@@ -8,6 +8,11 @@ export interface Settings {
   /** Remembered UI state. */
   ui: {
     workspace: Workspace
+    /**
+     * Remembered UI state owned by each module, keyed by module id (e.g. list filters).
+     * Stored as-is; a module validates its own slice when reading it.
+     */
+    moduleState: Record<string, unknown>
   }
 }
 
@@ -17,6 +22,6 @@ export function defaultSettings(defaultZoteroExportPath: string): Settings {
   return {
     zoteroExportPath: defaultZoteroExportPath,
     repoPath: '',
-    ui: { workspace: 'research' }
+    ui: { workspace: 'research', moduleState: {} }
   }
 }

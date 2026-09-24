@@ -49,6 +49,20 @@ describe('SettingsStore', () => {
     expect(await readFile(join(dir, kept!), 'utf8')).toBe('{ not json')
   })
 
+  it('stores per-module UI state and keeps it across reloads', async () => {
+    const store = new SettingsStore(file, defaults)
+    await store.update({ ui: { moduleState: { readings: { view: 'board' } } } })
+    await store.update({ ui: { workspace: 'life' } })
+    const reloaded = await new SettingsStore(file, defaults).load()
+    expect(reloaded.ui.moduleState).toEqual({ readings: { view: 'board' } })
+    expect(reloaded.ui.workspace).toBe('life')
+  })
+
+  it('ignores malformed module state', async () => {
+    await writeFile(file, JSON.stringify({ ui: { moduleState: ['nope'] } }))
+    expect((await new SettingsStore(file, defaults).load()).ui.moduleState).toEqual({})
+  })
+
   it('notifies listeners with the new and previous settings after saving', async () => {
     const store = new SettingsStore(file, defaults)
     const calls: [string, string][] = []

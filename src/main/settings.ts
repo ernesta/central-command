@@ -10,13 +10,17 @@ export function normaliseSettings(raw: unknown, defaults: Settings): Settings {
   const obj = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
   const ui = obj.ui && typeof obj.ui === 'object' ? (obj.ui as Record<string, unknown>) : {}
   const workspace = WORKSPACES.find((w) => w === ui.workspace) ?? defaults.ui.workspace
+  const moduleState =
+    ui.moduleState && typeof ui.moduleState === 'object' && !Array.isArray(ui.moduleState)
+      ? (ui.moduleState as Record<string, unknown>)
+      : defaults.ui.moduleState
   return {
     zoteroExportPath:
       typeof obj.zoteroExportPath === 'string' && obj.zoteroExportPath.trim()
         ? obj.zoteroExportPath
         : defaults.zoteroExportPath,
     repoPath: typeof obj.repoPath === 'string' ? obj.repoPath : defaults.repoPath,
-    ui: { workspace }
+    ui: { workspace, moduleState }
   }
 }
 
