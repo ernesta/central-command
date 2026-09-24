@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { durationMinutes, formatDate, formatDuration, meetingHeading } from './time'
+import {
+  durationMinutes,
+  formatDate,
+  formatDuration,
+  formatShortDate,
+  meetingHeading
+} from './time'
 
 describe('durationMinutes', () => {
   it('is end minus start', () => {
@@ -28,5 +34,13 @@ describe('dates and headings', () => {
     expect(meetingHeading('Supervision', '2026-09-24')).toBe('Supervision · Sep 24, 2026')
     expect(meetingHeading('', '2026-09-24')).toBe('Meeting · Sep 24, 2026')
     expect(meetingHeading('Other', '')).toBe('Other')
+  })
+})
+
+describe('formatShortDate', () => {
+  it('drops the year', () => {
+    expect(formatShortDate('2026-09-24')).toBe('Sep 24')
+    expect(formatShortDate('2026-01-05')).toBe('Jan 5')
+    expect(formatShortDate('soon')).toBe('soon')
   })
 })

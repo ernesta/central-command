@@ -59,6 +59,8 @@ export interface MeetingIndexRow {
   /** Plain text of the whole note, for search. */
   excerpt: string
   problems: string[]
+  /** How many topics the note has (level-3 headings under Notes, or the fallback headings). */
+  topicCount: number
   /** The TODOs found in the note, in order. */
   todos: TodoItem[]
   contentHash: string

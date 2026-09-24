@@ -42,6 +42,12 @@ describe('buildIndexRow', () => {
     expect(row.excerpt).not.toContain('series:')
   })
 
+  it('counts the topics in the note', () => {
+    const head = '---\nseries: Other\ndate: 2026-01-02\n---\n'
+    expect(buildIndexRow('research', 'x', head + '## Notes\n### A\n### B\n').topicCount).toBe(2)
+    expect(buildIndexRow('research', 'x', head + '## Notes\n').topicCount).toBe(0)
+  })
+
   it('records the TODOs in the note', () => {
     const row = buildIndexRow(
       'research',

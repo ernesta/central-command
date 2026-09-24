@@ -14,6 +14,7 @@ interface Row {
   summary: string
   excerpt: string
   problems: string
+  topic_count: number
   content_hash: string
 }
 
@@ -37,6 +38,7 @@ function toIndexRow(row: Row, todos: TodoItem[]): MeetingIndexRow {
     summary: row.summary,
     excerpt: row.excerpt,
     problems: JSON.parse(row.problems) as string[],
+    topicCount: row.topic_count,
     todos,
     contentHash: row.content_hash
   }
@@ -50,13 +52,13 @@ export function upsertMeeting(db: Database, row: MeetingIndexRow): void {
 function upsertMeetingRow(db: Database, row: MeetingIndexRow): void {
   db.prepare(
     `INSERT INTO meetings (workspace, meeting_id, series, date, start_time, end_time, mode,
-                           attendees, summary, excerpt, problems, content_hash)
+                           attendees, summary, excerpt, problems, topic_count, content_hash)
      VALUES (@workspace, @id, @series, @date, @start, @end, @mode,
-             @attendees, @summary, @excerpt, @problems, @contentHash)
+             @attendees, @summary, @excerpt, @problems, @topicCount, @contentHash)
      ON CONFLICT (workspace, meeting_id) DO UPDATE SET
        series = excluded.series, date = excluded.date, start_time = excluded.start_time,
        end_time = excluded.end_time, mode = excluded.mode, attendees = excluded.attendees,
-       summary = excluded.summary, excerpt = excluded.excerpt, problems = excluded.problems,
+       summary = excluded.summary, excerpt = excluded.excerpt, problems = excluded.problems, topic_count = excluded.topic_count,
        content_hash = excluded.content_hash`
   ).run({
     ...row,

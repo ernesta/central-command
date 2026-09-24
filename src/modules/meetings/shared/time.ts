@@ -29,3 +29,9 @@ export function formatDate(date: string): string {
 export function meetingHeading(series: string, date: string): string {
   return [series || 'Meeting', date ? formatDate(date) : ''].filter(Boolean).join(' · ')
 }
+
+/** "2026-09-24" as "Sep 24" (no year), for compact labels. Anything else is returned as it is. */
+export function formatShortDate(date: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date)
+  return m ? `${MONTHS[Number(m[2]) - 1] ?? m[2]} ${Number(m[3])}` : date
+}

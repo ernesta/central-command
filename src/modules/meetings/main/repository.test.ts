@@ -23,6 +23,7 @@ const row = (id: string, over: Partial<MeetingIndexRow> = {}): MeetingIndexRow =
   summary: '',
   excerpt: '',
   problems: [],
+  topicCount: 0,
   todos: [],
   contentHash: 'h',
   ...over
@@ -42,6 +43,7 @@ describe('meetings index', () => {
       mode: 'online',
       attendees: ['Kathy Rastle'],
       problems: ['x'],
+      topicCount: 3,
       todos: [
         { kind: 'previous', owners: ['KR'], text: 'send it', done: true, line: 0 },
         { kind: 'inline', owners: ['EO', 'AC'], text: 'run it', done: false, line: 1 }
