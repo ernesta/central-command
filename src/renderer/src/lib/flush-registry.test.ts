@@ -12,7 +12,9 @@ const register = (fn: () => Promise<void> | void): void => {
 describe('flush registry', () => {
   it('runs every registered flush and waits for async ones', async () => {
     const order: string[] = []
-    register(() => order.push('sync'))
+    register(() => {
+      order.push('sync')
+    })
     register(async () => {
       await new Promise((resolve) => setTimeout(resolve, 20))
       order.push('async')
