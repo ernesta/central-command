@@ -3,7 +3,14 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { runMigrations } from '../../../main/db/migrate'
 import type { SyncedFields } from '../shared/types'
 import { readingsMigrations } from './migrations'
-import { applySync, getCounts, getReadingByCitekey, lastSyncRun, recordSyncRun } from './repository'
+import {
+  applySync,
+  getCounts,
+  getReadingByCitekey,
+  lastSyncRun,
+  listAllReadings,
+  recordSyncRun
+} from './repository'
 
 const T1 = '2026-01-01T10:00:00.000Z'
 const T2 = '2026-01-02T10:00:00.000Z'
@@ -193,6 +200,19 @@ describe('applySync: atomicity', () => {
     expect(() => applySync(db, [entry('a', { status: 'read' }), entry('b'), bad], T2)).toThrow()
     expect(getCounts(db).total).toBe(1)
     expect(get('a')).toMatchObject({ status: 'to_read', updatedAt: T1 })
+  })
+})
+
+describe('listAllReadings', () => {
+  it('returns every reading, including ones missing from the export', () => {
+    applySync(db, [entry('a', { status: 'read' }), entry('b')], T1)
+    applySync(db, [entry('a', { status: 'read' })], T2)
+    const all = listAllReadings(db)
+    expect(all.map((r) => r.citekey).sort()).toEqual(['a', 'b'])
+    expect(all.find((r) => r.citekey === 'b')?.missingFromSource).toBe(true)
+  })
+  it('is empty for an empty table', () => {
+    expect(listAllReadings(db)).toEqual([])
   })
 })
 
