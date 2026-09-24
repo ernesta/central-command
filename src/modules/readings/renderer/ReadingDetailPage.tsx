@@ -7,6 +7,7 @@ import { Notice } from '@renderer/components/Notice'
 import type { Reading } from '../shared/types'
 import { AbstractBlock } from './AbstractBlock'
 import { NotesSection } from './NotesSection'
+import { ReferenceBlock } from './ReferenceBlock'
 import { StatusPill } from './StatusPill'
 import styles from './ReadingDetailPage.module.css'
 
@@ -94,6 +95,7 @@ export function ReadingDetailPage(): React.JSX.Element {
             <Notice>This item is no longer in your Zotero export. Your notes are safe.</Notice>
           </div>
         )}
+        <ReferenceBlock reading={reading} />
         {reading.abstract && <AbstractBlock abstract={reading.abstract} />}
         <NotesSection key={reading.citekey} citekey={reading.citekey} />
       </article>
