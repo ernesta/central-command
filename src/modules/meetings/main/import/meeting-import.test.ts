@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { parseMeta, splitNote } from '../../shared/front-matter'
 import { parseTodos } from '../../shared/todos'
+import { parseTopics } from '../../shared/topics'
 import {
   parseAttendees,
   parseObsidianMeeting,
@@ -386,6 +387,55 @@ describe('planMeetingImport: safety', () => {
     expect(imported(p)).toHaveLength(5)
     expect(byTarget(p, '2025-11-26 Supervision.md').meta).toMatchObject({ start: null, mode: null })
     expect(p.reminders.noTimes).toHaveLength(5)
+  })
+
+  it('keeps a Notes heading that is followed straight by a topic heading (so the topics stay topics)', () => {
+    const p = planMeetingImport({
+      ...input(),
+      obsidian: [
+        {
+          fileName: '2026 07 09 Supervisor Meeting.md',
+          folder: 'Supervision',
+          text: '#supervisor-meeting\n\n**Date**: Jul 9, 2026\n**Attendees**: A B\n## Notes\n### Updates\n- FRILL tomorrow\n### Study 1 Paper\n- Feedback\n'
+        }
+      ],
+      wordNotes: [],
+      logText: 'Jul 9, 2026\nTeams\nOnline\n60 min\nKey topics: the paper.\nKR\nEO\n'
+    })
+    const body = splitNote(byTarget(p, '2026-07-09 Supervision.md').content).body
+    expect(body).toBe(
+      '## Summary\n\nKey topics: the paper.\n\n## Notes\n\n### Updates\n\n- FRILL tomorrow\n\n### Study 1 Paper\n\n- Feedback\n'
+    )
+    expect(parseTopics(body).map((t) => t.text)).toEqual(['Updates', 'Study 1 Paper'])
+  })
+
+  it('imports previous items with a status word in front, keeping their text', () => {
+    const p = planMeetingImport({
+      ...input(),
+      obsidian: [
+        {
+          fileName: '2025 11 20 Supervisor Meeting.md',
+          folder: 'Supervision',
+          text: '#supervisor-meeting\n\n**Date**: Nov 20, 2025\n**Attendees**: A B\n## Previous Action Items\n- [x] **TODO(EO)**: Done one.\n- [ ] (Cancelled) **TODO(EO)**: Investigate datasets.\n- [ ] (In Progress) **TODO(EO)**: Update the plan.\n## Notes\n- x\n'
+        }
+      ],
+      wordNotes: [],
+      logText: null
+    })
+    const body = splitNote(byTarget(p, '2025-11-20 Supervision.md').content).body
+    expect(body).toContain('- [ ] (Cancelled) **TODO(EO)**: Investigate datasets.')
+    expect(body).toContain('- [ ] (In Progress) **TODO(EO)**: Update the plan.')
+    expect(body).toContain('- [x] **TODO(EO)**: Done one.')
+  })
+
+  it('leaves a note out if the conversion changes what is ticked', () => {
+    const untick = (body: string): { markdown: string } => ({
+      markdown: body.replace('- [x]', '- [ ]')
+    })
+    const p = planMeetingImport({ ...input(), transform: untick })
+    expect(p.items.some((i) => i.status === 'attention' && i.source.startsWith('2025 11 26'))).toBe(
+      true
+    )
   })
 
   it('leaves a note out, writing nothing, if the conversion ever loses or changes a TODO', () => {

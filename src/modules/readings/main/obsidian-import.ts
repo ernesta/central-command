@@ -49,8 +49,15 @@ export function parseObsidianNote(fileName: string, text: string): ObsidianNote 
   return { fileName, oldKey, title, year, body: lines.slice(i).join('\n') }
 }
 
-/** Obsidian-only syntax and template leftovers removed; returns Markdown ready for the app. */
-export function transformBody(body: string): { markdown: string; empty: boolean } {
+/**
+ * Obsidian-only syntax and template leftovers removed; returns Markdown ready for the app. Readings notes drop
+ * empty template headings and bullets; meeting notes keep them (`keepEmpty…`), because a heading followed
+ * straight by another heading (`## Notes` then `### Topic`) is structure, not an empty template section.
+ */
+export function transformBody(
+  body: string,
+  options: { keepEmptyHeadings?: boolean; keepEmptyBullets?: boolean } = {}
+): { markdown: string; empty: boolean } {
   const cleaned = body
     .replace(/\r\n?/g, '\n')
     // [[Page|shown text]] -> shown text; [[Page]] and ![[Page]] -> Page
@@ -60,13 +67,13 @@ export function transformBody(body: string): { markdown: string; empty: boolean 
     .replace(/^\t+/gm, (tabs) => '  '.repeat(tabs.length))
     // Empty placeholder bullets left by the template
     .split('\n')
-    .filter((line) => !/^\s*[-*+]\s*$/.test(line))
+    .filter((line) => options.keepEmptyBullets || !/^\s*[-*+]\s*$/.test(line))
 
   // Drop headings that no longer have anything under them (e.g. an unused "Key Quotes").
   const kept: string[] = []
   for (let n = 0; n < cleaned.length; n++) {
     const line = cleaned[n]
-    if (/^#{1,6}\s/.test(line)) {
+    if (!options.keepEmptyHeadings && /^#{1,6}\s/.test(line)) {
       let next = n + 1
       while (next < cleaned.length && cleaned[next].trim() === '') next++
       const followedByContent = next < cleaned.length && !/^#{1,6}\s/.test(cleaned[next])

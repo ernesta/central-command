@@ -236,3 +236,13 @@ describe('planImport', () => {
     expect(second.filter((p) => p.status === 'import')).toEqual([])
   })
 })
+
+describe('transformBody options (used by the meetings import)', () => {
+  const text = '## Notes\n### Topic\n- \n- item\n'
+  it('keeps headings that are followed straight by another heading, and empty bullets, when asked', () => {
+    expect(transformBody(text).markdown).toBe('### Topic\n\n- item\n')
+    expect(transformBody(text, { keepEmptyHeadings: true, keepEmptyBullets: true }).markdown).toBe(
+      '## Notes\n\n### Topic\n\n-\n- item\n'
+    )
+  })
+})

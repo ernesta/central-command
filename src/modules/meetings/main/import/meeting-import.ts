@@ -188,6 +188,10 @@ function markerCount(text: string): number {
   return (text.match(/\bTODO\s*(?:\([^()]*\))?\s*(?:\*\*)?\s*:/g) ?? []).length
 }
 
+/** Obsidian syntax converted, but every heading and bullet kept as written. */
+const keepStructure = (body: string): { markdown: string } =>
+  transformBody(body, { keepEmptyHeadings: true, keepEmptyBullets: true })
+
 /** Wikilinks become their text, as the importer does to the whole body. */
 const unlink = (text: string): string =>
   text.replace(/!?\[\[([^\]|]+)\|([^\]]+)\]\]/g, '$2').replace(/!?\[\[([^\]]+)\]\]/g, '$1')
@@ -335,26 +339,26 @@ export function planMeetingImport(input: PlanInput): MeetingImportPlan {
 
     // The body, in the editor's canonical form.
     const renamed = note.body.replace(/^##\s+Previous Action Items\s*$/gim, '## Previous TODOs')
-    const { markdown } = (input.transform ?? transformBody)(renamed)
+    const { markdown } = (input.transform ?? keepStructure)(renamed)
     const summary = (row?.comment ?? '').trim()
     const body = '## Summary\n\n' + (summary ? `${summary}\n\n` : '') + (markdown ? markdown : '')
     const finalBody = body.endsWith('\n') ? body : `${body}\n`
 
-    // Safety: every TODO in the source must still be there, unchanged.
-    const before = parseTodos(unlink(note.body.replace(/\r\n?/g, '\n')))
-    const after = parseTodos(finalBody)
-    const missing = before.filter(
-      (b) =>
-        !after.some(
-          (a) => a.text === b.text && a.owners.join() === b.owners.join() && a.done === b.done
-        )
-    )
-    if (missing.length > 0 || markerCount(note.body) !== markerCount(finalBody)) {
+    // Safety: every TODO in the source must still be there, word for word, and no ticked box may change.
+    // (Where the app files a TODO, as a Previous TODO or an inline one, is its own business; the text is what matters.)
+    const source = unlink(note.body.replace(/\r\n?/g, '\n'))
+    const lost = parseTodos(source).filter((t) => !finalBody.includes(t.text))
+    const ticked = (text: string): number => (text.match(/^\s*[-*+]\s+\[[xX]\]/gm) ?? []).length
+    if (
+      lost.length > 0 ||
+      markerCount(source) !== markerCount(finalBody) ||
+      ticked(source) !== ticked(finalBody)
+    ) {
       items.push({
         status: 'attention',
         source: note.fileName,
         problems: [
-          `The TODO check failed (${markerCount(note.body)} in the note, ${markerCount(finalBody)} after conversion): nothing was written for this note`
+          `The TODO check failed (${markerCount(source)} TODOs and ${ticked(source)} ticked boxes in the note, ${markerCount(finalBody)} and ${ticked(finalBody)} after conversion): nothing was written for this note`
         ]
       })
       continue
