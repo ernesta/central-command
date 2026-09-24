@@ -43,14 +43,17 @@ if (!vaultArg || !notesArg) {
     'Usage: npm run import:meetings -- --vault <path to vault> --meeting-notes <path to the Meeting Notes folder> [--apply] [--add-people]'
   )
 }
-if (process.platform !== 'darwin') fail('This importer reads Word files with macOS `textutil`, so it only runs on a Mac.')
+if (process.platform !== 'darwin')
+  fail('This importer reads Word files with macOS `textutil`, so it only runs on a Mac.')
 const apply = process.argv.includes('--apply')
 const addPeople = process.argv.includes('--add-people')
 const vault = expand(vaultArg as string)
 const meetingNotes = expand(notesArg as string)
 const home = process.env.CENTRAL_COMMAND_HOME || homedir()
 const dataRoot = join(home, 'CentralCommand')
-const meetingsDir = arg('meetings') ? expand(arg('meetings') as string) : join(dataRoot, 'notes', 'meetings', 'research')
+const meetingsDir = arg('meetings')
+  ? expand(arg('meetings') as string)
+  : join(dataRoot, 'notes', 'meetings', 'research')
 const peopleFile = join(dataRoot, 'data', 'people.json')
 
 const isDir = (p: string): boolean => existsSync(p) && statSync(p).isDirectory()
@@ -71,21 +74,31 @@ if (!folder) {
         .find((p) => p.endsWith('/Meetings') && isDir(p)) ?? ''
   }
 }
-if (!folder || !isDir(folder)) fail('Could not find the Meetings folder in the vault. Pass --folder <path inside the vault>.')
+if (!folder || !isDir(folder))
+  fail('Could not find the Meetings folder in the vault. Pass --folder <path inside the vault>.')
 
 const textutil = (file: string): string =>
-  execFileSync('textutil', ['-convert', 'txt', '-stdout', file], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+  execFileSync('textutil', ['-convert', 'txt', '-stdout', file], {
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024
+  })
 
 // --- read the sources
 const obsidian = readdirSync(folder, { withFileTypes: true }).flatMap((entry) => {
   if (entry.name.startsWith('.')) return []
   if (entry.isFile() && entry.name.endsWith('.md')) {
-    return [{ fileName: entry.name, folder: '', text: readFileSync(join(folder, entry.name), 'utf8') }]
+    return [
+      { fileName: entry.name, folder: '', text: readFileSync(join(folder, entry.name), 'utf8') }
+    ]
   }
   if (entry.isDirectory()) {
     return readdirSync(join(folder, entry.name))
       .filter((f) => f.endsWith('.md') && !f.startsWith('.'))
-      .map((f) => ({ fileName: f, folder: entry.name, text: readFileSync(join(folder, entry.name, f), 'utf8') }))
+      .map((f) => ({
+        fileName: f,
+        folder: entry.name,
+        text: readFileSync(join(folder, entry.name, f), 'utf8')
+      }))
   }
   return []
 })
@@ -114,7 +127,11 @@ console.log(`Obsidian meetings : ${folder} (${obsidian.length} notes)`)
 console.log(`Word notes        : ${supervisorsDir} (${wordNotes.length} files)`)
 console.log(`Word log          : ${logFile ? join(meetingNotes, logFile) : 'not found'}`)
 console.log(`Meetings folder   : ${meetingsDir} (${existing.length} already there)`)
-console.log(apply ? 'Mode              : APPLY (writing files)\n' : 'Mode              : dry run (nothing will be written)\n')
+console.log(
+  apply
+    ? 'Mode              : APPLY (writing files)\n'
+    : 'Mode              : dry run (nothing will be written)\n'
+)
 
 const describe = (item: PlanItem): string[] => {
   switch (item.status) {
@@ -124,11 +141,17 @@ const describe = (item: PlanItem): string[] => {
       const facts = [
         m.series,
         formatDate(m.date),
-        m.start ? `${m.start}–${m.end}${minutes ? ` (${formatDuration(minutes)})` : ''}` : 'no times',
+        m.start
+          ? `${m.start}–${m.end}${minutes ? ` (${formatDuration(minutes)})` : ''}`
+          : 'no times',
         m.mode === 'online' ? 'Online' : m.mode === 'in-person' ? 'In person' : 'no type',
         `${m.attendees.length} attendees`
       ]
-      return [`import   ${item.target}   <- ${item.source}`, `           ${facts.join(' · ')}`, ...item.notes.map((n) => `           note: ${n}`)]
+      return [
+        `import   ${item.target}   <- ${item.source}`,
+        `           ${facts.join(' · ')}`,
+        ...item.notes.map((n) => `           note: ${n}`)
+      ]
     }
     case 'skip-exists':
       return [`skip     ${item.source}   ${item.reason}`]
@@ -143,20 +166,30 @@ if (plan.anomalies.length) {
   for (const a of plan.anomalies) console.log(`  - ${a}`)
 }
 
-const toWrite = plan.items.filter((i): i is Extract<PlanItem, { status: 'import' }> => i.status === 'import')
+const toWrite = plan.items.filter(
+  (i): i is Extract<PlanItem, { status: 'import' }> => i.status === 'import'
+)
 const count = (s: PlanItem['status']): number => plan.items.filter((i) => i.status === s).length
-console.log(`\n${toWrite.length} to import, ${count('skip-exists')} already there, ${count('attention')} need attention.`)
+console.log(
+  `\n${toWrite.length} to import, ${count('skip-exists')} already there, ${count('attention')} need attention.`
+)
 
 const r = plan.reminders
 if (r.dateMismatches.length || r.durationMismatches.length || r.noTimes.length) {
   console.log('\nPlease check these yourself (nothing here was changed in your notes):')
   if (r.dateMismatches.length) {
     console.log('  Wrong dates in Obsidian **Date** lines (the file name date was used):')
-    for (const d of r.dateMismatches) console.log(`    ${d.source}: says ${formatDate(d.headerDate)}, used ${formatDate(d.usedDate)}`)
+    for (const d of r.dateMismatches)
+      console.log(
+        `    ${d.source}: says ${formatDate(d.headerDate)}, used ${formatDate(d.usedDate)}`
+      )
   }
   if (r.durationMismatches.length) {
-    console.log('  Durations that differ between the Word log and the Word note (the note\'s times were used):')
-    for (const d of r.durationMismatches) console.log(`    ${formatDate(d.date)}: log ${d.logMinutes} min, note ${d.noteMinutes} min`)
+    console.log(
+      "  Durations that differ between the Word log and the Word note (the note's times were used):"
+    )
+    for (const d of r.durationMismatches)
+      console.log(`    ${formatDate(d.date)}: log ${d.logMinutes} min, note ${d.noteMinutes} min`)
   }
   if (r.noTimes.length) {
     console.log('  Meetings with no Word note, so no start and end times (add them in the app):')
@@ -166,7 +199,9 @@ if (r.dateMismatches.length || r.durationMismatches.length || r.noTimes.length) 
 
 const names = [...new Set(toWrite.flatMap((i) => i.meta.attendees))]
 if (addPeople) {
-  console.log('\nPeople to add to your list (initials worked out from the names; change them in Settings):')
+  console.log(
+    '\nPeople to add to your list (initials worked out from the names; change them in Settings):'
+  )
 }
 
 async function run(): Promise<void> {
@@ -196,6 +231,10 @@ async function run(): Promise<void> {
       }
     }
   }
-  console.log(apply ? '\nOpen the app (or restart it) and the meetings will appear.' : '\nDry run only. Re-run with --apply to write these files.')
+  console.log(
+    apply
+      ? '\nOpen the app (or restart it) and the meetings will appear.'
+      : '\nDry run only. Re-run with --apply to write these files.'
+  )
 }
 void run()

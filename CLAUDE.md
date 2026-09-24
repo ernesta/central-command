@@ -11,6 +11,8 @@ ask the user.
   N-API prebuilds so no Electron rebuild is needed)
 - `npm run lint`, `npm run typecheck`, `npm run format`
 - `npm run import:obsidian -- --vault <path> [--apply]`: import reading notes from an Obsidian vault (dry run by default)
+- `npm run import:meetings -- --vault <path> --meeting-notes <path> [--apply] [--add-people]`: import meeting notes from
+  Obsidian and the Word log and notes (dry run by default; macOS only)
 
 All of test, lint and typecheck must pass before finishing a checkpoint.
 
@@ -52,10 +54,10 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
 - Phase 1 stages 1 to 6 are done (foundations, shell, Readings sync, Readings UI, detail page with
   notes editor and APA copy, polish pass). What is left is the user's review and the push.
   `docs/ROADMAP.md` is the checklist; `docs/DECISIONS.md` records what the polish pass changed.
-- Next feature: Meetings. It is planned in `docs/MEETINGS_PLAN.md`. Stages 1 to 7 are done (shared notes
+- Next feature: Meetings. It is planned in `docs/MEETINGS_PLAN.md`. Stages 1 to 8 are done (shared notes
   machinery, main-process core, TODO/topic/carry-over rules, the meeting page, the list, the landing page and
-  Research card, People settings and remembered list state). Stage 8 (the import from Obsidian and Word) waits
-  for the user's go-ahead.
+  Research card, People settings and remembered list state, the import). The import has been dry-run on the real
+  files but not applied; the user runs it. Stage 9 (polish and docs) waits for the user's go-ahead.
 - `docs/DECISIONS.md` explains why things are the way they are, including bugs found by using the
   app. Read it before changing sync, notes, the editor or the module structure.
 - The brief (`central-command-mvp-phase1-brief.md`) is authoritative for the visual design

@@ -431,3 +431,28 @@ Checked in dev mode and the production build against scratch libraries.
   hand-edited value can never hide every meeting behind an empty list.
 - **A series card on the landing page filters that visit only, with the other filters cleared**, so what you see is
   that series; it is saved only if you then change a filter.
+
+## Meetings stage 8: the import (`npm run import:meetings`)
+
+- **What it reads** (never modified): the Obsidian `Meetings` folder (with its `Supervision` sub-folder), the Word
+  supervisor log (converted with macOS `textutil`, so the tool only runs on a Mac) and the Word notes in
+  `Supervisors/` (only their first line: date and start–end). **What it writes**: one file per meeting into
+  `notes/meetings/research/`, only when `--apply` is given, using an exclusive create, so an existing file can never be
+  replaced; a meeting already there (matched on date and series, whatever the file is called) is skipped, so running it
+  again writes nothing. `--add-people` also adds the attendees to `data/people.json` (initials worked out, clashes numbered).
+- **Rules**: the file name date is the meeting's date (the `**Date**` line is only reported when it disagrees); series
+  come from the tags, the folder or the name; times come from the Word note of that day, and for supervision meetings
+  the summary and Online / In person come from the log row of that day (the log's Type of contact is dropped);
+  attendees are full names without titles or wikilinks; `## Previous Action Items` becomes `## Previous TODOs`;
+  a `## Summary` section is added to every meeting (empty when there is no log row). Nothing is guessed: a note whose
+  series or date cannot be worked out, or which duplicates another's date and series, is reported and left out.
+- **The Readings conversion could not be reused as it was.** It drops a heading followed straight by another heading, which
+  in these notes removed `## Notes` above the `###` topics (and let the Summary swallow them); found by dry-running on the
+  real files. Meeting notes now keep every heading and bullet (`keepEmptyHeadings`, `keepEmptyBullets`); Readings is unchanged.
+- **Safety net**: after converting each note the planner checks that every TODO's text is still in it, that the count of
+  TODO markers and of ticked boxes is unchanged, that the front matter and the summary read back the same, and leaves
+  the note out (reported as ATTENTION) if anything differs. A previous item with a status word in front,
+  `(Cancelled) **TODO(EO)**: …`, is kept as written; the app files it as an ownerless Previous TODO.
+- **Dry run on the real files** (writing nothing): 40 notes, all importable; 4 wrong `**Date**` lines (the three in the
+  plan and also `2025 11 17 Meeting with Matthew Jukes`, which says Nov 3), the four duration mismatches and five meetings
+  without times, exactly as in the plan; no Word note or log row left unmatched.
