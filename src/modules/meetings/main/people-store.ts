@@ -3,6 +3,7 @@ import { writeFileAtomic } from '../../../main/atomic-write'
 import {
   addPerson,
   normalisePeople,
+  removePerson,
   updatePerson,
   type NewPerson,
   type PersonPatch
@@ -45,6 +46,10 @@ export class PeopleStore {
 
   async update(name: string, patch: PersonPatch): Promise<Person[]> {
     return this.commit(updatePerson(this.people, name, patch))
+  }
+
+  async remove(name: string): Promise<Person[]> {
+    return this.commit(removePerson(this.people, name))
   }
 
   private async commit(next: Person[]): Promise<Person[]> {

@@ -67,9 +67,27 @@ function register({ db, paths }: MainContext): () => void {
     return store.syncPreviousTodos(asRef(ref), baseHash)
   })
   ipcMain.handle(MEETINGS_IPC.peopleList, () => people.list())
-  ipcMain.handle(MEETINGS_IPC.peopleAdd, (_event, name: unknown) => {
-    if (typeof name !== 'string') throw new Error('Invalid name')
-    return people.add({ name })
+  ipcMain.handle(MEETINGS_IPC.peopleAdd, (_event, input: unknown) => {
+    const o = asObject(input, 'person')
+    if (typeof o.name !== 'string') throw new Error('Invalid person')
+    return people.add({
+      name: o.name,
+      initials: typeof o.initials === 'string' ? o.initials : undefined,
+      me: o.me === true
+    })
+  })
+  ipcMain.handle(MEETINGS_IPC.peopleUpdate, (_event, name: unknown, patch: unknown) => {
+    if (typeof name !== 'string') throw new Error('Invalid person')
+    const o = asObject(patch, 'change')
+    return people.update(name, {
+      name: typeof o.name === 'string' ? o.name : undefined,
+      initials: typeof o.initials === 'string' ? o.initials : undefined,
+      me: typeof o.me === 'boolean' ? o.me : undefined
+    })
+  })
+  ipcMain.handle(MEETINGS_IPC.peopleRemove, (_event, name: unknown) => {
+    if (typeof name !== 'string') throw new Error('Invalid person')
+    return people.remove(name)
   })
 
   const watchers = ACTIVE_WORKSPACES.map(

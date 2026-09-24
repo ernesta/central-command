@@ -51,7 +51,9 @@ const api: Api = {
       ipcRenderer.invoke(MEETINGS_IPC.syncPrevious, ref, baseHash),
     people: {
       list: () => ipcRenderer.invoke(MEETINGS_IPC.peopleList),
-      add: (name) => ipcRenderer.invoke(MEETINGS_IPC.peopleAdd, name)
+      add: (input) => ipcRenderer.invoke(MEETINGS_IPC.peopleAdd, input),
+      update: (name, patch) => ipcRenderer.invoke(MEETINGS_IPC.peopleUpdate, name, patch),
+      remove: (name) => ipcRenderer.invoke(MEETINGS_IPC.peopleRemove, name)
     },
     onChanged: (listener) => {
       const handler = (_event: Electron.IpcRendererEvent, change: MeetingChangedEvent): void =>

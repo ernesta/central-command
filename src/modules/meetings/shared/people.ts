@@ -118,6 +118,13 @@ export function updatePerson(
   return withMe(list, initials, me)
 }
 
+/** A new list without the person called `name`. Files that mention them keep the name; nothing else is touched. */
+export function removePerson(people: readonly Person[], name: string): Person[] {
+  const target = findByName(people, name)
+  if (!target) throw new PeopleError(`${name} is not in the list`)
+  return people.filter((p) => p !== target).map((p) => ({ ...p }))
+}
+
 /**
  * Turn whatever was read from `people.json` into a valid list. Entries that are not objects with a
  * name are skipped; clashing initials are made unique rather than dropping anyone; only the first

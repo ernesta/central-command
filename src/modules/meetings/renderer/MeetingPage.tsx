@@ -91,7 +91,7 @@ function MeetingView({
     void (location.key !== 'default' ? navigate(-1) : navigate(meetingsBase))
 
   const addPerson = useCallback(async (name: string): Promise<Person> => {
-    const list = await window.api.meetings.people.add(name)
+    const list = await window.api.meetings.people.add({ name })
     setPeople(list)
     const added = list.find(
       (p) => p.name.toLowerCase() === name.trim().replace(/\s+/g, ' ').toLowerCase()

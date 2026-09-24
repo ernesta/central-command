@@ -1,5 +1,6 @@
 import { Plus, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { findByName } from '../shared/people'
 import type { Person } from '../shared/types'
 import styles from './AttendeesField.module.css'
@@ -61,11 +62,7 @@ export function AttendeesField({
       const person = await onAddPerson(trimmed)
       add(person.name)
     } catch (e) {
-      setError(
-        e instanceof Error
-          ? e.message.replace(/^Error invoking remote method '[^']*': (Error: )?/, '')
-          : String(e)
-      )
+      setError(ipcErrorMessage(e))
     }
   }
 

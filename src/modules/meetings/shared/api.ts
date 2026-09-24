@@ -1,5 +1,6 @@
 import type { NoteContent } from '@shared/notes'
 import type { MeetingChanges } from './front-matter'
+import type { NewPerson, PersonPatch } from './people'
 import type {
   MeetingIndexRow,
   MeetingMeta,
@@ -84,8 +85,12 @@ export interface MeetingsApi {
   syncPreviousTodos(ref: MeetingRef, baseHash: string): Promise<SyncPreviousResult>
   people: {
     list(): Promise<Person[]>
-    /** Add a person (initials are worked out from the name and made unique). Resolves with the new list. */
-    add(name: string): Promise<Person[]>
+    /** Add a person (initials are worked out from the name and made unique unless given). Resolves with the new list. */
+    add(input: NewPerson): Promise<Person[]>
+    /** Change a person's name, initials (which must stay unique) or "me". Resolves with the new list. */
+    update(name: string, patch: PersonPatch): Promise<Person[]>
+    /** Remove a person from the list. Meeting files that mention them are not touched. */
+    remove(name: string): Promise<Person[]>
   }
   /** Subscribe to meeting files changing on disk. Returns an unsubscribe function. */
   onChanged(listener: (event: MeetingChangedEvent) => void): () => void
@@ -100,5 +105,7 @@ export const MEETINGS_IPC = {
   syncPrevious: 'meetings:sync-previous',
   peopleList: 'meetings:people-list',
   peopleAdd: 'meetings:people-add',
+  peopleUpdate: 'meetings:people-update',
+  peopleRemove: 'meetings:people-remove',
   changed: 'meetings:changed'
 } as const

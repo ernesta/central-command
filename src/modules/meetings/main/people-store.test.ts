@@ -57,3 +57,22 @@ describe('PeopleStore', () => {
     expect(store.list()[0].initials).toBe('KR')
   })
 })
+
+describe('PeopleStore.remove', () => {
+  it('removes a person and keeps the change', async () => {
+    const store = new PeopleStore(file)
+    await store.add({ name: 'Kathy Rastle' })
+    await store.add({ name: 'Ernesta Orlovaitė' })
+    await store.remove('Kathy Rastle')
+    expect(await new PeopleStore(file).load()).toEqual([
+      { name: 'Ernesta Orlovaitė', initials: 'EO', me: false }
+    ])
+  })
+  it('refuses an unknown person and leaves the file as it was', async () => {
+    const store = new PeopleStore(file)
+    await store.add({ name: 'Kathy Rastle' })
+    const before = readFileSync(file, 'utf8')
+    await expect(store.remove('Nobody')).rejects.toThrow('not in the list')
+    expect(readFileSync(file, 'utf8')).toBe(before)
+  })
+})

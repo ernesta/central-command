@@ -7,6 +7,7 @@ import {
   makeInitialsUnique,
   normalisePeople,
   ownerOptions,
+  removePerson,
   updatePerson
 } from './people'
 import type { Person } from './types'
@@ -165,4 +166,21 @@ describe('ownerOptions', () => {
     ).toEqual(['KR', 'AC', 'EO', 'MJ'])
   })
   it('is empty when nobody is known', () => expect(ownerOptions(['A B'], [])).toEqual([]))
+})
+
+describe('removePerson', () => {
+  const list = [p('Kathy Rastle', 'KR'), p('Ernesta Orlovaitė', 'EO', true)]
+  it('removes only that person, without changing the input', () => {
+    const copy = JSON.parse(JSON.stringify(list))
+    expect(removePerson(list, ' kathy rastle ')).toEqual([p('Ernesta Orlovaitė', 'EO', true)])
+    expect(list).toEqual(copy)
+  })
+  it('refuses someone who is not in the list', () => {
+    expect(() => removePerson(list, 'Nobody')).toThrow('not in the list')
+  })
+  it('frees the initials for someone else', () => {
+    expect(addPerson(removePerson(list, 'Kathy Rastle'), { name: 'Karl Rowe' })[1].initials).toBe(
+      'KR'
+    )
+  })
 })
