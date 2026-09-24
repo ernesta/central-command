@@ -94,7 +94,7 @@ export function TagFilter({ tags, selected, onChange }: TagFilterProps): React.J
             )}
           </ul>
           <div className={styles.footer}>
-            <span>Readings must have all selected tags</span>
+            <span>Must have all selected</span>
             <button
               type="button"
               className={styles.clear}
