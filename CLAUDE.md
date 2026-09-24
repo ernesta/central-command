@@ -35,6 +35,9 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
 - Styling: plain CSS with design tokens from `theme/tokens.css` and CSS Modules.
   No raw hex values in components, no Tailwind or UI kits, no gradients, no
   emoji as icons (use Lucide).
+- The main process is CommonJS. A new ESM-only main-process dependency must be added to
+  `externalizeDeps.exclude` in `electron.vite.config.ts` (see docs/DECISIONS.md), and the
+  built app should be launched once to confirm it loads.
 - Every schema change is a numbered SQL migration (`<module>/NNNN_name`). Never
   edit a shipped migration.
 - No hardcoded personal paths: resolve from `app.getPath('home')`.
