@@ -1,12 +1,20 @@
+import { createElement } from 'react'
 import type { LiveModuleManifest } from '../types'
+import { ReadingDetailPage } from './renderer/ReadingDetailPage'
+import { ReadingsCard } from './renderer/ReadingsCard'
+import { ReadingsPage } from './renderer/ReadingsPage'
 import { SyncSummary } from './renderer/SyncSummary'
 
-/** Readings: literature synced one-way from Zotero, with notes. Pages and the landing card arrive in later stages. */
+/** Readings: literature synced one-way from Zotero, with notes. */
 export const readingsModule: LiveModuleManifest = {
   id: 'readings',
   workspace: 'research',
   label: 'Readings',
   status: 'live',
-  routes: [],
+  routes: [
+    { path: '', element: createElement(ReadingsPage) },
+    { path: ':citekey', element: createElement(ReadingDetailPage) }
+  ],
+  landingCard: ReadingsCard,
   settingsSection: SyncSummary
 }
