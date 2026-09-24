@@ -31,11 +31,11 @@ npm run format     # Prettier
 
 ## Where your data lives
 
-Everything is stored under `~/ControlCenter/`:
+Everything is stored under `~/CentralCommand/`:
 
 ```
-~/ControlCenter/
-├── data/control-center.sqlite      # metadata
+~/CentralCommand/
+├── data/central-command.sqlite      # metadata
 ├── data/zotero-export.bib          # default Zotero export target
 ├── notes/readings/<citekey>.md     # your notes, one Markdown file each
 └── settings.json
@@ -48,7 +48,7 @@ Everything is stored under `~/ControlCenter/`:
 2. In Zotero, right-click your library and choose **Export Library…**.
 3. Pick the **Better BibTeX** (or **Better BibLaTeX**) format.
 4. Tick **Keep updated**.
-5. Save the file to `~/ControlCenter/data/zotero-export.bib`, or to any path you
+5. Save the file to `~/CentralCommand/data/zotero-export.bib`, or to any path you
    then enter under **Settings → Zotero export path** in the app.
 
 The app only ever reads this file. It never writes to Zotero or to the export.

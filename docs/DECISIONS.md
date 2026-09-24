@@ -69,5 +69,7 @@ Renamed from the brief's placeholder "Control Center" at the user's request; a
 later rename is expected. The name lives in `src/shared/app-info.ts`
 (`APP_NAME`), `package.json`, `electron-builder.yml` (productName, appId,
 executable) and `src/renderer/index.html`. The original brief keeps its old
-wording; the code and docs are authoritative. The data folder is still
-`~/ControlCenter/`, because the user's Zotero auto-export already writes there.
+wording; the code and docs are authoritative. The data folder is
+`~/CentralCommand/` (`DATA_DIR_NAME`) and the database is
+`central-command.sqlite`; the user re-pointed their Zotero export to the new
+location.

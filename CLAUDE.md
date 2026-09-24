@@ -49,4 +49,4 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
 - Never delete or overwrite a note file, or delete a `readings` row; missing
   items are flagged, not removed.
 - Never send user data over the network.
-- Never commit secrets or user data; user data lives in `~/ControlCenter/`.
+- Never commit secrets or user data; user data lives in `~/CentralCommand/`.
