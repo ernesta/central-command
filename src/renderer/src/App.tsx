@@ -1,19 +1,15 @@
-import { useState } from 'react'
-import type { Workspace } from '@shared/settings'
-import { TopBar } from './shell/TopBar'
+import { MemoryRouter } from 'react-router'
+import { Shell } from './shell/Shell'
+import { SettingsProvider } from './state/SettingsProvider'
 
 function App(): React.JSX.Element {
-  const [workspace, setWorkspace] = useState<Workspace>('research')
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <TopBar
-        workspace={workspace}
-        onWorkspaceChange={setWorkspace}
-        onBuild={() => undefined}
-        onOpenSettings={() => undefined}
-      />
-    </div>
+    <SettingsProvider>
+      {/* Electron has no address bar, so an in-memory history is enough (and supports back/forward). */}
+      <MemoryRouter>
+        <Shell />
+      </MemoryRouter>
+    </SettingsProvider>
   )
 }
 
