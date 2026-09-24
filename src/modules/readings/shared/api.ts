@@ -1,3 +1,4 @@
+import type { NoteChangedEvent, NoteContent, NoteWriteResult } from './notes'
 import type { ReadingsQuery, TagCount } from './query'
 import type { Reading, ReadingCounts, SyncStatus } from './types'
 
@@ -16,6 +17,16 @@ export interface ReadingsApi {
   /** All tags in use, with how many readings carry each. */
   tags(): Promise<TagCount[]>
   get(citekey: string): Promise<Reading | null>
+  notes: {
+    read(citekey: string): Promise<NoteContent>
+    /**
+     * Save a note. `baseHash` is the hash of the version the editor started from; if the file
+     * has since changed on disk nothing is written and a conflict is returned.
+     */
+    write(citekey: string, content: string, baseHash: string): Promise<NoteWriteResult>
+    /** Subscribe to notes changing on disk (including this app's own saves). Returns an unsubscribe function. */
+    onChanged(listener: (event: NoteChangedEvent) => void): () => void
+  }
 }
 
 export const READINGS_IPC = {
@@ -25,5 +36,8 @@ export const READINGS_IPC = {
   counts: 'readings:counts',
   list: 'readings:list',
   tags: 'readings:tags',
-  get: 'readings:get'
+  get: 'readings:get',
+  notesRead: 'readings:notes-read',
+  notesWrite: 'readings:notes-write',
+  notesChanged: 'readings:notes-changed'
 } as const
