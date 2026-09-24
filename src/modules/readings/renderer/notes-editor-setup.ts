@@ -1,8 +1,8 @@
 import { Editor, remarkStringifyOptionsCtx } from '@milkdown/kit/core'
 import { history } from '@milkdown/kit/plugin/history'
-import { listener } from '@milkdown/kit/plugin/listener'
 import { commonmark } from '@milkdown/kit/preset/commonmark'
 import { gfm } from '@milkdown/kit/preset/gfm'
+import { notesChangeCtx, notesChangePlugin } from './notes-change-plugin'
 import { taskListToggle } from './notes-task-list'
 
 /**
@@ -20,7 +20,7 @@ export const NOTES_STRINGIFY_OPTIONS = {
 
 /**
  * The plugins every notes editor uses: CommonMark plus GitHub-flavoured Markdown
- * (task lists, tables, strikethrough), undo history, and change listening. Shared by
+ * (task lists, tables, strikethrough), undo history, and immediate change reporting. Shared by
  * the real editor and its tests so they cannot drift apart.
  */
 export function withNotesPlugins(editor: Editor): Editor {
@@ -35,5 +35,6 @@ export function withNotesPlugins(editor: Editor): Editor {
     .use(gfm)
     .use(taskListToggle)
     .use(history)
-    .use(listener)
+    .use(notesChangeCtx)
+    .use(notesChangePlugin)
 }

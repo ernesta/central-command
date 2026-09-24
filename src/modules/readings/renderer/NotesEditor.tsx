@@ -1,7 +1,7 @@
 import { Editor, defaultValueCtx, editorViewCtx, rootCtx } from '@milkdown/kit/core'
-import { listenerCtx } from '@milkdown/kit/plugin/listener'
 import { Milkdown, MilkdownProvider, useEditor, useInstance } from '@milkdown/react'
 import { useEffect, useRef } from 'react'
+import { notesChangeCtx } from './notes-change-plugin'
 import { withNotesPlugins } from './notes-editor-setup'
 import styles from './NotesEditor.module.css'
 
@@ -33,9 +33,7 @@ function Inner({
       Editor.make().config((ctx) => {
         ctx.set(rootCtx, root)
         ctx.set(defaultValueCtx, initial)
-        ctx.get(listenerCtx).markdownUpdated((_ctx, markdown, previous) => {
-          if (markdown !== previous) onChangeRef.current(markdown)
-        })
+        ctx.set(notesChangeCtx.key, (markdown) => onChangeRef.current(markdown))
       })
     )
   )

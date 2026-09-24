@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { Editor, defaultValueCtx, editorViewCtx, rootCtx } from '@milkdown/kit/core'
 import { getMarkdown } from '@milkdown/kit/utils'
+import { notesChangeCtx } from './notes-change-plugin'
 import { describe, expect, it } from 'vitest'
 import { withNotesPlugins } from './notes-editor-setup'
 import { toggleTask } from './notes-task-list'
@@ -92,5 +93,49 @@ describe('task list checkboxes', () => {
       result: false,
       out: '- plain\n- [ ] task\n'
     })
+  })
+})
+
+describe('immediate change reporting', () => {
+  it('reports the full Markdown synchronously on every edit, never on load', async () => {
+    const root = document.createElement('div')
+    document.body.appendChild(root)
+    const reported: string[] = []
+    const editor = await withNotesPlugins(
+      Editor.make().config((ctx) => {
+        ctx.set(rootCtx, root)
+        ctx.set(defaultValueCtx, '# Title\n\nBody\n')
+        ctx.set(notesChangeCtx.key, (markdown) => reported.push(markdown))
+      })
+    ).create()
+    expect(reported).toEqual([])
+
+    const view = editor.action((ctx) => ctx.get(editorViewCtx))
+    view.dispatch(view.state.tr.insertText(' more', view.state.doc.content.size - 1))
+    // No waiting: the report must already have happened.
+    expect(reported).toEqual(['# Title\n\nBody more\n'])
+
+    view.dispatch(view.state.tr.insertText('!', view.state.doc.content.size - 1))
+    expect(reported.at(-1)).toBe('# Title\n\nBody more!\n')
+    await editor.destroy()
+    root.remove()
+  })
+
+  it('does not report selection-only changes', async () => {
+    const root = document.createElement('div')
+    document.body.appendChild(root)
+    const reported: string[] = []
+    const editor = await withNotesPlugins(
+      Editor.make().config((ctx) => {
+        ctx.set(rootCtx, root)
+        ctx.set(defaultValueCtx, 'Text\n')
+        ctx.set(notesChangeCtx.key, (markdown) => reported.push(markdown))
+      })
+    ).create()
+    const view = editor.action((ctx) => ctx.get(editorViewCtx))
+    view.dispatch(view.state.tr.setMeta('noop', true))
+    expect(reported).toEqual([])
+    await editor.destroy()
+    root.remove()
   })
 })
