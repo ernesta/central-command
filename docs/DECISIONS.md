@@ -247,3 +247,10 @@ React StrictMode (`npm run dev`) runs an effect, its cleanup and the effect agai
 dispose undid the second `start()` and the editor stayed in "loading" forever. The state change is
 now synchronous. Production builds were unaffected, which is why earlier end-to-end runs (against
 the built app) missed it; dev mode is now also checked through the debugging port.
+
+## Backspace at the start of a list item leaves the list
+
+Milkdown's default did nothing visible on the first Backspace at the start of a bullet (a second
+press converted it), which made a bullet on a note's first line look impossible to remove.
+`liftListItemAtStart` takes the item out of the list, or outdents a nested one, in one press. It
+is registered before the default keymaps and only acts at the very start of an item's first block.
