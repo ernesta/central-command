@@ -1,0 +1,30 @@
+.card {
+  display: grid;
+  gap: 8px;
+  max-width: 600px;
+  padding: 28px 32px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-panel);
+  cursor: pointer;
+  transition: box-shadow var(--transition-base);
+}
+.card:hover {
+  box-shadow: 0 2px 10px rgba(27, 34, 43, 0.08);
+}
+.title {
+  font-size: var(--text-20);
+  font-weight: 600;
+}
+.line {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-14);
+}
+.action {
+  justify-self: start;
+  margin-top: 8px;
+}
+.error {
+  color: var(--danger);
+}
