@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import type { ReadingSort, SortKey } from '../shared/query'
 import type { Reading } from '../shared/types'
+import { clearOpened, peekOpened, rememberOpened } from './list-return'
 import { StatusPill } from './StatusPill'
 import styles from './ReadingsTable.module.css'
 
@@ -49,6 +50,25 @@ export function ReadingsTable({
     overscan: 10
   })
 
+  // Returning from a reading: bring its row back into view and focus it (once, on mount only).
+  const [restoreCitekey] = useState(peekOpened)
+  useEffect(() => {
+    // Cleared after a microtask so StrictMode's second effect run (same task) still restores.
+    queueMicrotask(clearOpened)
+    if (restoreCitekey === null) return
+    const index = readings.findIndex((r) => r.citekey === restoreCitekey)
+    if (index < 0) return
+    focusAfterRender.current = true
+    setActive(index)
+    virtualizer.scrollToIndex(index, { align: 'center' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount only
+  }, [])
+
+  const open = (reading: Reading): void => {
+    rememberOpened(reading.citekey)
+    onOpen(reading)
+  }
+
   // Keep the active row valid when the list shrinks (filters, search).
   const activeIndex = Math.min(active, Math.max(readings.length - 1, 0))
 
@@ -84,7 +104,7 @@ export function ReadingsTable({
       case 'End':
         return (move(readings.length - 1), event.preventDefault())
       case 'Enter':
-        return (onOpen(reading), event.preventDefault())
+        return (open(reading), event.preventDefault())
     }
   }
 
@@ -145,7 +165,7 @@ export function ReadingsTable({
                 style={{ transform: `translateY(${item.start}px)` }}
                 onClick={() => {
                   setActive(item.index)
-                  onOpen(reading)
+                  open(reading)
                 }}
                 onFocus={() => setActive(item.index)}
                 onKeyDown={(event) => onKeyDown(event, reading, item.index)}
