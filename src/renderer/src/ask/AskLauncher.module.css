@@ -1,0 +1,107 @@
+.pill {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-size: var(--text-14);
+  font-weight: 600;
+  box-shadow: var(--shadow-float);
+  transition: background var(--transition-fast);
+}
+.pill:hover {
+  background: color-mix(in srgb, var(--accent) 88%, black);
+}
+
+.panel {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  width: 380px;
+  height: 520px;
+  max-height: calc(100vh - 48px);
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-float);
+  overflow: hidden;
+  transform-origin: bottom right;
+  animation: expand var(--transition-base);
+}
+@keyframes expand {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 12px 18px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+}
+
+.messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+  overflow-y: auto;
+}
+.hint {
+  margin: auto;
+  color: var(--text-muted);
+  font-size: var(--text-14);
+}
+.message {
+  max-width: 85%;
+  padding: 8px 12px;
+  border-radius: var(--radius-card);
+  font-size: var(--text-14);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.user {
+  align-self: flex-end;
+  background: var(--selected-bg);
+  color: var(--selected-text);
+}
+.assistant {
+  align-self: flex-start;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.form {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid var(--border-soft);
+}
+.input {
+  flex: 1;
+}
