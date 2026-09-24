@@ -1,19 +1,10 @@
+import { fold } from '@shared/text'
 import type { Reading, ReadingStatus } from '../shared/types'
 import type { ReadingSort, ReadingsQuery, TagCount } from '../shared/query'
 
 const collator = new Intl.Collator('en', { sensitivity: 'base', numeric: true })
 
-/** Letters NFD does not decompose into base + accent. */
-const EXTRA_FOLDS: Record<string, string> = { ł: 'l', ø: 'o', đ: 'd', ß: 'ss', æ: 'ae', œ: 'oe' }
-
-/** Lowercase, strip accents: "Müller" and "muller" compare equal. */
-export function fold(text: string): string {
-  return text
-    .normalize('NFD')
-    .replace(/\p{M}/gu, '')
-    .toLowerCase()
-    .replace(/[łøđßæœ]/g, (c) => EXTRA_FOLDS[c])
-}
+export { fold }
 
 function matchesSearch(reading: Reading, terms: string[]): boolean {
   if (terms.length === 0) return true
