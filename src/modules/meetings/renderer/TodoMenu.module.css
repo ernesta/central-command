@@ -1,0 +1,45 @@
+.menu {
+  position: fixed;
+  z-index: 20;
+  min-width: 220px;
+  max-width: 320px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-float);
+}
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: var(--text-14);
+  cursor: pointer;
+}
+.active {
+  background: var(--selected-bg);
+  color: var(--selected-text);
+}
+.initials {
+  min-width: 28px;
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--panel);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-13);
+  text-align: center;
+}
+.name {
+  flex: 1;
+}
+.hint {
+  color: var(--text-muted);
+  font-size: var(--text-12);
+  white-space: nowrap;
+}
+.active .hint {
+  color: var(--selected-text);
+}

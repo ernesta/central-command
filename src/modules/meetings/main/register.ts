@@ -10,6 +10,7 @@ import { MEETING_WORKSPACES, type MeetingRef, type MeetingWorkspace } from '../s
 import { meetingPath } from './file-name'
 import { meetingsMigrations } from './migrations'
 import { MeetingsStore } from './meetings-store'
+import { listMeetingRows } from './repository'
 import { PeopleStore } from './people-store'
 
 /** Workspaces whose meetings folder is created and watched. Work joins when it gets its own page. */
@@ -47,6 +48,15 @@ function register({ db, paths }: MainContext): () => void {
     store.create(asObject(input, 'meeting') as unknown as CreateMeetingInput)
   )
   ipcMain.handle(MEETINGS_IPC.read, (_event, ref: unknown) => store.read(asRef(ref)))
+  ipcMain.handle(MEETINGS_IPC.list, (_event, workspace: unknown) => {
+    if (
+      typeof workspace !== 'string' ||
+      !(MEETING_WORKSPACES as readonly string[]).includes(workspace)
+    ) {
+      throw new Error('Invalid workspace')
+    }
+    return listMeetingRows(db, workspace as MeetingWorkspace)
+  })
   ipcMain.handle(MEETINGS_IPC.save, (_event, ref: unknown, changes: unknown, baseHash: unknown) => {
     if (typeof baseHash !== 'string') throw new Error('Invalid meeting save')
     return store.save(asRef(ref), asObject(changes, 'changes') as MeetingChanges, baseHash)

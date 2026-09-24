@@ -1,6 +1,13 @@
 import type { NoteContent, NoteWriteResult } from '@shared/notes'
 import type { MeetingChanges } from './front-matter'
-import type { MeetingMeta, MeetingMode, MeetingRef, MeetingWorkspace, Person } from './types'
+import type {
+  MeetingIndexRow,
+  MeetingMeta,
+  MeetingMode,
+  MeetingRef,
+  MeetingWorkspace,
+  Person
+} from './types'
 
 export interface CreateMeetingInput {
   workspace: MeetingWorkspace
@@ -50,6 +57,8 @@ export interface MeetingsApi {
   /** Create a new meeting file and resolve with it. Never replaces an existing file. */
   create(input: CreateMeetingInput): Promise<MeetingFile>
   read(ref: MeetingRef): Promise<MeetingFile>
+  /** Every meeting in a workspace from the index, newest first. */
+  list(workspace: MeetingWorkspace): Promise<MeetingIndexRow[]>
   /**
    * Save changes to the front matter fields and/or the body. `baseHash` is the hash of the file the
    * caller last read or saved; if the file has since changed on disk nothing is written and a
@@ -75,6 +84,7 @@ export interface MeetingsApi {
 export const MEETINGS_IPC = {
   create: 'meetings:create',
   read: 'meetings:read',
+  list: 'meetings:list',
   save: 'meetings:save',
   delete: 'meetings:delete',
   syncPrevious: 'meetings:sync-previous',

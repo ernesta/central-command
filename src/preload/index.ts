@@ -44,6 +44,7 @@ const api: Api = {
   meetings: {
     create: (input) => ipcRenderer.invoke(MEETINGS_IPC.create, input),
     read: (ref) => ipcRenderer.invoke(MEETINGS_IPC.read, ref),
+    list: (workspace) => ipcRenderer.invoke(MEETINGS_IPC.list, workspace),
     save: (ref, changes, baseHash) => ipcRenderer.invoke(MEETINGS_IPC.save, ref, changes, baseHash),
     delete: (ref) => ipcRenderer.invoke(MEETINGS_IPC.delete, ref),
     syncPreviousTodos: (ref, baseHash) =>
