@@ -89,7 +89,7 @@ async function open(initial?: string): Promise<void> {
     disk.exists = true
   }
   session = new NotesSession('k', disk, { debounceMs: 500 })
-  await session.load()
+  await session.start()
 }
 
 describe('loading', () => {
@@ -98,7 +98,7 @@ describe('loading', () => {
     disk.exists = true
     session = new NotesSession('k', disk)
     expect(session.getSnapshot().status).toBe('loading')
-    await session.load()
+    await session.start()
     expect(session.getSnapshot()).toMatchObject({
       status: 'ready',
       initial: '# Existing',
@@ -357,6 +357,28 @@ describe('conflicts found while saving', () => {
     await session.keepMine()
     await session.useDisk()
     expect(session.getSnapshot().initial).toBe('x')
+  })
+})
+
+describe('lifecycle', () => {
+  it('can be started again after being disposed (StrictMode remounts)', async () => {
+    await open('text')
+    await session.dispose()
+    expect(disk.listenerCount()).toBe(0)
+    await session.start()
+    expect(disk.listenerCount()).toBe(1)
+    disk.externalEdit('edited after restart')
+    await settle()
+    expect(session.getSnapshot()).toMatchObject({
+      initial: 'edited after restart',
+      reloadedFromDisk: true
+    })
+  })
+
+  it('does nothing until started', async () => {
+    session = new NotesSession('k', disk)
+    expect(disk.listenerCount()).toBe(0)
+    expect(session.getSnapshot().status).toBe('loading')
   })
 })
 

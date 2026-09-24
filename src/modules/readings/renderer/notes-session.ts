@@ -58,7 +58,7 @@ export class NotesSession {
   private inflight: Promise<void> | null = null
   private saveAgain = false
   private disposed = false
-  private readonly unsubscribe: () => void
+  private unsubscribe: (() => void) | null = null
 
   /** Hash of the file version our next save builds on. */
   private baseHash = ''
@@ -72,7 +72,6 @@ export class NotesSession {
     options: Options = {}
   ) {
     this.debounceMs = options.debounceMs ?? 500
-    this.unsubscribe = api.onChanged((event) => void this.onExternalChange(event))
   }
 
   getSnapshot = (): NotesSnapshot => this.snapshot
@@ -82,7 +81,15 @@ export class NotesSession {
     return () => this.listeners.delete(listener)
   }
 
-  async load(): Promise<void> {
+  /**
+   * Begin listening for outside changes and load the note. Kept out of the constructor so
+   * creating a session has no side effects; safe to call again after `dispose()` (React
+   * StrictMode mounts, unmounts and remounts a component in development).
+   */
+  async start(): Promise<void> {
+    this.disposed = false
+    this.unsubscribe?.()
+    this.unsubscribe = this.api.onChanged((event) => void this.onExternalChange(event))
     const note = await this.api.read(this.citekey)
     if (this.disposed) return
     this.adoptDisk(note)
@@ -156,13 +163,13 @@ export class NotesSession {
     })
   }
 
-  /** Stop listening and save anything pending. Safe to call more than once. */
+  /** Stop listening and save anything pending. Safe to call more than once; `start()` can revive it. */
   async dispose(): Promise<void> {
     if (this.disposed) return
     await this.flush()
     this.disposed = true
-    this.unsubscribe()
-    this.listeners.clear()
+    this.unsubscribe?.()
+    this.unsubscribe = null
   }
 
   private async saveOnce(): Promise<void> {
