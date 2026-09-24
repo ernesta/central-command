@@ -6,7 +6,7 @@ App shell plus Readings (Zotero one-way sync, notes editor). See
 `control-center-mvp-phase1-brief.md`.
 
 - [x] Foundations: scaffold, secure IPC, SQLite migrations, settings, fonts, tokens, base components, docs
-- [ ] Shell: workspaces, Settings screen, Build button, Ask launcher, module manifests
+- [x] Shell: workspaces, Settings screen, Build button, Ask launcher, module manifests
 - [ ] Readings data and sync
 - [ ] Readings UI and Research landing page
 - [ ] Reading detail and Markdown notes editor
