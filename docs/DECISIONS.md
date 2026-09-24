@@ -190,3 +190,60 @@ window or quitting never loses edits.
 Milkdown's list-item component pulls in Vue and re-renders every list item. Task items
 already carry `data-checked`, so the checkbox is drawn with CSS and a ~20-line plugin
 toggles it on click.
+
+## APA references are formatted by our own code, not a CSL engine
+
+Copying an APA reference needs journal, volume, pages, DOI, publisher and so on, so the
+sync now keeps those as JSON in `readings.reference` (migration `0002`), extracted from the
+BibLaTeX fields. `formatApa` (`shared/apa.ts`) is a small pure function covering journal
+articles, books, chapters, reports, theses, conference papers, datasets, software and web
+pages, with APA 7 rules for author lists (ampersand, the 20-author cutoff), group authors,
+editors, editions, DOIs, en-dash page ranges and italics. It returns plain text and HTML, and
+the Copy button puts both on the clipboard so italics survive pasting into Word.
+
+Why not citeproc-js with the official APA style? The engine is `CPAL-1.0 OR AGPL-1.0` and the
+style files are CC BY-SA, copyleft terms that could complicate publishing this app later.
+The trade-off: only the entry types above are covered precisely; anything else gets a
+general "Author (Year). Title. Publisher. URL" pattern.
+
+## Sentence-case titles come from Better BibTeX's own case protection
+
+APA wants sentence case, but Zotero usually stores Title Case. Better BibTeX already wraps
+words that must stay capitalised in `{{braces}}` (`{{Africa}}`, `{{What}}` after a colon), and the
+BibTeX parser's default sentence casing honours them. Tested on the user's 187 entries this gave
+correct results (`State-building and multilingual education in Africa`, `…language: A comparative
+perspective`). Titles are stored both as Zotero has them (`full_title`) and in sentence case
+(`reference.titleSentence`). Journal names keep their stored capitalisation.
+
+## BibLaTeX list fields are arrays
+
+`publisher`, `location` and `institution` are literal _lists_ in BibLaTeX, so the parser returns
+arrays; read as strings they came out empty. They are joined with "; ".
+
+## Reference details do not count as updates
+
+`reference` is saved whenever it differs but is deliberately outside the change signature, so
+back-filling it for an existing library (or a corrected volume number) does not bump
+`updated_at` or the "updated" count. Verified on the user's library: 187 of 187 back-filled, 0
+`updated_at` changes.
+
+## Importing notes from Obsidian
+
+`npm run import:obsidian -- --vault <path> [--apply]` (dry run by default) copies notes made by
+Obsidian's Citation plugin into `~/CentralCommand/notes/readings/`. The old notes were named with
+short citekeys (`@Cayado2025.md`) that no longer match Better BibTeX's (`cayadoCostNarrowLens2025`),
+so each note is matched by its own title and year (with a prefix rule for shortened Zotero titles);
+anything ambiguous or unmatched is reported, never guessed. The plugin's header (front matter,
+title, abstract) is dropped because the app shows it; empty template sections and empty templates
+are skipped; `[[wikilinks]]` become plain text; tabs become spaces; notes are written in the
+editor's canonical form so they are not reformatted on first edit. It never touches the vault and
+never overwrites an existing note. It is bundled with esbuild because the BibTeX parser is
+ESM-only.
+
+## A dev-only bug found by using the app: StrictMode and `dispose()`
+
+React StrictMode (`npm run dev`) runs an effect, its cleanup and the effect again without waiting.
+`NotesSession.dispose()` awaited the final save before marking itself disposed, so the late
+dispose undid the second `start()` and the editor stayed in "loading" forever. The state change is
+now synchronous. Production builds were unaffected, which is why earlier end-to-end runs (against
+the built app) missed it; dev mode is now also checked through the debugging port.
