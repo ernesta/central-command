@@ -49,8 +49,9 @@ describe('queryMeetings: what is listed and in what order', () => {
     row('undated', { date: '' })
   ]
 
-  it('is newest first, later start first within a day, no start last, undated at the end', () => {
-    expect(ids(queryMeetings(rows, q(), people, TODAY))).toEqual([
+  it('is newest first (upcoming meetings first), later start first within a day, no start last, undated at the end', () => {
+    expect(ids(queryMeetings(rows, q(), people))).toEqual([
+      '2026-10-01 Supervision',
       '2026-09-24 Rastle Lab',
       '2026-09-24 Supervision',
       '2026-09-24 Other',
@@ -59,23 +60,20 @@ describe('queryMeetings: what is listed and in what order', () => {
     ])
   })
 
-  it('leaves out upcoming meetings but keeps today', () => {
-    const out = ids(queryMeetings(rows, q(), people, TODAY))
-    expect(out).not.toContain('2026-10-01 Supervision')
-    expect(out).toContain('2026-09-24 Other')
-    expect(ids(queryMeetings(rows, q(), people, '2026-10-01'))).toContain('2026-10-01 Supervision')
+  it('includes upcoming meetings, which the list marks using isUpcoming', () => {
+    expect(ids(queryMeetings(rows, q(), people))).toContain('2026-10-01 Supervision')
+    expect(isUpcoming(rows[4], TODAY)).toBe(true)
+    expect(isUpcoming(rows[3], TODAY)).toBe(false) // today is not upcoming
   })
 
   it('never hides a meeting whose date could not be read', () => {
-    expect(ids(queryMeetings([row('undated', { date: '' })], q(), people, TODAY))).toEqual([
-      'undated'
-    ])
+    expect(ids(queryMeetings([row('undated', { date: '' })], q(), people))).toEqual(['undated'])
     expect(isUpcoming({ date: '' }, TODAY)).toBe(false)
   })
 
   it('does not change the rows it is given', () => {
     const copy = [...rows]
-    queryMeetings(rows, q(), people, TODAY)
+    queryMeetings(rows, q(), people)
     expect(rows).toEqual(copy)
   })
 })
@@ -95,23 +93,23 @@ describe('queryMeetings: filters', () => {
   ]
 
   it('filters by series, type and attendee, and they combine', () => {
-    expect(ids(queryMeetings(rows, q({ series: 'Rastle Lab' }), people, TODAY))).toEqual([
+    expect(ids(queryMeetings(rows, q({ series: 'Rastle Lab' }), people))).toEqual([
       '2026-09-11 Rastle Lab'
     ])
-    expect(ids(queryMeetings(rows, q({ mode: 'online' }), people, TODAY))).toEqual([
+    expect(ids(queryMeetings(rows, q({ mode: 'online' }), people))).toEqual([
       '2026-09-10 Supervision'
     ])
-    expect(ids(queryMeetings(rows, q({ attendee: 'Kathy Rastle' }), people, TODAY))).toEqual([
+    expect(ids(queryMeetings(rows, q({ attendee: 'Kathy Rastle' }), people))).toEqual([
       '2026-09-11 Rastle Lab',
       '2026-09-10 Supervision'
     ])
     expect(
-      ids(queryMeetings(rows, q({ attendee: 'Kathy Rastle', mode: 'in-person' }), people, TODAY))
+      ids(queryMeetings(rows, q({ attendee: 'Kathy Rastle', mode: 'in-person' }), people))
     ).toEqual(['2026-09-11 Rastle Lab'])
   })
 
   it('a meeting with no type is not matched by a type filter', () => {
-    expect(ids(queryMeetings(rows, q({ mode: 'in-person' }), people, TODAY))).not.toContain(
+    expect(ids(queryMeetings(rows, q({ mode: 'in-person' }), people))).not.toContain(
       '2026-09-12 Luminos'
     )
   })
@@ -131,7 +129,7 @@ describe('queryMeetings: search', () => {
       summary: 'Pilot timeline.'
     })
   ]
-  const find = (search: string): string[] => ids(queryMeetings(rows, q({ search }), people, TODAY))
+  const find = (search: string): string[] => ids(queryMeetings(rows, q({ search }), people))
 
   it('finds by series, attendee name or initials, summary and note text', () => {
     expect(find('luminos')).toEqual(['2026-03-02 Luminos'])

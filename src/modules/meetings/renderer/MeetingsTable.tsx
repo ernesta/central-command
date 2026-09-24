@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router'
 import { durationMinutes, formatDate, formatDuration } from '../shared/time'
-import { MODE_LABELS, formatTimeRange, initialsFor } from '../shared/query'
+import { MODE_LABELS, formatTimeRange, initialsFor, isUpcoming } from '../shared/query'
 import type { MeetingIndexRow, Person } from '../shared/types'
 import { meetingRoute } from './meetings-paths'
 import styles from './MeetingsTable.module.css'
@@ -10,10 +10,12 @@ const VISIBLE_ATTENDEES = 3
 /** Date, Time, Duration, Series, Type, Summary, Attendees. Clicking anywhere on a row opens the meeting. */
 export function MeetingsTable({
   rows,
-  people
+  people,
+  today
 }: {
   rows: MeetingIndexRow[]
   people: Person[]
+  today: string
 }): React.JSX.Element {
   const navigate = useNavigate()
   return (
@@ -48,6 +50,7 @@ export function MeetingsTable({
                   >
                     {row.date ? formatDate(row.date) : 'No date'}
                   </Link>
+                  {isUpcoming(row, today) && <span className={styles.upcoming}>Upcoming</span>}
                 </td>
                 <td className={styles.nowrap}>{formatTimeRange(row.start, row.end)}</td>
                 <td className={styles.nowrap}>

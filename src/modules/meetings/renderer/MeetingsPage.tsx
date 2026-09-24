@@ -1,11 +1,9 @@
 import { Download } from 'lucide-react'
 import { useState } from 'react'
-import { Link } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { SearchInput } from '@renderer/components/SearchInput'
 import { Select } from '@renderer/components/Select'
-import { formatDate } from '../shared/time'
 import {
   DEFAULT_MEETINGS_QUERY,
   MODE_LABELS,
@@ -13,18 +11,17 @@ import {
   initialsFor,
   queryMeetings,
   seriesOptions,
-  upcomingMeetings,
   type MeetingsQuery
 } from '../shared/query'
 import { MeetingsTable } from './MeetingsTable'
 import { NewMeetingButton } from './NewMeetingButton'
-import { meetingRoute, todayIso } from './meetings-paths'
+import { todayIso } from './meetings-paths'
 import { useMeetingsList } from './useMeetingsList'
 import styles from './MeetingsPage.module.css'
 
 /**
  * All meetings, newest first: the meeting list and, filtered to Supervision, the supervision log.
- * Upcoming meetings are left out until they have happened.
+ * Upcoming meetings are included and marked.
  */
 export function MeetingsPage(): React.JSX.Element {
   const { rows, people } = useMeetingsList()
@@ -33,9 +30,7 @@ export function MeetingsPage(): React.JSX.Element {
 
   const today = todayIso()
   const all = rows ?? []
-  const visible = queryMeetings(all, query, people, today)
-  const upcoming = upcomingMeetings(all, today)
-  const happened = all.length - upcoming.length
+  const visible = queryMeetings(all, query, people)
   const filtersActive =
     query.search.trim() !== '' ||
     query.series !== 'all' ||
@@ -44,16 +39,9 @@ export function MeetingsPage(): React.JSX.Element {
 
   let content: React.ReactNode = null
   if (rows === null) content = null
-  else if (happened === 0) {
+  else if (all.length === 0) {
     content = (
-      <EmptyState
-        heading="No meetings yet"
-        message={
-          upcoming.length > 0
-            ? 'Upcoming meetings appear here once they have happened.'
-            : 'Create a meeting to start keeping notes.'
-        }
-      />
+      <EmptyState heading="No meetings yet" message="Create a meeting to start keeping notes." />
     )
   } else if (visible.length === 0) {
     content = (
@@ -63,7 +51,7 @@ export function MeetingsPage(): React.JSX.Element {
         )}
       </EmptyState>
     )
-  } else content = <MeetingsTable rows={visible} people={people} />
+  } else content = <MeetingsTable rows={visible} people={people} today={today} />
 
   return (
     <div className={styles.page}>
@@ -121,27 +109,12 @@ export function MeetingsPage(): React.JSX.Element {
         </button>
       </div>
 
-      {upcoming.length > 0 && (
-        <p className={styles.upcoming}>
-          Upcoming:{' '}
-          {upcoming.map((m, i) => (
-            <span key={m.id}>
-              {i > 0 && ', '}
-              <Link className={styles.upcomingLink} to={meetingRoute(m.id)}>
-                {m.series} · {formatDate(m.date)}
-              </Link>
-            </span>
-          ))}
-        </p>
-      )}
-
       <div className={styles.content}>{content}</div>
 
       {rows !== null && visible.length > 0 && (
         <p className={styles.hint}>
           Newest first. Click any row to open its notes. Choosing the Supervision series gives you
-          the supervision log. Upcoming meetings are left out until they have happened. A dash means
-          nothing was recorded.
+          the supervision log. Upcoming meetings are marked. A dash means nothing was recorded.
         </p>
       )}
     </div>

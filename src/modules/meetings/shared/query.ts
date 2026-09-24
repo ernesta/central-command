@@ -63,19 +63,17 @@ function haystack(row: MeetingIndexRow, people: readonly Person[]): string {
 }
 
 /**
- * The meetings for the list and the supervision log: everything that has happened (upcoming meetings
- * are left out until they have), filtered and put newest first. Meetings whose date could not be read
- * are kept, at the end, so a file with a problem is never hidden. Pure, like the Readings query.
+ * The meetings for the list, filtered and put newest first. Upcoming meetings are included (the list
+ * marks them); the supervision log export, built later, will leave them out. Meetings whose date could
+ * not be read are kept, at the end, so a file with a problem is never hidden. Pure, like the Readings query.
  */
 export function queryMeetings(
   rows: readonly MeetingIndexRow[],
   query: MeetingsQuery,
-  people: readonly Person[],
-  today: string
+  people: readonly Person[]
 ): MeetingIndexRow[] {
   const terms = fold(query.search).split(/\s+/).filter(Boolean)
   return rows
-    .filter((r) => !isUpcoming(r, today))
     .filter((r) => query.series === 'all' || r.series === query.series)
     .filter((r) => query.mode === 'all' || r.mode === query.mode)
     .filter((r) => query.attendee === 'all' || r.attendees.includes(query.attendee))

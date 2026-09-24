@@ -43,6 +43,22 @@
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
+.upcoming {
+  margin-left: 10px;
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--selected-bg);
+  color: var(--selected-text);
+  font-size: var(--text-12);
+  font-weight: 500;
+}
+/* The hover tint is painted on the cells, so the last row's corner cells follow the table's rounded corners. */
+.row:last-child td:first-child {
+  border-bottom-left-radius: calc(var(--radius-card) - 1px);
+}
+.row:last-child td:last-child {
+  border-bottom-right-radius: calc(var(--radius-card) - 1px);
+}
 .link {
   color: var(--ink);
   text-decoration: none;

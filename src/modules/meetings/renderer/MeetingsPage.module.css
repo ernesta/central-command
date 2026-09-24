@@ -39,14 +39,6 @@
   opacity: 0.7;
   cursor: default;
 }
-.upcoming {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: var(--text-13);
-}
-.upcomingLink {
-  color: var(--accent);
-}
 .content {
   min-width: 0;
 }
