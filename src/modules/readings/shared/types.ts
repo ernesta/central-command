@@ -3,6 +3,39 @@ export type Author = { family: string; given?: string } | { literal: string }
 
 export type ReadingStatus = 'read' | 'to_read' | 'unset'
 
+/**
+ * Bibliographic details beyond the basics, kept so a reference can be formatted (e.g. APA).
+ * Values are stored as Zotero has them; formatting happens later.
+ */
+export interface ReferenceDetails {
+  /** The title in sentence case (from Better BibTeX's case protection), for styles that want it. */
+  titleSentence: string
+  /** Journal, book or proceedings title as stored. */
+  container?: string
+  /** The container title in sentence case (book titles). */
+  containerSentence?: string
+  volume?: string
+  issue?: string
+  pages?: string
+  articleNumber?: string
+  publisher?: string
+  place?: string
+  edition?: string
+  doi?: string
+  url?: string
+  editors?: Author[]
+  /** Report number, or thesis/report type such as "PhD thesis". */
+  reportNumber?: string
+  genre?: string
+  /** Institution, university or organisation. */
+  institution?: string
+  version?: string
+  /** The date exactly as exported (2023, 2023-05, 2023-05-12). */
+  date?: string
+  /** True for preprints (Better BibTeX pubstate "prepublished"). */
+  preprint?: boolean
+}
+
 /** A reading as the UI sees it. */
 export interface Reading {
   id: number
