@@ -30,3 +30,9 @@ principle of never losing user data.
 
 Migration ids are namespaced (`core/…`, `readings/…`) so modules own their own
 schema while sharing one `schema_migrations` table.
+
+## The "Consulting" workspace is called "Work"
+
+Renamed at the user's request. The workspace id is `work` and the label is
+"Work". The original build brief still says "Consulting"; where they differ, the
+code and docs (this rename) are authoritative.

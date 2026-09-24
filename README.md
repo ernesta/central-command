@@ -1,6 +1,6 @@
 # Control Center
 
-A local-first desktop app that brings research, consulting and personal life into
+A local-first desktop app that brings research, work and personal life into
 one place, with Claude at its centre. Built with Electron, React and TypeScript.
 Everything lives on your machine in open formats (SQLite and Markdown); nothing
 is sent anywhere.

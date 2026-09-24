@@ -20,6 +20,6 @@ App shell plus Readings (Zotero one-way sync, notes editor). See
 - Studies, Thesis, Training (notes, log, PDF export), Ideas, Data Sources, Inbox
 - Global dashboard (priorities, calendar, weather, unread email count)
 - World news tab, Research Digest, Focus/Writing space
-- Life and Consulting workspaces
+- Life and Work workspaces
 - Books module (following the Readings pattern)
 - Dark mode and theme switching, packaging and public release
