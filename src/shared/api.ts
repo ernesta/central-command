@@ -1,3 +1,4 @@
+import type { ReadingsApi } from '../modules/readings/shared/api'
 import type { Settings } from './settings'
 
 export interface PickPathOptions {
@@ -27,6 +28,7 @@ export interface Api {
     /** Opens a native picker. Resolves to the chosen path, or null if cancelled. */
     pickPath(options: PickPathOptions): Promise<string | null>
   }
+  readings: ReadingsApi
   build: {
     /** Opens a terminal in the configured Central Command repository path running `claude`. */
     openSession(): Promise<BuildResult>
