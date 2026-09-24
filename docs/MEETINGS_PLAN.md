@@ -33,8 +33,8 @@ meeting). Clicking anywhere on a row opens the meeting; there is no separate "no
 - **Attendees** are shown as initials (AC, KR, EO). See People below.
 - **Summary** is the text under a `## Summary` heading at the top of the note. It feeds the list and log. An empty summary shows "No summary yet".
   Automated summaries (Claude writing that section) come later; because files are the source of truth, they need no special support.
-- **Landing page** (mockup tab 1): a "Before next meeting" list of open TODOs (each row is the TODO text followed by its owner
-  written as `[EO]`, muted and monospace, with the source "Series · date" at the right end), an Everyone / Mine toggle, series cards with one line `N meetings · last X · next Y`, and
+- **Landing page** (mockup tab 1): a "Before next meeting" list of open TODOs (each row is the TODO text followed by its owner as
+  a small initials pill, the same pill used for attendees, with the source "Series · date" at the right end), an Everyone / Mine toggle, series cards with one line `N meetings · last X · next Y`, and
   a "Recent and upcoming" list with a link to all meetings. No "has a log" tag, no default-attendees line. The
   landing list is read-only; ticking happens in the next meeting's Previous TODOs (see below).
 - **Agenda section dropped.** The user prepares by writing notes before the meeting (things to ask, report or read up on, some
@@ -95,7 +95,7 @@ One or two sentences.
 **TODO syntax.** The user writes `**TODO(EO)**: text` inline wherever it arises. Accept `TODO(EO)`, `TODO (EO)` (space),
 `TODO(KR & AC)` (several owners) and `TODO:` (no owner), with or without bold. Do **not** rewrite the user's text on import
 beyond the header changes listed below. The note syntax does **not** change (the user's "owner at the end" was about the
-landing-page layout, `[EO]` after the text).
+landing-page layout: the owner pill after the text).
 
 **Owners and People.** A small people list (name, initials, "me" flag) stored as `data/people.json` (atomic writes).
 Initials are **unique**; auto-derived from the name (Kathy Rastle gives KR, titles like "Prof" ignored) and made unique
@@ -112,7 +112,7 @@ P's inline TODOs plus P's unticked Previous TODO items. Ticked items are not car
 touches ticked state. Items are written as `- [ ] **TODO(EO)**: text`.
 
 **Open TODOs (landing).** Per series, with L the latest meeting (including upcoming): unticked items in L's Previous
-TODOs plus L's inline TODOs. Each row shows the text, the owner as `[EO]` after it, and "Series · date of L" at the right; clicking opens L. Read-only in v1.
+TODOs plus L's inline TODOs. Each row shows the text, the owner as an initials pill after it, and "Series · date of L" at the right; clicking opens L. Read-only in v1.
 
 **Topics.** Topic headings are the level-3 headings under `## Notes`; if a note has none, its level-2 headings other than
 Summary / Previous TODOs / Notes (imported Luminos notes use that shape). The panel lists them with a checkbox (discussed),
@@ -183,9 +183,13 @@ notes plus the Rastle Lab one). Read Word files with macOS `textutil -convert tx
 
 - The meeting metadata row (series, date, start, end, calculated duration, type, attendees) is one flex row that wraps between fields,
   never inside one: values, the In person / Online segments and initials chips are `white-space: nowrap`.
-- In the all-meetings list the Series column is plain weight (not bold). Columns: Date, Time, Duration, Series, Type, Summary, Attendees.
+- In the all-meetings list the Series column is plain weight (not bold), Type never wraps, and the Attendees column is only as wide as
+  three initials pills; more people show as a muted `+N` after the third. Columns: Date, Time, Duration, Series, Type, Summary, Attendees.
   A dash means no time recorded yet.
-- Series cards on the landing page must show `N meetings · last X · next Y` on one line (two cards per row at the app's content width).
+- Export is a quiet, borderless "Export" control with a download icon, right-aligned in the filter row (disabled until built; it will
+  act on the Supervision view, oldest first). It is used about once a year, so it must never look prominent. No header button, no long label.
+- Series cards on the landing page are narrow (about 290 to 320px wide, `repeat(auto-fill, minmax(290px, 320px))`), so three or four per line and
+  wrapping to a second line is fine. They must show `N meetings · last X · next Y` on one line.
 - The meeting page is a two-column layout: the note (Summary, Previous TODOs, Notes) and a sticky Topics panel (about 260px, stacked below
   under 900px).
 - Delete opens a small confirmation (Cancel / Delete meeting) saying the file moves to the Trash.

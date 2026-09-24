@@ -235,6 +235,21 @@
     background: var(--panel);
     color: var(--text-secondary);
   }
+  .more {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-left: 6px;
+    white-space: nowrap;
+  }
+  td.att {
+    width: 1%;
+    white-space: nowrap;
+  }
+  td.att .chips {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    vertical-align: middle;
+  }
   .chip.add {
     background: transparent;
     border: 1px dashed var(--border-strong);
@@ -303,11 +318,8 @@
     border-radius: 4px;
     background: var(--surface);
   }
-  .own {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    color: var(--text-muted);
-    white-space: nowrap;
+  .todo .chip {
+    margin-left: 6px;
   }
   .src {
     font-size: 12px;
@@ -316,11 +328,11 @@
   }
   .cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(290px, 320px));
     gap: 16px;
   }
   .series {
-    padding: 20px;
+    padding: 20px 18px;
     display: grid;
     gap: 6px;
     border-radius: 12px;
@@ -530,6 +542,22 @@
     flex-wrap: wrap;
     align-items: center;
   }
+  .ghost {
+    margin-left: auto;
+    border: 0;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .ghost[disabled] {
+    opacity: 0.7;
+    cursor: default;
+  }
   .tablewrap {
     overflow-x: auto;
   }
@@ -560,6 +588,7 @@
   tr:last-child td {
     border-bottom: 0;
   }
+  td.nw,
   td.n {
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
@@ -646,33 +675,33 @@
             <span class="check"></span
             ><span
               >Run another model with an interaction between student and peer language match
-              <span class="own">[EO]</span></span
+              <span class="chip">EO</span></span
             ><span class="src">Supervision · Sep 24</span>
           </div>
           <div class="todo">
             <span class="check"></span
             ><span
               >Read the draft ethics application and send comments
-              <span class="own">[KR]</span></span
+              <span class="chip">KR</span></span
             ><span class="src">Supervision · Sep 24</span>
           </div>
           <div class="todo">
             <span class="check"></span
             ><span
-              >Share a list of potentially interesting journals <span class="own">[EO]</span></span
+              >Share a list of potentially interesting journals <span class="chip">EO</span></span
             ><span class="src">Supervision · Sep 24</span>
           </div>
           <div class="todo">
             <span class="check"></span
             ><span
-              >Introduce the two of us to the Luminos data team <span class="own">[MJ]</span></span
+              >Introduce the two of us to the Luminos data team <span class="chip">MJ</span></span
             ><span class="src">Luminos · May 21</span>
           </div>
           <div class="todo">
             <span class="check"></span
             ><span
               >Review the assumptions of logistic mixed effects models
-              <span class="own">[EO]</span></span
+              <span class="chip">EO</span></span
             ><span class="src">Supervision · Sep 24</span>
           </div>
         </div>
@@ -730,9 +759,9 @@
           <div class="recent">
             <span class="d">Sep 12, 2026</span><span>Rastle Lab</span
             ><span class="chips"
-              ><span class="chip">KR</span><span class="chip">MK</span><span class="chip">EO</span
-              ><span class="chip">+5</span></span
-            ><span class="muted">30 min · In person</span>
+              ><span class="chip">KR</span><span class="chip">MK</span
+              ><span class="chip">EO</span></span
+            ><span class="more">+5</span><span class="muted">30 min · In person</span>
           </div>
           <div class="recent">
             <span class="d">Aug 30, 2026</span><span>Luminos</span
@@ -747,16 +776,6 @@
     <div class="page" id="s2" hidden>
       <div class="head">
         <h2>All meetings</h2>
-        <div class="actions">
-          <button
-            class="btn"
-            type="button"
-            disabled
-            title="Later: exports the Supervision series, oldest first"
-          >
-            Export supervision log (PDF)
-          </button>
-        </div>
       </div>
       <div class="filters">
         <span class="search"
@@ -774,6 +793,14 @@
         <span class="sel"
           >Any type<svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" /></svg
         ></span>
+        <button
+          class="ghost"
+          type="button"
+          disabled
+          title="Later: exports the Supervision log as a PDF, oldest first"
+        >
+          <svg viewBox="0 0 16 16"><path d="M8 2v8M4.5 7 8 10.5 11.5 7M3 13h10" /></svg>Export
+        </button>
       </div>
       <div class="tablewrap">
         <table>
@@ -794,12 +821,12 @@
               <td class="n">14:00–15:00</td>
               <td class="n">60 min</td>
               <td>Supervision</td>
-              <td>In person</td>
+              <td class="nw">In person</td>
               <td class="sum">
                 Key topics: Study 1 models and the ethics application. Key decision: submit the
                 application before the next meeting. Next meeting Oct 1.
               </td>
-              <td>
+              <td class="att">
                 <span class="chips"
                   ><span class="chip">AC</span><span class="chip">KR</span
                   ><span class="chip">EO</span></span
@@ -811,9 +838,9 @@
               <td class="n">10:30–11:15</td>
               <td class="n">45 min</td>
               <td>Supervision</td>
-              <td>Online</td>
+              <td class="nw">Online</td>
               <td class="sum"><span class="missing">No summary yet.</span></td>
-              <td>
+              <td class="att">
                 <span class="chips"><span class="chip">KR</span><span class="chip">EO</span></span>
               </td>
             </tr>
@@ -822,16 +849,16 @@
               <td class="n">11:00–11:30</td>
               <td class="n">30 min</td>
               <td>Rastle Lab</td>
-              <td>In person</td>
+              <td class="nw">In person</td>
               <td class="sum">
                 Presentation on the language of instruction debate; feedback on framing and on
                 reporting absolute endline scores.
               </td>
-              <td>
+              <td class="att">
                 <span class="chips"
                   ><span class="chip">KR</span><span class="chip">MK</span
-                  ><span class="chip">EO</span><span class="chip">+5</span></span
-                >
+                  ><span class="chip">EO</span></span
+                ><span class="more">+5</span>
               </td>
             </tr>
             <tr>
@@ -839,11 +866,11 @@
               <td class="n">16:00–16:25</td>
               <td class="n">25 min</td>
               <td>Luminos</td>
-              <td>Online</td>
+              <td class="nw">Online</td>
               <td class="sum">
                 Agreed a rough timeline for the pilot and who to talk to at the Ministry.
               </td>
-              <td>
+              <td class="att">
                 <span class="chips"><span class="chip">CB</span><span class="chip">EO</span></span>
               </td>
             </tr>
@@ -852,13 +879,13 @@
               <td class="n muted">—</td>
               <td class="n muted">—</td>
               <td>Other</td>
-              <td>In person</td>
+              <td class="nw">In person</td>
               <td class="sum"><span class="missing">No summary yet.</span></td>
-              <td>
+              <td class="att">
                 <span class="chips"
                   ><span class="chip">RM</span><span class="chip">KR</span
-                  ><span class="chip">AC</span><span class="chip">EO</span></span
-                >
+                  ><span class="chip">AC</span></span
+                ><span class="more">+1</span>
               </td>
             </tr>
           </tbody>
@@ -866,8 +893,8 @@
       </div>
       <p class="muted small">
         Newest first. Click any row to open its notes. Choosing the Supervision series gives you the
-        supervision log. Upcoming meetings are left out until they have happened. A dash means no
-        time was recorded yet.
+        supervision log; Export (much later) works on that view. Upcoming meetings are left out
+        until they have happened. A dash means no time was recorded yet.
       </p>
     </div>
 
