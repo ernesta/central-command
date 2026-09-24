@@ -1,4 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
+import { registerFlushable } from '@renderer/lib/flush-registry'
 import { NotesSession, type NotesSnapshot } from './notes-session'
 
 /**
@@ -17,7 +18,10 @@ export function useNotesSession(citekey: string): {
     // Last-chance save if the window closes while a save is pending.
     const onPageHide = (): void => void session.flush()
     window.addEventListener('pagehide', onPageHide)
+    // Also saved when the window is closed or the app quits (see App).
+    const unregister = registerFlushable(() => session.flush())
     return () => {
+      unregister()
       window.removeEventListener('pagehide', onPageHide)
       void session.dispose()
     }
