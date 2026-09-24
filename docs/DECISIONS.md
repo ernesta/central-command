@@ -456,3 +456,29 @@ Checked in dev mode and the production build against scratch libraries.
 - **Dry run on the real files** (writing nothing): 40 notes, all importable; 4 wrong `**Date**` lines (the three in the
   plan and also `2025 11 17 Meeting with Matthew Jukes`, which says Nov 3), the four duration mismatches and five meetings
   without times, exactly as in the plan; no Word note or log row left unmatched.
+
+## Meetings stage 9: polish and QA
+
+What was checked (dev and production, scratch libraries, screenshots read) and what changed:
+
+- **Brief section 9**: no raw colours, gradients or coloured left borders in the Meetings CSS; shadows only on floating
+  things (menus, popovers, the delete dialog). The one exception is deliberate: the focused list row is ringed with inset
+  shadows on its cells so the ring follows the table's rounded corners and cannot be clipped. Every text and background
+  pair used passes 4.5:1 (lowest: muted on the panel colour and on the selected background, 4.61).
+- **Keyboard and focus**: tabbed through the landing page, list, meeting page, delete dialog and Settings; every focus ring
+  is visible and unclipped, the delete dialog keeps focus inside and closes on Escape, the list is one tab stop with arrow
+  navigation. Found and fixed: the People inputs near the bottom of Settings had their ring cut by the scroll container
+  (`scroll-padding-block` on `main`). The native calendar and clock buttons in the date and time fields keep the
+  browser's own (gold) focus highlight, which is visible.
+- **Empty and error states**: a brand-new library (landing, list, Research card), a meeting whose file vanished while open,
+  a file with a broken header (still listed, opens with a plain-words notice, nothing changed), a folder that cannot be
+  written to (error with Try again, the text stays on screen and saves once the problem is gone). Errors from the main
+  process now drop Electron's "Error invoking remote method" prefix and raw file-system codes.
+- **Stale rows**: the folder watcher can miss the deletion of a file removed within about a second of its creation, which
+  left a row in the list until the next start. The list now drops rows whose file has vanished (one directory listing)
+  before every listing.
+- **Performance** with 450 generated meetings (1.8 MB): the index is complete about 1 s after launch, the landing page
+  renders in ~50 ms, the list (450 rows, ~6,000 DOM nodes) in ~150 ms, a keystroke in the search box settles in ~35 ms,
+  a meeting opens in ~60 ms, memory is ~600 MB across the four Electron processes. No virtualising needed at this size;
+  the table is a plain `<table>`.
+- **Narrow windows**: the window cannot be narrower than 960 px, and no screen scrolls sideways at that width.

@@ -1,6 +1,6 @@
 # Meetings module: plan
 
-Status: **plan final and approved; stages 1 to 8 done** (see DECISIONS.md), waiting for the user's go-ahead for stage 9 (polish and docs). The import tool is built and dry-run on the real files but has not been applied to the real library; the user runs it. The user says "go" per step (see the prompt they keep for it). This file is
+Status: **plan final and approved; all nine stages done** (see DECISIONS.md). The import has been run on the user's real notes. Follow-ups are listed in `docs/ROADMAP.md`. The user says "go" per step (see the prompt they keep for it). This file is
 the source of truth after a context clear; read it together with `CLAUDE.md`, `docs/DECISIONS.md`
 and the mockup (`docs/design/meetings-mockup.html`, also published as a private artifact at
 https://claude.ai/artifact/4DWJurKEFDHsEKHTs44Fug). The mockup is the visual reference; this

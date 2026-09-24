@@ -26,10 +26,10 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   channel names, `Settings`, `APP_NAME`).
 - `src/renderer/src/`: React UI. `theme/` (tokens, fonts, base CSS), `components/`
   (shared UI), `shell/` (top bar, routing, Ask launcher).
-- `src/modules/<name>/`: one folder per feature module, split into `main/` and
-  `renderer/`, with an `index.ts` manifest the shell reads. Readings is the
-  pattern to copy for future modules such as Books. Do not build a generic
-  framework before a second module exists.
+- `src/modules/<name>/`: one folder per feature module, split into `main/`, `renderer/` and `shared/`, with an
+  `index.ts` manifest the shell reads. Readings and Meetings are the patterns to copy. Shared notes machinery
+  (guarded file access, watcher, editor, session) lives in `src/main/notes/` and `src/renderer/src/notes/`; the
+  remembered-UI-state hook is `useModuleState`.
 - Path aliases: `@shared`, `@modules`, `@renderer`.
 
 ## Conventions
@@ -54,10 +54,9 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
 - Phase 1 stages 1 to 6 are done (foundations, shell, Readings sync, Readings UI, detail page with
   notes editor and APA copy, polish pass). What is left is the user's review and the push.
   `docs/ROADMAP.md` is the checklist; `docs/DECISIONS.md` records what the polish pass changed.
-- Next feature: Meetings. It is planned in `docs/MEETINGS_PLAN.md`. Stages 1 to 8 are done (shared notes
-  machinery, main-process core, TODO/topic/carry-over rules, the meeting page, the list, the landing page and
-  Research card, People settings and remembered list state, the import). The import has been dry-run on the real
-  files but not applied; the user runs it. Stage 9 (polish and docs) waits for the user's go-ahead.
+- Meetings is done (all nine stages of `docs/MEETINGS_PLAN.md`) and awaits the user's review and the push. The user's
+  real meetings were imported. `docs/ROADMAP.md` lists the follow-ups. What to build next is the user's call; do not
+  start a new feature without their go-ahead.
 - `docs/DECISIONS.md` explains why things are the way they are, including bugs found by using the
   app. Read it before changing sync, notes, the editor or the module structure.
 - The brief (`central-command-mvp-phase1-brief.md`) is authoritative for the visual design
@@ -106,6 +105,18 @@ npx electron-vite dev -- --remote-debugging-port=9333`, then `chromium.connectOv
 - For safety-critical logic (never lose notes, never overwrite, conflict handling, import rules)
   deliberately break the code ("mutation check") and confirm a test fails. This found real gaps.
 - Commit granularity matters to the user: one commit per feature and per standalone part.
+
+- Before applying any importer to the user's real files, dry-run it on them and read every line: the meetings dry run found
+  that the Readings body conversion deleted `## Notes` headings, which no synthetic fixture had shown. Give importers a
+  safety check that compares the converted result with the source (TODO text, counts, ticked boxes) and leaves out a
+  note that fails it. Never run one with `--apply` on the real library unless the user asked.
+- Driving the editor with Playwright on macOS: `Home`/`End` scroll the page (use Cmd+Left/Right), a key sent within
+  milliseconds of a click can act on the old selection (wait a moment), and a controlled checkbox updates after an IPC
+  round trip (click and wait; `.check()` fails). Check dev mode and the production build both.
+- The React Compiler lint rules reject refs read during render and `setState` inside an effect. Keep behaviour that an
+  editor plugin or key handler needs in a small class held with `useState(() => new …)` (see `useTodoHelper`), and derive
+  "draft" values instead of copying props into state.
+- A `main` scroll container needs `scroll-padding` or a focused control's ring is cut at the edge (People settings).
 
 ## Never
 

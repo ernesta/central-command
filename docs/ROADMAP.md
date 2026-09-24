@@ -12,10 +12,26 @@ App shell plus Readings (Zotero one-way sync, notes editor). See
 - [x] Reading detail and Markdown notes editor
 - [x] Polish pass
 
-## Next: Meetings (planned, not started)
+## Meetings (complete; awaiting the user's review and the push)
 
-The plan, decisions and stage list are in `docs/MEETINGS_PLAN.md`; the visual reference is
-`docs/design/meetings-mockup.html`. Do not start until the user says so.
+All nine stages of `docs/MEETINGS_PLAN.md` are done (shared notes machinery, main-process core, TODO and topic rules,
+the meeting page, the list, the landing page, People settings and remembered list state, the import, polish).
+`docs/DECISIONS.md` records what was decided and found along the way. The import has been run on the user's real notes.
+
+### Meetings follow-ups (not started; the user decides when)
+
+- **Export the supervision log as a PDF** (oldest first, Supervision series, upcoming meetings left out). The disabled
+  Export control in the list is its place.
+- **Meetings in Work**: the code takes a workspace everywhere (`notes/meetings/<workspace>/`); Work needs a folder,
+  a route and a landing page from the same components. `ACTIVE_WORKSPACES` in `meetings/main/register.ts` is the switch.
+- **Imported notes with bold pseudo-headings** (`**Topic**`) have no topics in the panel; a one-off converter to `###`
+  headings could be offered, but nothing rewrites the user's notes unasked.
+- **Imported previous items with a status word** (`(Cancelled) **TODO(EO)**: …`) are ownerless Previous TODOs and carry
+  over while unticked; the user may want to tick or delete them in the newest notes.
+- **Backspace at the start of a first-line bullet** did not lift the bullet in a scripted run of the real app (unit
+  test passes); unconfirmed, check by hand.
+- **Renaming a person** does not rewrite meeting files (by design); a "rewrite this name in all meetings" action could be
+  offered explicitly if wanted.
 
 ## Product vision: Build is a headline feature
 
@@ -34,7 +50,6 @@ data.
   `/todo` for the TODO helper, the shortcuts of the notes editor, and so on). Add each new shortcut to it as it is built.
 - Real Claude wiring for the Ask panel; embedded terminal for Build
 - Shared task engine (tasks, dates, time tracking, lists, subtasks, table/board/calendar views) and a one-time ClickUp import
-- Meetings (informal notes plus formal Meeting Log)
 - Studies, Thesis, Training (notes, log, PDF export), Ideas, Data Sources, Inbox
 - Global dashboard (priorities, calendar, weather, unread email count)
 - World news tab, Research Digest, Focus/Writing space
