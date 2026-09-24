@@ -105,7 +105,10 @@ npx electron-vite dev -- --remote-debugging-port=9333`, then `chromium.connectOv
 ## Never
 
 - Never write to the Zotero `.bib` file or to Zotero.
-- Never delete or overwrite a note file, or delete a `readings` row; missing
-  items are flagged, not removed.
+- Never delete or overwrite a Readings note file, or delete a `readings` row; missing
+  items are flagged, not removed. Meetings differ: a meeting note can be deleted, but only by an
+  explicit user action with a confirmation, and it goes to the macOS Trash (`shell.trashItem`),
+  never removed outright. Meeting notes are still never overwritten: saves check the file's
+  content hash, and a new meeting never replaces an existing file.
 - Never send user data over the network.
 - Never commit secrets or user data; user data lives in `~/CentralCommand/`.

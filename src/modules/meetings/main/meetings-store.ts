@@ -36,6 +36,8 @@ interface MeetingsStoreOptions {
   db: Database
   /** The folder holding one workspace's meeting files. */
   dirFor: (workspace: MeetingWorkspace) => string
+  /** Moves a file to the operating system's Trash (Electron's `shell.trashItem`). Injected so tests need no Electron. */
+  trash: (path: string) => Promise<void>
 }
 
 function checkWorkspace(workspace: string): MeetingWorkspace {
@@ -82,10 +84,12 @@ function checkPatch(patch: MetaPatch): void {
 export class MeetingsStore {
   private readonly db: Database
   private readonly dirFor: (workspace: MeetingWorkspace) => string
+  private readonly trash: (path: string) => Promise<void>
 
-  constructor({ db, dirFor }: MeetingsStoreOptions) {
+  constructor({ db, dirFor, trash }: MeetingsStoreOptions) {
     this.db = db
     this.dirFor = dirFor
+    this.trash = trash
   }
 
   private pathOf(ref: MeetingRef): string {
@@ -143,6 +147,23 @@ export class MeetingsStore {
     const { result, wrote } = await writeNoteFileGuarded(path, next, baseHash)
     if (wrote) await this.reindex(ref)
     return result
+  }
+
+  /**
+   * Move a meeting's file to the Trash and drop its index row. This is the only way the app removes
+   * a note, and only ever on the user's explicit request (the interface asks first). Nothing is
+   * deleted outright: the file stays recoverable from the Trash. If the move fails the file and its
+   * row are left as they were.
+   */
+  async delete(ref: MeetingRef): Promise<void> {
+    const path = this.pathOf(ref)
+    const note = await readNoteFile(path)
+    if (!note.exists) {
+      deleteMeetingRow(this.db, ref.workspace, ref.id)
+      throw new MeetingError(`Meeting not found: ${ref.id}`)
+    }
+    await this.trash(path)
+    deleteMeetingRow(this.db, ref.workspace, ref.id)
   }
 
   /** Recompute one meeting's index row from its file; a file that is gone loses its row. */

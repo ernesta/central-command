@@ -1,7 +1,16 @@
 import Database from 'better-sqlite3'
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'fs'
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  renameSync,
+  rmSync,
+  writeFileSync
+} from 'fs'
 import { tmpdir } from 'os'
-import { join } from 'path'
+import { basename, join } from 'path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { runMigrations } from '../../../main/db/migrate'
 import { hashContent } from '../../../main/notes/guarded-file'
@@ -15,6 +24,9 @@ let root: string
 let dir: string
 let db: Database.Database
 let store: MeetingsStore
+let trashDir: string
+let trashed: string[]
+let trashFails = false
 const file = (id: string): string => join(dir, `${id}.md`)
 const disk = (id: string): string => readFileSync(file(id), 'utf8')
 const ref = (id: string): MeetingRef => ({ workspace: 'research', id })
@@ -24,7 +36,20 @@ beforeEach(() => {
   dir = join(root, 'research')
   db = new Database(':memory:')
   runMigrations(db, meetingsMigrations)
-  store = new MeetingsStore({ db, dirFor: (w) => join(root, w) })
+  trashDir = join(root, '.Trash')
+  trashed = []
+  trashFails = false
+  // A stand-in for the macOS Trash: moves the file into a folder, or fails.
+  store = new MeetingsStore({
+    db,
+    dirFor: (w) => join(root, w),
+    trash: async (path) => {
+      if (trashFails) throw new Error('Trash unavailable')
+      mkdirSync(trashDir, { recursive: true })
+      renameSync(path, join(trashDir, basename(path)))
+      trashed.push(path)
+    }
+  })
 })
 afterEach(() => rmSync(root, { recursive: true, force: true }))
 
@@ -228,5 +253,54 @@ describe('reindex', () => {
 
   it('reindexAll copes with a missing folder', async () => {
     await expect(store.reindexAll('work')).resolves.toBeUndefined()
+  })
+})
+
+describe('delete', () => {
+  const content = '---\nseries: Other\ndate: 2026-02-03\n---\n\nprecious notes\n'
+  beforeEach(() => {
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(file('a'), content)
+    writeFileSync(file('b'), content)
+  })
+
+  it('moves the file to the Trash (recoverable) and drops its row', async () => {
+    await store.reindexAll('research')
+    await store.delete(ref('a'))
+    expect(existsSync(file('a'))).toBe(false)
+    expect(readFileSync(join(trashDir, 'a.md'), 'utf8')).toBe(content)
+    expect(trashed).toEqual([file('a')])
+    expect(getMeetingRow(db, 'research', 'a')).toBeNull()
+  })
+
+  it('touches only the meeting it was asked to delete', async () => {
+    await store.reindexAll('research')
+    await store.delete(ref('a'))
+    expect(readFileSync(file('b'), 'utf8')).toBe(content)
+    expect(getMeetingRow(db, 'research', 'b')).not.toBeNull()
+  })
+
+  it('leaves the file and its row alone when the Trash move fails', async () => {
+    await store.reindexAll('research')
+    trashFails = true
+    await expect(store.delete(ref('a'))).rejects.toThrow('Trash unavailable')
+    expect(readFileSync(file('a'), 'utf8')).toBe(content)
+    expect(getMeetingRow(db, 'research', 'a')).not.toBeNull()
+  })
+
+  it('reports a missing meeting, and clears a stale row for it', async () => {
+    await store.reindexAll('research')
+    rmSync(file('a'))
+    await expect(store.delete(ref('a'))).rejects.toThrow('not found')
+    expect(trashed).toEqual([])
+    expect(getMeetingRow(db, 'research', 'a')).toBeNull()
+  })
+
+  it('refuses ids that could point outside the meetings folder, calling nothing', async () => {
+    await expect(store.delete(ref('../a'))).rejects.toThrow('Invalid meeting id')
+    await expect(store.delete({ workspace: 'life' as never, id: 'a' })).rejects.toThrow(
+      'Unknown workspace'
+    )
+    expect(trashed).toEqual([])
   })
 })
