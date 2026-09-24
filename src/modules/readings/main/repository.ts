@@ -225,6 +225,10 @@ export function getCounts(db: Database): ReadingCounts {
   return row
 }
 
+export function listAllReadings(db: Database): Reading[] {
+  return (db.prepare('SELECT * FROM readings').all() as ReadingRow[]).map(rowToReading)
+}
+
 export function getReadingByCitekey(db: Database, citekey: string): Reading | null {
   const row = db.prepare('SELECT * FROM readings WHERE citekey = ?').get(citekey) as
     ReadingRow | undefined
