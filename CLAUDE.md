@@ -91,6 +91,10 @@ npx electron-vite dev -- --remote-debugging-port=9333`, then `chromium.connectOv
 - Better BibLaTeX list fields (`publisher`, `location`, `institution`) parse as arrays, not strings.
 - When scripting edits with Python `str.replace`, assert the target exists: Prettier reflows
   lines, so a stale pattern silently does nothing. Run Prettier before matching on layout.
+- Focus rings (2px outline plus 2px offset) are clipped by any ancestor with `overflow` other than
+  visible (the board's card lists were). Give scroll containers 4px padding and `scroll-padding`, and
+  check clipping, not just that an outline exists: compare the ring rectangle with each clipping
+  ancestor while tabbing through every screen, and look at screenshots.
 - Chain shell steps with `&&` only when a failure should stop the chain; a failing test followed
   by an unconditional commit has happened. Keep commits compile-clean.
 - For safety-critical logic (never lose notes, never overwrite, conflict handling, import rules)
