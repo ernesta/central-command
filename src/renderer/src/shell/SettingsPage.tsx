@@ -19,7 +19,7 @@ export function SettingsPage(): React.JSX.Element {
         />
         <PathField
           label="Central Command repository path"
-          help="The Control Center code repository. The Build button opens a Claude Code session here so you can change the app itself."
+          help="The Central Command code repository. The Build button opens a Claude Code session here so you can change the app itself."
           kind="folder"
           placeholder="/path/to/central-command"
           value={settings.repoPath}

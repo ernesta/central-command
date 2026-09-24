@@ -1,7 +1,7 @@
 {
-  "name": "control-center",
+  "name": "central-command",
   "version": "1.0.0",
-  "description": "A local-first personal control center",
+  "description": "A local-first personal command center",
   "main": "./out/main/index.js",
   "author": "Ernesta Orlovaite",
   "scripts": {
