@@ -134,6 +134,13 @@ debounced (~400 ms) so typing in search does not write a file per keystroke.
 An environment variable read in `getAppPaths()`. It lets tests and experiments run
 the real app against a scratch library without touching `~/CentralCommand/`.
 
+## The board always shows all three status columns
+
+To Read, Read and Unset are always displayed with counts, even when empty (an empty
+column says "Nothing here."). The original brief showed Unset only when non-empty;
+that was changed at the user's request, because columns appearing and disappearing
+with the filters was confusing. The brief was updated to match.
+
 ## Board renders every card
 
 The table is virtualised; the board is not. With 2,000 readings it rendered in

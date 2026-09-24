@@ -339,7 +339,7 @@ Also a small `sync_runs` table: `started_at`, `finished_at`, `status`
 - Must stay smooth with ~2,000 rows (virtualise if needed).
 
 ### 8.3 Board view
-- Columns grouped by status: **To Read · Read** (and **Unset** only if non-empty).
+- Columns grouped by status: **To Read · Read · Unset**, always all three, each with its count.
 - Column header with count. Cards: white surface, soft border, radius 12px,
   padding 16px: short citation (600), full title (secondary, 2-line clamp), tags
   (muted, small).
