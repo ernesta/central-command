@@ -5,6 +5,7 @@ import { APP_NAME } from '@shared/app-info'
 import { getAppPaths } from './paths'
 import { SettingsStore } from './settings'
 import { registerSettingsIpc } from './ipc/settings'
+import { registerDialogIpc } from './ipc/dialog'
 import { openDatabase } from './db/connection'
 import { runMigrations } from './db/migrate'
 import { mainModules } from '@modules/main-registry'
@@ -71,6 +72,7 @@ app.whenReady().then(async () => {
   const settings = new SettingsStore(paths.settings, defaultSettings(paths.defaultBibExport))
   await settings.load()
   registerSettingsIpc(settings)
+  registerDialogIpc()
 
   const db = openDatabase(paths.database)
   runMigrations(
