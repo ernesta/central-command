@@ -1,0 +1,17 @@
+.empty {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  height: 100%;
+  padding: 48px;
+  text-align: center;
+}
+.heading {
+  font-size: var(--text-28);
+  font-weight: 700;
+}
+.message {
+  margin: 0;
+  color: var(--text-muted);
+}
