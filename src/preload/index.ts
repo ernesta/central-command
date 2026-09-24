@@ -1,5 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { IPC, type Api } from '@shared/api'
+import { MEETINGS_IPC } from '@modules/meetings/shared/api'
+import type { MeetingChangedEvent } from '@modules/meetings/shared/api'
 import { READINGS_IPC } from '@modules/readings/shared/api'
 import type { NoteChangedEvent } from '@shared/notes'
 import type { SyncStatus } from '@modules/readings/shared/types'
@@ -37,6 +39,21 @@ const api: Api = {
         ipcRenderer.on(READINGS_IPC.notesChanged, handler)
         return () => ipcRenderer.removeListener(READINGS_IPC.notesChanged, handler)
       }
+    }
+  },
+  meetings: {
+    create: (input) => ipcRenderer.invoke(MEETINGS_IPC.create, input),
+    read: (ref) => ipcRenderer.invoke(MEETINGS_IPC.read, ref),
+    save: (ref, changes, baseHash) => ipcRenderer.invoke(MEETINGS_IPC.save, ref, changes, baseHash),
+    delete: (ref) => ipcRenderer.invoke(MEETINGS_IPC.delete, ref),
+    people: {
+      list: () => ipcRenderer.invoke(MEETINGS_IPC.peopleList)
+    },
+    onChanged: (listener) => {
+      const handler = (_event: Electron.IpcRendererEvent, change: MeetingChangedEvent): void =>
+        listener(change)
+      ipcRenderer.on(MEETINGS_IPC.changed, handler)
+      return () => ipcRenderer.removeListener(MEETINGS_IPC.changed, handler)
     }
   },
   lifecycle: {

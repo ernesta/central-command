@@ -1,3 +1,4 @@
+import type { MeetingsApi } from '../modules/meetings/shared/api'
 import type { ReadingsApi } from '../modules/readings/shared/api'
 import type { Settings } from './settings'
 
@@ -29,6 +30,7 @@ export interface Api {
     pickPath(options: PickPathOptions): Promise<string | null>
   }
   readings: ReadingsApi
+  meetings: MeetingsApi
   lifecycle: {
     /**
      * Register work to finish before the window closes (e.g. saving notes). The window waits for

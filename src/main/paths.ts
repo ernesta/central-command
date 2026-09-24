@@ -9,6 +9,9 @@ export interface AppPaths {
   defaultBibExport: string
   notes: string
   readingsNotes: string
+  /** One sub-folder per workspace, e.g. meetings/research. */
+  meetingsNotes: string
+  people: string
   settings: string
 }
 
@@ -24,6 +27,8 @@ export function resolvePaths(home: string): AppPaths {
     defaultBibExport: join(data, 'zotero-export.bib'),
     notes,
     readingsNotes: join(notes, 'readings'),
+    meetingsNotes: join(notes, 'meetings'),
+    people: join(data, 'people.json'),
     settings: join(root, 'settings.json')
   }
 }
