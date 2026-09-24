@@ -6,6 +6,7 @@ import {
   findByInitials,
   makeInitialsUnique,
   normalisePeople,
+  ownerOptions,
   updatePerson
 } from './people'
 import type { Person } from './types'
@@ -139,4 +140,29 @@ describe('findByInitials', () => {
     expect(findByInitials([p('Kathy Rastle', 'KR')], ' kr ')?.name).toBe('Kathy Rastle')
     expect(findByInitials([p('Kathy Rastle', 'KR')], 'AC')).toBeUndefined()
   })
+})
+
+describe('ownerOptions', () => {
+  const all = [
+    p('Kathy Rastle', 'KR'),
+    p('Arnaud Chevalier', 'AC'),
+    p('Ernesta Orlovaitė', 'EO', true),
+    p('Matthew Jukes', 'MJ')
+  ]
+  it('lists attendees first, in meeting order, then everyone else', () => {
+    expect(
+      ownerOptions(['Ernesta Orlovaitė', 'Kathy Rastle'], all).map((o) => [o.initials, o.attendee])
+    ).toEqual([
+      ['EO', true],
+      ['KR', true],
+      ['AC', false],
+      ['MJ', false]
+    ])
+  })
+  it('skips attendees who are not in the people list and lists nobody twice', () => {
+    expect(
+      ownerOptions(['Stranger', 'Kathy Rastle', 'kathy rastle'], all).map((o) => o.initials)
+    ).toEqual(['KR', 'AC', 'EO', 'MJ'])
+  })
+  it('is empty when nobody is known', () => expect(ownerOptions(['A B'], [])).toEqual([]))
 })

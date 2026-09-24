@@ -144,3 +144,29 @@ export function normalisePeople(raw: unknown): Person[] {
   }
   return out
 }
+
+export interface OwnerOption {
+  initials: string
+  name: string
+  /** True for people at this meeting, who are suggested first. */
+  attendee: boolean
+}
+
+/** Who a TODO can be assigned to: the meeting's attendees first, then everyone else in the list. */
+export function ownerOptions(
+  attendeeNames: readonly string[],
+  people: readonly Person[]
+): OwnerOption[] {
+  const attendees = attendeeNames
+    .map((name) => findByName(people, name))
+    .filter((p): p is Person => p !== undefined)
+  const seen = new Set<string>()
+  const unique = attendees.filter(
+    (p) => !seen.has(p.initials.toUpperCase()) && seen.add(p.initials.toUpperCase())
+  )
+  const others = people.filter((p) => !seen.has(p.initials.toUpperCase()))
+  return [
+    ...unique.map((p) => ({ initials: p.initials, name: p.name, attendee: true })),
+    ...others.map((p) => ({ initials: p.initials, name: p.name, attendee: false }))
+  ]
+}

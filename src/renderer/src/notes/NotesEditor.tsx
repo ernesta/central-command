@@ -14,6 +14,11 @@ interface NotesEditorProps {
   onBlur: () => void
   placeholder: string
   showPlaceholder: boolean
+  /**
+   * Add editor plugins for one kind of note (for example the TODO helper for meetings). Applied
+   * once, when the editor is created, and before the shared plugins, so its key handling runs first.
+   */
+  setup?: (editor: Editor) => Editor
 }
 
 function Inner({
@@ -21,22 +26,22 @@ function Inner({
   onChange,
   onBlur,
   placeholder,
-  showPlaceholder
+  showPlaceholder,
+  setup
 }: NotesEditorProps): React.JSX.Element {
   const onChangeRef = useRef(onChange)
   useEffect(() => {
     onChangeRef.current = onChange
   })
 
-  useEditor((root) =>
-    withNotesPlugins(
-      Editor.make().config((ctx) => {
-        ctx.set(rootCtx, root)
-        ctx.set(defaultValueCtx, initial)
-        ctx.set(notesChangeCtx.key, (markdown) => onChangeRef.current(markdown))
-      })
-    )
-  )
+  useEditor((root) => {
+    const editor = Editor.make().config((ctx) => {
+      ctx.set(rootCtx, root)
+      ctx.set(defaultValueCtx, initial)
+      ctx.set(notesChangeCtx.key, (markdown) => onChangeRef.current(markdown))
+    })
+    return withNotesPlugins(setup ? setup(editor) : editor)
+  })
   const [loading, getEditor] = useInstance()
 
   // Clicking the empty space around the text should still put the cursor in the note.
