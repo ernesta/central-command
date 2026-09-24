@@ -377,3 +377,18 @@ Checked in dev mode and the production build against scratch libraries.
   delete with confirmation. Two things to know about scripting the editor: on macOS `Home`/`End` scroll the page
   instead of moving the caret (use Cmd+Left/Right), and a keystroke sent within a few milliseconds of a click
   can act on the old selection (wait a moment after clicking).
+
+## Meetings stage 5: the all-meetings list
+
+- **The query is plain code over the index rows** (`queryMeetings`, like Readings), run in the renderer: a few
+  hundred meetings filter instantly, and the list refreshes when any meeting file changes (from this app or
+  another tool). `fold` (case and accent folding) moved to `@shared/text` so both modules use it.
+- **Upcoming meetings are left out of the list**, as planned; a meeting whose date could not be read is kept, at
+  the end, so a file with a problem is never hidden. Search covers the date (both `2026-09` and `Sep 10`), series,
+  type, attendees (names and initials), summary and the note text.
+- **Rows** are a plain `<table>`: the whole row is clickable, and the date is a real link for the keyboard and
+  screen readers. Not virtualised yet (performance with a few hundred meetings is a stage 9 check).
+- **Stand-ins until the landing page (stage 6):** a "New meeting" popover in the list header (series and date), and
+  an "Upcoming:" line of links, because upcoming meetings are otherwise unreachable. Remove both when the landing
+  page gets its own New meeting button and "Recent and upcoming" list.
+- List filters are not remembered between visits yet; that is stage 7 (remembered list state).

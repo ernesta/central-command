@@ -52,9 +52,10 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
 - Phase 1 stages 1 to 6 are done (foundations, shell, Readings sync, Readings UI, detail page with
   notes editor and APA copy, polish pass). What is left is the user's review and the push.
   `docs/ROADMAP.md` is the checklist; `docs/DECISIONS.md` records what the polish pass changed.
-- Next feature: Meetings. It is planned in `docs/MEETINGS_PLAN.md`. Stages 1 to 4 are done (shared notes
-  machinery, main-process core, TODO/topic/carry-over rules, the meeting page); the index page and Research card
-  are stand-ins. Stage 5 (all meetings list) waits for the user's go-ahead.
+- Next feature: Meetings. It is planned in `docs/MEETINGS_PLAN.md`. Stages 1 to 5 are done (shared notes
+  machinery, main-process core, TODO/topic/carry-over rules, the meeting page, the all-meetings list); the Research
+  card, the New meeting popover and the "Upcoming" line are stand-ins for the landing page. Stage 6 (landing page)
+  waits for the user's go-ahead.
 - `docs/DECISIONS.md` explains why things are the way they are, including bugs found by using the
   app. Read it before changing sync, notes, the editor or the module structure.
 - The brief (`central-command-mvp-phase1-brief.md`) is authoritative for the visual design
