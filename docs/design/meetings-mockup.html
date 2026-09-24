@@ -1,0 +1,1008 @@
+<title>Meetings Mockup</title>
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@600;700&display=swap"
+/>
+<style>
+  :root {
+    --bg: #edeff2;
+    --panel: #e1e5ea;
+    --surface: #ffffff;
+    --ink: #1b222b;
+    --text-secondary: #3a4652;
+    --text-muted: #5c6672;
+    --border-soft: #d3d8de;
+    --border-strong: #c3cad2;
+    --border-faint: #e6e9ed;
+    --hover-tint: #f4f6f8;
+    --accent: #35577a;
+    --accent-contrast: #ffffff;
+    --selected-bg: #dce6ee;
+    --selected-text: #1f3a52;
+    --danger: #a8433f;
+    --font-display: 'Newsreader', Georgia, serif;
+    --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+    color-scheme: light;
+  }
+  [hidden] {
+    display: none !important;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.5;
+    padding-inline: 16px;
+    padding-block: 20px 48px;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    margin: 0;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  p {
+    margin: 0;
+  }
+  button {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: grid;
+    gap: 20px;
+  }
+  .intro {
+    display: grid;
+    gap: 4px;
+    max-width: 72ch;
+  }
+  .intro h1 {
+    font-size: 28px;
+  }
+  .intro p {
+    color: var(--text-secondary);
+  }
+  .tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 8px 16px;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text-secondary);
+  }
+  .tab[aria-pressed='true'] {
+    background: var(--selected-bg);
+    color: var(--selected-text);
+    border-color: var(--selected-bg);
+    font-weight: 600;
+  }
+
+  .frame {
+    background: var(--bg);
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .topbar {
+    height: 56px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: 24px;
+    gap: 12px;
+  }
+  .pills {
+    display: flex;
+    gap: 4px;
+  }
+  .pill {
+    padding: 6px 16px;
+    border-radius: 999px;
+    color: var(--text-secondary);
+  }
+  .pill.on {
+    background: var(--selected-bg);
+    color: var(--selected-text);
+    font-weight: 600;
+  }
+  .build {
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-weight: 500;
+    background: var(--surface);
+  }
+  .page {
+    padding: 40px 48px 48px;
+    display: grid;
+    gap: 28px;
+  }
+  .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .head h2 {
+    font-size: 28px;
+    font-weight: 700;
+  }
+  .actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-weight: 500;
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-contrast);
+  }
+  .btn.danger {
+    color: var(--danger);
+  }
+  .btn.small {
+    padding: 5px 10px;
+    font-size: 13px;
+  }
+  .btn[disabled] {
+    opacity: 0.55;
+    cursor: default;
+  }
+  .label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .muted {
+    color: var(--text-muted);
+  }
+  .small {
+    font-size: 13px;
+  }
+  svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex: none;
+  }
+  .section {
+    display: grid;
+    gap: 12px;
+  }
+  .sechead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .box {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+  }
+  .chips {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .chip {
+    white-space: nowrap;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: var(--panel);
+    color: var(--text-secondary);
+  }
+  .chip.add {
+    background: transparent;
+    border: 1px dashed var(--border-strong);
+    color: var(--text-muted);
+    font-family: var(--font-body);
+  }
+  .seg {
+    display: inline-flex;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .seg span {
+    padding: 5px 12px;
+    white-space: nowrap;
+  }
+  .seg .on {
+    background: var(--selected-bg);
+    color: var(--selected-text);
+    font-weight: 600;
+  }
+  .sel {
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 7px 12px;
+    background: var(--surface);
+    min-width: 130px;
+    display: inline-flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
+  }
+  .search {
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 7px 12px;
+    background: var(--surface);
+    min-width: 200px;
+    color: var(--text-muted);
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  /* Landing */
+  .todo {
+    display: grid;
+    grid-template-columns: 18px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-faint);
+  }
+  .todo:last-child {
+    border-bottom: 0;
+  }
+  .todo:hover {
+    background: var(--hover-tint);
+    cursor: pointer;
+  }
+  .check {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 4px;
+    background: var(--surface);
+  }
+  .own {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .src {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 16px;
+  }
+  .series {
+    padding: 20px;
+    display: grid;
+    gap: 6px;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+  .series:hover {
+    background: var(--hover-tint);
+  }
+  .series h3 {
+    font-size: 20px;
+    font-weight: 600;
+  }
+  .series .line {
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  .recent {
+    display: grid;
+    grid-template-columns: 110px 1.1fr 1fr 1.2fr;
+    gap: 16px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-faint);
+    align-items: center;
+  }
+  .recent:last-child {
+    border-bottom: 0;
+  }
+  .recent:hover {
+    background: var(--hover-tint);
+    cursor: pointer;
+  }
+  .recent .d {
+    font-variant-numeric: tabular-nums;
+    color: var(--text-secondary);
+  }
+  .upcoming {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--selected-text);
+    background: var(--selected-bg);
+    border-radius: 999px;
+    padding: 1px 8px;
+    margin-left: 8px;
+  }
+  .link {
+    color: var(--accent);
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  /* Meeting page */
+  .back {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    color: var(--text-secondary);
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px 28px;
+    padding: 16px 20px;
+    align-items: flex-end;
+  }
+  .field {
+    display: grid;
+    gap: 6px;
+    align-content: end;
+  }
+  .val {
+    white-space: nowrap;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 6px 12px;
+    background: var(--surface);
+    min-width: 100px;
+    font-variant-numeric: tabular-nums;
+  }
+  .val.calc {
+    background: var(--hover-tint);
+    color: var(--text-secondary);
+    border-style: dashed;
+  }
+  .split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 260px;
+    gap: 40px;
+    align-items: start;
+  }
+  .doc {
+    max-width: 780px;
+    display: grid;
+    gap: 4px;
+    font-size: 16px;
+    line-height: 1.8;
+  }
+  .doc h3 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    margin-top: 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .doc h3:first-child {
+    margin-top: 0;
+  }
+  .doc h4 {
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 600;
+    margin: 10px 0 0;
+  }
+  .doc .hint {
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.5;
+    font-weight: 400;
+    font-family: var(--font-body);
+  }
+  .li {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    align-items: baseline;
+  }
+  .bx {
+    width: 15px;
+    height: 15px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 4px;
+    transform: translateY(2px);
+    background: var(--surface);
+  }
+  .bx.done {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .li.done .t {
+    color: var(--text-muted);
+    text-decoration: line-through;
+  }
+  .dot {
+    padding-left: 22px;
+    position: relative;
+  }
+  .dot::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 15px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--text-muted);
+  }
+  .todo-in {
+    font-weight: 700;
+  }
+  .aside {
+    position: sticky;
+    top: 16px;
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+  }
+  .aside .tl {
+    display: grid;
+    grid-template-columns: 18px 1fr;
+    gap: 10px;
+    align-items: start;
+    padding: 6px 0;
+    cursor: pointer;
+  }
+  .aside .tl.done span:last-child {
+    color: var(--text-muted);
+    text-decoration: line-through;
+  }
+  .aside .tl:hover {
+    color: var(--accent);
+  }
+  .confirm {
+    max-width: 460px;
+    padding: 16px 20px;
+    display: grid;
+    gap: 12px;
+    box-shadow: 0 8px 24px rgba(27, 34, 43, 0.18);
+  }
+  .confirm .row {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  .btn.solid-danger {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: var(--accent-contrast);
+  }
+
+  /* Table */
+  .filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .tablewrap {
+    overflow-x: auto;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 960px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+  }
+  th {
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-faint);
+    vertical-align: top;
+  }
+  tbody tr {
+    cursor: pointer;
+  }
+  tbody tr:hover td {
+    background: var(--hover-tint);
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  td.n {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .sum {
+    max-width: 52ch;
+    color: var(--text-secondary);
+  }
+  .missing {
+    color: var(--danger);
+    font-size: 13px;
+  }
+  .ttl {
+    font-weight: 600;
+  }
+  @media (max-width: 900px) {
+    .split {
+      grid-template-columns: 1fr;
+    }
+    .aside {
+      position: static;
+    }
+  }
+  @media (max-width: 720px) {
+    .page {
+      padding: 24px 16px 32px;
+    }
+    .recent {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+    .todo {
+      grid-template-columns: 18px 1fr;
+    }
+  }
+</style>
+
+<div class="wrap">
+  <div class="intro">
+    <h1>Meetings, third design</h1>
+    <p>
+      Updated again: no meeting names, four series, owner at the end of each TODO, topics panel
+      instead of an agenda, and a Delete button. All data is invented. Nothing here is built yet.
+    </p>
+  </div>
+  <div class="tabs" role="group" aria-label="Screen">
+    <button class="tab" id="t1" aria-pressed="true" type="button">1 · Landing</button>
+    <button class="tab" id="t2" aria-pressed="false" type="button">
+      2 · All meetings (the log)
+    </button>
+    <button class="tab" id="t3" aria-pressed="false" type="button">3 · A meeting</button>
+  </div>
+
+  <div class="frame">
+    <div class="topbar">
+      <div class="pills">
+        <span class="pill">Life</span><span class="pill on">Research</span
+        ><span class="pill">Work</span>
+      </div>
+      <span class="build">Build</span>
+    </div>
+
+    <!-- 1. Landing -->
+    <div class="page" id="s1">
+      <div class="head">
+        <h2>Meetings</h2>
+        <div class="actions">
+          <button class="btn" type="button">All meetings</button>
+          <button class="btn primary" type="button">
+            <svg viewBox="0 0 16 16"><path d="M8 3v10M3 8h10" /></svg>New meeting
+          </button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sechead">
+          <span class="label">Before next meeting · 5 open</span>
+          <span class="seg" role="group" aria-label="Whose"
+            ><span class="on">Everyone</span><span>Mine (EO)</span></span
+          >
+        </div>
+        <div class="box">
+          <div class="todo">
+            <span class="check"></span
+            ><span
+              >Run another model with an interaction between student and peer language match
+              <span class="own">[EO]</span></span
+            ><span class="src">Supervision · Sep 24</span>
+          </div>
+          <div class="todo">
+            <span class="check"></span
+            ><span
+              >Read the draft ethics application and send comments
+              <span class="own">[KR]</span></span
+            ><span class="src">Supervision · Sep 24</span>
+          </div>
+          <div class="todo">
+            <span class="check"></span
+            ><span
+              >Share a list of potentially interesting journals <span class="own">[EO]</span></span
+            ><span class="src">Supervision · Sep 24</span>
+          </div>
+          <div class="todo">
+            <span class="check"></span
+            ><span
+              >Introduce the two of us to the Luminos data team <span class="own">[MJ]</span></span
+            ><span class="src">Luminos · May 21</span>
+          </div>
+          <div class="todo">
+            <span class="check"></span
+            ><span
+              >Review the assumptions of logistic mixed effects models
+              <span class="own">[EO]</span></span
+            ><span class="src">Supervision · Sep 24</span>
+          </div>
+        </div>
+        <p class="muted small">
+          Picked up from the TODOs you write in your notes. To tick one off, open the next meeting
+          of that series: it lists them under “Previous TODOs”.
+        </p>
+      </div>
+
+      <div class="section">
+        <span class="label">Series</span>
+        <div class="cards">
+          <div class="box series">
+            <h3>Supervision</h3>
+            <p class="line">52 meetings · last Sep 24 · next Oct 1</p>
+          </div>
+          <div class="box series">
+            <h3>Rastle Lab</h3>
+            <p class="line">9 meetings · last Sep 12</p>
+          </div>
+          <div class="box series">
+            <h3>Luminos</h3>
+            <p class="line">4 meetings · last May 21</p>
+          </div>
+          <div class="box series">
+            <h3>Other</h3>
+            <p class="line">1 meeting · last Jun 23</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sechead">
+          <span class="label">Recent and upcoming</span
+          ><a class="link small" href="#"
+            >See all meetings<svg viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" /></svg
+          ></a>
+        </div>
+        <div class="box">
+          <div class="recent">
+            <span class="d">Oct 1, 2026</span
+            ><span>Supervision<span class="upcoming">Upcoming</span></span
+            ><span class="chips"
+              ><span class="chip">AC</span><span class="chip">KR</span
+              ><span class="chip">EO</span></span
+            ><span class="muted">14:00 · 4 topics ready</span>
+          </div>
+          <div class="recent">
+            <span class="d">Sep 24, 2026</span><span>Supervision</span
+            ><span class="chips"
+              ><span class="chip">AC</span><span class="chip">KR</span
+              ><span class="chip">EO</span></span
+            ><span class="muted">60 min · In person</span>
+          </div>
+          <div class="recent">
+            <span class="d">Sep 12, 2026</span><span>Rastle Lab</span
+            ><span class="chips"
+              ><span class="chip">KR</span><span class="chip">MK</span><span class="chip">EO</span
+              ><span class="chip">+5</span></span
+            ><span class="muted">30 min · In person</span>
+          </div>
+          <div class="recent">
+            <span class="d">Aug 30, 2026</span><span>Luminos</span
+            ><span class="chips"><span class="chip">CB</span><span class="chip">EO</span></span
+            ><span class="muted">25 min · Online</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. All meetings / log -->
+    <div class="page" id="s2" hidden>
+      <div class="head">
+        <h2>All meetings</h2>
+        <div class="actions">
+          <button
+            class="btn"
+            type="button"
+            disabled
+            title="Later: exports the Supervision series, oldest first"
+          >
+            Export supervision log (PDF)
+          </button>
+        </div>
+      </div>
+      <div class="filters">
+        <span class="search"
+          ><svg viewBox="0 0 16 16">
+            <circle cx="7" cy="7" r="4.5" />
+            <path d="m10.5 10.5 3 3" /></svg
+          >Search meetings</span
+        >
+        <span class="sel"
+          >All series<svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" /></svg
+        ></span>
+        <span class="sel"
+          >Anyone<svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" /></svg
+        ></span>
+        <span class="sel"
+          >Any type<svg viewBox="0 0 16 16"><path d="m4 6 4 4 4-4" /></svg
+        ></span>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="label">Date</th>
+              <th class="label">Time</th>
+              <th class="label">Duration</th>
+              <th class="label">Series</th>
+              <th class="label">Type</th>
+              <th class="label">Summary</th>
+              <th class="label">Attendees</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="n">Sep 24, 2026</td>
+              <td class="n">14:00–15:00</td>
+              <td class="n">60 min</td>
+              <td>Supervision</td>
+              <td>In person</td>
+              <td class="sum">
+                Key topics: Study 1 models and the ethics application. Key decision: submit the
+                application before the next meeting. Next meeting Oct 1.
+              </td>
+              <td>
+                <span class="chips"
+                  ><span class="chip">AC</span><span class="chip">KR</span
+                  ><span class="chip">EO</span></span
+                >
+              </td>
+            </tr>
+            <tr>
+              <td class="n">Sep 17, 2026</td>
+              <td class="n">10:30–11:15</td>
+              <td class="n">45 min</td>
+              <td>Supervision</td>
+              <td>Online</td>
+              <td class="sum"><span class="missing">No summary yet.</span></td>
+              <td>
+                <span class="chips"><span class="chip">KR</span><span class="chip">EO</span></span>
+              </td>
+            </tr>
+            <tr>
+              <td class="n">Sep 12, 2026</td>
+              <td class="n">11:00–11:30</td>
+              <td class="n">30 min</td>
+              <td>Rastle Lab</td>
+              <td>In person</td>
+              <td class="sum">
+                Presentation on the language of instruction debate; feedback on framing and on
+                reporting absolute endline scores.
+              </td>
+              <td>
+                <span class="chips"
+                  ><span class="chip">KR</span><span class="chip">MK</span
+                  ><span class="chip">EO</span><span class="chip">+5</span></span
+                >
+              </td>
+            </tr>
+            <tr>
+              <td class="n">Aug 30, 2026</td>
+              <td class="n">16:00–16:25</td>
+              <td class="n">25 min</td>
+              <td>Luminos</td>
+              <td>Online</td>
+              <td class="sum">
+                Agreed a rough timeline for the pilot and who to talk to at the Ministry.
+              </td>
+              <td>
+                <span class="chips"><span class="chip">CB</span><span class="chip">EO</span></span>
+              </td>
+            </tr>
+            <tr>
+              <td class="n">Jun 23, 2026</td>
+              <td class="n muted">—</td>
+              <td class="n muted">—</td>
+              <td>Other</td>
+              <td>In person</td>
+              <td class="sum"><span class="missing">No summary yet.</span></td>
+              <td>
+                <span class="chips"
+                  ><span class="chip">RM</span><span class="chip">KR</span
+                  ><span class="chip">AC</span><span class="chip">EO</span></span
+                >
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted small">
+        Newest first. Click any row to open its notes. Choosing the Supervision series gives you the
+        supervision log. Upcoming meetings are left out until they have happened. A dash means no
+        time was recorded yet.
+      </p>
+    </div>
+
+    <!-- 3. A meeting -->
+    <div class="page" id="s3" hidden>
+      <a class="back" href="#"
+        ><svg viewBox="0 0 16 16"><path d="M13 8H3M7 4 3 8l4 4" /></svg>Meetings</a
+      >
+      <div class="head">
+        <h2>Supervision · Sep 24, 2026</h2>
+        <div class="actions">
+          <span class="muted small" style="align-self: center">Saved</span
+          ><button class="btn danger small" type="button">Delete meeting</button>
+        </div>
+      </div>
+      <div class="box meta">
+        <div class="field">
+          <span class="label">Series</span><span class="val">Supervision</span>
+        </div>
+        <div class="field">
+          <span class="label">Date</span><span class="val">Sep 24, 2026</span>
+        </div>
+        <div class="field"><span class="label">Start</span><span class="val">14:00</span></div>
+        <div class="field"><span class="label">End</span><span class="val">15:00</span></div>
+        <div class="field">
+          <span class="label">Duration</span><span class="val calc">60 min</span>
+        </div>
+        <div class="field">
+          <span class="label">Type</span
+          ><span class="seg"><span class="on">In person</span><span>Online</span></span>
+        </div>
+        <div class="field">
+          <span class="label">Attendees</span
+          ><span class="chips"
+            ><span class="chip">AC</span><span class="chip">KR</span><span class="chip">EO</span
+            ><span class="chip add">+ add</span></span
+          >
+        </div>
+      </div>
+
+      <div class="split">
+        <div class="doc">
+          <h3>Summary</h3>
+          <p>
+            Key topics: Study 1 models and the ethics application. Key decision: submit the
+            application before the next meeting. Next meeting Oct 1.
+          </p>
+          <span class="hint">Shown in the meetings list and the supervision log.</span>
+
+          <h3>Previous TODOs <span class="hint">Carried over from Sep 17 · 2 of 4 done</span></h3>
+          <div class="li done">
+            <span class="bx done"></span
+            ><span class="t"><b>TODO(EO)</b>: Start writing up the analysis</span>
+          </div>
+          <div class="li done">
+            <span class="bx done"></span
+            ><span class="t"
+              ><b>TODO(EO)</b>: Compare children who started at zero and improved with those who did
+              not</span
+            >
+          </div>
+          <div class="li">
+            <span class="bx"></span
+            ><span class="t"
+              ><b>TODO(EO)</b>: Share a list of potentially interesting journals</span
+            >
+          </div>
+          <div class="li">
+            <span class="bx"></span
+            ><span class="t"><b>TODO(KR)</b>: Send the Luminos contact details</span>
+          </div>
+
+          <h3>Notes</h3>
+          <h4>Study 1 model results</h4>
+          <div class="dot">
+            Weights in the second wave were applied twice; rerun before drawing conclusions.
+          </div>
+          <div class="dot">
+            <span class="todo-in">TODO(EO)</span>: Re-run the models with the corrected weights
+          </div>
+          <h4>Ethics application timeline</h4>
+          <div class="dot">Submit before the next meeting.</div>
+          <div class="dot">
+            <span class="todo-in">TODO(KR)</span>: Read the draft and send comments
+          </div>
+          <h4>Training plan for the spring</h4>
+          <div class="dot muted">Ask about the R course; read up on SENSS options later.</div>
+          <h4>Journals shortlist</h4>
+          <div class="dot muted">(nothing yet)</div>
+        </div>
+
+        <aside class="box aside" aria-label="Topics">
+          <span class="label">Topics · 2 of 4 discussed</span>
+          <div class="tl done"><span class="bx done"></span><span>Study 1 model results</span></div>
+          <div class="tl done">
+            <span class="bx done"></span><span>Ethics application timeline</span>
+          </div>
+          <div class="tl"><span class="bx"></span><span>Training plan for the spring</span></div>
+          <div class="tl"><span class="bx"></span><span>Journals shortlist</span></div>
+          <button class="btn small" type="button" style="justify-self: start">
+            <svg viewBox="0 0 16 16"><path d="M8 3v10M3 8h10" /></svg>Add topic
+          </button>
+          <span class="hint small muted"
+            >Built from the headings in your notes. Click one to jump to it; tick it when it has
+            been discussed. Unticked topics are what is left to cover or read up on.</span
+          >
+        </aside>
+      </div>
+
+      <div class="section">
+        <span class="label">After clicking “Delete meeting”</span>
+        <div class="box confirm">
+          <strong>Delete this meeting?</strong>
+          <span class="small muted"
+            >Supervision · Sep 24, 2026 and all its notes will be removed from Central Command. The
+            file moves to the macOS Trash, so you can still restore it from there.</span
+          >
+          <div class="row">
+            <button class="btn small" type="button">Cancel</button
+            ><button class="btn small solid-danger" type="button">Delete meeting</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const tabs = ['t1', 't2', 't3']
+  tabs.forEach((id, i) => {
+    document.getElementById(id).addEventListener('click', () => {
+      tabs.forEach((t, j) => {
+        document.getElementById(t).setAttribute('aria-pressed', String(i === j))
+        document.getElementById('s' + (j + 1)).hidden = i !== j
+      })
+    })
+  })
+</script>

@@ -12,6 +12,11 @@ App shell plus Readings (Zotero one-way sync, notes editor). See
 - [x] Reading detail and Markdown notes editor
 - [x] Polish pass
 
+## Next: Meetings (planned, not started)
+
+The plan, decisions and stage list are in `docs/MEETINGS_PLAN.md`; the visual reference is
+`docs/design/meetings-mockup.html`. Do not start until the user says so.
+
 ## Product vision: Build is a headline feature
 
 If Central Command is ever released, the Build button ("change your software to
