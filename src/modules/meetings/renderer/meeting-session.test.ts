@@ -265,6 +265,32 @@ describe('saving', () => {
     expect(parseMeta(splitNote(disk.text as string).head).meta.date).toBe('')
   })
 
+  it('shows an error from the main process without the Electron prefix, and explains a vanished file', async () => {
+    disk.failSave = new Error(
+      "Error invoking remote method 'meetings:save': Error: Invalid date: soon"
+    )
+    session.setMeta({ date: 'soon' })
+    await session.flush()
+    expect(session.getSnapshot().error).toBe('Invalid date: soon')
+    disk.failSave = new Error(
+      "Error invoking remote method 'meetings:save': Error: Meeting not found: 2026-09-24 Supervision"
+    )
+    session.setMeta({ start: '10:00' })
+    await session.flush()
+    expect(session.getSnapshot().error).toContain('has been moved or deleted')
+    expect(session.getSnapshot().error).not.toContain('Error invoking')
+  })
+
+  it('explains a permission problem in plain words', async () => {
+    disk.failSave = new Error(
+      "Error invoking remote method 'meetings:save': Error: EACCES: permission denied, open '/x/.m.md.tmp'"
+    )
+    session.editBody('x\n')
+    await session.flush()
+    expect(session.getSnapshot().error).toContain('not allowed to write')
+    expect(session.getSnapshot().error).not.toContain('/x/')
+  })
+
   it('replaceBody recreates the editor and saves the new text straight away', async () => {
     const key = session.getSnapshot().editorKey
     session.replaceBody('## Notes\n\n### New\n')

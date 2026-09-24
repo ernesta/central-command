@@ -48,13 +48,14 @@ function register({ db, paths }: MainContext): () => void {
     store.create(asObject(input, 'meeting') as unknown as CreateMeetingInput)
   )
   ipcMain.handle(MEETINGS_IPC.read, (_event, ref: unknown) => store.read(asRef(ref)))
-  ipcMain.handle(MEETINGS_IPC.list, (_event, workspace: unknown) => {
+  ipcMain.handle(MEETINGS_IPC.list, async (_event, workspace: unknown) => {
     if (
       typeof workspace !== 'string' ||
       !(MEETING_WORKSPACES as readonly string[]).includes(workspace)
     ) {
       throw new Error('Invalid workspace')
     }
+    await store.pruneMissing(workspace as MeetingWorkspace)
     return listMeetingRows(db, workspace as MeetingWorkspace)
   })
   ipcMain.handle(MEETINGS_IPC.save, (_event, ref: unknown, changes: unknown, baseHash: unknown) => {

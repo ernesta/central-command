@@ -273,6 +273,19 @@ export class MeetingsStore {
   async reindexAll(workspace: MeetingWorkspace): Promise<void> {
     const onDisk = await this.baseNamesOnDisk(workspace)
     for (const id of onDisk) await this.reindex({ workspace, id })
+    this.dropRowsWithoutFiles(workspace, onDisk)
+  }
+
+  /**
+   * Drop the index rows of files that are no longer there, without reading any file (one directory listing).
+   * Cheap enough to run before every list, which keeps the list right even if the folder watcher missed a
+   * deletion (a file created and removed within a moment can go unreported).
+   */
+  async pruneMissing(workspace: MeetingWorkspace): Promise<void> {
+    this.dropRowsWithoutFiles(workspace, await this.baseNamesOnDisk(workspace))
+  }
+
+  private dropRowsWithoutFiles(workspace: MeetingWorkspace, onDisk: readonly string[]): void {
     const present = new Set(onDisk)
     for (const id of listMeetingIds(this.db, workspace)) {
       if (!present.has(id)) deleteMeetingRow(this.db, workspace, id)

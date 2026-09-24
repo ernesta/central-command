@@ -1,4 +1,5 @@
 import type { NoteContent } from '@shared/notes'
+import { friendlyFileError, ipcErrorMessage } from '@renderer/lib/ipc-error'
 import type { SaveState } from '@renderer/notes/notes-session'
 import type {
   MeetingChangedEvent,
@@ -277,7 +278,13 @@ export class MeetingSession {
     try {
       result = await this.api.save(this.ref, changes, this.baseHash)
     } catch (error) {
-      this.update({ save: 'error', error: error instanceof Error ? error.message : String(error) })
+      const message = ipcErrorMessage(error)
+      this.update({
+        save: 'error',
+        error: /Meeting not found/.test(message)
+          ? 'the file for this meeting has been moved or deleted, so it cannot be saved. Your text is still here.'
+          : friendlyFileError(message)
+      })
       return
     }
     if (result.status === 'conflict') {

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { Select } from '@renderer/components/Select'
+import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { SERIES } from '../shared/types'
 import { meetingRoute, todayIso } from './meetings-paths'
 import styles from './NewMeetingButton.module.css'
@@ -34,7 +35,7 @@ export function NewMeetingButton(): React.JSX.Element {
       const file = await window.api.meetings.create({ workspace: 'research', series, date })
       void navigate(meetingRoute(file.ref.id))
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
+      setError(ipcErrorMessage(e))
       setBusy(false)
     }
   }

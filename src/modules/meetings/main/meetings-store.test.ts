@@ -256,6 +256,18 @@ describe('reindex', () => {
     expect(getMeetingRow(db, 'research', 'a')?.series).toBe('Luminos')
   })
 
+  it('pruneMissing drops rows whose file is gone, keeps the rest, and reads no file', async () => {
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(file('a'), '---\nseries: Other\ndate: 2026-01-01\n---\n')
+    writeFileSync(file('b'), '---\nseries: Other\ndate: 2026-01-02\n---\n')
+    await store.reindexAll('research')
+    rmSync(file('b'))
+    writeFileSync(file('a'), '---\nseries: Luminos\ndate: 2026-01-01\n---\n') // changed, but not re-read by a prune
+    await store.pruneMissing('research')
+    expect(listMeetingIds(db, 'research')).toEqual(['a'])
+    expect(getMeetingRow(db, 'research', 'a')?.series).toBe('Other')
+  })
+
   it('reindexAll copes with a missing folder', async () => {
     await expect(store.reindexAll('work')).resolves.toBeUndefined()
   })

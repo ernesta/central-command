@@ -7,6 +7,8 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
+  /* Keyboard focus scrolls an element into view; leave room so its focus ring is not cut by the edge. */
+  scroll-padding-block: 16px;
 }
 
 .notice {

@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
+import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { NotesEditor } from '@renderer/notes/NotesEditor'
 import type { SaveState } from '@renderer/notes/notes-session'
 import { ownerOptions } from '../shared/people'
@@ -153,7 +154,7 @@ function MeetingView({
       await window.api.meetings.delete(session.getRef())
       void navigate(meetingsBase)
     } catch (e) {
-      setDeleteError(e instanceof Error ? e.message : String(e))
+      setDeleteError(ipcErrorMessage(e))
       setDeleting(false)
       setConfirmDelete(false)
       void session.start()
