@@ -5,6 +5,8 @@ import { modulePath } from '@modules/types'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import type { Reading } from '../shared/types'
+import { AbstractBlock } from './AbstractBlock'
+import { NotesSection } from './NotesSection'
 import { StatusPill } from './StatusPill'
 import styles from './ReadingDetailPage.module.css'
 
@@ -92,6 +94,8 @@ export function ReadingDetailPage(): React.JSX.Element {
             <Notice>This item is no longer in your Zotero export. Your notes are safe.</Notice>
           </div>
         )}
+        {reading.abstract && <AbstractBlock abstract={reading.abstract} />}
+        <NotesSection key={reading.citekey} citekey={reading.citekey} />
       </article>
     </div>
   )
