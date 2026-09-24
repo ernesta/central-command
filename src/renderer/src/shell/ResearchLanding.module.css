@@ -1,0 +1,37 @@
+.page {
+  padding: 48px 64px;
+}
+.heading {
+  font-size: var(--text-32);
+  font-weight: 700;
+  margin-bottom: 32px;
+}
+.live {
+  display: grid;
+  gap: 16px;
+}
+.soon {
+  margin-top: 36px;
+}
+.soonLabel {
+  margin: 0 0 12px;
+  color: var(--text-muted);
+  font-size: var(--text-11);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.soonRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.soonCard {
+  padding: 20px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-card);
+  color: var(--text-secondary);
+  font-size: var(--text-15);
+  font-weight: 600;
+  opacity: 0.6;
+  cursor: default;
+}
