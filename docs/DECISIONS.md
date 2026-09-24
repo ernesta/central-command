@@ -145,3 +145,48 @@ with the filters was confusing. The brief was updated to match.
 
 The table is virtualised; the board is not. With 2,000 readings it rendered in
 ~140 ms, which is fine. Virtualise the board columns if that stops being true.
+
+## Notes are Markdown files guarded by content hashes
+
+Each reading's notes live in `~/CentralCommand/notes/readings/<citekey>.md`; the database
+only caches `has_notes` and a plain-text excerpt (for search). Rules, enforced by
+`NotesStore` and covered by tests:
+
+- **Lazy:** a file is created only when the user first types something (whitespace-only
+  content never creates one).
+- **Never deleted:** clearing a note leaves an empty file. Citekey changes in Zotero
+  never rename or remove a notes file; the old reading is just flagged.
+- **Never clobbered:** every save says which file version it builds on (a SHA-1 of the
+  content). If the file changed since, nothing is written and the user chooses "Keep my
+  version" or "Use the file's version". A missing file and an empty one hash the same.
+- **Atomic:** temp file plus rename.
+- **Filenames** are the citekey with unsafe characters replaced, so a citekey can never
+  escape the notes folder.
+- **External edits** (for example by Claude Code) are noticed by a watcher on the notes
+  folder: caches are refreshed, and an open, clean editor reloads in place. With unsaved
+  edits the conflict notice appears instead.
+
+## Notes editor: Milkdown, configured for plain Markdown
+
+The spike passed: Milkdown round-trips headings, emphasis, lists, task lists, quotes,
+links, fenced code, tables, strikethrough, rules and unicode byte-for-byte when
+configured with dash bullets and `---` rules. A note is only written back after the user
+edits it, so opening a note never reformats it. Known normalisations (equivalent, valid
+Markdown): `*` bullets become `-`; a two-space hard break becomes a backslash break;
+bare `*`, `_` and `[` are escaped (`\*`, `\_`, `\[`); adjacent lists alternate `-` and `*`
+markers so they stay separate lists. Tests pin these down.
+
+## Editor changes are reported synchronously (a data-loss bug found by using the app)
+
+Milkdown's change listener is debounced (~200 ms). Typing and then leaving the page, or
+closing the window, inside that window dropped the last words. The editor now reports
+every document change immediately through a small ProseMirror plugin, and the session does
+its own debouncing before saving (~500 ms). On top of that, the main process holds a
+window open (up to 3 s) after asking the renderer to flush pending saves, so closing the
+window or quitting never loses edits.
+
+## Task list checkboxes use CSS plus a tiny plugin, not Milkdown's Vue components
+
+Milkdown's list-item component pulls in Vue and re-renders every list item. Task items
+already carry `data-checked`, so the checkbox is drawn with CSS and a ~20-line plugin
+toggles it on click.
