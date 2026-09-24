@@ -12,6 +12,17 @@ App shell plus Readings (Zotero one-way sync, notes editor). See
 - [ ] Reading detail and Markdown notes editor
 - [ ] Polish pass
 
+## Product vision: Build is a headline feature
+
+If Central Command is ever released, the Build button ("change your software to
+work for you") is its most distinctive feature, not a developer-only tool. A
+released app would need to make that work for people who install it: a
+source checkout the app can edit (or a sandboxed equivalent), a way to hot-reload
+or rebuild after changes, and safety nets for bad edits (git history, easy
+rollback). Keep this in mind when making structural choices: modules stay
+self-contained and data stays outside the code so users' changes can't lose their
+data.
+
 ## Later, roughly in order (not for Phase 1)
 
 - Real Claude wiring for the Ask panel; embedded terminal for Build
