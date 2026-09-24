@@ -2,6 +2,10 @@ import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { APP_NAME } from '@shared/app-info'
+import { getAppPaths } from './paths'
+import { SettingsStore } from './settings'
+import { registerSettingsIpc } from './ipc/settings'
+import { defaultSettings } from '@shared/settings'
 import icon from '../../resources/icon.png?asset'
 
 function isSafeExternalUrl(url: string): boolean {
@@ -53,12 +57,17 @@ function createWindow(): void {
   }
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   electronApp.setAppUserModelId('app.controlcenter.desktop')
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
+
+  const paths = getAppPaths()
+  const settings = new SettingsStore(paths.settings, defaultSettings(paths.defaultBibExport))
+  await settings.load()
+  registerSettingsIpc(settings)
 
   createWindow()
 
