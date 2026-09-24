@@ -75,7 +75,19 @@ export function transformBody(body: string): { markdown: string; empty: boolean 
     kept.push(line)
   }
 
-  const markdown = kept
+  // The editor puts a blank line around every heading and drops trailing spaces. Do the same
+  // so an imported note is already in the editor's canonical form and is not rewritten the
+  // first time it is edited.
+  const isHeading = (line: string | undefined): boolean =>
+    line !== undefined && /^#{1,6}\s/.test(line)
+  const spaced = kept
+    .map((line) => line.replace(/[ \t]+$/, ''))
+    .flatMap((line, n, all) => {
+      const before = n > 0 && isHeading(line) && all[n - 1] !== '' ? [''] : []
+      const after = isHeading(line) && all[n + 1] !== undefined && all[n + 1] !== '' ? [''] : []
+      return [...before, line, ...after]
+    })
+  const markdown = spaced
     .join('\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim()

@@ -64,13 +64,15 @@ describe('transformBody', () => {
   it('keeps real content verbatim and drops empty template sections', () => {
     const { markdown, empty } = transformBody('## Notes\n- first\n- second\n\n## Key Quotes\n- \n')
     expect(empty).toBe(false)
-    expect(markdown).toBe('## Notes\n- first\n- second\n')
+    expect(markdown).toBe('## Notes\n\n- first\n- second\n')
   })
   it('keeps every section that has content', () => {
     const { markdown } = transformBody(
       '## Notes\n- a\n\n## Key Quotes\n- "quoted"\n\n## Further Reading\n- b\n'
     )
-    expect(markdown).toBe('## Notes\n- a\n\n## Key Quotes\n- "quoted"\n\n## Further Reading\n- b\n')
+    expect(markdown).toBe(
+      '## Notes\n\n- a\n\n## Key Quotes\n\n- "quoted"\n\n## Further Reading\n\n- b\n'
+    )
   })
   it('turns wikilinks into plain text', () => {
     expect(
@@ -89,6 +91,19 @@ describe('transformBody', () => {
     expect(transformBody('- top\n\t- child\n\t\t- grandchild\n').markdown).toBe(
       '- top\n  - child\n    - grandchild\n'
     )
+  })
+  it('puts a blank line after each heading, as the editor does', () => {
+    expect(transformBody('## Notes\n- a\n\n## More\n\n- b\n').markdown).toBe(
+      '## Notes\n\n- a\n\n## More\n\n- b\n'
+    )
+  })
+  it('puts a blank line before a heading that directly follows a list', () => {
+    expect(transformBody('## Notes\n- a\n## More\n- b\n').markdown).toBe(
+      '## Notes\n\n- a\n\n## More\n\n- b\n'
+    )
+  })
+  it('strips trailing whitespace from lines', () => {
+    expect(transformBody('- a   \n\t- b\t\n').markdown).toBe('- a\n  - b\n')
   })
   it('does not treat a heading-only note as content', () => {
     expect(transformBody('## Notes\n\n## Key Quotes\n').empty).toBe(true)
@@ -194,7 +209,7 @@ describe('planImport', () => {
       target: 'caladoCostNarrowLens2025.md',
       kind: 'title'
     })
-    expect(first.status === 'import' && first.markdown).toBe('## Notes\n- calado note\n')
+    expect(first.status === 'import' && first.markdown).toBe('## Notes\n\n- calado note\n')
   })
   it('skips empty templates and reports unmatched notes', () => {
     const plan = planImport(notes, readings, new Set())
