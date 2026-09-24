@@ -72,3 +72,38 @@ executable) and `src/renderer/index.html`. The brief was updated to match
 `~/CentralCommand/` (`DATA_DIR_NAME`) and the database is
 `central-command.sqlite`; the user re-pointed their Zotero export to the new
 location.
+
+## ESM-only dependencies are bundled into the main build
+
+The main process is built as CommonJS. `@retorquere/bibtex-parser` and
+`chokidar` are ESM-only (and the parser's `dist/cjs` folder is really ESM), so
+requiring them from `node_modules` fails at startup. They are listed in
+`externalizeDeps.exclude` in `electron.vite.config.ts`, which makes electron-vite
+bundle them. Any future ESM-only main-process dependency needs the same entry.
+Native modules (better-sqlite3) stay external.
+
+## Sync strictness: any parse error, or an empty export, fails the whole sync
+
+A half-written export produces parse errors, and an empty or blank file parses
+"successfully" with zero entries, which would otherwise flag the whole library as
+missing. Both are treated as failures: nothing changes except an error row in
+`sync_runs`, and the UI shows the message. A genuinely empty Zotero library will
+therefore show an error rather than an empty list; that trade-off is deliberate.
+
+## Parsing details
+
+- `sentenceCase: false`, because the parser otherwise lowercases title words.
+- Text is normalised to NFC; the parser emits decomposed accents that break
+  searching and sorting.
+- `and others` is not stored as a person; it makes the short citation "et al.".
+- Keywords come out of the parser sorted, so tags are alphabetical.
+- Editors are used for the short citation only when there are no authors, and are
+  not stored.
+- A row that reappears in the export clears `missing_from_source` without bumping
+  `updated_at`, unless a synced field also changed.
+
+## Modules can contribute settings sections
+
+`LiveModuleManifest.settingsSection` lets a module render its own block on the
+Settings page (Readings uses it for the Zotero sync summary), so the shell never
+imports module code directly. A module's `landingCard` is optional.
