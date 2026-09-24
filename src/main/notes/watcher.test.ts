@@ -2,8 +2,8 @@ import { mkdtempSync, rmSync, unlinkSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { writeFileAtomic } from '../../../main/atomic-write'
-import { NotesWatcher } from './notes-watcher'
+import { writeFileAtomic } from '../atomic-write'
+import { NotesWatcher } from './watcher'
 
 let dir: string
 let watcher: NotesWatcher

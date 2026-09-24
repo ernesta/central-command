@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { NoteChangedEvent, NoteContent, NoteWriteResult } from '../shared/notes'
+import type { NoteChangedEvent, NoteContent, NoteWriteResult } from '@shared/notes'
 import { NotesSession, type NotesApi } from './notes-session'
 
 const hash = (content: string): string => `h:${content}`

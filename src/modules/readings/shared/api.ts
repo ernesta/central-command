@@ -1,4 +1,4 @@
-import type { NoteChangedEvent, NoteContent, NoteWriteResult } from './notes'
+import type { NoteChangedEvent, NoteContent, NoteWriteResult } from '@shared/notes'
 import type { ReadingsQuery, TagCount } from './query'
 import type { Reading, ReadingCounts, SyncStatus } from './types'
 

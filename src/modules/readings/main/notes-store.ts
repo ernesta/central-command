@@ -1,14 +1,9 @@
-import { createHash } from 'crypto'
-import { readFile, readdir } from 'fs/promises'
+import { readdir } from 'fs/promises'
 import type { Database } from 'better-sqlite3'
-import { writeFileAtomic } from '../../../main/atomic-write'
-import type { NoteContent, NoteWriteResult } from '../shared/notes'
-import { markdownToExcerpt } from './notes-excerpt'
+import type { NoteContent, NoteWriteResult } from '@shared/notes'
+import { markdownToExcerpt } from '../../../main/notes/excerpt'
+import { readNoteFile, writeNoteFileGuarded } from '../../../main/notes/guarded-file'
 import { noteBaseName, noteFileName, notePath } from './notes-path'
-
-export function hashContent(content: string): string {
-  return createHash('sha1').update(content, 'utf8').digest('hex')
-}
 
 interface NotesStoreOptions {
   db: Database
@@ -33,37 +28,24 @@ export class NotesStore {
     this.notesDir = notesDir
   }
 
-  async read(citekey: string): Promise<NoteContent> {
-    try {
-      const content = await readFile(notePath(this.notesDir, citekey), 'utf8')
-      return { exists: true, content, hash: hashContent(content) }
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        return { exists: false, content: '', hash: hashContent('') }
-      }
-      throw error
-    }
+  read(citekey: string): Promise<NoteContent> {
+    return readNoteFile(notePath(this.notesDir, citekey))
   }
 
   /**
    * Save `content`, provided the file on disk still matches `baseHash` (what the editor
-   * loaded or last saved). A missing file and an empty file hash the same.
-   * - The file is created lazily: whitespace-only content never creates one.
-   * - Clearing a note leaves an empty file rather than deleting it.
+   * loaded or last saved). The file is created lazily and never deleted; see `writeNoteFileGuarded`.
    */
   async write(citekey: string, content: string, baseHash: string): Promise<NoteWriteResult> {
     if (!this.readingExists(citekey)) throw new Error(`Unknown reading: ${citekey}`)
 
-    const disk = await this.read(citekey)
-    if (disk.content === content) return { status: 'saved', hash: disk.hash }
-    if (disk.hash !== baseHash) return { status: 'conflict', disk }
-
-    const blank = content.trim() === ''
-    if (blank && !disk.exists) return { status: 'saved', hash: hashContent('') }
-
-    await writeFileAtomic(notePath(this.notesDir, citekey), content)
-    this.updateCache(citekey, content)
-    return { status: 'saved', hash: hashContent(content) }
+    const { result, wrote } = await writeNoteFileGuarded(
+      notePath(this.notesDir, citekey),
+      content,
+      baseHash
+    )
+    if (wrote) this.updateCache(citekey, content)
+    return result
   }
 
   /** Recompute one reading's caches from its file on disk. */

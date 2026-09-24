@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { markdownToExcerpt } from './notes-excerpt'
+import { markdownToExcerpt } from './excerpt'
 
 describe('markdownToExcerpt', () => {
   it('is empty for empty or whitespace-only notes', () => {

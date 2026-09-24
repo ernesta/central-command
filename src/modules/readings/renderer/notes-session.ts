@@ -1,4 +1,4 @@
-import type { NoteChangedEvent, NoteContent, NoteWriteResult } from '../shared/notes'
+import type { NoteChangedEvent, NoteContent, NoteWriteResult } from '@shared/notes'
 
 /** The slice of the Readings API a notes session needs. */
 export interface NotesApi {

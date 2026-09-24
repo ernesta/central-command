@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { IPC, type Api } from '@shared/api'
 import { READINGS_IPC } from '@modules/readings/shared/api'
-import type { NoteChangedEvent } from '@modules/readings/shared/notes'
+import type { NoteChangedEvent } from '@shared/notes'
 import type { SyncStatus } from '@modules/readings/shared/types'
 
 const api: Api = {

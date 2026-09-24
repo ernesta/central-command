@@ -15,7 +15,8 @@ import { runMigrations } from '../../../main/db/migrate'
 import type { SyncedFields } from '../shared/types'
 import { readingsMigrations } from './migrations'
 import { getReadingByCitekey, applySync } from './repository'
-import { hashContent, NotesStore } from './notes-store'
+import { hashContent } from '../../../main/notes/guarded-file'
+import { NotesStore } from './notes-store'
 
 const EMPTY = hashContent('')
 const entry = (citekey: string): SyncedFields => ({
