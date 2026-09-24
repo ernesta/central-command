@@ -22,7 +22,10 @@ const api: Api = {
         return () => ipcRenderer.removeListener(READINGS_IPC.syncStatusChanged, handler)
       }
     },
-    counts: () => ipcRenderer.invoke(READINGS_IPC.counts)
+    counts: () => ipcRenderer.invoke(READINGS_IPC.counts),
+    list: (query) => ipcRenderer.invoke(READINGS_IPC.list, query),
+    tags: () => ipcRenderer.invoke(READINGS_IPC.tags),
+    get: (citekey) => ipcRenderer.invoke(READINGS_IPC.get, citekey)
   },
   build: {
     openSession: () => ipcRenderer.invoke(IPC.buildOpenSession)
