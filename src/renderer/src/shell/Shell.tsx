@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 import { modules } from '@modules/index'
 import { modulePath } from '@modules/types'
 import { WORKSPACES, type Workspace } from '@shared/settings'
+import { Notice } from '../components/Notice'
 import { useSettings } from '../state/settings-context'
 import { SettingsPage } from './SettingsPage'
 import { ResearchLanding } from './ResearchLanding'
@@ -18,6 +20,12 @@ export function Shell(): React.JSX.Element {
   const { settings, update } = useSettings()
   const location = useLocation()
   const navigate = useNavigate()
+  const [buildError, setBuildError] = useState<string | null>(null)
+
+  const openBuild = async (): Promise<void> => {
+    const result = await window.api.build.openSession()
+    setBuildError(result.ok ? null : result.message)
+  }
 
   // Pages outside a workspace (e.g. Settings) keep the last workspace highlighted.
   const workspace = workspaceFromPath(location.pathname) ?? settings.ui.workspace
@@ -32,9 +40,16 @@ export function Shell(): React.JSX.Element {
       <TopBar
         workspace={workspace}
         onWorkspaceChange={switchWorkspace}
-        onBuild={() => undefined}
+        onBuild={() => void openBuild()}
         onOpenSettings={() => navigate('/settings')}
       />
+      {buildError && (
+        <div className={styles.notice}>
+          <Notice tone="error" onDismiss={() => setBuildError(null)}>
+            {buildError}
+          </Notice>
+        </div>
+      )}
       <main className={styles.main}>
         <Routes>
           <Route path="/" element={<Navigate to={`/${settings.ui.workspace}`} replace />} />

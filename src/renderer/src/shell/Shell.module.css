@@ -8,3 +8,7 @@
   min-height: 0;
   overflow: auto;
 }
+
+.notice {
+  padding: 12px 32px 0;
+}
