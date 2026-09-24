@@ -1,0 +1,50 @@
+.list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.row {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 8px 12px;
+  padding: 11px 20px;
+  border-bottom: 1px solid var(--border-faint);
+  color: inherit;
+  font-size: var(--text-14);
+  text-decoration: none;
+  transition: background var(--transition-fast);
+}
+li:last-child .row {
+  border-bottom: 0;
+  border-radius: 0 0 calc(var(--radius-card) - 1px) calc(var(--radius-card) - 1px);
+}
+li:first-child .row {
+  border-radius: calc(var(--radius-card) - 1px) calc(var(--radius-card) - 1px) 0 0;
+}
+li:only-child .row {
+  border-radius: calc(var(--radius-card) - 1px);
+}
+.row:hover {
+  background: var(--hover-tint);
+}
+.row:focus-visible {
+  outline-offset: -2px;
+}
+/* Read-only: a plain ring, not a checkbox. Ticking happens in the next meeting's Previous TODOs. */
+.ring {
+  width: 15px;
+  height: 15px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  transform: translateY(2px);
+}
+.text {
+  min-width: 0;
+}
+.source {
+  color: var(--text-muted);
+  font-size: var(--text-13);
+  white-space: nowrap;
+}

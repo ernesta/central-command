@@ -1,5 +1,6 @@
-import { Download } from 'lucide-react'
+import { ArrowLeft, Download } from 'lucide-react'
 import { useState } from 'react'
+import { Link, useSearchParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { SearchInput } from '@renderer/components/SearchInput'
@@ -15,7 +16,7 @@ import {
 } from '../shared/query'
 import { MeetingsTable } from './MeetingsTable'
 import { NewMeetingButton } from './NewMeetingButton'
-import { todayIso } from './meetings-paths'
+import { meetingsBase, todayIso } from './meetings-paths'
 import { useMeetingsList } from './useMeetingsList'
 import styles from './MeetingsPage.module.css'
 
@@ -25,7 +26,12 @@ import styles from './MeetingsPage.module.css'
  */
 export function MeetingsPage(): React.JSX.Element {
   const { rows, people } = useMeetingsList()
-  const [query, setQuery] = useState<MeetingsQuery>(DEFAULT_MEETINGS_QUERY)
+  // A series card on the landing page opens the list already filtered to that series.
+  const [params] = useSearchParams()
+  const [query, setQuery] = useState<MeetingsQuery>(() => ({
+    ...DEFAULT_MEETINGS_QUERY,
+    series: params.get('series') ?? 'all'
+  }))
   const set = (patch: Partial<MeetingsQuery>): void => setQuery((q) => ({ ...q, ...patch }))
 
   const today = todayIso()
@@ -55,6 +61,10 @@ export function MeetingsPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
+      <Link className={styles.back} to={meetingsBase}>
+        <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
+        Meetings
+      </Link>
       <header className={styles.header}>
         <h1 className={styles.heading}>All meetings</h1>
         <NewMeetingButton />

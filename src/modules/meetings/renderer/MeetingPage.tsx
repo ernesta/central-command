@@ -1,6 +1,6 @@
 import { ArrowLeft } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
@@ -62,6 +62,7 @@ function MeetingView({
   onRenamed: (id: string) => void
 }): React.JSX.Element {
   const navigate = useNavigate()
+  const location = useLocation()
   const { session, snapshot } = useMeetingSession(meetingRef, onRenamed)
   const [people, setPeople] = useState<Person[]>([])
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -85,7 +86,9 @@ function MeetingView({
   const todo = useTodoHelper(owners)
   const topics = useMemo(() => parseTopics(body, meta.discussed), [body, meta.discussed])
 
-  const goBack = (): void => void navigate(meetingsBase)
+  // Back goes to wherever the user came from (the landing page or the list); with no history, the landing page.
+  const goBack = (): void =>
+    void (location.key !== 'default' ? navigate(-1) : navigate(meetingsBase))
 
   const addPerson = useCallback(async (name: string): Promise<Person> => {
     const list = await window.api.meetings.people.add(name)

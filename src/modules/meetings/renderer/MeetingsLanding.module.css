@@ -1,0 +1,210 @@
+.page {
+  display: grid;
+  gap: 28px;
+  align-content: start;
+  padding: 36px 48px 48px;
+}
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+.heading {
+  margin: 0;
+  font-size: var(--text-32);
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.allLink {
+  padding: 8px 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-14);
+  font-weight: 500;
+  text-decoration: none;
+}
+.allLink:hover {
+  background: var(--hover-tint);
+}
+.section {
+  display: grid;
+  gap: 12px;
+}
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px;
+}
+.label {
+  margin: 0;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: var(--text-11);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.box {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+}
+.none {
+  margin: 0;
+  padding: 20px;
+  color: var(--text-muted);
+  font-size: var(--text-14);
+}
+.hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+}
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+  font-size: var(--text-13);
+}
+
+/* Series cards are narrow, so three or four fit on a line and more wrap. */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 320px));
+  gap: 16px;
+  padding: 4px;
+}
+.card {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  transition: background var(--transition-fast);
+}
+.card:hover {
+  background: var(--hover-tint);
+}
+.card:has(.cardLink:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.cardTitle {
+  margin: 0;
+  font-size: var(--text-20);
+}
+/* Stretched link: the whole card is the click target. */
+.cardLink {
+  color: inherit;
+  text-decoration: none;
+}
+.cardLink::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+.cardLink:focus-visible {
+  outline: none;
+}
+.line {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-14);
+  white-space: nowrap;
+}
+
+.recentList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.recent {
+  display: grid;
+  grid-template-columns: 120px minmax(120px, 1fr) auto minmax(0, auto);
+  align-items: center;
+  gap: 8px 20px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-faint);
+  color: inherit;
+  font-size: var(--text-14);
+  text-decoration: none;
+  transition: background var(--transition-fast);
+}
+li:last-child .recent {
+  border-bottom: 0;
+  border-radius: 0 0 calc(var(--radius-card) - 1px) calc(var(--radius-card) - 1px);
+}
+li:first-child .recent {
+  border-radius: calc(var(--radius-card) - 1px) calc(var(--radius-card) - 1px) 0 0;
+}
+li:only-child .recent {
+  border-radius: calc(var(--radius-card) - 1px);
+}
+.recent:hover {
+  background: var(--hover-tint);
+}
+.recent:focus-visible {
+  outline-offset: -2px;
+}
+.date {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.upcoming {
+  margin-left: 10px;
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--selected-bg);
+  color: var(--selected-text);
+  font-size: var(--text-12);
+  font-weight: 500;
+}
+.chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.chip {
+  padding: 2px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--panel);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-13);
+}
+.more {
+  color: var(--text-muted);
+  font-size: var(--text-12);
+}
+.note {
+  color: var(--text-muted);
+  font-size: var(--text-13);
+  text-align: right;
+  white-space: nowrap;
+}
+@media (max-width: 720px) {
+  .page {
+    padding: 24px 16px 32px;
+  }
+  .recent {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  .note {
+    text-align: left;
+  }
+}
