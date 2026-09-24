@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { APP_NAME } from '@shared/app-info'
+import { attachCloseGuard } from './close-guard'
 import { getAppPaths } from './paths'
 import { SettingsStore } from './settings'
 import { registerSettingsIpc } from './ipc/settings'
@@ -22,6 +23,8 @@ function isSafeExternalUrl(url: string): boolean {
   }
 }
 
+let isQuitting = false
+
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
     width: 1280,
@@ -38,6 +41,14 @@ function createWindow(): void {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true
+    }
+  })
+
+  // Let the renderer save pending edits before the window goes. If the app was quitting,
+  // the guard's deferred close would otherwise cancel the quit, so quit again afterwards.
+  attachCloseGuard(mainWindow, {
+    onClosed: () => {
+      if (isQuitting) app.quit()
     }
   })
 
@@ -90,6 +101,10 @@ app.whenReady().then(async () => {
   })
 
   createWindow()
+
+  app.on('before-quit', () => {
+    isQuitting = true
+  })
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
