@@ -1,4 +1,4 @@
-# Control Center — Phase 1 Build Brief
+# Central Command — Phase 1 Build Brief
 
 > **For Claude Code.** Read this whole document before writing any code. Start in
 > plan mode, propose a concrete implementation plan (folder structure, libraries,
@@ -10,8 +10,8 @@
 
 ## 0. Context and vision
 
-The user is a PhD student building a personal "control center": a local desktop app
-that brings their research, consulting and personal life into one beautiful,
+The user is a PhD student building a personal "command center": a local desktop app
+that brings their research, work and personal life into one beautiful,
 highly customisable place, with Claude at its centre (both automating things and
 answering ad hoc questions). It replaces a mix of Notion, ClickUp and Obsidian,
 which failed mainly on visual customisability and data flexibility.
@@ -19,7 +19,7 @@ which failed mainly on visual customisability and data flexibility.
 Long-term, the app will grow to include: a global dashboard (tasks, calendar,
 weather, unread email count), Meetings, Studies, Thesis, Training logs, Ideas,
 a daily news tab, a research digest (new papers, posts), a focus/writing space,
-and eventually Life and Consulting workspaces built from the same primitives. It
+and eventually Life and Work workspaces built from the same primitives. It
 may one day be released publicly as an app.
 
 **Phase 1 is deliberately small**: the app shell plus one real feature — Readings,
@@ -110,7 +110,7 @@ Each module exports a small manifest the shell reads, for example:
 ```ts
 {
   id: 'readings',
-  workspace: 'research',        // 'life' | 'research' | 'consulting'
+  workspace: 'research',        // 'life' | 'research' | 'work'
   label: 'Readings',
   routes: [...],                // list page, detail page
   landingCard: ReadingsCard,    // what appears on the workspace landing page
@@ -127,13 +127,13 @@ Readings module folder and changing the parser/source and citation format.
 
 ## 4. Data locations and settings
 
-App data folder: `~/ControlCenter/` (resolved via `app.getPath('home')`, never
+App data folder: `~/CentralCommand/` (resolved via `app.getPath('home')`, never
 hardcoded):
 
 ```
-~/ControlCenter/
+~/CentralCommand/
 ├── data/
-│   ├── control-center.sqlite
+│   ├── central-command.sqlite
 │   └── zotero-export.bib        # default target for Better BibTeX auto-export
 ├── notes/
 │   └── readings/
@@ -160,7 +160,7 @@ Rules for note files:
 
 **Settings** (`settings.json`, editable in a minimal Settings screen reachable from
 the top bar via a small gear icon button):
-- Zotero export path (default `~/ControlCenter/data/zotero-export.bib`)
+- Zotero export path (default `~/CentralCommand/data/zotero-export.bib`)
 - Project/repo path (used by the Build button)
 - Nothing else for Phase 1.
 
@@ -174,7 +174,7 @@ Export → Better BibTeX → tick "Keep updated").
 
 ### Top bar
 - Height 64px, surface white, 1px bottom border (soft), horizontal padding 32px.
-- **Left:** three workspace pills — **Life · Research · Consulting**. One active at a
+- **Left:** three workspace pills — **Life · Research · Work**. One active at a
   time. Pill: padding 8px 16px, fully rounded, 14px text. Inactive: secondary text,
   no background. Active: selected-tint background, selected-tint text, weight 600.
   Remember the last active workspace between launches.
@@ -184,9 +184,9 @@ Export → Better BibTeX → tick "Keep updated").
 
 ### Workspaces
 - **Research**: has a real landing page (section 7).
-- **Life** and **Consulting**: a centred empty state — heading "Nothing here yet"
+- **Life** and **Work**: a centred empty state — heading "Nothing here yet"
   (display font, 28px) and a muted line "This is where Life will live." (or
-  Consulting). No further content.
+  Work). No further content.
 
 ### Build button
 Opens a full Claude Code session in the project repo. Phase 1 implementation:
@@ -372,7 +372,7 @@ Also a small `sync_runs` table: `started_at`, `finished_at`, `status`
   - Supports: headings, bold, italic, lists, checkboxes, links, blockquotes, inline
     code, code blocks, tables if the editor supports them cleanly.
   - Empty state placeholder: "Start writing your notes…"
-  - Saves to `~/ControlCenter/notes/readings/<citekey>.md` per section 4; a subtle
+  - Saves to `~/CentralCommand/notes/readings/<citekey>.md` per section 4; a subtle
     "Saved" indicator near the Notes label.
 - This page is the only place in Phase 1 where the user types content.
 
@@ -440,7 +440,7 @@ authoritative.
 - Work in the user's existing GitHub repo. Ask for its path/URL if not obvious.
 - Small, meaningful commits with clear messages; push at the end of each phase.
 - `.gitignore`: `node_modules`, build output, and anything user-specific. User data
-  lives in `~/ControlCenter/`, never in the repo.
+  lives in `~/CentralCommand/`, never in the repo.
 - Create and maintain:
   - `README.md` — what it is, how to install, run, test, and set up the Zotero
     auto-export.
@@ -449,7 +449,7 @@ authoritative.
     delete notes).
   - `docs/ROADMAP.md` — section 13, updated as phases complete.
   - `docs/DECISIONS.md` — one short entry per notable decision.
-- Choose a sensible placeholder app name ("Control Center") that's easy to change
+- Choose a sensible placeholder app name ("Central Command") that's easy to change
   in one place.
 
 ---
@@ -481,7 +481,7 @@ run it and what to check, and wait for their go-ahead.
    *Checkpoint A: app launches with the correct fonts and colours; empty window
    with top bar.*
 2. **Shell** — workspace pills (with persistence), empty states for Life and
-   Consulting, Settings screen, Build button, Ask launcher (expand/collapse,
+   Work, Settings screen, Build button, Ask launcher (expand/collapse,
    persistent state, placeholder replies), module manifest system with planned
    modules.
    *Checkpoint B: user can click around the whole shell.*
@@ -519,6 +519,6 @@ choices that block them:
   count).
 - **World** news tab, **Research Digest** (papers, posts, alerts), **Focus/Writing**
   space.
-- **Life** and **Consulting** workspaces.
+- **Life** and **Work** workspaces.
 - **Books** module (following the Readings pattern).
 - Theme switching / dark mode, packaging and public release.
