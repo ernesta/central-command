@@ -1,3 +1,4 @@
+import { moduleSettingsSections } from '@modules/index'
 import { PathField } from './PathField'
 import { useSettings } from '../state/settings-context'
 import styles from './SettingsPage.module.css'
@@ -26,6 +27,9 @@ export function SettingsPage(): React.JSX.Element {
           onCommit={(repoPath) => void update({ repoPath })}
         />
       </div>
+      {moduleSettingsSections().map(({ id, Section }) => (
+        <Section key={id} />
+      ))}
     </div>
   )
 }
