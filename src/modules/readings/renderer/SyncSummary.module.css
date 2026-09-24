@@ -1,0 +1,69 @@
+.card {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 28px 32px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-panel);
+}
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.title {
+  font-size: var(--text-20);
+  font-weight: 600;
+}
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-14);
+  color: var(--text-secondary);
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: var(--radius-pill);
+  background: var(--border-strong);
+}
+.ok {
+  background: var(--accent);
+}
+.syncing {
+  background: var(--text-muted);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+.error {
+  background: var(--danger);
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+.counts {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-15);
+  font-weight: 500;
+}
+.muted {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+}
+.errorText {
+  margin: 0;
+  color: var(--danger);
+  font-size: var(--text-14);
+}
+.path {
+  font-family: var(--font-mono);
+  font-size: var(--text-12);
+  overflow-wrap: anywhere;
+}
