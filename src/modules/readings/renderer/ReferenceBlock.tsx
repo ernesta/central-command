@@ -28,22 +28,24 @@ export function ReferenceBlock({ reading }: { reading: Reading }): React.JSX.Ele
     <section className={styles.block} aria-label="APA reference">
       <div className={styles.header}>
         <h2 className={styles.label}>APA reference</h2>
-        <span className={styles.status} role="status">
-          {state === 'copied' ? 'Copied' : state === 'failed' ? 'Couldn’t copy' : ''}
-        </span>
-        <Button
-          size="small"
-          icon={
-            state === 'copied' ? (
-              <Check size={14} strokeWidth={1.75} aria-hidden />
-            ) : (
-              <Copy size={14} strokeWidth={1.75} aria-hidden />
-            )
-          }
-          onClick={() => void copy()}
-        >
-          Copy
-        </Button>
+        <div className={styles.actions}>
+          <span className={styles.status} role="status">
+            {state === 'copied' ? 'Copied' : state === 'failed' ? 'Couldn’t copy' : ''}
+          </span>
+          <Button
+            size="small"
+            icon={
+              state === 'copied' ? (
+                <Check size={14} strokeWidth={1.75} aria-hidden />
+              ) : (
+                <Copy size={14} strokeWidth={1.75} aria-hidden />
+              )
+            }
+            onClick={() => void copy()}
+          >
+            Copy
+          </Button>
+        </div>
       </div>
       {/* The HTML is produced by formatApa, which escapes all text; only <i> tags are added. */}
       <p className={styles.text} dangerouslySetInnerHTML={{ __html: reference.html }} />
