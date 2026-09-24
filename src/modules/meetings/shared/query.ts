@@ -31,7 +31,7 @@ export function initialsFor(name: string, people: readonly Person[]): string {
 
 /** A meeting after `today` (YYYY-MM-DD). Meetings with no date are never upcoming. */
 export function isUpcoming(row: Pick<MeetingIndexRow, 'date'>, today: string): boolean {
-  return row.date !== '' && row.date > today
+  return row.date > today // '' (no date) sorts before every date, so it is never upcoming
 }
 
 /** Newest first: by date, then start time (no start time last), then id. Meetings with no date come last. */
