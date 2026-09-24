@@ -8,7 +8,14 @@ const alias = {
 }
 
 export default defineConfig({
-  main: { resolve: { alias } },
+  main: {
+    resolve: { alias },
+    build: {
+      // These are ESM-only, but the main process is built as CommonJS, so Electron cannot
+      // require() them from node_modules. Bundle them into the main build instead.
+      externalizeDeps: { exclude: ['@retorquere/bibtex-parser', 'chokidar'] }
+    }
+  },
   preload: { resolve: { alias } },
   renderer: {
     resolve: { alias: { ...alias, '@renderer': resolve('src/renderer/src') } },
