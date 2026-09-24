@@ -1,0 +1,21 @@
+.pill {
+  display: inline-block;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-14);
+  font-weight: 400;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+.pill:hover:not(.active) {
+  background: var(--hover-tint);
+}
+.active {
+  background: var(--selected-bg);
+  color: var(--selected-text);
+  font-weight: 600;
+}
