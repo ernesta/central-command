@@ -1,0 +1,79 @@
+.page {
+  display: grid;
+  gap: 20px;
+  padding: 36px 64px 48px;
+  align-content: start;
+}
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+}
+.back:hover {
+  color: var(--ink);
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+.title {
+  margin: 0;
+  font-size: var(--text-30);
+  font-weight: 700;
+  line-height: 1.25;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.status {
+  color: var(--text-muted);
+  font-size: var(--text-12);
+}
+.statusError {
+  color: var(--danger);
+}
+.delete {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+.notices {
+  display: grid;
+  gap: 8px;
+}
+.noticeActions {
+  display: flex;
+  gap: 8px;
+}
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 40px;
+  align-items: start;
+}
+.doc {
+  max-width: 780px;
+  min-width: 0;
+}
+/* Headings the topics panel jumps to should not land under the edge of the window. */
+.doc :global(.ProseMirror) :is(h2, h3) {
+  scroll-margin-top: 24px;
+}
+@media (max-width: 900px) {
+  .page {
+    padding-inline: 24px;
+  }
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
