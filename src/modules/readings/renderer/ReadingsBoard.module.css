@@ -17,7 +17,7 @@
   display: flex;
   align-items: baseline;
   gap: 8px;
-  padding: 0 4px 12px;
+  padding: 0 8px 8px;
 }
 .columnTitle {
   margin: 0;
@@ -35,7 +35,9 @@
   gap: 12px;
   flex: 1;
   margin: 0;
-  padding: 0 2px 2px;
+  /* Room for the 2px focus ring plus its 2px offset, which the scroll container would otherwise clip. */
+  padding: 4px;
+  scroll-padding: 4px;
   overflow-y: auto;
   list-style: none;
 }
