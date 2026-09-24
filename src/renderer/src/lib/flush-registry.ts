@@ -10,5 +10,6 @@ export function registerFlushable(flush: Flushable): () => void {
 
 /** Run every registered flush. One failing does not stop the others. */
 export async function flushAll(): Promise<void> {
-  await Promise.allSettled([...flushables].map((flush) => flush()))
+  // `async` turns a synchronous throw into a rejection, so allSettled still sees it.
+  await Promise.allSettled([...flushables].map(async (flush) => flush()))
 }
