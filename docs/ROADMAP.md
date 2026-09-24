@@ -1,6 +1,6 @@
 # Roadmap
 
-## Phase 1 (in progress)
+## Phase 1 (complete; awaiting final review and push)
 
 App shell plus Readings (Zotero one-way sync, notes editor). See
 `central-command-mvp-phase1-brief.md`.
@@ -10,7 +10,7 @@ App shell plus Readings (Zotero one-way sync, notes editor). See
 - [x] Readings data and sync
 - [x] Readings UI and Research landing page
 - [x] Reading detail and Markdown notes editor
-- [ ] Polish pass
+- [x] Polish pass
 
 ## Product vision: Build is a headline feature
 

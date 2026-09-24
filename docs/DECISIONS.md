@@ -254,3 +254,31 @@ Milkdown's default did nothing visible on the first Backspace at the start of a 
 press converted it), which made a bullet on a note's first line look impossible to remove.
 `liftListItemAtStart` takes the item out of the list, or outdents a nested one, in one press. It
 is registered before the default keymaps and only acts at the very start of an item's first block.
+
+## Polish pass (Stage 6): what was checked and what changed
+
+Checked in dev mode and the production build against scratch libraries.
+
+- **Contrast:** every text token passes 4.5:1 on every background it is used on (lowest: muted
+  text on the panel colour, 4.6:1). Input borders (`--border-strong`) are about 1.65:1 against white;
+  that is the brief's specified colour and the fields have visible labels and placeholders, so it stays.
+- **Shadows:** the Readings card had a hover shadow, which section 9 reserves for floating elements.
+  It now tints its background on hover. Its title is a real link whose hit area covers the card,
+  which also gives it a proper focus ring (drawn around the whole card).
+- **Notes editor focus:** the editor has no outline of its own, so the whole editing area gets the
+  accent ring while it has focus.
+- **Failed first sync:** an empty or unparseable export used to show "Your Zotero export has no
+  entries" on the Readings page and "Not connected" on the Research card, with the real error only
+  behind the status dot. Both now say the sync failed, show the message and link to Settings.
+- **Reduced motion:** the rule shortened animation durations, which made the infinite sync pulse
+  strobe. Animations are now also limited to one iteration.
+- **Back to the list:** returning from a reading used to reset the table to the top. The opened
+  citekey is kept in session memory (`list-return.ts`); the table scrolls to that row and focuses it
+  on return. Read in a state initialiser and cleared after a microtask, so StrictMode's double
+  effect run still restores it.
+- **Large library:** a synthetic 4,000-entry export (twice the real library) gave 100 to 280 ms for
+  opening the table, searching, sorting, scrolling and switching views, and 450 ms for searching on the
+  board with 4,000 cards. The board is still not virtualised.
+- **Known, not changed:** the board makes every card a tab stop (about 190 of them); keyboard users
+  can switch to the table, which has arrow-key navigation. The list pages use a 48px gutter and the
+  other pages 64px, both as the brief specifies.

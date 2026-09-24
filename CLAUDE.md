@@ -49,8 +49,9 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
 
 ## Where things stand and where to look
 
-- Phase 1 stages 1 to 5 are done (foundations, shell, Readings sync, Readings UI, detail page with
-  notes editor and APA copy). Stage 6 is the polish pass. `docs/ROADMAP.md` is the checklist.
+- Phase 1 stages 1 to 6 are done (foundations, shell, Readings sync, Readings UI, detail page with
+  notes editor and APA copy, polish pass). What is left is the user's review and the push.
+  `docs/ROADMAP.md` is the checklist; `docs/DECISIONS.md` records what the polish pass changed.
 - `docs/DECISIONS.md` explains why things are the way they are, including bugs found by using the
   app. Read it before changing sync, notes, the editor or the module structure.
 - The brief (`central-command-mvp-phase1-brief.md`) is authoritative for the visual design
