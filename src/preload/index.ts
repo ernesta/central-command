@@ -39,6 +39,19 @@ const api: Api = {
       }
     }
   },
+  lifecycle: {
+    onBeforeClose: (handler) => {
+      const listener = async (): Promise<void> => {
+        try {
+          await handler()
+        } finally {
+          ipcRenderer.send(IPC.appCloseReady)
+        }
+      }
+      ipcRenderer.on(IPC.appBeforeClose, listener)
+      return () => ipcRenderer.removeListener(IPC.appBeforeClose, listener)
+    }
+  },
   build: {
     openSession: () => ipcRenderer.invoke(IPC.buildOpenSession)
   }

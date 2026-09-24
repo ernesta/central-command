@@ -29,6 +29,13 @@ export interface Api {
     pickPath(options: PickPathOptions): Promise<string | null>
   }
   readings: ReadingsApi
+  lifecycle: {
+    /**
+     * Register work to finish before the window closes (e.g. saving notes). The window waits for
+     * the handler, up to a few seconds, then closes. Returns an unsubscribe function.
+     */
+    onBeforeClose(handler: () => Promise<void> | void): () => void
+  }
   build: {
     /** Opens a terminal in the configured Central Command repository path running `claude`. */
     openSession(): Promise<BuildResult>
@@ -40,5 +47,7 @@ export const IPC = {
   settingsGet: 'settings:get',
   settingsUpdate: 'settings:update',
   dialogPickPath: 'dialog:pick-path',
+  appBeforeClose: 'app:before-close',
+  appCloseReady: 'app:close-ready',
   buildOpenSession: 'build:open-session'
 } as const
