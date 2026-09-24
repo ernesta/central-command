@@ -1,4 +1,4 @@
-# Control Center: conventions for Claude Code
+# Central Command: conventions for Claude Code
 
 A local-first Electron + React + TypeScript desktop app. The build brief is
 `control-center-mvp-phase1-brief.md`; when this file and the brief disagree,

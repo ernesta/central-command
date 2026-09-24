@@ -1,4 +1,4 @@
-# Control Center
+# Central Command
 
 A local-first desktop app that brings research, work and personal life into
 one place, with Claude at its centre. Built with Electron, React and TypeScript.
