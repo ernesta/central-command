@@ -9,7 +9,7 @@ App shell plus Readings (Zotero one-way sync, notes editor). See
 - [x] Shell: workspaces, Settings screen, Build button, Ask launcher, module manifests
 - [x] Readings data and sync
 - [x] Readings UI and Research landing page
-- [ ] Reading detail and Markdown notes editor
+- [x] Reading detail and Markdown notes editor
 - [ ] Polish pass
 
 ## Product vision: Build is a headline feature
