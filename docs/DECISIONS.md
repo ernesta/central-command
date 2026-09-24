@@ -36,3 +36,29 @@ schema while sharing one `schema_migrations` table.
 Renamed at the user's request. The workspace id is `work` and the label is
 "Work". The original build brief still says "Consulting"; where they differ, the
 code and docs (this rename) are authoritative.
+
+## Module manifests are split by process
+
+The brief puts `migrations` in the module manifest. Because the main process
+and the renderer are separate bundles, a module has a renderer manifest
+(`src/modules/index.ts`: routes, landing card) and a main registration
+(`src/modules/main-registry.ts`: migrations, IPC handlers). Adding a module
+means adding one entry to each list.
+
+## In-memory routing
+
+The renderer uses `MemoryRouter`: Electron has no address bar, and an in-memory
+history still gives back/forward. The last workspace is persisted in
+`settings.json`, not in the URL.
+
+## Build button is macOS-only for now
+
+It opens Terminal via `osascript` with the path shell-quoted and
+AppleScript-escaped (unit-tested). Other platforms show a clear message; adding
+Windows/Linux launchers later means extending `buildLaunchCommand`.
+
+## Ask state lives above the router
+
+`AskProvider` wraps the router, so the conversation, draft and open state
+survive page changes. The panel talks to an `AskBackend` interface; Phase 1 uses
+a placeholder that replies "Claude isn't connected yet."
