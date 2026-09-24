@@ -5,6 +5,9 @@ import { APP_NAME } from '@shared/app-info'
 import { getAppPaths } from './paths'
 import { SettingsStore } from './settings'
 import { registerSettingsIpc } from './ipc/settings'
+import { openDatabase } from './db/connection'
+import { runMigrations } from './db/migrate'
+import { mainModules } from '@modules/main-registry'
 import { defaultSettings } from '@shared/settings'
 import icon from '../../resources/icon.png?asset'
 
@@ -68,6 +71,19 @@ app.whenReady().then(async () => {
   const settings = new SettingsStore(paths.settings, defaultSettings(paths.defaultBibExport))
   await settings.load()
   registerSettingsIpc(settings)
+
+  const db = openDatabase(paths.database)
+  runMigrations(
+    db,
+    mainModules.flatMap((m) => m.migrations)
+  )
+  const disposers = mainModules
+    .map((m) => m.register({ db, paths, settings }))
+    .filter((d): d is () => void => typeof d === 'function')
+  app.on('will-quit', () => {
+    disposers.forEach((dispose) => dispose())
+    db.close()
+  })
 
   createWindow()
 
