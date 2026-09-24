@@ -394,3 +394,23 @@ Checked in dev mode and the production build against scratch libraries.
 - **Stand-ins until the landing page (stage 6):** a "New meeting" popover in the list header (series and date) and
   the minimal Research card. Replace them when the landing page gets its own New meeting button.
 - List filters are not remembered between visits yet; that is stage 7 (remembered list state).
+
+## Meetings stage 6: the landing page
+
+- **Routes:** `/research/meetings` is the landing page, `/all` the list and `/m/:id` a meeting, so a meeting whose
+  file is called "all" can never collide with the list. Back from a meeting returns to where the user came from
+  (landing or list), and to the landing page when there is no history. A series card opens the list already
+  filtered to that series (`?series=`).
+- **Open TODOs** are computed from the index (`meeting_todos` rows via `openTodos`), per series from its latest
+  meeting, upcoming ones included, so a TODO carried into an upcoming meeting is listed there ("Supervision · Jan 1").
+  The text is shown as plain text; owners are pills after it, and initials not in the people list are outlined,
+  never dropped. Rows are read-only links to the meeting that lists them.
+- **"Mine" needs a person marked as me.** The toggle only appears when the people list has one; there is no screen
+  to set it until People settings (stage 7). Until then it can be set by editing `data/people.json` (`"me": true`).
+- **Series cards** count meetings that have happened and show the last and the next date; every fixed series
+  shows, even with none ("No meetings yet"). Other series found in the files get a card too.
+- **Recent and upcoming** shows up to 3 upcoming (soonest nearest the top of the recent ones) and the 5 latest that have
+  happened. "N topics ready" comes from `topic_count`, a column added by migration `meetings/0002` and refreshed
+  when the index is rebuilt at startup.
+- **Research card** is live: meetings that have happened, the next date and the number of open TODOs. The
+  "Coming soon" tile for Meetings is gone. The New meeting popover now lives on the landing page and the list.
