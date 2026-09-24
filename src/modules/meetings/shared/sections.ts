@@ -12,8 +12,16 @@ export interface BodyLine {
  * that a `## Heading` or `**TODO**` inside a code block is never mistaken for the real thing.
  */
 export function scanLines(body: string): BodyLine[] {
+  return scan(body).lines
+}
+
+/**
+ * `scanLines`, plus the index of the line that opens a code fence which is never closed (Markdown
+ * lets it swallow the rest of the note), or null when every fence is closed.
+ */
+export function scan(body: string): { lines: BodyLine[]; unclosedFenceAt: number | null } {
   const lines: BodyLine[] = []
-  let fence: { char: string; length: number } | null = null
+  let fence: { char: string; length: number; at: number } | null = null
   let start = 0
   for (const raw of body.split('\n')) {
     const text = raw.endsWith('\r') ? raw.slice(0, -1) : raw
@@ -23,13 +31,13 @@ export function scanLines(body: string): BodyLine[] {
       const close = open && open[1][0] === fence.char && open[1].length >= fence.length
       if (close && text.slice(open[0].length).trim() === '') fence = null
     } else if (open) {
-      fence = { char: open[1][0], length: open[1].length }
+      fence = { char: open[1][0], length: open[1].length, at: lines.length }
       inFence = true
     }
     lines.push({ text, start, inFence })
     start += raw.length + 1
   }
-  return lines
+  return { lines, unclosedFenceAt: fence ? fence.at : null }
 }
 
 export interface Heading {
