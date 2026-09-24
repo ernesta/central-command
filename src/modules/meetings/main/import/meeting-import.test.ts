@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { transformBody } from '../../../readings/main/obsidian-import'
 import { parseMeta, splitNote } from '../../shared/front-matter'
 import { parseTodos } from '../../shared/todos'
 import { parseTopics } from '../../shared/topics'
@@ -429,8 +430,12 @@ describe('planMeetingImport: safety', () => {
   })
 
   it('leaves a note out if the conversion changes what is ticked', () => {
+    // A faithful conversion except that it unticks a box: only the ticked-box check can catch this.
     const untick = (body: string): { markdown: string } => ({
-      markdown: body.replace('- [x]', '- [ ]')
+      markdown: transformBody(body, {
+        keepEmptyHeadings: true,
+        keepEmptyBullets: true
+      }).markdown.replace('- [x]', '- [ ]')
     })
     const p = planMeetingImport({ ...input(), transform: untick })
     expect(p.items.some((i) => i.status === 'attention' && i.source.startsWith('2025 11 26'))).toBe(
