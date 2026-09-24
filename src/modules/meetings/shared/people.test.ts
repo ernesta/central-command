@@ -118,6 +118,15 @@ describe('normalisePeople', () => {
     })
     expect(out).toEqual([p('Kathy Rastle', 'KR', true), p('Arnaud Chevalier', 'AC')])
   })
+  it('keeps one entry when the same name appears twice', () => {
+    const out = normalisePeople({
+      people: [
+        { name: 'Kathy Rastle', initials: 'KR' },
+        { name: 'kathy rastle', initials: 'KX' }
+      ]
+    })
+    expect(out).toEqual([p('Kathy Rastle', 'KR')])
+  })
   it('gives an empty list for anything else', () => {
     expect(normalisePeople(null)).toEqual([])
     expect(normalisePeople('x')).toEqual([])
