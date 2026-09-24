@@ -300,3 +300,46 @@ Checked in dev mode and the production build against scratch libraries.
   resets the stop to the first paper, and row 0 is always rendered (virtualiser `rangeExtractor`) so
   it can hold the stop even when the list is scrolled far down; focusing it scrolls to the top.
   Returning from a reading still focuses that reading, once.
+
+## Meetings stages 1 to 3: shared notes machinery, main-process core, pure rules
+
+- **Shared notes machinery** (a pure move, Readings behaviour unchanged): `src/main/notes/` holds
+  the guarded file read/write (`guarded-file.ts`), the excerpt and the folder watcher;
+  `src/renderer/src/notes/` holds the session, the editor component and its plugins;
+  `src/shared/notes.ts` holds the note types. The Readings `NotesStore` keeps only what is
+  Readings-specific (citekey paths and the `has_notes` / excerpt caches). `useNotesSession` takes the
+  notes API as an argument. The change event still calls the note's key `citekey`; renaming it was
+  left out so the refactor touched no test assertions.
+- **Meeting files** are `~/CentralCommand/notes/meetings/<workspace>/YYYY-MM-DD Series.md` (` 2`, ` 3`
+  for repeats). The database is a rebuildable index (`meetings`, `meeting_todos`); rows for files that
+  disappear are removed, because the files are the source of truth.
+- **Front matter is read and edited by our own small code, not a YAML library.** The format is fixed
+  and tiny, and the requirement is that nothing else changes: `splitNote` returns `head` and `body`
+  with `head + body` equal to the file, blank lines after the closing fence belong to `head`, and
+  `updateHead` rewrites only the keys it is given, so unknown keys, comments and their order survive.
+  A YAML library would re-serialise the whole block.
+- **A save is a change, not a whole file**: `{ meta?, body? }` applied to what is on disk, checked
+  against the hash of the whole file the caller last read. The front matter fields and the body
+  therefore cannot overwrite each other. A missing file is an error on save; only `create` makes files,
+  and it links a temp file into place, so it can never replace one.
+- **Delete goes to the macOS Trash** (`shell.trashItem`, injected so tests need no Electron), and the
+  index row is dropped only after the move succeeded. `CLAUDE.md`'s never-delete rule now applies to
+  Readings only.
+- **People** live in `data/people.json`. Initials come from the first and last word of the name (titles
+  ignored), and a clash gets a number (`KR2`); explicit initials that clash are refused. Unknown TODO
+  owners are kept and flagged, never dropped.
+- **TODO rules**: accepted forms are `**TODO(EO)**:`, `**TODO(EO):**`, `TODO (EO):`, several owners,
+  and no owner; code spans and fences are ignored; a ticked checkbox anywhere counts as done. Two TODOs
+  are the same when their text matches after ignoring case, emphasis marks, spacing and a final full
+  stop, and their owners match, except that a TODO with no owner (an old plain checkbox from Obsidian)
+  matches any owner so imports do not double up.
+- **Carry-over only adds.** `insertPreviousTodos` splices text in and never rewrites what is there (a
+  test with 4,000 generated notes checks that every original character stays in order and every
+  existing item keeps its ticked state). It never inserts inside a code fence that is never closed
+  (found by that test: the section was appended inside the fence, so the next sync added it again).
+  A TODO the user deletes from Previous TODOs comes back at the next open, as the plan says.
+- **Search text** for meetings is a 4,000-character plain-text excerpt (Readings uses 300), because
+  meeting notes are long and the plan wants note text searchable.
+- **Known Readings quirk, not fixed here**: Backspace at the start of a bullet on a note's first line
+  does not lift it out of the list in the real app (checked on the pre-refactor build too), although
+  the unit test for `liftListItemAtStart` passes.
