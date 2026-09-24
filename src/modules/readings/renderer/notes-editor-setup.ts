@@ -2,6 +2,7 @@ import { Editor, remarkStringifyOptionsCtx } from '@milkdown/kit/core'
 import { history } from '@milkdown/kit/plugin/history'
 import { commonmark } from '@milkdown/kit/preset/commonmark'
 import { gfm } from '@milkdown/kit/preset/gfm'
+import { listBackspaceKeymap } from './notes-list-keymap'
 import { notesChangeCtx, notesChangePlugin } from './notes-change-plugin'
 import { taskListToggle } from './notes-task-list'
 
@@ -24,17 +25,21 @@ export const NOTES_STRINGIFY_OPTIONS = {
  * the real editor and its tests so they cannot drift apart.
  */
 export function withNotesPlugins(editor: Editor): Editor {
-  return editor
-    .config((ctx) => {
-      ctx.update(remarkStringifyOptionsCtx, (options) => ({
-        ...options,
-        ...NOTES_STRINGIFY_OPTIONS
-      }))
-    })
-    .use(commonmark)
-    .use(gfm)
-    .use(taskListToggle)
-    .use(history)
-    .use(notesChangeCtx)
-    .use(notesChangePlugin)
+  return (
+    editor
+      .config((ctx) => {
+        ctx.update(remarkStringifyOptionsCtx, (options) => ({
+          ...options,
+          ...NOTES_STRINGIFY_OPTIONS
+        }))
+      })
+      // First, so it runs before Milkdown's default Backspace handling.
+      .use(listBackspaceKeymap)
+      .use(commonmark)
+      .use(gfm)
+      .use(taskListToggle)
+      .use(history)
+      .use(notesChangeCtx)
+      .use(notesChangePlugin)
+  )
 }
