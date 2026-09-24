@@ -28,6 +28,10 @@ export function resolvePaths(home: string): AppPaths {
   }
 }
 
+/**
+ * `CENTRAL_COMMAND_HOME` relocates the whole data folder's parent (for tests and
+ * trying the app against a scratch library without touching real data).
+ */
 export function getAppPaths(): AppPaths {
-  return resolvePaths(app.getPath('home'))
+  return resolvePaths(process.env.CENTRAL_COMMAND_HOME || app.getPath('home'))
 }
