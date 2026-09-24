@@ -56,6 +56,14 @@ It opens Terminal via `osascript` with the path shell-quoted and
 AppleScript-escaped (unit-tested). Other platforms show a clear message; adding
 Windows/Linux launchers later means extending `buildLaunchCommand`.
 
+The terminal is a setting (`terminal`: Terminal or Ghostty, Settings screen). Terminal uses
+`osascript` as above. Ghostty is started with `open -na Ghostty --args -e <shell> -lic '<cd path && claude; exec shell -l>'`:
+a login shell so `claude` is on the PATH (a GUI-launched app has a minimal one), an explicit `cd`
+because Ghostty ignored `--working-directory` for `-e` commands when tried, and `exec shell` so the window stays
+open after Claude exits, as it does in Terminal. Adding another terminal means adding it to
+`TERMINALS` (`shared/settings.ts`) and a branch in `buildLaunchCommand`. A failed launch (for example
+the app is not installed) reports the first line of `open`'s error.
+
 ## Ask state lives above the router
 
 `AskProvider` wraps the router, so the conversation, draft and open state
@@ -282,3 +290,13 @@ Checked in dev mode and the production build against scratch libraries.
 - **Known, not changed:** the board makes every card a tab stop (about 190 of them); keyboard users
   can switch to the table, which has arrow-key navigation. The list pages use a 48px gutter and the
   other pages 64px, both as the brief specifies.
+
+## Focus details found by using the app (after the polish pass)
+
+- **Segmented control:** `overflow: hidden` on the rounded group clipped the square corners of
+  the focus ring. The group no longer clips; the first and last segments carry the rounded corners.
+- **Tab stop in the readings table:** the table is a single tab stop on one "active" row. That row
+  was whichever was last visited, so Tab jumped into the middle of the list. Leaving the table now
+  resets the stop to the first paper, and row 0 is always rendered (virtualiser `rangeExtractor`) so
+  it can hold the stop even when the list is scrolled far down; focusing it scrolls to the top.
+  Returning from a reading still focuses that reading, once.
