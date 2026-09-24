@@ -1,6 +1,7 @@
 import type { Database } from 'better-sqlite3'
 import type {
   Author,
+  ReferenceDetails,
   Reading,
   ReadingCounts,
   ReadingStatus,
@@ -20,6 +21,7 @@ interface ReadingRow {
   tags: string
   abstract: string | null
   entry_type: string
+  reference: string | null
   missing_from_source: number
   has_notes: number
   notes_excerpt: string
@@ -39,6 +41,7 @@ export function rowToReading(row: ReadingRow): Reading {
     tags: JSON.parse(row.tags) as string[],
     abstract: row.abstract,
     entryType: row.entry_type,
+    reference: row.reference ? (JSON.parse(row.reference) as ReferenceDetails) : null,
     missingFromSource: row.missing_from_source === 1,
     hasNotes: row.has_notes === 1,
     notesExcerpt: row.notes_excerpt,
@@ -47,7 +50,12 @@ export function rowToReading(row: ReadingRow): Reading {
   }
 }
 
-/** Columns Zotero owns, in a stable serialised form for change detection. */
+/**
+ * Columns Zotero owns that a person would notice changing, in a stable serialised form for change
+ * detection. `reference` (journal, volume, DOI...) is deliberately not part of it: it is stored
+ * whenever it differs, but it does not count as an update or move `updated_at`, so back-filling it
+ * for an existing library does not disturb "Recently updated".
+ */
 function syncedSignature(r: {
   short_citation: string
   full_title: string
@@ -85,7 +93,8 @@ function toColumns(
     status: entry.status,
     tags: JSON.stringify(entry.tags),
     abstract: entry.abstract,
-    entry_type: entry.entryType
+    entry_type: entry.entryType,
+    reference: JSON.stringify(entry.reference)
   }
 }
 
@@ -116,16 +125,19 @@ export function applySync(
   )
   const insert = db.prepare(
     `INSERT INTO readings
-       (citekey, short_citation, full_title, authors, year, status, tags, abstract, entry_type, added_at, updated_at)
+       (citekey, short_citation, full_title, authors, year, status, tags, abstract, entry_type, reference, added_at, updated_at)
      VALUES
-       (@citekey, @short_citation, @full_title, @authors, @year, @status, @tags, @abstract, @entry_type, @now, @now)`
+       (@citekey, @short_citation, @full_title, @authors, @year, @status, @tags, @abstract, @entry_type, @reference, @now, @now)`
   )
   const update = db.prepare(
     `UPDATE readings SET
        short_citation = @short_citation, full_title = @full_title, authors = @authors, year = @year,
        status = @status, tags = @tags, abstract = @abstract, entry_type = @entry_type,
-       missing_from_source = 0, updated_at = @now
+       reference = @reference, missing_from_source = 0, updated_at = @now
      WHERE citekey = @citekey`
+  )
+  const storeReference = db.prepare(
+    'UPDATE readings SET reference = @reference WHERE citekey = @citekey'
   )
   const unflag = db.prepare('UPDATE readings SET missing_from_source = 0 WHERE citekey = @citekey')
   const flag = db.prepare('UPDATE readings SET missing_from_source = 1 WHERE citekey = @citekey')
@@ -142,8 +154,11 @@ export function applySync(
       } else if (syncedSignature(current) !== syncedSignature(columns)) {
         update.run({ ...columns, now })
         counts.updated++
-      } else if (current.missing_from_source === 1) {
-        unflag.run({ citekey: entry.citekey })
+      } else {
+        if (current.reference !== columns.reference) {
+          storeReference.run({ citekey: entry.citekey, reference: columns.reference })
+        }
+        if (current.missing_from_source === 1) unflag.run({ citekey: entry.citekey })
       }
     }
     for (const [citekey, row] of existing) {

@@ -27,6 +27,7 @@ function entry(citekey: string, overrides: Partial<SyncedFields> = {}): SyncedFi
     tags: [],
     abstract: null,
     entryType: 'article',
+    reference: { titleSentence: `Title of ${citekey}` },
     ...overrides
   }
 }
@@ -123,6 +124,59 @@ describe('applySync: updating', () => {
     ).run()
     applySync(db, [entry('a', { fullTitle: 'Changed' })], T2)
     expect(get('a')).toMatchObject({ hasNotes: true, notesExcerpt: 'my notes' })
+  })
+})
+
+describe('applySync: reference details', () => {
+  const journal = {
+    titleSentence: 'A title',
+    container: 'Journal',
+    volume: '3',
+    pages: '1–9',
+    doi: '10.1/x'
+  }
+
+  it('stores the reference on insert and returns it with the reading', () => {
+    applySync(db, [entry('a', { reference: journal })], T1)
+    expect(get('a').reference).toEqual(journal)
+  })
+
+  it('back-fills a missing reference without counting an update or moving updated_at', () => {
+    applySync(db, [entry('a')], T1)
+    db.prepare("UPDATE readings SET reference = NULL WHERE citekey = 'a'").run() // as before the column existed
+    expect(get('a').reference).toBeNull()
+    const counts = applySync(db, [entry('a', { reference: journal })], T2)
+    expect(counts).toMatchObject({ inserted: 0, updated: 0 })
+    expect(get('a')).toMatchObject({ reference: journal, updatedAt: T1 })
+  })
+
+  it('stores a changed reference (say a corrected volume) without counting an update', () => {
+    applySync(db, [entry('a', { reference: journal })], T1)
+    const counts = applySync(db, [entry('a', { reference: { ...journal, volume: '4' } })], T2)
+    expect(counts.updated).toBe(0)
+    expect(get('a')).toMatchObject({ reference: { volume: '4' }, updatedAt: T1 })
+  })
+
+  it('stores the new reference together with other changes, and that does count as an update', () => {
+    applySync(db, [entry('a', { reference: journal })], T1)
+    const counts = applySync(
+      db,
+      [entry('a', { fullTitle: 'Renamed', reference: { ...journal, volume: '9' } })],
+      T2
+    )
+    expect(counts.updated).toBe(1)
+    expect(get('a')).toMatchObject({
+      fullTitle: 'Renamed',
+      reference: { volume: '9' },
+      updatedAt: T2
+    })
+  })
+
+  it('is idempotent with references present', () => {
+    applySync(db, [entry('a', { reference: journal })], T1)
+    const before = db.prepare('SELECT * FROM readings').all()
+    expect(applySync(db, [entry('a', { reference: journal })], T2)).toMatchObject({ updated: 0 })
+    expect(db.prepare('SELECT * FROM readings').all()).toEqual(before)
   })
 })
 
