@@ -3,6 +3,7 @@ import { modules } from '@modules/index'
 import { modulePath } from '@modules/types'
 import { WORKSPACES, type Workspace } from '@shared/settings'
 import { useSettings } from '../state/settings-context'
+import { SettingsPage } from './SettingsPage'
 import { ResearchLanding } from './ResearchLanding'
 import { TopBar } from './TopBar'
 import { WorkspaceEmpty } from './WorkspaceEmpty'
@@ -32,12 +33,13 @@ export function Shell(): React.JSX.Element {
         workspace={workspace}
         onWorkspaceChange={switchWorkspace}
         onBuild={() => undefined}
-        onOpenSettings={() => undefined}
+        onOpenSettings={() => navigate('/settings')}
       />
       <main className={styles.main}>
         <Routes>
           <Route path="/" element={<Navigate to={`/${settings.ui.workspace}`} replace />} />
           <Route path="/research" element={<ResearchLanding />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="/life" element={<WorkspaceEmpty workspace="life" />} />
           <Route path="/work" element={<WorkspaceEmpty workspace="work" />} />
           {modules.flatMap((m) =>
