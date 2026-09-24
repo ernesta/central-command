@@ -340,6 +340,8 @@ Checked in dev mode and the production build against scratch libraries.
   A TODO the user deletes from Previous TODOs comes back at the next open, as the plan says.
 - **Search text** for meetings is a 4,000-character plain-text excerpt (Readings uses 300), because
   meeting notes are long and the plan wants note text searchable.
-- **Known Readings quirk, not fixed here**: Backspace at the start of a bullet on a note's first line
-  does not lift it out of the list in the real app (checked on the pre-refactor build too), although
-  the unit test for `liftListItemAtStart` passes.
+- **Backspace-to-unlist**: the earlier fix (see above) works through the editor's full key handling in a
+  unit test (`handleKeyDown` with a real `KeyboardEvent`). A scripted Playwright run (typing `- x`,
+  moving to the start of the line, pressing Backspace) did not lift the bullet in either dev or the
+  production build, but that could be the script's way of moving the cursor; it is unconfirmed, so
+  check it by hand in the running app.
