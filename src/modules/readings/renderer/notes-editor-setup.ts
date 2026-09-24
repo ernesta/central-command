@@ -3,6 +3,7 @@ import { history } from '@milkdown/kit/plugin/history'
 import { listener } from '@milkdown/kit/plugin/listener'
 import { commonmark } from '@milkdown/kit/preset/commonmark'
 import { gfm } from '@milkdown/kit/preset/gfm'
+import { taskListToggle } from './notes-task-list'
 
 /**
  * How Markdown is written back to the file. Chosen so notes look the way a person
@@ -32,6 +33,7 @@ export function withNotesPlugins(editor: Editor): Editor {
     })
     .use(commonmark)
     .use(gfm)
+    .use(taskListToggle)
     .use(history)
     .use(listener)
 }

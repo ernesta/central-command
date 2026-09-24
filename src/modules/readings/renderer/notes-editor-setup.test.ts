@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
-import { Editor, defaultValueCtx, rootCtx } from '@milkdown/kit/core'
+import { Editor, defaultValueCtx, editorViewCtx, rootCtx } from '@milkdown/kit/core'
 import { getMarkdown } from '@milkdown/kit/utils'
 import { describe, expect, it } from 'vitest'
 import { withNotesPlugins } from './notes-editor-setup'
+import { toggleTask } from './notes-task-list'
 
 /** Load Markdown into the real editor configuration and read it straight back out. */
 async function roundTrip(markdown: string): Promise<string> {
@@ -49,5 +50,47 @@ describe('notes editor Markdown round trip', () => {
   })
   it('escapes bare asterisks and underscores', async () => {
     expect(await roundTrip('Price $5 * 2 and a_b\n')).toBe('Price $5 \\* 2 and a\\_b\n')
+  })
+})
+
+describe('task list checkboxes', () => {
+  async function toggleNth(
+    markdown: string,
+    index: number
+  ): Promise<{ result: boolean; out: string }> {
+    const root = document.createElement('div')
+    document.body.appendChild(root)
+    const editor = await withNotesPlugins(
+      Editor.make().config((ctx) => {
+        ctx.set(rootCtx, root)
+        ctx.set(defaultValueCtx, markdown)
+      })
+    ).create()
+    const positions: number[] = []
+    const view = editor.action((ctx) => ctx.get(editorViewCtx))
+    view.state.doc.descendants((node, pos) => {
+      if (node.type.name === 'list_item') positions.push(pos)
+    })
+    const result = toggleTask(view, positions[index])
+    const out = editor.action(getMarkdown())
+    await editor.destroy()
+    root.remove()
+    return { result, out }
+  }
+
+  it('checks an unchecked item and writes it back as [x]', async () => {
+    expect(await toggleNth('- [ ] todo\n- [x] done\n', 0)).toEqual({
+      result: true,
+      out: '- [x] todo\n- [x] done\n'
+    })
+  })
+  it('unchecks a checked item', async () => {
+    expect((await toggleNth('- [ ] todo\n- [x] done\n', 1)).out).toBe('- [ ] todo\n- [ ] done\n')
+  })
+  it('does nothing for an ordinary list item', async () => {
+    expect(await toggleNth('- plain\n- [ ] task\n', 0)).toEqual({
+      result: false,
+      out: '- plain\n- [ ] task\n'
+    })
   })
 })
