@@ -19,6 +19,33 @@ export const DEFAULT_MEETINGS_QUERY: MeetingsQuery = {
   mode: 'all'
 }
 
+/** Turn whatever was remembered (possibly hand-edited, or from an older version) into a valid query. */
+export function normaliseMeetingsQuery(raw: unknown): MeetingsQuery {
+  const o = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
+  const text = (v: unknown, fallback: string): string =>
+    typeof v === 'string' && v !== '' ? v : fallback
+  return {
+    search: typeof o.search === 'string' ? o.search : '',
+    series: text(o.series, 'all'),
+    attendee: text(o.attendee, 'all'),
+    mode: o.mode === 'in-person' || o.mode === 'online' ? o.mode : 'all'
+  }
+}
+
+/** The remembered query with any series or attendee that no longer exists in the files set back to "all". */
+export function reconcileQuery(
+  query: MeetingsQuery,
+  series: readonly string[],
+  attendees: readonly string[]
+): MeetingsQuery {
+  return {
+    ...query,
+    series: query.series === 'all' || series.includes(query.series) ? query.series : 'all',
+    attendee:
+      query.attendee === 'all' || attendees.includes(query.attendee) ? query.attendee : 'all'
+  }
+}
+
 export const MODE_LABELS: Record<MeetingMode, string> = {
   'in-person': 'In person',
   online: 'Online'

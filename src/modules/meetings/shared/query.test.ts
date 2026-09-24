@@ -5,6 +5,8 @@ import {
   formatTimeRange,
   initialsFor,
   isUpcoming,
+  normaliseMeetingsQuery,
+  reconcileQuery,
   queryMeetings,
   seriesOptions,
   upcomingMeetings,
@@ -182,5 +184,54 @@ describe('helpers', () => {
     expect(formatTimeRange('14:00', null)).toBe('14:00')
     expect(formatTimeRange(null, null)).toBe('—')
     expect(formatTimeRange(null, '15:00')).toBe('—')
+  })
+})
+
+describe('remembered query', () => {
+  it('keeps a valid saved query as it is', () => {
+    const saved = {
+      search: 'ethics',
+      series: 'Supervision',
+      attendee: 'Kathy Rastle',
+      mode: 'online' as const
+    }
+    expect(normaliseMeetingsQuery(saved)).toEqual(saved)
+  })
+  it('falls back to the defaults for anything else', () => {
+    for (const raw of [
+      undefined,
+      null,
+      'x',
+      7,
+      [],
+      {},
+      { search: 5, series: '', attendee: null, mode: 'hybrid' }
+    ]) {
+      expect(normaliseMeetingsQuery(raw)).toEqual(DEFAULT_MEETINGS_QUERY)
+    }
+  })
+  it('sets a series or attendee that is no longer in the files back to "all", and keeps the rest', () => {
+    const saved = {
+      search: 'x',
+      series: 'Book Club',
+      attendee: 'Gone Person',
+      mode: 'online' as const
+    }
+    expect(reconcileQuery(saved, ['Supervision'], ['Kathy Rastle'])).toEqual({
+      search: 'x',
+      series: 'all',
+      attendee: 'all',
+      mode: 'online'
+    })
+    expect(
+      reconcileQuery(
+        { ...saved, series: 'Supervision', attendee: 'Kathy Rastle' },
+        ['Supervision'],
+        ['Kathy Rastle']
+      )
+    ).toMatchObject({
+      series: 'Supervision',
+      attendee: 'Kathy Rastle'
+    })
   })
 })

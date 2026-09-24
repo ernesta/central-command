@@ -1,5 +1,4 @@
 import { ArrowLeft, Download } from 'lucide-react'
-import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
@@ -8,6 +7,7 @@ import { Select } from '@renderer/components/Select'
 import {
   DEFAULT_MEETINGS_QUERY,
   MODE_LABELS,
+  reconcileQuery,
   attendeeNames,
   initialsFor,
   queryMeetings,
@@ -18,6 +18,7 @@ import { MeetingsTable } from './MeetingsTable'
 import { NewMeetingButton } from './NewMeetingButton'
 import { meetingsBase, todayIso } from './meetings-paths'
 import { useMeetingsList } from './useMeetingsList'
+import { useMeetingsView } from './useMeetingsView'
 import styles from './MeetingsPage.module.css'
 
 /**
@@ -26,16 +27,19 @@ import styles from './MeetingsPage.module.css'
  */
 export function MeetingsPage(): React.JSX.Element {
   const { rows, people } = useMeetingsList()
-  // A series card on the landing page opens the list already filtered to that series.
+  // A series card on the landing page opens the list already filtered to that series (for this visit only).
   const [params] = useSearchParams()
-  const [query, setQuery] = useState<MeetingsQuery>(() => ({
-    ...DEFAULT_MEETINGS_QUERY,
-    series: params.get('series') ?? 'all'
-  }))
-  const set = (patch: Partial<MeetingsQuery>): void => setQuery((q) => ({ ...q, ...patch }))
+  const seriesParam = params.get('series')
+  const { query: saved, setQuery } = useMeetingsView(
+    seriesParam ? { series: seriesParam } : undefined
+  )
+  const set = (patch: Partial<MeetingsQuery>): void => setQuery(patch)
 
   const today = todayIso()
   const all = rows ?? []
+  // A remembered series or attendee that no longer exists in the files must not hide everything.
+  const query =
+    rows === null ? saved : reconcileQuery(saved, seriesOptions(all), attendeeNames(all))
   const visible = queryMeetings(all, query, people)
   const filtersActive =
     query.search.trim() !== '' ||

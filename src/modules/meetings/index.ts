@@ -4,6 +4,7 @@ import { MeetingPage } from './renderer/MeetingPage'
 import { MeetingsCard } from './renderer/MeetingsCard'
 import { MeetingsLanding } from './renderer/MeetingsLanding'
 import { MeetingsPage } from './renderer/MeetingsPage'
+import { PeopleSettings } from './renderer/PeopleSettings'
 
 /** Meetings: notes for every meeting, with TODOs carried over from one meeting to the next. */
 export const meetingsModule: LiveModuleManifest = {
@@ -16,5 +17,6 @@ export const meetingsModule: LiveModuleManifest = {
     { path: 'all', element: createElement(MeetingsPage) },
     { path: 'm/:id', element: createElement(MeetingPage) }
   ],
-  landingCard: MeetingsCard
+  landingCard: MeetingsCard,
+  settingsSection: PeopleSettings
 }
