@@ -31,8 +31,23 @@ describe('parseBib on the fixture', () => {
       tags: ['nlp', 'transformers'],
       abstract:
         'The dominant sequence transduction models are based on complex recurrent networks.',
-      entryType: 'article'
+      entryType: 'article',
+      reference: {
+        titleSentence: 'Attention is all you need',
+        container: 'Advances in Neural Information Processing Systems',
+        date: '2017-06-12'
+      }
     })
+  })
+
+  it('keeps proper nouns in the sentence-case title where the export protects them', () => {
+    const [entry] = parseBib(
+      '@book{k, title = {State-Building and Multilingual Education in {{Africa}}}, author = {Albaugh, Ericka}, date = {2014}}'
+    )
+    expect(entry.fullTitle).toBe('State-Building and Multilingual Education in Africa')
+    expect(entry.reference.titleSentence).toBe(
+      'State-building and multilingual education in Africa'
+    )
   })
 
   it('formats two authors and three-plus authors', () => {

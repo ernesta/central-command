@@ -48,6 +48,8 @@ export interface Reading {
   tags: string[]
   abstract: string | null
   entryType: string
+  /** Null until the first sync after this field was introduced. */
+  reference: ReferenceDetails | null
   missingFromSource: boolean
   hasNotes: boolean
   notesExcerpt: string
@@ -66,6 +68,7 @@ export interface SyncedFields {
   tags: string[]
   abstract: string | null
   entryType: string
+  reference: ReferenceDetails
 }
 
 /** What one sync changed. */

@@ -3,6 +3,7 @@ import type { SyncedFields } from '../shared/types'
 import { toCreatorList, toKeywords, toText, toYear } from './bib-values'
 import { formatShortCitation } from './citation'
 import { mapKeywords } from './keywords'
+import { buildReferenceDetails } from './reference-details'
 
 export class BibParseError extends Error {
   constructor(message: string) {
@@ -35,6 +36,9 @@ export function parseBib(text: string): SyncedFields[] {
     throw new BibParseError('The export contains no entries.')
   }
 
+  // A second pass with the parser's default sentence casing: Better BibTeX's {braces} mark words that keep their capital.
+  const sentenceByKey = new Map(parse(text).entries.map((entry) => [entry.key, entry.fields]))
+
   const seen = new Set<string>()
   const readings: SyncedFields[] = []
   for (const entry of result.entries) {
@@ -58,7 +62,8 @@ export function parseBib(text: string): SyncedFields[] {
       status,
       tags,
       abstract: abstract || null,
-      entryType: entry.type
+      entryType: entry.type,
+      reference: buildReferenceDetails(entry.type, fields, sentenceByKey.get(entry.key) ?? fields)
     })
   }
   return readings
