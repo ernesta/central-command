@@ -1,0 +1,26 @@
+.group {
+  display: inline-flex;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  overflow: hidden;
+}
+.segment {
+  padding: 8px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-14);
+  transition: background var(--transition-fast);
+}
+.segment:hover:not(.active) {
+  background: var(--hover-tint);
+}
+.segment:focus-visible {
+  outline-offset: -2px;
+}
+.active {
+  background: var(--selected-bg);
+  color: var(--selected-text);
+  font-weight: 600;
+}
