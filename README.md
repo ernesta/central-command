@@ -55,3 +55,22 @@ The app only ever reads this file. It never writes to Zotero or to the export.
 
 To mark readings, tag them in Zotero with `read` or `to-read`. Every other tag
 appears as a tag in the app.
+
+## Copying an APA reference
+
+Every reading page shows its APA 7 reference with a **Copy** button. It copies both plain text and
+formatted text, so pasting into Word or Google Docs keeps the italics. Titles are put in sentence
+case using Better BibTeX's case protection.
+
+## Importing notes from Obsidian
+
+If you kept reading notes in Obsidian with the Citation plugin:
+
+```sh
+npm run import:obsidian -- --vault ~/path/to/vault            # dry run: shows what would happen
+npm run import:obsidian -- --vault ~/path/to/vault --apply    # writes the new note files
+```
+
+Notes are matched to your Zotero library by title and year, converted (wikilinks become plain
+text, the plugin's header is dropped) and written as new files in `~/CentralCommand/notes/readings/`.
+Your vault is never modified and existing notes are never overwritten.
