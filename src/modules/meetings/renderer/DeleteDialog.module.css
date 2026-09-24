@@ -1,0 +1,37 @@
+.dialog {
+  width: min(460px, calc(100vw - 32px));
+  padding: 20px 24px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-float);
+}
+.dialog::backdrop {
+  background: color-mix(in srgb, var(--ink) 35%, transparent);
+}
+.title {
+  margin: 0 0 8px;
+  font-size: var(--text-20);
+}
+.text {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--text-14);
+  line-height: 1.5;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 4px;
+}
+.danger {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: var(--accent-contrast);
+}
+.danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 88%, black);
+}

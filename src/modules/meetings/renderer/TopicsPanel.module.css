@@ -1,0 +1,89 @@
+.panel {
+  position: sticky;
+  top: 16px;
+  display: grid;
+  gap: 10px;
+  /* 4px of room all round so focus rings on the rows are never clipped by the scroll container. */
+  padding: 16px;
+  max-height: calc(100vh - var(--topbar-height) - 48px);
+  overflow: auto;
+  scroll-padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+}
+.label {
+  margin: 0;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: var(--text-11);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.list {
+  display: grid;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+}
+.row {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  align-items: start;
+  gap: 10px;
+  padding: 4px 0;
+}
+.box {
+  width: 16px;
+  height: 16px;
+  margin: 4px 0 0;
+  accent-color: var(--accent);
+}
+.jump {
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--text-14);
+  line-height: 1.4;
+  text-align: left;
+}
+.jump:hover {
+  color: var(--accent);
+}
+.done {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+.empty,
+.hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+  line-height: 1.5;
+}
+.addButton {
+  justify-self: start;
+}
+.addForm {
+  display: grid;
+  gap: 8px;
+  padding: 4px;
+}
+.addActions {
+  display: flex;
+  gap: 8px;
+}
+.input {
+  padding: 7px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  font-size: var(--text-14);
+}
+.input:focus-visible {
+  outline-offset: 0;
+  border-color: var(--accent);
+}
