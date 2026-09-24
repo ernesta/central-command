@@ -9,6 +9,8 @@ export interface PickPathOptions {
   extensions?: string[]
 }
 
+export type BuildResult = { ok: true } | { ok: false; message: string }
+
 export type SettingsPatch = Partial<Omit<Settings, 'ui'>> & { ui?: Partial<Settings['ui']> }
 
 /**
