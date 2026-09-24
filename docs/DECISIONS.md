@@ -62,3 +62,12 @@ Windows/Linux launchers later means extending `buildLaunchCommand`.
 `AskProvider` wraps the router, so the conversation, draft and open state
 survive page changes. The panel talks to an `AskBackend` interface; Phase 1 uses
 a placeholder that replies "Claude isn't connected yet."
+
+## The app is called Central Command
+
+Renamed from the brief's placeholder "Control Center" at the user's request; a
+later rename is expected. The name lives in `src/shared/app-info.ts`
+(`APP_NAME`), `package.json`, `electron-builder.yml` (productName, appId,
+executable) and `src/renderer/index.html`. The original brief keeps its old
+wording; the code and docs are authoritative. The data folder is still
+`~/ControlCenter/`, because the user's Zotero auto-export already writes there.
