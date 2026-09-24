@@ -34,3 +34,45 @@ export interface SyncedFields {
   abstract: string | null
   entryType: string
 }
+
+/** What one sync changed. */
+export interface SyncCounts {
+  entriesSeen: number
+  inserted: number
+  updated: number
+  flaggedMissing: number
+}
+
+/** A recorded sync attempt (a row of sync_runs). */
+export interface SyncRun extends SyncCounts {
+  startedAt: string
+  finishedAt: string
+  status: 'ok' | 'error'
+  errorMessage: string | null
+}
+
+/**
+ * - not_configured: the export file does not exist (yet); shown as a setup state, not an error
+ * - idle: last sync succeeded
+ * - syncing: a sync is running
+ * - error: the last sync failed; existing data is untouched
+ */
+export type SyncState = 'not_configured' | 'idle' | 'syncing' | 'error'
+
+export interface SyncStatus {
+  state: SyncState
+  /** Most recent recorded attempt, ok or error. */
+  lastRun: SyncRun | null
+  /** When the last successful sync finished; null before any success. */
+  lastSuccessAt: string | null
+  /** Human-readable reason when state is error. */
+  message: string | null
+}
+
+export interface ReadingCounts {
+  total: number
+  read: number
+  toRead: number
+  unset: number
+  missingFromSource: number
+}
