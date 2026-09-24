@@ -3,7 +3,6 @@
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-control);
   background: var(--surface);
-  overflow: hidden;
 }
 .segment {
   padding: 8px 14px;
@@ -15,6 +14,14 @@
 }
 .segment:hover:not(.active) {
   background: var(--hover-tint);
+}
+/* No overflow: hidden on the group: it would clip the focus ring's square corners. The end segments
+   carry the group's rounded corners themselves (1px inside the border), so the ring follows the curve. */
+.segment:first-child {
+  border-radius: calc(var(--radius-control) - 1px) 0 0 calc(var(--radius-control) - 1px);
+}
+.segment:last-child {
+  border-radius: 0 calc(var(--radius-control) - 1px) calc(var(--radius-control) - 1px) 0;
 }
 .segment:focus-visible {
   outline-offset: -2px;
