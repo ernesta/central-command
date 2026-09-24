@@ -43,10 +43,10 @@ describe('buildLaunchCommand', () => {
 })
 
 describe('openBuildSession', () => {
-  it('asks for a project folder when none is set', async () => {
+  it('asks for the repository path when none is set', async () => {
     expect(await openBuildSession('  ')).toEqual({
       ok: false,
-      message: 'Set the project folder in Settings first.'
+      message: 'Set the Central Command repository path in Settings first.'
     })
   })
   it('reports a missing folder', async () => {

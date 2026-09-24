@@ -43,12 +43,12 @@ export async function openBuildSession(
   platform: NodeJS.Platform = process.platform
 ): Promise<BuildResult> {
   if (!repoPath.trim()) {
-    return { ok: false, message: 'Set the project folder in Settings first.' }
+    return { ok: false, message: 'Set the Central Command repository path in Settings first.' }
   }
   try {
     if (!(await stat(repoPath)).isDirectory()) throw new Error('not a directory')
   } catch {
-    return { ok: false, message: `The project folder doesn't exist: ${repoPath}` }
+    return { ok: false, message: `The Central Command repository path doesn't exist: ${repoPath}` }
   }
   const launch = buildLaunchCommand(repoPath, platform)
   if (!launch) {

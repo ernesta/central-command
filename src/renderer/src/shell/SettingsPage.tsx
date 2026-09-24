@@ -18,8 +18,8 @@ export function SettingsPage(): React.JSX.Element {
           onCommit={(zoteroExportPath) => void update({ zoteroExportPath })}
         />
         <PathField
-          label="Project folder"
-          help="The repository the Build button opens a Claude Code session in."
+          label="Central Command repository path"
+          help="The Control Center code repository. The Build button opens a Claude Code session here so you can change the app itself."
           kind="folder"
           placeholder="/path/to/central-command"
           value={settings.repoPath}

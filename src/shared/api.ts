@@ -28,7 +28,7 @@ export interface Api {
     pickPath(options: PickPathOptions): Promise<string | null>
   }
   build: {
-    /** Opens a terminal in the configured project folder running `claude`. */
+    /** Opens a terminal in the configured Central Command repository path running `claude`. */
     openSession(): Promise<BuildResult>
   }
 }
