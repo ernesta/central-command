@@ -27,11 +27,16 @@ export interface Api {
     /** Opens a native picker. Resolves to the chosen path, or null if cancelled. */
     pickPath(options: PickPathOptions): Promise<string | null>
   }
+  build: {
+    /** Opens a terminal in the configured project folder running `claude`. */
+    openSession(): Promise<BuildResult>
+  }
 }
 
 /** Channel names, kept in one place so preload and main cannot drift apart. */
 export const IPC = {
   settingsGet: 'settings:get',
   settingsUpdate: 'settings:update',
-  dialogPickPath: 'dialog:pick-path'
+  dialogPickPath: 'dialog:pick-path',
+  buildOpenSession: 'build:open-session'
 } as const
