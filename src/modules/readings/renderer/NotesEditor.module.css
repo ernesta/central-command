@@ -3,6 +3,12 @@
   min-height: 280px;
   cursor: text;
 }
+/* The editor itself has no outline (the caret is not enough for keyboard users), so ring the whole area. */
+.wrap:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+  border-radius: var(--radius-control);
+}
 .placeholder {
   position: absolute;
   top: 0;
