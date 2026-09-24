@@ -1,0 +1,54 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.dotButton {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+}
+.dotButton:not(:disabled) {
+  cursor: pointer;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--border-strong);
+}
+.ok {
+  background: var(--accent);
+}
+.syncing {
+  background: var(--text-muted);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+.error {
+  background: var(--danger);
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+.message {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  width: 300px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-float);
+  color: var(--danger);
+  font-size: var(--text-13);
+}
