@@ -41,3 +41,21 @@ export interface Person {
   /** The user themselves; at most one. */
   me: boolean
 }
+
+/** What the database index holds about one meeting file. */
+export interface MeetingIndexRow {
+  workspace: MeetingWorkspace
+  id: string
+  series: string
+  date: string
+  start: string | null
+  end: string | null
+  mode: MeetingMode | null
+  attendees: string[]
+  /** Plain text of the Summary section; '' when empty. */
+  summary: string
+  /** Plain text of the whole note, for search. */
+  excerpt: string
+  problems: string[]
+  contentHash: string
+}
