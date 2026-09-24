@@ -21,16 +21,16 @@
 }
 .list {
   display: grid;
-  gap: 10px;
+  grid-template-columns: minmax(160px, 1fr) 90px auto auto;
+  align-items: center;
+  gap: 10px 14px;
   margin: 0;
   padding: 4px;
   list-style: none;
 }
+/* One grid for the whole list, so the columns line up whatever a row holds. */
 .row {
-  display: grid;
-  grid-template-columns: minmax(160px, 1fr) 90px auto auto;
-  align-items: center;
-  gap: 10px 14px;
+  display: contents;
 }
 .head {
   color: var(--text-muted);

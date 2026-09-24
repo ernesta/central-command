@@ -27,11 +27,11 @@ import styles from './MeetingsPage.module.css'
  */
 export function MeetingsPage(): React.JSX.Element {
   const { rows, people } = useMeetingsList()
-  // A series card on the landing page opens the list already filtered to that series (for this visit only).
+  // A series card on the landing page opens the list already filtered to that series (for this visit only, with the other filters cleared so the series is what you see).
   const [params] = useSearchParams()
   const seriesParam = params.get('series')
   const { query: saved, setQuery } = useMeetingsView(
-    seriesParam ? { series: seriesParam } : undefined
+    seriesParam ? { ...DEFAULT_MEETINGS_QUERY, series: seriesParam } : undefined
   )
   const set = (patch: Partial<MeetingsQuery>): void => setQuery(patch)
 

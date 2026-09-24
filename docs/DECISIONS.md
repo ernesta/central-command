@@ -414,3 +414,20 @@ Checked in dev mode and the production build against scratch libraries.
   when the index is rebuilt at startup.
 - **Research card** is live: meetings that have happened, the next date and the number of open TODOs. The
   "Coming soon" tile for Meetings is gone. The New meeting popover now lives on the landing page and the list.
+
+## Meetings stage 7: People settings and remembered list state
+
+- **People** is a Settings section contributed by the Meetings module (`settingsSection`): add (name, optional
+  initials), edit name and initials (saved when the field loses focus or on Enter), one "This is me" (ticking it
+  clears it from everyone else), and remove (two steps). Initials stay unique and errors show on the row. The
+  "me" person turns on the Mine view on the landing page.
+- **Renaming or removing a person changes the list only.** Meeting files record attendees by full name and are
+  never rewritten behind the user's back, so existing meetings keep the old name (it shows as an outlined name
+  chip, and its TODO owners as outlined initials, until the list is changed back). The Settings text says so.
+- **Remembered state uses one shared hook, `useModuleState`** (`settings.ui.moduleState.<module>`, normalised on
+  read, written ~400 ms after the last change and when leaving the page). Readings' `useReadingsView` is now a
+  thin wrapper over it (same behaviour). The meeting list remembers search, series, attendee and type.
+- **A remembered series or attendee that no longer exists is treated as "all"** (`reconcileQuery`), so a stale or
+  hand-edited value can never hide every meeting behind an empty list.
+- **A series card on the landing page filters that visit only, with the other filters cleared**, so what you see is
+  that series; it is saved only if you then change a filter.

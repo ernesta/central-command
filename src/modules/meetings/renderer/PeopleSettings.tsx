@@ -156,6 +156,8 @@ export function PeopleSettings(): React.JSX.Element {
           <li className={`${styles.row} ${styles.head}`} aria-hidden>
             <span>Name</span>
             <span>Initials</span>
+            <span />
+            <span />
           </li>
           {people.map((person, index) => (
             <PersonRow
