@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { durationMinutes, formatDate, formatDuration } from '../shared/time'
 import { MODE_LABELS, formatTimeRange, initialsFor, isUpcoming } from '../shared/query'
@@ -7,7 +8,11 @@ import styles from './MeetingsTable.module.css'
 
 const VISIBLE_ATTENDEES = 3
 
-/** Date, Time, Duration, Series, Type, Summary, Attendees. Clicking anywhere on a row opens the meeting. */
+/**
+ * Date, Time, Duration, Series, Type, Summary, Attendees. Clicking anywhere on a row opens the meeting.
+ * Like the Readings table, the table is one tab stop: arrow keys, Home/End and PageUp/PageDown move between
+ * rows (the whole row is highlighted) and Enter opens the meeting.
+ */
 export function MeetingsTable({
   rows,
   people,
@@ -18,9 +23,46 @@ export function MeetingsTable({
   today: string
 }): React.JSX.Element {
   const navigate = useNavigate()
+  const [active, setActive] = useState(0)
+  const rowEls = useRef<(HTMLTableRowElement | null)[]>([])
+  // Keep the tab stop valid when the list shrinks (search, filters).
+  const activeIndex = Math.min(active, Math.max(rows.length - 1, 0))
+
+  const move = (next: number): void => {
+    const clamped = Math.max(0, Math.min(rows.length - 1, next))
+    setActive(clamped)
+    rowEls.current[clamped]?.focus()
+  }
+  const onKeyDown = (event: React.KeyboardEvent, row: MeetingIndexRow, index: number): void => {
+    const page = 8
+    const keys: Record<string, number> = {
+      ArrowDown: index + 1,
+      ArrowUp: index - 1,
+      PageDown: index + page,
+      PageUp: index - page,
+      Home: 0,
+      End: rows.length - 1
+    }
+    if (event.key in keys) {
+      event.preventDefault()
+      move(keys[event.key])
+    } else if (event.key === 'Enter') {
+      event.preventDefault()
+      void navigate(meetingRoute(row.id))
+    }
+  }
+
   return (
     <div className={styles.wrap}>
-      <table className={styles.table} aria-label="Meetings">
+      <table
+        className={styles.table}
+        aria-label="Meetings"
+        // Tabbing out of the table resets the tab stop to the first row, so coming back does not land mid-list.
+        onBlur={(event) => {
+          const next = event.relatedTarget
+          if (next instanceof Node && !event.currentTarget.contains(next)) setActive(0)
+        }}
+      >
         <thead>
           <tr>
             {['Date', 'Time', 'Duration', 'Series', 'Type', 'Summary', 'Attendees'].map((label) => (
@@ -31,19 +73,26 @@ export function MeetingsTable({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => {
+          {rows.map((row, index) => {
             const duration = durationMinutes(row.start, row.end)
             const shown = row.attendees.slice(0, VISIBLE_ATTENDEES)
             const more = row.attendees.length - shown.length
             return (
               <tr
                 key={`${row.workspace}/${row.id}`}
+                ref={(el) => {
+                  rowEls.current[index] = el
+                }}
+                tabIndex={index === activeIndex ? 0 : -1}
                 className={styles.row}
+                onFocus={() => setActive(index)}
+                onKeyDown={(event) => onKeyDown(event, row, index)}
                 onClick={() => void navigate(meetingRoute(row.id))}
               >
                 <td className={styles.nowrap}>
                   <Link
                     className={styles.link}
+                    tabIndex={-1}
                     to={meetingRoute(row.id)}
                     // The row handles the click; the link is for the keyboard and for assistive technology.
                     onClick={(event) => event.stopPropagation()}
