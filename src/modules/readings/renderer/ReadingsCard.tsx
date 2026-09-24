@@ -32,6 +32,20 @@ export function ReadingsCard(): React.JSX.Element {
             </p>
           )}
         </>
+      ) : status.state === 'error' ? (
+        <>
+          <p className={`${styles.line} ${styles.error}`}>
+            The first sync failed: {status.message ?? 'unknown error'}
+          </p>
+          <Button
+            className={styles.action}
+            onClick={() => {
+              void navigate('/settings')
+            }}
+          >
+            Check sync settings
+          </Button>
+        </>
       ) : (
         <>
           <p className={styles.line}>Not connected to Zotero yet</p>

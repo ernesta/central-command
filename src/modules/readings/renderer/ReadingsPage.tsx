@@ -33,6 +33,9 @@ const VIEW_OPTIONS = [
 
 const readingsBase = modulePath({ workspace: 'research', id: 'readings' })
 
+/** Ends an error message with a full stop so it can be followed by another sentence. */
+const sentence = (text: string): string => (/[.!?]$/.test(text) ? text : `${text}.`)
+
 export function ReadingsPage(): React.JSX.Element {
   const navigate = useNavigate()
   const { prefs, setPrefs } = useReadingsView()
@@ -66,22 +69,30 @@ export function ReadingsPage(): React.JSX.Element {
   if (readings === null || counts === null) {
     content = null
   } else if (counts.total === 0) {
-    content = (
-      <EmptyState
-        heading="No readings yet"
-        message={
-          status?.state === 'not_configured'
-            ? 'Connect Zotero to see your library here.'
-            : 'Your Zotero export has no entries.'
-        }
-      >
-        {status?.state === 'not_configured' && (
-          <Button variant="primary" onClick={() => navigate('/settings')}>
-            Set up Zotero sync
-          </Button>
-        )}
-      </EmptyState>
-    )
+    content =
+      status?.state === 'error' ? (
+        <EmptyState
+          heading="The sync failed"
+          message={`${sentence(status.message ?? 'Unknown error')} Nothing was imported and nothing was changed.`}
+        >
+          <Button onClick={() => navigate('/settings')}>Check sync settings</Button>
+        </EmptyState>
+      ) : (
+        <EmptyState
+          heading="No readings yet"
+          message={
+            status?.state === 'not_configured'
+              ? 'Connect Zotero to see your library here.'
+              : 'Your Zotero export has no entries.'
+          }
+        >
+          {status?.state === 'not_configured' && (
+            <Button variant="primary" onClick={() => navigate('/settings')}>
+              Set up Zotero sync
+            </Button>
+          )}
+        </EmptyState>
+      )
   } else if (readings.length === 0) {
     content = (
       <EmptyState heading="No matching readings" message="Try a different search or filter.">
