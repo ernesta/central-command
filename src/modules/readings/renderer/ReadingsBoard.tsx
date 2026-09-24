@@ -13,18 +13,15 @@ interface ReadingsBoardProps {
   onOpen: (reading: Reading) => void
 }
 
-/** Readings grouped by status. Read-only: status is owned by Zotero, so there is no drag and drop. */
+/** Readings grouped by status; all three columns are always shown, with counts. Read-only: status is owned by Zotero, so there is no drag and drop. */
 export function ReadingsBoard({ readings, onOpen }: ReadingsBoardProps): React.JSX.Element {
   const grouped = COLUMNS.map((column) => ({
     ...column,
     items: readings.filter((r) => r.status === column.status)
   }))
-  // Unset only appears when something is unset; To Read and Read always do.
-  const visible = grouped.filter((g) => g.status !== 'unset' || g.items.length > 0)
-
   return (
     <div className={styles.board}>
-      {visible.map(({ status, title, items }) => (
+      {grouped.map(({ status, title, items }) => (
         <section key={status} className={styles.column} aria-label={title}>
           <header className={styles.columnHeader}>
             <h2 className={styles.columnTitle}>{title}</h2>
