@@ -6,7 +6,7 @@ Everything lives on your machine in open formats (SQLite and Markdown); nothing
 is sent anywhere.
 
 Phase 1 covers the app shell and **Readings**, synced one-way from Zotero, with a
-Markdown notes editor. See `control-center-mvp-phase1-brief.md` for the full
+Markdown notes editor. See `central-command-mvp-phase1-brief.md` for the full
 brief and `docs/ROADMAP.md` for what comes next.
 
 ## Requirements

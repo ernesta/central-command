@@ -3,7 +3,7 @@
 ## Phase 1 (in progress)
 
 App shell plus Readings (Zotero one-way sync, notes editor). See
-`control-center-mvp-phase1-brief.md`.
+`central-command-mvp-phase1-brief.md`.
 
 - [x] Foundations: scaffold, secure IPC, SQLite migrations, settings, fonts, tokens, base components, docs
 - [x] Shell: workspaces, Settings screen, Build button, Ask launcher, module manifests
