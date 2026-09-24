@@ -1,0 +1,21 @@
+.pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-12);
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.read {
+  background: var(--selected-bg);
+  color: var(--selected-text);
+}
+.toRead {
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+}
+.unset {
+  color: var(--text-muted);
+  font-weight: 400;
+}
