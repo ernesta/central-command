@@ -371,6 +371,13 @@ describe('Previous TODOs carry-over', () => {
     expect(disk(m.ref.id)).toBe(before)
   })
 
+  it('syncPreviousTodos reports a conflict for a stale hash even when there is nothing to add', async () => {
+    const m = await store.create({ ...SUP, date: '2026-09-24' })
+    expect(await store.syncPreviousTodos(m.ref, hashContent('stale'))).toMatchObject({
+      status: 'conflict'
+    })
+  })
+
   it('syncPreviousTodos does nothing for the first meeting of a series', async () => {
     const m = await store.create({ ...SUP, date: '2026-09-24' })
     expect(await store.syncPreviousTodos(m.ref, m.note.hash)).toMatchObject({

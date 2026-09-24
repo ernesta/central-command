@@ -190,7 +190,6 @@ export class MeetingsStore {
     })
     if (previous === null) return { status: 'saved', hash: file.note.hash, added: 0 }
     const { body, added } = carryOver(previous, file.body)
-    if (added.length === 0) return { status: 'saved', hash: file.note.hash, added: 0 }
     const result = await this.save(ref, { body }, baseHash)
     return result.status === 'saved'
       ? { status: 'saved', hash: result.hash, added: added.length }
