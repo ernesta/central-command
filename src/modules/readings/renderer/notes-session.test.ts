@@ -375,6 +375,25 @@ describe('lifecycle', () => {
     })
   })
 
+  it('survives React StrictMode: start, dispose and start again without waiting in between', async () => {
+    disk.content = 'my note'
+    disk.exists = true
+    session = new NotesSession('k', disk)
+    // StrictMode runs effect, cleanup, effect back to back; none of them is awaited.
+    const first = session.start()
+    const disposing = session.dispose()
+    const second = session.start()
+    await Promise.all([first, disposing, second])
+    expect(session.getSnapshot()).toMatchObject({ status: 'ready', initial: 'my note' })
+    expect(disk.listenerCount()).toBe(1)
+    disk.externalEdit('changed later')
+    await settle()
+    expect(session.getSnapshot()).toMatchObject({
+      initial: 'changed later',
+      reloadedFromDisk: true
+    })
+  })
+
   it('does nothing until started', async () => {
     session = new NotesSession('k', disk)
     expect(disk.listenerCount()).toBe(0)

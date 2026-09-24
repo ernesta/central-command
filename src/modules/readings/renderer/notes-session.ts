@@ -163,13 +163,18 @@ export class NotesSession {
     })
   }
 
-  /** Stop listening and save anything pending. Safe to call more than once; `start()` can revive it. */
+  /**
+   * Stop listening and save anything pending. Safe to call more than once; `start()` can revive it.
+   * The state change is synchronous and only the final save is awaited: React StrictMode runs
+   * start, dispose, start back to back without waiting, and a late-finishing dispose must not
+   * undo the second start.
+   */
   async dispose(): Promise<void> {
     if (this.disposed) return
-    await this.flush()
     this.disposed = true
     this.unsubscribe?.()
     this.unsubscribe = null
+    await this.flush()
   }
 
   private async saveOnce(): Promise<void> {
