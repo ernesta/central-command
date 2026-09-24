@@ -5,6 +5,9 @@ const api: Api = {
   settings: {
     get: () => ipcRenderer.invoke(IPC.settingsGet),
     update: (patch) => ipcRenderer.invoke(IPC.settingsUpdate, patch)
+  },
+  dialog: {
+    pickPath: (options) => ipcRenderer.invoke(IPC.dialogPickPath, options)
   }
 }
 
