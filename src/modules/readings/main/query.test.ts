@@ -15,6 +15,7 @@ function reading(overrides: Partial<Reading> & { citekey: string }): Reading {
     tags: [],
     abstract: null,
     entryType: 'article',
+    reference: null,
     missingFromSource: false,
     hasNotes: false,
     notesExcerpt: '',

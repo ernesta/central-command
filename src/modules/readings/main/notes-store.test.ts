@@ -27,7 +27,8 @@ const entry = (citekey: string): SyncedFields => ({
   status: 'unset',
   tags: [],
   abstract: null,
-  entryType: 'article'
+  entryType: 'article',
+  reference: { titleSentence: `Title ${citekey}` }
 })
 
 let dir: string

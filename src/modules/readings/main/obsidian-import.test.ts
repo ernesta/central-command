@@ -11,7 +11,8 @@ const reading = (citekey: string, fullTitle: string, year: number | null): Synce
   status: 'unset',
   tags: [],
   abstract: null,
-  entryType: 'article'
+  entryType: 'article',
+  reference: { titleSentence: fullTitle }
 })
 
 /** A note as Obsidian's Citation plugin creates it. */
