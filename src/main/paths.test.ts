@@ -5,12 +5,12 @@ vi.mock('electron', () => ({ app: { getPath: () => '/unused' } }))
 import { resolvePaths } from './paths'
 
 describe('resolvePaths', () => {
-  it('places everything under <home>/ControlCenter', () => {
+  it('places everything under <home>/CentralCommand', () => {
     const p = resolvePaths('/home/someone')
-    expect(p.root).toBe('/home/someone/ControlCenter')
-    expect(p.database).toBe('/home/someone/ControlCenter/data/control-center.sqlite')
-    expect(p.defaultBibExport).toBe('/home/someone/ControlCenter/data/zotero-export.bib')
-    expect(p.readingsNotes).toBe('/home/someone/ControlCenter/notes/readings')
-    expect(p.settings).toBe('/home/someone/ControlCenter/settings.json')
+    expect(p.root).toBe('/home/someone/CentralCommand')
+    expect(p.database).toBe('/home/someone/CentralCommand/data/central-command.sqlite')
+    expect(p.defaultBibExport).toBe('/home/someone/CentralCommand/data/zotero-export.bib')
+    expect(p.readingsNotes).toBe('/home/someone/CentralCommand/notes/readings')
+    expect(p.settings).toBe('/home/someone/CentralCommand/settings.json')
   })
 })

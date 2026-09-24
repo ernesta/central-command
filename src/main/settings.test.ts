@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { defaultSettings } from '@shared/settings'
 import { SettingsStore } from './settings'
 
-const defaults = defaultSettings('/home/x/ControlCenter/data/zotero-export.bib')
+const defaults = defaultSettings('/home/x/CentralCommand/data/zotero-export.bib')
 let dir: string
 let file: string
 beforeEach(async () => {

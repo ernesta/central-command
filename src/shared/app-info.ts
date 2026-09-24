@@ -2,4 +2,4 @@
 export const APP_NAME = 'Central Command'
 
 /** Folder created in the user's home directory to hold all app data. */
-export const DATA_DIR_NAME = 'ControlCenter'
+export const DATA_DIR_NAME = 'CentralCommand'

@@ -20,7 +20,7 @@ export function resolvePaths(home: string): AppPaths {
   return {
     root,
     data,
-    database: join(data, 'control-center.sqlite'),
+    database: join(data, 'central-command.sqlite'),
     defaultBibExport: join(data, 'zotero-export.bib'),
     notes,
     readingsNotes: join(notes, 'readings'),
