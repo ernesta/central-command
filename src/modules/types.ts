@@ -27,7 +27,9 @@ export interface LiveModuleManifest extends BaseManifest {
   status: 'live'
   routes: ModuleRoute[]
   /** Shown on the workspace landing page. Receives no props; fetches its own data. */
-  landingCard: ComponentType
+  landingCard?: ComponentType
+  /** Rendered on the Settings page, so a module can own its own settings and status. */
+  settingsSection?: ComponentType
 }
 
 export type ModuleManifest = PlannedModuleManifest | LiveModuleManifest

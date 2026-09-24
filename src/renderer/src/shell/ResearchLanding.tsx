@@ -2,7 +2,7 @@ import { liveModules, plannedModulesFor } from '@modules/index'
 import styles from './ResearchLanding.module.css'
 
 export function ResearchLanding(): React.JSX.Element {
-  const live = liveModules('research')
+  const live = liveModules('research').filter((m) => m.landingCard)
   const planned = plannedModulesFor('research')
 
   return (
@@ -10,9 +10,7 @@ export function ResearchLanding(): React.JSX.Element {
       <h1 className={styles.heading}>Research</h1>
       {live.length > 0 && (
         <div className={styles.live}>
-          {live.map(({ id, landingCard: Card }) => (
-            <Card key={id} />
-          ))}
+          {live.map(({ id, landingCard: Card }) => (Card ? <Card key={id} /> : null))}
         </div>
       )}
       {planned.length > 0 && (
