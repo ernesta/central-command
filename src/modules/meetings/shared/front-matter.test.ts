@@ -195,6 +195,14 @@ describe('updateHead', () => {
     )
   })
 
+  it('keeps a comment line that sits under a replaced key', () => {
+    const head =
+      '---\nseries: Other\ndate: 2026-01-02\n# who came\nattendees: [A]\n# end of people\nmode: online\n---\n'
+    expect(updateHead(head, { attendees: ['B'] })).toBe(
+      '---\nseries: Other\ndate: 2026-01-02\n# who came\nattendees: [B]\n# end of people\nmode: online\n---\n'
+    )
+  })
+
   it('removes keys set to null or, for discussed, emptied', () => {
     const out = updateHead(HEAD, { start: null, end: null, mode: null, discussed: [] })
     expect(out).not.toMatch(/^(start|end|mode|discussed):/m)
