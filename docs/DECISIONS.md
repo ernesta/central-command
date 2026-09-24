@@ -345,3 +345,32 @@ Checked in dev mode and the production build against scratch libraries.
   moving to the start of the line, pressing Backspace) did not lift the bullet in either dev or the
   production build, but that could be the script's way of moving the cursor; it is unconfirmed, so
   check it by hand in the running app.
+
+## Meetings stage 4: the meeting page
+
+- **One session per open meeting** (`MeetingSession`, framework-free, tested with a fake disk) owns the
+  fields and the note together. Edits go out as one guarded save of only what changed (`{ meta?, body? }`),
+  against the hash of the whole file, so a field edit can never overwrite the note or the reverse. The
+  editor is recreated only when the note text itself changed on disk, so a field changed by another tool
+  never disturbs the cursor. An outside change with unsaved edits pauses saving and asks (keep mine /
+  use the file's version), as in Readings.
+- **Carry-over runs in the main process** (`syncPreviousTodos`) at create and at open, using the hash the
+  page just read, so two page loads racing (React StrictMode) cannot add an item twice.
+- **The TODO helper is a Milkdown plugin plus a small menu controller.** `/todo` (at the start of a line or
+  after a space) or Cmd/Ctrl+Shift+T opens the owner menu; the choice inserts a bold `TODO(XX)` then `: `,
+  which is what the parser reads. The menu never takes focus. Owners: attendees first, then everyone else.
+- **Topics**: ticking one writes `discussed` in the front matter; "Add topic" appends `### title` to the end of
+  the Notes section (insert-only, tested on generated notes) and recreates the editor, so undo history is
+  lost at that moment. Jumping finds the heading in the editor by its text.
+- **Changing the date or series does not rename the file.** The file name is only chosen at creation; the front
+  matter is what the app reads (the file name date is only a fallback). Renaming can be added if wanted.
+- **Attendees** can be added from the people list or by typing a new name (`people.add`), because the People
+  settings screen is a later stage. A name in the file that is not in the list shows as an outlined name chip.
+- **Stand-ins for later stages**: a plain index page (create a meeting, links to existing ones) and a minimal
+  Research card, so the page can be reached. The list and the landing page replace them; `meetings.list` is
+  already there for them.
+- Scripted checks (Playwright, scratch library, dev and production): typing with real keystrokes, the `/todo`
+  menu, fields, attendees, topics, an outside edit both clean and mid-typing, quitting straight after typing,
+  delete with confirmation. Two things to know about scripting the editor: on macOS `Home`/`End` scroll the page
+  instead of moving the caret (use Cmd+Left/Right), and a keystroke sent within a few milliseconds of a click
+  can act on the old selection (wait a moment after clicking).

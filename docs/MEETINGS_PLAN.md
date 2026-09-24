@@ -1,6 +1,6 @@
 # Meetings module: plan
 
-Status: **plan final and approved; stages 1 to 3 done** (see DECISIONS.md), waiting for the user's go-ahead for stage 4. The user says "go" per step (see the prompt they keep for it). This file is
+Status: **plan final and approved; stages 1 to 4 done** (see DECISIONS.md), waiting for the user's go-ahead for stage 5. The user says "go" per step (see the prompt they keep for it). This file is
 the source of truth after a context clear; read it together with `CLAUDE.md`, `docs/DECISIONS.md`
 and the mockup (`docs/design/meetings-mockup.html`, also published as a private artifact at
 https://claude.ai/artifact/4DWJurKEFDHsEKHTs44Fug). The mockup is the visual reference; this
