@@ -8,7 +8,7 @@ import styles from './TopBar.module.css'
 const LABELS: Record<Workspace, string> = {
   life: 'Life',
   research: 'Research',
-  consulting: 'Consulting'
+  work: 'Work'
 }
 
 interface TopBarProps {

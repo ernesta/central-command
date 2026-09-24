@@ -1,4 +1,4 @@
-export type Workspace = 'life' | 'research' | 'consulting'
+export type Workspace = 'life' | 'research' | 'work'
 
 export interface Settings {
   /** Path to the Better BibTeX auto-export file. */
@@ -11,7 +11,7 @@ export interface Settings {
   }
 }
 
-export const WORKSPACES: readonly Workspace[] = ['life', 'research', 'consulting']
+export const WORKSPACES: readonly Workspace[] = ['life', 'research', 'work']
 
 export function defaultSettings(defaultZoteroExportPath: string): Settings {
   return {

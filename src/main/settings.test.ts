@@ -21,10 +21,10 @@ describe('SettingsStore', () => {
 
   it('persists updates and reloads them', async () => {
     const store = new SettingsStore(file, defaults)
-    await store.update({ repoPath: '/work/repo', ui: { workspace: 'consulting' } })
+    await store.update({ repoPath: '/work/repo', ui: { workspace: 'work' } })
     const reloaded = await new SettingsStore(file, defaults).load()
     expect(reloaded.repoPath).toBe('/work/repo')
-    expect(reloaded.ui.workspace).toBe('consulting')
+    expect(reloaded.ui.workspace).toBe('work')
     expect(reloaded.zoteroExportPath).toBe(defaults.zoteroExportPath)
   })
 
