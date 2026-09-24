@@ -9,7 +9,8 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 16px;
-  padding: 40px 48px 0;
+  /* Bottom padding keeps focus rings on the controls clear of the content area below. */
+  padding: 40px 48px 8px;
 }
 .heading {
   font-size: var(--text-28);
