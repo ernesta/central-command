@@ -1,5 +1,5 @@
 import { readFile, rename } from 'fs/promises'
-import { WORKSPACES, type Settings } from '@shared/settings'
+import { TERMINALS, WORKSPACES, type Settings } from '@shared/settings'
 import { writeFileAtomic } from './atomic-write'
 
 /**
@@ -20,6 +20,7 @@ export function normaliseSettings(raw: unknown, defaults: Settings): Settings {
         ? obj.zoteroExportPath
         : defaults.zoteroExportPath,
     repoPath: typeof obj.repoPath === 'string' ? obj.repoPath : defaults.repoPath,
+    terminal: TERMINALS.find((t) => t.id === obj.terminal)?.id ?? defaults.terminal,
     ui: { workspace, moduleState }
   }
 }

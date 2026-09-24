@@ -28,6 +28,16 @@ describe('SettingsStore', () => {
     expect(reloaded.zoteroExportPath).toBe(defaults.zoteroExportPath)
   })
 
+  it('keeps a valid terminal choice and falls back to the default for unknown or missing ones', async () => {
+    const store = new SettingsStore(file, defaults)
+    await store.update({ terminal: 'ghostty' })
+    expect((await new SettingsStore(file, defaults).load()).terminal).toBe('ghostty')
+    await writeFile(file, JSON.stringify({ terminal: 'hyper' }))
+    expect((await new SettingsStore(file, defaults).load()).terminal).toBe(defaults.terminal)
+    await writeFile(file, JSON.stringify({ repoPath: '/r' }))
+    expect((await new SettingsStore(file, defaults).load()).terminal).toBe(defaults.terminal)
+  })
+
   it('ignores wrongly typed values and keeps defaults for them', async () => {
     await writeFile(
       file,

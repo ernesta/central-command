@@ -36,6 +36,16 @@ describe('buildLaunchCommand', () => {
     expect(script).toContain('\\"; do shell script \\"x')
     expect(script.match(/(?<!\\)"/g)).toHaveLength(4)
   })
+  it('opens Ghostty through open(1) with a login shell that cds and runs claude', () => {
+    const cmd = buildLaunchCommand('/Users/a/repo', 'darwin', 'ghostty', '/bin/zsh')!
+    expect(cmd.command).toBe('open')
+    expect(cmd.args.slice(0, 6)).toEqual(['-na', 'Ghostty', '--args', '-e', '/bin/zsh', '-lic'])
+    expect(cmd.args[6]).toBe(`cd '/Users/a/repo' && claude; exec '/bin/zsh' -l`)
+  })
+  it('keeps a hostile path inert in the Ghostty shell line', () => {
+    const cmd = buildLaunchCommand(`/a'; touch /tmp/pwned; '`, 'darwin', 'ghostty')!
+    expect(cmd.args[6]).toContain(`cd '/a'\\''; touch /tmp/pwned; '\\''' && claude`)
+  })
   it('is not supported off macOS', () => {
     expect(buildLaunchCommand('/a', 'linux')).toBeNull()
     expect(buildLaunchCommand('C:\\a', 'win32')).toBeNull()
@@ -50,11 +60,11 @@ describe('openBuildSession', () => {
     })
   })
   it('reports a missing folder', async () => {
-    const result = await openBuildSession('/definitely/not/here', 'darwin')
+    const result = await openBuildSession('/definitely/not/here', 'terminal', 'darwin')
     expect(result.ok).toBe(false)
   })
   it('explains unsupported platforms', async () => {
-    const result = await openBuildSession('/tmp', 'linux')
+    const result = await openBuildSession('/tmp', 'terminal', 'linux')
     expect(result).toMatchObject({ ok: false })
   })
 })
