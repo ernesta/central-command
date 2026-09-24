@@ -7,7 +7,7 @@ App shell plus Readings (Zotero one-way sync, notes editor). See
 
 - [x] Foundations: scaffold, secure IPC, SQLite migrations, settings, fonts, tokens, base components, docs
 - [x] Shell: workspaces, Settings screen, Build button, Ask launcher, module manifests
-- [ ] Readings data and sync
+- [x] Readings data and sync
 - [ ] Readings UI and Research landing page
 - [ ] Reading detail and Markdown notes editor
 - [ ] Polish pass
