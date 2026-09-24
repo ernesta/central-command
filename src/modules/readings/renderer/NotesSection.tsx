@@ -1,8 +1,8 @@
 import { Button } from '@renderer/components/Button'
 import { Notice } from '@renderer/components/Notice'
-import type { SaveState } from './notes-session'
-import { NotesEditor } from './NotesEditor'
-import { useNotesSession } from './useNotesSession'
+import type { SaveState } from '@renderer/notes/notes-session'
+import { NotesEditor } from '@renderer/notes/NotesEditor'
+import { useNotesSession } from '@renderer/notes/useNotesSession'
 import styles from './NotesSection.module.css'
 
 function statusText(save: SaveState, hasContent: boolean, reloaded: boolean): string {
@@ -24,7 +24,7 @@ function statusText(save: SaveState, hasContent: boolean, reloaded: boolean): st
  * calm handling of the file changing underneath. Render with `key={citekey}`.
  */
 export function NotesSection({ citekey }: { citekey: string }): React.JSX.Element {
-  const { session, snapshot } = useNotesSession(citekey)
+  const { session, snapshot } = useNotesSession(citekey, window.api.readings.notes)
   const { save, error, conflict, hasContent, reloadedFromDisk } = snapshot
 
   return (

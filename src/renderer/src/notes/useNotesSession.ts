@@ -1,17 +1,20 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { registerFlushable } from '@renderer/lib/flush-registry'
-import { NotesSession, type NotesSnapshot } from './notes-session'
+import { NotesSession, type NotesApi, type NotesSnapshot } from './notes-session'
 
 /**
- * Opens a NotesSession for one reading's notes. Render the component that uses this with
- * `key={citekey}` so each reading gets its own session; it is disposed (saving anything
- * pending) when the component unmounts.
+ * Opens a NotesSession for one note, identified by `citekey` (the note's key in whichever module
+ * owns `api`). Render the component that uses this with `key={citekey}` so each note gets its own
+ * session; it is disposed (saving anything pending) when the component unmounts.
  */
-export function useNotesSession(citekey: string): {
+export function useNotesSession(
+  citekey: string,
+  api: NotesApi
+): {
   session: NotesSession
   snapshot: NotesSnapshot
 } {
-  const [session] = useState(() => new NotesSession(citekey, window.api.readings.notes))
+  const [session] = useState(() => new NotesSession(citekey, api))
 
   useEffect(() => {
     void session.start()
