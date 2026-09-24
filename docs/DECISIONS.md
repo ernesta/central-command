@@ -107,3 +107,34 @@ therefore show an error rather than an empty list; that trade-off is deliberate.
 `LiveModuleManifest.settingsSection` lets a module render its own block on the
 Settings page (Readings uses it for the Zotero sync summary), so the shell never
 imports module code directly. A module's `landingCard` is optional.
+
+## Readings filtering, search and sorting happen in plain code, not SQL
+
+`queryReadings` (`src/modules/readings/main/query.ts`) is a pure function over the
+readings loaded from SQLite. SQLite's `LIKE` and `ORDER BY` are only case- and
+accent-insensitive for ASCII, so "muller" would not find "Müller" and "Ålund"
+would sort after "Zed". JavaScript gives accent-folded search (`fold`) and
+locale-aware sorting (`Intl.Collator`), and it is trivially unit-testable. At
+~2,000 readings a query takes a few milliseconds (measured in the real app:
+search settles in ~33 ms). Revisit only if libraries reach tens of thousands.
+
+## Tag filter semantics
+
+Selected tags narrow the list: a reading must have every selected tag. Tags that
+differ only in case are treated as the same tag.
+
+## Remembered UI state lives in `settings.ui.moduleState`
+
+A generic, per-module bucket, so core settings know nothing about Readings.
+Each module validates its own slice on read (`normaliseViewPrefs`), and writes are
+debounced (~400 ms) so typing in search does not write a file per keystroke.
+
+## `CENTRAL_COMMAND_HOME` relocates the data folder
+
+An environment variable read in `getAppPaths()`. It lets tests and experiments run
+the real app against a scratch library without touching `~/CentralCommand/`.
+
+## Board renders every card
+
+The table is virtualised; the board is not. With 2,000 readings it rendered in
+~140 ms, which is fine. Virtualise the board columns if that stops being true.
