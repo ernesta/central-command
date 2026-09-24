@@ -1,0 +1,22 @@
+.field {
+  display: grid;
+  gap: 6px;
+}
+.label {
+  font-size: var(--text-14);
+  font-weight: 600;
+}
+.help {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+}
+.row {
+  display: flex;
+  gap: 8px;
+}
+.input {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: var(--text-13);
+}
