@@ -22,6 +22,7 @@ export function normaliseSettings(raw: unknown, defaults: Settings): Settings {
 
 export class SettingsStore {
   private current: Settings
+  private readonly listeners = new Set<(settings: Settings, previous: Settings) => void>()
 
   constructor(
     private readonly file: string,
@@ -32,6 +33,12 @@ export class SettingsStore {
 
   get(): Settings {
     return this.current
+  }
+
+  /** Called after every successful update with the new and previous settings. */
+  onChange(listener: (settings: Settings, previous: Settings) => void): () => void {
+    this.listeners.add(listener)
+    return () => this.listeners.delete(listener)
   }
 
   /** Load from disk. A missing file yields defaults; a corrupt one is set aside, never overwritten. */
@@ -55,11 +62,13 @@ export class SettingsStore {
   async update(
     patch: Partial<Omit<Settings, 'ui'>> & { ui?: Partial<Settings['ui']> }
   ): Promise<Settings> {
+    const previous = this.current
     this.current = normaliseSettings(
       { ...this.current, ...patch, ui: { ...this.current.ui, ...patch.ui } },
       this.defaults
     )
     await writeFileAtomic(this.file, JSON.stringify(this.current, null, 2) + '\n')
+    for (const listener of this.listeners) listener(this.current, previous)
     return this.current
   }
 }

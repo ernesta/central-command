@@ -48,4 +48,18 @@ describe('SettingsStore', () => {
     expect(kept).toBeDefined()
     expect(await readFile(join(dir, kept!), 'utf8')).toBe('{ not json')
   })
+
+  it('notifies listeners with the new and previous settings after saving', async () => {
+    const store = new SettingsStore(file, defaults)
+    const calls: [string, string][] = []
+    const off = store.onChange((now, before) => calls.push([now.repoPath, before.repoPath]))
+    await store.update({ repoPath: '/a' })
+    await store.update({ repoPath: '/b' })
+    off()
+    await store.update({ repoPath: '/c' })
+    expect(calls).toEqual([
+      ['/a', ''],
+      ['/b', '/a']
+    ])
+  })
 })
