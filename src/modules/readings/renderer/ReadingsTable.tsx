@@ -1,6 +1,6 @@
 import { ArrowDown, ArrowUp, FileText } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { useVirtualizer } from '@tanstack/react-virtual'
+import { defaultRangeExtractor, useVirtualizer } from '@tanstack/react-virtual'
 import type { ReadingSort, SortKey } from '../shared/query'
 import type { Reading } from '../shared/types'
 import { clearOpened, peekOpened, rememberOpened } from './list-return'
@@ -47,7 +47,12 @@ export function ReadingsTable({
     count: readings.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => ROW_HEIGHT,
-    overscan: 10
+    overscan: 10,
+    // Row 0 is always rendered so it can hold the tab stop even when the list is scrolled far down.
+    rangeExtractor: (range) => {
+      const indexes = defaultRangeExtractor(range)
+      return indexes[0] === 0 || range.count === 0 ? indexes : [0, ...indexes]
+    }
   })
 
   // Returning from a reading: bring its row back into view and focus it (once, on mount only).
@@ -109,7 +114,17 @@ export function ReadingsTable({
   }
 
   return (
-    <div ref={scrollRef} className={styles.scroll}>
+    <div
+      ref={scrollRef}
+      className={styles.scroll}
+      // Tabbing out of the table resets the tab stop to the first row, so coming back with Tab (or
+      // Shift+Tab from elsewhere) does not jump to whichever row was last visited. A null
+      // relatedTarget (a row unmounting while it scrolls away, a click on empty space) is ignored.
+      onBlur={(event) => {
+        const next = event.relatedTarget
+        if (next instanceof Node && !scrollRef.current?.contains(next)) setActive(0)
+      }}
+    >
       <div
         className={styles.table}
         role="table"
