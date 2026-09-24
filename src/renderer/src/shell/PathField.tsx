@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react'
+import { useId, useState } from 'react'
 import { Button } from '../components/Button'
 import { Input } from '../components/Input'
 import styles from './PathField.module.css'
@@ -25,7 +25,12 @@ export function PathField({
 }: PathFieldProps): React.JSX.Element {
   const id = useId()
   const [draft, setDraft] = useState(value)
-  useEffect(() => setDraft(value), [value])
+  // Follow external changes to the saved value (e.g. after Browse) without an effect.
+  const [seen, setSeen] = useState(value)
+  if (seen !== value) {
+    setSeen(value)
+    setDraft(value)
+  }
 
   const commit = (next: string): void => {
     const trimmed = next.trim()
