@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 import { modules } from '@modules/index'
 import { modulePath } from '@modules/types'
@@ -29,6 +29,28 @@ export function Shell(): React.JSX.Element {
 
   // Pages outside a workspace (e.g. Settings) keep the last workspace highlighted.
   const workspace = workspaceFromPath(location.pathname) ?? settings.ui.workspace
+
+  // Browser-style back: Cmd/Ctrl+[ and the mouse's back button.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if ((event.metaKey || event.ctrlKey) && event.key === '[') {
+        event.preventDefault()
+        void navigate(-1)
+      }
+    }
+    const onMouseUp = (event: MouseEvent): void => {
+      if (event.button === 3) {
+        event.preventDefault()
+        void navigate(-1)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('mouseup', onMouseUp)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+  }, [navigate])
 
   const switchWorkspace = (next: Workspace): void => {
     navigate(`/${next}`)
