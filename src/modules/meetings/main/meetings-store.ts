@@ -1,9 +1,10 @@
 import { readdir } from 'fs/promises'
 import type { Database } from 'better-sqlite3'
-import type { NoteContent, NoteWriteResult } from '@shared/notes'
+import type { NoteContent } from '@shared/notes'
 import {
   createNoteFileExclusive,
   readNoteFile,
+  renameNoteFileExclusive,
   writeNoteFileGuarded
 } from '../../../main/notes/guarded-file'
 import {
@@ -17,7 +18,12 @@ import {
   type MeetingChanges,
   type MetaPatch
 } from '../shared/front-matter'
-import type { CreateMeetingInput, MeetingFile, SyncPreviousResult } from '../shared/api'
+import type {
+  CreateMeetingInput,
+  MeetingFile,
+  MeetingSaveResult,
+  SyncPreviousResult
+} from '../shared/api'
 import { carryOver, findPreviousMeeting } from '../shared/carry-over'
 import {
   MEETING_MODES,
@@ -162,7 +168,11 @@ export class MeetingsStore {
    * Apply `changes` to the meeting's file, provided it still matches `baseHash`. Whatever is not
    * being changed is written back exactly as it was. A missing file is an error, never created here.
    */
-  async save(ref: MeetingRef, changes: MeetingChanges, baseHash: string): Promise<NoteWriteResult> {
+  async save(
+    ref: MeetingRef,
+    changes: MeetingChanges,
+    baseHash: string
+  ): Promise<MeetingSaveResult> {
     if (changes.meta) checkPatch(changes.meta)
     if (changes.body !== undefined && typeof changes.body !== 'string') {
       throw new MeetingError('The body must be text')
@@ -175,7 +185,37 @@ export class MeetingsStore {
     const next = applyChanges(disk.content, changes)
     const { result, wrote } = await writeNoteFileGuarded(path, next, baseHash)
     if (wrote) await this.reindex(ref)
+    if (wrote && result.status === 'saved' && (changes.meta?.date || changes.meta?.series)) {
+      const renamedTo = await this.renameToMatch(ref, next)
+      if (renamedTo) return { ...result, renamedTo }
+    }
     return result
+  }
+
+  /**
+   * Give a meeting's file the name its date and series call for (`YYYY-MM-DD Series`, with ` 2` when that
+   * is taken), so file names stay consistent after the date or series is edited. Never replaces a file;
+   * if the rename fails the note is still saved under its old name. Returns the new id, or null.
+   */
+  private async renameToMatch(ref: MeetingRef, content: string): Promise<string | null> {
+    const { meta } = parseMeta(splitNote(content).head)
+    if (!meta.date || !meta.series) return null
+    const dir = this.dirFor(ref.workspace)
+    try {
+      for (let attempt = 0; attempt < 50; attempt++) {
+        const others = (await this.baseNamesOnDisk(ref.workspace)).filter((id) => id !== ref.id)
+        const id = meetingBaseName(meta.date, meta.series, others)
+        if (id === ref.id) return null
+        if (await renameNoteFileExclusive(meetingPath(dir, ref.id), meetingPath(dir, id))) {
+          deleteMeetingRow(this.db, ref.workspace, ref.id)
+          await this.reindex({ workspace: ref.workspace, id })
+          return id
+        }
+      }
+    } catch (error) {
+      console.error('Could not rename the meeting file:', error)
+    }
+    return null
   }
 
   /** See `MeetingsApi.syncPreviousTodos`. Adds only, and only if the file still matches `baseHash`. */

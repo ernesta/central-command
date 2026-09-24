@@ -386,3 +386,96 @@ describe('Previous TODOs carry-over', () => {
     })
   })
 })
+
+describe('renaming when the date or series changes', () => {
+  const SUP = { workspace: 'research', series: 'Supervision' } as const
+  const save = (
+    m: { ref: MeetingRef; note: { hash: string } },
+    meta: object
+  ): ReturnType<MeetingsStore['save']> => store.save(m.ref, { meta }, m.note.hash)
+
+  it('renames the file to match a new date, keeping its content and reporting the new id', async () => {
+    const m = await store.create({ ...SUP, date: '2026-09-24', body: 'my notes\n' })
+    const result = await save(m, { date: '2026-10-01' })
+    expect(result).toMatchObject({ status: 'saved', renamedTo: '2026-10-01 Supervision' })
+    expect(existsSync(file('2026-09-24 Supervision'))).toBe(false)
+    expect(disk('2026-10-01 Supervision')).toContain('date: 2026-10-01')
+    expect(disk('2026-10-01 Supervision')).toContain('my notes')
+    // The index follows the file: no row for the old name, a current row for the new one.
+    expect(getMeetingRow(db, 'research', '2026-09-24 Supervision')).toBeNull()
+    expect(getMeetingRow(db, 'research', '2026-10-01 Supervision')?.date).toBe('2026-10-01')
+    // The hash returned is the hash of the file under its new name.
+    if (result.status === 'saved')
+      expect(result.hash).toBe(hashContent(disk('2026-10-01 Supervision')))
+  })
+
+  it('renames for a new series too', async () => {
+    const m = await store.create({ ...SUP, date: '2026-09-24' })
+    expect(await save(m, { series: 'Luminos' })).toMatchObject({ renamedTo: '2026-09-24 Luminos' })
+    expect(existsSync(file('2026-09-24 Luminos'))).toBe(true)
+  })
+
+  it('numbers the name when another meeting of that series already has that day', async () => {
+    await store.create({ ...SUP, date: '2026-10-01' })
+    const m = await store.create({ ...SUP, date: '2026-09-24' })
+    expect(await save(m, { date: '2026-10-01' })).toMatchObject({
+      renamedTo: '2026-10-01 Supervision 2'
+    })
+  })
+
+  it('never replaces an existing file, even one the index does not know', async () => {
+    const m = await store.create({ ...SUP, date: '2026-09-24' })
+    writeFileSync(file('2026-10-01 Supervision'), 'hand-written, unindexed')
+    expect(await save(m, { date: '2026-10-01' })).toMatchObject({
+      renamedTo: '2026-10-01 Supervision 2'
+    })
+    expect(disk('2026-10-01 Supervision')).toBe('hand-written, unindexed')
+  })
+
+  it('does not rename for other edits, for a body edit, or when the name already matches', async () => {
+    const m = await store.create({ ...SUP, date: '2026-09-24' })
+    expect(await save(m, { start: '10:00', mode: 'online' })).not.toHaveProperty('renamedTo')
+    const again = await store.read(m.ref)
+    expect(await store.save(m.ref, { body: 'x\n' }, again.note.hash)).not.toHaveProperty(
+      'renamedTo'
+    )
+    const third = await store.read(m.ref)
+    expect(await save(third, { date: '2026-09-24' })).not.toHaveProperty('renamedTo')
+    expect(existsSync(file('2026-09-24 Supervision'))).toBe(true)
+  })
+
+  it('a meeting whose name never matched its date is only renamed when the date or series is edited', async () => {
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(file('old name'), '---\nseries: Other\ndate: 2026-01-02\n---\n\nbody\n')
+    const m = await store.read(ref('old name'))
+    expect(await store.save(m.ref, { meta: { start: '09:00' } }, m.note.hash)).not.toHaveProperty(
+      'renamedTo'
+    )
+    const m2 = await store.read(ref('old name'))
+    expect(await store.save(m2.ref, { meta: { date: '2026-01-03' } }, m2.note.hash)).toMatchObject({
+      renamedTo: '2026-01-03 Other'
+    })
+  })
+
+  it('a conflict renames nothing and writes nothing', async () => {
+    const m = await store.create({ ...SUP, date: '2026-09-24' })
+    writeFileSync(file(m.ref.id), disk(m.ref.id) + 'edited elsewhere\n')
+    expect((await save(m, { date: '2026-10-01' })).status).toBe('conflict')
+    expect(existsSync(file('2026-09-24 Supervision'))).toBe(true)
+    expect(existsSync(file('2026-10-01 Supervision'))).toBe(false)
+  })
+
+  it('the renamed meeting can be read and saved under its new id', async () => {
+    const m = await store.create({ ...SUP, date: '2026-09-24' })
+    const result = await save(m, { date: '2026-10-01' })
+    const moved = {
+      workspace: 'research',
+      id: (result as { renamedTo: string }).renamedTo
+    } as const
+    const read = await store.read(moved)
+    expect(await store.save(moved, { body: 'later\n' }, read.note.hash)).toMatchObject({
+      status: 'saved'
+    })
+    await expect(store.read(m.ref)).rejects.toThrow('not found')
+  })
+})

@@ -362,8 +362,11 @@ Checked in dev mode and the production build against scratch libraries.
 - **Topics**: ticking one writes `discussed` in the front matter; "Add topic" appends `### title` to the end of
   the Notes section (insert-only, tested on generated notes) and recreates the editor, so undo history is
   lost at that moment. Jumping finds the heading in the editor by its text.
-- **Changing the date or series does not rename the file.** The file name is only chosen at creation; the front
-  matter is what the app reads (the file name date is only a fallback). Renaming can be added if wanted.
+- **File names follow the date and series** (`YYYY-MM-DD Series`, ` 2` for repeats). Editing a meeting's date or
+  series renames its file to match, without ever replacing another file (`renameNoteFileExclusive`), and the page
+  stays open on the same meeting (the session and the route both follow the new id). Other edits never rename, so a
+  file with an odd name (for example an imported one) keeps it until its date or series is edited. If a rename fails
+  the note is still saved under its old name.
 - **Attendees** can be added from the people list or by typing a new name (`people.add`), because the People
   settings screen is a later stage. A name in the file that is not in the list shows as an outlined name chip.
 - **Stand-ins for later stages**: a plain index page (create a meeting, links to existing ones) and a minimal

@@ -6,6 +6,7 @@ import {
   createNoteFileExclusive,
   hashContent,
   readNoteFile,
+  renameNoteFileExclusive,
   writeNoteFileGuarded
 } from './guarded-file'
 
@@ -77,5 +78,24 @@ describe('writeNoteFileGuarded', () => {
 
   it('reads a missing file as empty', async () => {
     expect(await readNoteFile(path)).toEqual({ exists: false, content: '', hash: hashContent('') })
+  })
+})
+
+describe('renameNoteFileExclusive', () => {
+  it('moves the file to the new name with its content intact', async () => {
+    writeFileSync(path, 'hello')
+    const to = join(dir, 'other.md')
+    expect(await renameNoteFileExclusive(path, to)).toBe(true)
+    expect(readFileSync(to, 'utf8')).toBe('hello')
+    expect(readdirSync(dir)).toEqual(['other.md'])
+  })
+
+  it('never replaces a file already at the new name, and changes nothing', async () => {
+    writeFileSync(path, 'mine')
+    const to = join(dir, 'other.md')
+    writeFileSync(to, 'theirs')
+    expect(await renameNoteFileExclusive(path, to)).toBe(false)
+    expect(readFileSync(path, 'utf8')).toBe('mine')
+    expect(readFileSync(to, 'utf8')).toBe('theirs')
   })
 })

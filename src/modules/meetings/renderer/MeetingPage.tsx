@@ -11,7 +11,7 @@ import { meetingHeading } from '../shared/time'
 import { appendTopic, parseTopics, type Topic } from '../shared/topics'
 import type { MeetingRef, Person } from '../shared/types'
 import { DeleteDialog } from './DeleteDialog'
-import { meetingsBase } from './meetings-paths'
+import { meetingRoute, meetingsBase } from './meetings-paths'
 import { MetaFields } from './MetaFields'
 import { TopicsPanel } from './TopicsPanel'
 import { useMeetingSession } from './useMeetingSession'
@@ -34,12 +34,35 @@ function statusText(save: SaveState, reloaded: boolean): string {
 /** One meeting: its details, its note (Summary, Previous TODOs, Notes) and the topics panel. */
 export function MeetingPage(): React.JSX.Element {
   const { id = '' } = useParams()
-  return <MeetingView key={id} meetingRef={{ workspace: 'research', id }} />
+  const navigate = useNavigate()
+  // Changing the date or series renames the file, and so changes the id in the address. The page keeps
+  // its state (and the cursor) by staying mounted under the id it opened with: `ids` are the names this
+  // meeting has had, so the address moving from one to the next does not remount it.
+  const [known, setKnown] = useState<{ key: string; ids: string[] }>({ key: id, ids: [id] })
+  const key = known.ids.includes(id) ? known.key : id
+  return (
+    <MeetingView
+      key={key}
+      meetingRef={{ workspace: 'research', id: key }}
+      onRenamed={(newId) => {
+        setKnown((prev) =>
+          prev.key === key ? { key, ids: [...prev.ids, newId] } : { key, ids: [key, newId] }
+        )
+        void navigate(meetingRoute(newId), { replace: true })
+      }}
+    />
+  )
 }
 
-function MeetingView({ meetingRef }: { meetingRef: MeetingRef }): React.JSX.Element {
+function MeetingView({
+  meetingRef,
+  onRenamed
+}: {
+  meetingRef: MeetingRef
+  onRenamed: (id: string) => void
+}): React.JSX.Element {
   const navigate = useNavigate()
-  const { session, snapshot } = useMeetingSession(meetingRef)
+  const { session, snapshot } = useMeetingSession(meetingRef, onRenamed)
   const [people, setPeople] = useState<Person[]>([])
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -124,7 +147,7 @@ function MeetingView({ meetingRef }: { meetingRef: MeetingRef }): React.JSX.Elem
     setDeleteError(null)
     try {
       await session.dispose() // saves anything pending first
-      await window.api.meetings.delete(meetingRef)
+      await window.api.meetings.delete(session.getRef())
       void navigate(meetingsBase)
     } catch (e) {
       setDeleteError(e instanceof Error ? e.message : String(e))

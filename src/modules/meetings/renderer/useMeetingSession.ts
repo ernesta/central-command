@@ -7,11 +7,17 @@ import { MeetingSession, type MeetingSnapshot } from './meeting-session'
  * Opens a MeetingSession for one meeting. Render the component that uses this with `key={id}` so each
  * meeting gets its own session; it is disposed (saving anything pending) when the component unmounts.
  */
-export function useMeetingSession(ref: MeetingRef): {
+export function useMeetingSession(
+  ref: MeetingRef,
+  onRenamed?: (id: string) => void
+): {
   session: MeetingSession
   snapshot: MeetingSnapshot
 } {
   const [session] = useState(() => new MeetingSession(ref, window.api.meetings))
+  useEffect(() => {
+    session.setOnRenamed(onRenamed)
+  })
 
   useEffect(() => {
     void session.start()

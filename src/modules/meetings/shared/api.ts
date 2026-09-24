@@ -1,4 +1,4 @@
-import type { NoteContent, NoteWriteResult } from '@shared/notes'
+import type { NoteContent } from '@shared/notes'
 import type { MeetingChanges } from './front-matter'
 import type {
   MeetingIndexRow,
@@ -35,6 +35,16 @@ export interface MeetingFile {
   problems: string[]
 }
 
+/** The result of saving a meeting. Changing the date or series renames the file, and says so. */
+export type MeetingSaveResult =
+  | {
+      status: 'saved'
+      hash: string
+      /** The meeting's new id when its file was renamed. */ renamedTo?: string
+    }
+  /** The file changed since `baseHash`; nothing was written. */
+  | { status: 'conflict'; disk: NoteContent }
+
 /** The result of filling a meeting's Previous TODOs from the meeting before it. */
 export type SyncPreviousResult =
   | {
@@ -64,7 +74,7 @@ export interface MeetingsApi {
    * caller last read or saved; if the file has since changed on disk nothing is written and a
    * conflict is returned.
    */
-  save(ref: MeetingRef, changes: MeetingChanges, baseHash: string): Promise<NoteWriteResult>
+  save(ref: MeetingRef, changes: MeetingChanges, baseHash: string): Promise<MeetingSaveResult>
   /** Move the meeting's file to the Trash. The caller is responsible for asking the user first. */
   delete(ref: MeetingRef): Promise<void>
   /**

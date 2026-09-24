@@ -55,6 +55,30 @@ export async function writeNoteFileGuarded(
 }
 
 /**
+ * Rename `from` to `to` without ever replacing a file that is already at `to`: the new name is linked
+ * to the old file, then the old name is removed. Returns false (changing nothing) if `to` exists.
+ */
+export async function renameNoteFileExclusive(from: string, to: string): Promise<boolean> {
+  try {
+    await link(from, to)
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code
+    if (code === 'EEXIST') return false
+    if (code !== 'EPERM' && code !== 'ENOTSUP' && code !== 'EXDEV') throw error
+    // No hard links here: copy exclusively, then remove the original.
+    const content = await readFile(from)
+    try {
+      await writeFile(to, content, { flag: 'wx' })
+    } catch (inner) {
+      if ((inner as NodeJS.ErrnoException).code === 'EEXIST') return false
+      throw inner
+    }
+  }
+  await rm(from)
+  return true
+}
+
+/**
  * Create `path` with `content`, but only if nothing is there yet. Returns false (writing nothing) if
  * the file already exists. The content is written to a temp file first and then linked into place,
  * so the new file appears complete and an existing file can never be replaced.

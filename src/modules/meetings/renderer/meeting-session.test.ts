@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { NoteWriteResult } from '@shared/notes'
-import type { MeetingChangedEvent, MeetingFile, SyncPreviousResult } from '../shared/api'
+import type {
+  MeetingChangedEvent,
+  MeetingFile,
+  MeetingSaveResult,
+  SyncPreviousResult
+} from '../shared/api'
 import { applyChanges, parseMeta, splitNote, type MeetingChanges } from '../shared/front-matter'
 import type { MeetingRef } from '../shared/types'
 import { MeetingSession, type MeetingSessionApi } from './meeting-session'
@@ -45,11 +49,14 @@ class FakeDisk implements MeetingSessionApi {
     this.reads++
     return this.file()
   }
+  renameTo: string | null = null
+  saveRefs: string[] = []
   save = async (
-    _ref: MeetingRef,
+    ref: MeetingRef,
     changes: MeetingChanges,
     baseHash: string
-  ): Promise<NoteWriteResult> => {
+  ): Promise<MeetingSaveResult> => {
+    this.saveRefs.push(ref.id)
     this.saves.push({ changes, baseHash })
     if (this.gate) await this.gate
     if (this.failSave) throw this.failSave
@@ -57,7 +64,9 @@ class FakeDisk implements MeetingSessionApi {
     if (disk.hash !== baseHash) return { status: 'conflict', disk }
     this.text = applyChanges(this.text as string, changes)
     setTimeout(() => this.emit(), 0) // the watcher reports our own save a moment later
-    return { status: 'saved', hash: hash(this.text) }
+    const renamedTo = this.renameTo ?? undefined
+    this.renameTo = null
+    return { status: 'saved', hash: hash(this.text), renamedTo }
   }
   syncPreviousTodos = async (_ref: MeetingRef, baseHash: string): Promise<SyncPreviousResult> => {
     this.syncs.push(baseHash)
@@ -226,6 +235,23 @@ describe('saving', () => {
     await first
     await vi.advanceTimersByTimeAsync(600)
     expect(parseMeta(splitNote(disk.text as string).head).meta.start).toBe('11:00')
+  })
+
+  it('when saving renames the file, later saves and events use the new id and the page is told', async () => {
+    const renamed: string[] = []
+    session = new MeetingSession(REF, disk, {
+      debounceMs: 500,
+      onRenamed: (id) => renamed.push(id)
+    })
+    await session.start()
+    disk.renameTo = '2026-10-01 Supervision'
+    session.setMeta({ date: '2026-10-01' })
+    await session.flush()
+    expect(renamed).toEqual(['2026-10-01 Supervision'])
+    session.editBody('more\n')
+    await session.flush()
+    expect(disk.saveRefs).toEqual([REF.id, '2026-10-01 Supervision'])
+    expect(session.getSnapshot().conflict).toBeNull()
   })
 
   it('shows a save error and can try again', async () => {

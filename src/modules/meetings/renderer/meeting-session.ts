@@ -1,6 +1,11 @@
-import type { NoteContent, NoteWriteResult } from '@shared/notes'
+import type { NoteContent } from '@shared/notes'
 import type { SaveState } from '@renderer/notes/notes-session'
-import type { MeetingChangedEvent, MeetingFile, SyncPreviousResult } from '../shared/api'
+import type {
+  MeetingChangedEvent,
+  MeetingFile,
+  MeetingSaveResult,
+  SyncPreviousResult
+} from '../shared/api'
 import type { MeetingChanges, MetaPatch } from '../shared/front-matter'
 import { parseMeta, splitNote } from '../shared/front-matter'
 import type { MeetingMeta, MeetingRef } from '../shared/types'
@@ -8,7 +13,7 @@ import type { MeetingMeta, MeetingRef } from '../shared/types'
 /** The slice of the Meetings API a meeting session needs. */
 export interface MeetingSessionApi {
   read(ref: MeetingRef): Promise<MeetingFile>
-  save(ref: MeetingRef, changes: MeetingChanges, baseHash: string): Promise<NoteWriteResult>
+  save(ref: MeetingRef, changes: MeetingChanges, baseHash: string): Promise<MeetingSaveResult>
   syncPreviousTodos(ref: MeetingRef, baseHash: string): Promise<SyncPreviousResult>
   onChanged(listener: (event: MeetingChangedEvent) => void): () => void
 }
@@ -53,6 +58,8 @@ const EMPTY_META: MeetingMeta = {
 interface Options {
   /** How long after the last edit to save. */
   debounceMs?: number
+  /** Called when saving renamed the meeting's file (its date or series changed), with the new id. */
+  onRenamed?: (id: string) => void
 }
 
 function diskVersion(note: NoteContent): DiskVersion {
@@ -88,6 +95,7 @@ export class MeetingSession {
   }
   private readonly listeners = new Set<() => void>()
   private readonly debounceMs: number
+  private onRenamed: ((id: string) => void) | undefined
   private timer: ReturnType<typeof setTimeout> | null = null
   private inflight: Promise<void> | null = null
   private saveAgain = false
@@ -103,14 +111,23 @@ export class MeetingSession {
   private pendingMeta: MetaPatch = {}
 
   constructor(
-    private readonly ref: MeetingRef,
+    private ref: MeetingRef,
     private readonly api: MeetingSessionApi,
     options: Options = {}
   ) {
     this.debounceMs = options.debounceMs ?? 500
+    this.onRenamed = options.onRenamed
   }
 
   getSnapshot = (): MeetingSnapshot => this.snapshot
+
+  /** Set who to tell when saving renames the meeting's file. */
+  setOnRenamed = (listener: ((id: string) => void) | undefined): void => {
+    this.onRenamed = listener
+  }
+
+  /** Which meeting this is now (its id changes when a date or series edit renames the file). */
+  getRef = (): MeetingRef => this.ref
 
   subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener)
@@ -256,7 +273,7 @@ export class MeetingSession {
     if (sentBody !== this.savedBody) changes.body = sentBody
     this.update({ save: 'saving', error: null })
 
-    let result: NoteWriteResult
+    let result: MeetingSaveResult
     try {
       result = await this.api.save(this.ref, changes, this.baseHash)
     } catch (error) {
@@ -268,6 +285,11 @@ export class MeetingSession {
       return
     }
     this.baseHash = result.hash
+    if (result.renamedTo) {
+      // The file now has a name that matches its date and series; keep talking about the same meeting.
+      this.ref = { ...this.ref, id: result.renamedTo }
+      this.onRenamed?.(result.renamedTo)
+    }
     this.savedBody = sentBody
     this.savedMeta = { ...this.savedMeta, ...sentMeta } as MeetingMeta
     // Keep any field that was edited again while the save was running.
