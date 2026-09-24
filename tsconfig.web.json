@@ -7,7 +7,8 @@
     "src/shared/**/*",
     "src/modules/**/renderer/**/*",
     "src/modules/*.ts",
-    "src/modules/*/index.ts"
+    "src/modules/*/index.ts",
+    "src/modules/**/shared/**/*"
   ],
   "compilerOptions": {
     "composite": true,
