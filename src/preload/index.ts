@@ -1,5 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { IPC, type Api } from '@shared/api'
+import { READINGS_IPC } from '@modules/readings/shared/api'
+import type { SyncStatus } from '@modules/readings/shared/types'
 
 const api: Api = {
   settings: {
@@ -8,6 +10,19 @@ const api: Api = {
   },
   dialog: {
     pickPath: (options) => ipcRenderer.invoke(IPC.dialogPickPath, options)
+  },
+  readings: {
+    sync: {
+      now: () => ipcRenderer.invoke(READINGS_IPC.syncNow),
+      status: () => ipcRenderer.invoke(READINGS_IPC.syncStatus),
+      onStatus: (listener) => {
+        const handler = (_event: Electron.IpcRendererEvent, status: SyncStatus): void =>
+          listener(status)
+        ipcRenderer.on(READINGS_IPC.syncStatusChanged, handler)
+        return () => ipcRenderer.removeListener(READINGS_IPC.syncStatusChanged, handler)
+      }
+    },
+    counts: () => ipcRenderer.invoke(READINGS_IPC.counts)
   },
   build: {
     openSession: () => ipcRenderer.invoke(IPC.buildOpenSession)
