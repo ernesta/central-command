@@ -13,6 +13,43 @@
   pointer-events: none;
 }
 
+/* Task lists: the checkbox is drawn in the list item's left padding (clicks there toggle it). */
+.wrap :global(.ProseMirror) li[data-item-type='task'] {
+  position: relative;
+  margin-left: -1.6em;
+  padding-left: 1.6em;
+  list-style: none;
+}
+.wrap :global(.ProseMirror) li[data-item-type='task']::before {
+  content: '';
+  position: absolute;
+  top: 0.5em;
+  left: 0.1em;
+  width: 1em;
+  height: 1em;
+  box-sizing: border-box;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--surface);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
+}
+.wrap :global(.ProseMirror) li[data-item-type='task']:hover::before {
+  border-color: var(--accent);
+}
+.wrap :global(.ProseMirror) li[data-item-type='task'][data-checked='true']::before {
+  border-color: var(--accent);
+  background: var(--accent)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3.5 8.5 3 3 6-7'/%3E%3C/svg%3E")
+    center / 75% no-repeat;
+}
+.wrap :global(.ProseMirror) li[data-item-type='task'][data-checked='true'] > p {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
 /* The editor content. Milkdown ships no styles of its own here, so everything is ours. */
 .wrap :global(.ProseMirror) {
   min-height: 280px;
@@ -70,7 +107,7 @@
   color: var(--text-secondary);
 }
 .wrap :global(.ProseMirror) code {
-  padding: 0.1em 0.35em;
+  padding: 0.1em 0.3em;
   border-radius: 4px;
   background: var(--panel);
   font-family: var(--font-mono);
