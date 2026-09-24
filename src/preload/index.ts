@@ -46,8 +46,11 @@ const api: Api = {
     read: (ref) => ipcRenderer.invoke(MEETINGS_IPC.read, ref),
     save: (ref, changes, baseHash) => ipcRenderer.invoke(MEETINGS_IPC.save, ref, changes, baseHash),
     delete: (ref) => ipcRenderer.invoke(MEETINGS_IPC.delete, ref),
+    syncPreviousTodos: (ref, baseHash) =>
+      ipcRenderer.invoke(MEETINGS_IPC.syncPrevious, ref, baseHash),
     people: {
-      list: () => ipcRenderer.invoke(MEETINGS_IPC.peopleList)
+      list: () => ipcRenderer.invoke(MEETINGS_IPC.peopleList),
+      add: (name) => ipcRenderer.invoke(MEETINGS_IPC.peopleAdd, name)
     },
     onChanged: (listener) => {
       const handler = (_event: Electron.IpcRendererEvent, change: MeetingChangedEvent): void =>

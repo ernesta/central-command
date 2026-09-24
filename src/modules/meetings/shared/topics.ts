@@ -1,4 +1,4 @@
-import { parseHeading, scanLines } from './sections'
+import { parseHeading, scan, scanLines } from './sections'
 
 export interface Topic {
   /** The heading text. */
@@ -36,4 +36,58 @@ export function parseTopics(body: string, discussed: readonly string[] = []): To
     }
   }
   return level3.length > 0 ? level3 : level2
+}
+
+/** A heading line's text: one line, no leading hashes. */
+function cleanTitle(title: string): string {
+  return title
+    .trim()
+    .replace(/[\r\n]+/g, ' ')
+    .replace(/^#+\s*/, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+/**
+ * Add a `### title` topic at the end of the Notes section (creating `## Notes` at the end of the note
+ * if there is none). Only inserts: every existing character stays where it was, and nothing is put
+ * inside a code fence that is never closed. An empty title changes nothing.
+ */
+export function appendTopic(body: string, title: string): string {
+  const text = cleanTitle(title)
+  if (text === '') return body
+  const eol = body.includes('\r\n') ? '\r\n' : '\n'
+  const { lines, unclosedFenceAt } = scan(body)
+  const limit = unclosedFenceAt ?? lines.length
+  const lineEnd = (i: number): number => (i + 1 < lines.length ? lines[i + 1].start : body.length)
+
+  const headings = lines.flatMap((l, i) => {
+    const h = l.inFence ? null : parseHeading(l.text)
+    return h ? [{ ...h, i }] : []
+  })
+  const notes = headings.find(
+    (h) => h.level === 2 && h.text.toLowerCase() === 'notes' && h.i < limit
+  )
+  const heading = `### ${text}`
+
+  if (notes) {
+    const next = headings.find((h) => h.i > notes.i && h.level <= 2)
+    const stop = Math.min(next ? next.i : lines.length, limit)
+    let last = notes.i
+    for (let i = notes.i + 1; i < stop; i++) if (lines[i].text.trim() !== '') last = i
+    const pos = lineEnd(last)
+    const lead = pos === body.length && !body.endsWith('\n') ? eol : ''
+    return body.slice(0, pos) + lead + eol + heading + eol + body.slice(pos)
+  }
+
+  const section = `## Notes${eol}${eol}${heading}${eol}`
+  if (unclosedFenceAt !== null) {
+    const pos = lines[unclosedFenceAt].start
+    const before = body.slice(0, pos)
+    const gap = before === '' || /\n[ \t]*\r?\n$/.test(before) ? '' : eol
+    return before + gap + section + eol + body.slice(pos)
+  }
+  const endsBlank = /\n[ \t]*\r?\n$/.test(body)
+  const sep = body === '' || endsBlank ? '' : body.endsWith('\n') ? eol : eol + eol
+  return body + sep + section
 }

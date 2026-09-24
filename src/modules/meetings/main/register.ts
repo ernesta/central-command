@@ -52,7 +52,15 @@ function register({ db, paths }: MainContext): () => void {
     return store.save(asRef(ref), asObject(changes, 'changes') as MeetingChanges, baseHash)
   })
   ipcMain.handle(MEETINGS_IPC.delete, (_event, ref: unknown) => store.delete(asRef(ref)))
+  ipcMain.handle(MEETINGS_IPC.syncPrevious, (_event, ref: unknown, baseHash: unknown) => {
+    if (typeof baseHash !== 'string') throw new Error('Invalid sync request')
+    return store.syncPreviousTodos(asRef(ref), baseHash)
+  })
   ipcMain.handle(MEETINGS_IPC.peopleList, () => people.list())
+  ipcMain.handle(MEETINGS_IPC.peopleAdd, (_event, name: unknown) => {
+    if (typeof name !== 'string') throw new Error('Invalid name')
+    return people.add({ name })
+  })
 
   const watchers = ACTIVE_WORKSPACES.map(
     (workspace) =>

@@ -28,6 +28,16 @@ export interface MeetingFile {
   problems: string[]
 }
 
+/** The result of filling a meeting's Previous TODOs from the meeting before it. */
+export type SyncPreviousResult =
+  | {
+      status: 'saved'
+      hash: string
+      /** How many items were added (0 when nothing was missing). */ added: number
+    }
+  /** The file changed since `baseHash`; nothing was written. */
+  | { status: 'conflict'; disk: NoteContent }
+
 /** Pushed to the renderer when a meeting file changes on disk (from any tool, including this app). */
 export interface MeetingChangedEvent {
   ref: MeetingRef
@@ -48,8 +58,15 @@ export interface MeetingsApi {
   save(ref: MeetingRef, changes: MeetingChanges, baseHash: string): Promise<NoteWriteResult>
   /** Move the meeting's file to the Trash. The caller is responsible for asking the user first. */
   delete(ref: MeetingRef): Promise<void>
+  /**
+   * Add to this meeting's Previous TODOs whatever is open in the previous meeting of the series and
+   * not listed yet. Only adds; never removes or edits an item or touches ticked state.
+   */
+  syncPreviousTodos(ref: MeetingRef, baseHash: string): Promise<SyncPreviousResult>
   people: {
     list(): Promise<Person[]>
+    /** Add a person (initials are worked out from the name and made unique). Resolves with the new list. */
+    add(name: string): Promise<Person[]>
   }
   /** Subscribe to meeting files changing on disk. Returns an unsubscribe function. */
   onChanged(listener: (event: MeetingChangedEvent) => void): () => void
@@ -60,6 +77,8 @@ export const MEETINGS_IPC = {
   read: 'meetings:read',
   save: 'meetings:save',
   delete: 'meetings:delete',
+  syncPrevious: 'meetings:sync-previous',
   peopleList: 'meetings:people-list',
+  peopleAdd: 'meetings:people-add',
   changed: 'meetings:changed'
 } as const
