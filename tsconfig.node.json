@@ -9,7 +9,8 @@
     "src/modules/**/main/**/*",
     "src/modules/main-registry.ts",
     "tests/**/*",
-    "src/modules/**/shared/**/*"
+    "src/modules/**/shared/**/*",
+    "scripts/**/*"
   ],
   "compilerOptions": {
     "composite": true,
