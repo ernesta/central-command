@@ -34,8 +34,7 @@ schema while sharing one `schema_migrations` table.
 ## The "Consulting" workspace is called "Work"
 
 Renamed at the user's request. The workspace id is `work` and the label is
-"Work". The original build brief still says "Consulting"; where they differ, the
-code and docs (this rename) are authoritative.
+"Work". The build brief has been updated to match.
 
 ## Module manifests are split by process
 
@@ -68,8 +67,8 @@ a placeholder that replies "Claude isn't connected yet."
 Renamed from the brief's placeholder "Control Center" at the user's request; a
 later rename is expected. The name lives in `src/shared/app-info.ts`
 (`APP_NAME`), `package.json`, `electron-builder.yml` (productName, appId,
-executable) and `src/renderer/index.html`. The original brief keeps its old
-wording; the code and docs are authoritative. The data folder is
+executable) and `src/renderer/index.html`. The brief was updated to match
+(and its file renamed to `central-command-mvp-phase1-brief.md`). The data folder is
 `~/CentralCommand/` (`DATA_DIR_NAME`) and the database is
 `central-command.sqlite`; the user re-pointed their Zotero export to the new
 location.
