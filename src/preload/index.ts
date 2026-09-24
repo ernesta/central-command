@@ -8,6 +8,9 @@ const api: Api = {
   },
   dialog: {
     pickPath: (options) => ipcRenderer.invoke(IPC.dialogPickPath, options)
+  },
+  build: {
+    openSession: () => ipcRenderer.invoke(IPC.buildOpenSession)
   }
 }
 
