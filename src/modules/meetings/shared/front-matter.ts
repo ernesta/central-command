@@ -323,3 +323,25 @@ export function updateHead(head: string, patch: MetaPatch): string {
   const body = [...parsed.leading, ...entries.flatMap((e) => e.lines)]
   return [parsed.open, ...body, parsed.close].join(eol) + eol + parsed.trailing
 }
+
+/** What a save may change: front matter fields (only those listed) and/or the note body. */
+export interface MeetingChanges {
+  meta?: MetaPatch
+  /** The whole new body, replacing the old one exactly as given. */
+  body?: string
+}
+
+/**
+ * The file text after applying `changes` to `text`. Whatever is not being changed is copied through
+ * untouched: a body-only change leaves the front matter byte-for-byte alone, and a metadata-only
+ * change leaves the body byte-for-byte alone.
+ */
+export function applyChanges(text: string, changes: MeetingChanges): string {
+  const { head, body } = splitNote(text)
+  const newHead =
+    changes.meta && Object.keys(changes.meta).length > 0 ? updateHead(head, changes.meta) : head
+  return newHead + (changes.body ?? body)
+}
+
+/** The body a new meeting starts with. */
+export const NEW_MEETING_BODY = '## Summary\n\n## Previous TODOs\n\n## Notes\n'

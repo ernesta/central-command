@@ -1,5 +1,6 @@
-import { createHash } from 'crypto'
-import { readFile } from 'fs/promises'
+import { createHash, randomUUID } from 'crypto'
+import { link, mkdir, readFile, rm, writeFile } from 'fs/promises'
+import { basename, dirname, join } from 'path'
 import type { NoteContent, NoteWriteResult } from '@shared/notes'
 import { writeFileAtomic } from '../atomic-write'
 
@@ -51,4 +52,36 @@ export async function writeNoteFileGuarded(
 
   await writeFileAtomic(path, content)
   return { result: { status: 'saved', hash: hashContent(content) }, wrote: true }
+}
+
+/**
+ * Create `path` with `content`, but only if nothing is there yet. Returns false (writing nothing) if
+ * the file already exists. The content is written to a temp file first and then linked into place,
+ * so the new file appears complete and an existing file can never be replaced.
+ */
+export async function createNoteFileExclusive(path: string, content: string): Promise<boolean> {
+  const dir = dirname(path)
+  await mkdir(dir, { recursive: true })
+  const tmp = join(dir, `.${basename(path)}.${randomUUID()}.tmp`)
+  try {
+    await writeFile(tmp, content, { encoding: 'utf8', flag: 'wx' })
+    try {
+      await link(tmp, path)
+      return true
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code
+      if (code === 'EEXIST') return false
+      // File systems without hard links: fall back to an exclusive create.
+      if (code !== 'EPERM' && code !== 'ENOTSUP' && code !== 'EXDEV') throw error
+      try {
+        await writeFile(path, content, { encoding: 'utf8', flag: 'wx' })
+        return true
+      } catch (inner) {
+        if ((inner as NodeJS.ErrnoException).code === 'EEXIST') return false
+        throw inner
+      }
+    }
+  } finally {
+    await rm(tmp, { force: true })
+  }
 }
