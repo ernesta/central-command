@@ -2,6 +2,7 @@ import { hashContent } from '../../../main/notes/guarded-file'
 import { markdownToExcerpt } from '../../../main/notes/excerpt'
 import { parseMeta, splitNote, isValidDate } from '../shared/front-matter'
 import { extractSection } from '../shared/sections'
+import { parseTodos } from '../shared/todos'
 import type { MeetingIndexRow, MeetingWorkspace } from '../shared/types'
 import { dateFromBaseName } from './file-name'
 
@@ -42,6 +43,7 @@ export function buildIndexRow(
     summary,
     excerpt: markdownToExcerpt(body, EXCERPT_LENGTH),
     problems,
+    todos: parseTodos(body),
     contentHash: hashContent(content)
   }
 }

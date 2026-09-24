@@ -175,6 +175,11 @@ describe('save', () => {
     expect(after).toContain("start: '10:00'")
   })
 
+  it('keeps the index’s TODOs in step with what was saved', async () => {
+    await store.save(ref('m'), { body: '## Notes\n- **TODO(EO)**: first\n' }, hash())
+    expect(getMeetingRow(db, 'research', 'm')?.todos.map((t) => t.text)).toEqual(['first'])
+  })
+
   it('returns the new hash and refreshes the index', async () => {
     const result = await store.save(ref('m'), { meta: { end: '11:00' } }, hash())
     expect(result).toEqual({ status: 'saved', hash: hashContent(disk('m')) })

@@ -23,6 +23,7 @@ const row = (id: string, over: Partial<MeetingIndexRow> = {}): MeetingIndexRow =
   summary: '',
   excerpt: '',
   problems: [],
+  todos: [],
   contentHash: 'h',
   ...over
 })
@@ -40,7 +41,11 @@ describe('meetings index', () => {
       start: '14:00',
       mode: 'online',
       attendees: ['Kathy Rastle'],
-      problems: ['x']
+      problems: ['x'],
+      todos: [
+        { kind: 'previous', owners: ['KR'], text: 'send it', done: true, line: 0 },
+        { kind: 'inline', owners: ['EO', 'AC'], text: 'run it', done: false, line: 1 }
+      ]
     })
     upsertMeeting(db, r)
     expect(getMeetingRow(db, 'research', '2026-09-24 Supervision')).toEqual(r)
@@ -77,14 +82,39 @@ describe('meetings index', () => {
     expect(db.prepare('SELECT COUNT(*) AS n FROM meeting_todos').get()).toEqual({ n: 0 })
   })
 
-  it('does not let an upsert wipe the TODO rows of a meeting', () => {
-    upsertMeeting(db, row('2026-09-24 Supervision'))
-    const pk = (db.prepare('SELECT id FROM meetings').get() as { id: number }).id
-    db.prepare(
-      "INSERT INTO meeting_todos (meeting_pk, position, kind, text) VALUES (?, 0, 'inline', 't')"
-    ).run(pk)
-    upsertMeeting(db, row('2026-09-24 Supervision', { summary: 'changed' }))
+  it('replaces a meeting’s TODO rows with the current ones on every upsert', () => {
+    const todo = (text: string, line: number): MeetingIndexRow['todos'][number] => ({
+      kind: 'inline',
+      owners: [],
+      text,
+      done: false,
+      line
+    })
+    upsertMeeting(db, row('2026-09-24 Supervision', { todos: [todo('a', 0), todo('b', 1)] }))
+    upsertMeeting(db, row('2026-09-24 Supervision', { todos: [todo('c', 0)] }))
+    expect(
+      getMeetingRow(db, 'research', '2026-09-24 Supervision')?.todos.map((t) => t.text)
+    ).toEqual(['c'])
     expect(db.prepare('SELECT COUNT(*) AS n FROM meeting_todos').get()).toEqual({ n: 1 })
+  })
+
+  it('keeps each meeting’s TODOs apart', () => {
+    const todo = (text: string): MeetingIndexRow['todos'][number] => ({
+      kind: 'inline',
+      owners: [],
+      text,
+      done: false,
+      line: 0
+    })
+    upsertMeeting(db, row('2026-01-01 Other', { todos: [todo('one')] }))
+    upsertMeeting(db, row('2026-01-02 Other', { todos: [todo('two')] }))
+    expect(getMeetingRow(db, 'research', '2026-01-01 Other')?.todos.map((t) => t.text)).toEqual([
+      'one'
+    ])
+    expect(listMeetingRows(db, 'research').map((r) => r.todos.map((t) => t.text))).toEqual([
+      ['two'],
+      ['one']
+    ])
   })
 
   it('rejects an unknown mode', () => {

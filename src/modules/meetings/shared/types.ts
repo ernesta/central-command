@@ -1,3 +1,5 @@
+import type { TodoItem } from './todos'
+
 /** Workspaces that can hold meetings. Research now; Work later, from the same module code. */
 export const MEETING_WORKSPACES = ['research', 'work'] as const
 export type MeetingWorkspace = (typeof MEETING_WORKSPACES)[number]
@@ -57,5 +59,7 @@ export interface MeetingIndexRow {
   /** Plain text of the whole note, for search. */
   excerpt: string
   problems: string[]
+  /** The TODOs found in the note, in order. */
+  todos: TodoItem[]
   contentHash: string
 }

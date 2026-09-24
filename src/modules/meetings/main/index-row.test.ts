@@ -42,6 +42,18 @@ describe('buildIndexRow', () => {
     expect(row.excerpt).not.toContain('series:')
   })
 
+  it('records the TODOs in the note', () => {
+    const row = buildIndexRow(
+      'research',
+      'x',
+      '---\nseries: Other\ndate: 2026-01-02\n---\n## Previous TODOs\n- [ ] **TODO(KR)**: a\n## Notes\n- **TODO(EO)**: b\n'
+    )
+    expect(row.todos.map((t) => [t.kind, t.owners.join(), t.text, t.done])).toEqual([
+      ['previous', 'KR', 'a', false],
+      ['inline', 'EO', 'b', false]
+    ])
+  })
+
   it('has an empty summary when the section is missing or empty', () => {
     expect(
       buildIndexRow('research', 'x', '---\nseries: Other\ndate: 2026-01-02\n---\n## Notes\n')
