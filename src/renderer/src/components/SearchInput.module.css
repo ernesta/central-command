@@ -1,0 +1,19 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.icon {
+  position: absolute;
+  left: 10px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.input {
+  width: 160px;
+  padding-left: 32px;
+}
+.input:focus,
+.input:not(:placeholder-shown) {
+  width: 240px;
+}
