@@ -66,5 +66,7 @@ kbd {
   *::after {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+    /* Infinite animations (the sync pulse) would otherwise strobe at 0.01ms. */
+    animation-iteration-count: 1 !important;
   }
 }
