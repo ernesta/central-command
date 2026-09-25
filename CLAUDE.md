@@ -71,9 +71,10 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
 - The brief (`central-command-mvp-phase1-brief.md`) is authoritative for the visual design
   (section 9) and the stage plan (section 12). It has been updated for the renames: the app is
   "Central Command", the third workspace is "Work" (`work`), and data lives in `~/CentralCommand/`.
-- Training is done (all ten stages of `docs/TRAINING_PLAN.md`) and is in the user's second review round; Meetings gained an
-  academic-year selector, skills and an hours counter. Both importers have been applied to the real library. The two TODO lists (for
-  the user and for Claude) are at the top of `docs/ROADMAP.md`; keep them current. Nothing is pushed until the user says so.
+- Training is done (all ten stages of `docs/TRAINING_PLAN.md`) and has had two review rounds; Meetings gained an academic-year
+  selector, skills and an hours counter. Both importers have been applied to the real library (129 training entries, 35 meeting
+  files updated). Everything up to the second review round is pushed. The two TODO lists (for the user and for Claude) are at the
+  top of `docs/ROADMAP.md`; keep them current. Push only when the user says so.
 - Reuse patterns: landings, filter rows, export buttons, people and skills fields are shared components; use them rather than
   building a variant, and ask if a module needs something different.
 - The app name lives in one place (`src/shared/app-info.ts`); it may be renamed again.
