@@ -13,7 +13,7 @@
 - [ ] **One imported training broke the rules**: _Making your research transparent and reproducible (Live)_ (28 Jan 2026) has five skills in
       Inkpath and the app allows three. The first three were kept; left out: Digital and bibliographic skills (GS), Intellectual property
       rights (GS). Decide which three to keep. (Review this together with the other training TODOs.)
-- [ ] **Add the people who lead trainings to your people list** (Settings → People) and choose their initials, so they show as
+- [ ] **Add the people who lead trainings to your people list** (the People page) and choose their initials, so they show as
       initials chips. Not yet in the list: Anat Bardi, Chris Prosser, Cilla Harries, Emily Ma, Emma Russell, Eran Halperin, George Pontikas,
       James D. Williams, Jessie Ricketts, Joanna Young, Kathryn Redway, Laura Ulanowski, Robert Darby, Robert De Vries, Robyn Muir, Roger
       Giner-Sorolla, Smadar Cohen-Chen, Thomas C. Ormerod. Initials must be unique, so a second RM (Robyn Muir next to Ryan McKay) needs
