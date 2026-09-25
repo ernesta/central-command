@@ -34,7 +34,8 @@ export function Shell(): React.JSX.Element {
   // Browser-style back: Cmd/Ctrl+[ and the mouse's back button.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
-      if (matchesShortcut(event, BACK_SHORTCUT)) {
+      // The notes editor uses the same keys to move a list item out a level; when it handled the key press, stay.
+      if (!event.defaultPrevented && matchesShortcut(event, BACK_SHORTCUT)) {
         event.preventDefault()
         void navigate(-1)
       }
