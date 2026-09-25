@@ -2,6 +2,7 @@ import type { ComponentType } from 'react'
 import type { Workspace } from '@shared/settings'
 import type { ShortcutGroup } from '@shared/shortcuts'
 import { meetingsModule } from './meetings'
+import { notesModule } from './notes'
 import { plannedModules } from './planned'
 import { readingsModule } from './readings'
 import { trainingModule } from './training'
@@ -12,6 +13,7 @@ export const modules: ModuleManifest[] = [
   readingsModule,
   meetingsModule,
   trainingModule,
+  notesModule,
   ...plannedModules
 ]
 
