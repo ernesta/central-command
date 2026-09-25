@@ -30,10 +30,10 @@
 - [ ] **Try the Training plan** (Training → Training plan). Your draft was copied in as the 2026–27 plan; edit it there.
 - [ ] After the user's review: fix what they raise, then push, write up the state, clear context and move on to the next part.
 - [ ] A "decision log" for training types (see above): design it with the user when they start mapping; then suggest types automatically.
-- [ ] **Build the People page** (next; designed and approved, see `docs/DECISIONS.md` "People page" and
-      `docs/design/people-and-plan-mockup.html`). Then a dry-run script that creates people from the names already in
-      meeting attendees and training leads (apply only when the user says so, with the app closed), and add a TODO for the user to
-      review the new people's initials.
+- [x] **People page built** (see `docs/DECISIONS.md` "People page"). Waiting for the user's review.
+- [ ] **Try the People page**, then run `npm run people:from-notes` (dry run), read the list, and say when to apply it with the app closed.
+      Afterwards review the new people's initials on the People page (a second RM needs different initials).
+- [ ] Claude: apply `people:from-notes` only when the user says so.
 - [ ] Re-check the changed screens in dev mode (StrictMode) and the built app after any further change to lists, landings or entry pages.
 - [ ] **Say when a filter is applied** (later, the user's call when): opening the Supervision series card shows "All meetings" with only that
       series in it. See the Meetings follow-ups.

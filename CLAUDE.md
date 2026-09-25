@@ -17,6 +17,8 @@ ask the user.
   training log (dry run by default)
 - `npm run reconcile:meetings -- --inkpath <xlsx> [--apply]`: copy skills and missing times from the Inkpath log into meeting files (dry run by
   default)
+- `npm run people:from-notes [-- --apply]`: list people named in meeting attendees and training leads who are not in the people list, with
+  proposed initials (dry run by default; apply only with the app closed)
 - `npm run convert:topics [-- --apply]`: turn bold pseudo-headings (`**Topic**`) in meeting notes into `###` topics (dry run by
   default; `--apply` backs each note up first)
 
@@ -79,8 +81,8 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   building a variant, and ask if a module needs something different. Keep UI text short: one-sentence help, one-word buttons, no
   optional extra choices unless asked.
 - Since the second Training review: Meetings' Export (the Supervision log as a PDF; printing and page shell shared with Training) and the
-  Training plan (one Markdown file per academic year, `notes/training-plans/`, the user's 2026–27 draft copied in) are built. Next is the
-  People page as decided in `docs/DECISIONS.md` ("People page"); the mockup is `docs/design/people-and-plan-mockup.html`.
+  Training plan (one Markdown file per academic year, `notes/training-plans/`, the user's 2026–27 draft copied in) are built. The
+  People page is built (`docs/DECISIONS.md`, "People page"; mockup `docs/design/people-and-plan-mockup.html`) and awaits the user's review.
 - The app name lives in one place (`src/shared/app-info.ts`); it may be renamed again.
 
 ## Testing the app for real (unit tests are not enough)

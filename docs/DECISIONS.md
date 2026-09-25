@@ -597,7 +597,7 @@ list. `convertPseudoHeadings` (`meetings/shared/pseudo-headings.ts`) turns such 
 - **Landing headers hold only "New …"** (and Training's "Training plan"). The "All meetings" / "All training" buttons were removed at
   the user's request; the "See all …" link at the bottom of each landing page is the way to the full list.
 
-### People page (decided with the user, not built yet)
+### People page (decided with the user, built)
 
 Mockup: `docs/design/people-and-plan-mockup.html` (sections 1 to 3). The user asked for short text and one-word buttons everywhere.
 
@@ -617,3 +617,18 @@ Mockup: `docs/design/people-and-plan-mockup.html` (sections 1 to 3). The user as
   people to a note, their names and initials still resolve in old notes, and their initials stay reserved. Merge asks for the person to
   merge into and rewrites names and TODO initials in the files to that person, then removes the merged one.
 - Deleting or archiving never edits a note. Removing someone from a note's own field stays a normal edit in that note.
+
+**As built** (`PeoplePage`, `PeopleTable`, `RemoveDialog` in `src/modules/meetings/renderer/`; logic in `PeopleService`, `rewrite-files.ts`, `people-rewrite.ts`):
+
+- The page is at `/research/meetings/people`; Settings → People is a link (`AllLink`). Add is an inline row (no pop-up); Edit turns a
+  row into inputs with Save and Cancel, and "This is me" lives in the edit row. The person marked "me" has no Remove.
+- The Change dialog only appears when a note mentions the person; initials clashes are refused before it (the same list rules as the
+  main process). Counts come from the index, so `PeopleService` reindexes the notes it rewrites to keep them right at once.
+- Rewrites go through `rewriteNoteFiles`: original copied to `~/CentralCommand/backups/people-<time>/{meetings,training}/`, then a
+  content-hash guarded save; a note edited meanwhile is skipped and named in a Notice. Tests fail if anything but the attendee/lead
+  line and the TODO owner brackets changes (fences and inline code are skipped; a merged person already listed is kept once).
+- Delete is refused in the main process while any indexed note mentions the person. Archived people stay in `people.json` with
+  `archived: true`, so their name and initials still resolve and stay reserved; pickers (`PeopleField`, `ownerOptions`) skip them
+  unless they attended that meeting. Archiving clears "me".
+- Not built: an initials chip that links to the page (mockup mentions it); it would compete with the chip's remove button.
+- `npm run people:from-notes` lists people named in notes but missing from the list (dry run by default).
