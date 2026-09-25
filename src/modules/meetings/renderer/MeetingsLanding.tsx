@@ -81,7 +81,7 @@ export function MeetingsLanding(): React.JSX.Element {
         title="Meetings"
         actions={
           <>
-            <AllLink to={meetingsListRoute}>All meetings</AllLink>
+            <AllLink to={`${meetingsListRoute}?year=${year}`}>All meetings</AllLink>
             <NewMeetingButton />
           </>
         }
@@ -143,7 +143,7 @@ export function MeetingsLanding(): React.JSX.Element {
             id="recent"
             label="Recent and upcoming"
             aside={
-              <SeeAllLink to={meetingsListRoute}>
+              <SeeAllLink to={`${meetingsListRoute}?year=${year}`}>
                 See all meetings
                 <ArrowRight size={14} strokeWidth={1.75} aria-hidden />
               </SeeAllLink>

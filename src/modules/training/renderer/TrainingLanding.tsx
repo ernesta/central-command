@@ -83,7 +83,7 @@ export function TrainingLanding(): React.JSX.Element {
         title="Training"
         actions={
           <>
-            <AllLink to={trainingListRoute}>All training</AllLink>
+            <AllLink to={`${trainingListRoute}?year=${year}`}>All training</AllLink>
             <NewTrainingButton />
           </>
         }
@@ -121,7 +121,7 @@ export function TrainingLanding(): React.JSX.Element {
             id="recent"
             label="Recent and upcoming"
             aside={
-              <SeeAllLink to={trainingListRoute}>
+              <SeeAllLink to={`${trainingListRoute}?year=${year}`}>
                 See all training
                 <ArrowRight size={14} strokeWidth={1.75} aria-hidden />
               </SeeAllLink>

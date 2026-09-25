@@ -116,7 +116,7 @@ export function MeetingsTable({
                   {row.summary || <span className={styles.missing}>No summary yet.</span>}
                 </td>
                 <td className={styles.skills}>
-                  <SkillChips skills={row.skills} />
+                  <SkillChips skills={row.skills} stacked />
                 </td>
                 <td className={styles.attendees}>
                   <span className={styles.chips}>
