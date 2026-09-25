@@ -179,26 +179,27 @@ Inkpath has 15 activity types. Three of them read almost the same (Academic skil
 courses), which is where the choice gets hard. The proposal is a shorter list with plain names, grouped, each mapped to one Inkpath
 type so an export can restore it. **The meanings marked "my reading" are a guess for the user to correct.**
 
-| Group         | Name in the app           | Inkpath type                             | Plain description                                                          |
-| ------------- | ------------------------- | ---------------------------------------- | -------------------------------------------------------------------------- |
-| Courses       | Research methods course   | Research-related courses                 | Methods, statistics, research design, data and software (my reading)       |
-| Courses       | Academic skills course    | Academic skills courses                  | Writing, presenting, publishing, CV (my reading)                           |
-| Courses       | General skills course     | Generic skills courses                   | Skills useful beyond research: wellbeing, leadership, careers (my reading) |
-| Courses       | Language course           | Language courses                         | Learning a language                                                        |
-| Conferences   | Conference: attending     | Conference Guest                         | You went as a visitor                                                      |
-| Conferences   | Conference: presenting    | Conference Speaker / Contributor         | A talk, poster or paper                                                    |
-| Conferences   | Conference: organising    | Conference Organisation Team             | You helped run it                                                          |
-| Work          | Fieldwork                 | Fieldwork                                | Collecting data in the field                                               |
-| Work          | Placement or work project | Work placements or work-related projects | A placement or a project done as work                                      |
-| Work          | Shadowing                 | Shadowing                                | Following someone at work                                                  |
-| Work          | Volunteering              | Volunteering                             |                                                                            |
-| Contributions | Peer review               | Peer reviews                             | Reviewing someone's paper                                                  |
-| Contributions | Publication               | Publications                             | Submitting or publishing a paper or chapter                                |
-| Meetings      | Meeting with supervisor   | Supervisor/PI/manager meeting            | For Meetings; not offered in the Training list                             |
-| Other         | Other                     | Other                                    |                                                                            |
+| Group         | Name in the app         | Inkpath type                             | Plain description                                                          |
+| ------------- | ----------------------- | ---------------------------------------- | -------------------------------------------------------------------------- |
+| Courses       | Research methods course | Research-related courses                 | Methods, statistics, research design, data and software (my reading)       |
+| Courses       | Academic skills course  | Academic skills courses                  | Writing, presenting, publishing, CV (my reading)                           |
+| Courses       | General skills course   | Generic skills courses                   | Skills useful beyond research: wellbeing, leadership, careers (my reading) |
+| Courses       | Language course         | Language courses                         | Learning a language                                                        |
+| Conferences   | Conference: attending   | Conference Guest                         | You went as a visitor                                                      |
+| Conferences   | Conference: presenting  | Conference Speaker / Contributor         | A talk, poster or paper                                                    |
+| Conferences   | Conference: organising  | Conference Organisation Team             | You helped run it                                                          |
+| Work          | Fieldwork               | Fieldwork                                | Collecting data in the field                                               |
+| Work          | Placement               | Work placements or work-related projects | A placement or a project done as work                                      |
+| Work          | Shadowing               | Shadowing                                | Following someone at work                                                  |
+| Work          | Volunteering            | Volunteering                             |                                                                            |
+| Contributions | Peer review             | Peer reviews                             | Reviewing someone's paper                                                  |
+| Contributions | Publication             | Publications                             | Submitting or publishing a paper or chapter                                |
+| Meetings      | Supervisor meeting      | Supervisor/PI/manager meeting            | For Meetings; not offered in the Training list                             |
+| Other         | Other                   | Other                                    |                                                                            |
 
-**Not covered by any Inkpath type:** seminars, inductions, lab meetings, and self-guided learning such as DataCamp. The user has to say where
-those belong (a question below). The app keeps one field with the app name; the Inkpath name is only a mapping, never a second field to
+**Not covered by any Inkpath type:** seminars, inductions, lab meetings, and self-guided learning such as DataCamp. The user maps those
+by hand, so the app adds no types of its own for them. The user will keep a decision log of these mappings so that the app can learn to
+categorise them automatically later (a follow-up, not built now). The app keeps one field with the app name; the Inkpath name is only a mapping, never a second field to
 maintain.
 
 ### Leads and people
@@ -295,8 +296,8 @@ SEDarc and DataCamp and is optional; hours come from the times; files are linked
 
 **Open questions for the user**
 
-1. **Which type for a seminar, an induction, a lab meeting and self-guided learning (for example DataCamp)?** Inkpath has none of these
-   as a type. Which of its 15 do you use for them today, and would you like an extra type of your own such as "Seminar or talk"?
+1. ~~Which type for a seminar, an induction, a lab meeting and self-guided learning?~~ Decided: the user maps them by hand, the app adds
+   no extra types, and a decision log will support automatic categorising later.
 2. **Do my readings of the three course types match yours?** Research-related (methods, statistics, data, software), Academic skills
    (writing, presenting, publishing, CV) and Generic skills (wellbeing, leadership, careers). Tell me where I am wrong, or say whether
    you would rather have just one "Course" type in the app and pick the Inkpath type only when you export.
