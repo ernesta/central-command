@@ -1,10 +1,18 @@
 .page {
   padding: 48px 64px;
 }
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-bottom: 32px;
+}
 .heading {
+  margin: 0;
   font-size: var(--text-32);
   font-weight: 700;
-  margin-bottom: 32px;
 }
 .live {
   display: grid;

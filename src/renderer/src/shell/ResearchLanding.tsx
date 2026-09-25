@@ -1,4 +1,6 @@
 import { liveModules, plannedModulesFor } from '@modules/index'
+import { peopleRoute } from '@modules/meetings/renderer/meetings-paths'
+import { AllLink } from '../components/Landing'
 import styles from './ResearchLanding.module.css'
 
 export function ResearchLanding(): React.JSX.Element {
@@ -7,7 +9,10 @@ export function ResearchLanding(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.heading}>Research</h1>
+      <header className={styles.header}>
+        <h1 className={styles.heading}>Research</h1>
+        <AllLink to={peopleRoute}>People</AllLink>
+      </header>
       {live.length > 0 && (
         <div className={styles.live}>
           {live.map(({ id, landingCard: Card }) => (Card ? <Card key={id} /> : null))}
