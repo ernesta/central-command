@@ -19,6 +19,8 @@ interface NotesEditorProps {
    * once, when the editor is created, and before the shared plugins, so its key handling runs first.
    */
   setup?: (editor: Editor) => Editor
+  /** Put the cursor in the note as soon as the editor is ready (a note started from quick capture). */
+  autoFocus?: boolean
 }
 
 function Inner({
@@ -27,7 +29,8 @@ function Inner({
   onBlur,
   placeholder,
   showPlaceholder,
-  setup
+  setup,
+  autoFocus
 }: NotesEditorProps): React.JSX.Element {
   const onChangeRef = useRef(onChange)
   useEffect(() => {
@@ -43,6 +46,14 @@ function Inner({
     return withNotesPlugins(setup ? setup(editor) : editor)
   })
   const [loading, getEditor] = useInstance()
+
+  // Once only: later renders must never take the cursor away from another field.
+  const focused = useRef(false)
+  useEffect(() => {
+    if (loading || !autoFocus || focused.current) return
+    focused.current = true
+    getEditor()?.action((ctx) => ctx.get(editorViewCtx).focus())
+  }, [loading, autoFocus, getEditor])
 
   // Clicking the empty space around the text should still put the cursor in the note.
   const focusEditor = (event: React.MouseEvent): void => {
