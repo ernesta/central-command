@@ -1,4 +1,4 @@
-import type { NoteContent } from '@shared/notes'
+import type { NoteChangedEvent, NoteContent, NoteWriteResult } from '@shared/notes'
 import type { TrainingChanges } from './front-matter'
 import type {
   TrainingIndexRow,
@@ -84,6 +84,17 @@ export interface TrainingChangedEvent {
 /** The result of exporting a year as a PDF. */
 export type TrainingExportResult = { status: 'saved'; path: string } | { status: 'cancelled' }
 
+/** The slice of the Training API for the yearly plan; its `citekey` is the academic year's start year as text. */
+export interface TrainingPlanApi {
+  /** The plan of an academic year (its start year). A missing file reads as an empty one. */
+  read(year: string): Promise<NoteContent>
+  write(year: string, content: string, baseHash: string): Promise<NoteWriteResult>
+  /** Open the folder that holds the plans in Finder. */
+  reveal(): Promise<void>
+  /** Subscribe to a plan changing on disk (including this app's own saves). Returns an unsubscribe function. */
+  onChanged(listener: (event: NoteChangedEvent) => void): () => void
+}
+
 /** The Training slice of window.api. */
 export interface TrainingApi {
   /** Create a new entry file and resolve with it. Never replaces an existing file. */
@@ -100,6 +111,7 @@ export interface TrainingApi {
   /** Move the entry's file to the Trash. The caller is responsible for asking the user first. */
   delete(ref: TrainingRef): Promise<void>
   files: TrainingFilesApi
+  plan: TrainingPlanApi
   /** Ask where to save, then write the academic year (start year) as a PDF, oldest entry first. Upcoming entries are left out. */
   exportPdf(year: number): Promise<TrainingExportResult>
   /** Subscribe to entry files changing on disk. Returns an unsubscribe function. */
@@ -117,5 +129,9 @@ export const TRAINING_IPC = {
   filesOpen: 'training:files-open',
   filesReveal: 'training:files-reveal',
   filesToRelative: 'training:files-to-relative',
+  planRead: 'training:plan-read',
+  planWrite: 'training:plan-write',
+  planReveal: 'training:plan-reveal',
+  planChanged: 'training:plan-changed',
   changed: 'training:changed'
 } as const

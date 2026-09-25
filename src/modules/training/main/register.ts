@@ -18,6 +18,8 @@ import { reportFileName, trainingReportHtml } from '../shared/report'
 import type { TrainingChanges } from '../shared/front-matter'
 import { TRAINING_WORKSPACES, type TrainingRef, type TrainingWorkspace } from '../shared/types'
 import { trainingPath } from './file-name'
+import { PlanStore } from './plan-store'
+import { planYearFromFileName } from '../shared/plan'
 import { listFolder, openablePath, relativeToRoot, resolveInside } from './files'
 import { trainingMigrations } from './migrations'
 import { TrainingStore } from './training-store'
@@ -85,6 +87,44 @@ function register({ db, paths, settings }: MainContext): () => void {
     }
   )
 
+  // The yearly plan: one Markdown file per academic year, in its own folder. The renderer's notes
+  // session names a note by a string, so the year travels as text.
+  const plans = new PlanStore(paths.trainingPlans)
+  const asYear = (value: unknown): number => {
+    const year = typeof value === 'string' ? Number(value) : NaN
+    if (!Number.isInteger(year) || year < 1900 || year > 3000)
+      throw new Error('Invalid academic year')
+    return year
+  }
+  ipcMain.handle(TRAINING_IPC.planRead, (_event, year: unknown) => plans.read(asYear(year)))
+  ipcMain.handle(
+    TRAINING_IPC.planWrite,
+    (_event, year: unknown, content: unknown, baseHash: unknown) => {
+      if (typeof content !== 'string' || typeof baseHash !== 'string') {
+        throw new Error('Invalid plan write')
+      }
+      return plans.write(asYear(year), content, baseHash)
+    }
+  )
+  ipcMain.handle(TRAINING_IPC.planReveal, async () => {
+    await mkdir(paths.trainingPlans, { recursive: true })
+    const failure = await shell.openPath(paths.trainingPlans)
+    if (failure) throw new Error(failure)
+  })
+  const planWatcher = new NotesWatcher({
+    dir: paths.trainingPlans,
+    onNoteChanged: (fileName) => {
+      const year = planYearFromFileName(fileName)
+      if (year === null) return
+      void plans.read(year).then(({ hash }) => {
+        for (const window of BrowserWindow.getAllWindows()) {
+          window.webContents.send(TRAINING_IPC.planChanged, { citekey: String(year), hash })
+        }
+      })
+    }
+  })
+  void mkdir(paths.trainingPlans, { recursive: true }).then(() => planWatcher.start())
+
   // The Trainings folder is read from the settings on every call, so a change there applies at once.
   const root = (): string => settings.get().trainingsFolder
   const text = (value: unknown, what: string): string => {
@@ -144,6 +184,7 @@ function register({ db, paths, settings }: MainContext): () => void {
 
   return () => {
     for (const w of watchers) void w.close()
+    void planWatcher.close()
     for (const channel of Object.values(TRAINING_IPC)) ipcMain.removeHandler(channel)
   }
 }

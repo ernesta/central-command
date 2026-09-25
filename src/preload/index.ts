@@ -79,6 +79,18 @@ const api: Api = {
         ipcRenderer.invoke(TRAINING_IPC.filesReveal, folder, sub, name),
       toRelative: (absolute) => ipcRenderer.invoke(TRAINING_IPC.filesToRelative, absolute)
     },
+    plan: {
+      read: (year) => ipcRenderer.invoke(TRAINING_IPC.planRead, year),
+      write: (year, content, baseHash) =>
+        ipcRenderer.invoke(TRAINING_IPC.planWrite, year, content, baseHash),
+      reveal: () => ipcRenderer.invoke(TRAINING_IPC.planReveal),
+      onChanged: (listener) => {
+        const handler = (_event: Electron.IpcRendererEvent, change: NoteChangedEvent): void =>
+          listener(change)
+        ipcRenderer.on(TRAINING_IPC.planChanged, handler)
+        return () => ipcRenderer.removeListener(TRAINING_IPC.planChanged, handler)
+      }
+    },
     onChanged: (listener) => {
       const handler = (_event: Electron.IpcRendererEvent, change: TrainingChangedEvent): void =>
         listener(change)
