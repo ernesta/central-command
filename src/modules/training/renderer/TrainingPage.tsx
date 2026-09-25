@@ -30,7 +30,7 @@ import {
 import { TRAINING_SERIES, TRAINING_TYPES } from '../shared/types'
 import { NewTrainingButton } from './NewTrainingButton'
 import { TrainingTable } from './TrainingTable'
-import { todayIso } from './training-paths'
+import { entryRoute, todayIso } from './training-paths'
 import { useTrainingList } from './useTrainingList'
 import { useTrainingView } from './useTrainingView'
 import styles from './TrainingPage.module.css'
@@ -63,6 +63,8 @@ export function TrainingPage(): React.JSX.Element {
           leads: leadNames(everything)
         })
   const visible = queryTraining(all, query, people)
+  // Things the import left for the user to look at, from any year.
+  const toReview = everything.filter((r) => r.review)
   const aim = settings.trainingAimHours
   const hours = trainingHours(everything, year, today, aim)
   const meetingMinutes = meetingHours(meetings, year, today).minutes
@@ -132,6 +134,22 @@ export function TrainingPage(): React.JSX.Element {
           extra={meetingMinutes > 0 ? meetingsLine(meetingMinutes) : undefined}
           perSkill={hours.perSkill}
         />
+      )}
+
+      {toReview.length > 0 && (
+        <details className={styles.review}>
+          <summary>
+            {toReview.length} {toReview.length === 1 ? 'entry' : 'entries'} to review
+          </summary>
+          <ul className={styles.reviewList}>
+            {toReview.map((r) => (
+              <li key={r.id}>
+                <Link to={entryRoute(r.id)}>{r.title || 'Untitled'}</Link>
+                <span className={styles.reviewText}> {r.review}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
       )}
 
       <div className={styles.filters}>
