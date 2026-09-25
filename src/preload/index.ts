@@ -3,6 +3,8 @@ import { IPC, type Api } from '@shared/api'
 import { MEETINGS_IPC } from '@modules/meetings/shared/api'
 import type { MeetingChangedEvent } from '@modules/meetings/shared/api'
 import { READINGS_IPC } from '@modules/readings/shared/api'
+import { TRAINING_IPC } from '@modules/training/shared/api'
+import type { TrainingChangedEvent } from '@modules/training/shared/api'
 import type { NoteChangedEvent } from '@shared/notes'
 import type { SyncStatus } from '@modules/readings/shared/types'
 
@@ -60,6 +62,19 @@ const api: Api = {
         listener(change)
       ipcRenderer.on(MEETINGS_IPC.changed, handler)
       return () => ipcRenderer.removeListener(MEETINGS_IPC.changed, handler)
+    }
+  },
+  training: {
+    create: (input) => ipcRenderer.invoke(TRAINING_IPC.create, input),
+    read: (ref) => ipcRenderer.invoke(TRAINING_IPC.read, ref),
+    list: (workspace) => ipcRenderer.invoke(TRAINING_IPC.list, workspace),
+    save: (ref, changes, baseHash) => ipcRenderer.invoke(TRAINING_IPC.save, ref, changes, baseHash),
+    delete: (ref) => ipcRenderer.invoke(TRAINING_IPC.delete, ref),
+    onChanged: (listener) => {
+      const handler = (_event: Electron.IpcRendererEvent, change: TrainingChangedEvent): void =>
+        listener(change)
+      ipcRenderer.on(TRAINING_IPC.changed, handler)
+      return () => ipcRenderer.removeListener(TRAINING_IPC.changed, handler)
     }
   },
   lifecycle: {

@@ -4,6 +4,7 @@ import type { Migration } from '../main/db/migrate'
 import type { SettingsStore } from '../main/settings'
 import { meetingsMainModule } from './meetings/main/register'
 import { readingsMainModule } from './readings/main/register'
+import { trainingMainModule } from './training/main/register'
 
 /** What a module's main-process code may depend on. */
 export interface MainContext {
@@ -20,4 +21,8 @@ export interface MainModule {
 }
 
 /** Add a module's main-side registration here (the counterpart of the renderer manifest list). */
-export const mainModules: MainModule[] = [readingsMainModule, meetingsMainModule]
+export const mainModules: MainModule[] = [
+  readingsMainModule,
+  meetingsMainModule,
+  trainingMainModule
+]
