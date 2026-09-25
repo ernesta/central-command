@@ -11,6 +11,7 @@ interface Row {
   end_time: string | null
   mode: MeetingMode | null
   attendees: string
+  skills: string
   summary: string
   excerpt: string
   problems: string
@@ -35,6 +36,7 @@ function toIndexRow(row: Row, todos: TodoItem[]): MeetingIndexRow {
     end: row.end_time,
     mode: row.mode,
     attendees: JSON.parse(row.attendees) as string[],
+    skills: JSON.parse(row.skills) as string[],
     summary: row.summary,
     excerpt: row.excerpt,
     problems: JSON.parse(row.problems) as string[],
@@ -52,17 +54,18 @@ export function upsertMeeting(db: Database, row: MeetingIndexRow): void {
 function upsertMeetingRow(db: Database, row: MeetingIndexRow): void {
   db.prepare(
     `INSERT INTO meetings (workspace, meeting_id, series, date, start_time, end_time, mode,
-                           attendees, summary, excerpt, problems, topic_count, content_hash)
+                           attendees, skills, summary, excerpt, problems, topic_count, content_hash)
      VALUES (@workspace, @id, @series, @date, @start, @end, @mode,
-             @attendees, @summary, @excerpt, @problems, @topicCount, @contentHash)
+             @attendees, @skills, @summary, @excerpt, @problems, @topicCount, @contentHash)
      ON CONFLICT (workspace, meeting_id) DO UPDATE SET
        series = excluded.series, date = excluded.date, start_time = excluded.start_time,
-       end_time = excluded.end_time, mode = excluded.mode, attendees = excluded.attendees,
+       end_time = excluded.end_time, mode = excluded.mode, attendees = excluded.attendees, skills = excluded.skills,
        summary = excluded.summary, excerpt = excluded.excerpt, problems = excluded.problems, topic_count = excluded.topic_count,
        content_hash = excluded.content_hash`
   ).run({
     ...row,
     attendees: JSON.stringify(row.attendees),
+    skills: JSON.stringify(row.skills),
     problems: JSON.stringify(row.problems)
   })
   const pk = (

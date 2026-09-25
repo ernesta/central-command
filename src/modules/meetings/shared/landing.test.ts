@@ -12,6 +12,7 @@ const row = (id: string, over: Partial<MeetingIndexRow> = {}): MeetingIndexRow =
   end: null,
   mode: null,
   attendees: [],
+  skills: [],
   summary: '',
   excerpt: '',
   problems: [],

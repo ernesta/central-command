@@ -371,7 +371,8 @@ export function planMeetingImport(input: PlanInput): MeetingImportPlan {
       end,
       mode: modeOf(row),
       attendees: note.attendees,
-      discussed: []
+      discussed: [],
+      skills: []
     }
     const stem = meetingBaseName(note.date, note.series, taken)
     taken.add(stem)

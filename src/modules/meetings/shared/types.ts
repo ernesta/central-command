@@ -28,6 +28,8 @@ export interface MeetingMeta {
   attendees: string[]
   /** Topic headings ticked as discussed. */
   discussed: string[]
+  /** Skills the meeting built, as written (normally from the shared skills list); at most MAX_SKILLS. */
+  skills: string[]
 }
 
 /** Which meeting: the folder (workspace) and the file's base name, e.g. "2026-09-24 Supervision". */
@@ -54,6 +56,7 @@ export interface MeetingIndexRow {
   end: string | null
   mode: MeetingMode | null
   attendees: string[]
+  skills: string[]
   /** Plain text of the Summary section; '' when empty. */
   summary: string
   /** Plain text of the whole note, for search. */

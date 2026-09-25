@@ -235,6 +235,9 @@ export function parseMeta(head: string): ParsedMeta {
         .filter(Boolean),
       discussed: asList(value('discussed'))
         .map((s) => s.trim())
+        .filter(Boolean),
+      skills: asList(value('skills'))
+        .map((s) => s.trim())
         .filter(Boolean)
     },
     problems
@@ -278,6 +281,7 @@ const ORDER: (keyof MeetingMeta)[] = [
   'end',
   'mode',
   'attendees',
+  'skills',
   'discussed'
 ]
 

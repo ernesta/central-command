@@ -117,7 +117,8 @@ describe('parseMeta', () => {
       end: '15:00',
       mode: 'in-person',
       attendees: ['Kathy Rastle', 'Arnaud Chevalier', 'Ernesta Orlovaitė'],
-      discussed: ['Study 1 model results']
+      discussed: ['Study 1 model results'],
+      skills: []
     })
   })
 
@@ -269,5 +270,21 @@ describe('normaliseTime', () => {
     expect(normaliseTime('24:00')).toBeNull()
     expect(normaliseTime('10:5')).toBeNull()
     expect(normaliseTime('')).toBeNull()
+  })
+})
+
+describe('skills in the front matter', () => {
+  it('reads skills, and treats a missing key as none', () => {
+    const withSkills = updateHead(HEAD, { skills: ['Networking (RP)', 'Leadership (RP)'] })
+    expect(parseMeta(withSkills).meta.skills).toEqual(['Networking (RP)', 'Leadership (RP)'])
+    expect(parseMeta(HEAD).meta.skills).toEqual([])
+  })
+
+  it('writes skills after the attendees, keeps other keys and removes the key when emptied', () => {
+    const added = updateHead(HEAD, { skills: ['Networking (RP)'] })
+    const keys = added.split('\n').map((l) => l.split(':')[0])
+    expect(keys.indexOf('skills')).toBe(keys.indexOf('attendees') + 1)
+    expect(added).toContain('discussed: [Study 1 model results]')
+    expect(updateHead(added, { skills: [] })).toBe(HEAD)
   })
 })

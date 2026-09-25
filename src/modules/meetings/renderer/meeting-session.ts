@@ -53,6 +53,7 @@ const EMPTY_META: MeetingMeta = {
   end: null,
   mode: null,
   attendees: [],
+  skills: [],
   discussed: []
 }
 

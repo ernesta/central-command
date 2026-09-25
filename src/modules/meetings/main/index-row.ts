@@ -41,6 +41,7 @@ export function buildIndexRow(
     end: meta.end,
     mode: meta.mode,
     attendees: meta.attendees,
+    skills: meta.skills,
     summary,
     excerpt: markdownToExcerpt(body, EXCERPT_LENGTH),
     problems,
