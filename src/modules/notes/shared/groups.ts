@@ -129,7 +129,9 @@ export function filterTitle(filter: GroupFilter): string | null {
 
 export interface GroupOption {
   label: string
-  filter: GroupFilter
+  group: string
+  /** '' for a group itself. */
+  subgroup: string
   /** 0 for a group, 1 for a subgroup (indented in the selector). */
   depth: 0 | 1
   count: number
@@ -138,19 +140,20 @@ export interface GroupOption {
 /** The choices for a group selector: every group followed by its subgroups. */
 export function groupOptions(groups: readonly GroupSummary[]): GroupOption[] {
   return groups.flatMap((g) => [
-    {
-      label: g.name,
-      filter: { scope: 'group', group: g.name, subgroup: '' } as GroupFilter,
-      depth: 0 as const,
-      count: g.count
-    },
+    { label: g.name, group: g.name, subgroup: '', depth: 0 as const, count: g.count },
     ...g.subgroups.map((s) => ({
       label: groupLabel(g.name, s.name),
-      filter: { scope: 'group', group: g.name, subgroup: s.name } as GroupFilter,
+      group: g.name,
+      subgroup: s.name,
       depth: 1 as const,
       count: s.count
     }))
   ])
+}
+
+/** The list filter that shows an option's notes. */
+export function optionFilter(option: Pick<GroupOption, 'group' | 'subgroup'>): GroupFilter {
+  return { scope: 'group', group: option.group, subgroup: option.subgroup }
 }
 
 /** Turn whatever was remembered (possibly hand-edited) into a valid filter. */

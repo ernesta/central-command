@@ -10,6 +10,7 @@ import {
   landingGroups,
   matchesGroup,
   normaliseFilter,
+  optionFilter,
   reconcileFilter,
   resolveNames,
   sameFilter
@@ -130,11 +131,18 @@ describe('selector and remembered filter', () => {
   const groups = deriveGroups([row('a', 'Thesis', 'Methods'), row('b', 'Analysis')])
 
   it('lists each group followed by its subgroups', () => {
-    expect(groupOptions(groups).map((o) => [o.label, o.depth, o.count])).toEqual([
-      ['Analysis', 0, 1],
-      ['Thesis', 0, 1],
-      ['Thesis › Methods', 1, 1]
+    expect(
+      groupOptions(groups).map((o) => [o.label, o.group, o.subgroup, o.depth, o.count])
+    ).toEqual([
+      ['Analysis', 'Analysis', '', 0, 1],
+      ['Thesis', 'Thesis', '', 0, 1],
+      ['Thesis › Methods', 'Thesis', 'Methods', 1, 1]
     ])
+    expect(optionFilter(groupOptions(groups)[2])).toEqual({
+      scope: 'group',
+      group: 'Thesis',
+      subgroup: 'Methods'
+    })
   })
 
   it('reads a remembered filter leniently', () => {
