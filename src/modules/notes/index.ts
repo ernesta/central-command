@@ -1,6 +1,7 @@
 import { createElement } from 'react'
 import type { LiveModuleManifest } from '../types'
 import { NotePage } from './renderer/NotePage'
+import { NotesPage } from './renderer/NotesPage'
 
 /** Notes: one flat folder of Markdown notes, grouped by a field on each note, with a few pinned. */
 export const notesModule: LiveModuleManifest = {
@@ -8,5 +9,8 @@ export const notesModule: LiveModuleManifest = {
   workspace: 'research',
   label: 'Notes',
   status: 'live',
-  routes: [{ path: 'n/:id', element: createElement(NotePage) }]
+  routes: [
+    { path: 'all', element: createElement(NotesPage) },
+    { path: 'n/:id', element: createElement(NotePage) }
+  ]
 }

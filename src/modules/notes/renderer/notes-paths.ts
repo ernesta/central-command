@@ -12,7 +12,7 @@ export function groupRoute(group: string, subgroup = ''): string {
 }
 
 /** The list of notes that have no group. */
-export const ungroupedRoute = `${notesListRoute}?group=none`
+export const ungroupedRoute = `${notesListRoute}?ungrouped=1`
 
 /** The route of one note. Ids contain spaces, so they are encoded. */
 export function noteRoute(id: string): string {
