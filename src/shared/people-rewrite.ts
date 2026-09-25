@@ -43,3 +43,10 @@ export function renameInList(
   }
   return out
 }
+
+/** What rewriting the note files did: how many were changed, and which were left alone because they changed meanwhile. */
+export interface RewriteReport {
+  changed: number
+  /** File names skipped because they were edited while the rewrite ran; nothing was written to them. */
+  skipped: string[]
+}
