@@ -87,7 +87,7 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   People page is built (`docs/DECISIONS.md`, "People page"; mockup `docs/design/people-and-plan-mockup.html`) and awaits the user's review.
 - **Notes** is built (all nine stages of `docs/NOTES_PLAN.md`; `docs/DECISIONS.md`, "Notes") and awaits the user's review: one flat folder of
   notes, a group and optional subgroup per note shown as `Thesis › Methods`, up to four pinned notes, quick capture with Mod-Shift-n, and
-  `npm run import:notes`, which has not been applied to the real library (the user must read its dry run first). Studies stays "Coming
+  `npm run import:notes`, applied to the real library on 25 Sep 2026 (12 notes, ungrouped, wiki links stripped). Notes is pushed. Studies stays "Coming
   soon"; Ideas, Data Sources, Inbox and Thesis are not modules.
 - The app name lives in one place (`src/shared/app-info.ts`); it may be renamed again.
 

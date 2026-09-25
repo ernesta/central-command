@@ -30,11 +30,13 @@
 - [ ] A "decision log" for training types (see above): design it with the user when they start mapping; then suggest types automatically.
 - [x] **People page built** (see `docs/DECISIONS.md` "People page"). Waiting for the user's review.
 - [ ] **Decide what Studies should be** (it stays "Coming soon"); and later what Ideas becomes.
-- [x] **Notes built** (all nine stages of `docs/NOTES_PLAN.md`; see `docs/DECISIONS.md`, "Notes"). Waiting for the user's review.
+- [x] **Notes built** (all nine stages of `docs/NOTES_PLAN.md`; see `docs/DECISIONS.md`, "Notes"), pushed. Waiting for the user's review.
 - [ ] **Review Notes** against the mockup (`docs/design/notes-mockup.html`): the landing, All notes, a note (Group field, pin, dates, word
       count) and quick capture (Mod-Shift-n). Say what to change.
-- [ ] **Read the Notes import dry run and say when to apply it**: `npm run import:notes -- --vault ~/RHUL/Scribbles/RHUL` lists the 12
-      notes and the front matter each would get (all ungrouped). It has not been run on the real library; apply only when the user says so.
+- [x] **Notes import applied** on 25 Sep 2026: 12 notes from Data Sources, Ideas, Thesis and Placement are in
+      `~/CentralCommand/notes/notes/research/`, all ungrouped, wiki links stripped. Group them in the app.
+- [ ] **Group the 12 imported notes** (Notes → Ungrouped). The user wants Data Sources to become a single note eventually; the six
+      came across separately.
 - [ ] **Later, Notes**: a system-wide quick-capture shortcut (works when the app is in the background); Thesis extras (chapter progress,
       word counts per chapter).
 - [ ] **Claude, later**: Meetings' and Training's tables still carry their own copy of the row-key handling that Notes gets from
