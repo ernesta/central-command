@@ -46,8 +46,6 @@ data.
 
 ## Later, roughly in order (not for Phase 1)
 
-- **A list of keyboard shortcuts**, probably in Settings (asked for during Meetings: Cmd/Ctrl+[ back, Cmd/Ctrl+Shift+T and
-  `/todo` for the TODO helper, the shortcuts of the notes editor, and so on). Add each new shortcut to it as it is built.
 - Real Claude wiring for the Ask panel; embedded terminal for Build
 - Shared task engine (tasks, dates, time tracking, lists, subtasks, table/board/calendar views) and a one-time ClickUp import
 - Studies, Thesis, Training (notes, log, PDF export), Ideas, Data Sources, Inbox

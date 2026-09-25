@@ -49,6 +49,9 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
 - Renderer access to the main process goes through `window.api` only; add a
   method to `Api` and `IPC` in `src/shared/api.ts` rather than exposing anything
   generic.
+- Every keyboard shortcut is listed in Settings. App-level handlers match with `matchesShortcut` from `src/shared/shortcuts.ts`
+  using the same chord string the list shows; a module adds its shortcuts to `shortcuts` in its manifest. Add or change the
+  entry whenever you add or change a shortcut.
 - Commits are small: one per feature and per standalone part of a feature.
 
 ## Where things stand and where to look

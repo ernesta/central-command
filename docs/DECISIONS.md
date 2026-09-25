@@ -503,3 +503,18 @@ list. `convertPseudoHeadings` (`meetings/shared/pseudo-headings.ts`) turns such 
 - **Dry run on the real notes:** 14 lines in 5 notes (the two Luminos and three Supervision notes' topics plus the
   Rastle Lab one), matching a separate search of the files. A full `--apply` on a scratch copy changed exactly those 14
   lines, the backups equalled the originals and a second run changed nothing. It has not been applied to the real notes.
+
+## Keyboard shortcuts list (Settings)
+
+- **One vocabulary.** `src/shared/shortcuts.ts` defines a chord as a string (`Mod-Shift-t`, as ProseMirror writes them), a
+  matcher (`matchesShortcut`: exactly those modifiers, Cmd or Ctrl for `Mod`) and the display (⌘⇧⌥ on a Mac, Ctrl/Shift/Alt
+  elsewhere). Back, Ask and the TODO helper match with the same chord string the list shows, so they cannot drift apart.
+- **Modules contribute groups** through `shortcuts` in their manifest (like `settingsSection`), so the shell imports no module
+  code. The notes editor's group lives in `renderer/src/notes/notes-shortcuts.ts`.
+- **Editor shortcuts are Milkdown's, so the list is checked against it.** Milkdown does not export its keymaps, so a test reads
+  the built source of its presets and history plugin and requires every listed chord to appear there (the test caught that
+  Milkdown spells redo `Shift-Mod-z`). An upgrade that changes a key fails the test.
+- **A bug found by testing the app:** Cmd/Ctrl+`[` is "go back" and also the editor's "move list item out a level". Both ran, so
+  pressing it in a list left the page. The shell's handler now ignores a key press the editor already handled
+  (`defaultPrevented`); outside a list, or on a first-level item that cannot move out, it still goes back.
+  Checked in the production build and dev mode.
