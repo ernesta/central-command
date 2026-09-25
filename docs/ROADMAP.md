@@ -21,7 +21,7 @@
 - [ ] **Four supervision meetings have times that differ from the Inkpath log** (the files were left as they are): 11 Nov 2025 (file
       15:30–16:00, log 15:30–16:30), 16 Oct 2025 (14:00–14:30 against 14:00–14:15), 26 Jun 2026 (10:00–11:45 against 10:00–11:15), 29 May 2026
       (11:00–12:00 against 11:00–11:45). Say which is right.
-- [ ] **Two Rastle Lab meetings in the log have no meeting file** (rows for 2025-12-17 and 2026-06-22 or similar; create them if wanted).
+- [ ] **Two Rastle Lab meetings in the log have no meeting file** (1 Jun 2026 13:00–14:00 and 22 Jun 2026 15:00–16:00; create the meeting files if wanted).
 - [ ] **Twelve trainings have typed hours that differ from the times** (for example Rapid Reading typed 0 h, times give 3 h). The app
       uses the times; check the times are right. `npm run import:training` lists them.
 - [ ] **The 61 entries only in the older Word training log** (no twin in the Inkpath log) were not imported. Say if any should be.
