@@ -2,8 +2,11 @@ import { ArrowLeft, Download } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
+import { academicYearLabel } from '@shared/academic-year'
+import { AcademicYearSelect } from '@renderer/components/AcademicYearSelect'
 import { SearchInput } from '@renderer/components/SearchInput'
 import { Select } from '@renderer/components/Select'
+import { useAcademicYear } from '@renderer/state/use-academic-year'
 import {
   DEFAULT_MEETINGS_QUERY,
   MODE_LABELS,
@@ -14,6 +17,8 @@ import {
   seriesOptions,
   type MeetingsQuery
 } from '../shared/query'
+import { meetingsInYear } from '../shared/hours'
+import { MeetingsHours } from './MeetingsHours'
 import { MeetingsTable } from './MeetingsTable'
 import { NewMeetingButton } from './NewMeetingButton'
 import { meetingsBase, todayIso } from './meetings-paths'
@@ -36,10 +41,17 @@ export function MeetingsPage(): React.JSX.Element {
   const set = (patch: Partial<MeetingsQuery>): void => setQuery(patch)
 
   const today = todayIso()
-  const all = rows ?? []
+  const everything = rows ?? []
+  const { year, years, setYear } = useAcademicYear(
+    everything.map((r) => r.date),
+    today
+  )
+  const all = meetingsInYear(everything, year)
   // A remembered series or attendee that no longer exists in the files must not hide everything.
   const query =
-    rows === null ? saved : reconcileQuery(saved, seriesOptions(all), attendeeNames(all))
+    rows === null
+      ? saved
+      : reconcileQuery(saved, seriesOptions(everything), attendeeNames(everything))
   const visible = queryMeetings(all, query, people)
   const filtersActive =
     query.search.trim() !== '' ||
@@ -50,9 +62,15 @@ export function MeetingsPage(): React.JSX.Element {
   let content: React.ReactNode = null
   if (rows === null) content = null
   else if (all.length === 0) {
-    content = (
-      <EmptyState heading="No meetings yet" message="Create a meeting to start keeping notes." />
-    )
+    content =
+      everything.length === 0 ? (
+        <EmptyState heading="No meetings yet" message="Create a meeting to start keeping notes." />
+      ) : (
+        <EmptyState
+          heading={`No meetings in ${academicYearLabel(year)}`}
+          message="Create a meeting, or choose another academic year."
+        />
+      )
   } else if (visible.length === 0) {
     content = (
       <EmptyState heading="No matching meetings" message="Try a different search or filter.">
@@ -74,7 +92,10 @@ export function MeetingsPage(): React.JSX.Element {
         <NewMeetingButton />
       </header>
 
+      {rows !== null && <MeetingsHours rows={everything} year={year} today={today} />}
+
       <div className={styles.filters}>
+        <AcademicYearSelect year={year} years={years} onChange={setYear} />
         <SearchInput
           label="Search meetings"
           value={query.search}

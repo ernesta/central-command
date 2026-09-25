@@ -1,13 +1,17 @@
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
+import { AcademicYearSelect } from '@renderer/components/AcademicYearSelect'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Segmented } from '@renderer/components/Segmented'
+import { useAcademicYear } from '@renderer/state/use-academic-year'
 import { recentAndUpcoming, seriesLine, seriesSummaries } from '../shared/landing'
+import { meetingsInYear } from '../shared/hours'
 import { mine, openTodos } from '../shared/open-todos'
 import { MODE_LABELS, initialsFor, isUpcoming } from '../shared/query'
 import { durationMinutes, formatDate, formatDuration, formatShortDate } from '../shared/time'
 import type { MeetingIndexRow } from '../shared/types'
+import { MeetingsHours } from './MeetingsHours'
 import { NewMeetingButton } from './NewMeetingButton'
 import { OpenTodos } from './OpenTodos'
 import { meetingRoute, meetingsListRoute, seriesRoute, todayIso } from './meetings-paths'
@@ -42,7 +46,11 @@ export function MeetingsLanding(): React.JSX.Element {
   const open = openTodos(all)
   const shown = whose === 'mine' && me ? mine(open, me.initials) : open
   const { upcoming, recent } = recentAndUpcoming(all, today)
-  const summaries = seriesSummaries(all, today)
+  const { year, years, setYear } = useAcademicYear(
+    all.map((r) => r.date),
+    today
+  )
+  const summaries = seriesSummaries(meetingsInYear(all, year), today)
 
   return (
     <div className={styles.page}>
@@ -99,14 +107,19 @@ export function MeetingsLanding(): React.JSX.Element {
           </section>
 
           <section className={styles.section} aria-labelledby="series">
-            <h2 id="series" className={styles.label}>
-              Series
-            </h2>
+            <div className={styles.sectionHead}>
+              <h2 id="series" className={styles.label}>
+                Academic year
+              </h2>
+              <AcademicYearSelect year={year} years={years} onChange={setYear} />
+            </div>
+            <MeetingsHours rows={all} year={year} today={today} />
+            <p className={styles.hint}>Series in this academic year. Open one to see its meetings.</p>
             <div className={styles.cards}>
               {summaries.map((s) => (
                 <div key={s.series} className={styles.card}>
                   <h3 className={styles.cardTitle}>
-                    <Link className={styles.cardLink} to={seriesRoute(s.series)}>
+                    <Link className={styles.cardLink} to={seriesRoute(s.series, year)}>
                       {s.series}
                     </Link>
                   </h3>

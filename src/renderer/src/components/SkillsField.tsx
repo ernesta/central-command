@@ -98,7 +98,7 @@ export function SkillsField({ skills, onChange }: SkillsFieldProps): React.JSX.E
                         className={styles.option}
                         onClick={() => {
                           onChange([...skills, s.name])
-                          if (skills.length + 1 >= MAX_SKILLS) close()
+                          close()
                         }}
                       >
                         {s.name}

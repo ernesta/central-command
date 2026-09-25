@@ -9,7 +9,7 @@ import styles from './MeetingsTable.module.css'
 const VISIBLE_ATTENDEES = 3
 
 /**
- * Date, Time, Duration, Series, Type, Summary, Attendees. Clicking anywhere on a row opens the meeting.
+ * Date, Time, Duration, Series, Type, Summary, Skills, Attendees. Clicking anywhere on a row opens the meeting.
  * Like the Readings table, the table is one tab stop: arrow keys, Home/End and PageUp/PageDown move between
  * rows (the whole row is highlighted) and Enter opens the meeting.
  */
@@ -65,11 +65,13 @@ export function MeetingsTable({
       >
         <thead>
           <tr>
-            {['Date', 'Time', 'Duration', 'Series', 'Type', 'Summary', 'Attendees'].map((label) => (
-              <th key={label} className={styles.th} scope="col">
-                {label}
-              </th>
-            ))}
+            {['Date', 'Time', 'Duration', 'Series', 'Type', 'Summary', 'Skills', 'Attendees'].map(
+              (label) => (
+                <th key={label} className={styles.th} scope="col">
+                  {label}
+                </th>
+              )
+            )}
           </tr>
         </thead>
         <tbody>
@@ -109,6 +111,17 @@ export function MeetingsTable({
                 <td className={styles.nowrap}>{row.mode ? MODE_LABELS[row.mode] : '—'}</td>
                 <td className={styles.summary}>
                   {row.summary || <span className={styles.missing}>No summary yet.</span>}
+                </td>
+                <td className={styles.skills}>
+                  {row.skills.length === 0 ? (
+                    '—'
+                  ) : (
+                    <ul className={styles.skillList}>
+                      {row.skills.map((skill) => (
+                        <li key={skill}>{skill}</li>
+                      ))}
+                    </ul>
+                  )}
                 </td>
                 <td className={styles.attendees}>
                   <span className={styles.chips}>
