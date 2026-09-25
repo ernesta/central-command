@@ -673,5 +673,12 @@ or found on the way:
   A converted note is checked against its source (the text byte for byte, line count, TODO words, ticked and unticked boxes, every
   line of front matter the note already had); a note that fails is left out and reported. A note already imported (its `imported-from`
   is in the folder) is skipped, so a second run adds nothing, and a taken name gets ` 2`. Mutation checks are in `note-import.test.ts`.
-- **Known limit.** The editor escapes bare `[` (see "Notes editor" above), so `[[Link]]` and `![[image]]` in an imported note become
-  `\[\[Link]]` the first time the note is edited. The import itself leaves them as they were. See the ROADMAP.
+- **Wiki links are stripped by the import** (the user's call): `[[Note]]` becomes `Note` and `[[Note|Shown]]` becomes `Shown`, fenced
+  code is left alone, and the check expects exactly that difference. A note with an `![[embed]]` is left out and reported (the user
+  believes there are none; the real vault's dry run finds one link and no embeds). This also avoids the editor's escaping of bare `[`
+  (`\[\[Link]]` on the first edit), which is a known choice in "Notes editor" above.
+- **Empty notes remove themselves** (the user's call). Leaving a note page asks the main process to `discardIfEmpty`: no title, no
+  text, not pinned and no front matter keys the app does not own, so an imported note is never touched. It deletes the file outright
+  (the one exception to the Trash rule: nothing is in it, and the Trash would fill with empty `Untitled` files). The renderer waits
+  300 ms and only asks if the session is still disposed, because in development React unmounts and mounts a new page at once. Not
+  swept at start-up, so an empty note left by a crash stays until opened and left.

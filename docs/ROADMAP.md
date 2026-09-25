@@ -35,15 +35,10 @@
       count) and quick capture (Mod-Shift-n). Say what to change.
 - [ ] **Read the Notes import dry run and say when to apply it**: `npm run import:notes -- --vault ~/RHUL/Scribbles/RHUL` lists the 12
       notes and the front matter each would get (all ungrouped). It has not been run on the real library; apply only when the user says so.
-- [ ] **Decide about `[[wiki links]]` in imported notes**: the import copies them untouched, but the editor rewrites them as `\[\[Link]]`
-      the first time a note is edited (the editor escapes bare `[`, a known choice in `docs/DECISIONS.md`). An un-escape for `[[` and
-      `![[` in the shared editor would fix it for every module; it changes Readings and Meetings too, so it is the user's call.
 - [ ] **Later, Notes**: a system-wide quick-capture shortcut (works when the app is in the background); Thesis extras (chapter progress,
       word counts per chapter).
 - [ ] **Claude, later**: Meetings' and Training's tables still carry their own copy of the row-key handling that Notes gets from
       `useRowNavigation`; switch them over once there is real data to check them against.
-- [ ] **Empty notes pile up**: "New note" and the shortcut create the file at once, so a note started and never typed in stays as an empty
-      `Untitled`. Say if untouched empty notes should be removed when you leave them.
 - [ ] **Try the People page** (Research → People) and say what to change.
 - [ ] Re-check the changed screens in dev mode (StrictMode) and the built app after any further change to lists, landings or entry pages.
 - [ ] **Say when a filter is applied** (later, the user's call when): opening the Supervision series card shows "All meetings" with only that
