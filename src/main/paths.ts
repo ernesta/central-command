@@ -11,6 +11,8 @@ export interface AppPaths {
   readingsNotes: string
   /** One sub-folder per workspace, e.g. meetings/research. */
   meetingsNotes: string
+  /** One sub-folder per workspace, e.g. training/research. */
+  trainingNotes: string
   people: string
   settings: string
 }
@@ -28,6 +30,7 @@ export function resolvePaths(home: string): AppPaths {
     notes,
     readingsNotes: join(notes, 'readings'),
     meetingsNotes: join(notes, 'meetings'),
+    trainingNotes: join(notes, 'training'),
     people: join(data, 'people.json'),
     settings: join(root, 'settings.json')
   }

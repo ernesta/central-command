@@ -12,6 +12,7 @@ describe('resolvePaths', () => {
     expect(p.defaultBibExport).toBe('/home/someone/CentralCommand/data/zotero-export.bib')
     expect(p.readingsNotes).toBe('/home/someone/CentralCommand/notes/readings')
     expect(p.meetingsNotes).toBe('/home/someone/CentralCommand/notes/meetings')
+    expect(p.trainingNotes).toBe('/home/someone/CentralCommand/notes/training')
     expect(p.people).toBe('/home/someone/CentralCommand/data/people.json')
     expect(p.settings).toBe('/home/someone/CentralCommand/settings.json')
   })
