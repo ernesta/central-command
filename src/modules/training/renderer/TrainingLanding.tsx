@@ -29,7 +29,13 @@ import {
 } from '../shared/rules'
 import { TRAINING_MODE_LABELS, TRAINING_SERIES, type TrainingIndexRow } from '../shared/types'
 import { NewTrainingButton } from './NewTrainingButton'
-import { entryRoute, seriesRoute, todayIso, trainingListRoute } from './training-paths'
+import {
+  entryRoute,
+  seriesRoute,
+  todayIso,
+  trainingListRoute,
+  trainingPlanRoute
+} from './training-paths'
 import { useTrainingList } from './useTrainingList'
 
 /** What to say at the right of a "recent and upcoming" row. */
@@ -83,6 +89,7 @@ export function TrainingLanding(): React.JSX.Element {
         title="Training"
         actions={
           <>
+            <AllLink to={`${trainingPlanRoute}?year=${year}`}>Training plan</AllLink>
             <AllLink to={`${trainingListRoute}?year=${year}`}>All training</AllLink>
             <NewTrainingButton />
           </>

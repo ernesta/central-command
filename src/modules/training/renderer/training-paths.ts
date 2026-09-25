@@ -11,6 +11,9 @@ export function seriesRoute(series: string, year?: number): string {
   return `${trainingListRoute}?series=${encodeURIComponent(series)}${yearPart}`
 }
 
+/** The training plan of an academic year (chosen with `?year=`). */
+export const trainingPlanRoute = `${trainingBase}/plan`
+
 /** The route of one entry. Ids contain spaces, so they are encoded. */
 export function entryRoute(id: string): string {
   return `${trainingBase}/t/${encodeURIComponent(id)}`

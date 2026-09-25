@@ -4,6 +4,7 @@ import { TrainingCard } from './renderer/TrainingCard'
 import { TrainingEntryPage } from './renderer/TrainingEntryPage'
 import { TrainingLanding } from './renderer/TrainingLanding'
 import { TrainingPage } from './renderer/TrainingPage'
+import { TrainingPlanPage } from './renderer/TrainingPlanPage'
 import { TrainingSettings } from './renderer/TrainingSettings'
 
 /** Training: the formal training log, with notes and linked files per entry and hours towards a yearly aim. */
@@ -15,6 +16,7 @@ export const trainingModule: LiveModuleManifest = {
   routes: [
     { path: '', element: createElement(TrainingLanding) },
     { path: 'all', element: createElement(TrainingPage) },
+    { path: 'plan', element: createElement(TrainingPlanPage) },
     { path: 't/:id', element: createElement(TrainingEntryPage) }
   ],
   landingCard: TrainingCard,
