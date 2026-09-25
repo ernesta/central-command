@@ -1,7 +1,7 @@
 # Notes module: plan
 
-Status: **approved, not built** (the user approved the design and the mockup, `docs/design/notes-mockup.html`; open it in a
-browser). Nothing is built yet. Read it with `CLAUDE.md`, `docs/DECISIONS.md` and the Meetings and Training plans; Meetings is the pattern to
+Status: **built, awaiting the user's review** (the user approved the design and the mockup, `docs/design/notes-mockup.html`; open it in
+a browser; what was decided while building is in `docs/DECISIONS.md`, "Notes"). Read it with `CLAUDE.md`, `docs/DECISIONS.md` and the Meetings and Training plans; Meetings is the pattern to
 copy. "Ask" marks an open question at the end.
 
 ## What the user needs

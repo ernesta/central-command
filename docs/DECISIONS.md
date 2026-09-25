@@ -632,3 +632,46 @@ Mockup: `docs/design/people-and-plan-mockup.html` (sections 1 to 3). The user as
   unless they attended that meeting. Archiving clears "me".
 - Not built: an initials chip that links to the page (mockup mentions it); it would compete with the chip's remove button.
 - `npm run people:from-notes` lists people named in notes but missing from the list (dry run by default).
+
+## Notes (`docs/NOTES_PLAN.md`)
+
+Built as planned in nine stages (pure rules, main core, IPC, note page, list, landing, quick capture, import, polish). What was decided
+or found on the way:
+
+- **Files and index.** One Markdown file per note in `~/CentralCommand/notes/notes/<workspace>/` (only `research` is created and watched).
+  Front matter is `title`, `group`, `subgroup`, `pinned`, `created`; other keys (the import adds `imported-from`) are kept as they are.
+  The file name follows the title (`Methods: participants` is `Methods participants.md`: a colon followed by a space is dropped, other
+  colons become `-`), ` 2`, ` 3` when taken, `Untitled` without a title. A file whose name already fits its title (the title, or the
+  title and a number) is not renamed again. The index (`notes/0001_notes`) keeps the file's modified time as "edited", so edits made in
+  another tool show; it is rebuilt from the folder at start and pruned before every list.
+- **Groups are derived and compare loosely.** A group exists while a note uses it. Names compare ignoring case, accents and spacing and
+  the first spelling found wins, so typing `thesis` files a note under `Thesis`; a lone note may still respell its own group. A name may
+  not contain `/`, `\` or `›`. Moving a note to another group leaves its old subgroup behind; a note with no group has no subgroup
+  (both enforced when the file is written). Choosing a group in a filter includes its subgroups.
+- **Saving.** As Meetings: a save is `{ meta?, body? }` applied to what is on disk and checked against the hash of the whole file, so
+  the fields and the text cannot overwrite each other; a missing file is an error and only `create` makes files (exclusively, so it
+  cannot replace one, even one the index does not know). Pinning a fifth note is refused in the main process, not just greyed out.
+  Delete moves the file to the macOS Trash and drops the row only after the move worked. Mutation checks (a test fails when the hash
+  guard, the folder check when creating or renaming, the Trash move or the four-pin limit is removed) are in `notes-store.test.ts`.
+- **Landing.** Pinned (the four most recently edited if a hand-edited file marks more), Groups (the six most recently edited as cards,
+  Ungrouped always among them and last, dashed; the rest behind "Show all" as a row of names and counts) and Recent. Landing cards and
+  the recent list are the shared ones; `SeriesCards` gained an optional second line, a pin and a dashed border. The group and its
+  subgroups only appear as a line on their card.
+- **Quick capture** (`Mod-Shift-n`) is handled by a `QuickCapture` component the module manifest lists under the new optional `globals`
+  (the shell mounts it on every page), so the shell knows nothing about Notes. It starts the note in the group the All notes page is
+  showing (the page tells `capture-group.ts`, a plain module variable, because the shortcut is handled outside the page) and puts
+  the cursor in the text; "New note" puts it in the title. It is listed in Settings through the manifest's `shortcuts`.
+- **A dev-only bug found by using the app.** The editor's first version focused itself once. React StrictMode throws the first editor
+  away, so in `npm run dev` the cursor landed in nothing and text typed right after the shortcut was lost if you left at once. The
+  editor now focuses each time one becomes ready (`autoFocus` on `NotesEditor`). The production build was fine, which is why both
+  modes are checked.
+- **Reuse.** The note page and session copy the Training entry page (`NoteSession` extends `EntrySession`, which now also reports
+  `updatedAt`, used for "Updated"). The table's keyboard handling is a new shared hook, `useRowNavigation`; Meetings' and Training's
+  tables still have their own copy (on the ROADMAP). `DeleteDialog` takes an optional `contents` ("and all its text").
+- **The import** (`npm run import:notes`) reads the four vault folders, lists deeper folders and everything else it did not read, and
+  creates files only: nothing existing is touched, so it does not make backups (the plan mentioned one; there is nothing to back up).
+  A converted note is checked against its source (the text byte for byte, line count, TODO words, ticked and unticked boxes, every
+  line of front matter the note already had); a note that fails is left out and reported. A note already imported (its `imported-from`
+  is in the folder) is skipped, so a second run adds nothing, and a taken name gets ` 2`. Mutation checks are in `note-import.test.ts`.
+- **Known limit.** The editor escapes bare `[` (see "Notes editor" above), so `[[Link]]` and `![[image]]` in an imported note become
+  `\[\[Link]]` the first time the note is edited. The import itself leaves them as they were. See the ROADMAP.
