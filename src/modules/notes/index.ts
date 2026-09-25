@@ -1,7 +1,9 @@
 import { createElement } from 'react'
 import type { LiveModuleManifest } from '../types'
+import { NOTES_SHORTCUTS } from './shared/shortcuts'
 import { NotesCard } from './renderer/NotesCard'
 import { NotesLanding } from './renderer/NotesLanding'
+import { QuickCapture } from './renderer/QuickCapture'
 import { NotePage } from './renderer/NotePage'
 import { NotesPage } from './renderer/NotesPage'
 
@@ -16,5 +18,7 @@ export const notesModule: LiveModuleManifest = {
     { path: 'all', element: createElement(NotesPage) },
     { path: 'n/:id', element: createElement(NotePage) }
   ],
-  landingCard: NotesCard
+  landingCard: NotesCard,
+  globals: QuickCapture,
+  shortcuts: NOTES_SHORTCUTS
 }

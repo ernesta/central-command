@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
@@ -14,6 +14,7 @@ import {
   type GroupFilter
 } from '../shared/groups'
 import { DEFAULT_NOTES_QUERY, queryNotes, reconcileQuery, type NotesQuery } from '../shared/query'
+import { setCaptureGroup } from './capture-group'
 import { NewNoteButton } from './NewNoteButton'
 import { notesBase } from './notes-paths'
 import { NotesTable } from './NotesTable'
@@ -63,6 +64,14 @@ export function NotesPage(): React.JSX.Element {
   const title = filterTitle(query.group)
   const filtered = query.search.trim() !== '' || query.group.scope !== 'all'
 
+  // The quick-capture shortcut starts new notes in the group shown here (see `capture-group.ts`).
+  const captureGroup = query.group.scope === 'group' ? query.group.group : ''
+  const captureSubgroup = query.group.scope === 'group' ? query.group.subgroup : ''
+  useEffect(() => {
+    setCaptureGroup(captureGroup, captureSubgroup)
+    return () => setCaptureGroup('', '')
+  }, [captureGroup, captureSubgroup])
+
   let content: React.ReactNode = null
   if (rows === null) content = null
   else if (everything.length === 0) {
@@ -84,10 +93,7 @@ export function NotesPage(): React.JSX.Element {
       <header className={styles.header}>
         <h1 className={styles.heading}>{title ?? 'All notes'}</h1>
         <div className={styles.actions}>
-          <NewNoteButton
-            group={query.group.scope === 'group' ? query.group.group : ''}
-            subgroup={query.group.scope === 'group' ? query.group.subgroup : ''}
-          />
+          <NewNoteButton group={captureGroup} subgroup={captureSubgroup} />
         </div>
       </header>
 
