@@ -43,20 +43,22 @@ describe('skills', () => {
     ])
   })
 
-  it('sorts skills alphabetically, then by group (General, Specialist, Research in Practice), unknown last', () => {
+  it('sorts skills by group (General, Specialist, Research in Practice), each alphabetical, unknown last', () => {
     expect(
       sortSkills([
         'Networking (RP)',
         'Quantitative skills (SS)',
         'Zebra (Live)',
         'Quantitative skills (GS)',
-        'Data management and analysis (GS)'
+        'Data management and analysis (GS)',
+        'Career development (RP)'
       ])
     ).toEqual([
       'Data management and analysis (GS)',
-      'Networking (RP)',
       'Quantitative skills (GS)',
       'Quantitative skills (SS)',
+      'Career development (RP)',
+      'Networking (RP)',
       'Zebra (Live)'
     ])
   })

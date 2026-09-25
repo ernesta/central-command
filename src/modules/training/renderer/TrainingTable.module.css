@@ -144,15 +144,12 @@
   margin-top: 2px;
   color: var(--text-secondary);
 }
-.marksCell {
-  width: 1%;
-  white-space: nowrap;
-}
 .marks {
   display: inline-flex;
-  gap: 6px;
+  gap: 4px;
+  margin-right: 6px;
   color: var(--text-muted);
-  vertical-align: middle;
+  vertical-align: -2px;
 }
 /* Imported entries start without a type, so this is quiet rather than an error. */
 .noType {

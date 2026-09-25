@@ -1,5 +1,5 @@
 import { academicYearLabel } from '@shared/academic-year'
-import { formatHours } from '@shared/skills'
+import { formatHours, sortSkills } from '@shared/skills'
 import { durationMinutes, formatDate } from '@shared/time'
 import { compareNewestFirst, entriesInYear, isUpcoming, trainingHours } from './rules'
 import { typeLabel, type TrainingIndexRow } from './types'
@@ -49,13 +49,14 @@ export function trainingReportHtml(input: TrainingReportInput): string {
 <td class="nw r">${minutes === null ? '' : escapeHtml(formatHours(minutes))}</td>
 <td>${escapeHtml(typeLabel(r.type))}</td>
 <td><strong>${escapeHtml(r.title || 'Untitled')}</strong>${r.series ? ` <span class="q">${escapeHtml(r.series)}</span>` : ''}${r.summary ? `<br>${escapeHtml(r.summary)}` : ''}</td>
-<td>${r.skills.map(escapeHtml).join('<br>')}</td>
+<td>${sortSkills(r.skills).map(escapeHtml).join('<br>')}</td>
 <td>${r.leads.map(escapeHtml).join('<br>')}</td>
 </tr>`
     })
     .join('\n')
 
-  const skills = hours.perSkill
+  const skills = sortSkills(hours.perSkill.map((s) => s.skill))
+    .map((name) => hours.perSkill.find((s) => s.skill === name)!)
     .map((s) => `${escapeHtml(s.skill)}: ${escapeHtml(formatHours(s.minutes))}`)
     .join(' · ')
 

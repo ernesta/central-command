@@ -1,4 +1,4 @@
-import { formatHours } from '@shared/skills'
+import { formatHours, sortSkills } from '@shared/skills'
 import styles from './HoursStrip.module.css'
 
 interface HoursStripProps {
@@ -52,12 +52,14 @@ export function HoursStrip({
       {perSkill.length > 0 && (
         <div className={styles.skills}>
           <ul className={styles.list} aria-label="Hours per skill">
-            {perSkill.map((s) => (
-              <li key={s.skill} className={styles.skill}>
-                <span>{s.skill}</span>
-                <span className={styles.hours}>{formatHours(s.minutes)}</span>
-              </li>
-            ))}
+            {sortSkills(perSkill.map((s) => s.skill))
+              .map((name) => perSkill.find((s) => s.skill === name)!)
+              .map((s) => (
+                <li key={s.skill} className={styles.skill}>
+                  <span>{s.skill}</span>
+                  <span className={styles.hours}>{formatHours(s.minutes)}</span>
+                </li>
+              ))}
           </ul>
           <p className={styles.note}>
             Each entry counts fully towards each of its skills, so these add up to more than the

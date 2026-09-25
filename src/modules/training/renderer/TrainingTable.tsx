@@ -76,16 +76,10 @@ export function TrainingTable({
               'Series',
               'Type',
               'Title and summary',
-              '',
               'Skills',
               'Leads'
             ].map((label) => (
-              <th
-                key={label}
-                className={styles.th}
-                scope="col"
-                aria-label={label === '' ? 'Notes and files' : undefined}
-              >
+              <th key={label} className={styles.th} scope="col">
                 {label}
               </th>
             ))}
@@ -135,18 +129,18 @@ export function TrainingTable({
                   )}
                 </td>
                 <td className={styles.titleCell}>
+                  {(row.hasNotes || row.folder) && (
+                    <span className={styles.marks}>
+                      {row.folder && (
+                        <Folder size={13} strokeWidth={1.75} aria-label="Has a linked folder" />
+                      )}
+                      {row.hasNotes && (
+                        <FileText size={13} strokeWidth={1.75} aria-label="Has notes" />
+                      )}
+                    </span>
+                  )}
                   <span className={styles.titleText}>{row.title || 'Untitled'}</span>
                   {row.summary && <span className={styles.summaryText}>{row.summary}</span>}
-                </td>
-                <td className={styles.marksCell}>
-                  <span className={styles.marks}>
-                    {row.hasNotes && (
-                      <FileText size={13} strokeWidth={1.75} aria-label="Has notes" />
-                    )}
-                    {row.folder && (
-                      <Folder size={13} strokeWidth={1.75} aria-label="Has a linked folder" />
-                    )}
-                  </span>
                 </td>
                 <td className={styles.skills}>
                   <SkillChips skills={row.skills} stacked />

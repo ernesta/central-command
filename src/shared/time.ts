@@ -14,8 +14,12 @@ export function durationMinutes(start: string | null, end: string | null): numbe
   return a === null || b === null || b <= a ? null : b - a
 }
 
+/** A length of time in hours and minutes: "45 min", "3 h", "1 h 30 min". */
 export function formatDuration(totalMinutes: number): string {
-  return `${totalMinutes} min`
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+  if (hours === 0) return `${minutes} min`
+  return minutes === 0 ? `${hours} h` : `${hours} h ${minutes} min`
 }
 
 /** "2026-09-24" as "Sep 24, 2026", with no time zone involved. Anything else is returned as it is. */

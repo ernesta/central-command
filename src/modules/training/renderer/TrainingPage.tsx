@@ -14,7 +14,7 @@ import { Select } from '@renderer/components/Select'
 import { useAcademicYear } from '@renderer/state/use-academic-year'
 import { useSettings } from '@renderer/state/settings-context'
 import { academicYearLabel } from '@shared/academic-year'
-import { skillsIn } from '@shared/skills'
+import { skillFilterOptions, skillsIn } from '@shared/skills'
 import { initialsFor } from '@modules/meetings/shared/query'
 import { meetingHours } from '@modules/meetings/shared/hours'
 import {
@@ -179,7 +179,7 @@ export function TrainingPage(): React.JSX.Element {
           value={query.skill}
           options={[
             { value: 'all', label: 'Any skill' },
-            ...skillsIn(everything).map((s) => ({ value: s, label: s }))
+            ...skillFilterOptions(skillsIn(everything))
           ]}
           onChange={(skill) => setQuery({ skill })}
         />

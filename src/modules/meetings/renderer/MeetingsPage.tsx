@@ -5,7 +5,7 @@ import { EmptyState } from '@renderer/components/EmptyState'
 import { ExportButton } from '@renderer/components/ExportButton'
 import { FilterRow } from '@renderer/components/FilterRow'
 import { academicYearLabel } from '@shared/academic-year'
-import { skillsIn } from '@shared/skills'
+import { skillFilterOptions, skillsIn } from '@shared/skills'
 import { AcademicYearSelect } from '@renderer/components/AcademicYearSelect'
 import { SearchInput } from '@renderer/components/SearchInput'
 import { Select } from '@renderer/components/Select'
@@ -140,7 +140,7 @@ export function MeetingsPage(): React.JSX.Element {
           value={query.skill}
           options={[
             { value: 'all', label: 'Any skill' },
-            ...skillsIn(everything).map((s) => ({ value: s, label: s }))
+            ...skillFilterOptions(skillsIn(everything))
           ]}
           onChange={(skill) => set({ skill })}
         />

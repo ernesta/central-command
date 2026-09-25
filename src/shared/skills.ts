@@ -51,8 +51,8 @@ export const SKILL_TAG_LABELS: Record<Skill['tag'], string> = {
 const baseName = (name: string): string => name.replace(/\s*\((GS|SS|RP)\)\s*$/, '')
 
 /**
- * Skills in the order they are shown: alphabetical by name, and where the names match (Quantitative skills
- * (GS) and (SS)) by group. A name that is not on the list sorts after those that are.
+ * Skills in the order they are shown everywhere: General Skills first, then Specialist Skills, then Research
+ * in Practice, each group alphabetical. A name that is not on the list sorts after those that are.
  */
 export function sortSkills(names: readonly string[]): string[] {
   const rank = (name: string): number => {
@@ -60,11 +60,7 @@ export function sortSkills(names: readonly string[]): string[] {
     return skill ? SKILL_TAG_ORDER.indexOf(skill.tag) : SKILL_TAG_ORDER.length
   }
   return [...names].sort(
-    (a, b) =>
-      Number(findSkill(a) === null) - Number(findSkill(b) === null) ||
-      baseName(a).localeCompare(baseName(b)) ||
-      rank(a) - rank(b) ||
-      a.localeCompare(b)
+    (a, b) => rank(a) - rank(b) || baseName(a).localeCompare(baseName(b)) || a.localeCompare(b)
   )
 }
 
@@ -100,6 +96,16 @@ export function minutesPerSkill(
   return [...totals]
     .map(([skill, minutes]) => ({ skill, minutes }))
     .sort((a, b) => b.minutes - a.minutes || a.skill.localeCompare(b.skill))
+}
+
+/** Filter-menu options for skills, grouped under General Skills, Specialist Skills and Research in Practice like the chooser. */
+export function skillFilterOptions(
+  names: readonly string[]
+): { value: string; label: string; group?: string }[] {
+  return sortSkills(names).map((name) => {
+    const skill = findSkill(name)
+    return { value: name, label: name, group: skill ? SKILL_TAG_LABELS[skill.tag] : undefined }
+  })
 }
 
 /** The skills used by these entries, sorted for a filter menu. */

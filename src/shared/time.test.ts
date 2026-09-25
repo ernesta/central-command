@@ -20,7 +20,12 @@ describe('durationMinutes', () => {
     expect(durationMinutes('15:00', '14:00')).toBeNull()
     expect(durationMinutes('25:00', '26:00')).toBeNull()
   })
-  it('formats', () => expect(formatDuration(60)).toBe('60 min'))
+  it('formats in hours and minutes', () => {
+    expect(formatDuration(45)).toBe('45 min')
+    expect(formatDuration(60)).toBe('1 h')
+    expect(formatDuration(90)).toBe('1 h 30 min')
+    expect(formatDuration(450)).toBe('7 h 30 min')
+  })
 })
 
 describe('dates and headings', () => {
