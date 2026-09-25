@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { MessageCircle, Minus, SendHorizontal } from 'lucide-react'
+import { ASK_SHORTCUT, matchesShortcut } from '@shared/shortcuts'
 import { IconButton } from '../components/IconButton'
 import { Input } from '../components/Input'
 import { useAsk } from './ask-context'
@@ -18,7 +19,7 @@ export function AskLauncher(): React.JSX.Element {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'j') {
+      if (matchesShortcut(event, ASK_SHORTCUT)) {
         event.preventDefault()
         setOpen(!open)
       }

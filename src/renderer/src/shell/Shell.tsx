@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 import { modules } from '@modules/index'
 import { modulePath } from '@modules/types'
 import { WORKSPACES, type Workspace } from '@shared/settings'
+import { BACK_SHORTCUT, matchesShortcut } from '@shared/shortcuts'
 import { Notice } from '../components/Notice'
 import { useSettings } from '../state/settings-context'
 import { SettingsPage } from './SettingsPage'
@@ -33,7 +34,7 @@ export function Shell(): React.JSX.Element {
   // Browser-style back: Cmd/Ctrl+[ and the mouse's back button.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
-      if ((event.metaKey || event.ctrlKey) && event.key === '[') {
+      if (matchesShortcut(event, BACK_SHORTCUT)) {
         event.preventDefault()
         void navigate(-1)
       }

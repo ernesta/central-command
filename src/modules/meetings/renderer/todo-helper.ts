@@ -2,6 +2,8 @@ import { Plugin } from '@milkdown/kit/prose/state'
 import { TextSelection } from '@milkdown/kit/prose/state'
 import type { EditorView } from '@milkdown/kit/prose/view'
 import { $ctx, $prose } from '@milkdown/kit/utils'
+import { matchesShortcut } from '@shared/shortcuts'
+import { TODO_SHORTCUT } from '../shared/shortcuts'
 
 /** Where the menu should open, and the text the chosen TODO replaces (the typed `/todo`, or nothing). */
 export interface TodoMenuRequest {
@@ -96,7 +98,7 @@ export const todoHelperPlugin = $prose((ctx) => {
           if (event.key === 'Backspace') bridge.close()
           return false
         }
-        if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === 't') {
+        if (matchesShortcut(event, TODO_SHORTCUT)) {
           event.preventDefault()
           const { from, to } = view.state.selection
           bridge.open({ view, from, to })
