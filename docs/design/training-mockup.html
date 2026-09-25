@@ -468,6 +468,117 @@
           position: static;
         }
       }
+
+      .nowrap {
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        max-width: 26ch;
+      }
+      .tag {
+        font-size: 12px;
+        line-height: 1.3;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: var(--panel);
+        color: var(--text-secondary);
+        white-space: nowrap;
+      }
+      .chips {
+        display: inline-flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        padding: 2px 9px;
+        border-radius: 999px;
+        background: var(--panel);
+        color: var(--text-secondary);
+      }
+      td.att {
+        width: 1%;
+        white-space: nowrap;
+      }
+      .progress {
+        display: grid;
+        gap: 8px;
+        min-width: 240px;
+      }
+      .stat small {
+        font-family: var(--font-body);
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--text-muted);
+      }
+      .bar {
+        height: 8px;
+        border-radius: 999px;
+        background: var(--panel);
+        overflow: hidden;
+      }
+      .bar span {
+        display: block;
+        height: 100%;
+        background: var(--accent);
+      }
+      .skills {
+        display: grid;
+        gap: 6px;
+        flex: 1;
+        min-width: 300px;
+      }
+      .skills ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        columns: 2;
+        column-gap: 32px;
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+      .skills li {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 2px 0;
+        break-inside: avoid;
+      }
+      .skills li b {
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+      }
+      .skills li.more {
+        color: var(--text-muted);
+      }
+      .seg {
+        display: inline-flex;
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--surface);
+      }
+      .seg span {
+        padding: 5px 12px;
+        white-space: nowrap;
+      }
+      .seg .on {
+        background: var(--selected-bg);
+        color: var(--selected-text);
+        font-weight: 600;
+      }
+      .addchip,
+      .addtag {
+        background: transparent;
+        border: 1px dashed var(--border-strong);
+        color: var(--text-muted);
+        font-family: var(--font-body);
+      }
     </style>
   </head>
   <body>
@@ -475,13 +586,14 @@
       <div class="intro">
         <h1>Training mockup</h1>
         <p>
-          Two screens: the training log (it is also the formal Research Training Log) and one entry.
-          The rows, totals and days by type are real, from the 2025-26 Word log (131 entries). Only
-          the Upcoming row and the note text on the entry screen are made up.
+          Two screens: the training list (it is also the formal log) and one entry. Titles, times,
+          skills and summaries are real rows from the 2025-26 Inkpath log. The totals, the series,
+          the leads and the type names (“Course”, “Wellbeing” stand in for the harmonised list) are
+          illustrative.
         </p>
       </div>
       <div class="tabs" role="group" aria-label="Screen">
-        <button class="tab" aria-pressed="true" data-tab="log">1. Training log</button>
+        <button class="tab" aria-pressed="true" data-tab="log">1. Training list</button>
         <button class="tab" aria-pressed="false" data-tab="entry">2. One entry</button>
       </div>
 
@@ -494,29 +606,45 @@
           <span class="build">Build</span>
         </div>
 
-        <!-- 1. LOG -->
         <div class="page" data-screen="log">
           <a class="back" href="#"
             ><svg viewBox="0 0 24 24"><path d="M19 12H5m6-6-6 6 6 6" /></svg>Research</a
           >
           <div class="head">
             <h2>Training</h2>
-            <button class="btn primary">
-              <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>New entry
-            </button>
+            <div class="filters">
+              <span class="sel"
+                >2025–26 <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg
+              ></span>
+              <button class="btn primary">
+                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>New entry
+              </button>
+            </div>
           </div>
 
           <div class="box totals">
-            <div class="stat"><span class="label">Days</span><b>68.5</b></div>
-            <div class="stat"><span class="label">Hours</span><b>355.5</b></div>
-            <div class="stat"><span class="label">Entries</span><b>131</b></div>
-            <div class="bytype" aria-label="Days by type">
-              <span>Training <b>31.5</b></span>
-              <span>Online training <b>19.5</b></span>
-              <span>Seminar <b>5.0</b></span>
-              <span>Lab meeting <b>2.5</b></span>
-              <span>Conference attendance <b>2.5</b></span>
-              <span>Other <b>7.5</b></span>
+            <div class="progress">
+              <div class="stat">
+                <span class="label">Hours this year</span><b>334.5 <small>of 200</small></b>
+              </div>
+              <div class="bar" role="img" aria-label="334.5 of 200 hours, aim reached">
+                <span style="width: 100%"></span>
+              </div>
+            </div>
+            <div class="skills" aria-label="Hours per skill">
+              <span class="label">Hours per skill</span>
+              <ul>
+                <li><span>Quantitative Skills (GS)</span><b>205.5</b></li>
+                <li><span>Data Management and analysis (GS)</span><b>172.0</b></li>
+                <li><span>Networking (RP)</span><b>48.5</b></li>
+                <li><span>Career Development (RP)</span><b>36.5</b></li>
+                <li><span>Personal Development (RP)</span><b>36.5</b></li>
+                <li class="more"><span>+ 14 more</span></li>
+              </ul>
+              <p class="hint">
+                An entry counts fully towards each of its skills, so these add up to more than the
+                total.
+              </p>
             </div>
           </div>
 
@@ -528,23 +656,20 @@
               >Search</span
             >
             <span class="sel"
-              >2025–26 <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg
-            ></span>
-            <span class="sel"
-              >All programmes <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg
+              >All series <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg
             ></span>
             <span class="sel"
               >Any type <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg
             ></span>
+            <span class="sel"
+              >Any skill <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg
+            ></span>
+            <span class="sel"
+              >Anyone <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg
+            ></span>
             <span class="spacer"></span>
             <button class="quiet">
-              <svg viewBox="0 0 24 24">
-                <rect x="8" y="8" width="12" height="12" rx="2" />
-                <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg
-              >Copy as table
-            </button>
-            <button class="quiet">
-              <svg viewBox="0 0 24 24"><path d="M12 4v11m-4-4 4 4 4-4M5 20h14" /></svg>Export PDF
+              <svg viewBox="0 0 24 24"><path d="M12 4v11m-4-4 4 4 4-4M5 20h14" /></svg>Export
             </button>
           </div>
 
@@ -553,55 +678,77 @@
               <thead>
                 <tr>
                   <th>Date</th>
+                  <th>Time</th>
+                  <th>Duration</th>
+                  <th>Series</th>
                   <th>Type</th>
-                  <th>Title and details</th>
-                  <th style="text-align: right">Days (hours)</th>
+                  <th>Title and summary</th>
+                  <th>Skills</th>
+                  <th>Leads</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td class="date">Sep 23, 2025</td>
-                  <td class="type">Training</td>
+                  <td class="nowrap">Sep 23, 2025</td>
+                  <td class="nowrap">11:00–12:00</td>
+                  <td class="nowrap">1 h</td>
+                  <td class="nowrap">Royal Holloway</td>
+                  <td class="type">Course</td>
                   <td>
                     <div class="title">
-                      School of School of Life Sciences and the Environment Postgraduate Researcher
-                      Induction
+                      Department of Psychology Postgraduate Researcher Induction
                     </div>
                     <div class="details">
-                      An overview of the Doctoral School, its team, and the administrative and
-                      academic support it provides to postgraduate research students, including
-                      information on training, funding, and key university regulations.
+                      An introduction to the Psychology department covering essential information
+                      for starting the PhD.
                     </div>
                   </td>
-                  <td class="days">0.5 <small>(2 h)</small></td>
+                  <td>
+                    <div class="tags">
+                      <span class="tag">Project management (GS)</span
+                      ><span class="tag">Career Development (RP)</span>
+                    </div>
+                  </td>
+                  <td class="att"><div class="chips"></div></td>
                 </tr>
                 <tr>
-                  <td class="date">Sep 25, 2025</td>
-                  <td class="type">Guided learning</td>
+                  <td class="nowrap">Oct 1, 2025</td>
+                  <td class="nowrap">11:00–12:00</td>
+                  <td class="nowrap">1 h</td>
+                  <td class="nowrap">Royal Holloway</td>
+                  <td class="type">Course</td>
                   <td>
                     <div class="title">
-                      PS5302 Statistics for Research
-                      <span class="marks" aria-label="Has files"
+                      Research Training Seminar: Starting Your PhD<span class="marks"
                         ><svg viewBox="0 0 24 24">
-                          <path
-                            d="m21 12-8.5 8.5a5 5 0 0 1-7-7L14 5a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 8"
-                          /></svg
+                          <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+                          <path d="M14 3v5h5" /></svg
                       ></span>
                     </div>
                     <div class="details">
-                      Readings: the basics of a psychological research study and the foundations of
-                      statistics.
+                      Overview of the PhD lifecycle, covering topics such as working with
+                      supervisors and the basics of Open Science.
                     </div>
                   </td>
-                  <td class="days">1 <small>(7 h)</small></td>
+                  <td>
+                    <div class="tags">
+                      <span class="tag">Project management (GS)</span
+                      ><span class="tag">Digital and bibliographic skills (GS)</span
+                      ><span class="tag">Career Development (RP)</span>
+                    </div>
+                  </td>
+                  <td class="att"><div class="chips"></div></td>
                 </tr>
                 <tr>
-                  <td class="date">Oct 8, 2025</td>
-                  <td class="type">Training</td>
+                  <td class="nowrap">Oct 8, 2025</td>
+                  <td class="nowrap">14:00–17:00</td>
+                  <td class="nowrap">3 h</td>
+                  <td class="nowrap">SEDarc</td>
+                  <td class="type">Course</td>
                   <td>
                     <div class="title">
-                      SEDarc: Mixed Methods Research Designs
-                      <span class="marks" aria-label="Has notes and files"
+                      Refine understanding of mixed methods research designs (Live)<span
+                        class="marks"
                         ><svg viewBox="0 0 24 24">
                           <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
                           <path d="M14 3v5h5" /></svg
@@ -616,75 +763,118 @@
                       interpret mixed methods research.
                     </div>
                   </td>
-                  <td class="days">0.5 <small>(2 h)</small></td>
+                  <td>
+                    <div class="tags">
+                      <span class="tag">Qualitative Skills (GS)</span
+                      ><span class="tag">Quantitative Skills (GS)</span>
+                    </div>
+                  </td>
+                  <td class="att">
+                    <div class="chips"><span class="chip">RD</span></div>
+                  </td>
                 </tr>
                 <tr>
-                  <td class="date">Oct 15, 2025</td>
-                  <td class="type">Seminar</td>
+                  <td class="nowrap">Apr 1, 2026</td>
+                  <td class="nowrap">11:00–13:00</td>
+                  <td class="nowrap">2 h</td>
+                  <td class="nowrap">Royal Holloway</td>
+                  <td class="type">Course</td>
                   <td>
                     <div class="title">
-                      Research Training Seminar: Peer Review
-                      <span class="marks" aria-label="Has notes and files"
-                        ><svg viewBox="0 0 24 24">
-                          <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
-                          <path d="M14 3v5h5" /></svg
+                      Research Training Seminar: Introduction to Agent-Based Modelling<span
+                        class="marks"
                         ><svg viewBox="0 0 24 24">
                           <path
                             d="m21 12-8.5 8.5a5 5 0 0 1-7-7L14 5a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 8"
                           /></svg
                       ></span>
                     </div>
-                    <div class="details">
-                      Introduction to the peer review process: reviewing others’ work and receiving
-                      reviews from others.
+                    <div class="details">Introduction to agent-based modelling.</div>
+                  </td>
+                  <td>
+                    <div class="tags">
+                      <span class="tag">Data Management and analysis (GS)</span
+                      ><span class="tag">Quantitative Skills (GS)</span>
                     </div>
                   </td>
-                  <td class="days">0.5 <small>(2 h)</small></td>
+                  <td class="att"><div class="chips"></div></td>
                 </tr>
                 <tr>
-                  <td class="date">Jul 16, 2026</td>
-                  <td class="type">Training</td>
+                  <td class="nowrap">Apr 1, 2026</td>
+                  <td class="nowrap">13:00–14:00</td>
+                  <td class="nowrap">1 h</td>
+                  <td class="nowrap">SEDarc</td>
+                  <td class="type">Wellbeing</td>
+                  <td>
+                    <div class="title">Work-life balance</div>
+                    <div class="details">
+                      Dr Russell will discuss the importance of wellbeing and maintaining
+                      work-family balance while doing research.
+                    </div>
+                  </td>
+                  <td>
+                    <div class="tags"><span class="tag">Stress Management (RP)</span></div>
+                  </td>
+                  <td class="att">
+                    <div class="chips"><span class="chip">ER</span></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="nowrap">Jul 16, 2026</td>
+                  <td class="nowrap">15:00–18:00</td>
+                  <td class="nowrap">3 h</td>
+                  <td class="nowrap">SENSS</td>
+                  <td class="type">Course</td>
                   <td>
                     <div class="title">
                       SENSS Experimental Methods in the Social Sciences: Methods to Analyse
                       Experiments
                     </div>
-                    <div class="details">
-                      The main statistical and econometric tools for estimating causal effects in
-                      experimental data.
+                    <div class="details muted">No summary yet.</div>
+                  </td>
+                  <td>
+                    <div class="tags">
+                      <span class="tag">Quantitative Skills (SS)</span
+                      ><span class="tag">Data Management and analysis (GS)</span>
                     </div>
                   </td>
-                  <td class="days">0.5 <small>(3 h)</small></td>
+                  <td class="att"><div class="chips"></div></td>
                 </tr>
                 <tr>
-                  <td class="date">Oct 14, 2026</td>
-                  <td class="type">Training</td>
+                  <td class="nowrap">Oct 14, 2026</td>
+                  <td class="nowrap">—</td>
+                  <td class="nowrap">—</td>
+                  <td class="nowrap">Royal Holloway</td>
+                  <td class="type">Course</td>
                   <td>
                     <div class="title">
-                      Research Training Seminar: Writing a Literature Review
-                      <span class="upcoming">Upcoming</span>
+                      Research Training Seminar: Writing a Literature Review<span class="upcoming"
+                        >Upcoming</span
+                      >
                     </div>
-                    <div class="details muted">No details yet.</div>
+                    <div class="details muted">No summary yet.</div>
                   </td>
-                  <td class="days muted">—</td>
+                  <td><div class="tags"></div></td>
+                  <td class="att"><div class="chips"></div></td>
                 </tr>
               </tbody>
             </table>
           </div>
           <p class="foot">
-            Oldest first, like the Word log. Click any row to open it. Upcoming entries are shown,
-            marked, and left out of the totals and the export. A paperclip means a folder of files
-            is linked; the page icon means there are notes.
+            Oldest first. Click any row to open it. Upcoming entries are marked and left out of the
+            hours. The duration is calculated from the start and end times. A page icon means notes;
+            a paperclip means a linked folder.
           </p>
         </div>
 
-        <!-- 2. ENTRY -->
         <div class="page" data-screen="entry" hidden>
           <a class="back" href="#"
             ><svg viewBox="0 0 24 24"><path d="M19 12H5m6-6-6 6 6 6" /></svg>Training</a
           >
           <div class="head">
-            <div class="titleField">SEDarc: Data Management and Security</div>
+            <div class="titleField">
+              Refine understanding of mixed methods research designs (Live)
+            </div>
             <button class="btn small">
               <svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14" /></svg>Delete
             </button>
@@ -692,47 +882,57 @@
 
           <div class="box meta">
             <div class="field">
-              <span class="label">Date</span><span class="val">Dec 10, 2025</span>
+              <span class="label">Date</span><span class="val">Oct 8, 2025</span>
+            </div>
+            <div class="field"><span class="label">Start</span><span class="val">14:00</span></div>
+            <div class="field"><span class="label">End</span><span class="val">17:00</span></div>
+            <div class="field">
+              <span class="label">Duration</span><span class="val calc">3 h</span>
             </div>
             <div class="field">
-              <span class="label">Type</span><span class="val">Training</span>
+              <span class="label">Series</span><span class="val">SEDarc</span>
+            </div>
+            <div class="field"><span class="label">Type</span><span class="val">Course</span></div>
+            <div class="field">
+              <span class="label">Format</span
+              ><span class="seg"><span>In person</span><span class="on">Online</span></span>
             </div>
             <div class="field">
-              <span class="label">Programme</span><span class="val">SEDarc</span>
+              <span class="label">Leads</span
+              ><span class="chips"
+                ><span class="chip">RD</span><span class="chip addchip">+ Add</span></span
+              >
             </div>
-            <div class="field"><span class="label">Hours</span><span class="val">1.5</span></div>
+          </div>
+          <div class="box meta">
             <div class="field">
-              <span class="label">Days</span><span class="val">0.5</span>
-              <span class="hint">Suggested from the hours</span>
-            </div>
-            <div class="field">
-              <span class="label">Lead</span><span class="val">Robert Darby</span>
+              <span class="label">Skills · up to three</span>
+              <span class="chips"
+                ><span class="tag">Qualitative Skills (GS)</span
+                ><span class="tag">Quantitative Skills (GS)</span
+                ><span class="tag addtag">+ Add skill</span></span
+              >
             </div>
           </div>
 
           <div class="split">
             <div class="doc">
-              <h3>
-                Details<span class="hint"
-                  >Goes in the log’s Details column. One or two sentences.</span
-                >
-              </h3>
+              <h3>Summary<span class="hint">Shown in the list. One or two sentences.</span></h3>
               <p>
-                Principles and practices for secure data storage and management, and the ethical
-                sharing of data in support of research findings.
+                Integrating qualitative and quantitative approaches to design, conduct, and
+                interpret mixed methods research.
               </p>
               <h3>Notes<span class="hint">Example text, invented for this mockup.</span></h3>
               <ul>
-                <li>Use the university’s approved storage, not personal cloud accounts.</li>
-                <li>Risk in data drives the choice of encryption.</li>
-                <li>A data management plan is expected as part of the ethics application.</li>
+                <li>Mixed methods is a design choice, not a compromise.</li>
+                <li>Decide the order of the strands before collecting anything.</li>
               </ul>
             </div>
             <aside class="side" aria-label="Files">
               <span class="label">Files</span>
               <div class="box files">
                 <span class="path"
-                  >Trainings/2025-26/SEDarc/2025 12 10 Data Management and Security</span
+                  >Trainings/2025-26/SEDarc/2025 10 08 Mixed Methods Research Designs</span
                 >
                 <div class="file">
                   <svg viewBox="0 0 24 24">
