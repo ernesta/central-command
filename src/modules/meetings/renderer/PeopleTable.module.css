@@ -1,0 +1,96 @@
+/* 4px of padding all round so a focus ring is never clipped by the scroll container. */
+.card {
+  overflow-x: auto;
+  padding: 4px;
+  scroll-padding: 4px;
+}
+.table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+}
+.th {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-muted);
+  font-size: var(--text-11);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+}
+.th:first-child {
+  width: 34%;
+}
+.hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.row td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-faint);
+  vertical-align: middle;
+  font-size: var(--text-14);
+}
+.row:last-child td {
+  border-bottom: 0;
+}
+.me {
+  color: var(--text-muted);
+}
+.chip {
+  display: inline-block;
+  padding: 1px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--panel);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-13);
+  white-space: nowrap;
+}
+.count {
+  font-variant-numeric: tabular-nums;
+}
+.row td.actions {
+  text-align: right;
+  white-space: nowrap;
+}
+.actions > * + * {
+  margin-left: 8px;
+}
+.input {
+  width: 100%;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  font-size: var(--text-14);
+}
+.input:focus-visible {
+  outline-offset: 0;
+  border-color: var(--accent);
+}
+.initials {
+  max-width: 96px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+.meLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--text-secondary);
+  font-size: var(--text-13);
+}
+.meLabel input {
+  accent-color: var(--accent);
+}

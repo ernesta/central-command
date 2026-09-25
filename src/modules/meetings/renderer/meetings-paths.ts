@@ -5,6 +5,9 @@ export const meetingsBase = modulePath({ workspace: 'research', id: 'meetings' }
 /** The list of all meetings (and the supervision log). */
 export const meetingsListRoute = `${meetingsBase}/all`
 
+/** The people list. */
+export const peopleRoute = `${meetingsBase}/people`
+
 /** The list filtered to one series, as opened from a series card on the landing page. */
 export function seriesRoute(series: string, year?: number): string {
   const yearPart = year === undefined ? '' : `&year=${year}`

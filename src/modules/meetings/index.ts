@@ -4,6 +4,7 @@ import { MeetingPage } from './renderer/MeetingPage'
 import { MeetingsCard } from './renderer/MeetingsCard'
 import { MeetingsLanding } from './renderer/MeetingsLanding'
 import { MeetingsPage } from './renderer/MeetingsPage'
+import { PeoplePage } from './renderer/PeoplePage'
 import { PeopleSettings } from './renderer/PeopleSettings'
 import { MEETINGS_SHORTCUTS } from './shared/shortcuts'
 
@@ -16,7 +17,8 @@ export const meetingsModule: LiveModuleManifest = {
   routes: [
     { path: '', element: createElement(MeetingsLanding) },
     { path: 'all', element: createElement(MeetingsPage) },
-    { path: 'm/:id', element: createElement(MeetingPage) }
+    { path: 'm/:id', element: createElement(MeetingPage) },
+    { path: 'people', element: createElement(PeoplePage) }
   ],
   landingCard: MeetingsCard,
   settingsSection: PeopleSettings,
