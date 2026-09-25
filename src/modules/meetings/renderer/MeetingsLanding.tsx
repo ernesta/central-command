@@ -1,4 +1,4 @@
-import { ArrowRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { EmptyState } from '@renderer/components/EmptyState'
@@ -46,15 +46,21 @@ export function MeetingsLanding(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <h1 className={styles.heading}>Meetings</h1>
-        <div className={styles.actions}>
-          <Link className={styles.allLink} to={meetingsListRoute}>
-            All meetings
-          </Link>
-          <NewMeetingButton />
-        </div>
-      </header>
+      <div className={styles.top}>
+        <Link className={styles.back} to="/research">
+          <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
+          Research
+        </Link>
+        <header className={styles.header}>
+          <h1 className={styles.heading}>Meetings</h1>
+          <div className={styles.actions}>
+            <Link className={styles.allLink} to={meetingsListRoute}>
+              All meetings
+            </Link>
+            <NewMeetingButton />
+          </div>
+        </header>
+      </div>
 
       {rows === null ? null : (
         <>

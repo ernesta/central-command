@@ -4,6 +4,22 @@
   align-content: start;
   padding: 36px 48px 48px;
 }
+.top {
+  display: grid;
+  gap: 16px;
+}
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  justify-self: start;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+  text-decoration: none;
+}
+.back:hover {
+  color: var(--ink);
+}
 .header {
   display: flex;
   flex-wrap: wrap;
