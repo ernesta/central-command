@@ -1,11 +1,12 @@
 import { FileText, Folder } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { SkillChips } from '@renderer/components/SkillChips'
 import type { Person } from '@shared/people'
 import { durationMinutes, formatDate, formatDuration } from '@shared/time'
 import { formatTimeRange, initialsFor } from '@modules/meetings/shared/query'
 import { isUpcoming } from '../shared/rules'
-import type { TrainingIndexRow } from '../shared/types'
+import { typeLabel, type TrainingIndexRow } from '../shared/types'
 import { entryRoute } from './training-paths'
 import styles from './TrainingTable.module.css'
 
@@ -121,7 +122,11 @@ export function TrainingTable({
                 </td>
                 <td className={styles.nowrap}>{row.series || '—'}</td>
                 <td className={styles.nowrap}>
-                  {row.type || <span className={styles.noType}>No type yet</span>}
+                  {row.type ? (
+                    typeLabel(row.type)
+                  ) : (
+                    <span className={styles.noType}>No type yet</span>
+                  )}
                 </td>
                 <td className={styles.titleCell}>
                   <span className={styles.titleText}>{row.title || 'Untitled'}</span>
@@ -136,15 +141,7 @@ export function TrainingTable({
                   {row.summary && <span className={styles.summaryText}>{row.summary}</span>}
                 </td>
                 <td className={styles.skills}>
-                  {row.skills.length === 0 ? (
-                    '—'
-                  ) : (
-                    <ul className={styles.skillList}>
-                      {row.skills.map((skill) => (
-                        <li key={skill}>{skill}</li>
-                      ))}
-                    </ul>
-                  )}
+                  <SkillChips skills={row.skills} />
                 </td>
                 <td className={styles.attendees}>
                   <span className={styles.chips}>

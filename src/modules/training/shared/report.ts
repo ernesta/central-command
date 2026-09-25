@@ -2,7 +2,7 @@ import { academicYearLabel } from '@shared/academic-year'
 import { formatHours } from '@shared/skills'
 import { durationMinutes, formatDate } from '@shared/time'
 import { compareNewestFirst, entriesInYear, isUpcoming, trainingHours } from './rules'
-import type { TrainingIndexRow } from './types'
+import { typeLabel, type TrainingIndexRow } from './types'
 
 const escapeHtml = (text: string): string =>
   text
@@ -47,7 +47,7 @@ export function trainingReportHtml(input: TrainingReportInput): string {
 <td class="nw">${escapeHtml(r.date ? formatDate(r.date) : '')}</td>
 <td class="nw">${escapeHtml(time)}</td>
 <td class="nw r">${minutes === null ? '' : escapeHtml(formatHours(minutes))}</td>
-<td>${escapeHtml(r.type ?? '')}</td>
+<td>${escapeHtml(typeLabel(r.type))}</td>
 <td><strong>${escapeHtml(r.title || 'Untitled')}</strong>${r.series ? ` <span class="q">${escapeHtml(r.series)}</span>` : ''}${r.summary ? `<br>${escapeHtml(r.summary)}` : ''}</td>
 <td>${r.skills.map(escapeHtml).join('<br>')}</td>
 <td>${r.leads.map(escapeHtml).join('<br>')}</td>

@@ -19,43 +19,43 @@ export interface TrainingType {
  */
 export const TRAINING_TYPES: readonly TrainingType[] = [
   {
-    name: 'Research methods course',
+    name: 'Research methods',
     inkpath: 'Research-related courses',
     group: 'Courses',
     description: 'Methods, statistics, research design, data and software'
   },
   {
-    name: 'Academic skills course',
+    name: 'Academic skills',
     inkpath: 'Academic skills courses',
     group: 'Courses',
     description: 'Writing, presenting, publishing, CV'
   },
   {
-    name: 'General skills course',
+    name: 'General skills',
     inkpath: 'Generic skills courses',
     group: 'Courses',
     description: 'Skills useful beyond research: wellbeing, leadership, careers'
   },
   {
-    name: 'Language course',
+    name: 'Language',
     inkpath: 'Language courses',
     group: 'Courses',
     description: 'Learning a language'
   },
   {
-    name: 'Conference: attending',
+    name: 'Attending',
     inkpath: 'Conference Guest',
     group: 'Conferences',
     description: 'You went as a visitor'
   },
   {
-    name: 'Conference: presenting',
+    name: 'Presenting',
     inkpath: 'Conference Speaker / Contributor',
     group: 'Conferences',
     description: 'A talk, poster or paper'
   },
   {
-    name: 'Conference: organising',
+    name: 'Organising',
     inkpath: 'Conference Organisation Team',
     group: 'Conferences',
     description: 'You helped run it'
@@ -93,6 +93,18 @@ export const TRAINING_TYPES: readonly TrainingType[] = [
   },
   { name: 'Other', inkpath: 'Other', group: 'Other', description: '' }
 ]
+
+/**
+ * How a type reads where the group is not shown beside it (a table cell, the PDF): "Courses: Research
+ * methods". The chooser lists types under their group, so it uses the short name.
+ */
+export function typeLabel(name: string | null): string {
+  const type = TRAINING_TYPES.find((t) => t.name === name)
+  if (!type) return name ?? ''
+  return type.group === 'Other' || type.group === type.name
+    ? type.name
+    : `${type.group}: ${type.name}`
+}
 
 export const TRAINING_TYPE_NAMES: readonly string[] = TRAINING_TYPES.map((t) => t.name)
 

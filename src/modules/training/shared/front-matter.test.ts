@@ -12,7 +12,7 @@ start: '10:00'
 end: '11:30'
 title: 'SEDarc: Data Management'
 series: SEDarc
-type: Research methods course
+type: Research methods
 mode: self-paced
 skills: [Data management and analysis (GS), Ethical and legal issues (GS)]
 leads: [Robert Darby]
@@ -34,7 +34,7 @@ describe('parseTrainingMeta', () => {
       end: '11:30',
       title: 'SEDarc: Data Management',
       series: 'SEDarc',
-      type: 'Research methods course',
+      type: 'Research methods',
       mode: 'self-paced',
       skills: ['Data management and analysis (GS)', 'Ethical and legal issues (GS)'],
       leads: ['Robert Darby'],

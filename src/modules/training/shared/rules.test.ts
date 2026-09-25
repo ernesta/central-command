@@ -100,7 +100,7 @@ describe('queryTraining', () => {
     row('2025-10-01', {
       title: 'Mixed methods',
       series: 'SEDarc',
-      type: 'Research methods course',
+      type: 'Research methods',
       skills: ['Qualitative skills (SS)'],
       leads: ['Robert Darby'],
       summary: 'Ethnography'
@@ -125,7 +125,7 @@ describe('queryTraining', () => {
     const q = (patch: object): string[] =>
       queryTraining(rows, { ...DEFAULT_TRAINING_QUERY, ...patch }, people).map((r) => r.title)
     expect(q({ series: 'DataCamp' })).toEqual(['Python basics'])
-    expect(q({ type: 'Research methods course' })).toEqual(['Mixed methods'])
+    expect(q({ type: 'Research methods' })).toEqual(['Mixed methods'])
     expect(q({ skill: 'Quantitative skills (GS)' })).toEqual(['Python basics'])
     expect(q({ lead: 'Robert Darby' })).toEqual(['Mixed methods'])
   })

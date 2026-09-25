@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { SkillChips } from '@renderer/components/SkillChips'
 import { durationMinutes, formatDate, formatDuration } from '../shared/time'
 import { MODE_LABELS, formatTimeRange, initialsFor, isUpcoming } from '../shared/query'
 import type { MeetingIndexRow, Person } from '../shared/types'
@@ -115,15 +116,7 @@ export function MeetingsTable({
                   {row.summary || <span className={styles.missing}>No summary yet.</span>}
                 </td>
                 <td className={styles.skills}>
-                  {row.skills.length === 0 ? (
-                    '—'
-                  ) : (
-                    <ul className={styles.skillList}>
-                      {row.skills.map((skill) => (
-                        <li key={skill}>{skill}</li>
-                      ))}
-                    </ul>
-                  )}
+                  <SkillChips skills={row.skills} />
                 </td>
                 <td className={styles.attendees}>
                   <span className={styles.chips}>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { SKILLS, findSkill, formatHours, minutesPerSkill } from './skills'
+import { SKILLS, findSkill, formatHours, minutesPerSkill, sortSkills } from './skills'
 
 describe('skills', () => {
   it('has the 19 skills of the Inkpath log, each with a distinct name and Inkpath spelling', () => {
@@ -40,6 +40,24 @@ describe('skills', () => {
     expect(totals).toEqual([
       { skill: 'B', minutes: 90 },
       { skill: 'A', minutes: 75 }
+    ])
+  })
+
+  it('sorts skills alphabetically, then by group (General, Specialist, Research in Practice), unknown last', () => {
+    expect(
+      sortSkills([
+        'Networking (RP)',
+        'Quantitative skills (SS)',
+        'Zebra (Live)',
+        'Quantitative skills (GS)',
+        'Data management and analysis (GS)'
+      ])
+    ).toEqual([
+      'Data management and analysis (GS)',
+      'Networking (RP)',
+      'Quantitative skills (GS)',
+      'Quantitative skills (SS)',
+      'Zebra (Live)'
     ])
   })
 })

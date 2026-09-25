@@ -1,0 +1,16 @@
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.chip {
+  padding: 2px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--panel);
+  color: var(--text-secondary);
+  font-size: var(--text-12);
+  line-height: 1.4;
+}

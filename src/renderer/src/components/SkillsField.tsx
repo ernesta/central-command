@@ -1,14 +1,19 @@
 import { Plus, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { MAX_SKILLS, SKILLS, SKILL_TAG_LABELS, findSkill, type Skill } from '@shared/skills'
+import {
+  MAX_SKILLS,
+  SKILLS,
+  SKILL_TAG_LABELS,
+  SKILL_TAG_ORDER,
+  findSkill,
+  sortSkills
+} from '@shared/skills'
 import styles from './SkillsField.module.css'
 
 interface SkillsFieldProps {
   skills: string[]
   onChange: (skills: string[]) => void
 }
-
-const TAGS: Skill['tag'][] = ['GS', 'RP', 'SS']
 
 /**
  * The skills of an entry as chips (at most three), with a small menu of the shared skills list to add
@@ -38,7 +43,7 @@ export function SkillsField({ skills, onChange }: SkillsFieldProps): React.JSX.E
   return (
     <div className={styles.wrap} ref={wrapRef}>
       <ul className={styles.chips} aria-label="Skills">
-        {skills.map((name) => (
+        {sortSkills(skills).map((name) => (
           <li
             key={name}
             className={[styles.chip, !findSkill(name) && styles.unknown].filter(Boolean).join(' ')}
@@ -84,7 +89,7 @@ export function SkillsField({ skills, onChange }: SkillsFieldProps): React.JSX.E
             }
           }}
         >
-          {TAGS.map((tag) => {
+          {SKILL_TAG_ORDER.map((tag) => {
             const options = SKILLS.filter((s) => s.tag === tag && !chosen.has(s.name))
             if (options.length === 0) return null
             return (
