@@ -27,6 +27,8 @@
 - [ ] **The 61 entries only in the older Word training log** (no twin in the Inkpath log) were not imported. Say if any should be.
 - [ ] **Set the Trainings folder** in Settings → Training (`/Users/ernesta/RHUL/Trainings`) if not done, so the Files panels work.
 - [ ] Review the keyboard shortcuts listed in Settings (still open from Meetings).
+- [ ] **Try the Training plan** (Training → Training plan). It is empty for now: say if I should copy your draft (`Downloads/Training/Year 2
+    Training Priorities.md`) in as the 2026–27 plan, or paste it yourself.
 
 ### For Claude (next time)
 

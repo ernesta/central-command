@@ -580,3 +580,17 @@ list. `convertPseudoHeadings` (`meetings/shared/pseudo-headings.ts`) turns such 
   the user should choose initials that are clear in notes (a TODO).
 - **The people list is held in memory by the running app**, so files that change it (an importer) must not run while the app is open
   unless the app is restarted; the lead names were therefore not added to the real list (a TODO).
+
+### Meetings' Export and the Training plan
+
+- **Meetings' Export** saves the Supervision log of the selected academic year as a PDF: oldest first, upcoming and planned meetings
+  left out, totals and hours per skill on top. It mirrors Training's export on purpose. The printing (`src/main/export-pdf.ts`) and the
+  page shell (`src/shared/report-page.ts`) are shared, so a layout change after the user's review is made once.
+- **The Training plan** is one Markdown file per academic year, `notes/training-plans/Training plan 2026-27.md`, edited on
+  `/research/training/plan` (linked from the Training landing page). It sits in its own folder, not in `notes/training/research/`,
+  because that folder is watched and indexed as training entries. It reuses `NotesSession` and `NotesEditor` unchanged (the year
+  travels as the note's key, as text), so it has the same autosave, conflict handling and outside-change reload as every note. The
+  outline beside it is built from the `##` and `###` headings as you type (`shared/plan.ts`). The next academic year is always offered,
+  so a plan can be written before its year starts. Hours per priority were considered and left out on purpose.
+- **Not done:** the user's draft (`Downloads/Training/Year 2 Training Priorities.md`) has not been copied into the real library; it
+  only went into a scratch library for testing. It would be saved as `Training plan 2026-27.md` in the plans folder.
