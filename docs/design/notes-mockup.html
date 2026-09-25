@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Notes mockup</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&family=Newsreader:wght@600;700&display=swap"
+    />
+    <style>
+      :root {
+        --bg: #edeff2;
+        --surface: #ffffff;
+        --ink: #1b222b;
+        --text-secondary: #3a4652;
+        --text-muted: #5c6672;
+        --border-soft: #d3d8de;
+        --border-faint: #e6e9ed;
+        --hover-tint: #f4f6f8;
+        --panel: #e4e8ec;
+        --accent: #35577a;
+        --selected-bg: #dce6ee;
+        --danger: #a8433f;
+        --font-display: 'Newsreader', Georgia, serif;
+        --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+        --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font: 14px/1.5 var(--font-body);
+        padding: 20px 16px 48px;
+      }
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family: var(--font-display);
+        margin: 0;
+      }
+      p {
+        margin: 0;
+      }
+      .wrap {
+        max-width: 1000px;
+        margin: 0 auto;
+        display: grid;
+        gap: 40px;
+      }
+      .label {
+        color: var(--text-muted);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 8px;
+      }
+      .screen {
+        background: var(--bg);
+        border: 1px dashed var(--border-soft);
+        border-radius: 14px;
+        padding: 24px;
+        display: grid;
+        gap: 22px;
+        align-content: start;
+      }
+      .back {
+        color: var(--text-muted);
+        font-size: 13px;
+      }
+      .head {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .head h2 {
+        font-size: 30px;
+      }
+      .btn {
+        border: 1px solid var(--border-soft);
+        background: var(--surface);
+        border-radius: 8px;
+        padding: 7px 12px;
+        font: inherit;
+      }
+      .btn.primary {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+      .btn.danger {
+        background: var(--danger);
+        border-color: var(--danger);
+        color: #fff;
+      }
+      .btn.small {
+        padding: 5px 10px;
+        font-size: 13px;
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+        border-radius: 12px;
+      }
+      .muted {
+        color: var(--text-muted);
+      }
+      .small {
+        font-size: 13px;
+      }
+      .sechead {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+      .sechead .label {
+        margin: 0 0 8px;
+      }
+      .link {
+        color: var(--accent);
+        font-size: 13px;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 12px;
+      }
+      .group {
+        padding: 14px 16px;
+        display: grid;
+        gap: 2px;
+      }
+      .group h3 {
+        font-size: 18px;
+      }
+      .group.dashed {
+        border-style: dashed;
+        background: transparent;
+      }
+      .list .row {
+        display: grid;
+        grid-template-columns: 1.3fr 150px 1.6fr 110px;
+        gap: 16px;
+        padding: 11px 16px;
+        border-bottom: 1px solid var(--border-faint);
+        align-items: baseline;
+      }
+      .list .row:last-child {
+        border-bottom: 0;
+      }
+      .list .row b {
+        font-weight: 500;
+      }
+      .list .row .prev {
+        color: var(--text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .list .row .when {
+        color: var(--text-muted);
+        text-align: right;
+        white-space: nowrap;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+      th {
+        text-align: left;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border-soft);
+        font-weight: 500;
+      }
+      td {
+        padding: 11px 16px;
+        border-bottom: 1px solid var(--border-faint);
+        vertical-align: baseline;
+      }
+      tr:last-child td {
+        border-bottom: 0;
+      }
+      .chip {
+        display: inline-block;
+        background: var(--panel);
+        color: var(--text-secondary);
+        border-radius: 999px;
+        padding: 1px 10px;
+        font-size: 13px;
+      }
+      .chip.sub {
+        background: var(--selected-bg);
+        color: #1f3a52;
+      }
+      .filters {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .field {
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+        border-radius: 8px;
+        padding: 6px 12px;
+        color: var(--text-secondary);
+      }
+      .field.search {
+        min-width: 220px;
+        color: var(--text-muted);
+      }
+      .titlefield {
+        font: 700 30px var(--font-display);
+        border: 0;
+        padding: 0;
+        background: transparent;
+        color: var(--ink);
+      }
+      .meta {
+        display: flex;
+        gap: 28px;
+        padding: 12px 16px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .meta .k {
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-right: 8px;
+      }
+      .doc {
+        padding: 24px 28px;
+      }
+      .doc h3 {
+        font-size: 22px;
+        margin: 16px 0 6px;
+      }
+      .doc h3:first-child {
+        margin-top: 0;
+      }
+      .doc ul {
+        margin: 4px 0 8px;
+        padding-left: 20px;
+      }
+      .menuwrap {
+        position: relative;
+        display: inline-block;
+      }
+      .menu {
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(27, 34, 43, 0.18);
+        padding: 6px;
+        width: 280px;
+        display: grid;
+        gap: 2px;
+        margin-top: 6px;
+      }
+      .menu .item {
+        padding: 6px 10px;
+        border-radius: 8px;
+      }
+      .menu .item.on {
+        background: var(--selected-bg);
+      }
+      .menu .item.l2 {
+        padding-left: 26px;
+      }
+      .menu .sep {
+        border-top: 1px solid var(--border-faint);
+        margin: 4px 0;
+      }
+      .menu .new {
+        display: flex;
+        gap: 6px;
+        padding: 4px;
+      }
+      .menu .new .field {
+        flex: 1;
+        padding: 4px 8px;
+      }
+      kbd {
+        font: 12px var(--font-mono);
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+        border-bottom-width: 2px;
+        border-radius: 6px;
+        padding: 1px 6px;
+      }
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        align-items: start;
+      }
+      .step {
+        display: grid;
+        gap: 8px;
+      }
+      .step .cap {
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+      .frame {
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+        border-radius: 12px;
+        padding: 14px 16px;
+        display: grid;
+        gap: 8px;
+        min-height: 150px;
+        align-content: start;
+      }
+      .caret {
+        display: inline-block;
+        width: 1px;
+        height: 1em;
+        background: var(--ink);
+        vertical-align: text-bottom;
+      }
+      .ph {
+        color: var(--text-muted);
+      }
+      .shortcut {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--border-faint);
+      }
+      .shortcut:last-child {
+        border-bottom: 0;
+      }
+      .note {
+        color: var(--text-muted);
+        font-size: 13px;
+      }
+      .confirm {
+        padding: 16px 18px;
+        display: grid;
+        gap: 8px;
+        max-width: 460px;
+        box-shadow: 0 8px 24px rgba(27, 34, 43, 0.18);
+      }
+      .confirm .row {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+      @media (max-width: 800px) {
+        .steps {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        .list .row {
+          grid-template-columns: 1fr;
+          gap: 2px;
+        }
+        .list .row .when {
+          text-align: left;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Notes: mockup</h1>
+        <p class="note">
+          The design is written up in <code>docs/NOTES_PLAN.md</code>. Numbered screens below; "Ask"
+          marks something I need you to decide.
+        </p>
+      </header>
+
+      <section>
+        <p class="label">1. Landing (Research → Notes)</p>
+        <div class="screen">
+          <span class="back">← Research</span>
+          <div class="head">
+            <h2>Notes</h2>
+            <button class="btn primary" type="button">New note</button>
+          </div>
+
+          <div>
+            <div class="sechead"><span class="label">Pinned</span></div>
+            <div class="cards">
+              <div class="card group">
+                <h3>Data sources</h3>
+                <p class="muted small">Edited Sep 20 · Ungrouped</p>
+              </div>
+            </div>
+            <p class="note" style="margin-top: 8px">
+              Ask: pin a note to keep it here (your Data sources note), or is "just a note" enough?
+              Without pinning it lives in Ungrouped or a group.
+            </p>
+          </div>
+
+          <div>
+            <span class="label" style="display: block">Groups</span>
+            <div class="cards">
+              <div class="card group">
+                <h3>Thesis</h3>
+                <p class="muted small">12 notes · last Sep 24</p>
+                <p class="muted small">Introduction, Methods, Study 1</p>
+              </div>
+              <div class="card group">
+                <h3>Analysis</h3>
+                <p class="muted small">5 notes · last Sep 18</p>
+              </div>
+              <div class="card group">
+                <h3>Reading groups</h3>
+                <p class="muted small">3 notes · last Aug 30</p>
+              </div>
+              <div class="card group dashed">
+                <h3>Ungrouped</h3>
+                <p class="muted small">7 notes · last Sep 25</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="sechead">
+              <span class="label">Recent</span><a class="link" href="#">See all notes →</a>
+            </div>
+            <div class="card list">
+              <div class="row">
+                <b>Sampling weights in wave 2</b><span><span class="chip">Analysis</span></span>
+                <span class="prev"
+                  >Weights were applied twice; rerun before drawing conclusions.</span
+                >
+                <span class="when">Sep 25</span>
+              </div>
+              <div class="row">
+                <b>Methods: participants</b><span><span class="chip">Thesis / Methods</span></span>
+                <span class="prev">Schools were recruited through the Luminos network and…</span>
+                <span class="when">Sep 24</span>
+              </div>
+              <div class="row">
+                <b>Ask Kathy about the R course</b><span class="muted">Ungrouped</span>
+                <span class="prev"
+                  >Check dates for spring and whether SENSS covers mixed models.</span
+                >
+                <span class="when">Sep 24</span>
+              </div>
+              <div class="row">
+                <b>Data sources</b><span class="muted">Ungrouped</span>
+                <span class="prev">Ghana MICS, Luminos wave 1 and 2, Rastle Lab reading data…</span>
+                <span class="when">Sep 20</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <p class="label">
+          2. All notes, filtered to a group (opened from a group card, or "See all notes")
+        </p>
+        <div class="screen">
+          <span class="back">← Notes</span>
+          <div class="head">
+            <h2>Thesis</h2>
+            <button class="btn primary" type="button">New note</button>
+          </div>
+          <div class="filters">
+            <span class="field search">Search notes</span>
+            <span class="field">Thesis (all) ▾</span>
+          </div>
+          <div class="card" style="overflow: hidden">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 30%">Title</th>
+                  <th style="width: 22%">Group</th>
+                  <th>Preview</th>
+                  <th style="width: 110px; text-align: right">Edited</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Methods: participants</td>
+                  <td><span class="chip sub">Methods</span></td>
+                  <td class="muted">Schools were recruited through the Luminos network and…</td>
+                  <td class="muted" style="text-align: right">Sep 24</td>
+                </tr>
+                <tr>
+                  <td>Study 1: model choice</td>
+                  <td><span class="chip sub">Study 1</span></td>
+                  <td class="muted">Logistic mixed effects, with random slopes for school.</td>
+                  <td class="muted" style="text-align: right">Sep 18</td>
+                </tr>
+                <tr>
+                  <td>Thesis outline</td>
+                  <td><span class="chip">Thesis</span></td>
+                  <td class="muted">Five chapters: introduction, methods, three studies…</td>
+                  <td class="muted" style="text-align: right">Sep 2</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="note">
+            The page is titled with the group, so it is clear a filter is applied. Choosing a group
+            includes its subgroups (the selector lists Thesis, Thesis / Introduction, Thesis /
+            Methods…). The Group column shows the subgroup only, since the title says the rest.
+            Titleless notes show the first line of the note.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <p class="label">3. A note, with the Group field open</p>
+        <div class="screen">
+          <span class="back">← Thesis</span>
+          <div class="head">
+            <input class="titlefield" value="Methods: participants" aria-label="Title" />
+            <div>
+              <span class="muted small" style="margin-right: 8px">Saved</span
+              ><button class="btn danger small" type="button">Delete note</button>
+            </div>
+          </div>
+          <div>
+            <div class="card meta">
+              <span
+                ><span class="k">Group</span
+                ><span class="menuwrap"
+                  ><span class="chip sub">Thesis / Methods ▾</span></span
+                ></span
+              >
+              <span><span class="k">Created</span>Sep 3, 2026</span>
+              <span><span class="k">Edited</span>Sep 24, 2026</span>
+            </div>
+            <div class="menu">
+              <div class="item">No group</div>
+              <div class="item">Analysis</div>
+              <div class="item">Reading groups</div>
+              <div class="item">Thesis</div>
+              <div class="item l2">Introduction</div>
+              <div class="item l2 on">Methods ✓</div>
+              <div class="item l2">Study 1</div>
+              <div class="sep"></div>
+              <div class="new">
+                <span class="field ph">New group, e.g. Thesis / Study 2</span
+                ><button class="btn small" type="button">Add</button>
+              </div>
+            </div>
+          </div>
+          <div class="card doc">
+            <h3>Participants</h3>
+            <p>
+              Schools were recruited through the Luminos network. Two of the eleven schools withdrew
+              before the second wave.
+            </p>
+            <h3>Consent</h3>
+            <ul>
+              <li>Parental opt-out letters went out on Sep 3.</li>
+              <li>Pupils gave assent at the start of each session.</li>
+            </ul>
+          </div>
+          <p class="note">
+            Same editor and autosave as Meetings and Readings. Groups are picked from the list, or
+            made by typing a name; "A / B" makes a subgroup (two levels at most). A group disappears
+            when its last note leaves it.
+          </p>
+          <div class="card confirm">
+            <strong>Delete this note?</strong>
+            <span class="small muted"
+              >Methods: participants and all its text will be removed from Central Command. The file
+              moves to the macOS Trash, so you can still restore it from there.</span
+            >
+            <div class="row">
+              <button class="btn small" type="button">Cancel</button
+              ><button class="btn small danger" type="button">Delete note</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <p class="label">
+          4. Quick capture: <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>N</kbd> from anywhere in the app
+        </p>
+        <div class="screen">
+          <div class="steps">
+            <div class="step">
+              <span class="cap">1. You are anywhere, for example reading a paper</span>
+              <div class="frame">
+                <strong>Lopukhina et al. (2024)</strong>
+                <span class="muted">Reading detail…</span>
+              </div>
+            </div>
+            <div class="step">
+              <span class="cap"
+                >2. The shortcut makes a new note at once and opens it, ready to type</span
+              >
+              <div class="frame">
+                <span class="titlefield ph" style="font-size: 22px">Untitled</span>
+                <span class="muted small">Ungrouped</span>
+                <span
+                  >Check whether the effect holds for bilinguals<span class="caret"></span
+                ></span>
+              </div>
+            </div>
+            <div class="step">
+              <span class="cap"
+                >3. Back (<kbd>⌘</kbd> <kbd>[</kbd>) returns to the paper; the note is in
+                Ungrouped</span
+              >
+              <div class="frame">
+                <span class="chip" style="width: fit-content">Ungrouped</span>
+                <strong>Check whether the effect holds for bilinguals</strong>
+                <span class="muted small">Sep 25</span>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="overflow: hidden">
+            <div class="shortcut">
+              <b>New note</b><span><kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>N</kbd></span>
+            </div>
+            <div class="shortcut">
+              <span class="muted"
+                >Listed in Settings → Keyboard shortcuts, like every shortcut.</span
+              >
+            </div>
+          </div>
+          <p class="note">
+            The cursor starts in the body, so you can type first and title later. A note without a
+            title shows its first line in lists. On a group page the new note starts in that group.
+            Ask: should the shortcut also work when Central Command is in the background (a
+            system-wide shortcut)? That is a bigger step; I have left it out of the first version.
+          </p>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

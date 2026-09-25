@@ -29,6 +29,7 @@
 - [ ] After the user's review: fix what they raise, then push, write up the state, clear context and move on to the next part.
 - [ ] A "decision log" for training types (see above): design it with the user when they start mapping; then suggest types automatically.
 - [x] **People page built** (see `docs/DECISIONS.md` "People page"). Waiting for the user's review.
+- [ ] **Review the Notes mockup and plan** (`docs/design/notes-mockup.html`, `docs/NOTES_PLAN.md`; the questions are at the end of the plan).
 - [ ] **Try the People page** (Research → People) and say what to change.
 - [ ] Re-check the changed screens in dev mode (StrictMode) and the built app after any further change to lists, landings or entry pages.
 - [ ] **Say when a filter is applied** (later, the user's call when): opening the Supervision series card shows "All meetings" with only that
@@ -106,7 +107,9 @@ data.
 - Shared task engine (tasks, dates, time tracking, lists, subtasks, table/board/calendar views) and a one-time ClickUp import
 - **Training** (the formal training log, a notes page per entry, linked files, PDF export): the plan and mockup are drafted in
   `docs/TRAINING_PLAN.md` and `docs/design/training-mockup.html`; built; see the Training section above.
-- Studies, Thesis, Ideas, Data Sources, Inbox
+- **Notes** (one module for free notes with a group per note, quick capture; replaces Thesis, Data Sources and Inbox): planned in
+  `docs/NOTES_PLAN.md`, mockup `docs/design/notes-mockup.html`; awaiting the user's review. Studies stays "Coming soon" until its purpose
+  is decided; Ideas is dropped from the list for now.
 - Global dashboard (priorities, calendar, weather, unread email count)
 - World news tab, Research Digest, Focus/Writing space
 - Life and Work workspaces
