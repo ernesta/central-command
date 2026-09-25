@@ -114,7 +114,9 @@ export function MeetingsLanding(): React.JSX.Element {
               <AcademicYearSelect year={year} years={years} onChange={setYear} />
             </div>
             <MeetingsHours rows={all} year={year} today={today} />
-            <p className={styles.hint}>Series in this academic year. Open one to see its meetings.</p>
+            <p className={styles.hint}>
+              Series in this academic year. Open one to see its meetings.
+            </p>
             <div className={styles.cards}>
               {summaries.map((s) => (
                 <div key={s.series} className={styles.card}>
