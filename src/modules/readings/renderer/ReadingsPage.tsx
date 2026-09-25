@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { ArrowLeft } from 'lucide-react'
+import { Link, useNavigate } from 'react-router'
 import { modulePath } from '@modules/types'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
@@ -114,6 +115,10 @@ export function ReadingsPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
+      <Link className={styles.back} to="/research">
+        <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
+        Research
+      </Link>
       <header className={styles.header}>
         <h1 className={styles.heading}>Readings</h1>
         <div className={styles.controls}>

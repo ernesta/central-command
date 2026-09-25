@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { DeleteDialog } from '@renderer/components/DeleteDialog'
@@ -67,6 +67,8 @@ function EntryView({
   const [people, setPeople] = useState<Person[]>([])
   const [seriesUsed, setSeriesUsed] = useState<string[]>([...TRAINING_SERIES])
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const titleRef = useRef<HTMLInputElement>(null)
+  const focusTitle = useRef((location.state as { isNew?: boolean } | null)?.isNew === true)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
@@ -82,6 +84,15 @@ function EntryView({
       cancelled = true
     }
   }, [])
+
+  // A brand-new entry opens with its title selected, so typing replaces "Untitled".
+  const ready = snapshot.status === 'ready'
+  useEffect(() => {
+    if (!ready || !focusTitle.current) return
+    focusTitle.current = false
+    titleRef.current?.focus()
+    titleRef.current?.select()
+  }, [ready])
 
   const { meta, body, save, error, conflict, reloadedFromDisk, problems } = snapshot
 
@@ -143,6 +154,7 @@ function EntryView({
       {back}
       <div className={styles.head}>
         <input
+          ref={titleRef}
           className={styles.title}
           aria-label="Title"
           placeholder="Title"

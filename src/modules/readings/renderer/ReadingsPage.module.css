@@ -10,7 +10,20 @@
   flex-wrap: wrap;
   gap: 16px;
   /* Bottom padding keeps focus rings on the controls clear of the content area below. */
-  padding: 40px 48px 8px;
+  padding: 12px 48px 8px;
+}
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  margin: 36px 48px 0;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+  text-decoration: none;
+}
+.back:hover {
+  color: var(--ink);
 }
 .heading {
   font-size: var(--text-28);
