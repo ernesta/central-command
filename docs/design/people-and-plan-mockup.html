@@ -280,6 +280,15 @@
           grid-template-columns: minmax(0, 1fr);
         }
       }
+      table {
+        table-layout: fixed;
+      }
+      th:first-child {
+        width: 34%;
+      }
+      th:nth-child(2) {
+        width: 14%;
+      }
     </style>
   </head>
   <body>
@@ -293,12 +302,6 @@
           <div class="head">
             <h2>People</h2>
             <button class="btn primary">+ Add person</button>
-          </div>
-
-          <div class="notice">
-            <strong>Similar initials.</strong> <span class="chip warn">RM</span> Ryan McKay and
-            <span class="chip warn">RM2</span> Robyn Muir look alike in a note. Change one, for
-            example to <span class="chip">RMu</span>.
           </div>
 
           <div class="card">
@@ -329,14 +332,14 @@
                 </tr>
                 <tr>
                   <td>Ryan McKay</td>
-                  <td><span class="chip warn">RM</span></td>
+                  <td><span class="chip">RM</span></td>
                   <td>12</td>
                   <td>1</td>
                   <td class="act">Edit · Remove</td>
                 </tr>
                 <tr>
                   <td>Robyn Muir</td>
-                  <td><span class="chip warn">RM2</span></td>
+                  <td><span class="chip">RM2</span></td>
                   <td>0</td>
                   <td>1</td>
                   <td class="act">Edit · Remove</td>
@@ -345,7 +348,7 @@
             </table>
           </div>
           <details class="former" open>
-            <summary>Former people (2)</summary>
+            <summary>Archived (2)</summary>
             <div class="card" style="margin-top: 10px">
               <table>
                 <thead>
@@ -376,68 +379,45 @@
               </table>
             </div>
             <p class="note">
-              Not offered when adding people to a note, but their names and initials still show
-              properly in old notes, and nobody else can take their initials.
+              Archived people are not offered when adding people to a note. Old notes still show
+              them.
             </p>
           </details>
         </div>
       </section>
 
       <section>
-        <p class="label">
-          2. Changing a name or initials updates your notes (asked first, with counts)
-        </p>
+        <p class="label">2. Changing a name or initials updates your notes</p>
         <div class="screen">
           <div class="dialogs">
             <div class="dialog">
               <h3>Change name?</h3>
-              <p><strong>Kathy Rastle</strong> → <strong>Kathryn Rastle</strong></p>
-              <ul>
-                <li>Attendee in <strong>41 meetings</strong></li>
-                <li>Lead in <strong>2 trainings</strong></li>
-              </ul>
-              <p class="muted">
-                Only the attendee and lead lines at the top of each note change. Each file is backed
-                up first. A file that changed in the meantime is skipped and listed.
-              </p>
+              <p class="muted">This will update the name in meetings and trainings.</p>
               <div class="row">
-                <button class="btn">Cancel</button><button class="btn">Change the list only</button
-                ><button class="btn primary">Change name and update notes</button>
+                <button class="btn">Cancel</button><button class="btn primary">Change</button>
               </div>
             </div>
 
             <div class="dialog">
               <h3>Change initials?</h3>
-              <p><span class="chip">KR</span> → <span class="chip">KRa</span></p>
-              <ul>
-                <li><strong>TODO(KR)</strong> in <strong>17 TODOs</strong> across 9 meetings</li>
-              </ul>
-              <p class="muted">
-                Only the owner inside a TODO marker changes ("TODO(KR &amp; EO)" becomes "TODO(KRa
-                &amp; EO)"); no other text is touched. Nothing to update? Only the list changes.
-              </p>
+              <p class="muted">Initials in TODOs will change.</p>
               <div class="row">
-                <button class="btn">Cancel</button><button class="btn">Change the list only</button
-                ><button class="btn primary">Change initials and update notes</button>
+                <button class="btn">Cancel</button><button class="btn primary">Change</button>
               </div>
             </div>
           </div>
-          <p class="note">
-            "Change the list only" is there for the rare case where you want old notes left alone
-            (the old name then shows as an outlined chip).
-          </p>
         </div>
       </section>
 
       <section>
         <p class="label">
-          3. Removing a person: delete only when nothing mentions them, otherwise archive or merge
+          3. Removing a person: delete only when no note mentions them, otherwise archive or merge
         </p>
         <div class="screen">
           <div class="dialogs three">
             <div class="dialog">
               <h3>Delete Joanna Young?</h3>
-              <p class="muted">Not mentioned in any meeting or training.</p>
+              <p class="muted">No meeting or training mentions them.</p>
               <div class="row">
                 <button class="btn">Cancel</button><button class="btn danger">Delete</button>
               </div>
@@ -445,22 +425,20 @@
 
             <div class="dialog">
               <h3>Remove Cilla Harries?</h3>
-              <p>
-                Lead in <strong>2 trainings</strong>. Deleting would erase who led them, so choose:
-              </p>
+              <p class="muted">Mentioned in 2 trainings.</p>
               <label class="opt"
                 ><input type="radio" name="r" checked />
                 <span
-                  ><strong>Archive</strong> (recommended)<br /><span class="muted"
-                    >Moves to Former people. Notes are unchanged and still show CH.</span
+                  ><strong>Archive</strong><br /><span class="muted"
+                    >Notes stay as they are.</span
                   ></span
                 ></label
               >
               <label class="opt"
                 ><input type="radio" name="r" />
                 <span
-                  ><strong>Merge into another person…</strong><br /><span class="muted"
-                    >Use when this is a duplicate: every mention becomes the other person.</span
+                  ><strong>Merge</strong><br /><span class="muted"
+                    >Replace with another person.</span
                   ></span
                 ></label
               >
@@ -470,22 +448,17 @@
             </div>
 
             <div class="dialog">
-              <h3>Merge Kathryn Rastle into…</h3>
+              <h3>Merge Kathryn Rastle into</h3>
               <p>
                 <select class="input" style="width: 100%">
                   <option>Kathy Rastle (KR)</option>
                 </select>
               </p>
-              <ul>
-                <li>Attendee lines in <strong>3 meetings</strong> → Kathy Rastle</li>
-                <li><strong>TODO(KRa)</strong> in 2 TODOs → TODO(KR)</li>
-              </ul>
               <p class="muted">
-                Then Kathryn Rastle is removed from the list. Each changed file is backed up first.
+                Names and TODO initials in meetings and trainings will change to theirs.
               </p>
               <div class="row">
-                <button class="btn">Cancel</button
-                ><button class="btn primary">Merge and update notes</button>
+                <button class="btn">Cancel</button><button class="btn primary">Merge</button>
               </div>
             </div>
           </div>
