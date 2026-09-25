@@ -2,6 +2,8 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { IPC, type Api } from '@shared/api'
 import { MEETINGS_IPC } from '@modules/meetings/shared/api'
 import type { MeetingChangedEvent } from '@modules/meetings/shared/api'
+import { NOTES_IPC } from '@modules/notes/shared/api'
+import type { NoteChangedEvent as NotesChangedEvent } from '@modules/notes/shared/api'
 import { READINGS_IPC } from '@modules/readings/shared/api'
 import { TRAINING_IPC } from '@modules/training/shared/api'
 import type { TrainingChangedEvent } from '@modules/training/shared/api'
@@ -98,6 +100,19 @@ const api: Api = {
         listener(change)
       ipcRenderer.on(TRAINING_IPC.changed, handler)
       return () => ipcRenderer.removeListener(TRAINING_IPC.changed, handler)
+    }
+  },
+  notes: {
+    create: (input) => ipcRenderer.invoke(NOTES_IPC.create, input),
+    read: (ref) => ipcRenderer.invoke(NOTES_IPC.read, ref),
+    list: (workspace) => ipcRenderer.invoke(NOTES_IPC.list, workspace),
+    save: (ref, changes, baseHash) => ipcRenderer.invoke(NOTES_IPC.save, ref, changes, baseHash),
+    delete: (ref) => ipcRenderer.invoke(NOTES_IPC.delete, ref),
+    onChanged: (listener) => {
+      const handler = (_event: Electron.IpcRendererEvent, change: NotesChangedEvent): void =>
+        listener(change)
+      ipcRenderer.on(NOTES_IPC.changed, handler)
+      return () => ipcRenderer.removeListener(NOTES_IPC.changed, handler)
     }
   },
   lifecycle: {
