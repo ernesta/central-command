@@ -69,7 +69,8 @@ export function parseTrainingMeta(head: string): ParsedTrainingMeta {
       institution: text('institution'),
       folder: text('folder'),
       organisation: text('organisation'),
-      points: text('points')
+      points: text('points'),
+      review: text('review')
     },
     problems
   }
@@ -90,7 +91,8 @@ const ORDER: (keyof TrainingMeta)[] = [
   'institution',
   'folder',
   'organisation',
-  'points'
+  'points',
+  'review'
 ]
 
 /**

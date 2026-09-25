@@ -32,6 +32,7 @@ const row = (date: string, over: Partial<TrainingIndexRow> = {}): TrainingIndexR
   summary: '',
   excerpt: '',
   hasNotes: false,
+  review: null,
   problems: [],
   contentHash: 'h',
   ...over
