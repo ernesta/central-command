@@ -195,11 +195,6 @@ export function leadNames(rows: readonly TrainingIndexRow[]): string[] {
   return [...new Set(rows.flatMap((r) => r.leads))].sort((a, b) => a.localeCompare(b))
 }
 
-/** The skills used in these entries, by name. */
-export function skillNames(rows: readonly TrainingIndexRow[]): string[] {
-  return [...new Set(rows.flatMap((r) => r.skills))].sort((a, b) => a.localeCompare(b))
-}
-
 export function yearHoursTitle(year: number): string {
   return `Hours of training, ${academicYearLabel(year)}`
 }
@@ -207,4 +202,45 @@ export function yearHoursTitle(year: number): string {
 /** "plus 36.5 h of meetings, which Inkpath also counts" for the line under the Training total. */
 export function meetingsLine(meetingMinutes: number): string {
   return `plus ${formatHours(meetingMinutes)} of meetings, which Inkpath also counts`
+}
+
+/** The next few upcoming entries (soonest first, planned ones with no date last) and the latest few that have happened. */
+export function recentAndUpcoming(
+  rows: readonly TrainingIndexRow[],
+  today: string,
+  limits = { upcoming: 3, recent: 5 }
+): { upcoming: TrainingIndexRow[]; recent: TrainingIndexRow[] } {
+  return {
+    upcoming: rows
+      .filter((r) => isUpcoming(r, today))
+      .sort((a, b) => -compareNewestFirst(a, b))
+      .slice(0, limits.upcoming),
+    recent: rows
+      .filter((r) => !isUpcoming(r, today))
+      .sort(compareNewestFirst)
+      .slice(0, limits.recent)
+  }
+}
+
+export interface SeriesSummary {
+  series: string
+  /** Entries that have happened (upcoming ones are not counted). */
+  count: number
+  minutes: number
+}
+
+/** One summary per series for the rows given: the start series first (even with no entries), then any others. */
+export function seriesSummaries(
+  rows: readonly TrainingIndexRow[],
+  start: readonly string[],
+  today: string
+): SeriesSummary[] {
+  return seriesOptions(rows, start).map((series) => {
+    const mine = rows.filter((r) => r.series === series && !isUpcoming(r, today))
+    return {
+      series,
+      count: mine.length,
+      minutes: mine.reduce((n, r) => n + (durationMinutes(r.start, r.end) ?? 0), 0)
+    }
+  })
 }

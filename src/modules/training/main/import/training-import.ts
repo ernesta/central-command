@@ -11,6 +11,8 @@ import {
   isMeetingRow,
   limitSkills,
   looksLikePerson,
+  personName,
+  sameLead,
   seriesOfRow,
   splitSkills,
   type InkpathRow
@@ -70,7 +72,7 @@ export interface ImportPlan {
   reports: {
     /** Entries whose typed hours differ from the times. */
     hoursDiffer: { row: InkpathRow; typed: number; fromTimes: number }[]
-    /** Providers that look like people (kept as the institution; leads are not guessed). */
+    /** Providers that look like people; they became leads (with the title removed). */
     peopleProviders: { provider: string; count: number }[]
     /** Skills in the workbook that are not on the skills list. */
     unknownSkills: { skill: string; rows: number[] }[]
@@ -249,11 +251,10 @@ export function planTrainingImport(input: ImportInput): ImportPlan {
     else if (series === 'DataCamp') mode = 'self-paced'
     reports.withoutType++
 
-    // provider
+    // provider: an institution stays the institution; a provider that is a person is a lead
     const provider = row.provider
-    if (provider) {
-      providerCounts.set(provider, (providerCounts.get(provider) ?? 0) + 1)
-    }
+    const providerIsPerson = looksLikePerson(provider)
+    if (providerIsPerson) providerCounts.set(provider, (providerCounts.get(provider) ?? 0) + 1)
 
     // times and hours
     const minutes = durationMinutes(row.startTime, row.endTime)
@@ -284,6 +285,10 @@ export function planTrainingImport(input: ImportInput): ImportPlan {
     if (folderMatch && 'path' in folderMatch) folder = folderMatch.path
     else if (folderMatch) reports.unmatchedFolders.push({ row, reason: folderMatch.reason })
 
+    // the person who provided it is a lead, unless the note already names the same person
+    if (providerIsPerson && !leads.some((l) => sameLead(l, provider)))
+      leads = [...leads, personName(provider)]
+
     const points = /^\d+(\.\d+)?$/.test(row.points) ? row.points : null
     const patch: TrainingPatch = {
       date: row.startDate,
@@ -295,7 +300,7 @@ export function planTrainingImport(input: ImportInput): ImportPlan {
       mode,
       skills: kept,
       leads,
-      institution: provider || null,
+      institution: providerIsPerson ? null : provider || null,
       folder,
       organisation: row.organisation || null,
       points

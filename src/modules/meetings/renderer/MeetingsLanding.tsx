@@ -1,8 +1,20 @@
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { useState } from 'react'
-import { Link } from 'react-router'
 import { AcademicYearSelect } from '@renderer/components/AcademicYearSelect'
 import { EmptyState } from '@renderer/components/EmptyState'
+import {
+  AllLink,
+  LandingHeader,
+  LandingHint,
+  LandingPage,
+  LandingSection,
+  RecentList,
+  SeeAllLink,
+  SeriesCards,
+  LandingBox,
+  LandingNone,
+  type RecentRow
+} from '@renderer/components/Landing'
 import { Segmented } from '@renderer/components/Segmented'
 import { useAcademicYear } from '@renderer/state/use-academic-year'
 import { recentAndUpcoming, seriesLine, seriesSummaries } from '../shared/landing'
@@ -16,7 +28,6 @@ import { NewMeetingButton } from './NewMeetingButton'
 import { OpenTodos } from './OpenTodos'
 import { meetingRoute, meetingsListRoute, seriesRoute, todayIso } from './meetings-paths'
 import { useMeetingsList } from './useMeetingsList'
-import styles from './MeetingsLanding.module.css'
 
 type Whose = 'everyone' | 'mine'
 
@@ -52,32 +63,37 @@ export function MeetingsLanding(): React.JSX.Element {
   )
   const summaries = seriesSummaries(meetingsInYear(all, year), today)
 
+  const recentRows: RecentRow[] = [...[...upcoming].reverse(), ...recent].map((row) => ({
+    key: row.id,
+    to: meetingRoute(row.id),
+    date: row.date ? formatDate(row.date) : 'No date yet',
+    badge: isUpcoming(row, today) ? (row.date ? 'Upcoming' : 'Planned') : undefined,
+    title: row.series,
+    people: row.attendees.map((name) => ({ name, initials: initialsFor(name, people) })),
+    note: noteFor(row, today)
+  }))
+
   return (
-    <div className={styles.page}>
-      <div className={styles.top}>
-        <Link className={styles.back} to="/research">
-          <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-          Research
-        </Link>
-        <header className={styles.header}>
-          <h1 className={styles.heading}>Meetings</h1>
-          <div className={styles.actions}>
-            <Link className={styles.allLink} to={meetingsListRoute}>
-              All meetings
-            </Link>
+    <LandingPage>
+      <LandingHeader
+        backTo="/research"
+        backLabel="Research"
+        title="Meetings"
+        actions={
+          <>
+            <AllLink to={meetingsListRoute}>All meetings</AllLink>
             <NewMeetingButton />
-          </div>
-        </header>
-      </div>
+          </>
+        }
+      />
 
       {rows === null ? null : (
         <>
-          <section className={styles.section} aria-labelledby="open-todos">
-            <div className={styles.sectionHead}>
-              <h2 id="open-todos" className={styles.label}>
-                Before next meeting · {shown.length} open
-              </h2>
-              {me && (
+          <LandingSection
+            id="open-todos"
+            label={`Before next meeting · ${shown.length} open`}
+            aside={
+              me && (
                 <Segmented<Whose>
                   label="Whose TODOs"
                   value={whose}
@@ -87,100 +103,63 @@ export function MeetingsLanding(): React.JSX.Element {
                   ]}
                   onChange={setWhose}
                 />
-              )}
-            </div>
-            <div className={styles.box}>
+              )
+            }
+          >
+            <LandingBox>
               {shown.length > 0 ? (
                 <OpenTodos todos={shown} people={people} />
               ) : (
-                <p className={styles.none}>
+                <LandingNone>
                   {whose === 'mine'
                     ? 'Nothing open for you.'
                     : 'Nothing open. You are all caught up.'}
-                </p>
+                </LandingNone>
               )}
-            </div>
-            <p className={styles.hint}>
+            </LandingBox>
+            <LandingHint>
               Picked up from the TODOs you write in your notes. To tick one off, open the next
               meeting of that series: it lists them under “Previous TODOs”.
-            </p>
-          </section>
+            </LandingHint>
+          </LandingSection>
 
-          <section className={styles.section} aria-labelledby="series">
-            <div className={styles.sectionHead}>
-              <h2 id="series" className={styles.label}>
-                Academic year
-              </h2>
-              <AcademicYearSelect year={year} years={years} onChange={setYear} />
-            </div>
+          <LandingSection
+            id="year"
+            label="Academic year"
+            aside={<AcademicYearSelect year={year} years={years} onChange={setYear} />}
+          >
             <MeetingsHours rows={all} year={year} today={today} />
-            <p className={styles.hint}>
-              Series in this academic year. Open one to see its meetings.
-            </p>
-            <div className={styles.cards}>
-              {summaries.map((s) => (
-                <div key={s.series} className={styles.card}>
-                  <h3 className={styles.cardTitle}>
-                    <Link className={styles.cardLink} to={seriesRoute(s.series, year)}>
-                      {s.series}
-                    </Link>
-                  </h3>
-                  <p className={styles.line}>{seriesLine(s, formatShortDate)}</p>
-                </div>
-              ))}
-            </div>
-          </section>
+            <SeriesCards
+              cards={summaries.map((s) => ({
+                key: s.series,
+                to: seriesRoute(s.series, year),
+                title: s.series,
+                line: seriesLine(s, formatShortDate)
+              }))}
+            />
+          </LandingSection>
 
-          <section className={styles.section} aria-labelledby="recent">
-            <div className={styles.sectionHead}>
-              <h2 id="recent" className={styles.label}>
-                Recent and upcoming
-              </h2>
-              <Link className={styles.link} to={meetingsListRoute}>
+          <LandingSection
+            id="recent"
+            label="Recent and upcoming"
+            aside={
+              <SeeAllLink to={meetingsListRoute}>
                 See all meetings
                 <ArrowRight size={14} strokeWidth={1.75} aria-hidden />
-              </Link>
-            </div>
-            {upcoming.length + recent.length === 0 ? (
+              </SeeAllLink>
+            }
+          >
+            {recentRows.length === 0 ? (
               <EmptyState
                 heading="No meetings yet"
                 message="Create a meeting to start keeping notes."
               />
             ) : (
-              <ul className={styles.box + ' ' + styles.recentList}>
-                {[...[...upcoming].reverse(), ...recent].map((row) => (
-                  <li key={row.id}>
-                    <Link className={styles.recent} to={meetingRoute(row.id)}>
-                      <span className={styles.date}>
-                        {row.date ? formatDate(row.date) : 'No date yet'}
-                      </span>
-                      <span>
-                        {row.series}
-                        {isUpcoming(row, today) && (
-                          <span className={styles.upcoming}>
-                            {row.date ? 'Upcoming' : 'Planned'}
-                          </span>
-                        )}
-                      </span>
-                      <span className={styles.chips}>
-                        {row.attendees.slice(0, 3).map((name) => (
-                          <span key={name} className={styles.chip} title={name}>
-                            {initialsFor(name, people)}
-                          </span>
-                        ))}
-                        {row.attendees.length > 3 && (
-                          <span className={styles.more}>+{row.attendees.length - 3}</span>
-                        )}
-                      </span>
-                      <span className={styles.note}>{noteFor(row, today)}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+              <RecentList rows={recentRows} />
             )}
-          </section>
+          </LandingSection>
         </>
       )}
-    </div>
+    </LandingPage>
   )
 }

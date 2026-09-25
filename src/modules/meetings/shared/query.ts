@@ -7,6 +7,8 @@ export interface MeetingsQuery {
   search: string
   /** A series name, or 'all'. */
   series: string
+  /** A skill name, or 'all'. */
+  skill: string
   /** An attendee's full name, or 'all'. */
   attendee: string
   mode: MeetingMode | 'all'
@@ -15,6 +17,7 @@ export interface MeetingsQuery {
 export const DEFAULT_MEETINGS_QUERY: MeetingsQuery = {
   search: '',
   series: 'all',
+  skill: 'all',
   attendee: 'all',
   mode: 'all'
 }
@@ -27,6 +30,7 @@ export function normaliseMeetingsQuery(raw: unknown): MeetingsQuery {
   return {
     search: typeof o.search === 'string' ? o.search : '',
     series: text(o.series, 'all'),
+    skill: text(o.skill, 'all'),
     attendee: text(o.attendee, 'all'),
     mode: o.mode === 'in-person' || o.mode === 'online' ? o.mode : 'all'
   }
@@ -36,11 +40,13 @@ export function normaliseMeetingsQuery(raw: unknown): MeetingsQuery {
 export function reconcileQuery(
   query: MeetingsQuery,
   series: readonly string[],
-  attendees: readonly string[]
+  attendees: readonly string[],
+  skills: readonly string[] = []
 ): MeetingsQuery {
   return {
     ...query,
     series: query.series === 'all' || series.includes(query.series) ? query.series : 'all',
+    skill: query.skill === 'all' || skills.includes(query.skill) ? query.skill : 'all',
     attendee:
       query.attendee === 'all' || attendees.includes(query.attendee) ? query.attendee : 'all'
   }
@@ -103,6 +109,7 @@ export function queryMeetings(
   return rows
     .filter((r) => query.series === 'all' || r.series === query.series)
     .filter((r) => query.mode === 'all' || r.mode === query.mode)
+    .filter((r) => query.skill === 'all' || r.skills.includes(query.skill))
     .filter((r) => query.attendee === 'all' || r.attendees.includes(query.attendee))
     .filter((r) => {
       if (terms.length === 0) return true

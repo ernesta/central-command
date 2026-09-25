@@ -2,6 +2,7 @@ import { createElement } from 'react'
 import type { LiveModuleManifest } from '../types'
 import { TrainingCard } from './renderer/TrainingCard'
 import { TrainingEntryPage } from './renderer/TrainingEntryPage'
+import { TrainingLanding } from './renderer/TrainingLanding'
 import { TrainingPage } from './renderer/TrainingPage'
 import { TrainingSettings } from './renderer/TrainingSettings'
 
@@ -12,7 +13,8 @@ export const trainingModule: LiveModuleManifest = {
   label: 'Training',
   status: 'live',
   routes: [
-    { path: '', element: createElement(TrainingPage) },
+    { path: '', element: createElement(TrainingLanding) },
+    { path: 'all', element: createElement(TrainingPage) },
     { path: 't/:id', element: createElement(TrainingEntryPage) }
   ],
   landingCard: TrainingCard,

@@ -100,6 +100,15 @@ describe('queryMeetings: filters', () => {
     expect(ids(queryMeetings(rows, q({ series: 'Rastle Lab' }), people))).toEqual([
       '2026-09-11 Rastle Lab'
     ])
+    expect(
+      ids(
+        queryMeetings(
+          rows.map((r, i) => (i === 0 ? { ...r, skills: ['Networking (RP)'] } : r)),
+          q({ skill: 'Networking (RP)' }),
+          people
+        )
+      )
+    ).toEqual([rows[0].id])
     expect(ids(queryMeetings(rows, q({ mode: 'online' }), people))).toEqual([
       '2026-09-10 Supervision'
     ])
@@ -193,6 +202,7 @@ describe('remembered query', () => {
     const saved = {
       search: 'ethics',
       series: 'Supervision',
+      skill: 'Networking (RP)',
       attendee: 'Kathy Rastle',
       mode: 'online' as const
     }
@@ -215,12 +225,14 @@ describe('remembered query', () => {
     const saved = {
       search: 'x',
       series: 'Book Club',
+      skill: 'Gone skill',
       attendee: 'Gone Person',
       mode: 'online' as const
     }
     expect(reconcileQuery(saved, ['Supervision'], ['Kathy Rastle'])).toEqual({
       search: 'x',
       series: 'all',
+      skill: 'all',
       attendee: 'all',
       mode: 'online'
     })

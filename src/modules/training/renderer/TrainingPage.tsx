@@ -1,9 +1,11 @@
-import { ArrowLeft, Download } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { AcademicYearSelect } from '@renderer/components/AcademicYearSelect'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
+import { ExportButton } from '@renderer/components/ExportButton'
+import { FilterRow } from '@renderer/components/FilterRow'
 import { HoursStrip } from '@renderer/components/HoursStrip'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
@@ -12,6 +14,7 @@ import { Select } from '@renderer/components/Select'
 import { useAcademicYear } from '@renderer/state/use-academic-year'
 import { useSettings } from '@renderer/state/settings-context'
 import { academicYearLabel } from '@shared/academic-year'
+import { skillsIn } from '@shared/skills'
 import { initialsFor } from '@modules/meetings/shared/query'
 import { meetingHours } from '@modules/meetings/shared/hours'
 import {
@@ -22,7 +25,6 @@ import {
   queryTraining,
   reconcileTrainingQuery,
   seriesOptions,
-  skillNames,
   trainingFiltersActive,
   trainingHours,
   yearHoursTitle
@@ -30,7 +32,7 @@ import {
 import { TRAINING_SERIES, TRAINING_TYPES } from '../shared/types'
 import { NewTrainingButton } from './NewTrainingButton'
 import { TrainingTable } from './TrainingTable'
-import { todayIso } from './training-paths'
+import { todayIso, trainingBase } from './training-paths'
 import { useTrainingList } from './useTrainingList'
 import { useTrainingView } from './useTrainingView'
 import styles from './TrainingPage.module.css'
@@ -39,7 +41,12 @@ import styles from './TrainingPage.module.css'
 export function TrainingPage(): React.JSX.Element {
   const { rows, meetings, people } = useTrainingList()
   const { settings } = useSettings()
-  const { query: saved, setQuery } = useTrainingView()
+  // A series card on the landing page opens the list already filtered to that series (for this visit only).
+  const [params] = useSearchParams()
+  const seriesParam = params.get('series')
+  const { query: saved, setQuery } = useTrainingView(
+    seriesParam ? { ...DEFAULT_TRAINING_QUERY, series: seriesParam } : undefined
+  )
   const [exporting, setExporting] = useState(false)
   const [exportNotice, setExportNotice] = useState<{ tone: 'info' | 'error'; text: string } | null>(
     null
@@ -59,7 +66,7 @@ export function TrainingPage(): React.JSX.Element {
       : reconcileTrainingQuery(saved, {
           series: seriesOptions(everything, TRAINING_SERIES),
           types: TRAINING_TYPES.map((t) => t.name),
-          skills: skillNames(everything),
+          skills: skillsIn(everything),
           leads: leadNames(everything)
         })
   const visible = queryTraining(all, query, people)
@@ -114,13 +121,21 @@ export function TrainingPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <Link className={styles.back} to="/research">
+      <Link className={styles.back} to={trainingBase}>
         <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-        Research
+        Training
       </Link>
       <header className={styles.header}>
-        <h1 className={styles.heading}>Training</h1>
-        <NewTrainingButton />
+        <h1 className={styles.heading}>All training</h1>
+        <div className={styles.actions}>
+          <ExportButton
+            busy={exporting}
+            disabled={rows === null}
+            title={`Exports ${academicYearLabel(year)} as a PDF, oldest first, without upcoming entries`}
+            onClick={() => void exportPdf()}
+          />
+          <NewTrainingButton />
+        </div>
       </header>
 
       {rows !== null && (
@@ -134,7 +149,7 @@ export function TrainingPage(): React.JSX.Element {
         />
       )}
 
-      <div className={styles.filters}>
+      <FilterRow>
         <AcademicYearSelect year={year} years={years} onChange={setYear} />
         <SearchInput
           label="Search training"
@@ -164,15 +179,15 @@ export function TrainingPage(): React.JSX.Element {
           value={query.skill}
           options={[
             { value: 'all', label: 'Any skill' },
-            ...skillNames(everything).map((s) => ({ value: s, label: s }))
+            ...skillsIn(everything).map((s) => ({ value: s, label: s }))
           ]}
           onChange={(skill) => setQuery({ skill })}
         />
         <Select
-          label="Filter by lead"
+          label="Filter by people"
           value={query.lead}
           options={[
-            { value: 'all', label: 'Any lead' },
+            { value: 'all', label: 'Anyone' },
             ...leadNames(everything).map((name) => ({
               value: name,
               label: `${name} (${initialsFor(name, people)})`
@@ -180,18 +195,7 @@ export function TrainingPage(): React.JSX.Element {
           ]}
           onChange={(lead) => setQuery({ lead })}
         />
-        {/* Used about once a year, so deliberately quiet. */}
-        <button
-          type="button"
-          className={styles.export}
-          disabled={exporting || rows === null}
-          title={`Exports ${academicYearLabel(year)} as a PDF, oldest first, without upcoming entries`}
-          onClick={() => void exportPdf()}
-        >
-          <Download size={14} strokeWidth={1.75} aria-hidden />
-          {exporting ? 'Exporting…' : 'Export PDF'}
-        </button>
-      </div>
+      </FilterRow>
       {exportNotice && (
         <Notice tone={exportNotice.tone} onDismiss={() => setExportNotice(null)}>
           {exportNotice.text}

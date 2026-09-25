@@ -173,9 +173,7 @@ if (r.hoursDiffer.length) {
     )
 }
 if (r.peopleProviders.length) {
-  console.log(
-    '\nProviders that look like people (kept as the institution; add leads yourself if you want them):'
-  )
+  console.log('\nProviders that are people (made leads, title removed, no institution):')
   for (const p of r.peopleProviders) console.log(`  ${p.provider} (${p.count})`)
 }
 if (r.unknownSkills.length) {

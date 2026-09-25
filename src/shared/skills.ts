@@ -101,3 +101,8 @@ export function minutesPerSkill(
     .map(([skill, minutes]) => ({ skill, minutes }))
     .sort((a, b) => b.minutes - a.minutes || a.skill.localeCompare(b.skill))
 }
+
+/** The skills used by these entries, sorted for a filter menu. */
+export function skillsIn(rows: readonly { skills: readonly string[] }[]): string[] {
+  return sortSkills([...new Set(rows.flatMap((r) => r.skills))])
+}

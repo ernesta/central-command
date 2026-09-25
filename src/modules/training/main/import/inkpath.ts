@@ -217,3 +217,18 @@ export function looksLikePerson(provider: string): boolean {
   if (/^(dr|prof|professor|mr|mrs|ms|miss|mx|sir|dame)\.?\s+\p{Lu}/u.test(p)) return true
   return /^\p{Lu}[\p{L}'’-]+(\s+\p{Lu}[\p{L}'’-]+){1,2}$/u.test(p)
 }
+
+const PERSON_TITLE = /^(dr|prof|professor|mr|mrs|ms|miss|mx|sir|dame)\.?\s+/i
+
+/** A person's name without a title: "Dr Emma Russell" is "Emma Russell". */
+export function personName(text: string): string {
+  return text.trim().replace(PERSON_TITLE, '').trim()
+}
+
+/** Two names for the same person: the same first and last word, ignoring case, so "Thomas C. Ormerod" matches "Thomas Ormerod". */
+export function sameLead(a: string, b: string): boolean {
+  const words = (n: string): string[] => personName(n).toLowerCase().split(/\s+/).filter(Boolean)
+  const x = words(a)
+  const y = words(b)
+  return x.length > 0 && y.length > 0 && x[0] === y[0] && x[x.length - 1] === y[y.length - 1]
+}

@@ -125,12 +125,13 @@ describe('planTrainingImport: the row becomes an entry', () => {
     expect(p.items.map((i) => i.status)).toEqual(['import', 'skip-exists'])
   })
 
-  it('reports typed hours that differ from the times, and providers that look like people', () => {
+  it('reports typed hours that differ from the times, and turns providers that are people into leads', () => {
     const p = plan([row({ hours: 1, provider: 'Dr Anastasiya Lopukhina' })])
     expect(p.reports.hoursDiffer).toEqual([expect.objectContaining({ typed: 1, fromTimes: 180 })])
     expect(p.reports.peopleProviders).toEqual([{ provider: 'Dr Anastasiya Lopukhina', count: 1 }])
-    expect(imported(p)[0].patch.institution).toBe('Dr Anastasiya Lopukhina')
-    expect(imported(p)[0].leads).toEqual([])
+    // a person who provided it is a lead, not an institution; the title is dropped
+    expect(imported(p)[0].patch.institution).toBeNull()
+    expect(imported(p)[0].patch.leads).toEqual(['Anastasiya Lopukhina'])
   })
 })
 
@@ -185,6 +186,18 @@ describe('Obsidian notes', () => {
         parsed
       )
     ).toEqual(["The note's text changed in conversion"])
+  })
+})
+
+describe('leads from providers and notes', () => {
+  it('does not add a second lead for the same person as the note names', () => {
+    const note = {
+      path: 'x.md',
+      fileName: '2025 10 08 Mixed Methods Research Designs.md',
+      text: '**Lead**: Thomas C. Ormerod\n## Notes\nText\n'
+    }
+    const p = plan([row({ provider: 'Thomas Ormerod' })], { notes: [note] })
+    expect(imported(p)[0].patch.leads).toEqual(['Thomas C. Ormerod'])
   })
 })
 

@@ -76,10 +76,16 @@ export function TrainingTable({
               'Series',
               'Type',
               'Title and summary',
+              '',
               'Skills',
               'Leads'
             ].map((label) => (
-              <th key={label} className={styles.th} scope="col">
+              <th
+                key={label}
+                className={styles.th}
+                scope="col"
+                aria-label={label === '' ? 'Notes and files' : undefined}
+              >
                 {label}
               </th>
             ))}
@@ -130,6 +136,9 @@ export function TrainingTable({
                 </td>
                 <td className={styles.titleCell}>
                   <span className={styles.titleText}>{row.title || 'Untitled'}</span>
+                  {row.summary && <span className={styles.summaryText}>{row.summary}</span>}
+                </td>
+                <td className={styles.marksCell}>
                   <span className={styles.marks}>
                     {row.hasNotes && (
                       <FileText size={13} strokeWidth={1.75} aria-label="Has notes" />
@@ -138,7 +147,6 @@ export function TrainingTable({
                       <Folder size={13} strokeWidth={1.75} aria-label="Has a linked folder" />
                     )}
                   </span>
-                  {row.summary && <span className={styles.summaryText}>{row.summary}</span>}
                 </td>
                 <td className={styles.skills}>
                   <SkillChips skills={row.skills} />

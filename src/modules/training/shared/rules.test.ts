@@ -10,7 +10,6 @@ import {
   queryTraining,
   reconcileTrainingQuery,
   seriesOptions,
-  skillNames,
   trainingFiltersActive,
   trainingHours
 } from './rules'
@@ -184,7 +183,6 @@ describe('option lists', () => {
     ]
     expect(seriesOptions(rows, ['SEDarc', 'DataCamp'])).toEqual(['SEDarc', 'DataCamp', 'SENSS'])
     expect(leadNames(rows)).toEqual(['A A', 'B B'])
-    expect(skillNames(rows)).toEqual(['A', 'Z'])
   })
 
   it('words the meetings line', () => {

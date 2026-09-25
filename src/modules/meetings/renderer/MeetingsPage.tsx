@@ -1,8 +1,11 @@
-import { ArrowLeft, Download } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
+import { ExportButton } from '@renderer/components/ExportButton'
+import { FilterRow } from '@renderer/components/FilterRow'
 import { academicYearLabel } from '@shared/academic-year'
+import { skillsIn } from '@shared/skills'
 import { AcademicYearSelect } from '@renderer/components/AcademicYearSelect'
 import { SearchInput } from '@renderer/components/SearchInput'
 import { Select } from '@renderer/components/Select'
@@ -51,11 +54,17 @@ export function MeetingsPage(): React.JSX.Element {
   const query =
     rows === null
       ? saved
-      : reconcileQuery(saved, seriesOptions(everything), attendeeNames(everything))
+      : reconcileQuery(
+          saved,
+          seriesOptions(everything),
+          attendeeNames(everything),
+          skillsIn(everything)
+        )
   const visible = queryMeetings(all, query, people)
   const filtersActive =
     query.search.trim() !== '' ||
     query.series !== 'all' ||
+    query.skill !== 'all' ||
     query.attendee !== 'all' ||
     query.mode !== 'all'
 
@@ -89,12 +98,18 @@ export function MeetingsPage(): React.JSX.Element {
       </Link>
       <header className={styles.header}>
         <h1 className={styles.heading}>All meetings</h1>
-        <NewMeetingButton />
+        <div className={styles.actions}>
+          <ExportButton
+            disabled
+            title="Later: exports the Supervision log as a PDF, oldest first"
+          />
+          <NewMeetingButton />
+        </div>
       </header>
 
       {rows !== null && <MeetingsHours rows={everything} year={year} today={today} />}
 
-      <div className={styles.filters}>
+      <FilterRow>
         <AcademicYearSelect year={year} years={years} onChange={setYear} />
         <SearchInput
           label="Search meetings"
@@ -111,7 +126,26 @@ export function MeetingsPage(): React.JSX.Element {
           onChange={(series) => set({ series })}
         />
         <Select
-          label="Filter by attendee"
+          label="Filter by type"
+          value={query.mode}
+          options={[
+            { value: 'all', label: 'Any type' },
+            { value: 'in-person', label: MODE_LABELS['in-person'] },
+            { value: 'online', label: MODE_LABELS.online }
+          ]}
+          onChange={(mode) => set({ mode })}
+        />
+        <Select
+          label="Filter by skill"
+          value={query.skill}
+          options={[
+            { value: 'all', label: 'Any skill' },
+            ...skillsIn(everything).map((s) => ({ value: s, label: s }))
+          ]}
+          onChange={(skill) => set({ skill })}
+        />
+        <Select
+          label="Filter by people"
           value={query.attendee}
           options={[
             { value: 'all', label: 'Anyone' },
@@ -122,27 +156,7 @@ export function MeetingsPage(): React.JSX.Element {
           ]}
           onChange={(attendee) => set({ attendee })}
         />
-        <Select
-          label="Filter by type"
-          value={query.mode}
-          options={[
-            { value: 'all', label: 'Any type' },
-            { value: 'in-person', label: MODE_LABELS['in-person'] },
-            { value: 'online', label: MODE_LABELS.online }
-          ]}
-          onChange={(mode) => set({ mode })}
-        />
-        {/* Used about once a year, so deliberately quiet. Built later; it will act on the Supervision view, oldest first. */}
-        <button
-          type="button"
-          className={styles.export}
-          disabled
-          title="Later: exports the Supervision log as a PDF, oldest first"
-        >
-          <Download size={14} strokeWidth={1.75} aria-hidden />
-          Export
-        </button>
-      </div>
+      </FilterRow>
 
       <div className={styles.content}>{content}</div>
 
