@@ -34,7 +34,9 @@
 - [ ] A "decision log" for training types (see above): design it with the user when they start mapping; then suggest types automatically.
 - [ ] A People page (list too long for Settings), and warn when two people would get confusingly similar initials.
 - [ ] Re-check the changed screens in dev mode (StrictMode) and the built app after any further change to lists, landings or entry pages.
-- [ ] The "Say when a filter is applied" and Readings follow-ups below are still open.
+- [ ] **Say when a filter is applied** (later, the user's call when): opening the Supervision series card shows "All meetings" with only that
+      series in it. See the Meetings follow-ups.
+- [ ] The Readings follow-ups below are still open.
 
 ## Phase 1 (complete; awaiting final review and push)
 
