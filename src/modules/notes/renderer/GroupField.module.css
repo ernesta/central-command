@@ -1,0 +1,124 @@
+.wrap {
+  position: relative;
+}
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-14);
+  white-space: nowrap;
+}
+.trigger:hover {
+  background: var(--hover-tint);
+}
+.none {
+  color: var(--text-muted);
+}
+.popover {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 4px);
+  left: 0;
+  display: grid;
+  gap: 8px;
+  width: 320px;
+  padding: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-float);
+  white-space: normal;
+}
+.input {
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  font-size: var(--text-14);
+}
+.input:focus-visible {
+  outline-offset: 0;
+  border-color: var(--accent);
+}
+/* Scrolls when there are many groups; padding and scroll-padding keep focus rings from being cut. */
+.list {
+  display: grid;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  max-height: 240px;
+  overflow: auto;
+  scroll-padding: 4px;
+}
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font-size: var(--text-14);
+  text-align: left;
+}
+.item:hover {
+  background: var(--hover-tint);
+}
+.nested {
+  padding-left: 24px;
+}
+.empty {
+  padding: 6px 8px;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+}
+.new {
+  display: grid;
+  gap: 6px;
+  padding: 8px 4px 4px;
+  border-top: 1px solid var(--border-soft);
+}
+.newLabel {
+  color: var(--text-muted);
+  font-size: var(--text-11);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.newRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+.newRow select {
+  grid-column: 1;
+  min-width: 0;
+}
+.submit {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: end;
+  padding: 7px 14px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-size: var(--text-13);
+  font-weight: 500;
+}
+.submit:disabled {
+  opacity: 0.55;
+}
+.error {
+  margin: 0;
+  color: var(--danger);
+  font-size: var(--text-13);
+}
