@@ -27,11 +27,3 @@
   margin-top: 16px;
   padding: 4px;
 }
-.danger {
-  border-color: var(--danger);
-  background: var(--danger);
-  color: var(--accent-contrast);
-}
-.danger:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--danger) 88%, black);
-}
