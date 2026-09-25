@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import styles from './Dialog.module.css'
 
 interface DialogProps {
@@ -30,7 +31,8 @@ export function Dialog({
     if (dialog && !dialog.open) dialog.showModal()
   }, [])
 
-  return (
+  // Portalled to the body so the surroundings (a table cell, right-aligned text) never style it.
+  return createPortal(
     <dialog
       ref={ref}
       className={styles.dialog}
@@ -43,6 +45,7 @@ export function Dialog({
       <h2 className={styles.title}>{title}</h2>
       <div className={styles.text}>{children}</div>
       <div className={styles.actions}>{actions}</div>
-    </dialog>
+    </dialog>,
+    document.body
   )
 }

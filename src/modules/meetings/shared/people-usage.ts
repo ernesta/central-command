@@ -5,6 +5,11 @@ export interface PersonUsage {
   name: string
   meetings: number
   trainings: number
+  /** Meetings that name them as an attendee (a new name changes these). */
+  attended: number
+  /** TODOs they own, and the meetings those are in (new initials change these). */
+  todos: number
+  todoMeetings: number
 }
 
 interface MeetingLike {
@@ -24,12 +29,16 @@ export function personUsage(
 ): PersonUsage[] {
   return people.map((person) => {
     const initials = person.initials.toUpperCase()
+    const owned = (m: MeetingLike): number =>
+      m.todos.filter((t) => t.owners.includes(initials)).length
+    const attended = meetings.filter((m) => m.attendees.includes(person.name)).length
     return {
       name: person.name,
-      meetings: meetings.filter(
-        (m) => m.attendees.includes(person.name) || m.todos.some((t) => t.owners.includes(initials))
-      ).length,
-      trainings: trainings.filter((t) => t.leads.includes(person.name)).length
+      meetings: meetings.filter((m) => m.attendees.includes(person.name) || owned(m) > 0).length,
+      trainings: trainings.filter((t) => t.leads.includes(person.name)).length,
+      attended,
+      todos: meetings.reduce((sum, m) => sum + owned(m), 0),
+      todoMeetings: meetings.filter((m) => owned(m) > 0).length
     }
   })
 }

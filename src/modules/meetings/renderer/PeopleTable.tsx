@@ -3,6 +3,7 @@ import { Button } from '@renderer/components/Button'
 import { Dialog } from '@renderer/components/Dialog'
 import { PeopleError, updatePerson } from '@shared/people'
 import type { PersonPatch } from '../shared/people'
+import { changeSentences } from '../shared/people-copy'
 import type { PersonUsage } from '../shared/people-usage'
 import type { Person } from '../shared/types'
 import styles from './PeopleTable.module.css'
@@ -18,16 +19,6 @@ function submitOrCancel(submit: () => void, cancel: () => void) {
     if (event.key === 'Enter') submit()
     else cancel()
   }
-}
-
-/** The sentence the Change dialog shows: only what the edit will change in the notes. */
-function changeText(nameChanged: boolean, initialsChanged: boolean): string {
-  return [
-    nameChanged && 'This will update the name in meetings and trainings.',
-    initialsChanged && 'Initials in TODOs will change.'
-  ]
-    .filter(Boolean)
-    .join(' ')
 }
 
 function changeTitle(nameChanged: boolean, initialsChanged: boolean): string {
@@ -67,7 +58,6 @@ function PersonRow({
   const [initials, setInitials] = useState(person.initials)
   const [me, setMe] = useState(person.me)
   const [confirming, setConfirming] = useState(false)
-  const mentioned = (usage?.meetings ?? 0) + (usage?.trainings ?? 0) > 0
 
   const patch: PersonPatch = {}
   if (name.trim().replace(/\s+/g, ' ') !== person.name) patch.name = name
@@ -75,6 +65,7 @@ function PersonRow({
   if (me !== person.me) patch.me = me
   const nameChanged = patch.name !== undefined
   const initialsChanged = patch.initials !== undefined
+  const sentences = changeSentences(usage, nameChanged, initialsChanged)
 
   const save = async (): Promise<void> => {
     setConfirming(false)
@@ -84,7 +75,7 @@ function PersonRow({
   const submit = (): void => {
     const problem = check(person.name, patch)
     if (problem) return onInvalid(problem)
-    if ((nameChanged || initialsChanged) && mentioned) setConfirming(true)
+    if (sentences.length > 0) setConfirming(true)
     else void save()
   }
   const cancel = (): void => {
@@ -178,7 +169,7 @@ function PersonRow({
               </>
             }
           >
-            {changeText(nameChanged, initialsChanged)}
+            {sentences.join(' ')}
           </Dialog>
         )}
       </td>

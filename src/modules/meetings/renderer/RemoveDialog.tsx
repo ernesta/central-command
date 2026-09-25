@@ -4,20 +4,10 @@ import { Dialog } from '@renderer/components/Dialog'
 import { Select } from '@renderer/components/Select'
 import { activePeople } from '@shared/people'
 import type { RemoveHow } from '../shared/api'
+import { mentionedText, mergeSentence } from '../shared/people-copy'
 import type { PersonUsage } from '../shared/people-usage'
 import type { Person } from '../shared/types'
 import styles from './RemoveDialog.module.css'
-
-const plural = (n: number, noun: string): string => `${n} ${noun}${n === 1 ? '' : 's'}`
-
-/** "Mentioned in 2 meetings and 1 training." */
-function mentionedText(usage: PersonUsage): string {
-  const parts = [
-    usage.meetings > 0 && plural(usage.meetings, 'meeting'),
-    usage.trainings > 0 && plural(usage.trainings, 'training')
-  ].filter(Boolean)
-  return `Mentioned in ${parts.join(' and ')}.`
-}
 
 interface RemoveDialogProps {
   person: Person
@@ -96,9 +86,7 @@ export function RemoveDialog({
           ]}
           onChange={setInto}
         />
-        <p className={styles.text}>
-          Names and TODO initials in meetings and trainings will change to theirs.
-        </p>
+        <p className={styles.text}>{mergeSentence(usage)}</p>
       </Dialog>
     )
   }

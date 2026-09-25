@@ -201,10 +201,17 @@ describe('PeopleService.remove', () => {
 describe('PeopleService.usage', () => {
   it('counts meetings (attendee or TODO owner) and trainings (lead) per person', () => {
     expect(service.usage()).toEqual([
-      { name: 'Ernesta Orlovaitė', meetings: 2, trainings: 0 },
-      { name: 'Kathy Rastle', meetings: 1, trainings: 1 },
-      { name: 'Kathryn Rastle', meetings: 0, trainings: 0 },
-      { name: 'Joanna Young', meetings: 0, trainings: 0 }
+      {
+        name: 'Ernesta Orlovaitė',
+        meetings: 2,
+        trainings: 0,
+        attended: 2,
+        todos: 2,
+        todoMeetings: 2
+      },
+      { name: 'Kathy Rastle', meetings: 1, trainings: 1, attended: 1, todos: 1, todoMeetings: 1 },
+      { name: 'Kathryn Rastle', meetings: 0, trainings: 0, attended: 0, todos: 0, todoMeetings: 0 },
+      { name: 'Joanna Young', meetings: 0, trainings: 0, attended: 0, todos: 0, todoMeetings: 0 }
     ])
   })
 })
