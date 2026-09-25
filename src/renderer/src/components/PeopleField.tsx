@@ -1,7 +1,7 @@
 import { Plus, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
-import { findByName, type Person } from '@shared/people'
+import { activePeople, findByName, type Person } from '@shared/people'
 import styles from './PeopleField.module.css'
 
 interface PeopleFieldProps {
@@ -53,7 +53,7 @@ export function PeopleField({
   }, [open])
 
   const attending = new Set(names.map((a) => a.toLowerCase()))
-  const available = people.filter((p) => !attending.has(p.name.toLowerCase()))
+  const available = activePeople(people).filter((p) => !attending.has(p.name.toLowerCase()))
 
   const add = (personName: string): void => {
     onChange([...names, personName])

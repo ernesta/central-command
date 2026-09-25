@@ -1,9 +1,14 @@
-/** A person from the people list. Initials are unique (case-insensitively). */
+/** A person from the people list. Initials are unique (case-insensitively), archived people's included. */
 export interface Person {
   name: string
   initials: string
   /** The user themselves; at most one. */
   me: boolean
+  /**
+   * Archived people are no longer offered when adding people to a note, but their name and initials still
+   * resolve in old notes and their initials stay reserved.
+   */
+  archived?: boolean
 }
 
 /** Thrown for a change the people list refuses (blank name, duplicate name or initials, unknown person). */
@@ -119,7 +124,7 @@ export function updatePerson(
     if (clash) throw new PeopleError(`The initials ${initials} are already used by ${clash.name}`)
   }
   const me = patch.me ?? target.me
-  const updated: Person = { name: newName, initials, me }
+  const updated: Person = { ...target, name: newName, initials, me }
   const list = people.map((p) => (p === target ? updated : { ...p }))
   return withMe(list, initials, me)
 }
@@ -129,6 +134,42 @@ export function removePerson(people: readonly Person[], name: string): Person[] 
   const target = findByName(people, name)
   if (!target) throw new PeopleError(`${name} is not in the list`)
   return people.filter((p) => p !== target).map((p) => ({ ...p }))
+}
+
+/** Everyone who is not archived: who can be added to a note. */
+export const activePeople = (people: readonly Person[]): Person[] =>
+  people.filter((p) => !p.archived)
+
+/** A new list with the person called `name` archived (an archived person cannot be "me"). */
+export function archivePerson(people: readonly Person[], name: string): Person[] {
+  const target = findByName(people, name)
+  if (!target) throw new PeopleError(`${name} is not in the list`)
+  return people.map((p) => (p === target ? { ...p, me: false, archived: true } : { ...p }))
+}
+
+/** A new list with the person called `name` no longer archived. */
+export function restorePerson(people: readonly Person[], name: string): Person[] {
+  const target = findByName(people, name)
+  if (!target) throw new PeopleError(`${name} is not in the list`)
+  return people.map((p) => {
+    if (p !== target) return { ...p }
+    const active = { ...p }
+    delete active.archived
+    return active
+  })
+}
+
+/** A new list without `from`, whose place in the notes `into` takes over (including being "me"). */
+export function mergePerson(people: readonly Person[], from: string, into: string): Person[] {
+  const source = findByName(people, from)
+  const target = findByName(people, into)
+  if (!source) throw new PeopleError(`${from} is not in the list`)
+  if (!target) throw new PeopleError(`${into} is not in the list`)
+  if (source === target) throw new PeopleError('Choose someone else to merge into')
+  if (target.archived) throw new PeopleError(`${target.name} is archived`)
+  return people
+    .filter((p) => p !== source)
+    .map((p) => (p === target ? { ...p, me: p.me || source.me } : { ...p }))
 }
 
 /**
@@ -153,7 +194,13 @@ export function normalisePeople(raw: unknown): Person[] {
       base,
       out.map((p) => p.initials)
     )
-    out.push({ name, initials, me: o.me === true && !out.some((p) => p.me) })
+    const archived = o.archived === true
+    out.push({
+      name,
+      initials,
+      me: o.me === true && !archived && !out.some((p) => p.me),
+      ...(archived ? { archived } : {})
+    })
   }
   return out
 }
@@ -177,7 +224,7 @@ export function ownerOptions(
   const unique = attendees.filter(
     (p) => !seen.has(p.initials.toUpperCase()) && seen.add(p.initials.toUpperCase())
   )
-  const others = people.filter((p) => !seen.has(p.initials.toUpperCase()))
+  const others = activePeople(people).filter((p) => !seen.has(p.initials.toUpperCase()))
   return [
     ...unique.map((p) => ({ initials: p.initials, name: p.name, attendee: true })),
     ...others.map((p) => ({ initials: p.initials, name: p.name, attendee: false }))

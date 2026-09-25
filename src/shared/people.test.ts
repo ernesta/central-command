@@ -1,13 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import {
   PeopleError,
+  activePeople,
   addPerson,
+  archivePerson,
   deriveInitials,
   findByInitials,
+  findByName,
   makeInitialsUnique,
+  mergePerson,
   normalisePeople,
   ownerOptions,
   removePerson,
+  restorePerson,
   updatePerson
 } from './people'
 import type { Person } from './people'
@@ -182,5 +187,83 @@ describe('removePerson', () => {
     expect(addPerson(removePerson(list, 'Kathy Rastle'), { name: 'Karl Rowe' })[1].initials).toBe(
       'KR'
     )
+  })
+})
+
+describe('archived people', () => {
+  const list: Person[] = [
+    { name: 'Ernesta Orlovaitė', initials: 'EO', me: true },
+    { name: 'Kathy Rastle', initials: 'KR', me: false },
+    { name: 'Cilla Harries', initials: 'CH', me: false }
+  ]
+
+  it('archives and restores without touching anyone else', () => {
+    const archived = archivePerson(list, 'Cilla Harries')
+    expect(archived[2]).toEqual({
+      name: 'Cilla Harries',
+      initials: 'CH',
+      me: false,
+      archived: true
+    })
+    expect(archived.slice(0, 2)).toEqual(list.slice(0, 2))
+    expect(restorePerson(archived, 'Cilla Harries')).toEqual(list)
+    expect(list[2].archived).toBeUndefined()
+  })
+
+  it('cannot be "me" once archived', () => {
+    expect(archivePerson(list, 'Ernesta Orlovaitė')[0]).toMatchObject({ me: false, archived: true })
+  })
+
+  it('still resolves by name and initials, and keeps the initials reserved', () => {
+    const archived = archivePerson(list, 'Cilla Harries')
+    expect(findByName(archived, 'Cilla Harries')?.initials).toBe('CH')
+    expect(findByInitials(archived, 'ch')?.name).toBe('Cilla Harries')
+    expect(() => addPerson(archived, { name: 'Chloe Hart', initials: 'CH' })).toThrow(
+      /already used/
+    )
+    expect(addPerson(archived, { name: 'Chloe Hart' }).at(-1)?.initials).toBe('CH2')
+  })
+
+  it('stays archived when edited, and is read back from the file', () => {
+    const archived = archivePerson(list, 'Cilla Harries')
+    expect(updatePerson(archived, 'Cilla Harries', { initials: 'CX' })[2].archived).toBe(true)
+    expect(normalisePeople({ people: archived })[2].archived).toBe(true)
+    expect(normalisePeople({ people: list })[2]).toEqual(list[2])
+  })
+
+  it('is not offered as an owner, unless they attended', () => {
+    const archived = archivePerson(list, 'Cilla Harries')
+    expect(ownerOptions([], archived).map((o) => o.initials)).toEqual(['EO', 'KR'])
+    expect(ownerOptions(['Cilla Harries'], archived).map((o) => o.initials)).toEqual([
+      'CH',
+      'EO',
+      'KR'
+    ])
+    expect(activePeople(archived).map((p) => p.name)).toEqual(['Ernesta Orlovaitė', 'Kathy Rastle'])
+  })
+})
+
+describe('mergePerson', () => {
+  const list: Person[] = [
+    { name: 'Ernesta Orlovaitė', initials: 'EO', me: true },
+    { name: 'Kathy Rastle', initials: 'KR', me: false },
+    { name: 'Kathryn Rastle', initials: 'KRa', me: false }
+  ]
+
+  it('removes the merged person and leaves the rest', () => {
+    expect(mergePerson(list, 'Kathryn Rastle', 'Kathy Rastle')).toEqual(list.slice(0, 2))
+  })
+
+  it('hands over "me"', () => {
+    const merged = mergePerson(list, 'Ernesta Orlovaitė', 'Kathy Rastle')
+    expect(merged.find((p) => p.me)?.name).toBe('Kathy Rastle')
+  })
+
+  it('refuses itself, unknown people and archived targets', () => {
+    expect(() => mergePerson(list, 'Kathy Rastle', 'Kathy Rastle')).toThrow(/someone else/)
+    expect(() => mergePerson(list, 'Nobody', 'Kathy Rastle')).toThrow(/not in the list/)
+    expect(() => mergePerson(list, 'Kathy Rastle', 'Nobody')).toThrow(/not in the list/)
+    const archived = archivePerson(list, 'Kathryn Rastle')
+    expect(() => mergePerson(archived, 'Kathy Rastle', 'Kathryn Rastle')).toThrow(/archived/)
   })
 })
