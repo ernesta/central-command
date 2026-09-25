@@ -45,6 +45,8 @@ interface Marker {
   index: number
   end: number
   owners: string[]
+  /** Where the text between the brackets sits in the line, or null for a marker with no brackets. */
+  ownersAt: [number, number] | null
 }
 
 function findMarkers(line: string): Marker[] {
@@ -53,7 +55,14 @@ function findMarkers(line: string): Marker[] {
   for (const m of line.matchAll(MARKER)) {
     const index = m.index ?? 0
     if (spans.some(([a, b]) => index >= a && index < b)) continue
-    found.push({ index, end: index + m[0].length, owners: parseOwners(m[1] ?? m[2]) })
+    const raw = m[1] ?? m[2]
+    const open = m[0].indexOf('(')
+    found.push({
+      index,
+      end: index + m[0].length,
+      owners: parseOwners(raw),
+      ownersAt: raw === undefined ? null : [index + open + 1, index + open + 1 + raw.length]
+    })
   }
   return found
 }
@@ -164,4 +173,69 @@ export function resolveOwner(
 export function ownedBy(item: Pick<TodoItem, 'owners'>, initials: string): boolean {
   const wanted = initials.trim().toUpperCase()
   return wanted !== '' && item.owners.includes(wanted)
+}
+
+/**
+ * Owner initials inside one pair of brackets with `renames` applied (keys are upper-case), keeping the
+ * separators and spacing as written. An owner who ends up listed twice (a merge) is dropped the second time.
+ */
+function renameOwnerText(raw: string, renames: ReadonlyMap<string, string>): string {
+  const parts = raw.split(/(\s*(?:&|,|\+|\/|\band\b)\s*)/i)
+  const seen = new Set<string>()
+  let out = ''
+  let separator = ''
+  for (let i = 0; i < parts.length; i++) {
+    if (i % 2 === 1) {
+      separator = parts[i]
+      continue
+    }
+    const token = parts[i]
+    const bare = token.trim()
+    const renamed = bare === '' ? bare : (renames.get(bare.toUpperCase()) ?? bare)
+    if (bare !== '' && seen.has(renamed.toUpperCase())) {
+      separator = ''
+      continue
+    }
+    if (bare !== '') seen.add(renamed.toUpperCase())
+    out += separator + token.replace(bare, () => renamed)
+    separator = ''
+  }
+  return out
+}
+
+/**
+ * The body with the owners of every TODO marker renamed (`renames`: upper-case old initials to new
+ * initials), and how many markers changed. Only the text between a marker's brackets is touched; code
+ * and fenced code are skipped, as when reading TODOs.
+ */
+export function renameTodoOwners(
+  body: string,
+  renames: ReadonlyMap<string, string>
+): { body: string; changed: number } {
+  if (renames.size === 0) return { body, changed: 0 }
+  let out = ''
+  let cursor = 0
+  let changed = 0
+  for (const line of scanLines(body)) {
+    if (line.inFence) continue
+    let edited = ''
+    let at = 0
+    let touched = false
+    for (const marker of findMarkers(line.text)) {
+      if (!marker.ownersAt) continue
+      const [a, b] = marker.ownersAt
+      const raw = line.text.slice(a, b)
+      const next = renameOwnerText(raw, renames)
+      if (next === raw) continue
+      edited += line.text.slice(at, a) + next
+      at = b
+      touched = true
+      changed++
+    }
+    if (!touched) continue
+    edited += line.text.slice(at)
+    out += body.slice(cursor, line.start) + edited
+    cursor = line.start + line.text.length
+  }
+  return { body: out + body.slice(cursor), changed }
 }
