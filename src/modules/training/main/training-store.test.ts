@@ -18,7 +18,8 @@ import type { CreateTrainingInput, TrainingFile } from '../shared/api'
 import type { TrainingRef } from '../shared/types'
 import { trainingMigrations } from './migrations'
 import { getTrainingRow, listTrainingIds } from './repository'
-import { TrainingError, TrainingStore, isSafeRelativeFolder } from './training-store'
+import { isSafeRelativeFolder } from './files'
+import { TrainingError, TrainingStore } from './training-store'
 
 let root: string
 let dir: string

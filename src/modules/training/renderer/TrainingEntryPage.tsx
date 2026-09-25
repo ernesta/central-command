@@ -12,6 +12,7 @@ import type { Person } from '@shared/people'
 import { formatDate } from '@shared/time'
 import { seriesOptions } from '../shared/rules'
 import { TRAINING_SERIES, type TrainingRef } from '../shared/types'
+import { FilesPanel } from './FilesPanel'
 import { entryRoute, trainingBase } from './training-paths'
 import { TrainingMetaFields } from './TrainingMetaFields'
 import { useTrainingSession } from './useTrainingSession'
@@ -216,6 +217,8 @@ function EntryView({
         onChange={(patch) => session.setMeta(patch)}
         onAddPerson={addPerson}
       />
+
+      <FilesPanel folder={meta.folder} onChange={(folder) => session.setMeta({ folder })} />
 
       <div className={styles.doc}>
         <NotesEditor

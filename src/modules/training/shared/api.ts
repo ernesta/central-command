@@ -8,6 +8,34 @@ import type {
   TrainingWorkspace
 } from './types'
 
+export interface TrainingFolderEntry {
+  name: string
+  kind: 'file' | 'folder'
+  /** Bytes, for files. */
+  size: number | null
+}
+
+export type TrainingFolderListing =
+  | { status: 'ok'; entries: TrainingFolderEntry[] }
+  /** The Trainings folder setting is empty or is not a folder. */
+  | { status: 'no-root' }
+  /** The entry's folder is not there (moved or renamed). */
+  | { status: 'missing' }
+
+/**
+ * Files linked to an entry. The app only ever reads them: it lists, opens with the default app and
+ * shows in Finder, and refuses any path outside the Trainings folder.
+ */
+export interface TrainingFilesApi {
+  /** One level of an entry's folder (or a sub-folder of it), relative to the Trainings folder setting. */
+  list(folder: string, sub?: string): Promise<TrainingFolderListing>
+  open(folder: string, sub: string, name: string): Promise<void>
+  /** Show a file, or the folder itself when `name` is empty, in Finder. */
+  reveal(folder: string, sub: string, name: string): Promise<void>
+  /** A folder picked in a dialog, as a path relative to the Trainings folder; rejects one outside it. */
+  toRelative(absolute: string): Promise<string>
+}
+
 export interface CreateTrainingInput {
   workspace: TrainingWorkspace
   /** YYYY-MM-DD. */
@@ -68,6 +96,7 @@ export interface TrainingApi {
   save(ref: TrainingRef, changes: TrainingChanges, baseHash: string): Promise<TrainingSaveResult>
   /** Move the entry's file to the Trash. The caller is responsible for asking the user first. */
   delete(ref: TrainingRef): Promise<void>
+  files: TrainingFilesApi
   /** Subscribe to entry files changing on disk. Returns an unsubscribe function. */
   onChanged(listener: (event: TrainingChangedEvent) => void): () => void
 }
@@ -78,5 +107,9 @@ export const TRAINING_IPC = {
   list: 'training:list',
   save: 'training:save',
   delete: 'training:delete',
+  filesList: 'training:files-list',
+  filesOpen: 'training:files-open',
+  filesReveal: 'training:files-reveal',
+  filesToRelative: 'training:files-to-relative',
   changed: 'training:changed'
 } as const

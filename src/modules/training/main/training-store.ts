@@ -27,6 +27,7 @@ import {
   type TrainingRef,
   type TrainingWorkspace
 } from '../shared/types'
+import { isSafeRelativeFolder } from './files'
 import { idFromFileName, trainingBaseName, trainingPath } from './file-name'
 import { buildTrainingIndexRow } from './index-row'
 import { deleteTrainingRow, listTrainingIds, listTrainingRows, upsertTraining } from './repository'
@@ -50,18 +51,6 @@ function checkWorkspace(workspace: string): TrainingWorkspace {
 }
 
 const isText = (v: unknown): v is string => typeof v === 'string'
-
-/** A relative path inside the Trainings folder: no leading slash, no `..` and no control characters. */
-export function isSafeRelativeFolder(folder: string): boolean {
-  return (
-    folder !== '' &&
-    !folder.startsWith('/') &&
-    !folder.startsWith('~') &&
-    // eslint-disable-next-line no-control-regex
-    !/[\u0000-\u001f]/.test(folder) &&
-    !folder.split(/[\\/]/).some((part) => part === '..')
-  )
-}
 
 /** Refuse metadata that could not be read back: the file is only ever given values the app understands. */
 export function checkTrainingPatch(patch: TrainingPatch): void {

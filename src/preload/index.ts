@@ -70,6 +70,13 @@ const api: Api = {
     list: (workspace) => ipcRenderer.invoke(TRAINING_IPC.list, workspace),
     save: (ref, changes, baseHash) => ipcRenderer.invoke(TRAINING_IPC.save, ref, changes, baseHash),
     delete: (ref) => ipcRenderer.invoke(TRAINING_IPC.delete, ref),
+    files: {
+      list: (folder, sub) => ipcRenderer.invoke(TRAINING_IPC.filesList, folder, sub),
+      open: (folder, sub, name) => ipcRenderer.invoke(TRAINING_IPC.filesOpen, folder, sub, name),
+      reveal: (folder, sub, name) =>
+        ipcRenderer.invoke(TRAINING_IPC.filesReveal, folder, sub, name),
+      toRelative: (absolute) => ipcRenderer.invoke(TRAINING_IPC.filesToRelative, absolute)
+    },
     onChanged: (listener) => {
       const handler = (_event: Electron.IpcRendererEvent, change: TrainingChangedEvent): void =>
         listener(change)

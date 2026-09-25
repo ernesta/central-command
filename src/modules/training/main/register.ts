@@ -8,6 +8,7 @@ import { TRAINING_IPC, type CreateTrainingInput, type TrainingChangedEvent } fro
 import type { TrainingChanges } from '../shared/front-matter'
 import { TRAINING_WORKSPACES, type TrainingRef, type TrainingWorkspace } from '../shared/types'
 import { trainingPath } from './file-name'
+import { listFolder, openablePath, relativeToRoot, resolveInside } from './files'
 import { trainingMigrations } from './migrations'
 import { TrainingStore } from './training-store'
 
@@ -33,7 +34,7 @@ function asRef(value: unknown): TrainingRef {
   return { workspace: asWorkspace(o.workspace), id: o.id }
 }
 
-function register({ db, paths }: MainContext): () => void {
+function register({ db, paths, settings }: MainContext): () => void {
   const dirFor = (workspace: TrainingWorkspace): string => join(paths.trainingNotes, workspace)
   const store = new TrainingStore({ db, dirFor, trash: (path) => shell.trashItem(path) })
 
@@ -51,6 +52,40 @@ function register({ db, paths }: MainContext): () => void {
     return store.save(asRef(ref), asObject(changes, 'changes') as TrainingChanges, baseHash)
   })
   ipcMain.handle(TRAINING_IPC.delete, (_event, ref: unknown) => store.delete(asRef(ref)))
+
+  // The Trainings folder is read from the settings on every call, so a change there applies at once.
+  const root = (): string => settings.get().trainingsFolder
+  const text = (value: unknown, what: string): string => {
+    if (typeof value !== 'string') throw new Error(`Invalid ${what}`)
+    return value
+  }
+  ipcMain.handle(TRAINING_IPC.filesList, (_event, folder: unknown, sub: unknown) =>
+    listFolder(root(), text(folder, 'folder'), sub === undefined ? '' : text(sub, 'sub-folder'))
+  )
+  ipcMain.handle(
+    TRAINING_IPC.filesOpen,
+    async (_event, folder: unknown, sub: unknown, name: unknown) => {
+      const path = await openablePath(
+        root(),
+        text(folder, 'folder'),
+        text(sub, 'sub'),
+        text(name, 'name')
+      )
+      const failure = await shell.openPath(path)
+      if (failure) throw new Error(failure)
+    }
+  )
+  ipcMain.handle(
+    TRAINING_IPC.filesReveal,
+    async (_event, folder: unknown, sub: unknown, name: unknown) => {
+      shell.showItemInFolder(
+        await resolveInside(root(), text(folder, 'folder'), text(sub, 'sub'), text(name, 'name'))
+      )
+    }
+  )
+  ipcMain.handle(TRAINING_IPC.filesToRelative, (_event, absolute: unknown) =>
+    relativeToRoot(root(), text(absolute, 'path'))
+  )
 
   const watchers = ACTIVE_WORKSPACES.map(
     (workspace) =>

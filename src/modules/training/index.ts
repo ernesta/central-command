@@ -3,6 +3,7 @@ import type { LiveModuleManifest } from '../types'
 import { TrainingCard } from './renderer/TrainingCard'
 import { TrainingEntryPage } from './renderer/TrainingEntryPage'
 import { TrainingPage } from './renderer/TrainingPage'
+import { TrainingSettings } from './renderer/TrainingSettings'
 
 /** Training: the formal training log, with notes and linked files per entry and hours towards a yearly aim. */
 export const trainingModule: LiveModuleManifest = {
@@ -14,5 +15,6 @@ export const trainingModule: LiveModuleManifest = {
     { path: '', element: createElement(TrainingPage) },
     { path: 't/:id', element: createElement(TrainingEntryPage) }
   ],
-  landingCard: TrainingCard
+  landingCard: TrainingCard,
+  settingsSection: TrainingSettings
 }
