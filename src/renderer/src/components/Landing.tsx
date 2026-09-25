@@ -33,7 +33,7 @@ export function LandingHeader({
   )
 }
 
-/** The button-like link to the full list ("All meetings", "All training"). */
+/** A button-like link in a landing header, for a page that belongs to the module (for example "Training plan"). */
 export function AllLink({
   to,
   children

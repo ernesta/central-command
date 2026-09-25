@@ -592,5 +592,7 @@ list. `convertPseudoHeadings` (`meetings/shared/pseudo-headings.ts`) turns such 
   travels as the note's key, as text), so it has the same autosave, conflict handling and outside-change reload as every note. The
   outline beside it is built from the `##` and `###` headings as you type (`shared/plan.ts`). The next academic year is always offered,
   so a plan can be written before its year starts. Hours per priority were considered and left out on purpose.
-- **Not done:** the user's draft (`Downloads/Training/Year 2 Training Priorities.md`) has not been copied into the real library; it
-  only went into a scratch library for testing. It would be saved as `Training plan 2026-27.md` in the plans folder.
+- **The user's draft** (`Downloads/Training/Year 2 Training Priorities.md`) was copied, unchanged, into the real library as
+  `Training plan 2026-27.md` (never overwriting).
+- **Landing headers hold only "New …"** (and Training's "Training plan"). The "All meetings" / "All training" buttons were removed at
+  the user's request; the "See all …" link at the bottom of each landing page is the way to the full list.

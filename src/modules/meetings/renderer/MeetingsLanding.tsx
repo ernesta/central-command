@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { AcademicYearSelect } from '@renderer/components/AcademicYearSelect'
 import { EmptyState } from '@renderer/components/EmptyState'
 import {
-  AllLink,
   LandingHeader,
   LandingHint,
   LandingPage,
@@ -79,12 +78,7 @@ export function MeetingsLanding(): React.JSX.Element {
         backTo="/research"
         backLabel="Research"
         title="Meetings"
-        actions={
-          <>
-            <AllLink to={`${meetingsListRoute}?year=${year}`}>All meetings</AllLink>
-            <NewMeetingButton />
-          </>
-        }
+        actions={<NewMeetingButton />}
       />
 
       {rows === null ? null : (

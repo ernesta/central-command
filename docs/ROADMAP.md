@@ -27,11 +27,7 @@
 - [ ] **The 61 entries only in the older Word training log** (no twin in the Inkpath log) were not imported. Say if any should be.
 - [ ] **Set the Trainings folder** in Settings → Training (`/Users/ernesta/RHUL/Trainings`) if not done, so the Files panels work.
 - [ ] Review the keyboard shortcuts listed in Settings (still open from Meetings).
-- [ ] **Try the Training plan** (Training → Training plan). It is empty for now: say if I should copy your draft (`Downloads/Training/Year 2
-    Training Priorities.md`) in as the 2026–27 plan, or paste it yourself.
-
-### For Claude (next time)
-
+- [ ] **Try the Training plan** (Training → Training plan). Your draft was copied in as the 2026–27 plan; edit it there.
 - [ ] After the user's review: fix what they raise, then push, write up the state, clear context and move on to the next part.
 - [ ] A "decision log" for training types (see above): design it with the user when they start mapping; then suggest types automatically.
 - [ ] A People page (list too long for Settings), and warn when two people would get confusingly similar initials.

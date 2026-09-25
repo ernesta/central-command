@@ -90,7 +90,6 @@ export function TrainingLanding(): React.JSX.Element {
         actions={
           <>
             <AllLink to={`${trainingPlanRoute}?year=${year}`}>Training plan</AllLink>
-            <AllLink to={`${trainingListRoute}?year=${year}`}>All training</AllLink>
             <NewTrainingButton />
           </>
         }
