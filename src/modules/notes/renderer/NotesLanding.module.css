@@ -1,0 +1,49 @@
+.hint {
+  margin: 0;
+  padding: 0 4px;
+  color: var(--text-muted);
+  font-size: var(--text-14);
+}
+/* "Show all": a quiet text button that looks like the landing pages' links. */
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-size: var(--text-13);
+}
+.open {
+  transform: rotate(180deg);
+}
+/* The groups that did not get a card: names and counts in one compact row. */
+.more {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-13);
+  text-decoration: none;
+}
+.chip:hover {
+  background: var(--hover-tint);
+}
+.chip b {
+  color: var(--text-muted);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
