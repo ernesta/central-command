@@ -1,0 +1,85 @@
+.page {
+  display: grid;
+  gap: 20px;
+  padding: 36px 64px 48px;
+  align-content: start;
+}
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+}
+.back:hover {
+  color: var(--ink);
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+/* The title is an input that looks like the page heading. */
+.title {
+  flex: 1;
+  min-width: 260px;
+  margin: 0;
+  padding: 2px 4px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: var(--text-30);
+  font-weight: 700;
+  line-height: 1.25;
+}
+.title:hover {
+  border-color: var(--border-soft);
+}
+.title:focus-visible {
+  outline-offset: 0;
+  border-color: var(--accent);
+}
+.title::placeholder {
+  color: var(--text-muted);
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.status {
+  color: var(--text-muted);
+  font-size: var(--text-12);
+}
+.statusError {
+  color: var(--danger);
+}
+.delete {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+.notices {
+  display: grid;
+  gap: 8px;
+}
+.noticeActions {
+  display: flex;
+  gap: 8px;
+}
+.doc {
+  max-width: 780px;
+  min-width: 0;
+}
+@media (max-width: 900px) {
+  .page {
+    padding-inline: 24px;
+  }
+}

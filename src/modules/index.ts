@@ -4,10 +4,16 @@ import type { ShortcutGroup } from '@shared/shortcuts'
 import { meetingsModule } from './meetings'
 import { plannedModules } from './planned'
 import { readingsModule } from './readings'
+import { trainingModule } from './training'
 import type { LiveModuleManifest, ModuleManifest, PlannedModuleManifest } from './types'
 
 /** Add a new module by appending its manifest here; the shell builds routes and landing pages from this list. */
-export const modules: ModuleManifest[] = [readingsModule, meetingsModule, ...plannedModules]
+export const modules: ModuleManifest[] = [
+  readingsModule,
+  meetingsModule,
+  trainingModule,
+  ...plannedModules
+]
 
 export function liveModules(workspace: Workspace): LiveModuleManifest[] {
   return modules.filter(

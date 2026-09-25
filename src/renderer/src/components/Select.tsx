@@ -4,6 +4,8 @@ import styles from './Select.module.css'
 export interface SelectOption<T extends string> {
   value: T
   label: string
+  /** Options with the same group are listed together under its name. */
+  group?: string
 }
 
 interface SelectProps<T extends string> extends Omit<
@@ -33,10 +35,23 @@ export function Select<T extends string>({
       onChange={(event) => onChange(event.target.value as T)}
       {...rest}
     >
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>
-          {o.label}
-        </option>
+      {options
+        .filter((o) => !o.group)
+        .map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      {[...new Set(options.flatMap((o) => (o.group ? [o.group] : [])))].map((group) => (
+        <optgroup key={group} label={group}>
+          {options
+            .filter((o) => o.group === group)
+            .map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+        </optgroup>
       ))}
     </select>
   )
