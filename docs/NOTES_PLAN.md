@@ -1,7 +1,7 @@
 # Notes module: plan
 
-Status: **proposed** (the user approved the direction, answered the first questions and is reviewing the second mockup, `docs/design/notes-mockup.html`; open it in a
-browser). Nothing is built. Read it with `CLAUDE.md`, `docs/DECISIONS.md` and the Meetings and Training plans; Meetings is the pattern to
+Status: **approved, not built** (the user approved the design and the mockup, `docs/design/notes-mockup.html`; open it in a
+browser). Nothing is built yet. Read it with `CLAUDE.md`, `docs/DECISIONS.md` and the Meetings and Training plans; Meetings is the pattern to
 copy. "Ask" marks an open question at the end.
 
 ## What the user needs
@@ -100,24 +100,24 @@ The vault is `~/RHUL/Scribbles/RHUL` (the `.obsidian` folder is there). Its Read
 into their own modules and are skipped, as is `Assets` (a `.bib` export). The rest are "just notes", 12 in all, copied over as they
 are (the user will clean them up afterwards):
 
-| Vault folder | Notes                                                                                   | Becomes the group |
-| ------------ | --------------------------------------------------------------------------------------- | ----------------- |
-| Data Sources | 6 (ASER, PIRLS, PISA, UK National Pupil Database, US Learning Achievement, Young Lives) | Data Sources      |
-| Ideas        | 3                                                                                       | Ideas             |
-| Thesis       | 2 (Journals, Thesis Format)                                                             | Thesis            |
-| Placement    | 1                                                                                       | Placement         |
+| Vault folder | Notes                                                                                   |
+| ------------ | --------------------------------------------------------------------------------------- |
+| Data Sources | 6 (ASER, PIRLS, PISA, UK National Pupil Database, US Learning Achievement, Young Lives) |
+| Ideas        | 3                                                                                       |
+| Thesis       | 2 (Journals, Thesis Format)                                                             |
+| Placement    | 1                                                                                       |
 
-- The app has **no folders**: the vault folder name only fills the note's `group` field, which the user can change or clear. None of these
-  four folders has subfolders, so no subgroups arise; the importer would refuse to guess for deeper folders and list them instead.
+- The app has **no folders**, and **every imported note arrives ungrouped** (the user's decision); they group them afterwards. The vault
+  folder is kept only as the note's `imported-from` path, so nothing is lost. The importer lists any deeper folders instead of guessing.
 - The user wants Data Sources to be a single note eventually; the six come across separately and can be merged by hand.
 - Body text is copied untouched (`[[wiki links]]` and `![[images]]` stay as written; the app does not follow them yet). Front matter gets
-  `title` (the file name), `group`, `created` (the file's creation date) and `imported-from` (the vault path); any front matter the note
+  `title` (the file name), `created` (the file's creation date) and `imported-from` (the vault path); any front matter the note
   already had is kept.
 - Like the other importers: a dry run by default that lists every note and what it would get, a check that the converted note equals the
   source apart from the front matter, a backup and guarded write on `--apply`, and never a file replaced. It is run on the real vault
   only after a dry run has been read, and applied only when the user says so.
 
-## Ask
+## Still open
 
-1. **Studies**: what should it be? It may turn out to be a group too (`Studies`, with a subgroup per study).
-2. **Ideas** were imported into a group called Ideas; the user will decide later whether that stays a group.
+- **Studies** stays on "Coming soon" until the user decides what it is (perhaps a group, with a subgroup per study).
+- **Ideas**: the user will decide later whether it becomes something of its own.

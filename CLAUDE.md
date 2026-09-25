@@ -83,6 +83,10 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
 - Since the second Training review: Meetings' Export (the Supervision log as a PDF; printing and page shell shared with Training) and the
   Training plan (one Markdown file per academic year, `notes/training-plans/`, the user's 2026–27 draft copied in) are built. The
   People page is built (`docs/DECISIONS.md`, "People page"; mockup `docs/design/people-and-plan-mockup.html`) and awaits the user's review.
+- **Notes** is the next module to build: the plan `docs/NOTES_PLAN.md` and mockup `docs/design/notes-mockup.html` are approved (one flat
+  folder of notes, a group and optional subgroup per note shown as `Thesis › Methods`, up to four pinned notes, quick capture with
+  Mod-Shift-n, an Obsidian import that leaves everything ungrouped). Studies stays "Coming soon"; Ideas, Data Sources, Inbox and Thesis are
+  not modules.
 - The app name lives in one place (`src/shared/app-info.ts`); it may be renamed again.
 
 ## Testing the app for real (unit tests are not enough)

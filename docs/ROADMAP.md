@@ -29,7 +29,8 @@
 - [ ] After the user's review: fix what they raise, then push, write up the state, clear context and move on to the next part.
 - [ ] A "decision log" for training types (see above): design it with the user when they start mapping; then suggest types automatically.
 - [x] **People page built** (see `docs/DECISIONS.md` "People page"). Waiting for the user's review.
-- [ ] **Review the Notes mockup and plan**; the import is settled (12 notes from four vault folders become groups, see the plan). Still open: Studies.
+- [ ] **Decide what Studies should be** (it stays "Coming soon"); and later what Ideas becomes.
+- [ ] **Build Notes** (Claude): follow `docs/NOTES_PLAN.md` stage by stage; the user reviews the app against the mockup after stages 6 and 9.
 - [ ] **Later, Notes**: a system-wide quick-capture shortcut (works when the app is in the background); Thesis extras (chapter progress,
       word counts per chapter); a quiet word count in the editor (nice to have).
 - [ ] **Try the People page** (Research → People) and say what to change.
@@ -109,9 +110,8 @@ data.
 - Shared task engine (tasks, dates, time tracking, lists, subtasks, table/board/calendar views) and a one-time ClickUp import
 - **Training** (the formal training log, a notes page per entry, linked files, PDF export): the plan and mockup are drafted in
   `docs/TRAINING_PLAN.md` and `docs/design/training-mockup.html`; built; see the Training section above.
-- **Notes** (one module for free notes with a group per note, quick capture; replaces Thesis, Data Sources and Inbox): planned in
-  `docs/NOTES_PLAN.md`, mockup `docs/design/notes-mockup.html`; awaiting the user's review. Studies stays "Coming soon" until its purpose
-  is decided; Ideas is dropped from the list for now.
+- **Notes** (one module for free notes with a group per note, pinned notes, quick capture; replaces Thesis, Data Sources and Inbox): plan
+  `docs/NOTES_PLAN.md` and mockup `docs/design/notes-mockup.html` are approved; next to build (nine stages). Studies stays "Coming soon".
 - Global dashboard (priorities, calendar, weather, unread email count)
 - World news tab, Research Digest, Focus/Writing space
 - Life and Work workspaces
