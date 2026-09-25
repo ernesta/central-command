@@ -19,7 +19,10 @@ import { meetingPath } from './file-name'
 import { meetingsMigrations } from './migrations'
 import { MeetingsStore } from './meetings-store'
 import { listMeetingRows } from './repository'
+import { listTrainingRows } from '../../training/main/repository'
+import { PeopleService } from './people-service'
 import { PeopleStore } from './people-store'
+import type { RemoveHow } from '../shared/api'
 
 /** Workspaces whose meetings folder is created and watched. Work joins when it gets its own page. */
 const ACTIVE_WORKSPACES: readonly MeetingWorkspace[] = ['research']
@@ -51,6 +54,16 @@ function register({ db, paths }: MainContext): () => void {
   })
   const people = new PeopleStore(paths.people)
   people.load().catch((error) => console.error('Could not read the people list:', error))
+  const peopleService = new PeopleService({
+    store: people,
+    meetingsDir: dirFor('research'),
+    trainingDir: join(paths.trainingNotes, 'research'),
+    backupsDir: join(paths.root, 'backups'),
+    indexed: () => ({
+      meetings: listMeetingRows(db, 'research'),
+      trainings: listTrainingRows(db, 'research')
+    })
+  })
 
   ipcMain.handle(MEETINGS_IPC.create, (_event, input: unknown) =>
     store.create(asObject(input, 'meeting') as unknown as CreateMeetingInput)
@@ -102,18 +115,28 @@ function register({ db, paths }: MainContext): () => void {
       me: o.me === true
     })
   })
+  ipcMain.handle(MEETINGS_IPC.peopleUsage, () => peopleService.usage())
   ipcMain.handle(MEETINGS_IPC.peopleUpdate, (_event, name: unknown, patch: unknown) => {
     if (typeof name !== 'string') throw new Error('Invalid person')
     const o = asObject(patch, 'change')
-    return people.update(name, {
+    return peopleService.update(name, {
       name: typeof o.name === 'string' ? o.name : undefined,
       initials: typeof o.initials === 'string' ? o.initials : undefined,
       me: typeof o.me === 'boolean' ? o.me : undefined
     })
   })
-  ipcMain.handle(MEETINGS_IPC.peopleRemove, (_event, name: unknown) => {
+  ipcMain.handle(MEETINGS_IPC.peopleRemove, (_event, name: unknown, how: unknown) => {
     if (typeof name !== 'string') throw new Error('Invalid person')
-    return people.remove(name)
+    const o = asObject(how, 'removal')
+    if (o.how === 'delete' || o.how === 'archive') return peopleService.remove(name, { how: o.how })
+    if (o.how === 'merge' && typeof o.into === 'string') {
+      return peopleService.remove(name, { how: 'merge', into: o.into } satisfies RemoveHow)
+    }
+    throw new Error('Invalid removal')
+  })
+  ipcMain.handle(MEETINGS_IPC.peopleRestore, (_event, name: unknown) => {
+    if (typeof name !== 'string') throw new Error('Invalid person')
+    return peopleService.restore(name)
   })
 
   const watchers = ACTIVE_WORKSPACES.map(

@@ -1,6 +1,8 @@
 import type { NoteContent } from '@shared/notes'
 import type { MeetingChanges } from './front-matter'
+import type { RewriteReport } from '@shared/people-rewrite'
 import type { NewPerson, PersonPatch } from './people'
+import type { PersonUsage } from './people-usage'
 import type {
   MeetingIndexRow,
   MeetingMeta,
@@ -63,6 +65,15 @@ export interface MeetingChangedEvent {
   hash: string | null
 }
 
+/** The people list after a change, and what the change did to the note files (nothing, for a change that edits none). */
+export interface PeopleResult {
+  people: Person[]
+  report: RewriteReport
+}
+
+/** How to remove a person. Delete is only for someone no note mentions. */
+export type RemoveHow = { how: 'delete' } | { how: 'archive' } | { how: 'merge'; into: string }
+
 export type MeetingsExportResult = { status: 'saved'; path: string } | { status: 'cancelled' }
 
 /** The Meetings slice of window.api. */
@@ -91,10 +102,20 @@ export interface MeetingsApi {
     list(): Promise<Person[]>
     /** Add a person (initials are worked out from the name and made unique unless given). Resolves with the new list. */
     add(input: NewPerson): Promise<Person[]>
-    /** Change a person's name, initials (which must stay unique) or "me". Resolves with the new list. */
-    update(name: string, patch: PersonPatch): Promise<Person[]>
-    /** Remove a person from the list. Meeting files that mention them are not touched. */
-    remove(name: string): Promise<Person[]>
+    /** How many meetings and trainings mention each person. */
+    usage(): Promise<PersonUsage[]>
+    /**
+     * Change a person's name, initials (which must stay unique) or "me". A new name is written into meeting
+     * attendees and training leads, and new initials into TODO owners; nothing else in a note changes.
+     */
+    update(name: string, patch: PersonPatch): Promise<PeopleResult>
+    /**
+     * Delete (refused while any note mentions them), archive (notes stay as they are) or merge into someone
+     * else (their name and TODO initials in the notes change to the other person's).
+     */
+    remove(name: string, how: RemoveHow): Promise<PeopleResult>
+    /** Bring an archived person back. */
+    restore(name: string): Promise<Person[]>
   }
   /** Subscribe to meeting files changing on disk. Returns an unsubscribe function. */
   onChanged(listener: (event: MeetingChangedEvent) => void): () => void
@@ -111,6 +132,8 @@ export const MEETINGS_IPC = {
   peopleList: 'meetings:people-list',
   peopleAdd: 'meetings:people-add',
   peopleUpdate: 'meetings:people-update',
+  peopleUsage: 'meetings:people-usage',
   peopleRemove: 'meetings:people-remove',
+  peopleRestore: 'meetings:people-restore',
   changed: 'meetings:changed'
 } as const

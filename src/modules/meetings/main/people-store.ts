@@ -2,8 +2,11 @@ import { readFile, rename } from 'fs/promises'
 import { writeFileAtomic } from '../../../main/atomic-write'
 import {
   addPerson,
+  archivePerson,
+  mergePerson,
   normalisePeople,
   removePerson,
+  restorePerson,
   updatePerson,
   type NewPerson,
   type PersonPatch
@@ -50,6 +53,19 @@ export class PeopleStore {
 
   async remove(name: string): Promise<Person[]> {
     return this.commit(removePerson(this.people, name))
+  }
+
+  async archive(name: string): Promise<Person[]> {
+    return this.commit(archivePerson(this.people, name))
+  }
+
+  async restore(name: string): Promise<Person[]> {
+    return this.commit(restorePerson(this.people, name))
+  }
+
+  /** Remove `from`; `into` takes their place. Editing the notes is the caller's job. */
+  async merge(from: string, into: string): Promise<Person[]> {
+    return this.commit(mergePerson(this.people, from, into))
   }
 
   private async commit(next: Person[]): Promise<Person[]> {

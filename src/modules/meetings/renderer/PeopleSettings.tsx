@@ -163,8 +163,14 @@ export function PeopleSettings(): React.JSX.Element {
             <PersonRow
               key={index}
               person={person}
-              onChange={(name, patch) => run(window.api.meetings.people.update(name, patch))}
-              onRemove={(name) => run(window.api.meetings.people.remove(name))}
+              onChange={(name, patch) =>
+                run(window.api.meetings.people.update(name, patch).then((r) => r.people))
+              }
+              onRemove={(name) =>
+                run(
+                  window.api.meetings.people.remove(name, { how: 'delete' }).then((r) => r.people)
+                )
+              }
             />
           ))}
         </ul>
