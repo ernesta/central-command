@@ -3,6 +3,7 @@ import { moduleShortcutGroups } from '@modules/index'
 import {
   formatChord,
   GENERAL_SHORTCUTS,
+  LIST_SHORTCUTS,
   type Shortcut,
   type ShortcutGroup
 } from '@shared/shortcuts'
@@ -11,9 +12,9 @@ import styles from './ShortcutsSettings.module.css'
 
 const isMac = (): boolean => /Mac/i.test(navigator.platform || navigator.userAgent)
 
-/** The shell's groups first, then the ones each module contributes. */
+/** The short groups first, then the ones each module contributes; the long editor list comes last. */
 function shortcutGroups(): ShortcutGroup[] {
-  return [GENERAL_SHORTCUTS, NOTES_EDITOR_SHORTCUTS, ...moduleShortcutGroups()]
+  return [GENERAL_SHORTCUTS, LIST_SHORTCUTS, ...moduleShortcutGroups(), NOTES_EDITOR_SHORTCUTS]
 }
 
 function Keys({ shortcut, mac }: { shortcut: Shortcut; mac: boolean }): React.JSX.Element {

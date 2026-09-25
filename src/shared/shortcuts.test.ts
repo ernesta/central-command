@@ -57,6 +57,15 @@ describe('formatChord', () => {
     expect(formatChord('Mod-[', false)).toEqual(['Ctrl', '['])
   })
 
+  it('writes the keys a Mac lacks as Fn plus an arrow, and by name elsewhere', () => {
+    expect(formatChord('PageDown', true)).toEqual(['Fn', '↓'])
+    expect(formatChord('PageUp', true)).toEqual(['Fn', '↑'])
+    expect(formatChord('Home', true)).toEqual(['Fn', '←'])
+    expect(formatChord('End', true)).toEqual(['Fn', '→'])
+    expect(formatChord('PageDown', false)).toEqual(['PageDown'])
+    expect(formatChord('End', false)).toEqual(['End'])
+  })
+
   it('names keys plainly', () => {
     expect(formatChord('ArrowDown', true)).toEqual(['↓'])
     expect(formatChord('Enter', false)).toEqual(['Enter'])

@@ -63,6 +63,14 @@ const ARROWS: Record<string, string> = {
   ArrowRight: '→'
 }
 
+/** Keys a Mac keyboard has no cap for; they are made with Fn and an arrow. */
+const MAC_FN_KEYS: Record<string, string[]> = {
+  PageUp: ['Fn', '↑'],
+  PageDown: ['Fn', '↓'],
+  Home: ['Fn', '←'],
+  End: ['Fn', '→']
+}
+
 function keyLabel(key: string): string {
   if (key === RANGE_KEY) return '1–6'
   if (key in ARROWS) return ARROWS[key]
@@ -82,13 +90,25 @@ export function formatChord(chord: string, mac: boolean): string[] {
     if (c.alt) parts.push('Alt')
     if (c.shift) parts.push('Shift')
   }
-  parts.push(keyLabel(c.key))
+  if (mac && c.key in MAC_FN_KEYS) parts.push(...MAC_FN_KEYS[c.key])
+  else parts.push(keyLabel(c.key))
   return parts
 }
 
 /** The shortcuts of the app shell, shown first in the Settings list. */
 export const BACK_SHORTCUT = 'Mod-['
 export const ASK_SHORTCUT = 'Mod-j'
+
+/** The shortcuts of every list and table (Readings, Meetings, and later modules). */
+export const LIST_SHORTCUTS: ShortcutGroup = {
+  title: 'Lists and tables',
+  shortcuts: [
+    { action: 'Move between rows', keys: ['ArrowUp', 'ArrowDown'] },
+    { action: 'Move by a screenful', keys: ['PageUp', 'PageDown'] },
+    { action: 'Jump to the first or last row', keys: ['Home', 'End'] },
+    { action: 'Open the row', keys: ['Enter'] }
+  ]
+}
 
 export const GENERAL_SHORTCUTS: ShortcutGroup = {
   title: 'Everywhere',

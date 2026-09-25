@@ -18,14 +18,5 @@ export const MEETINGS_SHORTCUTS: ShortcutGroup[] = [
         note: 'Enter or Tab picks the highlighted person; Escape closes the menu.'
       }
     ]
-  },
-  {
-    title: 'Meetings list',
-    shortcuts: [
-      { action: 'Move between meetings', keys: ['ArrowUp', 'ArrowDown'] },
-      { action: 'Move by a screenful', keys: ['PageUp', 'PageDown'] },
-      { action: 'First or last meeting', keys: ['Home', 'End'] },
-      { action: 'Open the meeting', keys: ['Enter'] }
-    ]
   }
 ]
