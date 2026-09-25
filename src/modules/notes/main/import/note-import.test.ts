@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { splitNote } from '../../shared/front-matter'
 import {
   checkConversion,
+  stripWikiLinks,
   convertNote,
   importedFromOf,
   planNoteImport,
@@ -17,7 +18,7 @@ const src = (path: string, content: string, created = '2025-03-02'): SourceNote 
 
 describe('convertNote', () => {
   it('adds a title, created date and origin to a note with no front matter, and copies the text as it is', () => {
-    const body = '# ASER\r\n\n- [x] done\n- [ ] open  \n\n[[Link]] and ![[image.png]]\n\n\n'
+    const body = '# ASER\r\n\n- [x] done\n- [ ] open  \n\nplain text, [a](b) and *emphasis*\n\n\n'
     const { markdown, title } = convertNote(src('Data Sources/ASER.md', body))
     expect(title).toBe('ASER')
     expect(markdown).toBe(
@@ -129,5 +130,33 @@ describe('planNoteImport', () => {
 
   it('reads a note’s name', () => {
     expect(titleOf('Data Sources/UK National Pupil Database.md')).toBe('UK National Pupil Database')
+  })
+})
+
+describe('stripWikiLinks', () => {
+  it('turns links into plain text, using the shown text when there is one', () => {
+    expect(stripWikiLinks('See [[PIRLS]] and [[Note#Part|the part]], [[A]][[B]].')).toEqual({
+      text: 'See PIRLS and the part, AB.',
+      count: 4
+    })
+  })
+
+  it('leaves embeds, fenced code and everything else alone', () => {
+    const text = 'a ![[map.png]] b\n```\n[[in code]]\n```\n[x](y) [ok] [[ ]]'
+    expect(stripWikiLinks(text)).toEqual({ text: text.replace('[[ ]]', ' '), count: 1 })
+  })
+
+  it('is applied by the conversion and accepted by the check', () => {
+    const source = src('Ideas/L.md', 'Link to [[PIRLS]].\n- [x] [[Done]]\n')
+    const { markdown, linksStripped } = convertNote(source)
+    expect(splitNote(markdown).body).toBe('Link to PIRLS.\n- [x] Done\n')
+    expect(linksStripped).toBe(2)
+    expect(checkConversion(source, markdown)).toEqual([])
+  })
+
+  it('leaves out a note with an embedded image, and says why', () => {
+    const plan = planNoteImport([src('Ideas/I.md', 'x ![[map.png]]')], [])
+    expect(plan[0]).toMatchObject({ status: 'failed-check' })
+    expect((plan[0] as { problems: string[] }).problems.join()).toContain('embedded')
   })
 })

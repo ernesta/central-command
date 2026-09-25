@@ -23,6 +23,8 @@ export type PlanItem =
       target: string
       /** The whole new file. */
       markdown: string
+      /** How many wiki links were turned into plain text. */
+      linksStripped: number
     }
   /** A note that an earlier run already brought over (a file in the notes folder remembers where it came from). */
   | { status: 'skip-imported'; source: SourceNote; existing: string }
@@ -37,11 +39,33 @@ export function titleOf(path: string): string {
 }
 
 /**
- * The note as it will be written: the body is copied exactly as it is, and the front matter gets a title (the
+ * Obsidian `[[wiki links]]` as plain text: `[[Note]]` becomes `Note` and `[[Note|Shown]]` becomes `Shown`. Nothing
+ * else changes, and fenced code is left alone. Embeds (`![[image.png]]`) are not links and are left as they are.
+ */
+export function stripWikiLinks(text: string): { text: string; count: number } {
+  let count = 0
+  let fenced = false
+  const out = text.split('\n').map((line) => {
+    if (/^\s*(```|~~~)/.test(line)) fenced = !fenced
+    if (fenced) return line
+    return line.replace(/(?<!!)\[\[([^\]\n]+?)\]\]/g, (_m, inner: string) => {
+      count++
+      return inner.includes('|') ? inner.slice(inner.indexOf('|') + 1) : inner
+    })
+  })
+  return { text: out.join('\n'), count }
+}
+
+/**
+ * The note as it will be written: the body is copied as it is except that wiki links become plain text, and the front matter gets a title (the
  * file name), a created date and where it came from, each only if the note does not already say so. Everything
  * the note already had in its front matter stays as it was. The note arrives ungrouped.
  */
-export function convertNote(source: SourceNote): { markdown: string; title: string } {
+export function convertNote(source: SourceNote): {
+  markdown: string
+  title: string
+  linksStripped: number
+} {
   const { head, body } = splitNote(source.content)
   const existing = new Map(parseHead(head)?.entries.map((e) => [e.key, true]) ?? [])
   const title = titleOf(source.path)
@@ -53,7 +77,8 @@ export function convertNote(source: SourceNote): { markdown: string; title: stri
     order: ORDER,
     style: (key) => (key === 'created' ? 'plain' : 'auto')
   })
-  return { markdown: newHead + body, title }
+  const stripped = stripWikiLinks(body)
+  return { markdown: newHead + stripped.text, title, linksStripped: stripped.count }
 }
 
 function headLines(head: string): string[] {
@@ -72,7 +97,7 @@ const count = (text: string, pattern: RegExp): number => (text.match(pattern) ??
 
 /**
  * What is wrong with a converted note, compared with its source; an empty list means it is safe to write.
- * The text must be byte for byte the same, every line the note already had in its front matter must still be
+ * The text must be the vault's byte for byte apart from wiki links turned into plain text, every line the note already had in its front matter must still be
  * there in the same order, and the result must read back as a note with no problems. TODO words and ticked and
  * unticked checkboxes are counted as a second, independent check on the text.
  */
@@ -80,7 +105,10 @@ export function checkConversion(source: SourceNote, markdown: string): string[] 
   const problems: string[] = []
   const before = splitNote(source.content)
   const after = splitNote(markdown)
-  if (after.body !== before.body) problems.push('The text is not the same as in the vault')
+  // The text must be the vault's, apart from the wiki links turned into plain text.
+  const expected = stripWikiLinks(before.body).text
+  if (after.body !== expected) problems.push('The text is not the same as in the vault')
+  if (/!\[\[/.test(after.body)) problems.push('The note has an embedded image or file (![[…]])')
   if (count(after.body, /\n/g) !== count(before.body, /\n/g))
     problems.push('The line count changed')
   if (count(after.body, /TODO/g) !== count(before.body, /TODO/g)) problems.push('A TODO changed')
@@ -133,11 +161,11 @@ export function planNoteImport(
   return sources.map((source): PlanItem => {
     const existing = alreadyImported.get(source.path)
     if (existing) return { status: 'skip-imported', source, existing }
-    const { markdown, title } = convertNote(source)
+    const { markdown, title, linksStripped } = convertNote(source)
     const problems = checkConversion(source, markdown)
     if (problems.length > 0) return { status: 'failed-check', source, problems }
     const name = noteBaseName(title, taken)
     taken.add(name)
-    return { status: 'import', source, title, target: `${name}.md`, markdown }
+    return { status: 'import', source, title, target: `${name}.md`, markdown, linksStripped }
   })
 }

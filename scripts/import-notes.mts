@@ -5,8 +5,8 @@
  *   npm run import:notes -- --vault ~/path/to/vault            # dry run: shows every note and the front matter it would get
  *   npm run import:notes -- --vault ~/path/to/vault --apply    # creates the new note files
  *
- * Every note arrives ungrouped; you group them afterwards. The text is copied exactly as it is (`[[wiki links]]`
- * and `![[images]]` stay as written). The front matter gets a `title` (the file name), a `created` date (when the
+ * Every note arrives ungrouped; you group them afterwards. The text is copied exactly as it is, except that
+ * `[[wiki links]]` become plain text (`[[Note]]` is `Note`, `[[Note|Shown]]` is `Shown`); a note with an `![[embed]]` is left out and reported. The front matter gets a `title` (the file name), a `created` date (when the
  * file was created) and `imported-from` (its place in the vault), each only if the note does not already have one;
  * anything the note already had in its front matter is kept. Each converted note is checked against its source
  * (same text, same TODOs and boxes, same front matter lines); a note that fails is left out and reported.
@@ -143,7 +143,10 @@ for (const item of plan) {
     console.log(`import       ${name}  ->  ${item.target}`)
     console.log(indent(head))
     console.log(
-      `      text: ${lines} lines, ${body.length} characters, identical to the vault note (checked)\n`
+      `      text: ${lines} lines, ${body.length} characters, matches the vault note (checked)` +
+        (item.linksStripped
+          ? `, ${item.linksStripped} wiki ${item.linksStripped === 1 ? 'link' : 'links'} turned into plain text\n`
+          : '\n')
     )
   } else if (item.status === 'skip-imported') {
     console.log(`skip (done)  ${name}  already imported as ${item.existing}\n`)
