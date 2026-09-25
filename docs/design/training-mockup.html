@@ -298,7 +298,7 @@
         font-variant-numeric: tabular-nums;
       }
       td.type {
-        white-space: nowrap;
+        max-width: 16ch;
         color: var(--text-secondary);
       }
       td.days {
@@ -588,8 +588,8 @@
         <p>
           Two screens: the training list (it is also the formal log) and one entry. Titles, times,
           skills and summaries are real rows from the 2025-26 Inkpath log. The totals, the series,
-          the leads and the type names (“Course”, “Wellbeing” stand in for the harmonised list) are
-          illustrative.
+          the leads and the type names (a proposal; “Seminar or talk” is a suggested extra type) are
+          illustrative. Series shows only SEDarc and DataCamp, and “—” for none.
         </p>
       </div>
       <div class="tabs" role="group" aria-label="Screen">
@@ -634,16 +634,16 @@
             <div class="skills" aria-label="Hours per skill">
               <span class="label">Hours per skill</span>
               <ul>
-                <li><span>Quantitative Skills (GS)</span><b>205.5</b></li>
-                <li><span>Data Management and analysis (GS)</span><b>172.0</b></li>
+                <li><span>Quantitative skills (GS)</span><b>205.5</b></li>
+                <li><span>Data management and analysis (GS)</span><b>172.0</b></li>
                 <li><span>Networking (RP)</span><b>48.5</b></li>
-                <li><span>Career Development (RP)</span><b>36.5</b></li>
-                <li><span>Personal Development (RP)</span><b>36.5</b></li>
+                <li><span>Career development (RP)</span><b>36.5</b></li>
+                <li><span>Personal development (RP)</span><b>36.5</b></li>
                 <li class="more"><span>+ 14 more</span></li>
               </ul>
               <p class="hint">
                 An entry counts fully towards each of its skills, so these add up to more than the
-                total.
+                total. Plus 36.5 h of meetings, which Inkpath also counts.
               </p>
             </div>
           </div>
@@ -692,8 +692,8 @@
                   <td class="nowrap">Sep 23, 2025</td>
                   <td class="nowrap">11:00–12:00</td>
                   <td class="nowrap">1 h</td>
-                  <td class="nowrap">Royal Holloway</td>
-                  <td class="type">Course</td>
+                  <td class="nowrap">—</td>
+                  <td class="type">Other</td>
                   <td>
                     <div class="title">
                       Department of Psychology Postgraduate Researcher Induction
@@ -706,7 +706,7 @@
                   <td>
                     <div class="tags">
                       <span class="tag">Project management (GS)</span
-                      ><span class="tag">Career Development (RP)</span>
+                      ><span class="tag">Career development (RP)</span>
                     </div>
                   </td>
                   <td class="att"><div class="chips"></div></td>
@@ -715,8 +715,8 @@
                   <td class="nowrap">Oct 1, 2025</td>
                   <td class="nowrap">11:00–12:00</td>
                   <td class="nowrap">1 h</td>
-                  <td class="nowrap">Royal Holloway</td>
-                  <td class="type">Course</td>
+                  <td class="nowrap">—</td>
+                  <td class="type">Seminar or talk</td>
                   <td>
                     <div class="title">
                       Research Training Seminar: Starting Your PhD<span class="marks"
@@ -734,7 +734,7 @@
                     <div class="tags">
                       <span class="tag">Project management (GS)</span
                       ><span class="tag">Digital and bibliographic skills (GS)</span
-                      ><span class="tag">Career Development (RP)</span>
+                      ><span class="tag">Career development (RP)</span>
                     </div>
                   </td>
                   <td class="att"><div class="chips"></div></td>
@@ -744,7 +744,7 @@
                   <td class="nowrap">14:00–17:00</td>
                   <td class="nowrap">3 h</td>
                   <td class="nowrap">SEDarc</td>
-                  <td class="type">Course</td>
+                  <td class="type">Research methods course</td>
                   <td>
                     <div class="title">
                       Refine understanding of mixed methods research designs (Live)<span
@@ -765,8 +765,8 @@
                   </td>
                   <td>
                     <div class="tags">
-                      <span class="tag">Qualitative Skills (GS)</span
-                      ><span class="tag">Quantitative Skills (GS)</span>
+                      <span class="tag">Qualitative skills (GS)</span
+                      ><span class="tag">Quantitative skills (GS)</span>
                     </div>
                   </td>
                   <td class="att">
@@ -777,8 +777,8 @@
                   <td class="nowrap">Apr 1, 2026</td>
                   <td class="nowrap">11:00–13:00</td>
                   <td class="nowrap">2 h</td>
-                  <td class="nowrap">Royal Holloway</td>
-                  <td class="type">Course</td>
+                  <td class="nowrap">—</td>
+                  <td class="type">Seminar or talk</td>
                   <td>
                     <div class="title">
                       Research Training Seminar: Introduction to Agent-Based Modelling<span
@@ -793,8 +793,8 @@
                   </td>
                   <td>
                     <div class="tags">
-                      <span class="tag">Data Management and analysis (GS)</span
-                      ><span class="tag">Quantitative Skills (GS)</span>
+                      <span class="tag">Data management and analysis (GS)</span
+                      ><span class="tag">Quantitative skills (GS)</span>
                     </div>
                   </td>
                   <td class="att"><div class="chips"></div></td>
@@ -804,7 +804,7 @@
                   <td class="nowrap">13:00–14:00</td>
                   <td class="nowrap">1 h</td>
                   <td class="nowrap">SEDarc</td>
-                  <td class="type">Wellbeing</td>
+                  <td class="type">General skills course</td>
                   <td>
                     <div class="title">Work-life balance</div>
                     <div class="details">
@@ -813,7 +813,7 @@
                     </div>
                   </td>
                   <td>
-                    <div class="tags"><span class="tag">Stress Management (RP)</span></div>
+                    <div class="tags"><span class="tag">Stress management (RP)</span></div>
                   </td>
                   <td class="att">
                     <div class="chips"><span class="chip">ER</span></div>
@@ -823,8 +823,8 @@
                   <td class="nowrap">Jul 16, 2026</td>
                   <td class="nowrap">15:00–18:00</td>
                   <td class="nowrap">3 h</td>
-                  <td class="nowrap">SENSS</td>
-                  <td class="type">Course</td>
+                  <td class="nowrap">—</td>
+                  <td class="type">Research methods course</td>
                   <td>
                     <div class="title">
                       SENSS Experimental Methods in the Social Sciences: Methods to Analyse
@@ -834,8 +834,8 @@
                   </td>
                   <td>
                     <div class="tags">
-                      <span class="tag">Quantitative Skills (SS)</span
-                      ><span class="tag">Data Management and analysis (GS)</span>
+                      <span class="tag">Quantitative skills (SS)</span
+                      ><span class="tag">Data management and analysis (GS)</span>
                     </div>
                   </td>
                   <td class="att"><div class="chips"></div></td>
@@ -844,8 +844,8 @@
                   <td class="nowrap">Oct 14, 2026</td>
                   <td class="nowrap">—</td>
                   <td class="nowrap">—</td>
-                  <td class="nowrap">Royal Holloway</td>
-                  <td class="type">Course</td>
+                  <td class="nowrap">—</td>
+                  <td class="type">Seminar or talk</td>
                   <td>
                     <div class="title">
                       Research Training Seminar: Writing a Literature Review<span class="upcoming"
@@ -892,7 +892,9 @@
             <div class="field">
               <span class="label">Series</span><span class="val">SEDarc</span>
             </div>
-            <div class="field"><span class="label">Type</span><span class="val">Course</span></div>
+            <div class="field">
+              <span class="label">Type</span><span class="val">Research methods course</span>
+            </div>
             <div class="field">
               <span class="label">Format</span
               ><span class="seg"><span>In person</span><span class="on">Online</span></span>
@@ -908,8 +910,8 @@
             <div class="field">
               <span class="label">Skills · up to three</span>
               <span class="chips"
-                ><span class="tag">Qualitative Skills (GS)</span
-                ><span class="tag">Quantitative Skills (GS)</span
+                ><span class="tag">Qualitative skills (GS)</span
+                ><span class="tag">Quantitative skills (GS)</span
                 ><span class="tag addtag">+ Add skill</span></span
               >
             </div>

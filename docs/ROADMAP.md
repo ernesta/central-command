@@ -26,13 +26,15 @@ the meeting page, the list, the landing page, People settings and remembered lis
   only that series in it, which is easy to miss. Make the page say so (a different title or a visible "Showing Supervision
   only" line with a way to clear it). Not started.
 - **The Readings list has no back arrow** to the Research landing page (Meetings now has one). Same small fix if wanted.
-- **Academic year for Meetings** (and Training): each September tracking starts anew, so the list needs an academic-year
-  filter (1 Sep to 31 Aug, shown as `2025–26`) that opens on the current year. See `docs/TRAINING_PLAN.md`.
+- **Academic year, skills and an hours counter for Meetings.** Each September tracking starts anew, so the list needs an
+  academic-year filter (1 Sep to 31 Aug, shown as `2025–26`, opening on the current year). Meetings also get up to three skills
+  (the same list as Training, in sentence case) and an hours counter with hours per skill, but no aim: Training's 200 hours do not
+  include meetings. This is stage 1 of `docs/TRAINING_PLAN.md`; not started.
 - **A People page** of its own: the list will get too long for Settings. Later it could hold links per person (GitHub,
   Google Scholar, LinkedIn) and even pull their recent papers, posts or tweets. Training leads and meeting attendees both use it.
-- **Correct supervision times from the Inkpath log.** `2025-26 Inkpath Training Log.xlsx` has the right start and end times for
-  the supervisor meetings; a reconciling tool (dry run, reports differences, never guesses) could fix the four durations the
-  Meetings import flagged.
+- **Copy supervision and lab meeting times and skills from the Inkpath log** (`2025-26 Inkpath Training Log.xlsx` has the right
+  times and the skills for 34 supervisor and 3 lab meetings): a reconciling tool (dry run, reports every difference, never
+  overwrites a time). See `docs/TRAINING_PLAN.md`.
 - **Export the supervision log as a PDF** (oldest first, Supervision series, upcoming meetings left out). The disabled
   Export control in the list is its place.
 - **Meetings in Work**: the code takes a workspace everywhere (`notes/meetings/<workspace>/`); Work needs a folder,

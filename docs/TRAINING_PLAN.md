@@ -1,6 +1,6 @@
-# Training module: plan
+# Training module (and Meetings additions): plan
 
-Status: **draft 2, revised after the user's review. Nothing is built.** Read it with `CLAUDE.md`, `docs/DECISIONS.md` and the mockup
+Status: **draft 3, revised after the user's answers. Nothing is built.** Read it with `CLAUDE.md`, `docs/DECISIONS.md` and the mockup
 (`docs/design/training-mockup.html`; open it in a browser). The Meetings module is the pattern to copy (`docs/MEETINGS_PLAN.md`).
 "Proposed" means the user has not decided yet; the open questions are at the end.
 
@@ -20,15 +20,24 @@ A place in Research to keep the **training log** the user reports each academic 
 ## What changed since the first draft (the user's ten points)
 
 1. No days; hours only, calculated from start and end times (the Meetings fields and rule).
-2. Type: the full Inkpath list, renamed slightly and harmonised so it is easy to choose. **Blocked on the list**, see the questions.
+2. Type: the full Inkpath list, renamed slightly and harmonised so it is easy to choose (a proposal is in the Type section).
 3. The list shows title and summary (the summary is the notes' `## Summary`, as in Meetings).
 4. No days or per-type totals; hours, skills and the 200-hour aim instead.
 5. The list matches the Meetings list: Date, Time, Duration, Series, Type, Title and summary, then Skills and Leads.
-6. **Series** replaces "Programme" and behaves like a Meetings series (a chip, a filter, and it can open the list filtered).
+6. **Series** replaces "Programme" and behaves like a Meetings series (a chip and a filter). It starts with SEDarc and DataCamp.
 7. **Leads** are people, several allowed, chosen exactly like meeting attendees from the shared people list.
 8. Files are linked to existing folders, never copied.
 9. **Skills**: up to three per entry, chosen from the skills in the log; hours per skill are the summary.
 10. **Academic year** filter for both Training and Meetings.
+
+## The user's answers to draft 2
+
+- The full Inkpath type list was read (15 types); the user could not tell some of them apart, so this draft proposes plain names and asks
+  about the unclear ones (see Type).
+- **Meetings do not count towards the 200 hours** of Training. In practice Inkpath counts them, so **Meetings gets its own hours counter
+  and skills**, the same as Training, and the Training page can mention them beside its own total.
+- **Skills use one capitalisation** throughout (sentence case; see Skills).
+- **Series starts with SEDarc and DataCamp only.** The user adds more later.
 
 ## Facts found by reading the user's real files (read-only)
 
@@ -40,9 +49,9 @@ A place in Research to keep the **training log** the user reports each academic 
 - **It includes 34 supervisor meetings (32.5 h) and 3 Rastle Lab meetings (4 h)**, which the Meetings module already holds. The user says
   these have the correct times (the Meetings import found four durations that disagreed with the Word log), so they are a source for
   correcting Meetings times. Without them the log is 334.5 hours, so even so the aim of 200 is passed this year.
-- **The Type column says "Activity" in all 166 rows**, so the real type list is not in the file. It is in the user's two screenshots
-  (`types1.png`, `types2.png`). Only the second could be read: it ends with _Research-related courses, Shadowing, Supervisor/PI/manager
-  meeting, Volunteering, Work placements or work-related projects_. The first (the earlier part of the list) is still needed.
+- **The workbook's Type column says "Activity" in all 166 rows**, so the activity type of each entry is not in the file. The real list is
+  Inkpath's "Activity Type (required)" dropdown, read from the user's two screenshots: 15 options (see Type). The import therefore cannot
+  map old types; entries start without one, and the user chooses.
 - **Attendance Type** is Other (136), Live (online) (29) or Live (in person) (1), so it is a format like the Meetings Type
   (In person / Online). **Organisation** has two values (Healthy, Thriving Communities: 136; SEDarc DTP: 30). **Provider** has 31 values,
   a mix of institutions (Royal Holloway 79, DataCamp 38, Middlesex 9, LSE 2…) and people (Dr Anastasiya Lopukhina, Maria Korochkina…).
@@ -81,10 +90,10 @@ date: 2025-12-10
 start: '10:00'
 end: '11:30'
 title: 'Data Management and Security'
-series: SEDarc
-type: Research-related courses # from the harmonised list
+series: SEDarc # optional
+type: Research methods course # from the harmonised list
 mode: online # in-person | online, optional
-skills: [Data Management and analysis (GS), Ethical and legal issues (GS)] # up to three
+skills: [Data management and analysis (GS), Ethical and legal issues (GS)] # up to three
 leads: [Robert Darby] # people, several allowed
 folder: 2025-26/SEDarc/2025 12 10 Data Management and Security # optional, relative to the Trainings folder
 organisation: SEDarc DTP # kept from the Inkpath log, not shown yet
@@ -110,26 +119,87 @@ Free notes.
 
 ### Skills, the 200-hour aim and totals
 
-- **Skills** are chosen from a fixed list (the 19 in the log, names verbatim including the `(GS)`, `(RP)`, `(SS)` tag), at most three per
-  entry. The list lives in code like the Meetings series and is easy to change.
+- **Skills** are chosen from a fixed list (the 19 in the log; more can be added in code later), at most three per entry. The tags
+  `(GS)`, `(RP)` and `(SS)` stay because they tell apart skills with the same name (the meaning of the tags is a question below).
+- **One capitalisation: sentence case** (first word capitalised, the rest lower case; the tags stay upper case). The import maps each
+  original name to its harmonised name by an exact, case-insensitive match, and an export restores Inkpath's original spelling. The
+  original names and their harmonised forms:
+
+  | Inkpath name                          | In the app                            |
+  | ------------------------------------- | ------------------------------------- |
+  | Quantitative Skills (GS)              | Quantitative skills (GS)              |
+  | Quantitative Skills (SS)              | Quantitative skills (SS)              |
+  | Qualitative Skills (GS)               | Qualitative skills (GS)               |
+  | Qualitative Skills (SS)               | Qualitative skills (SS)               |
+  | Data Management and analysis (GS)     | Data management and analysis (GS)     |
+  | Digital and bibliographic skills (GS) | Digital and bibliographic skills (GS) |
+  | Ethical and legal issues (GS)         | Ethical and legal issues (GS)         |
+  | Impact of Research (GS)               | Impact of research (GS)               |
+  | Intellectual Property Rights (GS)     | Intellectual property rights (GS)     |
+  | Language Skills (GS)                  | Language skills (GS)                  |
+  | Project management (GS)               | Project management (GS)               |
+  | Career Development (RP)               | Career development (RP)               |
+  | Personal Development (RP)             | Personal development (RP)             |
+  | Stress Management (RP)                | Stress management (RP)                |
+  | Cultural Understanding (RP)           | Cultural understanding (RP)           |
+  | Impact (RP)                           | Impact (RP)                           |
+  | Leadership (RP)                       | Leadership (RP)                       |
+  | Negotiations (RP)                     | Negotiations (RP)                     |
+  | Networking (RP)                       | Networking (RP)                       |
+
 - **Totals strip** for the chosen academic year: **hours done of 200** with a thin progress bar (the aim is a setting, default 200),
-  then **hours per skill** as a compact list, largest first. Each entry counts fully towards each of its skills, so the skill hours add
-  up to more than the total; the strip says so in one line.
-- No per-type totals.
-- **Which entries count towards the 200?** Proposed: every past entry in the training list. Supervisor and lab meetings stay in the
-  Meetings module and are **not** counted, unless the user says Inkpath counts them (see the questions).
+  then **hours per skill**, largest first. Each entry counts fully towards each of its skills, so the skill hours add up to more than the
+  total; the strip says so in one line. Below the total, a quiet line says how many hours of meetings there are in the same year
+  ("plus 36.5 h of meetings, which Inkpath also counts"), so both numbers are visible without mixing them.
+- No per-type totals. **Meetings are not counted in the 200.**
 
-### Series (proposed)
+### Meetings: skills and an hours counter (new)
 
-Like Meetings series: a chip on every entry, a filter in the list, and an entry cannot exist without one (a series called "Other" is the
-fallback). Proposed starting list: **SEDarc, SENSS, LSE, DataCamp, Royal Holloway, Other**, and a new one can be added by typing it. The
-import assigns a series only when it is clear (the Organisation _SEDarc DTP_; _SENSS_ or _LSE_ in the title; the provider _DataCamp_ or
-_Royal Holloway_) and reports the rest as "Other" for the user to sort.
+Meetings gets what Training has, without a target:
 
-### Type (blocked, see the questions)
+- **Skills** on the meeting page (the same chips, at most three, the same list) and a Skills column in the list. Stored as `skills:` in the
+  meeting's front matter, which the Meetings code already preserves.
+- **An hours counter** at the top of the Meetings list and landing page: hours this academic year (duration from start and end times;
+  meetings without times count as zero and the strip says how many have none) and hours per skill.
+- **The academic-year selector** (below) filters the list, the counter and the series cards.
+- The 34 supervisor meetings and 3 lab meetings in the Inkpath log already carry skills and times; a reconciling tool (dry run, never
+  guesses, writes only the `skills`, `start` and `end` keys through the guarded save) can copy them into the meeting files, and reports
+  every disagreement with the times already there.
 
-The full Inkpath list, each renamed slightly for clarity and grouped so the choice is quick. The import maps Inkpath's original type to
-the new name from a table the user approves; the Inkpath original is kept in the file (`inkpath-type`) so an export can restore it.
+### Series (decided: start with two)
+
+Like Meetings series: a chip on an entry, a filter in the list, and a card-style shortcut is possible later. **The list starts with
+SEDarc and DataCamp.** The user adds more later (a series is added by typing a new name; nothing else needs code). **A series is
+optional**, so entries that belong to neither have none. The import sets SEDarc when the Organisation is _SEDarc DTP_ and DataCamp when
+the provider or title prefix is DataCamp, and leaves the rest without one (listed in the report).
+
+### Type (proposed; the user's confirmation needed)
+
+Inkpath has 15 activity types. Three of them read almost the same (Academic skills courses, Generic skills courses, Research-related
+courses), which is where the choice gets hard. The proposal is a shorter list with plain names, grouped, each mapped to one Inkpath
+type so an export can restore it. **The meanings marked "my reading" are a guess for the user to correct.**
+
+| Group         | Name in the app           | Inkpath type                             | Plain description                                                          |
+| ------------- | ------------------------- | ---------------------------------------- | -------------------------------------------------------------------------- |
+| Courses       | Research methods course   | Research-related courses                 | Methods, statistics, research design, data and software (my reading)       |
+| Courses       | Academic skills course    | Academic skills courses                  | Writing, presenting, publishing, CV (my reading)                           |
+| Courses       | General skills course     | Generic skills courses                   | Skills useful beyond research: wellbeing, leadership, careers (my reading) |
+| Courses       | Language course           | Language courses                         | Learning a language                                                        |
+| Conferences   | Conference: attending     | Conference Guest                         | You went as a visitor                                                      |
+| Conferences   | Conference: presenting    | Conference Speaker / Contributor         | A talk, poster or paper                                                    |
+| Conferences   | Conference: organising    | Conference Organisation Team             | You helped run it                                                          |
+| Work          | Fieldwork                 | Fieldwork                                | Collecting data in the field                                               |
+| Work          | Placement or work project | Work placements or work-related projects | A placement or a project done as work                                      |
+| Work          | Shadowing                 | Shadowing                                | Following someone at work                                                  |
+| Work          | Volunteering              | Volunteering                             |                                                                            |
+| Contributions | Peer review               | Peer reviews                             | Reviewing someone's paper                                                  |
+| Contributions | Publication               | Publications                             | Submitting or publishing a paper or chapter                                |
+| Meetings      | Meeting with supervisor   | Supervisor/PI/manager meeting            | For Meetings; not offered in the Training list                             |
+| Other         | Other                     | Other                                    |                                                                            |
+
+**Not covered by any Inkpath type:** seminars, inductions, lab meetings, and self-guided learning such as DataCamp. The user has to say where
+those belong (a question below). The app keeps one field with the app name; the Inkpath name is only a mapping, never a second field to
+maintain.
 
 ### Leads and people
 
@@ -169,18 +239,19 @@ cover the chosen academic year. The PDF helper is shared with the future supervi
 
 ## Stages (one or more small commits each; `npm run lint`, `typecheck` and `test` pass at every commit)
 
-1. **Academic year** helper and a selector in the Meetings list and landing (with the remembered state). Useful on its own.
+1. **Academic year and skills, first for Meetings** (useful on its own): the shared academic-year helper and the skills list
+   (`src/shared/`), the academic-year selector in the Meetings list and landing, `skills` on the meeting page and in the list, and the
+   Meetings hours counter with hours per skill. Existing meeting files are not touched.
 2. **Generalise the front matter code** (a pure move; the generic split, join and key-preserving update leave the Meetings module).
 3. **Training core (main process):** module, migration `training/0001`, file naming, front matter, store (create, guarded save, Trash),
    repository, watcher, IPC, registration. Tests.
-4. **Pure rules:** duration, academic year, hours per skill, progress, query, upcoming. Mutation checks on the totals and the upcoming
+4. **Pure rules:** duration, hours per skill, progress towards the aim, query, upcoming. Mutation checks on the totals and on the upcoming
    exclusion.
-5. **Entry page:** fields, the leads picker (the attendees control generalised to a people picker), skills, series, type, editor,
-   delete.
-6. **Training list and Research card.**
+5. **Entry page:** fields, the leads picker (the attendees control generalised to a people picker), skills, series, type, editor, delete.
+6. **Training list, its totals strip and the Research card.**
 7. **Files:** setting, contained listing, open and reveal, panel. Containment tests including symlinks.
 8. **Export** (the chosen formats).
-9. **Import** (`npm run import:training`, dry run by default).
+9. **Import** (`npm run import:training`, dry run by default) and **the Meetings reconciliation** (`npm run reconcile:meetings`).
 10. **Polish and docs** (brief section 9, focus rings and clipping, empty and error states, performance, README, DECISIONS, ROADMAP,
     shortcuts list entries, CLAUDE.md status).
 
@@ -189,21 +260,25 @@ screenshots read, quit right after typing, stray processes killed.
 
 ## Import (proposed)
 
-`npm run import:training -- --inkpath <the .xlsx> [--obsidian <folder>] [--trainings <folder>] [--word-log <docx>] [--apply]`. Dry run by
-default; never `--apply` on the real library unless the user asks. Sources are never modified.
+`npm run import:training -- --inkpath <the .xlsx> [--obsidian <folder>] [--trainings <folder>] [--apply]`. Dry run by default; never
+`--apply` on the real library unless the user asks. Sources are never modified.
 
 - **Primary source: the Inkpath workbook**, read by unzipping it and parsing the sheet XML (no new dependency). Each row becomes one entry:
-  name to title, description to Summary, start and end times, skills, format from Attendance Type. Organisation, provider, points, date
-  completed and the original type are kept in the front matter.
-- **Supervisor and Lab meetings are left out** (they belong to Meetings) and listed. Their times are reported against the Meetings
-  files so the user can correct them; nothing in Meetings is changed by this tool.
-- **The Word log** is only a cross-check: entries with no Inkpath match are listed for the user to decide about; none is imported.
-- **Reports, not guesses:** entries with more than three skills (the 5-skill one), hours that differ from the times (17), entries with no
-  clear series, Provider values that look like people (candidates for leads; leads are added only with `--add-people` and the user's
-  approval), Obsidian notes that could not be matched, folders that could not be linked.
+  name to title, description to Summary, start and end times, skills (mapped to the harmonised names by an exact, case-insensitive match;
+  an unknown skill is reported and left out of the entry, never invented), format from Attendance Type. Organisation, provider, points
+  and date completed are kept in the front matter.
+- **Type is left empty** (the workbook does not hold it) and the report counts the entries without one, for the user to fill in the app.
+- **Series:** SEDarc when the Organisation is SEDarc DTP, DataCamp when the provider or title prefix is DataCamp; otherwise none.
+- **Supervisor and lab meetings are left out** (they belong to Meetings) and listed. `npm run reconcile:meetings` (dry run by default)
+  compares them with the meeting files by date and series and, only with `--apply`, adds `skills` and missing times through the guarded
+  front matter save; it reports every time that differs and never overwrites one.
+- **The older Word log** is not imported. If wanted, a list of its entries with no Inkpath match can be printed for the user to judge.
+- **Reports, not guesses:** entries with more than three skills (one has five: keep three, or list the extras in the report), hours that
+  differ from the times (17), Provider values that look like people (leads are added only with `--add-people`), Obsidian notes that
+  could not be matched, folders that could not be linked.
 - **Obsidian notes** are matched by date and title (folded), `**Lead**` becomes a lead, tags are dropped, the note's headings and text go
-  under `## Notes` one level deeper, wikilinks become plain text. **Folders** are matched by the date at the start of the folder name or
-  a date range that contains the entry's date, plus a title check; anything uncertain is reported.
+  under `## Notes` one level deeper, wikilinks become plain text. **Folders** are matched by the date at the start of the folder name or a
+  date range that contains the entry's date, plus a title check; anything uncertain is reported.
 - **Safety net:** the imported entry count and total minutes equal the source's (minus the meetings), every title, description and skill
   list equals its source cell, and every note's text survives; an entry that fails is left out and reported as ATTENTION. Existing
   entries (same date and title) are skipped; files are created exclusively and never replaced, so a second run writes nothing.
@@ -213,18 +288,23 @@ default; never `--apply` on the real library unless the user asks. Sources are n
 Never write to the Inkpath or Word files, the Obsidian vault or the Trainings folder. Never overwrite an entry file (saves check its
 content hash). A deleted entry goes to the Trash after a confirmation. No user data over the network.
 
-## Open questions for the user
+## Decided and open
 
-1. **The type list.** `types1.png` could not be read (the read was declined). Please paste the list of types as text, or allow me to read
-   the file. I need every option to propose the renamed, harmonised list and the mapping.
-2. **Do supervisor and lab meetings count towards the 200 hours?** In Inkpath they are in the log. Proposed: no, they stay in Meetings.
-   This year it does not change the outcome (334.5 h without them, 371.0 with).
-3. **Series.** Is the starting list right (SEDarc, SENSS, LSE, DataCamp, Royal Holloway, Other)? What about the external ones (FRiLL,
-   Experimental Psychology Society)?
-4. **Skills.** Keep the `(GS)`, `(RP)`, `(SS)` tags in the names (proposed, they distinguish two "Quantitative Skills"), or show them
-   another way? What do the three tags stand for, so the list can be grouped?
-5. **Format.** Keep the Inkpath Attendance Type as In person / Online / (blank for self-paced), like Meetings?
-6. **Leads from Provider.** Some providers are people. Should the import turn those into leads (adding them to the people list), or leave
-   them for you?
-7. **Export.** PDF, Copy as table, or an .xlsx in Inkpath's columns (adds a dependency)? Do you upload to Inkpath from a file?
-8. **The 5-skill entry** breaks "up to three": keep three, or allow more for old imports?
+**Decided:** meetings are not counted in the 200 hours and have their own counter and skills; skills use sentence case; series starts with
+SEDarc and DataCamp and is optional; hours come from the times; files are linked; the aim is 200 hours per academic year.
+
+**Open questions for the user**
+
+1. **Which type for a seminar, an induction, a lab meeting and self-guided learning (for example DataCamp)?** Inkpath has none of these
+   as a type. Which of its 15 do you use for them today, and would you like an extra type of your own such as "Seminar or talk"?
+2. **Do my readings of the three course types match yours?** Research-related (methods, statistics, data, software), Academic skills
+   (writing, presenting, publishing, CV) and Generic skills (wellbeing, leadership, careers). Tell me where I am wrong, or say whether
+   you would rather have just one "Course" type in the app and pick the Inkpath type only when you export.
+3. **What do the skill tags (GS), (RP) and (SS) stand for?** They let the skills list be grouped, and I do not want to guess.
+4. **Format.** Keep Inkpath's Attendance Type as In person / Online / blank for self-paced, like Meetings?
+5. **Leads from Provider.** Some providers are people. Should the import turn those into leads (adding them to the people list) or
+   leave them for you?
+6. **Export.** PDF, Copy as table, or an .xlsx in Inkpath's columns (adds a small dependency)? Do you upload to Inkpath from a file?
+7. **The entry with five skills** breaks "up to three": keep three, or allow more for old imports?
+8. **Meetings counter target.** Meetings has no aim of its own. Should the Training page show the "plus N hours of meetings" line
+   (proposed), or would you rather see the two counters only on their own pages?
