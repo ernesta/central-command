@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>People and Training plan mockup</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@600;700&display=swap"
+    />
+    <style>
+      :root {
+        --bg: #edeff2;
+        --surface: #ffffff;
+        --ink: #1b222b;
+        --text-secondary: #3a4652;
+        --text-muted: #5c6672;
+        --border-soft: #d3d8de;
+        --border-faint: #e6e9ed;
+        --hover-tint: #f4f6f8;
+        --accent: #35577a;
+        --selected-bg: #dce6ee;
+        --danger: #a8433f;
+        --font-display: 'Newsreader', Georgia, serif;
+        --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font: 14px/1.5 var(--font-body);
+        padding: 20px 16px 48px;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: var(--font-display);
+        margin: 0;
+      }
+      p {
+        margin: 0;
+      }
+      .wrap {
+        max-width: 1000px;
+        margin: 0 auto;
+        display: grid;
+        gap: 40px;
+      }
+      .label {
+        color: var(--text-muted);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 8px;
+      }
+      .screen {
+        background: var(--bg);
+        border: 1px dashed var(--border-soft);
+        border-radius: 14px;
+        padding: 24px;
+      }
+      .back {
+        color: var(--text-muted);
+        font-size: 13px;
+      }
+      .head {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        margin: 8px 0 16px;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .head h2 {
+        font-size: 30px;
+      }
+      .btn {
+        border: 1px solid var(--border-soft);
+        background: var(--surface);
+        border-radius: 8px;
+        padding: 7px 12px;
+        font: inherit;
+      }
+      .btn.primary {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+        border-radius: 12px;
+      }
+      .notice {
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+        border-left: 3px solid var(--danger);
+        border-radius: 12px;
+        padding: 10px 14px;
+        margin-bottom: 16px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th {
+        text-align: left;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border-soft);
+        font-weight: 500;
+      }
+      td {
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--border-faint);
+      }
+      tr:last-child td {
+        border-bottom: 0;
+      }
+      .chip {
+        display: inline-block;
+        background: var(--selected-bg);
+        color: #1f3a52;
+        border-radius: 999px;
+        padding: 1px 10px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .chip.warn {
+        background: #f3dcda;
+        color: var(--danger);
+      }
+      .muted {
+        color: var(--text-muted);
+      }
+      .input {
+        border: 1px solid var(--border-soft);
+        border-radius: 8px;
+        padding: 4px 8px;
+        width: 70px;
+        background: var(--surface);
+        font: inherit;
+      }
+      h3.sec {
+        font-size: 18px;
+        margin: 22px 0 4px;
+      }
+      .plan {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 20px;
+        align-items: start;
+      }
+      .outline {
+        padding: 14px 16px;
+        font-size: 13px;
+      }
+      .outline b {
+        display: block;
+        margin: 10px 0 4px;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+      .outline b:first-child {
+        margin-top: 0;
+      }
+      .outline div {
+        padding: 3px 0;
+        color: var(--text-secondary);
+      }
+      .outline .on {
+        color: var(--accent);
+        font-weight: 600;
+      }
+      .doc {
+        padding: 24px 28px;
+      }
+      .doc h3 {
+        font-size: 22px;
+        margin: 18px 0 6px;
+      }
+      .doc h3:first-of-type {
+        margin-top: 0;
+      }
+      .doc ul {
+        margin: 4px 0 8px;
+        padding-left: 20px;
+      }
+      .doc a {
+        color: var(--accent);
+      }
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 12px;
+        color: var(--text-muted);
+        font-size: 12px;
+      }
+      .note {
+        color: var(--text-muted);
+        font-size: 13px;
+        margin-top: 10px;
+      }
+      @media (max-width: 720px) {
+        .plan {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <section>
+        <p class="label">
+          1. People (a page of its own, opened from Settings → People and from the people chips)
+        </p>
+        <div class="screen">
+          <span class="back">← Research</span>
+          <div class="head">
+            <h2>People</h2>
+            <button class="btn primary">+ Add person</button>
+          </div>
+
+          <div class="notice">
+            <strong>Similar initials.</strong> <span class="chip warn">RM</span> Ryan McKay and
+            <span class="chip warn">RM2</span> Robyn Muir look alike in a note. Change one, for
+            example to <span class="chip">RMu</span>.
+          </div>
+
+          <div class="card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Initials</th>
+                  <th>Meetings</th>
+                  <th>Trainings</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Ernesta Orlovaitė <span class="muted">(me)</span></td>
+                  <td><span class="chip">EO</span></td>
+                  <td>63</td>
+                  <td>0</td>
+                  <td class="muted">Edit</td>
+                </tr>
+                <tr>
+                  <td>Kathy Rastle</td>
+                  <td><span class="chip">KR</span></td>
+                  <td>41</td>
+                  <td>2</td>
+                  <td class="muted">Edit</td>
+                </tr>
+                <tr>
+                  <td>Ryan McKay</td>
+                  <td><span class="chip warn">RM</span></td>
+                  <td>12</td>
+                  <td>1</td>
+                  <td class="muted">Edit</td>
+                </tr>
+                <tr>
+                  <td>Robyn Muir</td>
+                  <td><input class="input" value="RM2" aria-label="Initials" /></td>
+                  <td>0</td>
+                  <td>1</td>
+                  <td class="muted">Save</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 class="sec">Named in your notes, not in the list yet</h3>
+          <p class="muted">
+            Found as training leads or meeting attendees. Check the initials, then add.
+          </p>
+          <div class="card" style="margin-top: 10px">
+            <table>
+              <tbody>
+                <tr>
+                  <td>Anat Bardi</td>
+                  <td><input class="input" value="AB" aria-label="Initials" /></td>
+                  <td class="muted">1 training</td>
+                  <td><button class="btn">Add</button></td>
+                </tr>
+                <tr>
+                  <td>Chris Prosser</td>
+                  <td><input class="input" value="CP" aria-label="Initials" /></td>
+                  <td class="muted">1 training</td>
+                  <td><button class="btn">Add</button></td>
+                </tr>
+                <tr>
+                  <td>Cilla Harries</td>
+                  <td><input class="input" value="CH" aria-label="Initials" /></td>
+                  <td class="muted">2 trainings</td>
+                  <td><button class="btn">Add</button></td>
+                </tr>
+                <tr>
+                  <td colspan="4" class="muted">
+                    15 more …
+                    <button class="btn" style="margin-left: 8px">
+                      Add all with these initials
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="note">
+            Later, per person: links (Google Scholar, GitHub, LinkedIn) and their recent papers.
+            Removing a person never edits notes.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <p class="label">
+          2. Training plan (a document, one per academic year, opened from the Training landing
+          page)
+        </p>
+        <div class="screen">
+          <span class="back">← Training</span>
+          <div class="head">
+            <h2>Training plan</h2>
+            <div style="display: flex; gap: 8px">
+              <button class="btn">2026–27 ▾</button>
+              <button class="btn">Open in Finder</button>
+            </div>
+          </div>
+          <div class="plan">
+            <nav class="card outline" aria-label="Outline">
+              <b>Priority 1</b>
+              <div class="on">1. Literature and the Research Landscape</div>
+              <div>2. Bayesian Statistical Modelling</div>
+              <div>3. Linear Mixed-Effects Modelling</div>
+              <div>4. Complex Survey Data</div>
+              <b>Priority 2</b>
+              <div>5. Communicating to Academics</div>
+              <div>6. Public and Policy Audiences</div>
+              <div>7. Experimental Psychology</div>
+              <b>Priority 3</b>
+              <div>8. Publishing · 9. Agent-Based · 10. AI · 11. Urdu</div>
+            </nav>
+            <article class="card doc">
+              <div class="toolbar">
+                Saved · edit here like any note (the same editor as a training entry)
+              </div>
+              <h3>2. Bayesian Statistical Modelling</h3>
+              <p>
+                <strong>What:</strong> Learn to fit, check, and report Bayesian models, including
+                multilevel models.
+              </p>
+              <p><strong>How:</strong></p>
+              <ul>
+                <li>Complete <a href="#">Introduction to Bayesian Data Analysis</a> (openHPI).</li>
+                <li>Refit one of my Study 1 models in a Bayesian framework.</li>
+                <li>Apply for SMLP 2027 (applications open around October 2026).</li>
+                <li><em>Added later:</em> Statistical Rethinking, McElreath (book).</li>
+              </ul>
+              <h3>3. Linear Mixed-Effects Modelling</h3>
+              <p class="muted">…</p>
+            </article>
+          </div>
+          <p class="note">
+            The plan is one Markdown file per year in your training notes folder, so it is also
+            editable outside the app. The outline on the left is built from its headings.
+          </p>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>
