@@ -1,3 +1,20 @@
 .content {
   min-width: 0;
 }
+
+.archived {
+  display: grid;
+  gap: 10px;
+}
+.summary {
+  width: fit-content;
+  color: var(--text-secondary);
+  font-size: var(--text-14);
+  font-weight: 500;
+  cursor: pointer;
+}
+.note {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+}

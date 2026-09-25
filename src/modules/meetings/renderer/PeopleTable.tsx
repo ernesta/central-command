@@ -45,6 +45,10 @@ interface RowProps {
   /** The reason a change would be refused (taken initials, a blank name), or null. */
   check: (name: string, patch: PersonPatch) => string | null
   onInvalid: (message: string) => void
+  /** Leave out for someone who cannot be removed (you). */
+  onRemove?: () => void
+  /** Given for archived people, who can only be restored. */
+  onRestore?: () => void
 }
 
 function PersonRow({
@@ -55,7 +59,9 @@ function PersonRow({
   onDone,
   onSave,
   check,
-  onInvalid
+  onInvalid,
+  onRemove,
+  onRestore
 }: RowProps): React.JSX.Element {
   const [name, setName] = useState(person.name)
   const [initials, setInitials] = useState(person.initials)
@@ -101,9 +107,22 @@ function PersonRow({
         <td className={styles.count}>{usage?.meetings ?? 0}</td>
         <td className={styles.count}>{usage?.trainings ?? 0}</td>
         <td className={styles.actions}>
-          <Button size="small" aria-label={`Edit ${person.name}`} onClick={onEdit}>
-            Edit
-          </Button>
+          {onRestore ? (
+            <Button size="small" aria-label={`Restore ${person.name}`} onClick={onRestore}>
+              Restore
+            </Button>
+          ) : (
+            <>
+              <Button size="small" aria-label={`Edit ${person.name}`} onClick={onEdit}>
+                Edit
+              </Button>
+              {onRemove && (
+                <Button size="small" aria-label={`Remove ${person.name}`} onClick={onRemove}>
+                  Remove
+                </Button>
+              )}
+            </>
+          )}
         </td>
       </tr>
     )
@@ -225,25 +244,34 @@ function AddRow({ onAdd, onDone }: AddRowProps): React.JSX.Element {
 }
 
 interface PeopleTableProps {
+  /** The people shown in this table. */
   people: readonly Person[]
+  /** Everyone, archived people included: their initials are taken. */
+  everyone: readonly Person[]
   usage: readonly PersonUsage[]
-  /** Show a row for a new person at the top. */
-  adding: boolean
-  onAdd: AddRowProps['onAdd']
-  onAddDone: () => void
+  /** Show a row for a new person at the top (with `onAdd` and `onAddDone`). */
+  adding?: boolean
+  onAdd?: AddRowProps['onAdd']
+  onAddDone?: () => void
   onSave: Save
   onInvalid: (message: string) => void
+  onRemove?: (person: Person) => void
+  /** Makes this the table of archived people: each row offers Restore instead of Edit and Remove. */
+  onRestore?: (person: Person) => void
 }
 
 /** The people list as a table: name, initials, how many meetings and trainings mention them, and what you can do. */
 export function PeopleTable({
   people,
+  everyone,
   usage,
   adding,
   onAdd,
   onAddDone,
   onSave,
-  onInvalid
+  onInvalid,
+  onRemove,
+  onRestore
 }: PeopleTableProps): React.JSX.Element {
   const [editing, setEditing] = useState<string | null>(null)
   return (
@@ -261,7 +289,7 @@ export function PeopleTable({
           </tr>
         </thead>
         <tbody>
-          {adding && <AddRow onAdd={onAdd} onDone={onAddDone} />}
+          {adding && onAdd && onAddDone && <AddRow onAdd={onAdd} onDone={onAddDone} />}
           {people.map((person) => (
             <PersonRow
               // A renamed person is a new row, so a stale edit draft never carries over.
@@ -274,7 +302,7 @@ export function PeopleTable({
               onSave={onSave}
               check={(name, patch) => {
                 try {
-                  updatePerson(people, name, patch)
+                  updatePerson(everyone, name, patch)
                   return null
                 } catch (error) {
                   if (error instanceof PeopleError) return error.message
@@ -282,6 +310,8 @@ export function PeopleTable({
                 }
               }}
               onInvalid={onInvalid}
+              onRemove={onRemove && !person.me ? () => onRemove(person) : undefined}
+              onRestore={onRestore ? () => onRestore(person) : undefined}
             />
           ))}
         </tbody>

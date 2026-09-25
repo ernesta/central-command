@@ -7,6 +7,7 @@
 .table {
   width: 100%;
   min-width: 640px;
+  table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
   background: var(--surface);
@@ -23,8 +24,13 @@
   text-align: left;
   text-transform: uppercase;
 }
-.th:first-child {
+.th:nth-child(1) {
   width: 34%;
+}
+.th:nth-child(2),
+.th:nth-child(3),
+.th:nth-child(4) {
+  width: 14%;
 }
 .hidden {
   position: absolute;

@@ -3,8 +3,11 @@ import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { LandingHeader, LandingPage } from '@renderer/components/Landing'
 import { Notice } from '@renderer/components/Notice'
+import type { RemoveHow } from '../shared/api'
 import type { PersonPatch } from '../shared/people'
+import type { Person } from '../shared/types'
 import { PeopleTable } from './PeopleTable'
+import { RemoveDialog } from './RemoveDialog'
 import { usePeople, type PeopleActionResult } from './usePeople'
 import styles from './PeoplePage.module.css'
 
@@ -21,6 +24,10 @@ export function PeoplePage(): React.JSX.Element {
   const { people, usage, run } = usePeople()
   const [adding, setAdding] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [removing, setRemoving] = useState<Person | null>(null)
+
+  const current = (people ?? []).filter((p) => !p.archived)
+  const archived = (people ?? []).filter((p) => p.archived)
 
   const report = (result: PeopleActionResult): string | null => {
     setError(result.error ?? (result.skipped.length > 0 ? skippedText(result.skipped) : null))
@@ -57,7 +64,8 @@ export function PeoplePage(): React.JSX.Element {
       {people !== null && (people.length > 0 || adding) && (
         <div className={styles.content}>
           <PeopleTable
-            people={people}
+            people={current}
+            everyone={people}
             usage={usage}
             adding={adding}
             onAdd={async (name, initials) =>
@@ -70,8 +78,40 @@ export function PeoplePage(): React.JSX.Element {
             onSave={async (name: string, patch: PersonPatch) =>
               report(await run(window.api.meetings.people.update(name, patch)))
             }
+            onRemove={setRemoving}
           />
         </div>
+      )}
+      {archived.length > 0 && people !== null && (
+        <details className={styles.archived}>
+          <summary className={styles.summary}>Archived ({archived.length})</summary>
+          <PeopleTable
+            people={archived}
+            everyone={people}
+            usage={usage}
+            onInvalid={setError}
+            onSave={async () => null}
+            onRestore={async (person) =>
+              void report(await run(window.api.meetings.people.restore(person.name)))
+            }
+          />
+          <p className={styles.note}>
+            Archived people are not offered when adding people to a note. Old notes still show them.
+          </p>
+        </details>
+      )}
+      {removing && people && (
+        <RemoveDialog
+          person={removing}
+          usage={usage.find((u) => u.name === removing.name)}
+          everyone={people}
+          onCancel={() => setRemoving(null)}
+          onConfirm={(how: RemoveHow) => {
+            const name = removing.name
+            setRemoving(null)
+            void run(window.api.meetings.people.remove(name, how)).then(report)
+          }}
+        />
       )}
     </LandingPage>
   )

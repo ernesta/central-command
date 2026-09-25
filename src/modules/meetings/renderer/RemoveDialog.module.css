@@ -1,0 +1,40 @@
+.text {
+  margin: 0 0 12px;
+}
+.select {
+  width: 100%;
+  margin-bottom: 12px;
+}
+.choices {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-control);
+  color: var(--ink);
+  font-size: var(--text-14);
+}
+.option input {
+  margin-top: 3px;
+  accent-color: var(--accent);
+}
+.hint {
+  display: block;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+}
