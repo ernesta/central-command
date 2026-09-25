@@ -14,6 +14,7 @@ import { isoDate } from '../shared/dates'
 import { deriveGroups } from '../shared/groups'
 import { canPin } from '../shared/pinning'
 import { UNTITLED } from '../shared/query'
+import { wordCount, wordCountLabel } from '../shared/words'
 import type { NoteRef } from '../shared/types'
 import { GroupField } from './GroupField'
 import { noteRoute, notesBase } from './notes-paths'
@@ -131,6 +132,7 @@ function NoteView({
     )
   }
 
+  const words = wordCount(body)
   const heading = meta.title || markdownToExcerpt(body, 40) || UNTITLED
   const pinDisabled = !meta.pinned && rows !== null && !canPin(rows, session.getRef().id)
 
@@ -259,6 +261,8 @@ function NoteView({
           onBlur={() => void session.flush()}
         />
       </div>
+
+      {words > 0 && <p className={styles.words}>{wordCountLabel(words)}</p>}
 
       <DeleteDialog
         open={confirmDelete}
