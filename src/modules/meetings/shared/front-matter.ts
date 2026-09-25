@@ -40,7 +40,8 @@ export function parseMeta(head: string): ParsedMeta {
 
   const date = asText(value('date')).trim()
   const dateOk = isValidDate(date)
-  if (!dateOk) problems.push(date ? `Invalid date: ${date}` : 'Missing date')
+  // No date is allowed: the meeting is planned and not yet scheduled.
+  if (date && !dateOk) problems.push(`Invalid date: ${date}`)
 
   const time = (key: 'start' | 'end'): string | null => {
     const raw = asText(value(key)).trim()
@@ -103,7 +104,9 @@ const ORDER: (keyof MeetingMeta)[] = [
  * null mode remove the key. With no front matter yet, a fresh block is created.
  */
 export function updateHead(head: string, patch: MetaPatch): string {
-  return updateHeadKeys(head, patch, {
+  // An empty date removes the key: the meeting is planned, with no date yet.
+  const changes = 'date' in patch && patch.date === '' ? { ...patch, date: null } : patch
+  return updateHeadKeys(head, changes, {
     order: ORDER,
     style: (key) =>
       key === 'start' || key === 'end' ? 'quote' : key === 'date' ? 'plain' : 'auto',

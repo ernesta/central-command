@@ -59,7 +59,7 @@ function checkPatch(patch: MetaPatch): void {
   if (patch.series !== undefined && !(SERIES as readonly string[]).includes(patch.series)) {
     throw new MeetingError(`Unknown series: ${patch.series}`)
   }
-  if (patch.date !== undefined && !isValidDate(patch.date)) {
+  if (patch.date !== undefined && patch.date !== '' && !isValidDate(patch.date)) {
     throw new MeetingError(`Invalid date: ${patch.date}`)
   }
   for (const key of ['start', 'end'] as const) {
@@ -108,7 +108,7 @@ export class MeetingsStore {
     const workspace = checkWorkspace(input.workspace)
     const patch: MetaPatch = {
       series: input.series,
-      date: input.date,
+      date: input.date ?? '',
       start: input.start ?? null,
       end: input.end ?? null,
       mode: input.mode ?? null,
@@ -121,10 +121,10 @@ export class MeetingsStore {
     // Names already taken, from the folder itself (not just the index) so nothing is ever replaced.
     for (let attempt = 0; attempt < 50; attempt++) {
       const taken = await this.baseNamesOnDisk(workspace)
-      const id = meetingBaseName(input.date, input.series, taken)
+      const id = meetingBaseName(input.date ?? '', input.series, taken)
       const body =
         input.body ??
-        (await this.templateBody({ workspace, id, series: input.series, date: input.date }))
+        (await this.templateBody({ workspace, id, series: input.series, date: input.date ?? '' }))
       if (await createNoteFileExclusive(meetingPath(dir, id), head + body)) {
         await this.reindex({ workspace, id })
         return this.read({ workspace, id })
@@ -185,7 +185,12 @@ export class MeetingsStore {
     const next = applyChanges(disk.content, changes)
     const { result, wrote } = await writeNoteFileGuarded(path, next, baseHash)
     if (wrote) await this.reindex(ref)
-    if (wrote && result.status === 'saved' && (changes.meta?.date || changes.meta?.series)) {
+    if (
+      wrote &&
+      result.status === 'saved' &&
+      changes.meta &&
+      ('date' in changes.meta || 'series' in changes.meta)
+    ) {
       const renamedTo = await this.renameToMatch(ref, next)
       if (renamedTo) return { ...result, renamedTo }
     }
@@ -199,7 +204,7 @@ export class MeetingsStore {
    */
   private async renameToMatch(ref: MeetingRef, content: string): Promise<string | null> {
     const { meta } = parseMeta(splitNote(content).head)
-    if (!meta.date || !meta.series) return null
+    if (!meta.series) return null
     const dir = this.dirFor(ref.workspace)
     try {
       for (let attempt = 0; attempt < 50; attempt++) {

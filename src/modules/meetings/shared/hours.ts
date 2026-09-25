@@ -18,6 +18,14 @@ export function meetingsInYear(rows: readonly MeetingIndexRow[], year: number): 
   return rows.filter((r) => inAcademicYear(r.date, year))
 }
 
+/** What the list shows for an academic year: its meetings, plus every planned meeting with no date yet. */
+export function meetingsInYearOrPlanned(
+  rows: readonly MeetingIndexRow[],
+  year: number
+): MeetingIndexRow[] {
+  return rows.filter((r) => r.date === '' || inAcademicYear(r.date, year))
+}
+
 /**
  * Hours for one academic year, from the start and end times. Upcoming meetings are left out (they have
  * not happened), and a meeting without both times counts as zero and is reported.

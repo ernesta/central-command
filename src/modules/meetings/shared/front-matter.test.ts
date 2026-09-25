@@ -153,7 +153,7 @@ describe('parseMeta', () => {
       'Invalid start time: 25:00',
       'Unknown mode: hybrid'
     ])
-    expect(parseMeta('---\nx: 1\n---\n').problems).toEqual(['Missing series', 'Missing date'])
+    expect(parseMeta('---\nx: 1\n---\n').problems).toEqual(['Missing series'])
   })
 
   it('keeps an unknown series as written', () => {

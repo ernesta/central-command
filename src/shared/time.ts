@@ -27,7 +27,7 @@ export function formatDate(date: string): string {
 
 /** The page heading: "Series · Sep 24, 2026". */
 export function meetingHeading(series: string, date: string): string {
-  return [series || 'Meeting', date ? formatDate(date) : ''].filter(Boolean).join(' · ')
+  return [series || 'Meeting', date ? formatDate(date) : 'No date yet'].join(' · ')
 }
 
 /** "2026-09-24" as "Sep 24" (no year), for compact labels. Anything else is returned as it is. */

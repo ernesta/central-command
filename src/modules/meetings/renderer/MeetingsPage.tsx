@@ -17,7 +17,7 @@ import {
   seriesOptions,
   type MeetingsQuery
 } from '../shared/query'
-import { meetingsInYear } from '../shared/hours'
+import { meetingsInYearOrPlanned } from '../shared/hours'
 import { MeetingsHours } from './MeetingsHours'
 import { MeetingsTable } from './MeetingsTable'
 import { NewMeetingButton } from './NewMeetingButton'
@@ -46,7 +46,7 @@ export function MeetingsPage(): React.JSX.Element {
     everything.map((r) => r.date),
     today
   )
-  const all = meetingsInYear(everything, year)
+  const all = meetingsInYearOrPlanned(everything, year)
   // A remembered series or attendee that no longer exists in the files must not hide everything.
   const query =
     rows === null

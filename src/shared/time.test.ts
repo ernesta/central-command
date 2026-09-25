@@ -33,7 +33,7 @@ describe('dates and headings', () => {
   it('joins series and date', () => {
     expect(meetingHeading('Supervision', '2026-09-24')).toBe('Supervision · Sep 24, 2026')
     expect(meetingHeading('', '2026-09-24')).toBe('Meeting · Sep 24, 2026')
-    expect(meetingHeading('Other', '')).toBe('Other')
+    expect(meetingHeading('Other', '')).toBe('Other · No date yet')
   })
 })
 

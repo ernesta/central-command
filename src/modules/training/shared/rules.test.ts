@@ -3,6 +3,7 @@ import type { Person } from '@shared/people'
 import {
   DEFAULT_TRAINING_QUERY,
   entriesInYear,
+  isUpcoming,
   leadNames,
   meetingsLine,
   normaliseTrainingQuery,
@@ -139,13 +140,16 @@ describe('queryTraining', () => {
     expect(q('mixed nothing')).toEqual([])
   })
 
-  it('keeps an entry with no date, at the end', () => {
+  it('keeps an entry with no date (planned), first, and counts it as upcoming', () => {
     const list = queryTraining(
       [...rows, row('', { title: 'Undated' })],
       DEFAULT_TRAINING_QUERY,
       people
     )
-    expect(list.at(-1)?.title).toBe('Undated')
+    expect(list.at(0)?.title).toBe('Undated')
+    expect(isUpcoming({ date: '' }, TODAY)).toBe(true)
+    // A planned entry adds nothing to the hours until it has a date and has happened.
+    expect(trainingHours([row('', { title: 'Undated' })], 2025, TODAY, 200).minutes).toBe(0)
   })
 })
 

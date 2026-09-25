@@ -38,8 +38,8 @@ export interface TrainingFilesApi {
 
 export interface CreateTrainingInput {
   workspace: TrainingWorkspace
-  /** YYYY-MM-DD. */
-  date: string
+  /** YYYY-MM-DD; leave out (or '') for an entry that is planned but not yet scheduled. */
+  date?: string
   title: string
   start?: string | null
   end?: string | null

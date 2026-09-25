@@ -152,12 +152,14 @@ export function MeetingsLanding(): React.JSX.Element {
                   <li key={row.id}>
                     <Link className={styles.recent} to={meetingRoute(row.id)}>
                       <span className={styles.date}>
-                        {row.date ? formatDate(row.date) : 'No date'}
+                        {row.date ? formatDate(row.date) : 'No date yet'}
                       </span>
                       <span>
                         {row.series}
                         {isUpcoming(row, today) && (
-                          <span className={styles.upcoming}>Upcoming</span>
+                          <span className={styles.upcoming}>
+                            {row.date ? 'Upcoming' : 'Planned'}
+                          </span>
                         )}
                       </span>
                       <span className={styles.chips}>

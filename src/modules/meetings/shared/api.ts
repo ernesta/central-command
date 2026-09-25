@@ -14,8 +14,8 @@ export interface CreateMeetingInput {
   workspace: MeetingWorkspace
   /** One of SERIES. */
   series: string
-  /** YYYY-MM-DD. */
-  date: string
+  /** YYYY-MM-DD; leave out (or '') for a meeting that is planned but not yet scheduled. */
+  date?: string
   start?: string | null
   end?: string | null
   mode?: MeetingMode | null

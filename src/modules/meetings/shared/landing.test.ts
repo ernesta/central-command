@@ -60,11 +60,11 @@ describe('seriesSummaries', () => {
     ])
     expect(by('Luminos')).toEqual({ series: 'Luminos', count: 0, last: null, next: null })
   })
-  it('counts an undated meeting of a series as having happened, but gives it no last date', () => {
+  it('does not count a planned (undated) meeting as having happened, and gives it no dates', () => {
     const only = seriesSummaries([row('undated', { date: '', series: 'Other' })], TODAY).find(
       (s) => s.series === 'Other'
     )
-    expect(only).toEqual({ series: 'Other', count: 1, last: null, next: null })
+    expect(only).toEqual({ series: 'Other', count: 0, last: null, next: null })
   })
 })
 

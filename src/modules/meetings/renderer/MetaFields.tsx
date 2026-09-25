@@ -76,8 +76,10 @@ export function MetaFields({
           className={styles.input}
           value={meta.date}
           onChange={(event) => {
-            // A cleared or half-typed date is ignored; the file only ever gets a real date.
-            if (isValidDate(event.target.value)) onChange({ date: event.target.value })
+            // Clearing the date makes the meeting planned (no date yet); a half-typed date is ignored, so the
+            // file only ever gets a real date.
+            if (event.target.value === '') onChange({ date: '' })
+            else if (isValidDate(event.target.value)) onChange({ date: event.target.value })
           }}
         />
       </div>

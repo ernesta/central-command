@@ -399,6 +399,27 @@ describe('Previous TODOs carry-over', () => {
   })
 })
 
+describe('a meeting with no date yet (planned)', () => {
+  it('is created as "Planned Series", has no problem, and is renamed when a date is set or cleared', async () => {
+    const meeting = await store.create({ workspace: 'research', series: 'Luminos' })
+    expect(meeting.ref.id).toBe('Planned Luminos')
+    expect(disk(meeting.ref.id)).not.toContain('date:')
+    expect(meeting.problems).toEqual([])
+
+    const dated = await store.save(meeting.ref, { meta: { date: '2026-03-04' } }, meeting.note.hash)
+    expect(dated.status === 'saved' && dated.renamedTo).toBe('2026-03-04 Luminos')
+    const again = await store.read(ref('2026-03-04 Luminos'))
+    const cleared = await store.save(again.ref, { meta: { date: '' } }, again.note.hash)
+    expect(cleared.status === 'saved' && cleared.renamedTo).toBe('Planned Luminos')
+    expect(disk('Planned Luminos')).not.toContain('date:')
+  })
+
+  it('gets no Previous TODOs carried over, and is not the previous meeting of another', async () => {
+    const planned = await store.create({ workspace: 'research', series: 'Supervision' })
+    expect(planned.body).toBe('## Summary\n\n## Previous TODOs\n\n## Notes\n')
+  })
+})
+
 describe('renaming when the date or series changes', () => {
   const SUP = { workspace: 'research', series: 'Supervision' } as const
   const save = (

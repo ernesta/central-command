@@ -53,14 +53,14 @@ describe('queryMeetings: what is listed and in what order', () => {
     row('undated', { date: '' })
   ]
 
-  it('is newest first (upcoming meetings first), later start first within a day, no start last, undated at the end', () => {
+  it('is newest first (upcoming meetings first), later start first within a day, no start last, planned (undated) first', () => {
     expect(ids(queryMeetings(rows, q(), people))).toEqual([
+      'undated',
       '2026-10-01 Supervision',
       '2026-09-24 Rastle Lab',
       '2026-09-24 Supervision',
       '2026-09-24 Other',
-      '2026-09-10 Supervision',
-      'undated'
+      '2026-09-10 Supervision'
     ])
   })
 
@@ -70,9 +70,9 @@ describe('queryMeetings: what is listed and in what order', () => {
     expect(isUpcoming(rows[3], TODAY)).toBe(false) // today is not upcoming
   })
 
-  it('never hides a meeting whose date could not be read', () => {
+  it('never hides a meeting with no date: it is planned, and counts as upcoming', () => {
     expect(ids(queryMeetings([row('undated', { date: '' })], q(), people))).toEqual(['undated'])
-    expect(isUpcoming({ date: '' }, TODAY)).toBe(false)
+    expect(isUpcoming({ date: '' }, TODAY)).toBe(true)
   })
 
   it('does not change the rows it is given', () => {

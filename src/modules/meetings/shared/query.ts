@@ -56,16 +56,16 @@ export function initialsFor(name: string, people: readonly Person[]): string {
   return findByName(people, name)?.initials ?? (deriveInitials(name) || name)
 }
 
-/** A meeting after `today` (YYYY-MM-DD). Meetings with no date are never upcoming. */
+/** A meeting that has not happened yet: after `today` (YYYY-MM-DD), or planned with no date yet. */
 export function isUpcoming(row: Pick<MeetingIndexRow, 'date'>, today: string): boolean {
-  return row.date > today // '' (no date) sorts before every date, so it is never upcoming
+  return row.date === '' || row.date > today
 }
 
-/** Newest first: by date, then start time (no start time last), then id. Meetings with no date come last. */
+/** Newest first: by date, then start time (no start time last), then id. Meetings with no date (planned) come first. */
 export function compareNewestFirst(a: MeetingIndexRow, b: MeetingIndexRow): number {
   if (a.date !== b.date) {
-    if (a.date === '') return 1
-    if (b.date === '') return -1
+    if (a.date === '') return -1
+    if (b.date === '') return 1
     return a.date < b.date ? 1 : -1
   }
   const sa = a.start ?? ''
@@ -91,8 +91,8 @@ function haystack(row: MeetingIndexRow, people: readonly Person[]): string {
 
 /**
  * The meetings for the list, filtered and put newest first. Upcoming meetings are included (the list
- * marks them); the supervision log export, built later, will leave them out. Meetings whose date could
- * not be read are kept, at the end, so a file with a problem is never hidden. Pure, like the Readings query.
+ * marks them); the supervision log export, built later, will leave them out. Meetings with no date are
+ * planned ones and come first. Pure, like the Readings query.
  */
 export function queryMeetings(
   rows: readonly MeetingIndexRow[],

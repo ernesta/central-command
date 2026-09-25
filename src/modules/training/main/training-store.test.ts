@@ -221,6 +221,30 @@ describe('renaming when the date or title changes', () => {
   })
 })
 
+describe('an entry with no date yet (planned)', () => {
+  it('is created as "Planned Title", has no problem, and is renamed when a date is set or cleared', async () => {
+    const entry = await make({ date: '', title: 'DataCamp: Later' })
+    expect(entry.ref.id).toBe('Planned DataCamp_ Later')
+    expect(disk(entry.ref.id)).not.toContain('date:')
+    expect(entry.problems).toEqual([])
+    expect(getTrainingRow(db, 'research', entry.ref.id)).toMatchObject({ date: '', problems: [] })
+
+    const dated = await store.save(entry.ref, { meta: { date: '2026-03-04' } }, entry.note.hash)
+    expect(dated.status === 'saved' && dated.renamedTo).toBe('2026-03-04 DataCamp_ Later')
+    const again = await store.read(ref('2026-03-04 DataCamp_ Later'))
+    expect(again.meta.date).toBe('2026-03-04')
+
+    const cleared = await store.save(again.ref, { meta: { date: '' } }, again.note.hash)
+    expect(cleared.status === 'saved' && cleared.renamedTo).toBe('Planned DataCamp_ Later')
+    expect(disk('Planned DataCamp_ Later')).not.toContain('date:')
+  })
+
+  it('numbers a second planned entry with the same title', async () => {
+    await make({ date: '', title: 'Same' })
+    expect((await make({ date: '', title: 'Same' })).ref.id).toBe('Planned Same 2')
+  })
+})
+
 describe('reindex', () => {
   it('picks up a file another tool created, and drops the row when it is removed', async () => {
     mkdirSync(dir, { recursive: true })

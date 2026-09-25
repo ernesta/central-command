@@ -16,8 +16,9 @@ export function safeNamePart(text: string, fallback: string, maxLength: number):
 }
 
 /**
- * A base name (no extension) that is not in `taken`: `YYYY-MM-DD Label`, then `… 2`, `… 3`. Comparison
- * ignores case because macOS file systems do.
+ * A base name (no extension) that is not in `taken`: `YYYY-MM-DD Label`, then `… 2`, `… 3`. With no date
+ * (something planned, not yet scheduled) it is `Planned Label`. Comparison ignores case because macOS file
+ * systems do.
  */
 export function datedBaseName(
   date: string,
@@ -26,7 +27,7 @@ export function datedBaseName(
   { fallback, maxLength }: { fallback: string; maxLength: number }
 ): string {
   const used = new Set([...taken].map((n) => n.toLowerCase()))
-  const stem = `${date} ${safeNamePart(label, fallback, maxLength)}`
+  const stem = `${date || 'Planned'} ${safeNamePart(label, fallback, maxLength)}`
   if (!used.has(stem.toLowerCase())) return stem
   for (let n = 2; ; n++) {
     const candidate = `${stem} ${n}`

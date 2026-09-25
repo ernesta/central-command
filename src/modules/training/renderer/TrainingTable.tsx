@@ -109,9 +109,11 @@ export function TrainingTable({
                     // The row handles the click; the link is for the keyboard and for assistive technology.
                     onClick={(event) => event.stopPropagation()}
                   >
-                    {row.date ? formatDate(row.date) : 'No date'}
+                    {row.date ? formatDate(row.date) : 'No date yet'}
                   </Link>
-                  {isUpcoming(row, today) && <span className={styles.upcoming}>Upcoming</span>}
+                  {isUpcoming(row, today) && (
+                    <span className={styles.upcoming}>{row.date ? 'Upcoming' : 'Planned'}</span>
+                  )}
                 </td>
                 <td className={styles.nowrap}>{formatTimeRange(row.start, row.end)}</td>
                 <td className={styles.nowrap}>

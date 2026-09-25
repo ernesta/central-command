@@ -54,7 +54,7 @@ const isText = (v: unknown): v is string => typeof v === 'string'
 
 /** Refuse metadata that could not be read back: the file is only ever given values the app understands. */
 export function checkTrainingPatch(patch: TrainingPatch): void {
-  if (patch.date !== undefined && !isValidDate(patch.date)) {
+  if (patch.date !== undefined && patch.date !== '' && !isValidDate(patch.date)) {
     throw new TrainingError(`Invalid date: ${patch.date}`)
   }
   for (const key of ['start', 'end'] as const) {
@@ -126,7 +126,7 @@ export class TrainingStore {
   async create(input: CreateTrainingInput): Promise<TrainingFile> {
     const workspace = checkWorkspace(input.workspace)
     const patch: TrainingPatch = {
-      date: input.date,
+      date: input.date ?? '',
       start: input.start ?? null,
       end: input.end ?? null,
       title: input.title,
@@ -144,7 +144,7 @@ export class TrainingStore {
     // Names already taken, from the folder itself (not just the index) so nothing is ever replaced.
     for (let attempt = 0; attempt < 50; attempt++) {
       const taken = await this.baseNamesOnDisk(workspace)
-      const id = trainingBaseName(input.date, input.title, taken)
+      const id = trainingBaseName(input.date ?? '', input.title, taken)
       if (await createNoteFileExclusive(trainingPath(dir, id), head + body)) {
         await this.reindex({ workspace, id })
         return this.read({ workspace, id })
@@ -180,7 +180,12 @@ export class TrainingStore {
     const next = applyTrainingChanges(disk.content, changes)
     const { result, wrote } = await writeNoteFileGuarded(path, next, baseHash)
     if (wrote) await this.reindex(ref)
-    if (wrote && result.status === 'saved' && (changes.meta?.date || changes.meta?.title)) {
+    if (
+      wrote &&
+      result.status === 'saved' &&
+      changes.meta &&
+      ('date' in changes.meta || 'title' in changes.meta)
+    ) {
       const renamedTo = await this.renameToMatch(ref, next)
       if (renamedTo) return { ...result, renamedTo }
     }
@@ -194,7 +199,7 @@ export class TrainingStore {
    */
   private async renameToMatch(ref: TrainingRef, content: string): Promise<string | null> {
     const { meta } = parseTrainingMeta(splitNote(content).head)
-    if (!meta.date || !meta.title) return null
+    if (!meta.title) return null
     const dir = this.dirFor(ref.workspace)
     try {
       for (let attempt = 0; attempt < 50; attempt++) {

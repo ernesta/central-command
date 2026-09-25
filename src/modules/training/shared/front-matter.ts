@@ -39,7 +39,8 @@ export function parseTrainingMeta(head: string): ParsedTrainingMeta {
 
   const date = text('date') ?? ''
   const dateOk = isValidDate(date)
-  if (!dateOk) problems.push(date ? `Invalid date: ${date}` : 'Missing date')
+  // No date is allowed: the entry is planned and not yet scheduled.
+  if (date && !dateOk) problems.push(`Invalid date: ${date}`)
 
   const time = (key: 'start' | 'end'): string | null => {
     const raw = text(key)
@@ -101,7 +102,9 @@ const ORDER: (keyof TrainingMeta)[] = [
  * removes the key.
  */
 export function updateTrainingHead(head: string, patch: TrainingPatch): string {
-  return updateHeadKeys(head, patch, {
+  // An empty date removes the key: the entry is planned, with no date yet.
+  const changes = 'date' in patch && patch.date === '' ? { ...patch, date: null } : patch
+  return updateHeadKeys(head, changes, {
     order: ORDER,
     style: (key) =>
       key === 'start' || key === 'end'

@@ -6,9 +6,17 @@ import { findByName } from '@shared/people'
 import type { Person } from '@shared/people'
 import { TRAINING_MODE_LABELS, type TrainingIndexRow, type TrainingMode } from './types'
 
-/** An entry after `today` (YYYY-MM-DD). Entries with no date are never upcoming. */
+/** An entry that has not happened yet: after `today` (YYYY-MM-DD), or planned with no date yet. */
 export function isUpcoming(row: Pick<TrainingIndexRow, 'date'>, today: string): boolean {
-  return row.date > today // '' (no date) sorts before every date
+  return row.date === '' || row.date > today
+}
+
+/** What the list shows for an academic year: its entries, plus every planned entry with no date yet. */
+export function entriesInYearOrPlanned(
+  rows: readonly TrainingIndexRow[],
+  year: number
+): TrainingIndexRow[] {
+  return rows.filter((r) => r.date === '' || inAcademicYear(r.date, year))
 }
 
 /** The entries dated within an academic year (start year), upcoming ones included. */
@@ -116,11 +124,11 @@ export function reconcileTrainingQuery(
   }
 }
 
-/** Newest first: by date, then start time (no start time last), then id. Entries with no date come last. */
+/** Newest first: by date, then start time (no start time last), then id. Entries with no date (planned) come first. */
 export function compareNewestFirst(a: TrainingIndexRow, b: TrainingIndexRow): number {
   if (a.date !== b.date) {
-    if (a.date === '') return 1
-    if (b.date === '') return -1
+    if (a.date === '') return -1
+    if (b.date === '') return 1
     return a.date < b.date ? 1 : -1
   }
   const sa = a.start ?? ''
