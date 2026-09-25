@@ -1,7 +1,7 @@
 import { mkdir } from 'fs/promises'
 import { join } from 'path'
-import { writeFile } from 'fs/promises'
-import { BrowserWindow, app, dialog, ipcMain, shell } from 'electron'
+import { BrowserWindow, ipcMain, shell } from 'electron'
+import { exportHtmlAsPdf } from '../../../main/export-pdf'
 import { readNoteFile } from '../../../main/notes/guarded-file'
 import { listMeetingRows } from '../../meetings/main/repository'
 import { meetingHours } from '../../meetings/shared/hours'
@@ -77,34 +77,11 @@ function register({ db, paths, settings }: MainContext): () => void {
         aimHours: settings.get().trainingAimHours,
         meetingMinutes: meetingHours(listMeetingRows(db, 'research'), year, today).minutes
       })
-      const options = {
-        title: 'Export the training log',
-        defaultPath: join(app.getPath('documents'), reportFileName(year)),
-        filters: [{ name: 'PDF', extensions: ['pdf'] }]
-      }
-      const parent = BrowserWindow.fromWebContents(event.sender)
-      const chosen = parent
-        ? await dialog.showSaveDialog(parent, options)
-        : await dialog.showSaveDialog(options)
-      if (chosen.canceled || !chosen.filePath) return { status: 'cancelled' }
-
-      // A hidden page with no scripts, made only to print. Nothing leaves the machine.
-      const printer = new BrowserWindow({
-        show: false,
-        webPreferences: { sandbox: true, javascript: false }
+      return exportHtmlAsPdf(event.sender, {
+        html,
+        dialogTitle: 'Export the training log',
+        fileName: reportFileName(year)
       })
-      try {
-        await printer.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`)
-        const pdf = await printer.webContents.printToPDF({
-          pageSize: 'A4',
-          landscape: true,
-          printBackground: false
-        })
-        await writeFile(chosen.filePath, pdf)
-      } finally {
-        printer.destroy()
-      }
-      return { status: 'saved', path: chosen.filePath }
     }
   )
 
