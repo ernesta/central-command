@@ -1,5 +1,7 @@
 import { createElement } from 'react'
 import type { LiveModuleManifest } from '../types'
+import { NotesCard } from './renderer/NotesCard'
+import { NotesLanding } from './renderer/NotesLanding'
 import { NotePage } from './renderer/NotePage'
 import { NotesPage } from './renderer/NotesPage'
 
@@ -10,7 +12,9 @@ export const notesModule: LiveModuleManifest = {
   label: 'Notes',
   status: 'live',
   routes: [
+    { path: '', element: createElement(NotesLanding) },
     { path: 'all', element: createElement(NotesPage) },
     { path: 'n/:id', element: createElement(NotePage) }
-  ]
+  ],
+  landingCard: NotesCard
 }
