@@ -29,10 +29,9 @@
 - [ ] After the user's review: fix what they raise, then push, write up the state, clear context and move on to the next part.
 - [ ] A "decision log" for training types (see above): design it with the user when they start mapping; then suggest types automatically.
 - [x] **People page built** (see `docs/DECISIONS.md` "People page"). Waiting for the user's review.
-- [ ] **Answer the Notes import questions** at the end of `docs/NOTES_PLAN.md` (which Obsidian folders, how folders map to groups).
+- [ ] **Review the Notes mockup and plan**; the import is settled (12 notes from four vault folders become groups, see the plan). Still open: Studies.
 - [ ] **Later, Notes**: a system-wide quick-capture shortcut (works when the app is in the background); Thesis extras (chapter progress,
       word counts per chapter); a quiet word count in the editor (nice to have).
-- [ ] **Review the Notes mockup and plan** (`docs/design/notes-mockup.html`, `docs/NOTES_PLAN.md`; the questions are at the end of the plan).
 - [ ] **Try the People page** (Research → People) and say what to change.
 - [ ] Re-check the changed screens in dev mode (StrictMode) and the built app after any further change to lists, landings or entry pages.
 - [ ] **Say when a filter is applied** (later, the user's call when): opening the Supervision series card shows "All meetings" with only that

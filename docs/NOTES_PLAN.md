@@ -94,10 +94,30 @@ The Group field is the one new component (a small menu; built like the people fi
 - **Thesis extras**: chapter progress or word counts per chapter, on top of the Thesis group.
 - The word count, if it is not done in stage 9.
 
-## Ask (for the Obsidian import)
+## The Obsidian import (decided with the user)
 
-1. Which folders of your vault hold the notes to bring in? Readings notes and meeting notes are already imported and are skipped.
-2. **Folders to groups**: a vault folder becomes the group and a folder inside it the subgroup. Deeper folders would go into the
-   subgroup (the folder path is kept in the note's front matter as `imported-from`). Is that right, or do you prefer another mapping?
-3. **Links and files**: `[[wiki links]]` and `![[images]]` stay as written for now (the app does not follow them yet). Is that fine?
-4. **Studies**: what should it be? It may turn out to be a group too (`Studies`, with a subgroup per study).
+The vault is `~/RHUL/Scribbles/RHUL` (the `.obsidian` folder is there). Its Readings, Meetings and Training folders were already imported
+into their own modules and are skipped, as is `Assets` (a `.bib` export). The rest are "just notes", 12 in all, copied over as they
+are (the user will clean them up afterwards):
+
+| Vault folder | Notes                                                                                   | Becomes the group |
+| ------------ | --------------------------------------------------------------------------------------- | ----------------- |
+| Data Sources | 6 (ASER, PIRLS, PISA, UK National Pupil Database, US Learning Achievement, Young Lives) | Data Sources      |
+| Ideas        | 3                                                                                       | Ideas             |
+| Thesis       | 2 (Journals, Thesis Format)                                                             | Thesis            |
+| Placement    | 1                                                                                       | Placement         |
+
+- The app has **no folders**: the vault folder name only fills the note's `group` field, which the user can change or clear. None of these
+  four folders has subfolders, so no subgroups arise; the importer would refuse to guess for deeper folders and list them instead.
+- The user wants Data Sources to be a single note eventually; the six come across separately and can be merged by hand.
+- Body text is copied untouched (`[[wiki links]]` and `![[images]]` stay as written; the app does not follow them yet). Front matter gets
+  `title` (the file name), `group`, `created` (the file's creation date) and `imported-from` (the vault path); any front matter the note
+  already had is kept.
+- Like the other importers: a dry run by default that lists every note and what it would get, a check that the converted note equals the
+  source apart from the front matter, a backup and guarded write on `--apply`, and never a file replaced. It is run on the real vault
+  only after a dry run has been read, and applied only when the user says so.
+
+## Ask
+
+1. **Studies**: what should it be? It may turn out to be a group too (`Studies`, with a subgroup per study).
+2. **Ideas** were imported into a group called Ideas; the user will decide later whether that stays a group.
