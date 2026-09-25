@@ -122,6 +122,14 @@
   margin: 0;
   font-size: var(--text-20);
 }
+.dashed {
+  border-style: dashed;
+}
+.pinIcon {
+  margin-right: 8px;
+  color: var(--text-muted);
+  vertical-align: -1px;
+}
 /* Stretched link: the whole card is the click target. */
 .cardLink {
   color: inherit;

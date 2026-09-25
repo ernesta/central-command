@@ -1,4 +1,4 @@
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Pin } from 'lucide-react'
 import { Link } from 'react-router'
 import styles from './Landing.module.css'
 
@@ -96,20 +96,39 @@ export interface SeriesCard {
   to: string
   title: string
   line: string
+  /** A second line under the first (the subgroups of a group). */
+  extra?: string
+  /** A card for a pinned note: the title carries a pin. */
+  pinned?: boolean
+  /** A card for what has no group: drawn with a dashed border. */
+  dashed?: boolean
 }
 
-/** One narrow card per series; the whole card opens the list filtered to it. */
+/** One narrow card per series (or group, or pinned note); the whole card opens what it stands for. */
 export function SeriesCards({ cards }: { cards: readonly SeriesCard[] }): React.JSX.Element {
   return (
     <div className={styles.cards}>
       {cards.map((c) => (
-        <div key={c.key} className={styles.card}>
+        <div
+          key={c.key}
+          className={[styles.card, c.dashed && styles.dashed].filter(Boolean).join(' ')}
+        >
           <h3 className={styles.cardTitle}>
+            {c.pinned && (
+              <Pin
+                size={14}
+                strokeWidth={1.75}
+                fill="currentColor"
+                className={styles.pinIcon}
+                aria-label="Pinned"
+              />
+            )}
             <Link className={styles.cardLink} to={c.to}>
               {c.title}
             </Link>
           </h3>
           <p className={styles.line}>{c.line}</p>
+          {c.extra && <p className={styles.line}>{c.extra}</p>}
         </div>
       ))}
     </div>
