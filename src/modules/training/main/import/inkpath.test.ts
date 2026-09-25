@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  decodeHtmlEntities,
   isMeetingRow,
   limitSkills,
   looksLikePerson,
@@ -142,5 +143,15 @@ describe('classifying rows', () => {
     expect(looksLikePerson('Royal Holloway')).toBe(false)
     expect(looksLikePerson('DataCamp')).toBe(false)
     expect(looksLikePerson('')).toBe(false)
+  })
+})
+
+describe('decodeHtmlEntities', () => {
+  it('turns the common entities into characters and leaves unknown ones alone', () => {
+    expect(
+      decodeHtmlEntities('students&rsquo; work &ndash; &ldquo;fine&rdquo; &amp; &#233;&#x41;')
+    ).toBe('students’ work – “fine” & éA')
+    expect(decodeHtmlEntities('a &madeup; b &; c')).toBe('a &madeup; b &; c')
+    expect(decodeHtmlEntities('Q&A AT&T')).toBe('Q&A AT&T')
   })
 })

@@ -79,6 +79,37 @@ export function parseInkpathTime(text: string): string {
   return ''
 }
 
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  apos: "'",
+  nbsp: ' ',
+  rsquo: '\u2019',
+  lsquo: '\u2018',
+  ldquo: '\u201c',
+  rdquo: '\u201d',
+  ndash: '\u2013',
+  mdash: '\u2014',
+  hellip: '\u2026',
+  bull: '\u2022'
+}
+
+/** Inkpath descriptions carry HTML entities (`students&rsquo; work`); the common ones become the characters they stand for. Anything else is left as written. */
+export function decodeHtmlEntities(text: string): string {
+  return text.replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z]+);/g, (whole, e: string) => {
+    if (e[0] === '#') {
+      const code =
+        e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10)
+      return Number.isFinite(code) && code > 0 && code <= 0x10ffff
+        ? String.fromCodePoint(code)
+        : whole
+    }
+    return NAMED_ENTITIES[e] ?? whole
+  })
+}
+
 export interface ParsedWorkbook {
   rows: InkpathRow[]
   /** Problems that stop the import (a column is missing). */
@@ -98,7 +129,8 @@ export function parseInkpathRows(table: readonly (readonly string[])[]): ParsedW
   const col = (name: string): number => header.indexOf(name)
   const rows: InkpathRow[] = []
   table.slice(1).forEach((cells, i) => {
-    const cell = (name: string): string => (cells[col(name)] ?? '').replace(/\r\n?/g, '\n')
+    const cell = (name: string): string =>
+      decodeHtmlEntities((cells[col(name)] ?? '').replace(/\r\n?/g, '\n'))
     if (cells.every((c) => !c || c.trim() === '')) return
     const hours = cell('Hours').trim()
     rows.push({
