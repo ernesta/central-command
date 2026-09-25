@@ -3,6 +3,7 @@ import { isValidDate, normaliseTime, type MetaPatch } from '../shared/front-matt
 import { durationMinutes, formatDuration } from '../shared/time'
 import { Segmented } from '@renderer/components/Segmented'
 import { Select } from '@renderer/components/Select'
+import { SkillsField } from '@renderer/components/SkillsField'
 import { AttendeesField } from './AttendeesField'
 import styles from './MetaFields.module.css'
 
@@ -120,6 +121,10 @@ export function MetaFields({
           onChange={(attendees) => onChange({ attendees })}
           onAddPerson={onAddPerson}
         />
+      </div>
+      <div className={styles.field}>
+        <span className={styles.label}>Skills</span>
+        <SkillsField skills={meta.skills} onChange={(skills) => onChange({ skills })} />
       </div>
     </div>
   )
