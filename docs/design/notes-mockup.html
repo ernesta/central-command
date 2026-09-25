@@ -360,6 +360,41 @@
         gap: 8px;
         justify-content: flex-end;
       }
+      .crumb {
+        color: var(--text-muted);
+        padding: 0 4px;
+      }
+      .pin {
+        color: var(--accent);
+      }
+      .cards.pinned {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+      .more {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 12px 0 0;
+      }
+      .more .chip b {
+        font-weight: 500;
+        color: var(--text-muted);
+        margin-left: 6px;
+      }
+      .footer {
+        display: flex;
+        justify-content: flex-end;
+        color: var(--text-muted);
+        font-size: 12px;
+        padding: 0 4px;
+      }
+      .menu .filter {
+        padding: 4px;
+      }
+      .menu .filter .field {
+        display: block;
+        padding: 4px 8px;
+      }
       @media (max-width: 800px) {
         .steps {
           grid-template-columns: minmax(0, 1fr);
@@ -379,8 +414,9 @@
       <header>
         <h1>Notes: mockup</h1>
         <p class="note">
-          The design is written up in <code>docs/NOTES_PLAN.md</code>. Numbered screens below; "Ask"
-          marks something I need you to decide.
+          The design is written up in <code>docs/NOTES_PLAN.md</code>. Numbered screens below.
+          Changed after your first review: up to four pinned notes, nesting shown with an arrow (no
+          slashes anywhere), what happens with many groups, and a quiet word count.
         </p>
       </header>
 
@@ -394,21 +430,28 @@
           </div>
 
           <div>
-            <div class="sechead"><span class="label">Pinned</span></div>
-            <div class="cards">
+            <div class="sechead"><span class="label">Pinned · 2 of 4</span></div>
+            <div class="cards pinned">
               <div class="card group">
-                <h3>Data sources</h3>
-                <p class="muted small">Edited Sep 20 · Ungrouped</p>
+                <h3><span class="pin">◆</span> Data sources</h3>
+                <p class="muted small">Edited Sep 20</p>
+              </div>
+              <div class="card group">
+                <h3><span class="pin">◆</span> Thesis outline</h3>
+                <p class="muted small">Thesis · edited Sep 2</p>
               </div>
             </div>
             <p class="note" style="margin-top: 8px">
-              Ask: pin a note to keep it here (your Data sources note), or is "just a note" enough?
-              Without pinning it lives in Ungrouped or a group.
+              Pin a note from its own page (the ◆ in its meta box). Up to four; at four, the pin is
+              disabled until you unpin one. Pinned notes are shown only here.
             </p>
           </div>
 
           <div>
-            <span class="label" style="display: block">Groups</span>
+            <div class="sechead">
+              <span class="label">Groups · 14</span>
+              <a class="link" href="#">Show all 14 ▾</a>
+            </div>
             <div class="cards">
               <div class="card group">
                 <h3>Thesis</h3>
@@ -428,6 +471,25 @@
                 <p class="muted small">7 notes · last Sep 25</p>
               </div>
             </div>
+            <div class="more">
+              <span class="chip">Conferences<b>4</b></span
+              ><span class="chip">Grant ideas<b>3</b></span
+              ><span class="chip">Teaching<b>3</b></span
+              ><span class="chip">Writing<b>2</b></span
+              ><span class="chip">Tools<b>2</b></span
+              ><span class="chip">Reviews<b>2</b></span
+              ><span class="chip">Talks<b>1</b></span
+              ><span class="chip">Workshops<b>1</b></span
+              ><span class="chip">Ethics<b>1</b></span
+              ><span class="chip">Funding<b>1</b></span>
+            </div>
+            <p class="note" style="margin-top: 8px">
+              With many groups the landing stays short: it shows the six most recently edited as
+              cards (Ungrouped is always one of them), and "Show all" opens the rest as a compact
+              row of names and counts under the cards (shown open here). Subgroups never get cards;
+              they appear as a line on their group's card. Everything is also reachable from the
+              group selector on All notes, which scrolls and can be typed into.
+            </p>
           </div>
 
           <div>
@@ -443,7 +505,10 @@
                 <span class="when">Sep 25</span>
               </div>
               <div class="row">
-                <b>Methods: participants</b><span><span class="chip">Thesis / Methods</span></span>
+                <b>Methods: participants</b
+                ><span
+                  ><span class="chip">Thesis<span class="crumb">›</span>Methods</span></span
+                >
                 <span class="prev">Schools were recruited through the Luminos network and…</span>
                 <span class="when">Sep 24</span>
               </div>
@@ -476,7 +541,7 @@
           </div>
           <div class="filters">
             <span class="field search">Search notes</span>
-            <span class="field">Thesis (all) ▾</span>
+            <span class="field">Thesis, all ▾</span>
           </div>
           <div class="card" style="overflow: hidden">
             <table>
@@ -512,9 +577,10 @@
           </div>
           <p class="note">
             The page is titled with the group, so it is clear a filter is applied. Choosing a group
-            includes its subgroups (the selector lists Thesis, Thesis / Introduction, Thesis /
-            Methods…). The Group column shows the subgroup only, since the title says the rest.
-            Titleless notes show the first line of the note.
+            includes its subgroups (the selector lists Thesis, then Introduction, Methods and Study
+            1 indented under it). The Group column shows the subgroup only, since the title says the
+            rest; the unfiltered list shows "Thesis › Methods". Titleless notes show the first line
+            of the note.
           </p>
         </div>
       </section>
@@ -534,14 +600,14 @@
             <div class="card meta">
               <span
                 ><span class="k">Group</span
-                ><span class="menuwrap"
-                  ><span class="chip sub">Thesis / Methods ▾</span></span
-                ></span
+                ><span class="chip sub">Thesis<span class="crumb">›</span>Methods ▾</span></span
               >
               <span><span class="k">Created</span>Sep 3, 2026</span>
-              <span><span class="k">Edited</span>Sep 24, 2026</span>
+              <span><span class="k">Updated</span>Sep 24, 2026</span>
+              <span style="margin-left: auto"><span class="pin">◆</span> Pinned</span>
             </div>
-            <div class="menu">
+            <div class="menu scroll">
+              <div class="filter"><span class="field ph">Type to find a group</span></div>
               <div class="item">No group</div>
               <div class="item">Analysis</div>
               <div class="item">Reading groups</div>
@@ -551,7 +617,7 @@
               <div class="item l2">Study 1</div>
               <div class="sep"></div>
               <div class="new">
-                <span class="field ph">New group, e.g. Thesis / Study 2</span
+                <span class="field ph">New group</span><span class="field">Inside Thesis ▾</span
                 ><button class="btn small" type="button">Add</button>
               </div>
             </div>
@@ -568,10 +634,14 @@
               <li>Pupils gave assent at the start of each session.</li>
             </ul>
           </div>
+          <div class="footer">412 words</div>
           <p class="note">
-            Same editor and autosave as Meetings and Readings. Groups are picked from the list, or
-            made by typing a name; "A / B" makes a subgroup (two levels at most). A group disappears
-            when its last note leaves it.
+            Same editor and autosave as Meetings and Readings. Groups are picked from the list (type
+            to narrow it). To make one, type a name and say what it sits inside (nothing, or an
+            existing group): no separators to type. Two levels at most. A group disappears when its
+            last note leaves it. Created and Updated are in the meta box; the word count sits
+            quietly under the editor (optional, built last). In the file the subgroup is its own key
+            (<code>group: Thesis</code>, <code>subgroup: Methods</code>).
           </p>
           <div class="card confirm">
             <strong>Delete this note?</strong>
@@ -637,8 +707,8 @@
           <p class="note">
             The cursor starts in the body, so you can type first and title later. A note without a
             title shows its first line in lists. On a group page the new note starts in that group.
-            Ask: should the shortcut also work when Central Command is in the background (a
-            system-wide shortcut)? That is a bigger step; I have left it out of the first version.
+            A system-wide shortcut (works when Central Command is in the background) is a later
+            addition; it is on the TODO list.
           </p>
         </div>
       </section>

@@ -1,6 +1,6 @@
 # Notes module: plan
 
-Status: **proposed** (the user has approved the direction and is reviewing the mockup, `docs/design/notes-mockup.html`; open it in a
+Status: **proposed** (the user approved the direction, answered the first questions and is reviewing the second mockup, `docs/design/notes-mockup.html`; open it in a
 browser). Nothing is built. Read it with `CLAUDE.md`, `docs/DECISIONS.md` and the Meetings and Training plans; Meetings is the pattern to
 copy. "Ask" marks an open question at the end.
 
@@ -19,6 +19,11 @@ A note-taking mechanism and one place where the various notes live, in Research.
 
 - One **group** per note is enough, and **two levels** of nesting are enough (`Thesis / Methods`).
 - Grouping is by a field on the note, not by folders (see Data model), so moving a note between groups never moves a file.
+- **Pinned notes**: up to four, shown at the top of the landing page.
+- **No slashes** anywhere. Nesting is shown with an arrow (`Thesis › Methods`) and stored as two keys, so nobody types a separator.
+- **Quick capture works inside the app only** for now; a system-wide shortcut is a TODO for later.
+- **Import from Obsidian** is wanted (see Stages).
+- **Word count** in the editor, quiet, is nice to have but not required at first. **Created and updated dates** are shown on the note.
 - New notes are created at once and opened (no pop-up), as with meetings and training entries.
 
 ## Data model
@@ -29,15 +34,17 @@ Meetings does). Front matter, read leniently and written only for the keys the a
 ```yaml
 ---
 title: Methods: participants   # optional; a note without one shows its first line
-group: Thesis / Methods         # optional; "A" or "A / B", never deeper
+group: Thesis                   # optional
+subgroup: Methods               # optional, only with a group; there are never more than two levels
+pinned: true                    # optional; at most four notes are pinned
 created: 2026-09-03
 ---
 ```
 
 - **File name** follows the title (`Methods participants.md`, ` 2` if taken); an untitled note is `Untitled.md`, `Untitled 2.md`… and is
   renamed (never replacing a file) when it gets a title, as Meetings renames on a date change.
-- **Groups are derived**: the list of groups is whatever the notes use. Making a group means typing a name in the Group field; a group
-  disappears with its last note. Choosing a group in a filter includes its subgroups. Names compare ignoring case and spacing, and the
+- **Groups are derived**: the list of groups is whatever the notes use. Making a group means typing a name in the Group field and
+  saying what it sits inside (nothing, or an existing group); a group disappears with its last note. Choosing a group in a filter includes its subgroups. Names compare ignoring case and spacing, and the
   first spelling found wins, so "thesis" does not become a second group.
 - **Edited** comes from the file's modified time, kept in the index, so edits made in another tool show too. **Created** is written once.
 - **Index** (SQLite, migration `notes/0001_notes`): workspace, id, title, group, created, edited, plain-text excerpt for search, content hash.
@@ -46,12 +53,16 @@ created: 2026-09-03
 
 ## Screens (see the mockup)
 
-1. **Landing** (`/research/notes`): header with **New note**; Groups as cards (name, count, last edited, subgroups), with **Ungrouped**
-   as a dashed card; **Recent** with a "See all notes" link. Same landing components as Meetings and Training.
+1. **Landing** (`/research/notes`): header with **New note**; **Pinned** (up to four cards; pin from the note's page, disabled at four);
+   Groups as cards (name, count, last edited, subgroups as a line), with **Ungrouped** as a dashed card; **Recent** with a "See all
+   notes" link. Same landing components as Meetings and Training. **Many groups**: the landing shows the six most recently edited as
+   cards (Ungrouped always among them) and "Show all" opens the rest as a compact row of names and counts below the cards, so the page
+   stays short. Subgroups never get cards. The group selector on All notes scrolls and can be typed into.
 2. **All notes** (`/research/notes/all`): search, a group selector (grouped, with subgroups), and a table (title, group, preview, edited).
    The page is titled with the group when one is chosen, so a filter is never hidden. The remembered list state uses `useModuleState`.
-3. **A note** (`/research/notes/n/:id`): the title as a heading, a meta box (Group field, created, edited), the shared notes editor,
-   Delete. The Group field is a menu of the existing groups (nested two levels) with a "new group" input.
+3. **A note** (`/research/notes/n/:id`): the title as a heading, a meta box (Group field, Created, Updated, Pin), the shared notes
+   editor, Delete. The Group field is a menu of the existing groups (nested two levels, type to narrow it) with a "new group" input and an
+   "Inside" selector. A quiet word count sits under the editor (last stage, optional).
 4. **Quick capture**: `Mod-Shift-n` anywhere in the app makes an ungrouped note (in the current group when on a group page) and opens it
    with the cursor in the body. Registered in the module manifest's `shortcuts`, so it is listed in Settings, and matched with
    `matchesShortcut`.
@@ -64,20 +75,29 @@ The Group field is the one new component (a small menu; built like the people fi
 
 ## Stages (one or more small commits each; test, lint, typecheck pass at every checkpoint)
 
-1. **Pure rules** in `shared/`: front matter read and write, group paths (two levels, comparison, subgroup filter), list query, tests.
+1. **Pure rules** in `shared/`: front matter read and write, groups (two levels, comparison, subgroup filter, the six-most-recent rule),
+   pinning (at most four), list query, tests.
 2. **Main core**: `notes-store` (create, read, guarded save, rename to match the title, delete to the Trash), index migration and
    repository, tests with a mutation check on the guards.
 3. **IPC and API**: `Api` and `IPC` entries, `register.ts`, the folder watcher and change events.
-4. **A note**: page, title, Group field, editor, delete.
+4. **A note**: page, title, Group field, pin, editor, delete.
 5. **All notes**: list, filters, remembered state, keyboard rows.
-6. **Landing and card**, the module manifest and route; Ideas removed from the planned modules.
+6. **Landing and card**, the module manifest and route; Ideas is already gone from the planned modules.
 7. **Quick capture**: the shortcut, its Settings entry, and the "start in this group" behaviour.
-8. **Real-app pass**: scratch library, production build and dev mode, screenshots; then docs.
+8. **Import from Obsidian**: `npm run import:notes -- --vault <path> [--apply]`, a dry run by default like the other importers, with a
+   safety check comparing each converted note to its source, and a backup and guarded write on apply. Needs the answers below first.
+9. **Real-app pass** (scratch library, production build and dev mode, screenshots), then the word count, then docs.
 
-## Ask
+## Later (on the TODO list)
 
-1. **Pinned notes** on the landing (the mockup shows one for your Data sources note), or is Ungrouped/a group enough?
-2. **System-wide shortcut**: should quick capture also work when Central Command is in the background? Left out of the first version.
-3. **Import**: do you have loose notes (Obsidian, Word) to bring in, as with readings and meetings? Not planned unless you say so.
-4. **Thesis extras**: chapter progress or word counts per chapter would be a later feature on top of the group; not planned now.
-5. **Studies**: what should it be? It may turn out to be a group too (`Studies / Study 1`).
+- A **system-wide** quick-capture shortcut (works when Central Command is in the background).
+- **Thesis extras**: chapter progress or word counts per chapter, on top of the Thesis group.
+- The word count, if it is not done in stage 9.
+
+## Ask (for the Obsidian import)
+
+1. Which folders of your vault hold the notes to bring in? Readings notes and meeting notes are already imported and are skipped.
+2. **Folders to groups**: a vault folder becomes the group and a folder inside it the subgroup. Deeper folders would go into the
+   subgroup (the folder path is kept in the note's front matter as `imported-from`). Is that right, or do you prefer another mapping?
+3. **Links and files**: `[[wiki links]]` and `![[images]]` stay as written for now (the app does not follow them yet). Is that fine?
+4. **Studies**: what should it be? It may turn out to be a group too (`Studies`, with a subgroup per study).
