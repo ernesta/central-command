@@ -596,3 +596,24 @@ list. `convertPseudoHeadings` (`meetings/shared/pseudo-headings.ts`) turns such 
   `Training plan 2026-27.md` (never overwriting).
 - **Landing headers hold only "New …"** (and Training's "Training plan"). The "All meetings" / "All training" buttons were removed at
   the user's request; the "See all …" link at the bottom of each landing page is the way to the full list.
+
+### People page (decided with the user, not built yet)
+
+Mockup: `docs/design/people-and-plan-mockup.html` (sections 1 to 3). The user asked for short text and one-word buttons everywhere.
+
+- **A page of its own** for the people list (Settings → People becomes a link to it, and an initials chip can lead to it). It replaces the
+  People section in Settings. Columns: name, initials, number of meetings, number of trainings, actions (Edit, Remove). "Me" is marked.
+  Add person, edit name and initials, and "This is me" keep working as they do now. Initials stay unique (an automatic RM2 stays).
+- **No "named in your notes, not in the list" section in the app** (a one-time job for a script, see the ROADMAP) **and no
+  similar-initials warning** (the user doubted it was needed; uniqueness is already enforced).
+- **Changing a name or initials is written into the files.** Only two things are rewritten: people in the structured fields (meeting
+  attendees, training leads; the front matter line, exact match on the old name) and the owners inside `TODO(...)` markers in meeting
+  bodies (initials, including the multi-owner forms and Previous TODOs). Nothing else in a note is touched. The dialog says one short
+  sentence ("This will update the name in meetings and trainings." / "Initials in TODOs will change.") with **Cancel** and **Change**;
+  there is no "list only" option. Safety still applies underneath: guarded saves (a file that changed meanwhile is skipped and reported),
+  a backup of each file first (as `convert:topics` does), and a test that fails if the rewrite touches anything else (mutation check).
+- **Removing a person:** if no meeting or training mentions them, **Delete** (Cancel, Delete). If notes mention them, the choice is
+  **Archive** (the default) or **Merge**. Archive moves them to an "Archived" group with **Restore**; they are not offered when adding
+  people to a note, their names and initials still resolve in old notes, and their initials stay reserved. Merge asks for the person to
+  merge into and rewrites names and TODO initials in the files to that person, then removes the merged one.
+- Deleting or archiving never edits a note. Removing someone from a note's own field stays a normal edit in that note.

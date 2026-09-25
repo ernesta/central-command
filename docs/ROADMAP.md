@@ -30,7 +30,10 @@
 - [ ] **Try the Training plan** (Training → Training plan). Your draft was copied in as the 2026–27 plan; edit it there.
 - [ ] After the user's review: fix what they raise, then push, write up the state, clear context and move on to the next part.
 - [ ] A "decision log" for training types (see above): design it with the user when they start mapping; then suggest types automatically.
-- [ ] A People page (list too long for Settings), and warn when two people would get confusingly similar initials.
+- [ ] **Build the People page** (next; designed and approved, see `docs/DECISIONS.md` "People page" and
+      `docs/design/people-and-plan-mockup.html`). Then a dry-run script that creates people from the names already in
+      meeting attendees and training leads (apply only when the user says so, with the app closed), and add a TODO for the user to
+      review the new people's initials.
 - [ ] Re-check the changed screens in dev mode (StrictMode) and the built app after any further change to lists, landings or entry pages.
 - [ ] **Say when a filter is applied** (later, the user's call when): opening the Supervision series card shows "All meetings" with only that
       series in it. See the Meetings follow-ups.
@@ -61,7 +64,7 @@ the meeting page, the list, the landing page, People settings and remembered lis
 - **Say when a filter is applied.** Opening a series card (for example Supervision) shows the page titled "All meetings" with
   only that series in it, which is easy to miss. Make the page say so (a different title or a visible "Showing Supervision
   only" line with a way to clear it). Not started.
-- **A People page** of its own: the list will get too long for Settings. Later it could hold links per person (GitHub,
+- **A People page** of its own: designed and approved, to be built next (see the Claude TODO above). Later it could hold links per person (GitHub,
   Google Scholar, LinkedIn) and even pull their recent papers, posts or tweets. Training leads and meeting attendees both use it.
 - **Export the supervision log as a PDF**: built (`meetings/shared/report.ts`; printing in `src/main/export-pdf.ts` and the page
   shell in `src/shared/report-page.ts` are shared with Training). Awaiting the user's review of the layout.

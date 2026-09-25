@@ -76,7 +76,11 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   files updated). Everything up to the second review round is pushed. The two TODO lists (for the user and for Claude) are at the
   top of `docs/ROADMAP.md`; keep them current. Push only when the user says so.
 - Reuse patterns: landings, filter rows, export buttons, people and skills fields are shared components; use them rather than
-  building a variant, and ask if a module needs something different.
+  building a variant, and ask if a module needs something different. Keep UI text short: one-sentence help, one-word buttons, no
+  optional extra choices unless asked.
+- Since the second Training review: Meetings' Export (the Supervision log as a PDF; printing and page shell shared with Training) and the
+  Training plan (one Markdown file per academic year, `notes/training-plans/`, the user's 2026–27 draft copied in) are built. Next is the
+  People page as decided in `docs/DECISIONS.md` ("People page"); the mockup is `docs/design/people-and-plan-mockup.html`.
 - The app name lives in one place (`src/shared/app-info.ts`); it may be renamed again.
 
 ## Testing the app for real (unit tests are not enough)
@@ -99,7 +103,8 @@ npx electron-vite dev -- --remote-debugging-port=9333`, then `chromium.connectOv
   - Clipboard contents: `app.evaluate(({ clipboard }) => clipboard.readText())` (also `readHTML`).
   - Type real keystrokes (`page.keyboard`) rather than setting state; several bugs only showed
     up that way. Test leaving the page or quitting immediately after typing.
-- Kill stray processes afterwards (`pkill -f electron-vite`, `pkill -f node_modules/electron`).
+- Kill stray processes afterwards, but only ones you started: the user often has their own `npm run dev` running on the real library, so check
+  with `pgrep -fl electron` before any `pkill`, and prefer closing your own app with `app.close()` in the script.
 
 ## Pitfalls learned the hard way
 
