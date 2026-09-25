@@ -4,17 +4,20 @@ import styles from './DeleteDialog.module.css'
 
 interface DeleteDialogProps {
   open: boolean
-  /** "Supervision · Sep 24, 2026" */
+  /** What is being deleted, for example "Supervision · Sep 24, 2026". */
   heading: string
+  /** "meeting" or "training entry". */
+  noun: string
   busy: boolean
   onCancel: () => void
   onConfirm: () => void
 }
 
-/** Asks before deleting a meeting. The file goes to the Trash, so this is calm rather than alarming. */
+/** Asks before deleting a note (a meeting, a training entry). The file goes to the Trash, so this is calm rather than alarming. */
 export function DeleteDialog({
   open,
   heading,
+  noun,
   busy,
   onCancel,
   onConfirm
@@ -32,17 +35,17 @@ export function DeleteDialog({
     <dialog
       ref={ref}
       className={styles.dialog}
-      aria-labelledby="delete-meeting-title"
-      aria-describedby="delete-meeting-text"
+      aria-labelledby="delete-note-title"
+      aria-describedby="delete-note-text"
       onCancel={(event) => {
         event.preventDefault()
         if (!busy) onCancel()
       }}
     >
-      <h2 id="delete-meeting-title" className={styles.title}>
-        Delete this meeting?
+      <h2 id="delete-note-title" className={styles.title}>
+        Delete this {noun}?
       </h2>
-      <p id="delete-meeting-text" className={styles.text}>
+      <p id="delete-note-text" className={styles.text}>
         {heading} and all its notes will be removed from Central Command. The file moves to the
         macOS Trash, so you can still restore it from there.
       </p>
@@ -51,7 +54,7 @@ export function DeleteDialog({
           Cancel
         </Button>
         <Button size="small" className={styles.danger} onClick={onConfirm} disabled={busy}>
-          Delete meeting
+          Delete {noun}
         </Button>
       </div>
     </dialog>

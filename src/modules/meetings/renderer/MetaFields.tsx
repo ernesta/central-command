@@ -4,7 +4,7 @@ import { durationMinutes, formatDuration } from '../shared/time'
 import { Segmented } from '@renderer/components/Segmented'
 import { Select } from '@renderer/components/Select'
 import { SkillsField } from '@renderer/components/SkillsField'
-import { AttendeesField } from './AttendeesField'
+import { PeopleField } from '@renderer/components/PeopleField'
 import styles from './MetaFields.module.css'
 
 interface MetaFieldsProps {
@@ -115,8 +115,10 @@ export function MetaFields({
       </div>
       <div className={styles.field}>
         <span className={styles.label}>Attendees</span>
-        <AttendeesField
-          attendees={meta.attendees}
+        <PeopleField
+          label="Attendees"
+          noun="attendee"
+          names={meta.attendees}
           people={people}
           onChange={(attendees) => onChange({ attendees })}
           onAddPerson={onAddPerson}

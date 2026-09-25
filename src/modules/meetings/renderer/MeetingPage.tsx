@@ -2,6 +2,7 @@ import { ArrowLeft } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
+import { DeleteDialog } from '@renderer/components/DeleteDialog'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
@@ -11,7 +12,6 @@ import { ownerOptions } from '../shared/people'
 import { meetingHeading } from '../shared/time'
 import { appendTopic, parseTopics, type Topic } from '../shared/topics'
 import type { MeetingRef, Person } from '../shared/types'
-import { DeleteDialog } from './DeleteDialog'
 import { meetingRoute, meetingsBase } from './meetings-paths'
 import { MetaFields } from './MetaFields'
 import { TopicsPanel } from './TopicsPanel'
@@ -278,6 +278,7 @@ function MeetingView({
       <DeleteDialog
         open={confirmDelete}
         heading={heading}
+        noun="meeting"
         busy={deleting}
         onCancel={() => setConfirmDelete(false)}
         onConfirm={() => void confirmAndDelete()}

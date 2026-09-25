@@ -1,25 +1,30 @@
 import { Plus, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
-import { findByName } from '../shared/people'
-import type { Person } from '../shared/types'
-import styles from './AttendeesField.module.css'
+import { findByName, type Person } from '@shared/people'
+import styles from './PeopleField.module.css'
 
-interface AttendeesFieldProps {
-  attendees: string[]
+interface PeopleFieldProps {
+  /** What the people are called, plural: "Attendees", "Leads". */
+  label: string
+  /** The same in the singular and lower case, for the menu: "attendee", "lead". */
+  noun: string
+  names: string[]
   people: Person[]
-  onChange: (attendees: string[]) => void
+  onChange: (names: string[]) => void
   /** Add a person to the people list (initials are worked out from the name). Rejects with a message. */
   onAddPerson: (name: string) => Promise<Person>
 }
 
-/** The meeting's attendees as initials chips, with a small menu to add people. */
-export function AttendeesField({
-  attendees,
+/** People as initials chips (Meetings attendees, Training leads), with a small menu to add people. */
+export function PeopleField({
+  label,
+  noun,
+  names,
   people,
   onChange,
   onAddPerson
-}: AttendeesFieldProps): React.JSX.Element {
+}: PeopleFieldProps): React.JSX.Element {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -47,11 +52,11 @@ export function AttendeesField({
     return () => document.removeEventListener('mousedown', onDown)
   }, [open])
 
-  const attending = new Set(attendees.map((a) => a.toLowerCase()))
+  const attending = new Set(names.map((a) => a.toLowerCase()))
   const available = people.filter((p) => !attending.has(p.name.toLowerCase()))
 
   const add = (personName: string): void => {
-    onChange([...attendees, personName])
+    onChange([...names, personName])
     close()
   }
 
@@ -68,22 +73,22 @@ export function AttendeesField({
 
   return (
     <div className={styles.wrap} ref={wrapRef}>
-      <ul className={styles.chips} aria-label="Attendees">
-        {attendees.map((attendee) => {
-          const person = findByName(people, attendee)
+      <ul className={styles.chips} aria-label={label}>
+        {names.map((name) => {
+          const person = findByName(people, name)
           return (
             <li
-              key={attendee}
+              key={name}
               className={[styles.chip, !person && styles.unknown].filter(Boolean).join(' ')}
             >
-              <span title={person ? attendee : `${attendee} is not in your people list`}>
-                {person ? person.initials : attendee}
+              <span title={person ? name : `${name} is not in your people list`}>
+                {person ? person.initials : name}
               </span>
               <button
                 type="button"
                 className={styles.remove}
-                aria-label={`Remove ${attendee}`}
-                onClick={() => onChange(attendees.filter((a) => a !== attendee))}
+                aria-label={`Remove ${name}`}
+                onClick={() => onChange(names.filter((a) => a !== name))}
               >
                 <X size={12} strokeWidth={2} aria-hidden />
               </button>
@@ -111,7 +116,7 @@ export function AttendeesField({
         <div
           className={styles.popover}
           role="dialog"
-          aria-label="Add an attendee"
+          aria-label={`Add ${noun === 'attendee' ? 'an' : 'a'} ${noun}`}
           onKeyDown={(event) => {
             if (event.key === 'Escape') {
               event.stopPropagation()
