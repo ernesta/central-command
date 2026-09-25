@@ -53,3 +53,7 @@
   white-space: normal;
   max-width: 28ch;
 }
+.input[list],
+#training-institution {
+  min-width: 220px;
+}

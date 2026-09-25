@@ -119,7 +119,7 @@ export function TrainingTable({
                 </td>
                 <td className={styles.nowrap}>{row.series || '—'}</td>
                 <td className={styles.nowrap}>
-                  {row.type || <span className={styles.missing}>No type</span>}
+                  {row.type || <span className={styles.noType}>No type yet</span>}
                 </td>
                 <td className={styles.titleCell}>
                   <span className={styles.titleText}>{row.title || 'Untitled'}</span>
