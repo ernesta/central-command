@@ -81,6 +81,9 @@ export interface TrainingChangedEvent {
   hash: string | null
 }
 
+/** The result of exporting a year as a PDF. */
+export type TrainingExportResult = { status: 'saved'; path: string } | { status: 'cancelled' }
+
 /** The Training slice of window.api. */
 export interface TrainingApi {
   /** Create a new entry file and resolve with it. Never replaces an existing file. */
@@ -97,6 +100,8 @@ export interface TrainingApi {
   /** Move the entry's file to the Trash. The caller is responsible for asking the user first. */
   delete(ref: TrainingRef): Promise<void>
   files: TrainingFilesApi
+  /** Ask where to save, then write the academic year (start year) as a PDF, oldest entry first. Upcoming entries are left out. */
+  exportPdf(year: number): Promise<TrainingExportResult>
   /** Subscribe to entry files changing on disk. Returns an unsubscribe function. */
   onChanged(listener: (event: TrainingChangedEvent) => void): () => void
 }
@@ -107,6 +112,7 @@ export const TRAINING_IPC = {
   list: 'training:list',
   save: 'training:save',
   delete: 'training:delete',
+  exportPdf: 'training:export-pdf',
   filesList: 'training:files-list',
   filesOpen: 'training:files-open',
   filesReveal: 'training:files-reveal',

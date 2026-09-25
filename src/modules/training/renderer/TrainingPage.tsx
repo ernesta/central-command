@@ -1,9 +1,12 @@
 import { ArrowLeft, Download } from 'lucide-react'
+import { useState } from 'react'
 import { Link } from 'react-router'
 import { AcademicYearSelect } from '@renderer/components/AcademicYearSelect'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { HoursStrip } from '@renderer/components/HoursStrip'
+import { Notice } from '@renderer/components/Notice'
+import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { SearchInput } from '@renderer/components/SearchInput'
 import { Select } from '@renderer/components/Select'
 import { useAcademicYear } from '@renderer/state/use-academic-year'
@@ -37,6 +40,10 @@ export function TrainingPage(): React.JSX.Element {
   const { rows, meetings, people } = useTrainingList()
   const { settings } = useSettings()
   const { query: saved, setQuery } = useTrainingView()
+  const [exporting, setExporting] = useState(false)
+  const [exportNotice, setExportNotice] = useState<{ tone: 'info' | 'error'; text: string } | null>(
+    null
+  )
   const today = todayIso()
   const everything = rows ?? []
   const { year, years, setYear } = useAcademicYear(
@@ -59,6 +66,24 @@ export function TrainingPage(): React.JSX.Element {
   const aim = settings.trainingAimHours
   const hours = trainingHours(everything, year, today, aim)
   const meetingMinutes = meetingHours(meetings, year, today).minutes
+
+  const exportPdf = async (): Promise<void> => {
+    setExporting(true)
+    setExportNotice(null)
+    try {
+      const result = await window.api.training.exportPdf(year)
+      if (result.status === 'saved') {
+        setExportNotice({
+          tone: 'info',
+          text: `Saved ${academicYearLabel(year)} to ${result.path}`
+        })
+      }
+    } catch (e) {
+      setExportNotice({ tone: 'error', text: `Couldn’t export: ${ipcErrorMessage(e)}` })
+    } finally {
+      setExporting(false)
+    }
+  }
 
   let content: React.ReactNode = null
   if (rows === null) content = null
@@ -155,17 +180,23 @@ export function TrainingPage(): React.JSX.Element {
           ]}
           onChange={(lead) => setQuery({ lead })}
         />
-        {/* Used about once a year, so deliberately quiet. Built with the export stage. */}
+        {/* Used about once a year, so deliberately quiet. */}
         <button
           type="button"
           className={styles.export}
-          disabled
-          title="Later: exports this academic year as a PDF, oldest first"
+          disabled={exporting || rows === null}
+          title={`Exports ${academicYearLabel(year)} as a PDF, oldest first, without upcoming entries`}
+          onClick={() => void exportPdf()}
         >
           <Download size={14} strokeWidth={1.75} aria-hidden />
-          Export
+          {exporting ? 'Exporting…' : 'Export PDF'}
         </button>
       </div>
+      {exportNotice && (
+        <Notice tone={exportNotice.tone} onDismiss={() => setExportNotice(null)}>
+          {exportNotice.text}
+        </Notice>
+      )}
 
       <div className={styles.content}>{content}</div>
 

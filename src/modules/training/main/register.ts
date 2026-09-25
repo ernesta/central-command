@@ -1,10 +1,20 @@
 import { mkdir } from 'fs/promises'
 import { join } from 'path'
-import { BrowserWindow, ipcMain, shell } from 'electron'
+import { writeFile } from 'fs/promises'
+import { BrowserWindow, app, dialog, ipcMain, shell } from 'electron'
 import { readNoteFile } from '../../../main/notes/guarded-file'
+import { listMeetingRows } from '../../meetings/main/repository'
+import { meetingHours } from '../../meetings/shared/hours'
+import { todayIso } from '@shared/time'
 import { NotesWatcher } from '../../../main/notes/watcher'
 import type { MainContext, MainModule } from '../../main-registry'
-import { TRAINING_IPC, type CreateTrainingInput, type TrainingChangedEvent } from '../shared/api'
+import {
+  TRAINING_IPC,
+  type CreateTrainingInput,
+  type TrainingChangedEvent,
+  type TrainingExportResult
+} from '../shared/api'
+import { reportFileName, trainingReportHtml } from '../shared/report'
 import type { TrainingChanges } from '../shared/front-matter'
 import { TRAINING_WORKSPACES, type TrainingRef, type TrainingWorkspace } from '../shared/types'
 import { trainingPath } from './file-name'
@@ -52,6 +62,51 @@ function register({ db, paths, settings }: MainContext): () => void {
     return store.save(asRef(ref), asObject(changes, 'changes') as TrainingChanges, baseHash)
   })
   ipcMain.handle(TRAINING_IPC.delete, (_event, ref: unknown) => store.delete(asRef(ref)))
+
+  ipcMain.handle(
+    TRAINING_IPC.exportPdf,
+    async (event, year: unknown): Promise<TrainingExportResult> => {
+      if (typeof year !== 'number' || !Number.isInteger(year) || year < 1900 || year > 3000) {
+        throw new Error('Invalid academic year')
+      }
+      const today = todayIso()
+      const html = trainingReportHtml({
+        rows: store.list('research'),
+        year,
+        today,
+        aimHours: settings.get().trainingAimHours,
+        meetingMinutes: meetingHours(listMeetingRows(db, 'research'), year, today).minutes
+      })
+      const options = {
+        title: 'Export the training log',
+        defaultPath: join(app.getPath('documents'), reportFileName(year)),
+        filters: [{ name: 'PDF', extensions: ['pdf'] }]
+      }
+      const parent = BrowserWindow.fromWebContents(event.sender)
+      const chosen = parent
+        ? await dialog.showSaveDialog(parent, options)
+        : await dialog.showSaveDialog(options)
+      if (chosen.canceled || !chosen.filePath) return { status: 'cancelled' }
+
+      // A hidden page with no scripts, made only to print. Nothing leaves the machine.
+      const printer = new BrowserWindow({
+        show: false,
+        webPreferences: { sandbox: true, javascript: false }
+      })
+      try {
+        await printer.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`)
+        const pdf = await printer.webContents.printToPDF({
+          pageSize: 'A4',
+          landscape: true,
+          printBackground: false
+        })
+        await writeFile(chosen.filePath, pdf)
+      } finally {
+        printer.destroy()
+      }
+      return { status: 'saved', path: chosen.filePath }
+    }
+  )
 
   // The Trainings folder is read from the settings on every call, so a change there applies at once.
   const root = (): string => settings.get().trainingsFolder
