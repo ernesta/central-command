@@ -1,5 +1,42 @@
 # Roadmap
 
+## TODOs
+
+### For the user (review and decisions)
+
+- [ ] **Review the exports** once there is data to look at: Training's **Export** (a PDF of an academic year, oldest first, no upcoming
+      or planned entries) and Meetings' **Export** (still a disabled placeholder: the Supervision log as a PDF). Say what to change in the
+      layout and content; then Meetings' Export gets built the same way.
+- [ ] **Choose a type for each imported training** (all 129 start without one; the list says "No type yet"). Seminars, inductions, lab
+      meetings and self-guided learning have no Inkpath type: map them by hand and keep a decision log of why, so categorising can
+      be automated later.
+- [ ] **One imported training broke the rules**: _Making your research transparent and reproducible (Live)_ (28 Jan 2026) has five skills in
+      Inkpath and the app allows three. The first three were kept; left out: Digital and bibliographic skills (GS), Intellectual property
+      rights (GS). Decide which three to keep. (Review this together with the other training TODOs.)
+- [ ] **Add the people who lead trainings to your people list** (Settings → People) and choose their initials, so they show as
+      initials chips. Not yet in the list: Anat Bardi, Chris Prosser, Cilla Harries, Emily Ma, Emma Russell, Eran Halperin, George Pontikas,
+      James D. Williams, Jessie Ricketts, Joanna Young, Kathryn Redway, Laura Ulanowski, Robert Darby, Robert De Vries, Robyn Muir, Roger
+      Giner-Sorolla, Smadar Cohen-Chen, Thomas C. Ormerod. Initials must be unique, so a second RM (Robyn Muir next to Ryan McKay) needs
+      different initials, for example RM and RMu, so that a TODO(RM) in a note is unambiguous.
+- [ ] **Four supervision meetings have times that differ from the Inkpath log** (the files were left as they are): 11 Nov 2025 (file
+      15:30–16:00, log 15:30–16:30), 16 Oct 2025 (14:00–14:30 against 14:00–14:15), 26 Jun 2026 (10:00–11:45 against 10:00–11:15), 29 May 2026
+      (11:00–12:00 against 11:00–11:45). Say which is right.
+- [ ] **Two Rastle Lab meetings in the log have no meeting file** (rows for 2025-12-17 and 2026-06-22 or similar; create them if wanted).
+- [ ] **Twelve trainings have typed hours that differ from the times** (for example Rapid Reading typed 0 h, times give 3 h). The app
+      uses the times; check the times are right. `npm run import:training` lists them.
+- [ ] **The 61 entries only in the older Word training log** (no twin in the Inkpath log) were not imported. Say if any should be.
+- [ ] **Set the Trainings folder** in Settings → Training (`/Users/ernesta/RHUL/Trainings`) if not done, so the Files panels work.
+- [ ] Review the keyboard shortcuts listed in Settings (still open from Meetings).
+
+### For Claude (next time)
+
+- [ ] After the user's review: fix what they raise, then push, write up the state, clear context and move on to the next part.
+- [ ] Build Meetings' Export the same way as Training's (`shared/report.ts` pattern), once the user has reviewed Training's.
+- [ ] A "decision log" for training types (see above): design it with the user when they start mapping; then suggest types automatically.
+- [ ] A People page (list too long for Settings), and warn when two people would get confusingly similar initials.
+- [ ] Re-check the changed screens in dev mode (StrictMode) and the built app after any further change to lists, landings or entry pages.
+- [ ] The "Say when a filter is applied" and Readings follow-ups below are still open.
+
 ## Phase 1 (complete; awaiting final review and push)
 
 App shell plus Readings (Zotero one-way sync, notes editor). See
@@ -25,7 +62,6 @@ the meeting page, the list, the landing page, People settings and remembered lis
 - **Say when a filter is applied.** Opening a series card (for example Supervision) shows the page titled "All meetings" with
   only that series in it, which is easy to miss. Make the page say so (a different title or a visible "Showing Supervision
   only" line with a way to clear it). Not started.
-- **The Readings list has no back arrow** to the Research landing page (Meetings now has one). Same small fix if wanted.
 - **A People page** of its own: the list will get too long for Settings. Later it could hold links per person (GitHub,
   Google Scholar, LinkedIn) and even pull their recent papers, posts or tweets. Training leads and meeting attendees both use it.
 - **Export the supervision log as a PDF** (oldest first, Supervision series, upcoming meetings left out). The disabled
@@ -52,9 +88,6 @@ neither has been applied to the real library.
 - **Apply the imports** to the real library when the user says so: `npm run import:training -- --inkpath <xlsx> --obsidian
 <notes> --trainings <folder> --apply` (129 entries, 10 notes matched, 38 folders linked) and `npm run reconcile:meetings --
 --inkpath <xlsx> --apply` (35 meeting files get skills and missing times; 4 times differ and are only reported).
-- **Choose a type for each imported entry** (all start without one) and **the review list** (one entry had five skills).
-- **A decision log for types Inkpath has no type for** (seminars, inductions, lab meetings, self-guided learning): the user maps
-  them by hand and records why, so categorising can be automated later.
 - **Show meetings in the Training PDF?** Only a line with the hours is included; the meetings are not listed.
 - **Inkpath's Organisation, Points and Date Completed** are kept in the front matter (Organisation and Points are read) but
   not shown or used.

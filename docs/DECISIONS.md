@@ -553,3 +553,30 @@ list. `convertPseudoHeadings` (`meetings/shared/pseudo-headings.ts`) turns such 
   differs is reported, never overwritten.
 - **Bugs found by looking:** a test note typed into a heading (my script, not the app); the skills menu stayed open after a pick
   (now closes); none of these were visible to unit tests, which is why each stage was driven in the real app (production and dev).
+
+### Training and Meetings: after the first review
+
+- **One landing pattern.** Training now has a landing page like Meetings (`/research/training`): the academic year with its hours and a
+  card per series, then "Recent and upcoming" with a link to the full list (`/all`). The pieces (`LandingHeader`, `LandingSection`,
+  `SeriesCards`, `RecentList`, the "All …" link) are shared components in `renderer/src/components/Landing.tsx`, which
+  Meetings uses too, as are `FilterRow` and `ExportButton`. The user asked for this after noticing Training had gone straight to
+  a list: when a module needs a screen that another already has, reuse the components.
+- **Same filter order everywhere**, matching the columns: academic year, search, series, type, skill, people ("Anyone"). Meetings gained a
+  skill filter. **Export** sits in the header beside "New …", is called "Export" in both lists, and is quiet.
+- **No date is allowed** for a meeting or a training: it is _planned_, shown first with a "Planned" tag, counted as upcoming (left out
+  of hours and the PDF), and the file is named `Planned Title.md` until a date is set (clearing the date in the app renames it back).
+  A missing date is no longer a "problem" in the front matter.
+- **New meeting / New entry create the item at once** and open its page (no pop-up): a Supervision meeting for today; a training named
+  "Untitled" for today with the title selected.
+- **The to-review feature was removed from the app** (the `review` key, the list and the notice; migration `training/0003` drops the
+  column). What breaks the import's rules goes on the user's TODO list in `docs/ROADMAP.md`, and the import prints it.
+- **Types lose the group word** (Courses: Research methods, Academic skills, General skills, Language; Conferences: Attending, Presenting,
+  Organising). Tables and the PDF show "Group: name"; the chooser lists them under the group.
+- **Skills** are grouped General, Specialist, Research in Practice in the chooser, and shown as tags everywhere (Meetings and
+  Training lists included), sorted alphabetically and then by group, so "Quantitative skills (GS)" comes before "(SS)".
+- **Providers that are people are leads** (title removed; the same person as a note's Lead line is not added twice); institutions
+  stay institutions. 27 existing entries were updated through the guarded save.
+- **Initials must be unique**: adding Robyn Muir next to Ryan McKay gives the second one "RM2" automatically. Nothing is wrong, but
+  the user should choose initials that are clear in notes (a TODO).
+- **The people list is held in memory by the running app**, so files that change it (an importer) must not run while the app is open
+  unless the app is restarted; the lead names were therefore not added to the real list (a TODO).
