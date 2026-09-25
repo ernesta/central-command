@@ -36,6 +36,13 @@ export function moduleSettingsSections(): { id: string; Section: ComponentType }
   )
 }
 
+/** The components modules want mounted on every page, in registration order. */
+export function moduleGlobals(): { id: string; Global: ComponentType }[] {
+  return modules.flatMap((m) =>
+    m.status === 'live' && m.globals ? [{ id: m.id, Global: m.globals }] : []
+  )
+}
+
 /** Keyboard shortcut groups contributed by live modules, in registration order. */
 export function moduleShortcutGroups(): ShortcutGroup[] {
   return modules.flatMap((m) => (m.status === 'live' ? (m.shortcuts ?? []) : []))

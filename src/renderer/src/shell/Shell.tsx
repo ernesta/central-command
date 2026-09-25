@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
-import { modules } from '@modules/index'
+import { moduleGlobals, modules } from '@modules/index'
 import { modulePath } from '@modules/types'
 import { WORKSPACES, type Workspace } from '@shared/settings'
 import { BACK_SHORTCUT, matchesShortcut } from '@shared/shortcuts'
@@ -74,6 +74,9 @@ export function Shell(): React.JSX.Element {
           </Notice>
         </div>
       )}
+      {moduleGlobals().map(({ id, Global }) => (
+        <Global key={id} />
+      ))}
       <main className={styles.main}>
         <Routes>
           <Route path="/" element={<Navigate to={`/${settings.ui.workspace}`} replace />} />

@@ -31,6 +31,8 @@ export interface LiveModuleManifest extends BaseManifest {
   landingCard?: ComponentType
   /** Rendered on the Settings page, so a module can own its own settings and status. */
   settingsSection?: ComponentType
+  /** Mounted once by the shell on every page, for what must work anywhere in the app (a keyboard shortcut). Renders nothing. */
+  globals?: ComponentType
   /** Listed in Settings under Keyboard shortcuts. Add a shortcut here whenever the module gets one. */
   shortcuts?: ShortcutGroup[]
 }
