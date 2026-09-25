@@ -26,7 +26,13 @@ export function useNoteSession(
     return () => {
       unregister()
       window.removeEventListener('pagehide', onPageHide)
-      void session.dispose()
+      void session.dispose().then(() => {
+        // A note made and never written in goes away. Development mounts, unmounts and mounts again at once, so
+        // wait a moment and only act if the page really was left.
+        setTimeout(() => {
+          if (session.isDisposed()) void window.api.notes.discardIfEmpty(session.getRef())
+        }, 300)
+      })
     }
   }, [session])
 

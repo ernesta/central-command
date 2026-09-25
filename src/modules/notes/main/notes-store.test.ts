@@ -292,3 +292,31 @@ describe('the index follows the folder', () => {
     expect(listNoteIds(db, 'research')).toEqual([])
   })
 })
+
+describe('discardIfEmpty', () => {
+  it('removes a note that was never written in, without the Trash', async () => {
+    await store.create({ workspace: 'research', group: 'Thesis' })
+    expect(await store.discardIfEmpty(ref('Untitled'))).toBe(true)
+    expect(existsSync(file('Untitled'))).toBe(false)
+    expect(listNoteIds(db, 'research')).toEqual([])
+    expect(trashed).toEqual([])
+  })
+
+  it('keeps a note with a title, text, a pin or front matter from another tool', async () => {
+    await store.create({ workspace: 'research', title: 'Titled' })
+    await store.create({ workspace: 'research', body: 'some words\n' })
+    const pinned = await store.create({ workspace: 'research' })
+    await store.save(ref(pinned.ref.id), { meta: { pinned: true } }, pinned.note.hash)
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(file('Imported'), '---\nimported-from: Ideas/X.md\n---\n\n')
+    for (const id of ['Titled', 'Untitled', pinned.ref.id, 'Imported']) {
+      const before = existsSync(file(id)) ? disk(id) : null
+      expect(await store.discardIfEmpty(ref(id))).toBe(false)
+      expect(before === null ? true : disk(id)).toBe(before === null ? true : before)
+    }
+  })
+
+  it('says false for a note that is not there', async () => {
+    expect(await store.discardIfEmpty(ref('Ghost'))).toBe(false)
+  })
+})

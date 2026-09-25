@@ -1,4 +1,4 @@
-import { readdir, stat } from 'fs/promises'
+import { readdir, rm, stat } from 'fs/promises'
 import type { Database } from 'better-sqlite3'
 import type { NoteContent } from '@shared/notes'
 import {
@@ -7,6 +7,7 @@ import {
   renameNoteFileExclusive,
   writeNoteFileGuarded
 } from '../../../main/notes/guarded-file'
+import { parseHead } from '@shared/front-matter'
 import {
   NEW_NOTE_BODY,
   applyChanges,
@@ -210,6 +211,26 @@ export class NotesStore {
     }
     await this.trash(path)
     deleteNoteRow(this.db, ref.workspace, ref.id)
+  }
+
+  /**
+   * Remove a note that was made and never written in: no title, no text, not pinned, and no front matter beyond
+   * what the app itself writes (so an imported note, or one with keys from another tool, is never touched).
+   * The only case where a note file is deleted without the Trash: there is nothing in it to keep, and a Trash full
+   * of empty `Untitled` files would only be clutter. Returns whether the file was removed.
+   */
+  async discardIfEmpty(ref: NoteRef): Promise<boolean> {
+    const path = this.pathOf(ref)
+    const note = await readNoteFile(path)
+    if (!note.exists) return false
+    const { head, body } = splitNote(note.content)
+    const { meta } = parseMeta(head)
+    const owned = ['title', 'group', 'subgroup', 'pinned', 'created']
+    const foreign = parseHead(head)?.entries.some((e) => !owned.includes(e.key)) ?? false
+    if (meta.title || meta.pinned || body.trim() !== '' || foreign) return false
+    await rm(path)
+    deleteNoteRow(this.db, ref.workspace, ref.id)
+    return true
   }
 
   /** Recompute one note's index row from its file; a file that is gone loses its row. */

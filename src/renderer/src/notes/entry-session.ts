@@ -145,6 +145,9 @@ export class EntrySession<R extends { id: string; workspace: string }, M> {
     this.onRenamed = listener
   }
 
+  /** True after `dispose()` until `start()` runs again. */
+  isDisposed = (): boolean => this.disposed
+
   /** Which entry this is now (its id changes when an edit renames the file). */
   getRef = (): R => this.ref
 

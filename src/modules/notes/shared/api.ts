@@ -59,6 +59,11 @@ export interface NotesApi {
   save(ref: NoteRef, changes: NoteChanges, baseHash: string): Promise<NoteSaveResult>
   /** Move the note's file to the Trash. The caller is responsible for asking the user first. */
   delete(ref: NoteRef): Promise<void>
+  /**
+   * Remove the note if it was never written in (no title, no text, not pinned). Resolves with whether it was removed.
+   * The one case where a file is deleted without the Trash, because nothing is lost.
+   */
+  discardIfEmpty(ref: NoteRef): Promise<boolean>
   /** Subscribe to note files changing on disk. Returns an unsubscribe function. */
   onChanged(listener: (event: NoteChangedEvent) => void): () => void
 }
@@ -69,5 +74,6 @@ export const NOTES_IPC = {
   list: 'notes:list',
   save: 'notes:save',
   delete: 'notes:delete',
+  discardIfEmpty: 'notes:discard-if-empty',
   changed: 'notes:changed'
 } as const

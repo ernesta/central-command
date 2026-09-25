@@ -108,6 +108,7 @@ const api: Api = {
     list: (workspace) => ipcRenderer.invoke(NOTES_IPC.list, workspace),
     save: (ref, changes, baseHash) => ipcRenderer.invoke(NOTES_IPC.save, ref, changes, baseHash),
     delete: (ref) => ipcRenderer.invoke(NOTES_IPC.delete, ref),
+    discardIfEmpty: (ref) => ipcRenderer.invoke(NOTES_IPC.discardIfEmpty, ref),
     onChanged: (listener) => {
       const handler = (_event: Electron.IpcRendererEvent, change: NotesChangedEvent): void =>
         listener(change)
