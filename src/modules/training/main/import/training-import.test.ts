@@ -52,8 +52,7 @@ describe('planTrainingImport: the row becomes an entry', () => {
       mode: 'online',
       skills: ['Qualitative skills (SS)', 'Quantitative skills (GS)'],
       institution: 'Royal Holloway',
-      organisation: 'SEDarc DTP',
-      review: null
+      organisation: 'SEDarc DTP'
     })
     expect(body).toBe('## Summary\n\nRefine understanding of mixed methods.\n\n## Notes\n')
     expect(p.totals).toMatchObject({
@@ -82,8 +81,8 @@ describe('planTrainingImport: the row becomes an entry', () => {
     ])
     const [entry] = imported(p)
     expect(entry.patch.skills).toEqual(['Networking (RP)', 'Leadership (RP)', 'Impact (RP)'])
-    expect(entry.patch.review).toContain('Left out: Negotiations (RP)')
-    expect(entry.patch.review).toContain('Making things (Live)')
+    expect(entry.todo).toContain('Left out: Negotiations (RP)')
+    expect(entry.todo).toContain('Making things (Live)')
     expect(p.reports.unknownSkills).toEqual([{ skill: 'Making things (Live)', rows: [2] }])
   })
 

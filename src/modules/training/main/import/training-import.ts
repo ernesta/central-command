@@ -51,6 +51,8 @@ export interface PlannedEntry {
   patch: TrainingPatch
   minutes: number | null
   notes: string[]
+  /** What the user should look at later (an entry that broke a rule); for the report and the user's TODO list, not written to the file. */
+  todo: string | null
   /** Names from the note's Lead line. */
   leads: string[]
   matchedNote: string | null
@@ -296,8 +298,7 @@ export function planTrainingImport(input: ImportInput): ImportPlan {
       institution: provider || null,
       folder,
       organisation: row.organisation || null,
-      points,
-      review: review.length > 0 ? review.join(' ') : null
+      points
     }
     const head = updateTrainingHead('', patch)
     const summary = row.description
@@ -328,6 +329,7 @@ export function planTrainingImport(input: ImportInput): ImportPlan {
       patch,
       minutes,
       notes: notesOut,
+      todo: review.length > 0 ? review.join(' ') : null,
       leads,
       matchedNote
     })

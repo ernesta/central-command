@@ -66,7 +66,7 @@ export function checkTrainingPatch(patch: TrainingPatch): void {
   if (patch.title !== undefined && (!isText(patch.title) || /[\r\n]/.test(patch.title))) {
     throw new TrainingError('The title must be one line of text')
   }
-  for (const key of ['series', 'institution', 'organisation', 'review'] as const) {
+  for (const key of ['series', 'institution', 'organisation'] as const) {
     const value = patch[key]
     if (value !== undefined && value !== null && (!isText(value) || /[\r\n]/.test(value))) {
       throw new TrainingError(`${key} must be one line of text`)

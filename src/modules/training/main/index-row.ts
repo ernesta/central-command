@@ -47,7 +47,6 @@ export function buildTrainingIndexRow(
     summary: markdownToExcerpt(extractSection(body, 'Summary') ?? '', SUMMARY_LENGTH),
     excerpt: markdownToExcerpt(body, EXCERPT_LENGTH),
     hasNotes: notes !== '',
-    review: meta.review,
     problems,
     contentHash: hashContent(content)
   }

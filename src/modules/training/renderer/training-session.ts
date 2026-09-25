@@ -30,8 +30,7 @@ export const EMPTY_TRAINING_META: TrainingMeta = {
   institution: null,
   folder: null,
   organisation: null,
-  points: null,
-  review: null
+  points: null
 }
 
 /**

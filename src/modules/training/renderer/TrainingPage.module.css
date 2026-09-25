@@ -64,26 +64,3 @@
     padding: 24px 16px 32px;
   }
 }
-/* The to-review list: closed by default, quiet. */
-.review {
-  padding: 10px 16px;
-  background: var(--surface);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-card);
-  font-size: var(--text-14);
-}
-.review summary {
-  cursor: pointer;
-  color: var(--text-secondary);
-}
-.reviewList {
-  display: grid;
-  gap: 6px;
-  margin: 10px 0 0;
-  padding: 0;
-  list-style: none;
-}
-.reviewText {
-  color: var(--text-muted);
-  font-size: var(--text-13);
-}

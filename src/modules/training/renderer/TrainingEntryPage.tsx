@@ -176,7 +176,7 @@ function EntryView({
         </div>
       </div>
 
-      {(conflict || error || deleteError || meta.review || problems.length > 0) && (
+      {(conflict || error || deleteError || problems.length > 0) && (
         <div className={styles.notices}>
           {conflict && (
             <Notice
@@ -210,17 +210,6 @@ function EntryView({
           {deleteError && (
             <Notice tone="error" onDismiss={() => setDeleteError(null)}>
               Couldn’t move the entry to the Trash: {deleteError}
-            </Notice>
-          )}
-          {meta.review && (
-            <Notice
-              action={
-                <Button size="small" onClick={() => session.setMeta({ review: null })}>
-                  Done
-                </Button>
-              }
-            >
-              To review: {meta.review}
             </Notice>
           )}
           {problems.length > 0 && (

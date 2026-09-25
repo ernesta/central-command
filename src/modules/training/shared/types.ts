@@ -136,8 +136,6 @@ export interface TrainingMeta {
   /** Kept from the Inkpath log; not shown yet. */
   organisation: string | null
   points: string | null
-  /** Something the user should look at, written by the import (for example skills that did not fit). Cleared with "Done". */
-  review: string | null
 }
 
 /** Which entry: the folder (workspace) and the file's base name, e.g. "2025-12-10 Data Management and Security". */
@@ -167,8 +165,6 @@ export interface TrainingIndexRow {
   excerpt: string
   /** Whether the Notes section holds any text. */
   hasNotes: boolean
-  /** See `TrainingMeta.review`. */
-  review: string | null
   problems: string[]
   contentHash: string
 }

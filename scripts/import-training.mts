@@ -150,7 +150,7 @@ const describe = (item: ImportItem): string[] => {
         `import   ${item.target}   <- ${item.source}`,
         `           ${facts.join(' · ')}`,
         ...item.notes.map((n) => `           note: ${n}`),
-        ...(p.review ? [`           TO REVIEW: ${p.review}`] : [])
+        ...(item.todo ? [`           TO REVIEW: ${item.todo}`] : [])
       ]
     }
     case 'skip-exists':
@@ -197,7 +197,7 @@ const toWrite = plan.items.filter(
   (i): i is Extract<ImportItem, { status: 'import' }> => i.status === 'import'
 )
 console.log(
-  `\n${toWrite.length} to import, ${count('skip-exists')} already there, ${count('attention')} need attention, ${plan.meetings.length} left for Meetings, ${toWrite.filter((i) => i.patch.review).length} to review, ${r.withoutType} without a type (choose one in the app).`
+  `\n${toWrite.length} to import, ${count('skip-exists')} already there, ${count('attention')} need attention, ${plan.meetings.length} left for Meetings, ${toWrite.filter((i) => i.todo).length} to review, ${r.withoutType} without a type (choose one in the app).`
 )
 const t = plan.totals
 console.log(

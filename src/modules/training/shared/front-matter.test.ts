@@ -20,7 +20,6 @@ institution: Royal Holloway
 folder: 2025-26/SEDarc/2025 12 10 Data Management
 organisation: SEDarc DTP
 points: 1
-review: Check the skills
 ---
 
 `
@@ -42,8 +41,7 @@ describe('parseTrainingMeta', () => {
       institution: 'Royal Holloway',
       folder: '2025-26/SEDarc/2025 12 10 Data Management',
       organisation: 'SEDarc DTP',
-      points: '1',
-      review: 'Check the skills'
+      points: '1'
     })
   })
 
