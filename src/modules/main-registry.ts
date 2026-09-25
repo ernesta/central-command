@@ -3,6 +3,7 @@ import type { AppPaths } from '../main/paths'
 import type { Migration } from '../main/db/migrate'
 import type { SettingsStore } from '../main/settings'
 import { meetingsMainModule } from './meetings/main/register'
+import { notesMainModule } from './notes/main/register'
 import { readingsMainModule } from './readings/main/register'
 import { trainingMainModule } from './training/main/register'
 
@@ -24,5 +25,6 @@ export interface MainModule {
 export const mainModules: MainModule[] = [
   readingsMainModule,
   meetingsMainModule,
-  trainingMainModule
+  trainingMainModule,
+  notesMainModule
 ]
