@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { Person } from '@modules/meetings/shared/types'
+import type { Person } from '@shared/people'
 import {
   DEFAULT_TRAINING_QUERY,
   entriesInYear,

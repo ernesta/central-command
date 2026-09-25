@@ -2,8 +2,8 @@ import { academicYearLabel, inAcademicYear } from '@shared/academic-year'
 import { fold } from '@shared/text'
 import { formatDate, durationMinutes } from '@shared/time'
 import { formatHours, minutesPerSkill } from '@shared/skills'
-import { findByName } from '@modules/meetings/shared/people'
-import type { Person } from '@modules/meetings/shared/types'
+import { findByName } from '@shared/people'
+import type { Person } from '@shared/people'
 import { TRAINING_MODE_LABELS, type TrainingIndexRow, type TrainingMode } from './types'
 
 /** An entry after `today` (YYYY-MM-DD). Entries with no date are never upcoming. */

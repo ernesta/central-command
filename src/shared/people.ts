@@ -1,4 +1,10 @@
-import type { Person } from './types'
+/** A person from the people list. Initials are unique (case-insensitively). */
+export interface Person {
+  name: string
+  initials: string
+  /** The user themselves; at most one. */
+  me: boolean
+}
 
 /** Thrown for a change the people list refuses (blank name, duplicate name or initials, unknown person). */
 export class PeopleError extends Error {}

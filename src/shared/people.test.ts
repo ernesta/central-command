@@ -10,7 +10,7 @@ import {
   removePerson,
   updatePerson
 } from './people'
-import type { Person } from './types'
+import type { Person } from './people'
 
 const p = (name: string, initials: string, me = false): Person => ({ name, initials, me })
 

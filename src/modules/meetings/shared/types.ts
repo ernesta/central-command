@@ -38,13 +38,7 @@ export interface MeetingRef {
   id: string
 }
 
-/** A person from the people list. Initials are unique (case-insensitively). */
-export interface Person {
-  name: string
-  initials: string
-  /** The user themselves; at most one. */
-  me: boolean
-}
+export type { Person } from '@shared/people'
 
 /** What the database index holds about one meeting file. */
 export interface MeetingIndexRow {
