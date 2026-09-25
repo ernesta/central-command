@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Training Mockup</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@600;700&display=swap"
+    />
+    <style>
+      :root {
+        --bg: #edeff2;
+        --panel: #e1e5ea;
+        --surface: #ffffff;
+        --ink: #1b222b;
+        --text-secondary: #3a4652;
+        --text-muted: #5c6672;
+        --border-soft: #d3d8de;
+        --border-strong: #c3cad2;
+        --border-faint: #e6e9ed;
+        --hover-tint: #f4f6f8;
+        --accent: #35577a;
+        --accent-contrast: #ffffff;
+        --selected-bg: #dce6ee;
+        --selected-text: #1f3a52;
+        --font-display: 'Newsreader', Georgia, serif;
+        --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+        --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+        color-scheme: light;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-body);
+        font-size: 14px;
+        line-height: 1.5;
+        padding-inline: 16px;
+        padding-block: 20px 48px;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: var(--font-display);
+        margin: 0;
+        text-wrap: balance;
+      }
+      p {
+        margin: 0;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.75;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex: none;
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        display: grid;
+        gap: 20px;
+      }
+      .intro {
+        display: grid;
+        gap: 4px;
+        max-width: 72ch;
+      }
+      .intro h1 {
+        font-size: 28px;
+      }
+      .intro p {
+        color: var(--text-secondary);
+      }
+      .tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .tab {
+        padding: 8px 16px;
+        border: 1px solid var(--border-strong);
+        border-radius: 999px;
+        background: var(--surface);
+        color: var(--text-secondary);
+      }
+      .tab[aria-pressed='true'] {
+        background: var(--selected-bg);
+        color: var(--selected-text);
+        border-color: var(--selected-bg);
+        font-weight: 600;
+      }
+      .frame {
+        background: var(--bg);
+        border: 1px solid var(--border-strong);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+      .topbar {
+        height: 56px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border-soft);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-inline: 24px;
+        gap: 12px;
+      }
+      .pills {
+        display: flex;
+        gap: 4px;
+      }
+      .pill {
+        padding: 6px 16px;
+        border-radius: 999px;
+        color: var(--text-secondary);
+      }
+      .pill.on {
+        background: var(--selected-bg);
+        color: var(--selected-text);
+        font-weight: 600;
+      }
+      .build {
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-weight: 500;
+        background: var(--surface);
+      }
+      .page {
+        padding: 40px 48px 48px;
+        display: grid;
+        gap: 24px;
+      }
+      .head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .head h2 {
+        font-size: 28px;
+        font-weight: 700;
+      }
+      .btn {
+        border: 1px solid var(--border-strong);
+        background: var(--surface);
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-weight: 500;
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .btn.primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-contrast);
+      }
+      .btn.small {
+        padding: 5px 10px;
+        font-size: 13px;
+      }
+      .quiet {
+        border: 0;
+        background: transparent;
+        color: var(--text-muted);
+        padding: 7px 10px;
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .label {
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      .muted {
+        color: var(--text-muted);
+      }
+      .box {
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+        border-radius: 12px;
+      }
+      .sel,
+      .search {
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        padding: 7px 12px;
+        background: var(--surface);
+        display: inline-flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .sel {
+        min-width: 130px;
+        justify-content: space-between;
+      }
+      .search {
+        min-width: 200px;
+        color: var(--text-muted);
+      }
+      .filters {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .filters .spacer {
+        flex: 1;
+      }
+
+      /* Totals */
+      .totals {
+        display: flex;
+        gap: 40px;
+        flex-wrap: wrap;
+        padding: 18px 24px;
+        align-items: flex-end;
+      }
+      .stat {
+        display: grid;
+        gap: 2px;
+      }
+      .stat b {
+        font-family: var(--font-display);
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1.1;
+        font-variant-numeric: tabular-nums;
+      }
+      .bytype {
+        display: flex;
+        gap: 8px 16px;
+        flex-wrap: wrap;
+        margin-left: auto;
+        color: var(--text-secondary);
+        font-size: 13px;
+      }
+      .bytype span b {
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+      }
+
+      /* Log table */
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+      th {
+        text-align: left;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border-soft);
+      }
+      td {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border-faint);
+        vertical-align: top;
+      }
+      tr:last-child td {
+        border-bottom: 0;
+      }
+      tbody tr:hover td {
+        background: var(--hover-tint);
+        cursor: pointer;
+      }
+      td.date,
+      td.days {
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+      td.type {
+        white-space: nowrap;
+        color: var(--text-secondary);
+      }
+      td.days {
+        text-align: right;
+      }
+      td.days small {
+        color: var(--text-muted);
+      }
+      .title {
+        font-weight: 500;
+      }
+      .details {
+        color: var(--text-muted);
+        font-size: 13px;
+        margin-top: 2px;
+        max-width: 62ch;
+      }
+      .marks {
+        display: inline-flex;
+        gap: 6px;
+        margin-left: 8px;
+        color: var(--text-muted);
+        vertical-align: middle;
+      }
+      .marks svg {
+        width: 14px;
+        height: 14px;
+      }
+      .upcoming {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--selected-text);
+        background: var(--selected-bg);
+        border-radius: 999px;
+        padding: 1px 8px;
+        margin-left: 8px;
+      }
+      .foot {
+        color: var(--text-muted);
+        font-size: 13px;
+      }
+
+      /* Entry page */
+      .back {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        color: var(--text-secondary);
+      }
+      .titleField {
+        font-family: var(--font-display);
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1.25;
+        border-bottom: 1px dashed var(--border-strong);
+        padding-bottom: 6px;
+      }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px 28px;
+        padding: 16px 20px;
+        align-items: flex-start;
+      }
+      .field {
+        display: grid;
+        gap: 6px;
+        align-content: end;
+      }
+      .val {
+        white-space: nowrap;
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        padding: 6px 12px;
+        background: var(--surface);
+        min-width: 100px;
+        font-variant-numeric: tabular-nums;
+      }
+      .val.calc {
+        background: var(--hover-tint);
+        color: var(--text-secondary);
+        border-style: dashed;
+      }
+      .hint {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+      .split {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 280px;
+        gap: 40px;
+        align-items: start;
+      }
+      .doc {
+        max-width: 780px;
+        display: grid;
+        gap: 6px;
+        font-size: 16px;
+        line-height: 1.8;
+      }
+      .doc h3 {
+        font-size: 20px;
+        margin-top: 20px;
+      }
+      .doc h3:first-child {
+        margin-top: 0;
+      }
+      .doc h3 .hint {
+        font-family: var(--font-body);
+        font-weight: 400;
+        margin-left: 10px;
+      }
+      .doc ul {
+        margin: 0;
+        padding-left: 22px;
+      }
+      .side {
+        display: grid;
+        gap: 12px;
+        position: sticky;
+        top: 16px;
+      }
+      .files {
+        padding: 14px 16px;
+        display: grid;
+        gap: 10px;
+      }
+      .path {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text-secondary);
+        overflow-wrap: anywhere;
+      }
+      .file {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        padding: 6px 8px;
+        border-radius: 8px;
+        color: var(--text-secondary);
+      }
+      .file:hover {
+        background: var(--hover-tint);
+        cursor: pointer;
+      }
+      .file span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .notes {
+        color: var(--text-muted);
+        font-size: 12px;
+        max-width: 72ch;
+        padding-top: 4px;
+      }
+      @media (max-width: 900px) {
+        .page {
+          padding: 24px 16px 32px;
+        }
+        .split {
+          grid-template-columns: 1fr;
+        }
+        .side {
+          position: static;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="intro">
+        <h1>Training mockup</h1>
+        <p>
+          Two screens: the training log (it is also the formal Research Training Log) and one entry.
+          The rows, totals and days by type are real, from the 2025-26 Word log (131 entries). Only
+          the Upcoming row and the note text on the entry screen are made up.
+        </p>
+      </div>
+      <div class="tabs" role="group" aria-label="Screen">
+        <button class="tab" aria-pressed="true" data-tab="log">1. Training log</button>
+        <button class="tab" aria-pressed="false" data-tab="entry">2. One entry</button>
+      </div>
+
+      <div class="frame">
+        <div class="topbar">
+          <div class="pills">
+            <span class="pill">Life</span><span class="pill on">Research</span
+            ><span class="pill">Work</span>
+          </div>
+          <span class="build">Build</span>
+        </div>
+
+        <!-- 1. LOG -->
+        <div class="page" data-screen="log">
+          <a class="back" href="#"
+            ><svg viewBox="0 0 24 24"><path d="M19 12H5m6-6-6 6 6 6" /></svg>Research</a
+          >
+          <div class="head">
+            <h2>Training</h2>
+            <button class="btn primary">
+              <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>New entry
+            </button>
+          </div>
+
+          <div class="box totals">
+            <div class="stat"><span class="label">Days</span><b>68.5</b></div>
+            <div class="stat"><span class="label">Hours</span><b>355.5</b></div>
+            <div class="stat"><span class="label">Entries</span><b>131</b></div>
+            <div class="bytype" aria-label="Days by type">
+              <span>Training <b>31.5</b></span>
+              <span>Online training <b>19.5</b></span>
+              <span>Seminar <b>5.0</b></span>
+              <span>Lab meeting <b>2.5</b></span>
+              <span>Conference attendance <b>2.5</b></span>
+              <span>Other <b>7.5</b></span>
+            </div>
+          </div>
+
+          <div class="filters">
+            <span class="search"
+              ><svg viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3.5-3.5" /></svg
+              >Search</span
+            >
+            <span class="sel"
+              >2025–26 <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg
+            ></span>
+            <span class="sel"
+              >All programmes <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg
+            ></span>
+            <span class="sel"
+              >Any type <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg
+            ></span>
+            <span class="spacer"></span>
+            <button class="quiet">
+              <svg viewBox="0 0 24 24">
+                <rect x="8" y="8" width="12" height="12" rx="2" />
+                <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg
+              >Copy as table
+            </button>
+            <button class="quiet">
+              <svg viewBox="0 0 24 24"><path d="M12 4v11m-4-4 4 4 4-4M5 20h14" /></svg>Export PDF
+            </button>
+          </div>
+
+          <div class="box">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Title and details</th>
+                  <th style="text-align: right">Days (hours)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="date">Sep 23, 2025</td>
+                  <td class="type">Training</td>
+                  <td>
+                    <div class="title">
+                      School of School of Life Sciences and the Environment Postgraduate Researcher
+                      Induction
+                    </div>
+                    <div class="details">
+                      An overview of the Doctoral School, its team, and the administrative and
+                      academic support it provides to postgraduate research students, including
+                      information on training, funding, and key university regulations.
+                    </div>
+                  </td>
+                  <td class="days">0.5 <small>(2 h)</small></td>
+                </tr>
+                <tr>
+                  <td class="date">Sep 25, 2025</td>
+                  <td class="type">Guided learning</td>
+                  <td>
+                    <div class="title">
+                      PS5302 Statistics for Research
+                      <span class="marks" aria-label="Has files"
+                        ><svg viewBox="0 0 24 24">
+                          <path
+                            d="m21 12-8.5 8.5a5 5 0 0 1-7-7L14 5a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 8"
+                          /></svg
+                      ></span>
+                    </div>
+                    <div class="details">
+                      Readings: the basics of a psychological research study and the foundations of
+                      statistics.
+                    </div>
+                  </td>
+                  <td class="days">1 <small>(7 h)</small></td>
+                </tr>
+                <tr>
+                  <td class="date">Oct 8, 2025</td>
+                  <td class="type">Training</td>
+                  <td>
+                    <div class="title">
+                      SEDarc: Mixed Methods Research Designs
+                      <span class="marks" aria-label="Has notes and files"
+                        ><svg viewBox="0 0 24 24">
+                          <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+                          <path d="M14 3v5h5" /></svg
+                        ><svg viewBox="0 0 24 24">
+                          <path
+                            d="m21 12-8.5 8.5a5 5 0 0 1-7-7L14 5a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 8"
+                          /></svg
+                      ></span>
+                    </div>
+                    <div class="details">
+                      Integrating qualitative and quantitative approaches to design, conduct, and
+                      interpret mixed methods research.
+                    </div>
+                  </td>
+                  <td class="days">0.5 <small>(2 h)</small></td>
+                </tr>
+                <tr>
+                  <td class="date">Oct 15, 2025</td>
+                  <td class="type">Seminar</td>
+                  <td>
+                    <div class="title">
+                      Research Training Seminar: Peer Review
+                      <span class="marks" aria-label="Has notes and files"
+                        ><svg viewBox="0 0 24 24">
+                          <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+                          <path d="M14 3v5h5" /></svg
+                        ><svg viewBox="0 0 24 24">
+                          <path
+                            d="m21 12-8.5 8.5a5 5 0 0 1-7-7L14 5a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 8"
+                          /></svg
+                      ></span>
+                    </div>
+                    <div class="details">
+                      Introduction to the peer review process: reviewing others’ work and receiving
+                      reviews from others.
+                    </div>
+                  </td>
+                  <td class="days">0.5 <small>(2 h)</small></td>
+                </tr>
+                <tr>
+                  <td class="date">Jul 16, 2026</td>
+                  <td class="type">Training</td>
+                  <td>
+                    <div class="title">
+                      SENSS Experimental Methods in the Social Sciences: Methods to Analyse
+                      Experiments
+                    </div>
+                    <div class="details">
+                      The main statistical and econometric tools for estimating causal effects in
+                      experimental data.
+                    </div>
+                  </td>
+                  <td class="days">0.5 <small>(3 h)</small></td>
+                </tr>
+                <tr>
+                  <td class="date">Oct 14, 2026</td>
+                  <td class="type">Training</td>
+                  <td>
+                    <div class="title">
+                      Research Training Seminar: Writing a Literature Review
+                      <span class="upcoming">Upcoming</span>
+                    </div>
+                    <div class="details muted">No details yet.</div>
+                  </td>
+                  <td class="days muted">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="foot">
+            Oldest first, like the Word log. Click any row to open it. Upcoming entries are shown,
+            marked, and left out of the totals and the export. A paperclip means a folder of files
+            is linked; the page icon means there are notes.
+          </p>
+        </div>
+
+        <!-- 2. ENTRY -->
+        <div class="page" data-screen="entry" hidden>
+          <a class="back" href="#"
+            ><svg viewBox="0 0 24 24"><path d="M19 12H5m6-6-6 6 6 6" /></svg>Training</a
+          >
+          <div class="head">
+            <div class="titleField">SEDarc: Data Management and Security</div>
+            <button class="btn small">
+              <svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14" /></svg>Delete
+            </button>
+          </div>
+
+          <div class="box meta">
+            <div class="field">
+              <span class="label">Date</span><span class="val">Dec 10, 2025</span>
+            </div>
+            <div class="field">
+              <span class="label">Type</span><span class="val">Training</span>
+            </div>
+            <div class="field">
+              <span class="label">Programme</span><span class="val">SEDarc</span>
+            </div>
+            <div class="field"><span class="label">Hours</span><span class="val">1.5</span></div>
+            <div class="field">
+              <span class="label">Days</span><span class="val">0.5</span>
+              <span class="hint">Suggested from the hours</span>
+            </div>
+            <div class="field">
+              <span class="label">Lead</span><span class="val">Robert Darby</span>
+            </div>
+          </div>
+
+          <div class="split">
+            <div class="doc">
+              <h3>
+                Details<span class="hint"
+                  >Goes in the log’s Details column. One or two sentences.</span
+                >
+              </h3>
+              <p>
+                Principles and practices for secure data storage and management, and the ethical
+                sharing of data in support of research findings.
+              </p>
+              <h3>Notes<span class="hint">Example text, invented for this mockup.</span></h3>
+              <ul>
+                <li>Use the university’s approved storage, not personal cloud accounts.</li>
+                <li>Risk in data drives the choice of encryption.</li>
+                <li>A data management plan is expected as part of the ethics application.</li>
+              </ul>
+            </div>
+            <aside class="side" aria-label="Files">
+              <span class="label">Files</span>
+              <div class="box files">
+                <span class="path"
+                  >Trainings/2025-26/SEDarc/2025 12 10 Data Management and Security</span
+                >
+                <div class="file">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+                    <path d="M14 3v5h5" /></svg
+                  ><span>Slides.pdf</span>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                  <button class="btn small">Show in Finder</button>
+                </div>
+              </div>
+              <p class="notes">
+                The app lists and opens what is in that folder. It never moves or deletes your
+                files.
+              </p>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const tabs = document.querySelectorAll('.tab')
+      const screens = document.querySelectorAll('[data-screen]')
+      tabs.forEach((tab) =>
+        tab.addEventListener('click', () => {
+          tabs.forEach((t) => t.setAttribute('aria-pressed', String(t === tab)))
+          screens.forEach((s) => (s.hidden = s.dataset.screen !== tab.dataset.tab))
+        })
+      )
+      document
+        .querySelectorAll('a[href="#"]')
+        .forEach((a) => a.addEventListener('click', (e) => e.preventDefault()))
+    </script>
+  </body>
+</html>

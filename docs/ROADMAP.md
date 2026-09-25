@@ -48,7 +48,9 @@ data.
 
 - Real Claude wiring for the Ask panel; embedded terminal for Build
 - Shared task engine (tasks, dates, time tracking, lists, subtasks, table/board/calendar views) and a one-time ClickUp import
-- Studies, Thesis, Training (notes, log, PDF export), Ideas, Data Sources, Inbox
+- **Training** (the formal training log, a notes page per entry, linked files, PDF export): the plan and mockup are drafted in
+  `docs/TRAINING_PLAN.md` and `docs/design/training-mockup.html`; not started until the user answers its open questions.
+- Studies, Thesis, Ideas, Data Sources, Inbox
 - Global dashboard (priorities, calendar, weather, unread email count)
 - World news tab, Research Digest, Focus/Writing space
 - Life and Work workspaces
