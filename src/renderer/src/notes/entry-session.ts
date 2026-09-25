@@ -9,6 +9,8 @@ export interface EntryFile<R, M> {
   meta: M
   body: string
   problems: string[]
+  /** The file's modified time in milliseconds, for kinds of entry that show it. */
+  edited?: number
 }
 
 export type EntrySaveResult =
@@ -58,6 +60,8 @@ export interface EntrySnapshot<M> {
   conflict: DiskVersion<M> | null
   /** True after the entry was refreshed from disk because another tool changed it. */
   reloadedFromDisk: boolean
+  /** When the file was last changed (milliseconds): as read from disk, or when this session last saved it. Null if unknown. */
+  updatedAt: number | null
 }
 
 /** What differs between kinds of entry. */
@@ -129,7 +133,8 @@ export class EntrySession<R extends { id: string; workspace: string }, M> {
       save: 'clean',
       error: null,
       conflict: null,
-      reloadedFromDisk: false
+      reloadedFromDisk: false,
+      updatedAt: null
     }
   }
 
@@ -327,7 +332,7 @@ export class EntrySession<R extends { id: string; workspace: string }, M> {
     }
     this.pendingMeta = remaining
     const dirty = this.hasPending()
-    this.update({ save: dirty ? 'dirty' : 'clean' })
+    this.update({ save: dirty ? 'dirty' : 'clean', updatedAt: Date.now() })
     if (dirty) this.saveAgain = true
   }
 
@@ -376,7 +381,8 @@ export class EntrySession<R extends { id: string; workspace: string }, M> {
       meta: file.meta,
       problems: file.problems,
       body: file.body,
-      initialBody: file.body
+      initialBody: file.body,
+      updatedAt: file.edited ?? this.snapshot.updatedAt
     })
   }
 
