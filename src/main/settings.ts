@@ -21,6 +21,15 @@ export function normaliseSettings(raw: unknown, defaults: Settings): Settings {
         : defaults.zoteroExportPath,
     repoPath: typeof obj.repoPath === 'string' ? obj.repoPath : defaults.repoPath,
     terminal: TERMINALS.find((t) => t.id === obj.terminal)?.id ?? defaults.terminal,
+    trainingAimHours:
+      typeof obj.trainingAimHours === 'number' &&
+      Number.isFinite(obj.trainingAimHours) &&
+      obj.trainingAimHours > 0 &&
+      obj.trainingAimHours <= 5000
+        ? obj.trainingAimHours
+        : defaults.trainingAimHours,
+    trainingsFolder:
+      typeof obj.trainingsFolder === 'string' ? obj.trainingsFolder : defaults.trainingsFolder,
     ui: { workspace, moduleState }
   }
 }

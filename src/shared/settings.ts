@@ -15,6 +15,10 @@ export interface Settings {
   repoPath: string
   /** Terminal app the Build button opens. */
   terminal: TerminalId
+  /** Yearly training aim in hours (Training shows progress towards it). */
+  trainingAimHours: number
+  /** The folder holding training files (slides, readings); entries link to sub-folders of it. Empty until configured. */
+  trainingsFolder: string
   /** Remembered UI state. */
   ui: {
     workspace: Workspace
@@ -26,6 +30,8 @@ export interface Settings {
   }
 }
 
+export const DEFAULT_TRAINING_AIM_HOURS = 200
+
 export const WORKSPACES: readonly Workspace[] = ['life', 'research', 'work']
 
 export function defaultSettings(defaultZoteroExportPath: string): Settings {
@@ -33,6 +39,8 @@ export function defaultSettings(defaultZoteroExportPath: string): Settings {
     zoteroExportPath: defaultZoteroExportPath,
     repoPath: '',
     terminal: 'terminal',
+    trainingAimHours: DEFAULT_TRAINING_AIM_HOURS,
+    trainingsFolder: '',
     ui: { workspace: 'research', moduleState: {} }
   }
 }
