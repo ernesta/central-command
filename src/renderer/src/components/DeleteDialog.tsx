@@ -7,6 +7,8 @@ interface DeleteDialogProps {
   heading: string
   /** "meeting" or "training entry". */
   noun: string
+  /** What goes with it, after "and all its": notes by default; a note says "text". */
+  contents?: string
   busy: boolean
   onCancel: () => void
   onConfirm: () => void
@@ -17,6 +19,7 @@ export function DeleteDialog({
   open,
   heading,
   noun,
+  contents = 'notes',
   busy,
   onCancel,
   onConfirm
@@ -38,8 +41,8 @@ export function DeleteDialog({
         </>
       }
     >
-      {heading} and all its notes will be removed from Central Command. The file moves to the macOS
-      Trash, so you can still restore it from there.
+      {heading} and all its {contents} will be removed from Central Command. The file moves to the
+      macOS Trash, so you can still restore it from there.
     </Dialog>
   )
 }
