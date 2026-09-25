@@ -216,13 +216,77 @@
           grid-template-columns: 1fr;
         }
       }
+      .act {
+        color: var(--text-muted);
+        text-align: right;
+        white-space: nowrap;
+      }
+      .former {
+        margin-top: 18px;
+      }
+      .former summary {
+        cursor: pointer;
+        color: var(--text-secondary);
+        font-weight: 500;
+      }
+      .dialogs {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        align-items: start;
+      }
+      .dialogs.three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .dialog {
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+        border-radius: 14px;
+        padding: 18px 20px;
+        box-shadow: 0 8px 24px rgba(27, 34, 43, 0.18);
+        display: grid;
+        gap: 10px;
+      }
+      .dialog h3 {
+        font-size: 18px;
+      }
+      .dialog ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+      .dialog .row {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        margin-top: 4px;
+      }
+      .btn.danger {
+        background: var(--danger);
+        border-color: var(--danger);
+        color: #fff;
+      }
+      .opt {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        padding: 8px 10px;
+        border: 1px solid var(--border-soft);
+        border-radius: 8px;
+      }
+      @media (max-width: 900px) {
+        .dialogs,
+        .dialogs.three {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
     </style>
   </head>
   <body>
     <div class="wrap">
       <section>
         <p class="label">
-          1. People (a page of its own, opened from Settings → People and from the people chips)
+          1. People page (opened from Settings → People and from any initials chip)
         </p>
         <div class="screen">
           <span class="back">← Research</span>
@@ -254,80 +318,175 @@
                   <td><span class="chip">EO</span></td>
                   <td>63</td>
                   <td>0</td>
-                  <td class="muted">Edit</td>
+                  <td class="act">Edit</td>
                 </tr>
                 <tr>
                   <td>Kathy Rastle</td>
                   <td><span class="chip">KR</span></td>
                   <td>41</td>
                   <td>2</td>
-                  <td class="muted">Edit</td>
+                  <td class="act">Edit · Remove</td>
                 </tr>
                 <tr>
                   <td>Ryan McKay</td>
                   <td><span class="chip warn">RM</span></td>
                   <td>12</td>
                   <td>1</td>
-                  <td class="muted">Edit</td>
+                  <td class="act">Edit · Remove</td>
                 </tr>
                 <tr>
                   <td>Robyn Muir</td>
-                  <td><input class="input" value="RM2" aria-label="Initials" /></td>
+                  <td><span class="chip warn">RM2</span></td>
                   <td>0</td>
                   <td>1</td>
-                  <td class="muted">Save</td>
+                  <td class="act">Edit · Remove</td>
                 </tr>
               </tbody>
             </table>
           </div>
+          <details class="former" open>
+            <summary>Former people (2)</summary>
+            <div class="card" style="margin-top: 10px">
+              <table>
+                <tbody>
+                  <tr>
+                    <td>Chris Prosser</td>
+                    <td><span class="chip">CP</span></td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td class="act">Restore</td>
+                  </tr>
+                  <tr>
+                    <td>Anat Bardi</td>
+                    <td><span class="chip">AB</span></td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td class="act">Restore</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="note">
+              Not offered when adding people to a note, but their names and initials still show
+              properly in old notes, and nobody else can take their initials.
+            </p>
+          </details>
+        </div>
+      </section>
 
-          <h3 class="sec">Named in your notes, not in the list yet</h3>
-          <p class="muted">
-            Found as training leads or meeting attendees. Check the initials, then add.
-          </p>
-          <div class="card" style="margin-top: 10px">
-            <table>
-              <tbody>
-                <tr>
-                  <td>Anat Bardi</td>
-                  <td><input class="input" value="AB" aria-label="Initials" /></td>
-                  <td class="muted">1 training</td>
-                  <td><button class="btn">Add</button></td>
-                </tr>
-                <tr>
-                  <td>Chris Prosser</td>
-                  <td><input class="input" value="CP" aria-label="Initials" /></td>
-                  <td class="muted">1 training</td>
-                  <td><button class="btn">Add</button></td>
-                </tr>
-                <tr>
-                  <td>Cilla Harries</td>
-                  <td><input class="input" value="CH" aria-label="Initials" /></td>
-                  <td class="muted">2 trainings</td>
-                  <td><button class="btn">Add</button></td>
-                </tr>
-                <tr>
-                  <td colspan="4" class="muted">
-                    15 more …
-                    <button class="btn" style="margin-left: 8px">
-                      Add all with these initials
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+      <section>
+        <p class="label">
+          2. Changing a name or initials updates your notes (asked first, with counts)
+        </p>
+        <div class="screen">
+          <div class="dialogs">
+            <div class="dialog">
+              <h3>Change name?</h3>
+              <p><strong>Kathy Rastle</strong> → <strong>Kathryn Rastle</strong></p>
+              <ul>
+                <li>Attendee in <strong>41 meetings</strong></li>
+                <li>Lead in <strong>2 trainings</strong></li>
+              </ul>
+              <p class="muted">
+                Only the attendee and lead lines at the top of each note change. Each file is backed
+                up first. A file that changed in the meantime is skipped and listed.
+              </p>
+              <div class="row">
+                <button class="btn">Cancel</button><button class="btn">Change the list only</button
+                ><button class="btn primary">Change name and update notes</button>
+              </div>
+            </div>
+
+            <div class="dialog">
+              <h3>Change initials?</h3>
+              <p><span class="chip">KR</span> → <span class="chip">KRa</span></p>
+              <ul>
+                <li><strong>TODO(KR)</strong> in <strong>17 TODOs</strong> across 9 meetings</li>
+              </ul>
+              <p class="muted">
+                Only the owner inside a TODO marker changes ("TODO(KR &amp; EO)" becomes "TODO(KRa
+                &amp; EO)"); no other text is touched. Nothing to update? Only the list changes.
+              </p>
+              <div class="row">
+                <button class="btn">Cancel</button><button class="btn">Change the list only</button
+                ><button class="btn primary">Change initials and update notes</button>
+              </div>
+            </div>
           </div>
           <p class="note">
-            Later, per person: links (Google Scholar, GitHub, LinkedIn) and their recent papers.
-            Removing a person never edits notes.
+            "Change the list only" is there for the rare case where you want old notes left alone
+            (the old name then shows as an outlined chip).
           </p>
         </div>
       </section>
 
       <section>
         <p class="label">
-          2. Training plan (a document, one per academic year, opened from the Training landing
-          page)
+          3. Removing a person: delete only when nothing mentions them, otherwise archive or merge
+        </p>
+        <div class="screen">
+          <div class="dialogs three">
+            <div class="dialog">
+              <h3>Delete Joanna Young?</h3>
+              <p class="muted">Not mentioned in any meeting or training.</p>
+              <div class="row">
+                <button class="btn">Cancel</button><button class="btn danger">Delete</button>
+              </div>
+            </div>
+
+            <div class="dialog">
+              <h3>Remove Cilla Harries?</h3>
+              <p>
+                Lead in <strong>2 trainings</strong>. Deleting would erase who led them, so choose:
+              </p>
+              <label class="opt"
+                ><input type="radio" name="r" checked />
+                <span
+                  ><strong>Archive</strong> (recommended)<br /><span class="muted"
+                    >Moves to Former people. Notes are unchanged and still show CH.</span
+                  ></span
+                ></label
+              >
+              <label class="opt"
+                ><input type="radio" name="r" />
+                <span
+                  ><strong>Merge into another person…</strong><br /><span class="muted"
+                    >Use when this is a duplicate: every mention becomes the other person.</span
+                  ></span
+                ></label
+              >
+              <div class="row">
+                <button class="btn">Cancel</button><button class="btn primary">Archive</button>
+              </div>
+            </div>
+
+            <div class="dialog">
+              <h3>Merge Kathryn Rastle into…</h3>
+              <p>
+                <select class="input" style="width: 100%">
+                  <option>Kathy Rastle (KR)</option>
+                </select>
+              </p>
+              <ul>
+                <li>Attendee lines in <strong>3 meetings</strong> → Kathy Rastle</li>
+                <li><strong>TODO(KRa)</strong> in 2 TODOs → TODO(KR)</li>
+              </ul>
+              <p class="muted">
+                Then Kathryn Rastle is removed from the list. Each changed file is backed up first.
+              </p>
+              <div class="row">
+                <button class="btn">Cancel</button
+                ><button class="btn primary">Merge and update notes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <p class="label">
+          4. Training plan (built) (a document, one per academic year, opened from the Training
+          landing page)
         </p>
         <div class="screen">
           <span class="back">← Training</span>
