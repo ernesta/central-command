@@ -1,6 +1,6 @@
 # Training module (and Meetings additions): plan
 
-Status: **draft 3, revised after the user's answers. Nothing is built.** Read it with `CLAUDE.md`, `docs/DECISIONS.md` and the mockup
+Status: **draft 4: the user approved the plan; implementation is under way (stage 1 first).** Read it with `CLAUDE.md`, `docs/DECISIONS.md` and the mockup
 (`docs/design/training-mockup.html`; open it in a browser). The Meetings module is the pattern to copy (`docs/MEETINGS_PLAN.md`).
 "Proposed" means the user has not decided yet; the open questions are at the end.
 
@@ -294,18 +294,16 @@ content hash). A deleted entry goes to the Trash after a confirmation. No user d
 **Decided:** meetings are not counted in the 200 hours and have their own counter and skills; skills use sentence case; series starts with
 SEDarc and DataCamp and is optional; hours come from the times; files are linked; the aim is 200 hours per academic year.
 
-**Open questions for the user**
+**Answered by the user (draft 3 review):**
 
-1. ~~Which type for a seminar, an induction, a lab meeting and self-guided learning?~~ Decided: the user maps them by hand, the app adds
-   no extra types, and a decision log will support automatic categorising later.
-2. **Do my readings of the three course types match yours?** Research-related (methods, statistics, data, software), Academic skills
-   (writing, presenting, publishing, CV) and Generic skills (wellbeing, leadership, careers). Tell me where I am wrong, or say whether
-   you would rather have just one "Course" type in the app and pick the Inkpath type only when you export.
-3. **What do the skill tags (GS), (RP) and (SS) stand for?** They let the skills list be grouped, and I do not want to guess.
-4. **Format.** Keep Inkpath's Attendance Type as In person / Online / blank for self-paced, like Meetings?
-5. **Leads from Provider.** Some providers are people. Should the import turn those into leads (adding them to the people list) or
-   leave them for you?
-6. **Export.** PDF, Copy as table, or an .xlsx in Inkpath's columns (adds a small dependency)? Do you upload to Inkpath from a file?
-7. **The entry with five skills** breaks "up to three": keep three, or allow more for old imports?
-8. **Meetings counter target.** Meetings has no aim of its own. Should the Training page show the "plus N hours of meetings" line
-   (proposed), or would you rather see the two counters only on their own pages?
+1. **Types:** each Inkpath type has a corresponding type in the app, so the three course types stay separate. Types Inkpath lacks
+   (seminar, induction, lab meeting, self-guided learning) are mapped by hand; the app adds none. The user will keep a decision log of
+   those mappings so that categorising can be automated later.
+2. **Skill tags:** GS is General Skills, RP is Research in Practice, SS is Specialist Skills.
+3. **Format:** In person, Online or Self-paced (Meetings has the first two; Self-paced is added for Training).
+4. **Provider is an institution** (stored as `institution`); **leads are people**. The import does not turn providers into leads.
+5. **Export:** PDF only, like Meetings, for annual reviews. The user cannot upload to Inkpath and enters entries there by hand, so no
+   spreadsheet or copy-as-table export.
+6. **Skills stay limited to three.** An imported entry with more (one has five) keeps three and is added to a review TODO list for the
+   user (the import report, and a list in the app's Training page).
+7. **The Training page shows a small "plus N hours of meetings" counter.**
