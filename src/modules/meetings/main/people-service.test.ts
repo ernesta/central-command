@@ -51,6 +51,7 @@ let trainingDir: string
 let backupsDir: string
 let store: PeopleStore
 let service: PeopleService
+let reindexed: string[]
 
 const read = (dir: string, name: string): string => readFileSync(join(dir, name), 'utf8')
 
@@ -64,6 +65,7 @@ beforeEach(async () => {
   writeFileSync(join(meetingsDir, '2026-01-01 Supervision.md'), MEETING)
   writeFileSync(join(meetingsDir, '2026-01-02 Supervision.md'), OTHER_MEETING)
   writeFileSync(join(trainingDir, '2026-01-03 Stats.md'), TRAINING)
+  reindexed = []
   store = new PeopleStore(join(root, 'people.json'))
   await store.add({ name: 'Ernesta Orlovaitė', me: true })
   await store.add({ name: 'Kathy Rastle' })
@@ -81,6 +83,9 @@ beforeEach(async () => {
       ],
       trainings: [{ leads: ['Kathy Rastle'] }]
     }),
+    reindex: async (kind, fileName) => {
+      reindexed.push(`${kind}:${fileName}`)
+    },
     now: () => new Date('2026-09-25T10:00:00Z')
   })
 })
@@ -103,6 +108,10 @@ describe('PeopleService.update', () => {
     expect(read(trainingDir, '2026-01-03 Stats.md')).toBe(
       TRAINING.replace('leads: [Kathy Rastle]', 'leads: [Katherine Rastle]')
     )
+    expect(reindexed).toEqual([
+      'meetings:2026-01-01 Supervision.md',
+      'training:2026-01-03 Stats.md'
+    ])
     const [backup] = readdirSync(backupsDir)
     expect(backup).toBe('people-2026-09-25T10-00-00-000Z')
     expect(read(join(backupsDir, backup, 'meetings'), '2026-01-01 Supervision.md')).toBe(MEETING)

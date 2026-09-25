@@ -26,6 +26,8 @@ interface PeopleServiceOptions {
     meetings: Parameters<typeof personUsage>[1]
     trainings: Parameters<typeof personUsage>[2]
   }
+  /** Bring the index up to date for a note this service just rewrote, so counts are right straight away. */
+  reindex: (kind: 'meetings' | 'training', fileName: string) => Promise<void>
   now?: () => Date
 }
 
@@ -90,8 +92,10 @@ export class PeopleService {
       backupDir: join(backup, 'training'),
       transform: (content) => rewriteTrainingPeople(content, change)
     })
+    for (const name of meetings.changed) await this.options.reindex('meetings', name)
+    for (const name of trainings.changed) await this.options.reindex('training', name)
     return {
-      changed: meetings.changed + trainings.changed,
+      changed: meetings.changed.length + trainings.changed.length,
       skipped: [...meetings.skipped, ...trainings.skipped]
     }
   }

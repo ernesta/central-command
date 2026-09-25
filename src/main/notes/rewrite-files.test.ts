@@ -30,7 +30,7 @@ describe('rewriteNoteFiles', () => {
     writeFileSync(join(dir, 'a.md'), 'old one\n')
     writeFileSync(join(dir, 'b.md'), 'nothing here\n')
     const report = await rewriteNoteFiles({ dir, transform: swap, backupDir })
-    expect(report).toEqual({ changed: 1, skipped: [] })
+    expect(report).toEqual({ changed: ['a.md'], skipped: [] })
     expect(readFileSync(join(dir, 'a.md'), 'utf8')).toBe('new one\n')
     expect(readFileSync(join(dir, 'b.md'), 'utf8')).toBe('nothing here\n')
     expect(readdirSync(backupDir)).toEqual(['a.md'])
@@ -49,7 +49,7 @@ describe('rewriteNoteFiles', () => {
         return swap(content)
       }
     })
-    expect(report).toEqual({ changed: 1, skipped: ['b.md'] })
+    expect(report).toEqual({ changed: ['a.md'], skipped: ['b.md'] })
     expect(readFileSync(join(dir, 'a.md'), 'utf8')).toBe('new one\n')
     expect(readFileSync(join(dir, 'b.md'), 'utf8')).toBe('old two, edited by hand\n')
   })
@@ -58,13 +58,13 @@ describe('rewriteNoteFiles', () => {
     writeFileSync(join(dir, '.hidden.md'), 'old\n')
     writeFileSync(join(dir, 'x.txt'), 'old\n')
     expect(await rewriteNoteFiles({ dir, transform: swap, backupDir })).toEqual({
-      changed: 0,
+      changed: [],
       skipped: []
     })
     expect(readFileSync(join(dir, '.hidden.md'), 'utf8')).toBe('old\n')
     expect(existsSync(backupDir)).toBe(false)
     expect(
       await rewriteNoteFiles({ dir: join(root, 'missing'), transform: swap, backupDir })
-    ).toEqual({ changed: 0, skipped: [] })
+    ).toEqual({ changed: [], skipped: [] })
   })
 })

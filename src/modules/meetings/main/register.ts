@@ -19,6 +19,7 @@ import { meetingPath } from './file-name'
 import { meetingsMigrations } from './migrations'
 import { MeetingsStore } from './meetings-store'
 import { listMeetingRows } from './repository'
+import { TrainingStore } from '../../training/main/training-store'
 import { listTrainingRows } from '../../training/main/repository'
 import { PeopleService } from './people-service'
 import { PeopleStore } from './people-store'
@@ -54,11 +55,21 @@ function register({ db, paths }: MainContext): () => void {
   })
   const people = new PeopleStore(paths.people)
   people.load().catch((error) => console.error('Could not read the people list:', error))
+  // Only used to bring the index up to date for entries whose leads were just rewritten.
+  const trainingStore = new TrainingStore({
+    db,
+    dirFor: () => join(paths.trainingNotes, 'research'),
+    trash: (path) => shell.trashItem(path)
+  })
   const peopleService = new PeopleService({
     store: people,
     meetingsDir: dirFor('research'),
     trainingDir: join(paths.trainingNotes, 'research'),
     backupsDir: join(paths.root, 'backups'),
+    reindex: async (kind, fileName) => {
+      if (kind === 'meetings') await store.reindexFile('research', fileName)
+      else await trainingStore.reindexFile('research', fileName)
+    },
     indexed: () => ({
       meetings: listMeetingRows(db, 'research'),
       trainings: listTrainingRows(db, 'research')
