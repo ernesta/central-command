@@ -13,11 +13,9 @@
 - [ ] **One imported training broke the rules**: _Making your research transparent and reproducible (Live)_ (28 Jan 2026) has five skills in
       Inkpath and the app allows three. The first three were kept; left out: Digital and bibliographic skills (GS), Intellectual property
       rights (GS). Decide which three to keep. (Review this together with the other training TODOs.)
-- [ ] **Add the people who lead trainings to your people list** (the People page) and choose their initials, so they show as
-      initials chips. Not yet in the list: Anat Bardi, Chris Prosser, Cilla Harries, Emily Ma, Emma Russell, Eran Halperin, George Pontikas,
-      James D. Williams, Jessie Ricketts, Joanna Young, Kathryn Redway, Laura Ulanowski, Robert Darby, Robert De Vries, Robyn Muir, Roger
-      Giner-Sorolla, Smadar Cohen-Chen, Thomas C. Ormerod. Initials must be unique, so a second RM (Robyn Muir next to Ryan McKay) needs
-      different initials, for example RM and RMu, so that a TODO(RM) in a note is unambiguous.
+- [ ] **Review the initials of the 18 people added from your notes** (People page): a few got numbered initials because of clashes
+      (Cilla Harries CH2, Kathryn Redway KR2, Robyn Muir RM2). `npm run people:from-notes` was applied on 25 Sep 2026; the previous list
+      is `people.json.backup-<time>` in `~/CentralCommand/data/`. Restart the app before using the People page.
 - [ ] **Four supervision meetings have times that differ from the Inkpath log** (the files were left as they are): 11 Nov 2025 (file
       15:30–16:00, log 15:30–16:30), 16 Oct 2025 (14:00–14:30 against 14:00–14:15), 26 Jun 2026 (10:00–11:45 against 10:00–11:15), 29 May 2026
       (11:00–12:00 against 11:00–11:45). Say which is right.
@@ -31,9 +29,7 @@
 - [ ] After the user's review: fix what they raise, then push, write up the state, clear context and move on to the next part.
 - [ ] A "decision log" for training types (see above): design it with the user when they start mapping; then suggest types automatically.
 - [x] **People page built** (see `docs/DECISIONS.md` "People page"). Waiting for the user's review.
-- [ ] **Try the People page**, then run `npm run people:from-notes` (dry run), read the list, and say when to apply it with the app closed.
-      Afterwards review the new people's initials on the People page (a second RM needs different initials).
-- [ ] Claude: apply `people:from-notes` only when the user says so.
+- [ ] **Try the People page** (Research → People) and say what to change.
 - [ ] Re-check the changed screens in dev mode (StrictMode) and the built app after any further change to lists, landings or entry pages.
 - [ ] **Say when a filter is applied** (later, the user's call when): opening the Supervision series card shows "All meetings" with only that
       series in it. See the Meetings follow-ups.
@@ -64,7 +60,7 @@ the meeting page, the list, the landing page, People settings and remembered lis
 - **Say when a filter is applied.** Opening a series card (for example Supervision) shows the page titled "All meetings" with
   only that series in it, which is easy to miss. Make the page say so (a different title or a visible "Showing Supervision
   only" line with a way to clear it). Not started.
-- **A People page** of its own: designed and approved, to be built next (see the Claude TODO above). Later it could hold links per person (GitHub,
+- **People page**: built. Later it could hold links per person (GitHub,
   Google Scholar, LinkedIn) and even pull their recent papers, posts or tweets. Training leads and meeting attendees both use it.
 - **Export the supervision log as a PDF**: built (`meetings/shared/report.ts`; printing in `src/main/export-pdf.ts` and the page
   shell in `src/shared/report-page.ts` are shared with Training). Awaiting the user's review of the layout.
@@ -76,8 +72,6 @@ the meeting page, the list, the landing page, People settings and remembered lis
   over while unticked; the user may want to tick or delete them in the newest notes.
 - **Backspace at the start of a first-line bullet** did not lift the bullet in a scripted run of the real app (unit
   test passes); unconfirmed, check by hand.
-- **Renaming a person** does not rewrite meeting files (by design); a "rewrite this name in all meetings" action could be
-  offered explicitly if wanted.
 
 ## Training (built; awaiting the user's review)
 
