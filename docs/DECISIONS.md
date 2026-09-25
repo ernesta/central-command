@@ -518,3 +518,38 @@ list. `convertPseudoHeadings` (`meetings/shared/pseudo-headings.ts`) turns such 
   pressing it in a list left the page. The shell's handler now ignores a key press the editor already handled
   (`defaultPrevented`); outside a list, or on a first-level item that cannot move out, it still goes back.
   Checked in the production build and dev mode.
+
+## Training (`docs/TRAINING_PLAN.md`)
+
+- **Same shape as Meetings.** Entries are Markdown files in `~/CentralCommand/notes/training/research/` (`YYYY-MM-DD Title.md`);
+  the database is a rebuildable index (`training/0001`, `0002_review`). Front matter fields: `date`, `start`, `end`, `title`,
+  `series`, `type`, `mode`, `skills`, `leads`, `institution`, `folder`, `organisation`, `points`, `review`; unknown keys survive
+  every save. Duration is calculated from the times and there is no hours field, so hours can never disagree with the times.
+- **Shared code moved, not copied.** Front-matter split/join/update, sections, time, people and the dated file-name helpers live
+  in `src/shared` and `src/main/notes`; the note-editing session (saves, conflicts, outside changes) is one `EntrySession` that
+  `MeetingSession` and `TrainingSession` extend, so the rules that protect the user's writing exist once. PeopleField, SkillsField,
+  DeleteDialog, HoursStrip and AcademicYearSelect are shared components.
+- **User's answers that shaped it:** each Inkpath type has its own type in the app (the three course types stay separate);
+  the tags GS, RP and SS are General Skills, Research in Practice and Specialist Skills; format is In person, Online or
+  Self-paced; Provider is the institution and leads are people (the import never turns providers into leads); PDF is the only
+  export; skills are limited to three and an entry with more goes on a to-review list (`review` key, shown on the page and the
+  entry); the Training page shows "plus N h of meetings". Meetings are not counted in the 200 hours.
+- **Academic year** runs 1 Sep to 31 Aug (`2025–26`). Pages open on the current year (`?year=` in the address, not remembered).
+  Upcoming entries are shown, marked and left out of the totals and the PDF.
+- **Files are linked, never copied.** The panel lists, opens and shows in Finder; nothing else. `resolveInside` follows symlinks
+  before checking containment, so `..`, absolute paths, a link that leads outside the Trainings folder and a sibling folder with
+  the same prefix are all refused; links that escape are hidden from listings; files that run code (`.command`, `.app`, `.sh`,
+  ...) are never opened. Each rule was mutation-checked (removing it fails a test).
+- **PDF export** uses `printToPDF` on a hidden, script-less page built from a pure, escaped HTML string (`shared/report.ts`); the
+  save location is chosen in a native dialog. Nothing leaves the machine.
+- **Importer** (`npm run import:training`, dry run by default): reads the .xlsx with Node built-ins (zip central directory plus
+  sheet XML). Findings from reading the real file: descriptions carry HTML entities (`&rsquo;`), decoded on import; typed hours
+  differ from the times in 12 non-meeting entries (the app uses the times); 37 rows are supervisor or lab meetings and are left
+  for Meetings. Notes and folders are matched by date and a similar title and only when the match is unique; the rest is
+  reported. Every planned entry is read back and compared with its source row (title, date, times, skills, description, a note's
+  lines); a failure leaves it out as ATTENTION. Mutation checks found and fixed a title matcher that treated "for" as a shared
+  word. A second run writes nothing.
+- **`npm run reconcile:meetings`** copies skills and missing times into meeting files through the guarded save; a time that
+  differs is reported, never overwritten.
+- **Bugs found by looking:** a test note typed into a heading (my script, not the app); the skills menu stayed open after a pick
+  (now closes); none of these were visible to unit tests, which is why each stage was driven in the real app (production and dev).

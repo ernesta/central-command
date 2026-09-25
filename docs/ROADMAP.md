@@ -26,17 +26,10 @@ the meeting page, the list, the landing page, People settings and remembered lis
   only that series in it, which is easy to miss. Make the page say so (a different title or a visible "Showing Supervision
   only" line with a way to clear it). Not started.
 - **The Readings list has no back arrow** to the Research landing page (Meetings now has one). Same small fix if wanted.
-- **Academic year, skills and an hours counter for Meetings.** Each September tracking starts anew, so the list needs an
-  academic-year filter (1 Sep to 31 Aug, shown as `2025–26`, opening on the current year). Meetings also get up to three skills
-  (the same list as Training, in sentence case) and an hours counter with hours per skill, but no aim: Training's 200 hours do not
-  include meetings. This is stage 1 of `docs/TRAINING_PLAN.md`; not started.
 - **A People page** of its own: the list will get too long for Settings. Later it could hold links per person (GitHub,
   Google Scholar, LinkedIn) and even pull their recent papers, posts or tweets. Training leads and meeting attendees both use it.
-- **Copy supervision and lab meeting times and skills from the Inkpath log** (`2025-26 Inkpath Training Log.xlsx` has the right
-  times and the skills for 34 supervisor and 3 lab meetings): a reconciling tool (dry run, reports every difference, never
-  overwrites a time). See `docs/TRAINING_PLAN.md`.
 - **Export the supervision log as a PDF** (oldest first, Supervision series, upcoming meetings left out). The disabled
-  Export control in the list is its place.
+  Export control in the list is its place; Training's PDF export (`training/main/register.ts`, `shared/report.ts`) is the pattern.
 - **Meetings in Work**: the code takes a workspace everywhere (`notes/meetings/<workspace>/`); Work needs a folder,
   a route and a landing page from the same components. `ACTIVE_WORKSPACES` in `meetings/main/register.ts` is the switch.
 - **Imported notes with bold pseudo-headings** (`**Topic**`): the converter is built (`npm run convert:topics`, dry run by
@@ -47,6 +40,25 @@ the meeting page, the list, the landing page, People settings and remembered lis
   test passes); unconfirmed, check by hand.
 - **Renaming a person** does not rewrite meeting files (by design); a "rewrite this name in all meetings" action could be
   offered explicitly if wanted.
+
+## Training (built; awaiting the user's review)
+
+All ten stages of `docs/TRAINING_PLAN.md` are done, plus the Meetings additions (academic year selector, skills, hours counter).
+`docs/DECISIONS.md` (Training) records what was decided and found. The importers have been dry-run on the user's real files;
+neither has been applied to the real library.
+
+### Training follow-ups (not started; the user decides when)
+
+- **Apply the imports** to the real library when the user says so: `npm run import:training -- --inkpath <xlsx> --obsidian
+<notes> --trainings <folder> --apply` (129 entries, 10 notes matched, 38 folders linked) and `npm run reconcile:meetings --
+--inkpath <xlsx> --apply` (35 meeting files get skills and missing times; 4 times differ and are only reported).
+- **Choose a type for each imported entry** (all start without one) and **the review list** (one entry had five skills).
+- **A decision log for types Inkpath has no type for** (seminars, inductions, lab meetings, self-guided learning): the user maps
+  them by hand and records why, so categorising can be automated later.
+- **Show meetings in the Training PDF?** Only a line with the hours is included; the meetings are not listed.
+- **Inkpath's Organisation, Points and Date Completed** are kept in the front matter (Organisation and Points are read) but
+  not shown or used.
+- **Long titles** are cut at 80 characters in file names (the front matter title is complete).
 
 ## Product vision: Build is a headline feature
 
@@ -64,7 +76,7 @@ data.
 - Real Claude wiring for the Ask panel; embedded terminal for Build
 - Shared task engine (tasks, dates, time tracking, lists, subtasks, table/board/calendar views) and a one-time ClickUp import
 - **Training** (the formal training log, a notes page per entry, linked files, PDF export): the plan and mockup are drafted in
-  `docs/TRAINING_PLAN.md` and `docs/design/training-mockup.html`; approved, in progress.
+  `docs/TRAINING_PLAN.md` and `docs/design/training-mockup.html`; built; see the Training section above.
 - Studies, Thesis, Ideas, Data Sources, Inbox
 - Global dashboard (priorities, calendar, weather, unread email count)
 - World news tab, Research Digest, Focus/Writing space

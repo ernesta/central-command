@@ -13,6 +13,10 @@ ask the user.
 - `npm run import:obsidian -- --vault <path> [--apply]`: import reading notes from an Obsidian vault (dry run by default)
 - `npm run import:meetings -- --vault <path> --meeting-notes <path> [--apply] [--add-people]`: import meeting notes from
   Obsidian and the Word log and notes (dry run by default; macOS only)
+- `npm run import:training -- --inkpath <xlsx> [--obsidian <notes>] [--trainings <folder>] [--apply] [--add-people]`: import the Inkpath
+  training log (dry run by default)
+- `npm run reconcile:meetings -- --inkpath <xlsx> [--apply]`: copy skills and missing times from the Inkpath log into meeting files (dry run by
+  default)
 - `npm run convert:topics [-- --apply]`: turn bold pseudo-headings (`**Topic**`) in meeting notes into `###` topics (dry run by
   default; `--apply` backs each note up first)
 
@@ -67,6 +71,9 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
 - The brief (`central-command-mvp-phase1-brief.md`) is authoritative for the visual design
   (section 9) and the stage plan (section 12). It has been updated for the renames: the app is
   "Central Command", the third workspace is "Work" (`work`), and data lives in `~/CentralCommand/`.
+- Training is done (all ten stages of `docs/TRAINING_PLAN.md`) and awaits the user's review; Meetings gained an academic-year
+  selector, skills and an hours counter. Both importers were dry-run on the real files and **never applied to the real library**;
+  applying them is the user's call (`docs/ROADMAP.md` lists the follow-ups).
 - The app name lives in one place (`src/shared/app-info.ts`); it may be renamed again.
 
 ## Testing the app for real (unit tests are not enough)

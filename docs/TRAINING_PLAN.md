@@ -1,6 +1,6 @@
 # Training module (and Meetings additions): plan
 
-Status: **draft 4: the user approved the plan; implementation is under way (stage 1 first).** Read it with `CLAUDE.md`, `docs/DECISIONS.md` and the mockup
+Status: **built** (all ten stages); see `docs/DECISIONS.md` (Training) for what changed on the way. Read it with `CLAUDE.md`, `docs/DECISIONS.md` and the mockup
 (`docs/design/training-mockup.html`; open it in a browser). The Meetings module is the pattern to copy (`docs/MEETINGS_PLAN.md`).
 "Proposed" means the user has not decided yet; the open questions are at the end.
 

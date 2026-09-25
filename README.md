@@ -7,7 +7,7 @@ is sent anywhere.
 
 Phase 1 covers the app shell and **Readings**, synced one-way from Zotero, with a
 Markdown notes editor. **Meetings** (notes for every meeting, with TODOs carried over from one meeting
-to the next) is built on top of it. See `central-command-mvp-phase1-brief.md` for the full brief,
+to the next) and **Training** (the formal training log, with hours towards a yearly aim) are built on top of it. See `central-command-mvp-phase1-brief.md` for the full brief,
 `docs/MEETINGS_PLAN.md` for the Meetings plan and `docs/ROADMAP.md` for what comes next.
 
 ## Requirements
@@ -96,6 +96,25 @@ truth: Claude Code or Obsidian can edit them, and the app notices. The database 
   never removed, and ticks are yours.
 - **People:** Settings → People. Initials are unique. Marking yourself as "me" turns on the Mine view.
 - **File names** follow the date and series; changing either in the app renames the file.
+
+## Training
+
+Training lives under **Research → Training**. Each entry is one Markdown file
+(`notes/training/research/2025-12-10 Data Management and Security.md`) with a header (date, start, end, title,
+series, type, format, skills, leads, institution and a linked folder) and two sections, **Summary** and **Notes**.
+
+- **The list** shows one academic year (1 September to 31 August) with the hours done of your yearly aim (Settings →
+  Training), hours per skill, and a quiet "plus N h of meetings" line. Hours are calculated from the start and end times.
+  Upcoming entries are marked and not counted.
+- **Skills** (up to three, from the Inkpath list), **type** (one per Inkpath activity type), **leads** (people, like
+  meeting attendees) and **series** are set on the entry. Meetings has skills, an academic-year selector and an hours
+  counter too.
+- **Files** are linked, never copied: set the Trainings folder in Settings, then link a sub-folder to an entry. The app
+  lists and opens the files and never changes them.
+- **Export PDF** writes an academic year, oldest first, for your annual reviews.
+- **Importing your Inkpath log:** `npm run import:training -- --inkpath <the .xlsx> [--obsidian <notes>] [--trainings <folder>]`
+  (dry run; add `--apply` to write) and `npm run reconcile:meetings -- --inkpath <the .xlsx>` (adds skills and missing
+  times to meeting files). Neither changes your sources; existing files are never overwritten.
 
 ### Importing your existing meeting notes (macOS)
 
