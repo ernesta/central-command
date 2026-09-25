@@ -20,6 +20,19 @@ the meeting page, the list, the landing page, People settings and remembered lis
 
 ### Meetings follow-ups (not started; the user decides when)
 
+- **TODO for the user: review the keyboard shortcuts** listed in Settings and say which to change or drop. Nothing has been
+  reviewed yet; the list was grouped so the short ones come first and the long editor list last.
+- **Say when a filter is applied.** Opening a series card (for example Supervision) shows the page titled "All meetings" with
+  only that series in it, which is easy to miss. Make the page say so (a different title or a visible "Showing Supervision
+  only" line with a way to clear it). Not started.
+- **The Readings list has no back arrow** to the Research landing page (Meetings now has one). Same small fix if wanted.
+- **Academic year for Meetings** (and Training): each September tracking starts anew, so the list needs an academic-year
+  filter (1 Sep to 31 Aug, shown as `2025–26`) that opens on the current year. See `docs/TRAINING_PLAN.md`.
+- **A People page** of its own: the list will get too long for Settings. Later it could hold links per person (GitHub,
+  Google Scholar, LinkedIn) and even pull their recent papers, posts or tweets. Training leads and meeting attendees both use it.
+- **Correct supervision times from the Inkpath log.** `2025-26 Inkpath Training Log.xlsx` has the right start and end times for
+  the supervisor meetings; a reconciling tool (dry run, reports differences, never guesses) could fix the four durations the
+  Meetings import flagged.
 - **Export the supervision log as a PDF** (oldest first, Supervision series, upcoming meetings left out). The disabled
   Export control in the list is its place.
 - **Meetings in Work**: the code takes a workspace everywhere (`notes/meetings/<workspace>/`); Work needs a folder,
