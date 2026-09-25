@@ -13,6 +13,8 @@ ask the user.
 - `npm run import:obsidian -- --vault <path> [--apply]`: import reading notes from an Obsidian vault (dry run by default)
 - `npm run import:meetings -- --vault <path> --meeting-notes <path> [--apply] [--add-people]`: import meeting notes from
   Obsidian and the Word log and notes (dry run by default; macOS only)
+- `npm run convert:topics [-- --apply]`: turn bold pseudo-headings (`**Topic**`) in meeting notes into `###` topics (dry run by
+  default; `--apply` backs each note up first)
 
 All of test, lint and typecheck must pass before finishing a checkpoint.
 

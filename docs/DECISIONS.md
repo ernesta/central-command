@@ -482,3 +482,24 @@ What was checked (dev and production, scratch libraries, screenshots read) and w
   a meeting opens in ~60 ms, memory is ~600 MB across the four Electron processes. No virtualising needed at this size;
   the table is a plain `<table>`.
 - **Narrow windows**: the window cannot be narrower than 960 px, and no screen scrolls sideways at that width.
+
+## Converting bold pseudo-headings to topics (`npm run convert:topics`)
+
+Imported notes have topics as a bold line of their own (`**Ethics Application**`), which the topics panel does not
+list. `convertPseudoHeadings` (`meetings/shared/pseudo-headings.ts`) turns such a line into `### Ethics Application`.
+
+- **Narrow on purpose.** A line converts only when it is under `## Notes`, outside code fences, is nothing but one bold
+  span (a trailing colon is dropped), is at most 100 characters, is not a TODO, and follows a blank line or a heading. A
+  bold line inside a paragraph, `**Decision**: text` and bold list items are never touched. A note whose Notes section
+  already has `###` headings is skipped as a whole (its bold lines are then emphasis). Every bold-only line that was
+  not converted is listed with the reason, so nothing is skipped silently.
+- **Only those lines change.** Line endings, blank lines and the front matter are untouched. Before a result is used,
+  `checkConversion` confirms the same number of lines, every other line identical, the TODOs (text, owners, ticked
+  state) unchanged and each converted line reading back as a topic; a note that fails is left as it is. Mutation
+  checks on each of those rules found that the whole check was untested, so it is exported and tested directly.
+- **The tool** is a dry run by default. `--apply` copies each note it changes to
+  `~/CentralCommand/backups/topic-headings-<time>/` and then writes with the same content-hash guard as the app, so
+  a note edited meanwhile is skipped. It is idempotent: a second run finds nothing.
+- **Dry run on the real notes:** 14 lines in 5 notes (the two Luminos and three Supervision notes' topics plus the
+  Rastle Lab one), matching a separate search of the files. A full `--apply` on a scratch copy changed exactly those 14
+  lines, the backups equalled the originals and a second run changed nothing. It has not been applied to the real notes.

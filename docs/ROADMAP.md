@@ -24,8 +24,8 @@ the meeting page, the list, the landing page, People settings and remembered lis
   Export control in the list is its place.
 - **Meetings in Work**: the code takes a workspace everywhere (`notes/meetings/<workspace>/`); Work needs a folder,
   a route and a landing page from the same components. `ACTIVE_WORKSPACES` in `meetings/main/register.ts` is the switch.
-- **Imported notes with bold pseudo-headings** (`**Topic**`) have no topics in the panel; a one-off converter to `###`
-  headings could be offered, but nothing rewrites the user's notes unasked.
+- **Imported notes with bold pseudo-headings** (`**Topic**`): the converter is built (`npm run convert:topics`, dry run by
+  default). Its dry run on the real notes finds 14 lines in 5 notes; applying it is the user's call.
 - **Imported previous items with a status word** (`(Cancelled) **TODO(EO)**: …`) are ownerless Previous TODOs and carry
   over while unticked; the user may want to tick or delete them in the newest notes.
 - **Backspace at the start of a first-line bullet** did not lift the bullet in a scripted run of the real app (unit

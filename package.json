@@ -21,7 +21,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "import:obsidian": "esbuild scripts/import-obsidian.mts --bundle --alias:@shared=./src/shared --alias:@modules=./src/modules --platform=node --format=esm --log-level=warning --banner:js=\"import{createRequire as __cr}from'module';const require=__cr(import.meta.url);\" --outfile=out/scripts/import-obsidian.mjs && node out/scripts/import-obsidian.mjs",
-    "import:meetings": "esbuild scripts/import-meetings.mts --bundle --alias:@shared=./src/shared --alias:@modules=./src/modules --platform=node --format=esm --log-level=warning --banner:js=\"import{createRequire as __cr}from'module';const require=__cr(import.meta.url);\" --outfile=out/scripts/import-meetings.mjs && node out/scripts/import-meetings.mjs"
+    "import:meetings": "esbuild scripts/import-meetings.mts --bundle --alias:@shared=./src/shared --alias:@modules=./src/modules --platform=node --format=esm --log-level=warning --banner:js=\"import{createRequire as __cr}from'module';const require=__cr(import.meta.url);\" --outfile=out/scripts/import-meetings.mjs && node out/scripts/import-meetings.mjs",
+    "convert:topics": "esbuild scripts/convert-topics.mts --bundle --alias:@shared=./src/shared --alias:@modules=./src/modules --platform=node --format=esm --log-level=warning --banner:js=\"import{createRequire as __cr}from'module';const require=__cr(import.meta.url);\" --outfile=out/scripts/convert-topics.mjs && node out/scripts/convert-topics.mjs"
   },
   "dependencies": {
     "@electron-toolkit/utils": "^4.0.0",
