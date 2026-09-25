@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router'
+import { sortPeople } from '@shared/people'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { LandingHeader, LandingPage } from '@renderer/components/Landing'
@@ -26,8 +28,10 @@ export function PeoplePage(): React.JSX.Element {
   const [error, setError] = useState<string | null>(null)
   const [removing, setRemoving] = useState<Person | null>(null)
 
-  const current = (people ?? []).filter((p) => !p.archived)
-  const archived = (people ?? []).filter((p) => p.archived)
+  const current = sortPeople((people ?? []).filter((p) => !p.archived))
+  const archived = sortPeople((people ?? []).filter((p) => p.archived))
+  // Back goes to where you came from: Settings links here, and so may other pages later.
+  const fromSettings = (useLocation().state as { from?: string } | null)?.from === 'settings'
 
   const report = (result: PeopleActionResult): string | null => {
     setError(result.error ?? (result.skipped.length > 0 ? skippedText(result.skipped) : null))
@@ -37,8 +41,8 @@ export function PeoplePage(): React.JSX.Element {
   return (
     <LandingPage>
       <LandingHeader
-        backTo="/research"
-        backLabel="Research"
+        backTo={fromSettings ? '/settings' : '/research'}
+        backLabel={fromSettings ? 'Settings' : 'Research'}
         title="People"
         actions={
           <Button

@@ -136,6 +136,10 @@ export function removePerson(people: readonly Person[], name: string): Person[] 
   return people.filter((p) => p !== target).map((p) => ({ ...p }))
 }
 
+/** A new list in the order the People page shows: you first, then everyone else alphabetically by name. */
+export const sortPeople = (people: readonly Person[]): Person[] =>
+  [...people].sort((a, b) => Number(b.me) - Number(a.me) || a.name.localeCompare(b.name))
+
 /** Everyone who is not archived: who can be added to a note. */
 export const activePeople = (people: readonly Person[]): Person[] =>
   people.filter((p) => !p.archived)

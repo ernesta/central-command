@@ -11,7 +11,9 @@ export function PeopleSettings(): React.JSX.Element {
       </h2>
       <p className={styles.help}>The people you meet and train with, and their initials.</p>
       <div>
-        <AllLink to={peopleRoute}>Open people</AllLink>
+        <AllLink to={peopleRoute} state={{ from: 'settings' }}>
+          Open people
+        </AllLink>
       </div>
     </section>
   )

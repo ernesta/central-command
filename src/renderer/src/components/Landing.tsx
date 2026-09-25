@@ -36,13 +36,16 @@ export function LandingHeader({
 /** A button-like link in a landing header, for a page that belongs to the module (for example "Training plan"). */
 export function AllLink({
   to,
+  state,
   children
 }: {
   to: string
+  /** Router state for the page opened, for example where the visitor came from. */
+  state?: unknown
   children: React.ReactNode
 }): React.JSX.Element {
   return (
-    <Link className={styles.allLink} to={to}>
+    <Link className={styles.allLink} to={to} state={state}>
       {children}
     </Link>
   )

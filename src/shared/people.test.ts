@@ -13,6 +13,7 @@ import {
   ownerOptions,
   removePerson,
   restorePerson,
+  sortPeople,
   updatePerson
 } from './people'
 import type { Person } from './people'
@@ -265,5 +266,21 @@ describe('mergePerson', () => {
     expect(() => mergePerson(list, 'Kathy Rastle', 'Nobody')).toThrow(/not in the list/)
     const archived = archivePerson(list, 'Kathryn Rastle')
     expect(() => mergePerson(archived, 'Kathy Rastle', 'Kathryn Rastle')).toThrow(/archived/)
+  })
+})
+
+describe('sortPeople', () => {
+  it('puts you first, then everyone alphabetically', () => {
+    const list: Person[] = [
+      { name: 'Zoe Adams', initials: 'ZA', me: false },
+      { name: 'Ernesta Orlovaitė', initials: 'EO', me: true },
+      { name: 'Anat Bardi', initials: 'AB', me: false }
+    ]
+    expect(sortPeople(list).map((p) => p.name)).toEqual([
+      'Ernesta Orlovaitė',
+      'Anat Bardi',
+      'Zoe Adams'
+    ])
+    expect(list[0].name).toBe('Zoe Adams')
   })
 })
