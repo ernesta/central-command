@@ -1,9 +1,12 @@
 import { ArrowLeft } from 'lucide-react'
+import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { ExportButton } from '@renderer/components/ExportButton'
 import { FilterRow } from '@renderer/components/FilterRow'
+import { Notice } from '@renderer/components/Notice'
+import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { academicYearLabel } from '@shared/academic-year'
 import { skillFilterOptions, skillsIn } from '@shared/skills'
 import { AcademicYearSelect } from '@renderer/components/AcademicYearSelect'
@@ -41,6 +44,10 @@ export function MeetingsPage(): React.JSX.Element {
   const { query: saved, setQuery } = useMeetingsView(
     seriesParam ? { ...DEFAULT_MEETINGS_QUERY, series: seriesParam } : undefined
   )
+  const [exporting, setExporting] = useState(false)
+  const [exportNotice, setExportNotice] = useState<{ tone: 'info' | 'error'; text: string } | null>(
+    null
+  )
   const set = (patch: Partial<MeetingsQuery>): void => setQuery(patch)
 
   const today = todayIso()
@@ -67,6 +74,24 @@ export function MeetingsPage(): React.JSX.Element {
     query.skill !== 'all' ||
     query.attendee !== 'all' ||
     query.mode !== 'all'
+
+  const exportPdf = async (): Promise<void> => {
+    setExporting(true)
+    setExportNotice(null)
+    try {
+      const result = await window.api.meetings.exportPdf(year)
+      if (result.status === 'saved') {
+        setExportNotice({
+          tone: 'info',
+          text: `Saved the supervision log for ${academicYearLabel(year)} to ${result.path}`
+        })
+      }
+    } catch (e) {
+      setExportNotice({ tone: 'error', text: `Couldn’t export: ${ipcErrorMessage(e)}` })
+    } finally {
+      setExporting(false)
+    }
+  }
 
   let content: React.ReactNode = null
   if (rows === null) content = null
@@ -100,8 +125,10 @@ export function MeetingsPage(): React.JSX.Element {
         <h1 className={styles.heading}>All meetings</h1>
         <div className={styles.actions}>
           <ExportButton
-            disabled
-            title="Later: exports the Supervision log as a PDF, oldest first"
+            busy={exporting}
+            disabled={rows === null}
+            title={`Exports the Supervision log for ${academicYearLabel(year)} as a PDF, oldest first, without upcoming meetings`}
+            onClick={() => void exportPdf()}
           />
           <NewMeetingButton />
         </div>
@@ -157,6 +184,11 @@ export function MeetingsPage(): React.JSX.Element {
           onChange={(attendee) => set({ attendee })}
         />
       </FilterRow>
+      {exportNotice && (
+        <Notice tone={exportNotice.tone} onDismiss={() => setExportNotice(null)}>
+          {exportNotice.text}
+        </Notice>
+      )}
 
       <div className={styles.content}>{content}</div>
 

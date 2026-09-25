@@ -63,6 +63,8 @@ export interface MeetingChangedEvent {
   hash: string | null
 }
 
+export type MeetingsExportResult = { status: 'saved'; path: string } | { status: 'cancelled' }
+
 /** The Meetings slice of window.api. */
 export interface MeetingsApi {
   /** Create a new meeting file and resolve with it. Never replaces an existing file. */
@@ -83,6 +85,8 @@ export interface MeetingsApi {
    * not listed yet. Only adds; never removes or edits an item or touches ticked state.
    */
   syncPreviousTodos(ref: MeetingRef, baseHash: string): Promise<SyncPreviousResult>
+  /** Ask where to save, then write the Supervision log of an academic year (its start year) as a PDF. */
+  exportPdf(year: number): Promise<MeetingsExportResult>
   people: {
     list(): Promise<Person[]>
     /** Add a person (initials are worked out from the name and made unique unless given). Resolves with the new list. */
@@ -103,6 +107,7 @@ export const MEETINGS_IPC = {
   save: 'meetings:save',
   delete: 'meetings:delete',
   syncPrevious: 'meetings:sync-previous',
+  exportPdf: 'meetings:export-pdf',
   peopleList: 'meetings:people-list',
   peopleAdd: 'meetings:people-add',
   peopleUpdate: 'meetings:people-update',

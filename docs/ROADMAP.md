@@ -5,8 +5,8 @@
 ### For the user (review and decisions)
 
 - [ ] **Review the exports** once there is data to look at: Training's **Export** (a PDF of an academic year, oldest first, no upcoming
-      or planned entries) and Meetings' **Export** (still a disabled placeholder: the Supervision log as a PDF). Say what to change in the
-      layout and content; then Meetings' Export gets built the same way.
+      or planned entries) and Meetings' **Export** (the Supervision log as a PDF, same page layout as Training's). Say what to change in the
+      layout and content of both.
 - [ ] **Choose a type for each imported training** (all 129 start without one; the list says "No type yet"). Seminars, inductions, lab
       meetings and self-guided learning have no Inkpath type: map them by hand and keep a decision log of why, so categorising can
       be automated later.
@@ -31,7 +31,6 @@
 ### For Claude (next time)
 
 - [ ] After the user's review: fix what they raise, then push, write up the state, clear context and move on to the next part.
-- [ ] Build Meetings' Export the same way as Training's (`shared/report.ts` pattern), once the user has reviewed Training's.
 - [ ] A "decision log" for training types (see above): design it with the user when they start mapping; then suggest types automatically.
 - [ ] A People page (list too long for Settings), and warn when two people would get confusingly similar initials.
 - [ ] Re-check the changed screens in dev mode (StrictMode) and the built app after any further change to lists, landings or entry pages.
@@ -64,8 +63,8 @@ the meeting page, the list, the landing page, People settings and remembered lis
   only" line with a way to clear it). Not started.
 - **A People page** of its own: the list will get too long for Settings. Later it could hold links per person (GitHub,
   Google Scholar, LinkedIn) and even pull their recent papers, posts or tweets. Training leads and meeting attendees both use it.
-- **Export the supervision log as a PDF** (oldest first, Supervision series, upcoming meetings left out). The disabled
-  Export control in the list is its place; Training's PDF export (`training/main/register.ts`, `shared/report.ts`) is the pattern.
+- **Export the supervision log as a PDF**: built (`meetings/shared/report.ts`; printing in `src/main/export-pdf.ts` and the page
+  shell in `src/shared/report-page.ts` are shared with Training). Awaiting the user's review of the layout.
 - **Meetings in Work**: the code takes a workspace everywhere (`notes/meetings/<workspace>/`); Work needs a folder,
   a route and a landing page from the same components. `ACTIVE_WORKSPACES` in `meetings/main/register.ts` is the switch.
 - **Imported notes with bold pseudo-headings** (`**Topic**`): the converter is built (`npm run convert:topics`, dry run by

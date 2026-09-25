@@ -1,10 +1,18 @@
 import { mkdir } from 'fs/promises'
 import { join } from 'path'
 import { BrowserWindow, ipcMain, shell } from 'electron'
+import { exportHtmlAsPdf } from '../../../main/export-pdf'
+import { todayIso } from '@shared/time'
 import { readNoteFile } from '../../../main/notes/guarded-file'
 import { NotesWatcher } from '../../../main/notes/watcher'
 import type { MainContext, MainModule } from '../../main-registry'
-import { MEETINGS_IPC, type MeetingChangedEvent, type CreateMeetingInput } from '../shared/api'
+import {
+  MEETINGS_IPC,
+  type MeetingChangedEvent,
+  type CreateMeetingInput,
+  type MeetingsExportResult
+} from '../shared/api'
+import { meetingsReportHtml, reportFileName } from '../shared/report'
 import type { MeetingChanges } from '../shared/front-matter'
 import { MEETING_WORKSPACES, type MeetingRef, type MeetingWorkspace } from '../shared/types'
 import { meetingPath } from './file-name'
@@ -46,6 +54,23 @@ function register({ db, paths }: MainContext): () => void {
 
   ipcMain.handle(MEETINGS_IPC.create, (_event, input: unknown) =>
     store.create(asObject(input, 'meeting') as unknown as CreateMeetingInput)
+  )
+  ipcMain.handle(
+    MEETINGS_IPC.exportPdf,
+    async (event, year: unknown): Promise<MeetingsExportResult> => {
+      if (typeof year !== 'number' || !Number.isInteger(year) || year < 1900 || year > 3000) {
+        throw new Error('Invalid academic year')
+      }
+      return exportHtmlAsPdf(event.sender, {
+        html: meetingsReportHtml({
+          rows: listMeetingRows(db, 'research'),
+          year,
+          today: todayIso()
+        }),
+        dialogTitle: 'Export the supervision log',
+        fileName: reportFileName(year)
+      })
+    }
   )
   ipcMain.handle(MEETINGS_IPC.read, (_event, ref: unknown) => store.read(asRef(ref)))
   ipcMain.handle(MEETINGS_IPC.list, async (_event, workspace: unknown) => {
