@@ -11,6 +11,8 @@ ask the user.
   N-API prebuilds so no Electron rebuild is needed)
 - `npm run lint`, `npm run typecheck`, `npm run format`
 - `npm run import:obsidian -- --vault <path> [--apply]`: import reading notes from an Obsidian vault (dry run by default)
+- `npm run import:notes -- --vault <path> [--apply]`: import the free notes (Data Sources, Ideas, Thesis, Placement) from an Obsidian
+  vault into Notes, all ungrouped (dry run by default; only ever creates files)
 - `npm run import:meetings -- --vault <path> --meeting-notes <path> [--apply] [--add-people]`: import meeting notes from
   Obsidian and the Word log and notes (dry run by default; macOS only)
 - `npm run import:training -- --inkpath <xlsx> [--obsidian <notes>] [--trainings <folder>] [--apply] [--add-people]`: import the Inkpath
@@ -83,10 +85,10 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
 - Since the second Training review: Meetings' Export (the Supervision log as a PDF; printing and page shell shared with Training) and the
   Training plan (one Markdown file per academic year, `notes/training-plans/`, the user's 2026–27 draft copied in) are built. The
   People page is built (`docs/DECISIONS.md`, "People page"; mockup `docs/design/people-and-plan-mockup.html`) and awaits the user's review.
-- **Notes** is the next module to build: the plan `docs/NOTES_PLAN.md` and mockup `docs/design/notes-mockup.html` are approved (one flat
-  folder of notes, a group and optional subgroup per note shown as `Thesis › Methods`, up to four pinned notes, quick capture with
-  Mod-Shift-n, an Obsidian import that leaves everything ungrouped). Studies stays "Coming soon"; Ideas, Data Sources, Inbox and Thesis are
-  not modules.
+- **Notes** is built (all nine stages of `docs/NOTES_PLAN.md`; `docs/DECISIONS.md`, "Notes") and awaits the user's review: one flat folder of
+  notes, a group and optional subgroup per note shown as `Thesis › Methods`, up to four pinned notes, quick capture with Mod-Shift-n, and
+  `npm run import:notes`, which has not been applied to the real library (the user must read its dry run first). Studies stays "Coming
+  soon"; Ideas, Data Sources, Inbox and Thesis are not modules.
 - The app name lives in one place (`src/shared/app-info.ts`); it may be renamed again.
 
 ## Testing the app for real (unit tests are not enough)

@@ -30,9 +30,20 @@
 - [ ] A "decision log" for training types (see above): design it with the user when they start mapping; then suggest types automatically.
 - [x] **People page built** (see `docs/DECISIONS.md` "People page"). Waiting for the user's review.
 - [ ] **Decide what Studies should be** (it stays "Coming soon"); and later what Ideas becomes.
-- [ ] **Build Notes** (Claude): follow `docs/NOTES_PLAN.md` stage by stage; the user reviews the app against the mockup after stages 6 and 9.
+- [x] **Notes built** (all nine stages of `docs/NOTES_PLAN.md`; see `docs/DECISIONS.md`, "Notes"). Waiting for the user's review.
+- [ ] **Review Notes** against the mockup (`docs/design/notes-mockup.html`): the landing, All notes, a note (Group field, pin, dates, word
+      count) and quick capture (Mod-Shift-n). Say what to change.
+- [ ] **Read the Notes import dry run and say when to apply it**: `npm run import:notes -- --vault ~/RHUL/Scribbles/RHUL` lists the 12
+      notes and the front matter each would get (all ungrouped). It has not been run on the real library; apply only when the user says so.
+- [ ] **Decide about `[[wiki links]]` in imported notes**: the import copies them untouched, but the editor rewrites them as `\[\[Link]]`
+      the first time a note is edited (the editor escapes bare `[`, a known choice in `docs/DECISIONS.md`). An un-escape for `[[` and
+      `![[` in the shared editor would fix it for every module; it changes Readings and Meetings too, so it is the user's call.
 - [ ] **Later, Notes**: a system-wide quick-capture shortcut (works when the app is in the background); Thesis extras (chapter progress,
-      word counts per chapter); a quiet word count in the editor (nice to have).
+      word counts per chapter).
+- [ ] **Claude, later**: Meetings' and Training's tables still carry their own copy of the row-key handling that Notes gets from
+      `useRowNavigation`; switch them over once there is real data to check them against.
+- [ ] **Empty notes pile up**: "New note" and the shortcut create the file at once, so a note started and never typed in stays as an empty
+      `Untitled`. Say if untouched empty notes should be removed when you leave them.
 - [ ] **Try the People page** (Research → People) and say what to change.
 - [ ] Re-check the changed screens in dev mode (StrictMode) and the built app after any further change to lists, landings or entry pages.
 - [ ] **Say when a filter is applied** (later, the user's call when): opening the Supervision series card shows "All meetings" with only that
@@ -111,7 +122,7 @@ data.
 - **Training** (the formal training log, a notes page per entry, linked files, PDF export): the plan and mockup are drafted in
   `docs/TRAINING_PLAN.md` and `docs/design/training-mockup.html`; built; see the Training section above.
 - **Notes** (one module for free notes with a group per note, pinned notes, quick capture; replaces Thesis, Data Sources and Inbox): plan
-  `docs/NOTES_PLAN.md` and mockup `docs/design/notes-mockup.html` are approved; next to build (nine stages). Studies stays "Coming soon".
+  `docs/NOTES_PLAN.md` and mockup `docs/design/notes-mockup.html` are approved; built (nine stages), see the Notes section above and `docs/DECISIONS.md`. Studies stays "Coming soon".
 - Global dashboard (priorities, calendar, weather, unread email count)
 - World news tab, Research Digest, Focus/Writing space
 - Life and Work workspaces
