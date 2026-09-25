@@ -253,8 +253,8 @@ function NoteView({
           initial={snapshot.initialBody}
           placeholder="Write your note…"
           showPlaceholder={body.trim() === ''}
-          // Only the first editor: a later one (the file changed outside) must not take the cursor.
-          autoFocus={startFocus === 'body' && snapshot.editorKey === 1}
+          // Not after the file changed outside: that editor must not take the cursor.
+          autoFocus={startFocus === 'body' && !reloadedFromDisk}
           onChange={session.editBody.bind(session)}
           onBlur={() => void session.flush()}
         />

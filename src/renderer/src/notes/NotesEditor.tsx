@@ -47,13 +47,16 @@ function Inner({
   })
   const [loading, getEditor] = useInstance()
 
-  // Once only: later renders must never take the cursor away from another field.
-  const focused = useRef(false)
+  // Focus each time an editor becomes ready. In development React mounts, unmounts and mounts again, and the first
+  // editor is thrown away; a guard that only focused once would leave the cursor in nothing.
+  const getEditorRef = useRef(getEditor)
   useEffect(() => {
-    if (loading || !autoFocus || focused.current) return
-    focused.current = true
-    getEditor()?.action((ctx) => ctx.get(editorViewCtx).focus())
-  }, [loading, autoFocus, getEditor])
+    getEditorRef.current = getEditor
+  })
+  useEffect(() => {
+    if (loading || !autoFocus) return
+    getEditorRef.current()?.action((ctx) => ctx.get(editorViewCtx).focus())
+  }, [loading, autoFocus])
 
   // Clicking the empty space around the text should still put the cursor in the note.
   const focusEditor = (event: React.MouseEvent): void => {
