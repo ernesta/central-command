@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react'
 import type { Workspace } from '@shared/settings'
+import type { ShortcutGroup } from '@shared/shortcuts'
 import { meetingsModule } from './meetings'
 import { plannedModules } from './planned'
 import { readingsModule } from './readings'
@@ -25,4 +26,9 @@ export function moduleSettingsSections(): { id: string; Section: ComponentType }
   return modules.flatMap((m) =>
     m.status === 'live' && m.settingsSection ? [{ id: m.id, Section: m.settingsSection }] : []
   )
+}
+
+/** Keyboard shortcut groups contributed by live modules, in registration order. */
+export function moduleShortcutGroups(): ShortcutGroup[] {
+  return modules.flatMap((m) => (m.status === 'live' ? (m.shortcuts ?? []) : []))
 }

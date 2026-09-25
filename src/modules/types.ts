@@ -1,5 +1,6 @@
 import type { ComponentType, ReactNode } from 'react'
 import type { Workspace } from '@shared/settings'
+import type { ShortcutGroup } from '@shared/shortcuts'
 
 export interface ModuleRoute {
   /** Relative to the module's base path (`/<workspace>/<id>`). Empty string is the module's index. */
@@ -30,6 +31,8 @@ export interface LiveModuleManifest extends BaseManifest {
   landingCard?: ComponentType
   /** Rendered on the Settings page, so a module can own its own settings and status. */
   settingsSection?: ComponentType
+  /** Listed in Settings under Keyboard shortcuts. Add a shortcut here whenever the module gets one. */
+  shortcuts?: ShortcutGroup[]
 }
 
 export type ModuleManifest = PlannedModuleManifest | LiveModuleManifest

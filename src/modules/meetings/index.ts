@@ -5,6 +5,7 @@ import { MeetingsCard } from './renderer/MeetingsCard'
 import { MeetingsLanding } from './renderer/MeetingsLanding'
 import { MeetingsPage } from './renderer/MeetingsPage'
 import { PeopleSettings } from './renderer/PeopleSettings'
+import { MEETINGS_SHORTCUTS } from './shared/shortcuts'
 
 /** Meetings: notes for every meeting, with TODOs carried over from one meeting to the next. */
 export const meetingsModule: LiveModuleManifest = {
@@ -18,5 +19,6 @@ export const meetingsModule: LiveModuleManifest = {
     { path: 'm/:id', element: createElement(MeetingPage) }
   ],
   landingCard: MeetingsCard,
-  settingsSection: PeopleSettings
+  settingsSection: PeopleSettings,
+  shortcuts: MEETINGS_SHORTCUTS
 }
