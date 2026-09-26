@@ -1,7 +1,7 @@
 import { FileText, Folder } from 'lucide-react'
-import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { SkillChips } from '@renderer/components/SkillChips'
+import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import type { Person } from '@shared/people'
 import { durationMinutes, formatDate, formatDuration } from '@shared/time'
 import { formatTimeRange, initialsFor } from '@modules/meetings/shared/query'
@@ -14,7 +14,7 @@ const VISIBLE_LEADS = 3
 
 /**
  * Date, Time, Duration, Series, Type, Title and summary, Skills, Leads. Clicking anywhere on a row opens
- * the entry. Like the Meetings table, it is one tab stop: arrow keys, Home/End and PageUp/PageDown move
+ * the entry. Like the Notes table, it is one tab stop: arrow keys, Home/End and PageUp/PageDown move
  * between rows and Enter opens the entry.
  */
 export function TrainingTable({
@@ -27,46 +27,14 @@ export function TrainingTable({
   today: string
 }): React.JSX.Element {
   const navigate = useNavigate()
-  const [active, setActive] = useState(0)
-  const rowEls = useRef<(HTMLTableRowElement | null)[]>([])
-  // Keep the tab stop valid when the list shrinks (search, filters).
-  const activeIndex = Math.min(active, Math.max(rows.length - 1, 0))
-
-  const move = (next: number): void => {
-    const clamped = Math.max(0, Math.min(rows.length - 1, next))
-    setActive(clamped)
-    rowEls.current[clamped]?.focus()
-  }
-  const onKeyDown = (event: React.KeyboardEvent, row: TrainingIndexRow, index: number): void => {
-    const page = 8
-    const keys: Record<string, number> = {
-      ArrowDown: index + 1,
-      ArrowUp: index - 1,
-      PageDown: index + page,
-      PageUp: index - page,
-      Home: 0,
-      End: rows.length - 1
-    }
-    if (event.key in keys) {
-      event.preventDefault()
-      move(keys[event.key])
-    } else if (event.key === 'Enter') {
-      event.preventDefault()
-      void navigate(entryRoute(row.id))
-    }
-  }
+  const { tableProps, rowProps } = useRowNavigation(
+    rows.length,
+    (index) => void navigate(entryRoute(rows[index].id))
+  )
 
   return (
     <div className={styles.wrap}>
-      <table
-        className={styles.table}
-        aria-label="Training"
-        // Tabbing out of the table resets the tab stop to the first row, so coming back does not land mid-list.
-        onBlur={(event) => {
-          const next = event.relatedTarget
-          if (next instanceof Node && !event.currentTarget.contains(next)) setActive(0)
-        }}
-      >
+      <table className={styles.table} aria-label="Training" {...tableProps}>
         <thead>
           <tr>
             {[
@@ -93,13 +61,8 @@ export function TrainingTable({
             return (
               <tr
                 key={`${row.workspace}/${row.id}`}
-                ref={(el) => {
-                  rowEls.current[index] = el
-                }}
-                tabIndex={index === activeIndex ? 0 : -1}
                 className={styles.row}
-                onFocus={() => setActive(index)}
-                onKeyDown={(event) => onKeyDown(event, row, index)}
+                {...rowProps(index)}
                 onClick={() => void navigate(entryRoute(row.id))}
               >
                 <td className={styles.nowrap}>
