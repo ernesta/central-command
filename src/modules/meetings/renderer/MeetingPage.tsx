@@ -6,6 +6,7 @@ import { DeleteDialog } from '@renderer/components/DeleteDialog'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
+import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { NotesEditor } from '@renderer/notes/NotesEditor'
 import type { SaveState } from '@renderer/notes/notes-session'
@@ -84,6 +85,7 @@ function MeetingView({
   }, [])
 
   const { meta, body, save, error, conflict, reloadedFromDisk, problems, updatedAt } = snapshot
+  useDocumentTitle(meta.series || meta.date ? meetingHeading(meta.series, meta.date) : null)
   const owners = useMemo(() => ownerOptions(meta.attendees, people), [meta.attendees, people])
   const todo = useTodoHelper(owners)
   const topics = useMemo(() => parseTopics(body, meta.discussed), [body, meta.discussed])

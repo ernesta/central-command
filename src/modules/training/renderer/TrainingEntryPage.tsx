@@ -6,6 +6,7 @@ import { DeleteDialog } from '@renderer/components/DeleteDialog'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
+import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { NotesEditor } from '@renderer/notes/NotesEditor'
 import type { SaveState } from '@renderer/notes/notes-session'
@@ -96,6 +97,7 @@ function EntryView({
   }, [ready])
 
   const { meta, body, save, error, conflict, reloadedFromDisk, problems, updatedAt } = snapshot
+  useDocumentTitle(meta.title)
 
   // Back goes to wherever the user came from (the list); with no history, the list.
   const goBack = (): void =>

@@ -2,6 +2,7 @@ import { ArrowLeft, Check, Copy } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { modulePath } from '@modules/types'
+import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import type { Reading } from '../shared/types'
@@ -30,6 +31,8 @@ export function ReadingDetailPage(): React.JSX.Element {
       cancelled = true
     }
   }, [citekey])
+
+  useDocumentTitle(loaded && loaded.citekey === citekey ? loaded.reading?.shortCitation : null)
 
   const backToList = (): void => {
     void navigate(readingsBase)
