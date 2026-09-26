@@ -8,8 +8,8 @@ import { NOTES_EDITOR_SHORTCUTS } from './notes-shortcuts'
 const milkdownSource = (pkg: string): string =>
   readFileSync(join(process.cwd(), 'node_modules/@milkdown', pkg, 'lib/index.js'), 'utf8')
 
-// Ours, not Milkdown's: Backspace at the start of a list item (notes-list-keymap.ts).
-const OURS = new Set(['Backspace'])
+// Ours, not Milkdown's: Backspace at the start of a list item (notes-list-keymap.ts) and Cmd-click on a link (NotesEditor.tsx).
+const OURS = new Set(['Backspace', 'Mod-Click'])
 // Milkdown lists these chords in several keymaps (headings are `Mod-Alt-1` … `Mod-Alt-6`).
 const chordsOf = (chord: string): string[] =>
   chord.includes(RANGE_KEY)

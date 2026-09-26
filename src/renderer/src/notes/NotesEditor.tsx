@@ -58,8 +58,16 @@ function Inner({
     getEditorRef.current()?.action((ctx) => ctx.get(editorViewCtx).focus())
   }, [loading, autoFocus])
 
-  // Clicking the empty space around the text should still put the cursor in the note.
+  // Clicking the empty space around the text should still put the cursor in the note. A link is opened with Cmd (or
+  // Ctrl) held: a plain click puts the cursor in it, as in any editor. The main process opens web addresses in the
+  // browser and refuses anything else.
   const focusEditor = (event: React.MouseEvent): void => {
+    const link = (event.target as HTMLElement).closest('a[href]')
+    if ((event.metaKey || event.ctrlKey) && link) {
+      event.preventDefault()
+      window.open(link.getAttribute('href') ?? '', '_blank')
+      return
+    }
     if (loading || (event.target as HTMLElement).closest('.ProseMirror')) return
     getEditor()?.action((ctx) => ctx.get(editorViewCtx).focus())
   }

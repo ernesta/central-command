@@ -30,6 +30,11 @@ export const NOTES_EDITOR_SHORTCUTS: ShortcutGroup = {
       keys: ['Backspace'],
       note: 'At the very start of the item.'
     },
+    {
+      action: 'Open a link',
+      keys: ['Mod-Click'],
+      note: 'A plain click puts the cursor in the link.'
+    },
     { action: 'Undo', keys: ['Mod-z'] },
     { action: 'Redo', keys: ['Shift-Mod-z', 'Mod-y'] }
   ]
