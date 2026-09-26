@@ -7,9 +7,13 @@
 .body {
   padding: 24px 28px;
 }
-/* A quiet line of facts about the note, under the text. */
+/* A quiet line of facts about the note, under the text. It stays at the bottom of the window in a long note. */
 .footer {
+  position: sticky;
+  bottom: 0;
   margin: 0;
+  background: var(--surface);
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
   padding: 10px 28px;
   border-top: 1px solid var(--border-soft);
   color: var(--text-muted);
