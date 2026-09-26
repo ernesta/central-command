@@ -132,6 +132,34 @@ Grounded in what the app already stores. Numbers are the ones used in the conver
 **Small additions** 14. Global search: **built** (Mod-K; `docs/DECISIONS.md`, "Global search"), including whole-note text and the Training plans. Later:
 people as results (with the People pages) and recent items when the field is empty. 15. A weekly review page (meetings, trainings, notes edited, words written), exportable as a PDF with the existing export. 16. Gentle prompts ("no supervision meeting booked this month", "training hours are behind pace").
 
+## Home (the overall landing page): ideas and open questions (26 Sep 2026; nothing designed yet)
+
+Decided so far: cross-workspace page (not Research-first). **Wanted:** greeting, date and a week strip (5 above); weather (6, network
+allowed for it: the `CLAUDE.md` rule must be amended to say exactly what is sent); Today (7: meetings, your open TODOs, trainings).
+**Not wanted on Home:** Research progress (8), pinned notes and recent edits (9) and a resume card (10); they belong on Research.
+
+More ideas, to choose from before any design (default pick: 1, 2, 3, 4, 9, 14, 15):
+
+- Things to act on: 1 priorities (up to three lines typed for today, unfinished ones carry over); 2 "Needs attention" (a note whose front
+  matter has a problem, a reading missing from Zotero, a TODO past its date, a file changed outside the app; "All clear" when empty);
+  3 "Dates ahead" (your own deadlines and milestones with days to go, edited on the card); 4 a capture bar (a line that becomes a note)
+  with New meeting, New note and New training links.
+- Time and place: 5 a calendar agenda from a local calendar file plus meetings and trainings; 6 other clocks (time zones you choose);
+  7 sun times and when rain starts beside the weather; 8 unread email count (needs a mail connection; parked with the network features).
+- Reflection and rhythm (automatic): 9 "Today so far" / "Yesterday" from what the app knows (notes edited, words written, meetings and
+  trainings), with a planning tone in the morning and a wrap-up in the evening; 10 a one-line day log saved as a note per day (feeds the
+  weekly review); 11 habit ticks with streaks that count days, not amounts; 12 "Changed while you were away" (files another tool, such
+  as Claude Code, edited).
+- Around people: 13 birthdays and anniversaries this week, from an optional date on each person (with the People pages).
+- The page itself: 14 workspace tiles (Life, Research, Work, each with one line of status, so Home is also how you get around);
+  15 choose, show or hide and reorder the cards in Settings (the brief names visual customisability as the main reason for leaving
+  Notion and ClickUp, so build it in from the start); 16 an Ask box for the Claude integration; 17 a focus session (a 25-minute timer
+  attached to a note that logs time and feeds the writing tally).
+
+Open questions for the design: single-column "morning briefing" or a grid of small cards; whether Home opens at launch and sits in the
+top bar before Life, Research and Work, or replaces the workspace pills. Sources for the ideas: personal-dashboard and habit-tracker
+templates (Notion, Asana), Athenify, and the daily-dashboard projects on GitHub.
+
 ## Later, roughly in order (not for Phase 1)
 
 - Real Claude wiring for the Ask panel; embedded terminal for Build
