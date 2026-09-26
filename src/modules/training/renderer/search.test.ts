@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { TrainingIndexRow } from '../shared/types'
-import { trainingHits } from './search'
+import { planHits, planYears, trainingHits } from './search'
 
 const entry = (over: Partial<TrainingIndexRow>): TrainingIndexRow => ({
   workspace: 'research',
@@ -49,5 +49,39 @@ describe('trainingHits', () => {
     const [hit] = trainingHits(rows, [], 'logistics')
     expect(hit.title).toBe('Applied Economics September Meet-up')
     expect(hit.detail).toContain('logistics')
+  })
+})
+
+describe('planHits', () => {
+  const plans = [
+    {
+      year: 2026,
+      markdown: '# Priorities\n\n## Bayesian modelling\n\nLearn to fit multilevel models.'
+    },
+    { year: 2025, markdown: '' }
+  ]
+
+  it('finds a plan by its text and shows the part that matched', () => {
+    const [hit] = planHits(plans, 'bayesian')
+    expect(hit).toMatchObject({
+      key: 'plan-2026',
+      title: 'Training plan 2026–27',
+      route: '/research/training/plan?year=2026'
+    })
+    expect(hit.detail.toLowerCase()).toContain('bayesian')
+  })
+
+  it('finds a plan by its name, and skips a plan with no text', () => {
+    expect(planHits(plans, 'training plan').map((h) => h.key)).toEqual(['plan-2026'])
+  })
+
+  it('finds nothing for a word that is not there', () => {
+    expect(planHits(plans, 'zebra')).toEqual([])
+  })
+})
+
+describe('planYears', () => {
+  it('has the years of the entries, this year and the next, newest first', () => {
+    expect(planYears(['2025-10-02'], '2026-09-26')).toEqual([2027, 2026, 2025])
   })
 })
