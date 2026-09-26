@@ -1,4 +1,4 @@
-import { Settings as SettingsIcon, Terminal } from 'lucide-react'
+import { Search, Settings as SettingsIcon, Terminal } from 'lucide-react'
 import { WORKSPACES, type Workspace } from '@shared/settings'
 import { WORKSPACE_LABELS } from './workspaces'
 import { Button } from '../components/Button'
@@ -11,13 +11,15 @@ interface TopBarProps {
   onWorkspaceChange: (workspace: Workspace) => void
   onBuild: () => void
   onOpenSettings: () => void
+  onOpenSearch: () => void
 }
 
 export function TopBar({
   workspace,
   onWorkspaceChange,
   onBuild,
-  onOpenSettings
+  onOpenSettings,
+  onOpenSearch
 }: TopBarProps): React.JSX.Element {
   return (
     <header className={styles.bar}>
@@ -36,6 +38,9 @@ export function TopBar({
         >
           Build
         </Button>
+        <IconButton label="Search" onClick={onOpenSearch}>
+          <Search size={18} strokeWidth={1.75} aria-hidden />
+        </IconButton>
         <IconButton label="Settings" onClick={onOpenSettings}>
           <SettingsIcon size={18} strokeWidth={1.75} aria-hidden />
         </IconButton>

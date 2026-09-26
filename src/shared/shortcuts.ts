@@ -98,6 +98,7 @@ export function formatChord(chord: string, mac: boolean): string[] {
 /** The shortcuts of the app shell, shown first in the Settings list. */
 export const BACK_SHORTCUT = 'Mod-['
 export const ASK_SHORTCUT = 'Mod-j'
+export const SEARCH_SHORTCUT = 'Mod-k'
 
 /** The shortcuts of every list and table (Readings, Meetings, and later modules). */
 export const LIST_SHORTCUTS: ShortcutGroup = {
@@ -119,6 +120,11 @@ export const GENERAL_SHORTCUTS: ShortcutGroup = {
       note: 'The mouse’s back button does the same. In a list, the editor takes it to move the item out a level.'
     },
     { action: 'Open or close Ask', keys: [ASK_SHORTCUT] },
+    {
+      action: 'Search everything',
+      keys: [SEARCH_SHORTCUT],
+      note: 'Notes, meetings, training and readings.'
+    },
     { action: 'Close the Ask panel, a menu or a pop-up', keys: ['Escape'] }
   ]
 }

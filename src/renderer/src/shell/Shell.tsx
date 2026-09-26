@@ -3,9 +3,10 @@ import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 import { moduleGlobals, modules } from '@modules/index'
 import { modulePath } from '@modules/types'
 import { WORKSPACES, type Workspace } from '@shared/settings'
-import { BACK_SHORTCUT, matchesShortcut } from '@shared/shortcuts'
+import { BACK_SHORTCUT, SEARCH_SHORTCUT, matchesShortcut } from '@shared/shortcuts'
 import { Notice } from '../components/Notice'
 import { useSettings } from '../state/settings-context'
+import { GlobalSearch } from './GlobalSearch'
 import { SettingsPage } from './SettingsPage'
 import { ResearchLanding } from './ResearchLanding'
 import { TopBar } from './TopBar'
@@ -22,6 +23,7 @@ export function Shell(): React.JSX.Element {
   const location = useLocation()
   const navigate = useNavigate()
   const [buildError, setBuildError] = useState<string | null>(null)
+  const [searchOpen, setSearchOpen] = useState(false)
 
   const openBuild = async (): Promise<void> => {
     const result = await window.api.build.openSession()
@@ -34,6 +36,11 @@ export function Shell(): React.JSX.Element {
   // Browser-style back: Cmd/Ctrl+[ and the mouse's back button.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
+      if (matchesShortcut(event, SEARCH_SHORTCUT)) {
+        event.preventDefault()
+        setSearchOpen((open) => !open)
+        return
+      }
       // The notes editor uses the same keys to move a list item out a level; when it handled the key press, stay.
       if (!event.defaultPrevented && matchesShortcut(event, BACK_SHORTCUT)) {
         event.preventDefault()
@@ -66,6 +73,7 @@ export function Shell(): React.JSX.Element {
         onWorkspaceChange={switchWorkspace}
         onBuild={() => void openBuild()}
         onOpenSettings={() => navigate('/settings')}
+        onOpenSearch={() => setSearchOpen(true)}
       />
       {buildError && (
         <div className={styles.notice}>
@@ -74,6 +82,7 @@ export function Shell(): React.JSX.Element {
           </Notice>
         </div>
       )}
+      {searchOpen && <GlobalSearch onClose={() => setSearchOpen(false)} />}
       {moduleGlobals().map(({ id, Global }) => (
         <Global key={id} />
       ))}
