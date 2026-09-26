@@ -667,7 +667,7 @@ or found on the way:
   modes are checked.
 - **Reuse.** The note page and session copy the Training entry page (`NoteSession` extends `EntrySession`, which now also reports
   `updatedAt`, used for "Updated"). The table's keyboard handling is a new shared hook, `useRowNavigation`; Meetings' and Training's
-  tables still have their own copy (on the ROADMAP). `DeleteDialog` takes an optional `contents` ("and all its text").
+  tables now use it too (checked in the built app against copies of the real meetings and training). Readings' table is virtualised and keeps its own. `DeleteDialog` takes an optional `contents` ("and all its text").
 - **The import** (`npm run import:notes`) reads the four vault folders, lists deeper folders and everything else it did not read, and
   creates files only: nothing existing is touched, so it does not make backups (the plan mentioned one; there is nothing to back up).
   A converted note is checked against its source (the text byte for byte, line count, TODO words, ticked and unticked boxes, every

@@ -41,8 +41,6 @@
       came across separately.
 - [ ] **Later, Notes**: a system-wide quick-capture shortcut (works when the app is in the background); Thesis extras (chapter progress,
       word counts per chapter).
-- [ ] **Claude, later**: Meetings' and Training's tables still carry their own copy of the row-key handling that Notes gets from
-      `useRowNavigation`; switch them over once there is real data to check them against.
 - [ ] **Try the People page** (Research → People) and say what to change.
 - [ ] Re-check the changed screens in dev mode (StrictMode) and the built app after any further change to lists, landings or entry pages.
 - [ ] **Say when a filter is applied** (later, the user's call when): opening the Supervision series card shows "All meetings" with only that
