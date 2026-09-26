@@ -23,7 +23,6 @@
 - [ ] **Twelve trainings have typed hours that differ from the times** (for example Rapid Reading typed 0 h, times give 3 h). The app
       uses the times; check the times are right. `npm run import:training` lists them.
 - [ ] **The 61 entries only in the older Word training log** (no twin in the Inkpath log) were not imported. Say if any should be.
-- [ ] **Set the Trainings folder** in Settings → Training (`/Users/ernesta/RHUL/Trainings`) if not done, so the Files panels work.
 - [ ] Review the keyboard shortcuts listed in Settings (still open from Meetings).
 - [ ] **Try the Training plan** (Training → Training plan). Your draft was copied in as the 2026–27 plan; edit it there.
 - [ ] After the user's review: fix what they raise, then push, write up the state, clear context and move on to the next part.
@@ -31,10 +30,10 @@
 - [x] **People page built** (see `docs/DECISIONS.md` "People page"). Waiting for the user's review.
 - [ ] **Decide what Studies should be** (it stays "Coming soon"); and later what Ideas becomes.
 - [x] **Notes built** (all nine stages of `docs/NOTES_PLAN.md`; see `docs/DECISIONS.md`, "Notes"), pushed. Waiting for the user's review.
-- [ ] **Review the editor card** (all editors: white window, Created/Edited/word count line; Notes: Group and Pin beside the title). Say if
-      Created should also be recorded for Meetings, Training and Readings notes (see `docs/DECISIONS.md`, "Editor card").
-- [ ] **Review Notes** against the mockup (`docs/design/notes-mockup.html`): the landing, All notes, a note (Group field, pin, dates, word
-      count) and quick capture (Mod-Shift-n). Say what to change.
+- [ ] **Review Notes** against the mockup (`docs/design/notes-mockup.html`): the landing, All notes, a note (Group and Pin beside the
+      title; the editor card with Created, Edited and word count under the text) and quick capture (Mod-Shift-n). The editor card is now
+      on every editor (Meetings, Training, the plan, Readings notes). Say what to change, and whether Created should also be recorded for
+      Meetings, Training and Readings notes (see `docs/DECISIONS.md`, "Editor card").
 - [x] **Notes import applied** on 25 Sep 2026: 12 notes from Data Sources, Ideas, Thesis and Placement are in
       `~/CentralCommand/notes/notes/research/`, all ungrouped, wiki links stripped. Group them in the app.
 - [ ] **Group the 12 imported notes** (Notes → Ungrouped). The user wants Data Sources to become a single note eventually; the six
@@ -42,7 +41,8 @@
 - [ ] **Later, Notes**: a system-wide quick-capture shortcut (works when the app is in the background); Thesis extras (chapter progress,
       word counts per chapter).
 - [ ] **Try the People page** (Research → People) and say what to change.
-- [ ] Re-check the changed screens in dev mode (StrictMode) and the built app after any further change to lists, landings or entry pages.
+- [ ] Re-check the changed screens in dev mode (StrictMode) and the built app after any further change to lists, landings or entry pages
+      (last done for the editor card on 26 Sep 2026).
 - [ ] **Say when a filter is applied** (later, the user's call when): opening the Supervision series card shows "All meetings" with only that
       series in it. See the Meetings follow-ups.
 - [ ] The Readings follow-ups below are still open.

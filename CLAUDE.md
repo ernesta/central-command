@@ -89,6 +89,10 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   notes, a group and optional subgroup per note shown as `Thesis › Methods`, up to four pinned notes, quick capture with Mod-Shift-n, and
   `npm run import:notes`, applied to the real library on 25 Sep 2026 (12 notes, ungrouped, wiki links stripped). Notes is pushed. Studies stays "Coming
   soon"; Ideas, Data Sources, Inbox and Thesis are not modules.
+- Since the Notes review: every editor sits in the shared `EditorCard` (`src/renderer/src/notes/`): a white window with a quiet line
+  "Created · Edited · N words" under the text (`docs/DECISIONS.md`, "Editor card"). Meetings' and Training's tables use the shared
+  `useRowNavigation`. All importers and the topic conversion are applied to the real library (dry runs find nothing left). Work since
+  the last push (26 Sep 2026) is committed but not pushed.
 - The app name lives in one place (`src/shared/app-info.ts`); it may be renamed again.
 
 ## Testing the app for real (unit tests are not enough)

@@ -696,3 +696,6 @@ or found on the way:
 - **Edited** is the file's modified time: `readNoteFile` now returns it (`NoteContent.edited`), and both sessions keep it and use the
   time of their own saves afterwards. The word count is of the text as it stands, so it moves while typing. It counts what the editor
   writes back: a bare link the editor turns into `<https://…>` is no longer counted.
+- **Readings' table keeps its own keyboard code.** It is virtualised (rows are `div`s that come and go while scrolling), so focus has to wait
+  for a row to be rendered, scroll with `scrollToIndex`, and page by the height of the scroller. `useRowNavigation` is for plain `<tr>`
+  tables (Notes, Meetings, Training) and would need all of that to fit.
