@@ -752,3 +752,29 @@ or found on the way:
 - Checked in the built app with the browser hand-off replaced by a recorder: a plain click opens nothing, Cmd-click opens the address
   once and leaves the note open; the menu template builds. The native menu itself is not visible to the test driver, so **look at a
   right-click by hand once** (a misspelt word in a note).
+
+## Small, standard things added while the user was away (26 Sep 2026)
+
+None needed a design decision; each follows what most Mac apps do. Each is tested, and checked in the built app where it shows.
+
+- **A crash on one page** shows "Something went wrong. This page could not be shown. Your notes are safe." with a Try again button
+  (`ErrorBoundary` around the routes) and the top bar, search and other pages keep working. It clears when the address changes and never
+  remounts a page that is working (a note's address changes when it is renamed, and the page must keep its cursor).
+- **The window opens where it was left** (`settings.ui.window`, saved half a second after a move or resize, not while maximised, full
+  screen or minimised). A remembered position on a screen that is gone is dropped and only the size is kept (`restoreBounds`, tested).
+- **The window is named after the open page** ("Methods · Central Command"): notes, meetings, training entries and readings. Back to the
+  app's name on any other page.
+- **Settings → Your data** shows the data folder with a **Show** button (Finder) and the app's version. The only two things the window
+  can ask about the machine (`window.api.app`).
+- **Cmd-, opens Settings; Cmd-1, 2 and 3 go to Life, Research and Work** (listed under Everywhere in Settings).
+- **`lang="en-GB"`** on the page.
+- **Colour contrast is a test:** every text and button colour pair is checked for WCAG AA (4.5:1) in both themes
+  (`theme/tokens.test.ts`), so a new or changed colour that is hard to read fails a test.
+- **Checked with a library ten times the size** (2,000 notes, 600 meetings, 800 training entries; about 9 MB of text): start to the
+  Research page with counts 1.4 s; each list 4 to 50 ms in the main process (the notes list is 17 MB over the bridge); a search
+  as typed 50 to 300 ms; the Notes list to its first row 250 ms. Nothing needs changing yet. The first thing to do if it ever slows is
+  to send the lists without the full text and search in the main process.
+- **The failure paths, in the built app, for all five editors** (a note, a meeting, a training entry, the Training plan, a reading's
+  notes): typing and quitting at once leaves the text on disk; a change made outside while the editor is clean is shown in it (status
+  "Updated from an outside change"); a change made outside while typing brings up the conflict notice, nothing is overwritten, and
+  "Use the file's version" loads the outside text.
