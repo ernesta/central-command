@@ -63,9 +63,7 @@ describe.each<Scheme>(['light', 'dark'])('the %s colours', (scheme) => {
   })
 
   it('has both colours of every pair (no missing or malformed value)', () => {
-    for (const name of ['bg', 'panel', 'surface', 'ink', 'accent', 'danger', 'scrim'].filter(
-      (n) => n !== 'scrim'
-    )) {
+    for (const name of ['bg', 'panel', 'surface', 'ink', 'accent', 'danger']) {
       expect(token(name, scheme)).toMatch(/^#[0-9a-f]{6}$/i)
     }
   })
