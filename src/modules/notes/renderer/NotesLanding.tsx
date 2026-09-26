@@ -13,7 +13,7 @@ import {
   type SeriesCard
 } from '@renderer/components/Landing'
 import { formatDate, formatShortDate } from '@shared/time'
-import { isoDate } from '../shared/dates'
+import { isoDate } from '@shared/dates'
 import { groupLabel, landingGroups } from '../shared/groups'
 import { MAX_PINNED, pinnedNotes } from '../shared/pinning'
 import { displayTitle, noteCount, recentNotes } from '../shared/query'

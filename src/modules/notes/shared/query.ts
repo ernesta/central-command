@@ -1,6 +1,6 @@
 import { fold } from '@shared/text'
 import { formatDate } from '@shared/time'
-import { isoDate } from './dates'
+import { isoDate } from '@shared/dates'
 import {
   ALL_GROUPS,
   groupLabel,

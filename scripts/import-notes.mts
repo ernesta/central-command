@@ -23,7 +23,7 @@ import { homedir } from 'os'
 import { join, resolve } from 'path'
 import { createNoteFileExclusive } from '../src/main/notes/guarded-file'
 import { splitNote } from '../src/modules/notes/shared/front-matter'
-import { isoDate } from '../src/modules/notes/shared/dates'
+import { isoDate } from '../src/shared/dates'
 import {
   IMPORT_FOLDERS,
   importedFromOf,
