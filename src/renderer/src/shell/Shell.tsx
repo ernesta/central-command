@@ -3,7 +3,13 @@ import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 import { moduleGlobals, modules } from '@modules/index'
 import { modulePath } from '@modules/types'
 import { WORKSPACES, type Workspace } from '@shared/settings'
-import { BACK_SHORTCUT, SEARCH_SHORTCUT, matchesShortcut } from '@shared/shortcuts'
+import {
+  BACK_SHORTCUT,
+  SEARCH_SHORTCUT,
+  SETTINGS_SHORTCUT,
+  WORKSPACE_SHORTCUTS,
+  matchesShortcut
+} from '@shared/shortcuts'
 import { ErrorBoundary } from '../components/ErrorBoundary'
 import { Notice } from '../components/Notice'
 import { useSettings } from '../state/settings-context'
@@ -66,6 +72,25 @@ export function Shell(): React.JSX.Element {
     navigate(`/${next}`)
     void update({ ui: { workspace: next } })
   }
+
+  // Mac conventions: Cmd-, opens Settings; Cmd-1, 2 and 3 go to a workspace.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (matchesShortcut(event, SETTINGS_SHORTCUT)) {
+        event.preventDefault()
+        void navigate('/settings')
+        return
+      }
+      const target = WORKSPACE_SHORTCUTS.find((s) => matchesShortcut(event, s.chord))
+      if (target) {
+        event.preventDefault()
+        void navigate(`/${target.workspace}`)
+        void update({ ui: { workspace: target.workspace } })
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [navigate, update])
 
   return (
     <div className={styles.shell}>

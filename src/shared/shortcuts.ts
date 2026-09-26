@@ -99,6 +99,13 @@ export function formatChord(chord: string, mac: boolean): string[] {
 export const BACK_SHORTCUT = 'Mod-['
 export const ASK_SHORTCUT = 'Mod-j'
 export const SEARCH_SHORTCUT = 'Mod-k'
+export const SETTINGS_SHORTCUT = 'Mod-,'
+/** Go straight to a workspace, in the order of the top bar. */
+export const WORKSPACE_SHORTCUTS = [
+  { workspace: 'life', chord: 'Mod-1' },
+  { workspace: 'research', chord: 'Mod-2' },
+  { workspace: 'work', chord: 'Mod-3' }
+] as const
 
 /** The shortcuts of every list and table (Readings, Meetings, and later modules). */
 export const LIST_SHORTCUTS: ShortcutGroup = {
@@ -120,6 +127,10 @@ export const GENERAL_SHORTCUTS: ShortcutGroup = {
       note: 'The mouse’s back button does the same. In a list, the editor takes it to move the item out a level.'
     },
     { action: 'Open or close Ask', keys: [ASK_SHORTCUT] },
+    { action: 'Go to Life', keys: [WORKSPACE_SHORTCUTS[0].chord] },
+    { action: 'Go to Research', keys: [WORKSPACE_SHORTCUTS[1].chord] },
+    { action: 'Go to Work', keys: [WORKSPACE_SHORTCUTS[2].chord] },
+    { action: 'Open Settings', keys: [SETTINGS_SHORTCUT] },
     {
       action: 'Search everything',
       keys: [SEARCH_SHORTCUT],

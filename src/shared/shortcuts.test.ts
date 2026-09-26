@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { formatChord, matchesShortcut, parseChord } from './shortcuts'
+import { WORKSPACES } from './settings'
+import {
+  GENERAL_SHORTCUTS,
+  SETTINGS_SHORTCUT,
+  WORKSPACE_SHORTCUTS,
+  formatChord,
+  matchesShortcut,
+  parseChord
+} from './shortcuts'
 
 const press = (
   key: string,
@@ -70,5 +78,23 @@ describe('formatChord', () => {
     expect(formatChord('ArrowDown', true)).toEqual(['↓'])
     expect(formatChord('Enter', false)).toEqual(['Enter'])
     expect(formatChord('Mod-Alt-<n>', true)).toEqual(['⌥', '⌘', '1–6'])
+  })
+})
+
+describe('the shortcuts that work everywhere', () => {
+  it('go to the workspaces in the order of the top bar, on Cmd-1, 2 and 3', () => {
+    expect(WORKSPACE_SHORTCUTS.map((s) => s.workspace)).toEqual([...WORKSPACES])
+    expect(WORKSPACE_SHORTCUTS.map((s) => s.chord)).toEqual(['Mod-1', 'Mod-2', 'Mod-3'])
+    expect(matchesShortcut(press('2', { metaKey: true }), 'Mod-2')).toBe(true)
+  })
+
+  it('open Settings on Cmd-comma, shown as ⌘ ,', () => {
+    expect(matchesShortcut(press(',', { metaKey: true }), SETTINGS_SHORTCUT)).toBe(true)
+    expect(formatChord(SETTINGS_SHORTCUT, true)).toEqual(['⌘', ','])
+  })
+
+  it('use no chord twice, so one key press never does two things', () => {
+    const chords = GENERAL_SHORTCUTS.shortcuts.flatMap((s) => s.keys)
+    expect(new Set(chords).size).toBe(chords.length)
   })
 })
