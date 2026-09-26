@@ -17,6 +17,13 @@ export const THEMES: readonly { id: ThemeChoice; label: string }[] = [
   { id: 'dark', label: 'Dark' }
 ]
 
+export interface WindowBounds {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
 export interface Settings {
   /** Light, dark, or whatever the system is set to. */
   theme: ThemeChoice
@@ -33,6 +40,8 @@ export interface Settings {
   /** Remembered UI state. */
   ui: {
     workspace: Workspace
+    /** Where the window was left (its size and position when not maximised), so it opens the same way. Null until moved. */
+    window: WindowBounds | null
     /**
      * Remembered UI state owned by each module, keyed by module id (e.g. list filters).
      * Stored as-is; a module validates its own slice when reading it.
@@ -53,6 +62,6 @@ export function defaultSettings(defaultZoteroExportPath: string): Settings {
     terminal: 'terminal',
     trainingAimHours: DEFAULT_TRAINING_AIM_HOURS,
     trainingsFolder: '',
-    ui: { workspace: 'research', moduleState: {} }
+    ui: { workspace: 'research', window: null, moduleState: {} }
   }
 }

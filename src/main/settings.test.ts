@@ -28,6 +28,16 @@ describe('SettingsStore', () => {
     expect(reloaded.zoteroExportPath).toBe(defaults.zoteroExportPath)
   })
 
+  it('keeps the window position it was given, and ignores a hand-edited one that makes no sense', async () => {
+    const saved = { x: 10, y: 20, width: 1300, height: 800 }
+    await new SettingsStore(file, defaults).update({ ui: { window: saved } })
+    expect((await new SettingsStore(file, defaults).load()).ui.window).toEqual(saved)
+    await writeFile(file, JSON.stringify({ ui: { window: { x: 'a', y: 1, width: 5, height: 5 } } }))
+    expect((await new SettingsStore(file, defaults).load()).ui.window).toBeNull()
+    await writeFile(file, JSON.stringify({ ui: { window: { x: 1, y: 1, width: 0, height: 5 } } }))
+    expect((await new SettingsStore(file, defaults).load()).ui.window).toBeNull()
+  })
+
   it('keeps a valid theme and falls back to following the system for unknown or missing ones', async () => {
     await new SettingsStore(file, defaults).update({ theme: 'dark' })
     expect((await new SettingsStore(file, defaults).load()).theme).toBe('dark')

@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, Menu, clipboard, nativeTheme } from 'electron'
+import { app, shell, BrowserWindow, Menu, clipboard, nativeTheme, screen } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { APP_NAME } from '@shared/app-info'
@@ -13,17 +13,25 @@ import { runMigrations } from './db/migrate'
 import { mainModules } from '@modules/main-registry'
 import { defaultSettings } from '@shared/settings'
 import { buildContextMenu } from './context-menu'
+import { restoreBounds } from './window-bounds'
 import { isSafeExternalUrl } from './urls'
 import icon from '../../resources/icon.png?asset'
 
 let isQuitting = false
 
-function createWindow(): void {
+const DEFAULT_SIZE = { width: 1280, height: 820 }
+const MIN_SIZE = { width: 960, height: 600 }
+
+function createWindow(settings: SettingsStore): void {
   const mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 820,
-    minWidth: 960,
-    minHeight: 600,
+    ...restoreBounds(
+      settings.get().ui.window,
+      screen.getAllDisplays().map((d) => d.workArea),
+      DEFAULT_SIZE,
+      MIN_SIZE
+    ),
+    minWidth: MIN_SIZE.width,
+    minHeight: MIN_SIZE.height,
     show: false,
     title: APP_NAME,
     // The page's own background (`--bg` in tokens.css) for the theme in use, so the window does not flash the wrong colour.
@@ -47,6 +55,21 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => mainWindow.show())
+
+  // Remember where the window was left (a moment after it stops moving; not while maximised, full screen or minimised).
+  let saveTimer: ReturnType<typeof setTimeout> | null = null
+  const rememberBounds = (): void => {
+    if (mainWindow.isMaximized() || mainWindow.isFullScreen() || mainWindow.isMinimized()) return
+    if (saveTimer) clearTimeout(saveTimer)
+    saveTimer = setTimeout(() => {
+      if (mainWindow.isDestroyed()) return
+      settings.update({ ui: { window: mainWindow.getBounds() } }).catch((error: unknown) => {
+        console.error('Could not remember the window position:', error)
+      })
+    }, 500)
+  }
+  mainWindow.on('resize', rememberBounds)
+  mainWindow.on('move', rememberBounds)
 
   // The app is a single page: never navigate away, and open web links in the browser.
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
@@ -110,14 +133,14 @@ app.whenReady().then(async () => {
     db.close()
   })
 
-  createWindow()
+  createWindow(settings)
 
   app.on('before-quit', () => {
     isQuitting = true
   })
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) createWindow(settings)
   })
 })
 

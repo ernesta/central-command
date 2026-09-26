@@ -14,6 +14,20 @@ export function normaliseSettings(raw: unknown, defaults: Settings): Settings {
     ui.moduleState && typeof ui.moduleState === 'object' && !Array.isArray(ui.moduleState)
       ? (ui.moduleState as Record<string, unknown>)
       : defaults.ui.moduleState
+  const w =
+    ui.window && typeof ui.window === 'object' ? (ui.window as Record<string, unknown>) : null
+  const window =
+    w &&
+    [w.x, w.y, w.width, w.height].every((n) => typeof n === 'number' && Number.isFinite(n)) &&
+    (w.width as number) > 0 &&
+    (w.height as number) > 0
+      ? {
+          x: w.x as number,
+          y: w.y as number,
+          width: w.width as number,
+          height: w.height as number
+        }
+      : defaults.ui.window
   return {
     theme: THEMES.find((t) => t.id === obj.theme)?.id ?? defaults.theme,
     zoteroExportPath:
@@ -31,7 +45,7 @@ export function normaliseSettings(raw: unknown, defaults: Settings): Settings {
         : defaults.trainingAimHours,
     trainingsFolder:
       typeof obj.trainingsFolder === 'string' ? obj.trainingsFolder : defaults.trainingsFolder,
-    ui: { workspace, moduleState }
+    ui: { workspace, window, moduleState }
   }
 }
 
