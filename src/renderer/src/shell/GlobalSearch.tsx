@@ -102,7 +102,7 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
         <Search size={16} strokeWidth={1.75} className={styles.icon} aria-hidden />
         <input
           className={styles.input}
-          type="search"
+          type="text"
           autoFocus
           placeholder="Search"
           aria-label="Search"
