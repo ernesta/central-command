@@ -5,14 +5,17 @@ import { EditorCard } from './EditorCard'
 
 const noon = (y: number, m: number, d: number): number => new Date(y, m - 1, d, 12).getTime()
 
-function render(props: { text: string; created?: string; edited: number | null }): string {
+type Props = Parameters<typeof EditorCard>[0]
+
+function render(props: Omit<Props, 'children'>): string {
+  // The child goes as the third argument, as the lint rule wants; the cast is for the required `children` prop.
   return renderToStaticMarkup(
-    createElement(EditorCard, { ...props, children: createElement('div', null, 'editor') })
+    createElement(EditorCard, props as Props, createElement('div', null, 'editor'))
   )
 }
 
 /** The facts line of a card, as text. */
-function footer(props: { text: string; created?: string; edited: number | null }): string {
+function footer(props: Omit<Props, 'children'>): string {
   const html = render(props)
   const match = /<p[^>]*>(.*?)<\/p>/.exec(html)
   if (!match) throw new Error('no facts line')
