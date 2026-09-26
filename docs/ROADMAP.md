@@ -82,8 +82,8 @@ the meeting page, the list, the landing page, People settings and remembered lis
   default). Its dry run on the real notes finds 14 lines in 5 notes; applying it is the user's call.
 - **Imported previous items with a status word** (`(Cancelled) **TODO(EO)**: …`) are ownerless Previous TODOs and carry
   over while unticked; the user may want to tick or delete them in the newest notes.
-- **Backspace at the start of a first-line bullet** did not lift the bullet in a scripted run of the real app (unit
-  test passes); unconfirmed, check by hand.
+- **Backspace at the start of a first-line bullet**: checked by hand in the built app on 26 Sep 2026 (typed `- first item`, Cmd+Left,
+  Backspace): the bullet lifts to a paragraph at once. Resolved.
 
 ## Training (built; awaiting the user's review)
 
