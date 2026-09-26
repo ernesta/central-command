@@ -1,4 +1,5 @@
 import { moduleSettingsSections } from '@modules/index'
+import { AboutSettings } from './AboutSettings'
 import { PathField } from './PathField'
 import { ShortcutsSettings } from './ShortcutsSettings'
 import { TerminalField } from './TerminalField'
@@ -38,6 +39,9 @@ export function SettingsPage(): React.JSX.Element {
       {moduleSettingsSections().map(({ id, Section }) => (
         <Section key={id} />
       ))}
+      <div className={`${styles.section} ${styles.follows}`}>
+        <AboutSettings />
+      </div>
       <ShortcutsSettings />
     </div>
   )

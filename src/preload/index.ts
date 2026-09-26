@@ -18,6 +18,10 @@ const api: Api = {
   dialog: {
     pickPath: (options) => ipcRenderer.invoke(IPC.dialogPickPath, options)
   },
+  app: {
+    info: () => ipcRenderer.invoke(IPC.appInfo),
+    revealData: () => ipcRenderer.invoke(IPC.appRevealData)
+  },
   readings: {
     sync: {
       now: () => ipcRenderer.invoke(READINGS_IPC.syncNow),

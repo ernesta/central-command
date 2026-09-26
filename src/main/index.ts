@@ -7,6 +7,7 @@ import { getAppPaths } from './paths'
 import { SettingsStore } from './settings'
 import { registerSettingsIpc } from './ipc/settings'
 import { registerDialogIpc } from './ipc/dialog'
+import { registerAppIpc } from './ipc/app'
 import { registerBuildIpc } from './ipc/build'
 import { openDatabase } from './db/connection'
 import { runMigrations } from './db/migrate'
@@ -118,6 +119,7 @@ app.whenReady().then(async () => {
   })
   registerSettingsIpc(settings)
   registerDialogIpc()
+  registerAppIpc(paths.root)
   registerBuildIpc(settings)
 
   const db = openDatabase(paths.database)

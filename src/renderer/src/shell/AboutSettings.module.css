@@ -1,0 +1,16 @@
+.path {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-13);
+  overflow-wrap: anywhere;
+}
+
+.show {
+  align-self: flex-start;
+}

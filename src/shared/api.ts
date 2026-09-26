@@ -22,6 +22,13 @@ export type SettingsPatch = Partial<Omit<Settings, 'ui'>> & { ui?: Partial<Setti
  * Exposed as window.api by the preload script; every method maps to one
  * explicitly registered IPC handler. There is deliberately no generic invoke.
  */
+export interface AppInfo {
+  name: string
+  version: string
+  /** The folder holding everything the app keeps (notes, settings, the index). */
+  dataDir: string
+}
+
 export interface Api {
   settings: {
     get(): Promise<Settings>
@@ -30,6 +37,12 @@ export interface Api {
   dialog: {
     /** Opens a native picker. Resolves to the chosen path, or null if cancelled. */
     pickPath(options: PickPathOptions): Promise<string | null>
+  }
+  app: {
+    /** The app's version and where its data lives, for the About section of Settings. */
+    info(): Promise<AppInfo>
+    /** Opens the data folder in Finder. */
+    revealData(): Promise<void>
   }
   readings: ReadingsApi
   meetings: MeetingsApi
@@ -53,6 +66,8 @@ export const IPC = {
   settingsGet: 'settings:get',
   settingsUpdate: 'settings:update',
   dialogPickPath: 'dialog:pick-path',
+  appInfo: 'app:info',
+  appRevealData: 'app:reveal-data',
   appBeforeClose: 'app:before-close',
   appCloseReady: 'app:close-ready',
   buildOpenSession: 'build:open-session'
