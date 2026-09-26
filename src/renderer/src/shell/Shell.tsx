@@ -4,6 +4,7 @@ import { moduleGlobals, modules } from '@modules/index'
 import { modulePath } from '@modules/types'
 import { WORKSPACES, type Workspace } from '@shared/settings'
 import { BACK_SHORTCUT, SEARCH_SHORTCUT, matchesShortcut } from '@shared/shortcuts'
+import { ErrorBoundary } from '../components/ErrorBoundary'
 import { Notice } from '../components/Notice'
 import { useSettings } from '../state/settings-context'
 import { GlobalSearch } from './GlobalSearch'
@@ -87,25 +88,27 @@ export function Shell(): React.JSX.Element {
         <Global key={id} />
       ))}
       <main className={styles.main}>
-        <Routes>
-          <Route path="/" element={<Navigate to={`/${settings.ui.workspace}`} replace />} />
-          <Route path="/research" element={<ResearchLanding />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/life" element={<WorkspaceEmpty workspace="life" />} />
-          <Route path="/work" element={<WorkspaceEmpty workspace="work" />} />
-          {modules.flatMap((m) =>
-            m.status === 'live'
-              ? m.routes.map((r) => (
-                  <Route
-                    key={`${m.id}/${r.path}`}
-                    path={`${modulePath(m)}${r.path ? `/${r.path}` : ''}`}
-                    element={r.element}
-                  />
-                ))
-              : []
-          )}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <ErrorBoundary resetKey={location.pathname}>
+          <Routes>
+            <Route path="/" element={<Navigate to={`/${settings.ui.workspace}`} replace />} />
+            <Route path="/research" element={<ResearchLanding />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/life" element={<WorkspaceEmpty workspace="life" />} />
+            <Route path="/work" element={<WorkspaceEmpty workspace="work" />} />
+            {modules.flatMap((m) =>
+              m.status === 'live'
+                ? m.routes.map((r) => (
+                    <Route
+                      key={`${m.id}/${r.path}`}
+                      path={`${modulePath(m)}${r.path ? `/${r.path}` : ''}`}
+                      element={r.element}
+                    />
+                  ))
+                : []
+            )}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </ErrorBoundary>
       </main>
     </div>
   )
