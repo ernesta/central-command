@@ -14,6 +14,16 @@ describe('wordCount', () => {
     expect(wordCount('\n\n---\n')).toBe(0)
   })
 
+  it('counts a bare link once, whether or not the editor wrapped it in angle brackets', () => {
+    expect(wordCount('See https://x.org/a?b=1 now')).toBe(3)
+    expect(wordCount('See <https://x.org/a?b=1> now')).toBe(3)
+    expect(wordCount('- <https://x.org/a>')).toBe(1)
+  })
+
+  it('still drops other inline HTML', () => {
+    expect(wordCount('one <br> two')).toBe(2)
+  })
+
   it('counts a long note in full, not just its start', () => {
     expect(wordCount('word '.repeat(2000))).toBe(2000)
   })

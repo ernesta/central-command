@@ -2,7 +2,11 @@ import { markdownToExcerpt } from '@shared/text'
 
 /** How many words a note's text has, not counting Markdown marks (`##`, `**`, list bullets, link addresses). */
 export function wordCount(markdown: string): number {
-  const text = markdownToExcerpt(markdown, Number.MAX_SAFE_INTEGER)
+  // The editor writes a bare link as `<https://…>`, which the excerpt would drop as HTML: keep it as one word.
+  const text = markdownToExcerpt(
+    markdown.replace(/<(https?:\/\/[^>\s]+)>/g, '$1'),
+    Number.MAX_SAFE_INTEGER
+  )
   return text === '' ? 0 : text.split(/\s+/).length
 }
 
