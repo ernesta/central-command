@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
+import type { SearchHit } from '@shared/search'
 import { runSearches } from './run-search'
 
-const hit = (key: string) => ({ key, title: key, detail: '', route: `/${key}` })
+const hit = (key: string): SearchHit => ({ key, title: key, detail: '', route: `/${key}` })
 
 describe('runSearches', () => {
   it('keeps the modules that found something, in the order given', async () => {
