@@ -720,3 +720,20 @@ or found on the way:
 - **Not searched:** people (to be added with the People pages, when their design is settled), settings, and files that are not notes.
 - Checked in the built app and dev mode (StrictMode) on a scratch library: opening, typing, ArrowDown, Enter, no results, Escape,
   the button, Mod-K from inside the editor. The field is a plain text input (a search input clears itself on the first Escape).
+
+## Dark mode (Theme: System, Light or Dark, in Settings)
+
+- **Each colour is written once.** `tokens.css` uses `light-dark(light, dark)` under `color-scheme: light dark`, so a component never
+  knows about themes and the dark palette sits beside the light one. Two things became tokens because components had derived them
+  from `black` or the ink colour: the hover shades (`--accent-hover`, `--danger-hover`) and the dialog backdrop (`--scrim`); the
+  shadow colour is `--shadow-color`. Still no raw colours in components.
+- **The setting decides the whole window.** The main process sets `nativeTheme.themeSource` from `settings.theme` at start and when it
+  changes, so the page's `prefers-color-scheme`, scrollbars and native controls (date and time inputs, selects) follow it without any
+  code in the renderer. The window's start colour (before the page paints) follows the theme too. A hand-edited unknown value falls
+  back to System.
+- **Dark palette** ("Cool Slate" kept cool and low-contrast at the edges): page `#14181d`, panels `#1b2128`, cards `#1f262e`, text
+  `#e6eaee`, muted text `#98a3af`, accent `#86aad0` with dark text on it, danger `#dc7c77`.
+- Checked in the built app (Settings, Research, Readings, a reading, Meetings and a meeting, Training and an entry and the plan, Notes and
+  a note, the group menu, the delete dialog, search, Ask) and by switching Light, Dark and System live. **A note for testing:**
+  Playwright emulates a light colour scheme by default, which hides the app's own; call `page.emulateMedia({ colorScheme: null })`
+  first. PDF exports keep their own light page.

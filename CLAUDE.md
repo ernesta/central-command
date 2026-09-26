@@ -94,7 +94,7 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   `useRowNavigation`. All importers and the topic conversion are applied to the real library (dry runs find nothing left). Work since
   the last push (26 Sep 2026) is committed but not pushed. Global search (Mod-K) is built: a module offers `search` in its manifest and
   the shell searches them all (`docs/DECISIONS.md`, "Global search"). The ideas list (People pages, Home, writing) is at the top of
-  "Later" in `docs/ROADMAP.md`; none is started.
+  "Later" in `docs/ROADMAP.md`; none is started. Dark mode is built (Settings → Theme; `docs/DECISIONS.md`, "Dark mode"): colours are `light-dark()` pairs in `tokens.css`, so a new colour needs both values.
 - The app name lives in one place (`src/shared/app-info.ts`); it may be renamed again.
 
 ## Testing the app for real (unit tests are not enough)

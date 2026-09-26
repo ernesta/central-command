@@ -172,4 +172,4 @@ templates (Notion, Asana), Athenify, and the daily-dashboard projects on GitHub.
 - World news tab, Research Digest, Focus/Writing space
 - Life and Work workspaces
 - Books module (following the Readings pattern)
-- Dark mode and theme switching, packaging and public release
+- Dark mode: **built** (Settings → Theme). Packaging and public release
