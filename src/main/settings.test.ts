@@ -28,6 +28,15 @@ describe('SettingsStore', () => {
     expect(reloaded.zoteroExportPath).toBe(defaults.zoteroExportPath)
   })
 
+  it('keeps a valid theme and falls back to following the system for unknown or missing ones', async () => {
+    await new SettingsStore(file, defaults).update({ theme: 'dark' })
+    expect((await new SettingsStore(file, defaults).load()).theme).toBe('dark')
+    await writeFile(file, JSON.stringify({ theme: 'sepia' }))
+    expect((await new SettingsStore(file, defaults).load()).theme).toBe('system')
+    await writeFile(file, JSON.stringify({}))
+    expect((await new SettingsStore(file, defaults).load()).theme).toBe('system')
+  })
+
   it('keeps a valid terminal choice and falls back to the default for unknown or missing ones', async () => {
     const store = new SettingsStore(file, defaults)
     await store.update({ terminal: 'ghostty' })

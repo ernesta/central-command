@@ -8,7 +8,18 @@ export const TERMINALS: readonly { id: TerminalId; label: string }[] = [
   { id: 'ghostty', label: 'Ghostty' }
 ]
 
+/** How the app looks: follow the system's light or dark setting, or always one of them. */
+export type ThemeChoice = 'system' | 'light' | 'dark'
+
+export const THEMES: readonly { id: ThemeChoice; label: string }[] = [
+  { id: 'system', label: 'System' },
+  { id: 'light', label: 'Light' },
+  { id: 'dark', label: 'Dark' }
+]
+
 export interface Settings {
+  /** Light, dark, or whatever the system is set to. */
+  theme: ThemeChoice
   /** Path to the Better BibTeX auto-export file. */
   zoteroExportPath: string
   /** Repo the Build button opens a Claude Code session in. Empty until configured. */
@@ -36,6 +47,7 @@ export const WORKSPACES: readonly Workspace[] = ['life', 'research', 'work']
 
 export function defaultSettings(defaultZoteroExportPath: string): Settings {
   return {
+    theme: 'system',
     zoteroExportPath: defaultZoteroExportPath,
     repoPath: '',
     terminal: 'terminal',

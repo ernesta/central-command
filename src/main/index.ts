@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow, nativeTheme } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { APP_NAME } from '@shared/app-info'
@@ -33,7 +33,8 @@ function createWindow(): void {
     minHeight: 600,
     show: false,
     title: APP_NAME,
-    backgroundColor: '#EDEFF2',
+    // The page's own background (`--bg` in tokens.css) for the theme in use, so the window does not flash the wrong colour.
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#14181D' : '#EDEFF2',
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
@@ -83,6 +84,11 @@ app.whenReady().then(async () => {
   const paths = getAppPaths()
   const settings = new SettingsStore(paths.settings, defaultSettings(paths.defaultBibExport))
   await settings.load()
+  // The chosen theme decides light or dark for the whole window: the page's `prefers-color-scheme`, scrollbars and form controls follow it.
+  nativeTheme.themeSource = settings.get().theme
+  settings.onChange((next, previous) => {
+    if (next.theme !== previous.theme) nativeTheme.themeSource = next.theme
+  })
   registerSettingsIpc(settings)
   registerDialogIpc()
   registerBuildIpc(settings)

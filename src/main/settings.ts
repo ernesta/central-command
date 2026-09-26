@@ -1,5 +1,5 @@
 import { readFile, rename } from 'fs/promises'
-import { TERMINALS, WORKSPACES, type Settings } from '@shared/settings'
+import { TERMINALS, THEMES, WORKSPACES, type Settings } from '@shared/settings'
 import { writeFileAtomic } from './atomic-write'
 
 /**
@@ -15,6 +15,7 @@ export function normaliseSettings(raw: unknown, defaults: Settings): Settings {
       ? (ui.moduleState as Record<string, unknown>)
       : defaults.ui.moduleState
   return {
+    theme: THEMES.find((t) => t.id === obj.theme)?.id ?? defaults.theme,
     zoteroExportPath:
       typeof obj.zoteroExportPath === 'string' && obj.zoteroExportPath.trim()
         ? obj.zoteroExportPath
