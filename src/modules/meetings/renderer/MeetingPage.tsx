@@ -6,6 +6,7 @@ import { DeleteDialog } from '@renderer/components/DeleteDialog'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
+import { EditorCard } from '@renderer/notes/EditorCard'
 import { NotesEditor } from '@renderer/notes/NotesEditor'
 import type { SaveState } from '@renderer/notes/notes-session'
 import { ownerOptions } from '../shared/people'
@@ -82,7 +83,7 @@ function MeetingView({
     }
   }, [])
 
-  const { meta, body, save, error, conflict, reloadedFromDisk, problems } = snapshot
+  const { meta, body, save, error, conflict, reloadedFromDisk, problems, updatedAt } = snapshot
   const owners = useMemo(() => ownerOptions(meta.attendees, people), [meta.attendees, people])
   const todo = useTodoHelper(owners)
   const topics = useMemo(() => parseTopics(body, meta.discussed), [body, meta.discussed])
@@ -256,15 +257,17 @@ function MeetingView({
 
       <div className={styles.split}>
         <div className={styles.doc} ref={editorRef}>
-          <NotesEditor
-            key={snapshot.editorKey}
-            initial={snapshot.initialBody}
-            placeholder="Write your meeting notes…"
-            showPlaceholder={body.trim() === ''}
-            setup={todo.setup}
-            onChange={session.editBody.bind(session)}
-            onBlur={() => void session.flush()}
-          />
+          <EditorCard text={body} edited={updatedAt}>
+            <NotesEditor
+              key={snapshot.editorKey}
+              initial={snapshot.initialBody}
+              placeholder="Write your meeting notes…"
+              showPlaceholder={body.trim() === ''}
+              setup={todo.setup}
+              onChange={session.editBody.bind(session)}
+              onBlur={() => void session.flush()}
+            />
+          </EditorCard>
         </div>
         <TopicsPanel
           topics={topics}
