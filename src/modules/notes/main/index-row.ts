@@ -1,9 +1,8 @@
 import { hashContent } from '../../../main/notes/guarded-file'
-import { markdownToExcerpt } from '../../../main/notes/excerpt'
+import { SEARCH_TEXT_LENGTH, markdownToExcerpt } from '../../../main/notes/excerpt'
 import { parseMeta, splitNote } from '../shared/front-matter'
 import type { NoteIndexRow, NoteWorkspace } from '../shared/types'
 
-const EXCERPT_LENGTH = 4000
 const FIRST_LINE_LENGTH = 120
 
 /** The first line of the body that has any words in it, without Markdown marks. */
@@ -37,7 +36,7 @@ export function buildIndexRow(
     created: meta.created,
     edited: Math.floor(edited),
     firstLine: firstLineOf(body),
-    excerpt: markdownToExcerpt(body, EXCERPT_LENGTH),
+    excerpt: markdownToExcerpt(body, SEARCH_TEXT_LENGTH),
     problems,
     contentHash: hashContent(content)
   }

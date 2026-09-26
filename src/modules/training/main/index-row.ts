@@ -1,4 +1,4 @@
-import { markdownToExcerpt } from '../../../main/notes/excerpt'
+import { SEARCH_TEXT_LENGTH, markdownToExcerpt } from '../../../main/notes/excerpt'
 import { hashContent } from '../../../main/notes/guarded-file'
 import { extractSection } from '@shared/sections'
 import { isValidDate, parseTrainingMeta, splitNote } from '../shared/front-matter'
@@ -6,7 +6,6 @@ import type { TrainingIndexRow, TrainingWorkspace } from '../shared/types'
 import { dateFromBaseName } from './file-name'
 
 const SUMMARY_LENGTH = 1000
-const EXCERPT_LENGTH = 4000
 
 /**
  * Work out what the index should say about an entry file. Pure: the same text always gives the same
@@ -45,7 +44,7 @@ export function buildTrainingIndexRow(
     institution: meta.institution,
     folder: meta.folder,
     summary: markdownToExcerpt(extractSection(body, 'Summary') ?? '', SUMMARY_LENGTH),
-    excerpt: markdownToExcerpt(body, EXCERPT_LENGTH),
+    excerpt: markdownToExcerpt(body, SEARCH_TEXT_LENGTH),
     hasNotes: notes !== '',
     problems,
     contentHash: hashContent(content)

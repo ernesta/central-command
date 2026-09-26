@@ -31,6 +31,11 @@ describe('buildIndexRow', () => {
     expect(a).toMatchObject({ title: '', group: '', firstLine: 'Just words', problems: [] })
   })
 
+  it('keeps the whole text of a long note for search, not just its start', () => {
+    const chapter = `${'word '.repeat(20_000)}needle`
+    expect(buildIndexRow('research', 'Chapter', chapter, 5).excerpt.endsWith('needle')).toBe(true)
+  })
+
   it('finds the first line with words, skipping blank and mark-only lines', () => {
     expect(firstLineOf('\n\n---\n\n> Quote here\n')).toBe('Quote here')
     expect(firstLineOf('')).toBe('')

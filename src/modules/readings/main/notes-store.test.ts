@@ -74,6 +74,11 @@ describe('NotesStore.write: creating and saving', () => {
     expect(reading('a')).toMatchObject({ hasNotes: true, notesExcerpt: 'Method Some notes' })
   })
 
+  it('keeps the whole text of long notes for search, not just their start', async () => {
+    await store.write('a', `${'word '.repeat(20_000)}needle`, EMPTY)
+    expect(reading('a').notesExcerpt.endsWith('needle')).toBe(true)
+  })
+
   it('does not create a file for empty or whitespace-only content', async () => {
     expect(await store.write('a', '', EMPTY)).toEqual({ status: 'saved', hash: EMPTY })
     expect(await store.write('a', '  \n\n ', EMPTY)).toEqual({ status: 'saved', hash: EMPTY })

@@ -42,6 +42,12 @@ describe('buildIndexRow', () => {
     expect(row.excerpt).not.toContain('series:')
   })
 
+  it('keeps the whole text of a long note for search, not just its start', () => {
+    const head = '---\nseries: Other\ndate: 2026-01-02\n---\n'
+    const row = buildIndexRow('research', 'x', `${head}## Notes\n\n${'word '.repeat(20_000)}needle`)
+    expect(row.excerpt.endsWith('needle')).toBe(true)
+  })
+
   it('counts the topics in the note', () => {
     const head = '---\nseries: Other\ndate: 2026-01-02\n---\n'
     expect(buildIndexRow('research', 'x', head + '## Notes\n### A\n### B\n').topicCount).toBe(2)

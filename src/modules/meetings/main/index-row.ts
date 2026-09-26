@@ -1,5 +1,5 @@
 import { hashContent } from '../../../main/notes/guarded-file'
-import { markdownToExcerpt } from '../../../main/notes/excerpt'
+import { SEARCH_TEXT_LENGTH, markdownToExcerpt } from '../../../main/notes/excerpt'
 import { parseMeta, splitNote, isValidDate } from '../shared/front-matter'
 import { extractSection } from '../shared/sections'
 import { parseTodos } from '../shared/todos'
@@ -8,7 +8,6 @@ import type { MeetingIndexRow, MeetingWorkspace } from '../shared/types'
 import { dateFromBaseName } from './file-name'
 
 const SUMMARY_LENGTH = 1000
-const EXCERPT_LENGTH = 4000
 
 /**
  * Work out what the index should say about a meeting file. Pure: the same text always gives the same
@@ -43,7 +42,7 @@ export function buildIndexRow(
     attendees: meta.attendees,
     skills: meta.skills,
     summary,
-    excerpt: markdownToExcerpt(body, EXCERPT_LENGTH),
+    excerpt: markdownToExcerpt(body, SEARCH_TEXT_LENGTH),
     problems,
     topicCount: parseTopics(body).length,
     todos: parseTodos(body),

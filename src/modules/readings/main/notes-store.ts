@@ -1,7 +1,7 @@
 import { readdir } from 'fs/promises'
 import type { Database } from 'better-sqlite3'
 import type { NoteContent, NoteWriteResult } from '@shared/notes'
-import { markdownToExcerpt } from '../../../main/notes/excerpt'
+import { SEARCH_TEXT_LENGTH, markdownToExcerpt } from '../../../main/notes/excerpt'
 import { readNoteFile, writeNoteFileGuarded } from '../../../main/notes/guarded-file'
 import { noteBaseName, noteFileName, notePath } from './notes-path'
 
@@ -89,7 +89,7 @@ export class NotesStore {
 
   private updateCache(citekey: string, content: string): void {
     const hasNotes = content.trim() !== '' ? 1 : 0
-    const excerpt = hasNotes ? markdownToExcerpt(content) : ''
+    const excerpt = hasNotes ? markdownToExcerpt(content, SEARCH_TEXT_LENGTH) : ''
     this.db
       .prepare(
         `UPDATE readings SET has_notes = ?, notes_excerpt = ?
