@@ -6,6 +6,7 @@ import { DeleteDialog } from '@renderer/components/DeleteDialog'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
+import { EditorCard } from '@renderer/notes/EditorCard'
 import { NotesEditor } from '@renderer/notes/NotesEditor'
 import type { SaveState } from '@renderer/notes/notes-session'
 import type { Person } from '@shared/people'
@@ -94,7 +95,7 @@ function EntryView({
     titleRef.current?.select()
   }, [ready])
 
-  const { meta, body, save, error, conflict, reloadedFromDisk, problems } = snapshot
+  const { meta, body, save, error, conflict, reloadedFromDisk, problems, updatedAt } = snapshot
 
   // Back goes to wherever the user came from (the list); with no history, the list.
   const goBack = (): void =>
@@ -231,14 +232,16 @@ function EntryView({
       <FilesPanel folder={meta.folder} onChange={(folder) => session.setMeta({ folder })} />
 
       <div className={styles.doc}>
-        <NotesEditor
-          key={snapshot.editorKey}
-          initial={snapshot.initialBody}
-          placeholder="Write your notes…"
-          showPlaceholder={body.trim() === ''}
-          onChange={session.editBody.bind(session)}
-          onBlur={() => void session.flush()}
-        />
+        <EditorCard text={body} edited={updatedAt}>
+          <NotesEditor
+            key={snapshot.editorKey}
+            initial={snapshot.initialBody}
+            placeholder="Write your notes…"
+            showPlaceholder={body.trim() === ''}
+            onChange={session.editBody.bind(session)}
+            onBlur={() => void session.flush()}
+          />
+        </EditorCard>
       </div>
 
       <DeleteDialog
