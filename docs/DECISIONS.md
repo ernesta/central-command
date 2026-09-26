@@ -682,3 +682,18 @@ or found on the way:
   (the one exception to the Trash rule: nothing is in it, and the Trash would fill with empty `Untitled` files). The renderer waits
   300 ms and only asks if the session is still disposed, because in development React unmounts and mounts a new page at once. Not
   swept at start-up, so an empty note left by a crash stays until opened and left.
+
+### Editor card (after the first Notes review)
+
+- Every notes editor (Notes, Meetings, Training entries, the Training plan, Readings notes) sits in one shared `EditorCard`: a white window
+  with a quiet line under the text, "Created … · Edited … · 412 words", which stays at the bottom of the window in a long note. The
+  code never had a white window around the text before (Meetings, Training and Notes pages drew it straight on the grey page, and only the
+  Training plan had its own white page); the mockups did show one, so this follows them. Notes' details bar is gone; Group and Pin sit
+  beside the title.
+- **Created is only shown for Notes**, which records it in its front matter. The file's own creation time was tried and rejected: every
+  save writes a temporary file and renames it over the note, so the creation time is the last save. Adding a `created` key to the other
+  kinds of file is the alternative if wanted.
+- **Edited** is the file's modified time: `readNoteFile` now returns it (`NoteContent.edited`), and both sessions keep it and use the
+  time of their own saves afterwards. The word count is of the text as it stands, so it moves while typing. It counts what the editor
+  writes back: a bare link the editor turns into `<https://…>` is no longer counted.
+

@@ -31,6 +31,8 @@
 - [x] **People page built** (see `docs/DECISIONS.md` "People page"). Waiting for the user's review.
 - [ ] **Decide what Studies should be** (it stays "Coming soon"); and later what Ideas becomes.
 - [x] **Notes built** (all nine stages of `docs/NOTES_PLAN.md`; see `docs/DECISIONS.md`, "Notes"), pushed. Waiting for the user's review.
+- [ ] **Review the editor card** (all editors: white window, Created/Edited/word count line; Notes: Group and Pin beside the title). Say if
+      Created should also be recorded for Meetings, Training and Readings notes (see `docs/DECISIONS.md`, "Editor card").
 - [ ] **Review Notes** against the mockup (`docs/design/notes-mockup.html`): the landing, All notes, a note (Group field, pin, dates, word
       count) and quick capture (Mod-Shift-n). Say what to change.
 - [x] **Notes import applied** on 25 Sep 2026: 12 notes from Data Sources, Ideas, Thesis and Placement are in
