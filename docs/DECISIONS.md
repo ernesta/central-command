@@ -737,3 +737,18 @@ or found on the way:
   a note, the group menu, the delete dialog, search, Ask) and by switching Light, Dark and System live. **A note for testing:**
   Playwright emulates a light colour scheme by default, which hides the app's own; call `page.emulateMedia({ colorScheme: null })`
   first. PDF exports keep their own light page.
+
+## Editor: opening links, and the right-click menu
+
+- **Opening a link:** hold Cmd (Ctrl elsewhere) and click. A plain click puts the cursor in the link, as in any editor (a link inside
+  editable text cannot be followed by clicking). The click calls `window.open`; the main process already opens only `http` and `https`
+  addresses in the browser and refuses everything else (`isSafeExternalUrl`, now in `src/main/urls.ts`, tested). Listed in Settings
+  under the notes editor keys as "Mod-Click" (one of the two keys that are ours, not Milkdown's).
+- **Right-click menu** (`src/main/context-menu.ts`, tested): Electron has none of its own, so there was no spelling help and no
+  Copy or Paste from the mouse. It shows spelling suggestions (up to five, "No suggestions", "Add to dictionary") for a misspelt
+  word in editable text, then Open link (web addresses only) and Copy link address on a link, then Cut, Copy, Paste and Select all in
+  editable text (Cut and Copy only with a selection) or Copy on selected text elsewhere. Nothing is shown where there is nothing to
+  do. **Undo and Redo are left out on purpose:** the editor keeps its own history, which the system's undo would bypass; the keys work.
+- Checked in the built app with the browser hand-off replaced by a recorder: a plain click opens nothing, Cmd-click opens the address
+  once and leaves the note open; the menu template builds. The native menu itself is not visible to the test driver, so **look at a
+  right-click by hand once** (a misspelt word in a note).

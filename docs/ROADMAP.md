@@ -160,6 +160,21 @@ Open questions for the design: single-column "morning briefing" or a grid of sma
 top bar before Life, Research and Work, or replaces the workspace pills. Sources for the ideas: personal-dashboard and habit-tracker
 templates (Notion, Asana), Athenify, and the daily-dashboard projects on GitHub.
 
+## Before a public release: what needs the user's decision
+
+Nothing here is started; each is a choice, not just work. Already in place: packaging config (`electron-builder.yml`, icons in
+`build/`), a light and dark theme, local-only data, no telemetry, and a right-click menu and link opening in the editor.
+
+- **Licence** for the code (none chosen yet) and whether the source is public. The Build button assumes a source checkout, see the
+  product vision above.
+- **Signing and notarising** the macOS app (needs an Apple Developer account; `notarize` is off) and, for Windows, a certificate.
+- **Updates:** where releases are hosted and whether the app checks for them (an update check is a network request).
+- **Name and icon:** the app name is one constant (`src/shared/app-info.ts`); the icon is a placeholder to replace.
+- **First-run experience:** what a new user sees with no Zotero export, no repo path and no data (Settings explains each field now).
+- **A privacy line** in the README and Settings: what stays on the computer, and what the future network features (weather, Claude)
+  would send.
+- **Other platforms:** the Build button and the trash move are macOS-first; Windows and Linux need checking.
+
 ## Later, roughly in order (not for Phase 1)
 
 - Real Claude wiring for the Ask panel; embedded terminal for Build
