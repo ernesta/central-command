@@ -122,3 +122,12 @@
   color: var(--danger);
   font-size: var(--text-13);
 }
+
+/* Narrow windows: the field wraps under the title at the left edge, so open the menu to the right of it. */
+@media (max-width: 640px) {
+  .popover {
+    left: 0;
+    right: auto;
+    max-width: calc(100vw - 48px);
+  }
+}
