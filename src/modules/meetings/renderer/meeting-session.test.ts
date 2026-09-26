@@ -31,6 +31,7 @@ class FakeDisk implements MeetingSessionApi {
     added: 0
   })
   failSave: Error | null = null
+  edited: number | undefined = undefined
   gate: Promise<void> | null = null
 
   file(): MeetingFile {
@@ -39,7 +40,7 @@ class FakeDisk implements MeetingSessionApi {
     const { meta, problems } = parseMeta(head)
     return {
       ref: REF,
-      note: { exists: true, content: this.text, hash: hash(this.text) },
+      note: { exists: true, content: this.text, hash: hash(this.text), edited: this.edited },
       meta,
       body,
       problems
@@ -99,6 +100,14 @@ beforeEach(() => {
   session = new MeetingSession(REF, disk, { debounceMs: 500 })
 })
 afterEach(() => vi.useRealTimers())
+
+describe('when the file was last changed', () => {
+  it('takes the time the file was read with, as its modified time', async () => {
+    disk.edited = 1_700_000_000_000
+    await session.start()
+    expect(session.getSnapshot().updatedAt).toBe(1_700_000_000_000)
+  })
+})
 
 describe('start', () => {
   it('loads the meeting and its note', async () => {
