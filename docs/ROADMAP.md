@@ -78,8 +78,7 @@ the meeting page, the list, the landing page, People settings and remembered lis
   shell in `src/shared/report-page.ts` are shared with Training). Awaiting the user's review of the layout.
 - **Meetings in Work**: the code takes a workspace everywhere (`notes/meetings/<workspace>/`); Work needs a folder,
   a route and a landing page from the same components. `ACTIVE_WORKSPACES` in `meetings/main/register.ts` is the switch.
-- **Imported notes with bold pseudo-headings** (`**Topic**`): the converter is built (`npm run convert:topics`, dry run by
-  default). Its dry run on the real notes finds 14 lines in 5 notes; applying it is the user's call.
+- **Imported notes with bold pseudo-headings** (`**Topic**`): converted (`npm run convert:topics`, applied 25 Sep 2026; a dry run now finds nothing).
 - **Imported previous items with a status word** (`(Cancelled) **TODO(EO)**: …`) are ownerless Previous TODOs and carry
   over while unticked; the user may want to tick or delete them in the newest notes.
 - **Backspace at the start of a first-line bullet**: checked by hand in the built app on 26 Sep 2026 (typed `- first item`, Cmd+Left,
@@ -89,13 +88,15 @@ the meeting page, the list, the landing page, People settings and remembered lis
 
 All ten stages of `docs/TRAINING_PLAN.md` are done, plus the Meetings additions (academic year selector, skills, hours counter).
 `docs/DECISIONS.md` (Training) records what was decided and found. The importers have been dry-run on the user's real files;
-neither has been applied to the real library.
+both have been applied to the real library.
 
 ### Training follow-ups (not started; the user decides when)
 
-- **Apply the imports** to the real library when the user says so: `npm run import:training -- --inkpath <xlsx> --obsidian
-<notes> --trainings <folder> --apply` (129 entries, 10 notes matched, 38 folders linked) and `npm run reconcile:meetings --
---inkpath <xlsx> --apply` (35 meeting files get skills and missing times; 4 times differ and are only reported).
+- **Imports and conversions are all applied** (checked on 26 Sep 2026: every dry run reports nothing left to write: training 129 already
+  there, 35 meeting files agree with the log, 12 notes, 17 reading notes, topics converted, people added). What is left is for you to
+  decide: 10 Obsidian training notes found no matching activity (Psychology/Peer Review, Starting Your PhD, Annual Reviews and Upgrade;
+  SEDarc Induction and five SEDarc method sessions and Data Management and Security; University/Central Induction), so their text is
+  not in the app; the four differing meeting times and the two Rastle Lab meetings without a file (both above).
 - **Show meetings in the Training PDF?** Only a line with the hours is included; the meetings are not listed.
 - **Inkpath's Organisation, Points and Date Completed** are kept in the front matter (Organisation and Points are read) but
   not shown or used.

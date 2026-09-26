@@ -502,7 +502,7 @@ list. `convertPseudoHeadings` (`meetings/shared/pseudo-headings.ts`) turns such 
   a note edited meanwhile is skipped. It is idempotent: a second run finds nothing.
 - **Dry run on the real notes:** 14 lines in 5 notes (the two Luminos and three Supervision notes' topics plus the
   Rastle Lab one), matching a separate search of the files. A full `--apply` on a scratch copy changed exactly those 14
-  lines, the backups equalled the originals and a second run changed nothing. It has not been applied to the real notes.
+  lines, the backups equalled the originals and a second run changed nothing. It was applied to the real notes on 25 Sep 2026 (backups in `~/CentralCommand/backups/topic-headings-…`); a dry run now finds nothing.
 
 ## Keyboard shortcuts list (Settings)
 
