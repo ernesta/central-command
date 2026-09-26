@@ -6,15 +6,13 @@ import { DeleteDialog } from '@renderer/components/DeleteDialog'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
+import { EditorCard } from '@renderer/notes/EditorCard'
 import { NotesEditor } from '@renderer/notes/NotesEditor'
 import type { SaveState } from '@renderer/notes/notes-session'
 import { markdownToExcerpt } from '@shared/text'
-import { formatDate } from '@shared/time'
-import { isoDate } from '@shared/dates'
 import { deriveGroups } from '../shared/groups'
 import { canPin } from '../shared/pinning'
 import { UNTITLED } from '../shared/query'
-import { wordCount, wordCountLabel } from '@shared/words'
 import type { NoteRef } from '../shared/types'
 import { GroupField } from './GroupField'
 import { noteRoute, notesBase } from './notes-paths'
@@ -132,7 +130,6 @@ function NoteView({
     )
   }
 
-  const words = wordCount(body)
   const heading = meta.title || markdownToExcerpt(body, 40) || UNTITLED
   const pinDisabled = !meta.pinned && rows !== null && !canPin(rows, session.getRef().id)
 
@@ -151,6 +148,29 @@ function NoteView({
           }
         />
         <div className={styles.actions}>
+          <GroupField
+            group={meta.group}
+            subgroup={meta.subgroup}
+            groups={groups}
+            onChange={(value) => session.setMeta(value)}
+          />
+          <Button
+            size="small"
+            aria-pressed={meta.pinned}
+            disabled={pinDisabled}
+            title={pinDisabled ? 'Four notes are pinned. Unpin one first.' : undefined}
+            icon={
+              <Pin
+                size={14}
+                strokeWidth={1.75}
+                fill={meta.pinned ? 'currentColor' : 'none'}
+                aria-hidden
+              />
+            }
+            onClick={() => session.setMeta({ pinned: !meta.pinned })}
+          >
+            {meta.pinned ? 'Pinned' : 'Pin'}
+          </Button>
           <span
             className={[styles.status, save === 'error' && styles.statusError]
               .filter(Boolean)
@@ -209,60 +229,20 @@ function NoteView({
         </div>
       )}
 
-      <div className={styles.meta}>
-        <div className={styles.field}>
-          <span className={styles.label}>Group</span>
-          <GroupField
-            group={meta.group}
-            subgroup={meta.subgroup}
-            groups={groups}
-            onChange={(value) => session.setMeta(value)}
-          />
-        </div>
-        <div className={styles.field}>
-          <span className={styles.label}>Created</span>
-          <span className={styles.value}>{meta.created ? formatDate(meta.created) : '—'}</span>
-        </div>
-        <div className={styles.field}>
-          <span className={styles.label}>Updated</span>
-          <span className={styles.value}>
-            {updatedAt === null ? '—' : formatDate(isoDate(updatedAt))}
-          </span>
-        </div>
-        <Button
-          size="small"
-          className={styles.pin}
-          aria-pressed={meta.pinned}
-          disabled={pinDisabled}
-          title={pinDisabled ? 'Four notes are pinned. Unpin one first.' : undefined}
-          icon={
-            <Pin
-              size={14}
-              strokeWidth={1.75}
-              fill={meta.pinned ? 'currentColor' : 'none'}
-              aria-hidden
-            />
-          }
-          onClick={() => session.setMeta({ pinned: !meta.pinned })}
-        >
-          {meta.pinned ? 'Pinned' : 'Pin'}
-        </Button>
-      </div>
-
       <div className={styles.doc}>
-        <NotesEditor
-          key={snapshot.editorKey}
-          initial={snapshot.initialBody}
-          placeholder="Write your note…"
-          showPlaceholder={body.trim() === ''}
-          // Not after the file changed outside: that editor must not take the cursor.
-          autoFocus={startFocus === 'body' && !reloadedFromDisk}
-          onChange={session.editBody.bind(session)}
-          onBlur={() => void session.flush()}
-        />
+        <EditorCard text={body} created={meta.created || undefined} edited={updatedAt}>
+          <NotesEditor
+            key={snapshot.editorKey}
+            initial={snapshot.initialBody}
+            placeholder="Write your note…"
+            showPlaceholder={body.trim() === ''}
+            // Not after the file changed outside: that editor must not take the cursor.
+            autoFocus={startFocus === 'body' && !reloadedFromDisk}
+            onChange={session.editBody.bind(session)}
+            onBlur={() => void session.flush()}
+          />
+        </EditorCard>
       </div>
-
-      {words > 0 && <p className={styles.words}>{wordCountLabel(words)}</p>}
 
       <DeleteDialog
         open={confirmDelete}

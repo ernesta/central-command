@@ -5,12 +5,12 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 12px;
+  padding: 6px 12px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-control);
   background: var(--surface);
   color: var(--ink);
-  font-size: var(--text-14);
+  font-size: var(--text-13);
   white-space: nowrap;
 }
 .trigger:hover {
@@ -23,7 +23,7 @@
   position: absolute;
   z-index: 10;
   top: calc(100% + 4px);
-  left: 0;
+  right: 0;
   display: grid;
   gap: 8px;
   width: 320px;
