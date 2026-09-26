@@ -1,0 +1,32 @@
+import { isoDate } from '@shared/dates'
+import { searchTerms, snippet, type SearchHit } from '@shared/search'
+import { fold } from '@shared/text'
+import { formatShortDate } from '@shared/time'
+import { groupLabel } from '../shared/groups'
+import { DEFAULT_NOTES_QUERY, displayTitle, queryNotes } from '../shared/query'
+import type { NoteIndexRow } from '../shared/types'
+import { noteRoute } from './notes-paths'
+
+const LIMIT = 6
+
+/** The notes that match, most recently edited first: the part of the text that matched, else the group and date. */
+export function noteHits(rows: readonly NoteIndexRow[], query: string): SearchHit[] {
+  const terms = searchTerms(query)
+  return queryNotes(rows, { ...DEFAULT_NOTES_QUERY, search: query })
+    .slice(0, LIMIT)
+    .map((row) => {
+      const title = displayTitle(row)
+      const inTitle = terms.every((t) => fold(title).includes(t))
+      const details = `${groupLabel(row.group, row.subgroup) || 'Ungrouped'} · ${formatShortDate(isoDate(row.edited))}`
+      return {
+        key: row.id,
+        title,
+        detail: (!inTitle && snippet(row.excerpt, terms)) || details,
+        route: noteRoute(row.id)
+      }
+    })
+}
+
+export async function searchNotes(query: string): Promise<SearchHit[]> {
+  return noteHits(await window.api.notes.list('research'), query)
+}
