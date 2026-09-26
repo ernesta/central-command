@@ -1,6 +1,7 @@
 import { Button } from '@renderer/components/Button'
 import { Notice } from '@renderer/components/Notice'
 import type { SaveState } from '@renderer/notes/notes-session'
+import { EditorCard } from '@renderer/notes/EditorCard'
 import { NotesEditor } from '@renderer/notes/NotesEditor'
 import { useNotesSession } from '@renderer/notes/useNotesSession'
 import styles from './NotesSection.module.css'
@@ -25,7 +26,7 @@ function statusText(save: SaveState, hasContent: boolean, reloaded: boolean): st
  */
 export function NotesSection({ citekey }: { citekey: string }): React.JSX.Element {
   const { session, snapshot } = useNotesSession(citekey, window.api.readings.notes)
-  const { save, error, conflict, hasContent, reloadedFromDisk } = snapshot
+  const { save, error, conflict, hasContent, reloadedFromDisk, text, updatedAt } = snapshot
 
   return (
     <section className={styles.section} aria-label="Notes">
@@ -76,14 +77,16 @@ export function NotesSection({ citekey }: { citekey: string }): React.JSX.Elemen
       )}
 
       {snapshot.status === 'ready' && (
-        <NotesEditor
-          key={snapshot.editorKey}
-          initial={snapshot.initial}
-          placeholder="Start writing your notes…"
-          showPlaceholder={!hasContent}
-          onChange={session.edit.bind(session)}
-          onBlur={() => void session.flush()}
-        />
+        <EditorCard text={text} edited={updatedAt}>
+          <NotesEditor
+            key={snapshot.editorKey}
+            initial={snapshot.initial}
+            placeholder="Start writing your notes…"
+            showPlaceholder={!hasContent}
+            onChange={session.edit.bind(session)}
+            onBlur={() => void session.flush()}
+          />
+        </EditorCard>
       )}
     </section>
   )
