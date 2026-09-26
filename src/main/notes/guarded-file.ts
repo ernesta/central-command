@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'crypto'
-import { link, mkdir, readFile, rm, writeFile } from 'fs/promises'
+import { link, mkdir, readFile, rm, stat, writeFile } from 'fs/promises'
 import { basename, dirname, join } from 'path'
 import type { NoteContent, NoteWriteResult } from '@shared/notes'
 import { writeFileAtomic } from '../atomic-write'
@@ -12,7 +12,8 @@ export function hashContent(content: string): string {
 export async function readNoteFile(path: string): Promise<NoteContent> {
   try {
     const content = await readFile(path, 'utf8')
-    return { exists: true, content, hash: hashContent(content) }
+    const edited = Math.floor((await stat(path)).mtimeMs)
+    return { exists: true, content, hash: hashContent(content), edited }
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return { exists: false, content: '', hash: hashContent('') }

@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'fs'
+import { mkdtempSync, readFileSync, readdirSync, rmSync, utimesSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -74,6 +74,13 @@ describe('writeNoteFileGuarded', () => {
     writeFileSync(path, 'text')
     await writeNoteFileGuarded(path, '', hashContent('text'))
     expect(readFileSync(path, 'utf8')).toBe('')
+  })
+
+  it('reads when the file was last changed', async () => {
+    writeFileSync(path, 'text')
+    const time = new Date('2026-03-04T10:00:00Z')
+    utimesSync(path, time, time)
+    expect((await readNoteFile(path)).edited).toBe(time.getTime())
   })
 
   it('reads a missing file as empty', async () => {

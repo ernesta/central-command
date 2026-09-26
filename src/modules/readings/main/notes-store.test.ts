@@ -60,7 +60,8 @@ describe('NotesStore.read', () => {
     expect(await store.read('a')).toEqual({
       exists: true,
       content: '# Hi',
-      hash: hashContent('# Hi')
+      hash: hashContent('# Hi'),
+      edited: expect.any(Number)
     })
   })
 })
@@ -126,7 +127,8 @@ describe('NotesStore.write: never deleting or clobbering', () => {
       disk: {
         exists: true,
         content: 'edited by Claude Code',
-        hash: hashContent('edited by Claude Code')
+        hash: hashContent('edited by Claude Code'),
+        edited: expect.any(Number)
       }
     })
     expect(readFileSync(file('a.md'), 'utf8')).toBe('edited by Claude Code')

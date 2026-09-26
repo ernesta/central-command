@@ -385,7 +385,7 @@ export class EntrySession<R extends { id: string; workspace: string }, M> {
       problems: file.problems,
       body: file.body,
       initialBody: file.body,
-      updatedAt: file.edited ?? this.snapshot.updatedAt
+      updatedAt: file.edited ?? file.note.edited ?? this.snapshot.updatedAt
     })
   }
 

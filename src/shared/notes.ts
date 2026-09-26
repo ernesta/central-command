@@ -4,6 +4,8 @@ export interface NoteContent {
   content: string
   /** Hash of `content`; the editor sends it back to prove which version it started from. */
   hash: string
+  /** When the file was last changed (milliseconds), as read from disk. Absent for a missing file. */
+  edited?: number
 }
 
 export type NoteWriteResult =

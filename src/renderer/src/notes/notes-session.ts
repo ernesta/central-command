@@ -23,6 +23,10 @@ export interface NotesSnapshot {
   reloadedFromDisk: boolean
   /** Whether the note currently has any text (drives the Saved indicator). */
   hasContent: boolean
+  /** The note text as it stands now (for the word count). */
+  text: string
+  /** When the file was last changed (milliseconds): as read from disk, or when this session last saved it. Null if unknown. */
+  updatedAt: number | null
 }
 
 interface Options {
@@ -50,7 +54,9 @@ export class NotesSession {
     error: null,
     conflict: null,
     reloadedFromDisk: false,
-    hasContent: false
+    hasContent: false,
+    text: '',
+    updatedAt: null
   }
   private readonly listeners = new Set<() => void>()
   private readonly debounceMs: number
@@ -112,6 +118,7 @@ export class NotesSession {
     this.update({
       save: this.snapshot.save === 'saving' && dirty ? 'saving' : dirty ? 'dirty' : 'clean',
       hasContent: markdown.trim() !== '',
+      text: markdown,
       reloadedFromDisk: false
     })
     if (this.timer) clearTimeout(this.timer)
@@ -196,7 +203,7 @@ export class NotesSession {
     }
     this.baseHash = result.hash
     this.savedContent = content
-    this.update({ save: this.latest === content ? 'clean' : 'dirty' })
+    this.update({ save: this.latest === content ? 'clean' : 'dirty', updatedAt: Date.now() })
     if (this.latest !== content) this.saveAgain = true
   }
 
@@ -239,6 +246,12 @@ export class NotesSession {
     this.latest = note.content
     if (this.timer) clearTimeout(this.timer)
     this.timer = null
+    // The caller notifies with the update that follows.
+    this.snapshot = {
+      ...this.snapshot,
+      text: note.content,
+      updatedAt: note.edited ?? this.snapshot.updatedAt
+    }
   }
 
   private update(patch: Partial<NotesSnapshot>): void {

@@ -14,11 +14,13 @@ class FakeDisk implements NotesApi {
   private listeners = new Set<(event: NoteChangedEvent) => void>()
   private gate: (() => void) | null = null
   holdWrites = false
+  edited: number | undefined = undefined
 
   read = async (): Promise<NoteContent> => ({
     exists: this.exists,
     content: this.content,
-    hash: hash(this.content)
+    hash: hash(this.content),
+    edited: this.edited
   })
 
   write = async (_citekey: string, content: string, baseHash: string): Promise<NoteWriteResult> => {
@@ -111,6 +113,23 @@ describe('loading', () => {
     await open()
     expect(session.getSnapshot()).toMatchObject({ initial: '', hasContent: false })
     expect(disk.exists).toBe(false)
+  })
+})
+
+describe('text and edited time', () => {
+  it('shows the text as it stands and when the file was last changed', async () => {
+    disk.edited = 1_000
+    await open('one two')
+    expect(session.getSnapshot()).toMatchObject({ text: 'one two', updatedAt: 1_000 })
+    session.edit('one two three')
+    expect(session.getSnapshot().text).toBe('one two three')
+  })
+  it('takes the time of a save', async () => {
+    vi.setSystemTime(5_000)
+    await open('one')
+    session.edit('two')
+    await session.flush()
+    expect(session.getSnapshot().updatedAt).toBe(5_000)
   })
 })
 
