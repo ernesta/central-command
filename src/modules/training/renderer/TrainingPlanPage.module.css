@@ -86,10 +86,6 @@
 }
 .doc {
   min-width: 0;
-  padding: 24px 28px 32px;
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-card);
-  background: var(--surface);
 }
 .docHead {
   display: flex;

@@ -5,6 +5,7 @@ import { AcademicYearSelect } from '@renderer/components/AcademicYearSelect'
 import { Button } from '@renderer/components/Button'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
+import { EditorCard } from '@renderer/notes/EditorCard'
 import { NotesEditor } from '@renderer/notes/NotesEditor'
 import type { SaveState } from '@renderer/notes/notes-session'
 import { useNotesSession } from '@renderer/notes/useNotesSession'
@@ -89,7 +90,7 @@ function scrollToHeading(root: HTMLElement | null, item: OutlineItem): void {
 
 function PlanView({ year }: { year: number }): React.JSX.Element {
   const { session, snapshot } = useNotesSession(String(year), window.api.training.plan)
-  const { save, error, conflict, hasContent, reloadedFromDisk } = snapshot
+  const { save, error, conflict, hasContent, reloadedFromDisk, updatedAt } = snapshot
   // The outline follows what is typed. The text is tagged with the editor it came from, so a reload
   // from disk (a new editor) starts from the file's text again.
   const [typed, setTyped] = useState<{ editorKey: number; text: string } | null>(null)
@@ -164,17 +165,19 @@ function PlanView({ year }: { year: number }): React.JSX.Element {
           </div>
         )}
         {snapshot.status === 'ready' && (
-          <NotesEditor
-            key={snapshot.editorKey}
-            initial={snapshot.initial}
-            placeholder={`Write your training plan for ${academicYearLabel(year)}: priorities as headings, with what, why and how under each.`}
-            showPlaceholder={!hasContent}
-            onChange={(markdown) => {
-              session.edit(markdown)
-              setTyped({ editorKey: snapshot.editorKey, text: markdown })
-            }}
-            onBlur={() => void session.flush()}
-          />
+          <EditorCard text={text} edited={updatedAt}>
+            <NotesEditor
+              key={snapshot.editorKey}
+              initial={snapshot.initial}
+              placeholder={`Write your training plan for ${academicYearLabel(year)}: priorities as headings, with what, why and how under each.`}
+              showPlaceholder={!hasContent}
+              onChange={(markdown) => {
+                session.edit(markdown)
+                setTyped({ editorKey: snapshot.editorKey, text: markdown })
+              }}
+              onBlur={() => void session.flush()}
+            />
+          </EditorCard>
         )}
       </section>
     </div>
