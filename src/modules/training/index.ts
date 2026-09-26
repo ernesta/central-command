@@ -5,6 +5,7 @@ import { TrainingEntryPage } from './renderer/TrainingEntryPage'
 import { TrainingLanding } from './renderer/TrainingLanding'
 import { TrainingPage } from './renderer/TrainingPage'
 import { TrainingPlanPage } from './renderer/TrainingPlanPage'
+import { searchTraining } from './renderer/search'
 import { TrainingSettings } from './renderer/TrainingSettings'
 
 /** Training: the formal training log, with notes and linked files per entry and hours towards a yearly aim. */
@@ -20,5 +21,6 @@ export const trainingModule: LiveModuleManifest = {
     { path: 't/:id', element: createElement(TrainingEntryPage) }
   ],
   landingCard: TrainingCard,
+  search: searchTraining,
   settingsSection: TrainingSettings
 }

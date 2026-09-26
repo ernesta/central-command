@@ -1,5 +1,6 @@
 import type { ComponentType, ReactNode } from 'react'
 import type { Workspace } from '@shared/settings'
+import type { SearchHit } from '@shared/search'
 import type { ShortcutGroup } from '@shared/shortcuts'
 
 export interface ModuleRoute {
@@ -33,6 +34,8 @@ export interface LiveModuleManifest extends BaseManifest {
   settingsSection?: ComponentType
   /** Mounted once by the shell on every page, for what must work anywhere in the app (a keyboard shortcut). Renders nothing. */
   globals?: ComponentType
+  /** Finds this module's items for the global search: a few of the best matches for a query, most relevant first. */
+  search?: (query: string) => Promise<SearchHit[]>
   /** Listed in Settings under Keyboard shortcuts. Add a shortcut here whenever the module gets one. */
   shortcuts?: ShortcutGroup[]
 }

@@ -4,6 +4,7 @@ import { MeetingPage } from './renderer/MeetingPage'
 import { MeetingsCard } from './renderer/MeetingsCard'
 import { MeetingsLanding } from './renderer/MeetingsLanding'
 import { MeetingsPage } from './renderer/MeetingsPage'
+import { searchMeetings } from './renderer/search'
 import { PeoplePage } from './renderer/PeoplePage'
 import { PeopleSettings } from './renderer/PeopleSettings'
 import { MEETINGS_SHORTCUTS } from './shared/shortcuts'
@@ -21,6 +22,7 @@ export const meetingsModule: LiveModuleManifest = {
     { path: 'people', element: createElement(PeoplePage) }
   ],
   landingCard: MeetingsCard,
+  search: searchMeetings,
   settingsSection: PeopleSettings,
   shortcuts: MEETINGS_SHORTCUTS
 }

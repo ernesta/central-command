@@ -3,6 +3,7 @@ import type { LiveModuleManifest } from '../types'
 import { ReadingDetailPage } from './renderer/ReadingDetailPage'
 import { ReadingsCard } from './renderer/ReadingsCard'
 import { ReadingsPage } from './renderer/ReadingsPage'
+import { searchReadings } from './renderer/search'
 import { SyncSummary } from './renderer/SyncSummary'
 
 /** Readings: literature synced one-way from Zotero, with notes. */
@@ -16,5 +17,6 @@ export const readingsModule: LiveModuleManifest = {
     { path: ':citekey', element: createElement(ReadingDetailPage) }
   ],
   landingCard: ReadingsCard,
+  search: searchReadings,
   settingsSection: SyncSummary
 }

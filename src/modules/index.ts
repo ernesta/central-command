@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react'
 import type { Workspace } from '@shared/settings'
+import type { SearchHit } from '@shared/search'
 import type { ShortcutGroup } from '@shared/shortcuts'
 import { meetingsModule } from './meetings'
 import { notesModule } from './notes'
@@ -40,6 +41,17 @@ export function moduleSettingsSections(): { id: string; Section: ComponentType }
 export function moduleGlobals(): { id: string; Global: ComponentType }[] {
   return modules.flatMap((m) =>
     m.status === 'live' && m.globals ? [{ id: m.id, Global: m.globals }] : []
+  )
+}
+
+/** The modules that can be searched, in registration order. */
+export function moduleSearches(): {
+  id: string
+  label: string
+  search: (query: string) => Promise<SearchHit[]>
+}[] {
+  return modules.flatMap((m) =>
+    m.status === 'live' && m.search ? [{ id: m.id, label: m.label, search: m.search }] : []
   )
 }
 
