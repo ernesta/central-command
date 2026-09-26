@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, nativeTheme } from 'electron'
+import { app, shell, BrowserWindow, Menu, clipboard, nativeTheme } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { APP_NAME } from '@shared/app-info'
@@ -12,16 +12,9 @@ import { openDatabase } from './db/connection'
 import { runMigrations } from './db/migrate'
 import { mainModules } from '@modules/main-registry'
 import { defaultSettings } from '@shared/settings'
+import { buildContextMenu } from './context-menu'
+import { isSafeExternalUrl } from './urls'
 import icon from '../../resources/icon.png?asset'
-
-function isSafeExternalUrl(url: string): boolean {
-  try {
-    const { protocol } = new URL(url)
-    return protocol === 'https:' || protocol === 'http:'
-  } catch {
-    return false
-  }
-}
 
 let isQuitting = false
 
@@ -59,6 +52,17 @@ function createWindow(): void {
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (isSafeExternalUrl(url)) shell.openExternal(url)
     return { action: 'deny' }
+  })
+  // Electron has no right-click menu of its own: spelling suggestions, the editing commands and links.
+  mainWindow.webContents.on('context-menu', (_event, params) => {
+    const contents = mainWindow.webContents
+    const template = buildContextMenu(params, {
+      replaceMisspelling: (word) => contents.replaceMisspelling(word),
+      addToDictionary: (word) => contents.session.addWordToSpellCheckerDictionary(word),
+      openLink: (url) => void shell.openExternal(url),
+      copyLink: (url) => clipboard.writeText(url)
+    })
+    if (template.length > 0) Menu.buildFromTemplate(template).popup({ window: mainWindow })
   })
   mainWindow.webContents.on('will-navigate', (event, url) => {
     if (url !== mainWindow.webContents.getURL()) {
