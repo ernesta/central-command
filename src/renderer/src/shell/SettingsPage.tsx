@@ -2,6 +2,7 @@ import { moduleSettingsSections } from '@modules/index'
 import { PathField } from './PathField'
 import { ShortcutsSettings } from './ShortcutsSettings'
 import { TerminalField } from './TerminalField'
+import { ThemeField } from './ThemeField'
 import { useSettings } from '../state/settings-context'
 import styles from './SettingsPage.module.css'
 
@@ -12,6 +13,7 @@ export function SettingsPage(): React.JSX.Element {
     <div className={styles.page}>
       <h1 className={styles.heading}>Settings</h1>
       <div className={styles.section}>
+        <ThemeField value={settings.theme} onChange={(theme) => void update({ theme })} />
         <PathField
           label="Zotero export path"
           help="The Better BibTeX auto-export file the Readings module syncs from. The app only reads it."

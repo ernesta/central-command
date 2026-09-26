@@ -19,7 +19,7 @@
   color: var(--accent-contrast);
 }
 .primary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--accent) 88%, black);
+  background: var(--accent-hover);
 }
 
 .secondary {
@@ -36,7 +36,7 @@
   color: var(--accent-contrast);
 }
 .danger:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--danger) 88%, black);
+  background: var(--danger-hover);
 }
 
 .small {

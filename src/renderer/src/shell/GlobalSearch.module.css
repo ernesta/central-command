@@ -10,7 +10,7 @@
   overflow: hidden;
 }
 .dialog::backdrop {
-  background: color-mix(in srgb, var(--ink) 35%, transparent);
+  background: var(--scrim);
 }
 .field {
   position: relative;

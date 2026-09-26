@@ -1,22 +1,32 @@
 /* Design tokens ("Cool Slate"). Components use these, never raw values, so a
    future theme is a token swap. */
 :root {
+  /*
+   * Light and dark, each colour once: `light-dark(light, dark)` picks by the colour scheme, which follows the theme
+   * setting (the main process sets it for the window) and the system when the setting is System.
+   */
+  color-scheme: light dark;
+
   /* Colour */
-  --bg: #edeff2;
-  --panel: #e1e5ea;
-  --surface: #ffffff;
-  --ink: #1b222b;
-  --text-secondary: #3a4652;
-  --text-muted: #5c6672;
-  --border-soft: #d3d8de;
-  --border-strong: #c3cad2;
-  --border-faint: #e6e9ed;
-  --hover-tint: #f4f6f8;
-  --accent: #35577a;
-  --accent-contrast: #ffffff;
-  --selected-bg: #dce6ee;
-  --selected-text: #1f3a52;
-  --danger: #a8433f;
+  --bg: light-dark(#edeff2, #14181d);
+  --panel: light-dark(#e1e5ea, #1b2128);
+  --surface: light-dark(#ffffff, #1f262e);
+  --ink: light-dark(#1b222b, #e6eaee);
+  --text-secondary: light-dark(#3a4652, #c2cad2);
+  --text-muted: light-dark(#5c6672, #98a3af);
+  --border-soft: light-dark(#d3d8de, #2f3843);
+  --border-strong: light-dark(#c3cad2, #3d4855);
+  --border-faint: light-dark(#e6e9ed, #262e37);
+  --hover-tint: light-dark(#f4f6f8, #262e37);
+  --accent: light-dark(#35577a, #86aad0);
+  --accent-hover: light-dark(#2f4d6c, #9bbbdc);
+  --accent-contrast: light-dark(#ffffff, #0f1620);
+  --selected-bg: light-dark(#dce6ee, #2a3b4d);
+  --selected-text: light-dark(#1f3a52, #d3e3f2);
+  --danger: light-dark(#a8433f, #dc7c77);
+  --danger-hover: light-dark(#953a37, #e79591);
+  /* Behind a dialog. */
+  --scrim: light-dark(rgba(27, 34, 43, 0.35), rgba(0, 0, 0, 0.6));
 
   /* Type */
   --font-display: 'Newsreader', Georgia, serif;
@@ -41,7 +51,8 @@
   --radius-pill: 999px;
 
   /* Elevation: floating elements only */
-  --shadow-float: 0 8px 24px rgba(27, 34, 43, 0.18);
+  --shadow-color: light-dark(rgba(27, 34, 43, 0.18), rgba(0, 0, 0, 0.55));
+  --shadow-float: 0 8px 24px var(--shadow-color);
 
   /* Motion */
   --transition-fast: 120ms ease;

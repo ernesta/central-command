@@ -16,7 +16,7 @@
   transition: background var(--transition-fast);
 }
 .pill:hover {
-  background: color-mix(in srgb, var(--accent) 88%, black);
+  background: var(--accent-hover);
 }
 
 .panel {

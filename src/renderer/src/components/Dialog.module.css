@@ -8,7 +8,7 @@
   box-shadow: var(--shadow-float);
 }
 .dialog::backdrop {
-  background: color-mix(in srgb, var(--ink) 35%, transparent);
+  background: var(--scrim);
 }
 .title {
   margin: 0 0 8px;
