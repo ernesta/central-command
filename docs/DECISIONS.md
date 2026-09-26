@@ -338,7 +338,7 @@ Checked in dev mode and the production build against scratch libraries.
   existing item keeps its ticked state). It never inserts inside a code fence that is never closed
   (found by that test: the section was appended inside the fence, so the next sync added it again).
   A TODO the user deletes from Previous TODOs comes back at the next open, as the plan says.
-- **Search text** for meetings is a 4,000-character plain-text excerpt (Readings uses 300), because
+- **Search text** for meetings was a 4,000-character plain-text excerpt (Readings 300); it is now the whole note (see "Global search"), because
   meeting notes are long and the plan wants note text searchable.
 - **Backspace-to-unlist**: the earlier fix (see above) works through the editor's full key handling in a
   unit test (`handleKeyDown` with a real `KeyboardEvent`). A scripted Playwright run (typing `- x`,
@@ -712,9 +712,11 @@ or found on the way:
   one function and one manifest line. Each module's `renderer/search.ts` reuses its own list query (`queryNotes`, `queryMeetings`,
   `queryTraining`, the Readings list with a search), so a word matches here exactly as it does in that module's list (folded for case
   and accents, every word must match, people found by name or initials).
-- **What is searched** is what the indexes hold: titles, fields and the plain text of each note (Notes keep the first 4,000
-  characters), a reading's title, authors, abstract and notes. No new index, no new IPC. Each search asks the main process for the lists
-  again (about a hundred rows each today, after a 120 ms pause in typing); if that ever feels slow, keep the lists between keystrokes.
-- **Not searched:** people, settings, the Training plan, and text past a note's first 4,000 characters.
+- **What is searched** is what the indexes hold: titles, fields and the plain text of each note, the whole of it (the index keeps up to
+  200,000 characters, `SEARCH_TEXT_LENGTH`; it was 4,000, and 300 for a reading's notes, before the search was completed), a
+  reading's title, authors, tags and notes, and the yearly Training plans (read from their files: the years with entries, this one and
+  the next). No new index, no new IPC. Each search asks the main process for the lists again (about a hundred rows each today, after a
+  120 ms pause in typing); if that ever feels slow, keep the lists between keystrokes.
+- **Not searched:** people (to be added with the People pages, when their design is settled), settings, and files that are not notes.
 - Checked in the built app and dev mode (StrictMode) on a scratch library: opening, typing, ArrowDown, Enter, no results, Escape,
   the button, Mod-K from inside the editor. The field is a plain text input (a search input clears itself on the first Escape).
