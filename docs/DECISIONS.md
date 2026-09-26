@@ -699,3 +699,22 @@ or found on the way:
 - **Readings' table keeps its own keyboard code.** It is virtualised (rows are `div`s that come and go while scrolling), so focus has to wait
   for a row to be rendered, scroll with `scrollToIndex`, and page by the height of the scroller. `useRowNavigation` is for plain `<tr>`
   tables (Notes, Meetings, Training) and would need all of that to fit.
+
+## Global search (Mod-K, or the magnifier in the top bar)
+
+- **One field, results by module** (Readings, Meetings, Training, Notes: up to six each, most relevant first), in a window like the
+  other dialogs. Arrow keys move through all the results as one list, Enter opens, Escape or Mod-K again closes. A result shows the
+  title and one line: the part of the text that matched (with … around it) when the title itself did not match, else the details (a
+  note's group and date, a meeting's summary, a training entry's date and series, a reading's short citation). "No results." and nothing
+  else when nothing matches; nothing at all before typing.
+- **The shell knows no modules.** A module's manifest may offer `search(query)` returning `SearchHit`s (`src/shared/search.ts`); the
+  registry lists them (`moduleSearches`) and `runSearches` asks all of them, dropping one that fails. Adding a module to the search is
+  one function and one manifest line. Each module's `renderer/search.ts` reuses its own list query (`queryNotes`, `queryMeetings`,
+  `queryTraining`, the Readings list with a search), so a word matches here exactly as it does in that module's list (folded for case
+  and accents, every word must match, people found by name or initials).
+- **What is searched** is what the indexes hold: titles, fields and the plain text of each note (Notes keep the first 4,000
+  characters), a reading's title, authors, abstract and notes. No new index, no new IPC. Each search asks the main process for the lists
+  again (about a hundred rows each today, after a 120 ms pause in typing); if that ever feels slow, keep the lists between keystrokes.
+- **Not searched:** people, settings, the Training plan, and text past a note's first 4,000 characters.
+- Checked in the built app and dev mode (StrictMode) on a scratch library: opening, typing, ArrowDown, Enter, no results, Escape,
+  the button, Mod-K from inside the editor. The field is a plain text input (a search input clears itself on the first Escape).

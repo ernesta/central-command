@@ -92,7 +92,9 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
 - Since the Notes review: every editor sits in the shared `EditorCard` (`src/renderer/src/notes/`): a white window with a quiet line
   "Created · Edited · N words" under the text (`docs/DECISIONS.md`, "Editor card"). Meetings' and Training's tables use the shared
   `useRowNavigation`. All importers and the topic conversion are applied to the real library (dry runs find nothing left). Work since
-  the last push (26 Sep 2026) is committed but not pushed.
+  the last push (26 Sep 2026) is committed but not pushed. Global search (Mod-K) is built: a module offers `search` in its manifest and
+  the shell searches them all (`docs/DECISIONS.md`, "Global search"). The ideas list (People pages, Home, writing) is at the top of
+  "Later" in `docs/ROADMAP.md`; none is started.
 - The app name lives in one place (`src/shared/app-info.ts`); it may be renamed again.
 
 ## Testing the app for real (unit tests are not enough)

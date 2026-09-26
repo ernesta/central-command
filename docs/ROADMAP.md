@@ -129,7 +129,8 @@ Grounded in what the app already stores. Numbers are the ones used in the conver
 
 **Writing and focus** 11. A daily writing tally from the word counts (days written, a streak, a weekly total; no target to set). 12. A thesis chapters view: a Notes group per chapter with words and a target (already noted under Notes, later). 13. A distraction-free writing mode for any note.
 
-**Small additions** 14. Global search (built: see `docs/DECISIONS.md`, "Global search" when done). 15. A weekly review page (meetings, trainings, notes edited, words written), exportable as a PDF with the existing export. 16. Gentle prompts ("no supervision meeting booked this month", "training hours are behind pace").
+**Small additions** 14. Global search: **built** (Mod-K; `docs/DECISIONS.md`, "Global search"). Later: people and the Training plan as results, a
+longer note text, and recent items when the field is empty. 15. A weekly review page (meetings, trainings, notes edited, words written), exportable as a PDF with the existing export. 16. Gentle prompts ("no supervision meeting booked this month", "training hours are behind pace").
 
 ## Later, roughly in order (not for Phase 1)
 
