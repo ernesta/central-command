@@ -74,12 +74,25 @@
   display: flex;
   gap: 8px;
 }
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 40px;
+  align-items: start;
+}
 .doc {
   max-width: 780px;
   min-width: 0;
 }
+.side {
+  display: grid;
+  gap: 20px;
+}
 @media (max-width: 900px) {
   .page {
     padding-inline: 24px;
+  }
+  .split {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

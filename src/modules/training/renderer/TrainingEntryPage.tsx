@@ -10,6 +10,7 @@ import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { NotesEditor } from '@renderer/notes/NotesEditor'
 import type { SaveState } from '@renderer/notes/notes-session'
+import { NoteOutline } from '@modules/notes/renderer/NoteOutline'
 import type { Person } from '@shared/people'
 import { formatDate } from '@shared/time'
 import { seriesOptions } from '../shared/rules'
@@ -70,6 +71,7 @@ function EntryView({
   const [seriesUsed, setSeriesUsed] = useState<string[]>([...TRAINING_SERIES])
   const [confirmDelete, setConfirmDelete] = useState(false)
   const titleRef = useRef<HTMLInputElement>(null)
+  const docRef = useRef<HTMLDivElement>(null)
   const focusTitle = useRef((location.state as { isNew?: boolean } | null)?.isNew === true)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
@@ -231,19 +233,23 @@ function EntryView({
         onAddPerson={addPerson}
       />
 
-      <FilesPanel folder={meta.folder} onChange={(folder) => session.setMeta({ folder })} />
-
-      <div className={styles.doc}>
-        <EditorCard text={body} edited={updatedAt}>
-          <NotesEditor
-            key={snapshot.editorKey}
-            initial={snapshot.initialBody}
-            placeholder="Write your notes…"
-            showPlaceholder={body.trim() === ''}
-            onChange={session.editBody.bind(session)}
-            onBlur={() => void session.flush()}
-          />
-        </EditorCard>
+      <div className={styles.split}>
+        <div className={styles.doc} ref={docRef}>
+          <EditorCard text={body} edited={updatedAt}>
+            <NotesEditor
+              key={snapshot.editorKey}
+              initial={snapshot.initialBody}
+              placeholder="Write your notes…"
+              showPlaceholder={body.trim() === ''}
+              onChange={session.editBody.bind(session)}
+              onBlur={() => void session.flush()}
+            />
+          </EditorCard>
+        </div>
+        <div className={styles.side}>
+          <FilesPanel folder={meta.folder} onChange={(folder) => session.setMeta({ folder })} />
+          <NoteOutline text={body} docRef={docRef} />
+        </div>
       </div>
 
       <DeleteDialog
