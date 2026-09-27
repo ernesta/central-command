@@ -2,6 +2,15 @@
 
 ## For Claude: six things requested 27 Sep 2026, go-ahead given — work through these without further check-in
 
+**Status (27 Sep 2026, evening): all six done and pushed.** Items 1–5 are fully built, tested (unit tests, plus
+the built app and dev mode on a scratch library) and merged. Item 6 was deliberately stopped at a dry run, as
+instructed: the importer is built and tested, but `--apply` was not run and Work's own workspace wiring was not
+built (it turned out to be bigger than the importer; see its write-up). Full findings, decisions and two real bugs
+found by testing (not by reading code) are in `docs/DECISIONS.md`: "Training entry page: a side panel", "Find in
+the note, redesigned as an inline bar with replace", "Reading lists", "A page per person, and links", and "Work
+meetings import". Immediate TODOs for you are in the "For the user" list directly below, with the two Work-import
+ones at the top since they're newest.
+
 Commit as you go (small commits, per feature and per standalone part, as always); do not push. Update this file and
 `docs/DECISIONS.md` as each part lands, the same way the rest of this file has been kept current. Order below is
 suggested (safe and self-contained first); reorder if a dependency makes more sense once you're in the code.
@@ -219,6 +228,21 @@ ready for `--apply`" and say so plainly when you report back.
       importer will not guess); "Chris Cumminskey" and "Chris Cummiskey" are almost certainly the same person
       spelled two ways. Say what to do about both, whether "Impact" and "Teaching & Learning" should be added to
       the fixed series list, and whether to go ahead with `--apply` once Work has somewhere to put the files.
+- [ ] **Try the Training entry page's new side panel** (Files above Outline, matching Meetings; see `docs/DECISIONS.md`,
+      "Training entry page: a side panel"). Say what to change, and whether Meetings should get a second, plain outline
+      after all now that you've seen Training's (a deliberate no for now, see item 2 above).
+- [ ] **Try the redesigned Find and replace** (Cmd-F, Cmd-Option-F for replace, in any note): the bar now lives in the
+      editor's own footer instead of floating. See `docs/DECISIONS.md`, "Find in the note, redesigned as an inline bar
+      with replace", including the VS Code-style chords chosen (Cmd-Return / Cmd-Shift-Return) and two bugs found and
+      fixed by testing it, not by reading the code.
+- [ ] **Try Reading lists** (Research → Reading lists, new): create a list, write a section and a placeholder citation,
+      then "Attach a reading…" to link it. See `docs/DECISIONS.md`, "Reading lists" for the design decisions made
+      without checking back first (storage shape, the `@citekey` convention and why, no importer built for your own
+      example list) — say what to change.
+- [ ] **Try a person's own page** (Research → People → a name, or click a name in the table): meetings, trainings,
+      open TODOs, last met, next meeting, and links (Google Scholar, GitHub, Website, LinkedIn or your own label). See
+      `docs/DECISIONS.md`, "A page per person, and links", including a bug (links silently failed to save) found and
+      fixed by testing it.
 - [ ] **Review the exports** once there is data to look at: Training's **Export** (a PDF of an academic year, oldest first, no upcoming
       or planned entries) and Meetings' **Export** (the Supervision log as a PDF, same page layout as Training's). Say what to change in the
       layout and content of both.
