@@ -847,3 +847,30 @@ kind of control across the app.
   new parsing, just the levels it cares about.
 - Checked in the built app: typing `##`/`###` headings updates the outline live, clicking a nested heading scrolls to it and not to
   an outer heading sharing its text.
+
+## Find in the note (Cmd-F, at the user's request, replacing the earlier find-on-page attempt)
+
+- **Scoped to the note, not the page.** The earlier attempt (see "Find on the page", above) used Electron's
+  `webContents.findInPage`, which searches the whole rendered page (the top bar, the outline, everything) and, being
+  cross-process, lost keystrokes under fast typing. This one is a ProseMirror plugin (`notes-find.ts`) living entirely
+  in the renderer: `findMatches(doc, query)` walks the document's text nodes and returns `{from, to}` positions (no
+  DOM search, so it survives re-renders), and a decoration highlights every match, the current one more strongly.
+  Nothing is written to the file; a mutation check is not needed here since the plugin only ever adds decorations to
+  a transaction, never edits the document.
+- **Built into `NotesEditor` itself**, the same shared component every module already uses, so Notes, Meetings,
+  Training entries, the Training plan and Readings notes all get it for free; no page had to be changed. The bridge
+  between the plugin (which owns Cmd-F, the same `handleKeyDown` shape as the TODO helper's `Cmd-Shift-T`) and the
+  bar (a `NotesFindController` class, the same shape as `TodoMenuController`: it keeps the `EditorView` and the
+  current matches, and tells React through a setter) is `useNotesFind`, following the pattern CLAUDE.md already
+  names for this ("keep behaviour a key handler needs in a small class held with `useState(() => new …)`").
+- **A bar fixed to the bottom of the window** (not the bottom of the note, which could be scrolled far out of view):
+  a field, a count ("2 of 3"), Previous, Next and Close. Enter/Shift-Enter move; Escape closes and clears the
+  highlights. Does not collide with global search's own Cmd-K, or with a module's own editor shortcuts (checked
+  against Meetings' TODO helper, Cmd-Shift-T still opens its menu after Find has been used).
+- **A known limitation, on purpose:** a match cannot cross a mark boundary (a word split across bold and plain text,
+  or across a heading and the paragraph after it, is not found), since matching works one text node at a time. Good
+  enough for finding your own words back; a full-text engine would need to flatten the document first and map
+  positions back, which is more machinery than this needed.
+- Checked in the built app and dev mode (StrictMode): opening, typing, the count, Enter and Shift-Enter wrapping
+  round, Escape clearing the highlights and closing, the note file unchanged, and on a Meeting's notes (confirming
+  it is not Notes-module-specific and does not conflict with that module's own shortcuts).
