@@ -5,6 +5,7 @@ import type { ShortcutGroup } from '@shared/shortcuts'
 import { meetingsModule } from './meetings'
 import { notesModule } from './notes'
 import { plannedModules } from './planned'
+import { readingListsModule } from './reading-lists'
 import { readingsModule } from './readings'
 import { trainingModule } from './training'
 import type { LiveModuleManifest, ModuleManifest, PlannedModuleManifest } from './types'
@@ -15,6 +16,7 @@ export const modules: ModuleManifest[] = [
   meetingsModule,
   trainingModule,
   notesModule,
+  readingListsModule,
   ...plannedModules
 ]
 

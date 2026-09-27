@@ -50,7 +50,15 @@ export function snippet(text: string, terms: readonly string[], length = 90): st
  * whatever a search does not name here (put last, in whatever order it was given). See
  * `docs/DECISIONS.md`, "Global search" for why this order and not a relevance score.
  */
-export const SEARCH_GROUP_ORDER = ['actions', 'people', 'notes', 'meetings', 'training', 'readings']
+export const SEARCH_GROUP_ORDER = [
+  'actions',
+  'people',
+  'notes',
+  'meetings',
+  'training',
+  'readings',
+  'reading-lists'
+]
 
 /** What `in:` may be followed by, and which source it means. Plural or singular, either is fine. */
 const SOURCE_ALIASES: Record<string, string> = {
@@ -63,7 +71,9 @@ const SOURCE_ALIASES: Record<string, string> = {
   training: 'training',
   trainings: 'training',
   reading: 'readings',
-  readings: 'readings'
+  readings: 'readings',
+  list: 'reading-lists',
+  lists: 'reading-lists'
 }
 
 export interface ParsedSearch {

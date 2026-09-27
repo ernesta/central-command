@@ -238,5 +238,5 @@ export function toListFile(
 ): ReadingListFile {
   const { head, body } = splitNote(note.content)
   const { meta } = parseMeta(head)
-  return { ref, note, meta, body, edited: Math.floor(edited) }
+  return { ref, note, meta, body, edited: Math.floor(edited), problems: [] }
 }

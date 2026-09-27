@@ -5,6 +5,7 @@ import { modulePath } from '@modules/types'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
+import { ReadingListMentions } from '@modules/reading-lists/renderer/ReadingListMentions'
 import type { Reading } from '../shared/types'
 import { AbstractBlock } from './AbstractBlock'
 import { NotesSection } from './NotesSection'
@@ -100,6 +101,7 @@ export function ReadingDetailPage(): React.JSX.Element {
         )}
         <ReferenceBlock reading={reading} />
         {reading.abstract && <AbstractBlock abstract={reading.abstract} />}
+        <ReadingListMentions key={reading.citekey} citekey={reading.citekey} />
         <NotesSection key={reading.citekey} citekey={reading.citekey} />
       </article>
     </div>

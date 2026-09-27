@@ -22,6 +22,9 @@ export interface ReadingListFile {
   body: string
   /** The file's modified time in milliseconds. */
   edited: number
+  /** What is wrong with the front matter, if anything. A list's own fields are lenient, so always empty
+      today; kept so this shape matches every other kind of entry (`EntryFile`). */
+  problems: string[]
 }
 
 /** The result of saving a list. Changing the title renames the file, and says so. */

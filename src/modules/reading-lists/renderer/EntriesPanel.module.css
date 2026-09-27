@@ -1,0 +1,155 @@
+.panel {
+  position: sticky;
+  top: 16px;
+  display: grid;
+  gap: 14px;
+  /* 4px of room all round so focus rings on the rows are never clipped by the scroll container. */
+  padding: 16px;
+  max-height: calc(100vh - var(--topbar-height) - 48px);
+  overflow: auto;
+  scroll-padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+}
+.label {
+  margin: 0;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: var(--text-11);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.section {
+  display: grid;
+  gap: 8px;
+}
+.sectionHeading {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-14);
+  font-weight: 600;
+}
+.list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.entry {
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  border-radius: var(--radius-control);
+}
+.citation {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-13);
+  font-weight: 500;
+  line-height: 1.4;
+  text-decoration: none;
+}
+a.citation:hover {
+  color: var(--accent);
+}
+.missing {
+  margin: 0;
+  color: var(--danger);
+  font-size: var(--text-13);
+  line-height: 1.4;
+}
+.annotation {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--text-13);
+  line-height: 1.45;
+}
+.empty {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+  line-height: 1.5;
+}
+.attachButton {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--accent);
+  font-size: var(--text-12);
+}
+.attachButton:hover {
+  text-decoration: underline;
+}
+.attach {
+  display: grid;
+  gap: 6px;
+  padding: 6px;
+  background: var(--surface-sunken, var(--hover-tint));
+  border-radius: var(--radius-control);
+}
+.attachField {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text-muted);
+}
+.attachInput {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--text-13);
+}
+.attachInput:focus-visible {
+  outline: none;
+}
+.attachClose {
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+}
+.attachClose:hover {
+  color: var(--ink);
+}
+.attachHint {
+  margin: 0;
+  padding: 2px 4px;
+  color: var(--text-muted);
+  font-size: var(--text-12);
+}
+.attachResults {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.attachResult {
+  width: 100%;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--text-12);
+  line-height: 1.4;
+  text-align: left;
+}
+.attachResult:hover {
+  background: var(--hover-tint);
+}
