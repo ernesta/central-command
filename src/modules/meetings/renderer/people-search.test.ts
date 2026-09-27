@@ -53,9 +53,9 @@ describe('personHits', () => {
     expect(personHits(people, [], 'archived')).toEqual([])
   })
 
-  it('routes to the People page with the person named in the query', () => {
+  it('routes to that person’s own page', () => {
     expect(personHits(people, usages, 'kathy rastle')[0].route).toBe(
-      '/research/meetings/people?person=Kathy%20Rastle'
+      '/research/meetings/people/Kathy%20Rastle'
     )
   })
 

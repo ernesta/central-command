@@ -1,0 +1,55 @@
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+}
+.stat {
+  display: grid;
+  gap: 2px;
+}
+.statLabel {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-11);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.statValue {
+  margin: 0;
+  font-size: var(--text-14);
+}
+.todoList {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.todoRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-control);
+}
+.todoText {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-14);
+}
+.todoMeeting {
+  flex: none;
+  color: var(--text-muted);
+  font-size: var(--text-12);
+  text-decoration: none;
+}
+.todoMeeting:hover {
+  color: var(--accent);
+}

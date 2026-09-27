@@ -6,6 +6,7 @@ import { MeetingsLanding } from './renderer/MeetingsLanding'
 import { MeetingsPage } from './renderer/MeetingsPage'
 import { searchMeetings } from './renderer/search'
 import { PeoplePage } from './renderer/PeoplePage'
+import { PersonPage } from './renderer/PersonPage'
 import { MEETINGS_SHORTCUTS } from './shared/shortcuts'
 
 /** Meetings: notes for every meeting, with TODOs carried over from one meeting to the next. */
@@ -18,7 +19,8 @@ export const meetingsModule: LiveModuleManifest = {
     { path: '', element: createElement(MeetingsLanding) },
     { path: 'all', element: createElement(MeetingsPage) },
     { path: 'm/:id', element: createElement(MeetingPage) },
-    { path: 'people', element: createElement(PeoplePage) }
+    { path: 'people', element: createElement(PeoplePage) },
+    { path: 'people/:name', element: createElement(PersonPage) }
   ],
   landingCard: MeetingsCard,
   search: searchMeetings,

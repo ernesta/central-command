@@ -34,6 +34,16 @@ function asObject(value: unknown, what: string): Record<string, unknown> {
   return value as Record<string, unknown>
 }
 
+function asLinks(value: unknown): { label: string; url: string }[] | undefined {
+  if (value === undefined) return undefined
+  if (!Array.isArray(value)) throw new Error('Invalid links')
+  return value.map((item) => {
+    const o = asObject(item, 'link')
+    if (typeof o.label !== 'string' || typeof o.url !== 'string') throw new Error('Invalid link')
+    return { label: o.label, url: o.url }
+  })
+}
+
 function asRef(value: unknown): MeetingRef {
   const o = asObject(value, 'meeting')
   if (
@@ -133,7 +143,8 @@ function register({ db, paths }: MainContext): () => void {
     return peopleService.update(name, {
       name: typeof o.name === 'string' ? o.name : undefined,
       initials: typeof o.initials === 'string' ? o.initials : undefined,
-      me: typeof o.me === 'boolean' ? o.me : undefined
+      me: typeof o.me === 'boolean' ? o.me : undefined,
+      links: asLinks(o.links)
     })
   })
   ipcMain.handle(MEETINGS_IPC.peopleRemove, (_event, name: unknown, how: unknown) => {

@@ -48,6 +48,14 @@
 .row:last-child td {
   border-bottom: 0;
 }
+.nameLink {
+  color: var(--ink);
+  text-decoration: none;
+}
+.nameLink:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
 .me {
   color: var(--text-muted);
 }

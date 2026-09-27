@@ -1,0 +1,125 @@
+import { useEffect, useState } from 'react'
+import { todayIso } from '@shared/time'
+import { DEFAULT_TRAINING_QUERY, queryTraining } from '@modules/training/shared/rules'
+import type { TrainingIndexRow } from '@modules/training/shared/types'
+import { ownedBy, parseTodos, type TodoItem } from '../shared/todos'
+import { DEFAULT_MEETINGS_QUERY, queryMeetings } from '../shared/query'
+import type { MeetingIndexRow, Person } from '../shared/types'
+
+/** One open TODO this person owns, with enough of its meeting to link to it. */
+export interface OwnedTodo extends TodoItem {
+  meetingId: string
+  meetingHeading: string
+  meetingDate: string
+}
+
+export interface PersonProfile {
+  person: Person | null
+  /** This person's meetings, newest first (undated ones first, as the meetings list shows them). */
+  meetings: MeetingIndexRow[]
+  /** This person's trainings, newest first. */
+  trainings: TrainingIndexRow[]
+  /** The most recent past meeting with them, if any. */
+  lastMet: MeetingIndexRow | null
+  /** The nearest upcoming meeting with them, if any. */
+  nextMeeting: MeetingIndexRow | null
+  /** Their open TODOs across every meeting, oldest first (the ones waited on longest). */
+  openTodos: OwnedTodo[]
+}
+
+const EMPTY: PersonProfile = {
+  person: null,
+  meetings: [],
+  trainings: [],
+  lastMet: null,
+  nextMeeting: null,
+  openTodos: []
+}
+
+/**
+ * Everything a person's own page shows. Scans every meeting's body for open TODOs (not just the ones
+ * this person attended: an owner need not have been an attendee), which is one `read` per meeting; fine
+ * for the handful of meetings this app expects, and avoids trusting the search index's plain-text
+ * excerpt, which cannot tell a ticked "Previous TODO" checkbox from an unticked one.
+ */
+export function usePersonProfile(name: string): {
+  profile: PersonProfile
+  loading: boolean
+  /** Re-reads everything: call after a change made on this page itself (adding a link). */
+  refresh: () => void
+} {
+  // Keyed by the name and the reload count that produced it, so switching to a different person (or the
+  // initial load, or a refresh) reads as "loading" without a synchronous setState at the top of the effect.
+  const [found, setFound] = useState<{
+    name: string
+    reload: number
+    profile: PersonProfile
+  } | null>(null)
+  const [reload, setReload] = useState(0)
+  const loading = found?.name !== name || found.reload !== reload
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      const [people, meetingRows, trainingRows] = await Promise.all([
+        window.api.meetings.people.list(),
+        window.api.meetings.list('research'),
+        window.api.training.list('research')
+      ])
+      if (cancelled) return
+      const person = people.find((p) => p.name === name) ?? null
+
+      const meetings = queryMeetings(
+        meetingRows,
+        { ...DEFAULT_MEETINGS_QUERY, attendee: name },
+        people
+      )
+      const trainings = queryTraining(
+        trainingRows,
+        { ...DEFAULT_TRAINING_QUERY, lead: name },
+        people
+      )
+
+      const today = todayIso()
+      const past = meetings.filter((m) => m.date !== '' && m.date <= today)
+      const upcoming = meetings.filter((m) => m.date !== '' && m.date > today)
+      const lastMet = past[0] ?? null // meetings is already newest first
+      const nextMeeting = upcoming.length > 0 ? upcoming[upcoming.length - 1] : null
+
+      const bodies = await Promise.all(
+        meetingRows.map((row) =>
+          window.api.meetings.read({ workspace: 'research', id: row.id }).catch(() => null)
+        )
+      )
+      if (cancelled) return
+      const initials = person?.initials
+      const openTodos: OwnedTodo[] = initials
+        ? meetingRows.flatMap((row, i) => {
+            const file = bodies[i]
+            if (!file) return []
+            return parseTodos(file.body)
+              .filter((t) => !t.done && ownedBy(t, initials))
+              .map((t) => ({
+                ...t,
+                meetingId: row.id,
+                meetingHeading: `${row.series || 'Meeting'} · ${row.date || 'No date yet'}`,
+                meetingDate: row.date
+              }))
+          })
+        : []
+      openTodos.sort((a, b) => a.meetingDate.localeCompare(b.meetingDate))
+
+      setFound({
+        name,
+        reload,
+        profile: { person, meetings, trainings, lastMet, nextMeeting, openTodos }
+      })
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [name, reload])
+
+  const profile = found?.name === name && found.reload === reload ? found.profile : EMPTY
+  return { profile, loading, refresh: () => setReload((r) => r + 1) }
+}

@@ -2,7 +2,7 @@ import { fold } from '@shared/text'
 import { searchTerms, type SearchHit } from '@shared/search'
 import type { PersonUsage } from '../shared/people-usage'
 import type { Person } from '../shared/types'
-import { peopleRoute } from './meetings-paths'
+import { personRoute } from './meetings-paths'
 
 const DEFAULT_LIMIT = 6
 
@@ -41,7 +41,7 @@ export function personHits(
       key: person.name,
       title: person.me ? `${person.name} (you)` : person.name,
       detail: usageLine(usageFor(person.name)),
-      route: `${peopleRoute}?person=${encodeURIComponent(person.name)}`
+      route: personRoute(person.name)
     }))
 }
 

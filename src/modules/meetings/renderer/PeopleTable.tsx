@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { Dialog } from '@renderer/components/Dialog'
 import { PeopleError, updatePerson } from '@shared/people'
 import type { PersonPatch } from '../shared/people'
+import { personRoute } from './meetings-paths'
 import { changeSentences } from '../shared/people-copy'
 import type { PersonUsage } from '../shared/people-usage'
 import type { Person } from '../shared/types'
@@ -100,7 +102,9 @@ function PersonRow({
         className={[styles.row, highlighted && styles.highlighted].filter(Boolean).join(' ')}
       >
         <td>
-          {person.name}
+          <Link className={styles.nameLink} to={personRoute(person.name)}>
+            {person.name}
+          </Link>
           {person.me && <span className={styles.me}> (me)</span>}
         </td>
         <td>

@@ -8,6 +8,11 @@ export const meetingsListRoute = `${meetingsBase}/all`
 /** The people list. */
 export const peopleRoute = `${meetingsBase}/people`
 
+/** One person's own page. Names contain spaces, so they are encoded. */
+export function personRoute(name: string): string {
+  return `${peopleRoute}/${encodeURIComponent(name)}`
+}
+
 /** The list filtered to one series, as opened from a series card on the landing page. */
 export function seriesRoute(series: string, year?: number): string {
   const yearPart = year === undefined ? '' : `&year=${year}`
