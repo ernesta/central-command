@@ -2,16 +2,20 @@ import { Search } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router'
+import { searchPeople } from '@modules/meetings/renderer/people-search'
 import { moduleSearches } from '@modules/index'
 import type { SearchHit } from '@shared/search'
-import { runSearches, type SearchGroup } from './run-search'
+import { searchCommands } from './commands'
+import { searchEverywhere, type SearchGroup, type Searchable } from './run-search'
 import styles from './GlobalSearch.module.css'
 
 const DELAY_MS = 120
 
 /**
- * Find anything in the app from one field: notes, meetings, training and readings, a few of the best matches each.
- * Render it only while it is open. Arrow keys move between results, Enter opens one, Escape closes.
+ * Find anything in the app from one field: notes, meetings, training, readings and people, a few of the best
+ * matches each, plus a few commands (a command palette sharing the same window). `in:meetings` (or any of the
+ * other sources, singular or plural) restricts to it. Render this only while it is open. Arrow keys move
+ * between results, Enter opens or runs one, Escape closes.
  */
 export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.Element {
   const navigate = useNavigate()
@@ -24,6 +28,20 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
   })
   const [active, setActive] = useState(0)
 
+  // Built once per open: `navigate` does not change while the window is up.
+  const sources = useMemo<Searchable[]>(
+    () => [
+      {
+        id: 'actions',
+        label: 'Actions',
+        search: (q: string, limit?: number) => searchCommands(q, navigate, limit)
+      },
+      { id: 'people', label: 'People', search: searchPeople },
+      ...moduleSearches()
+    ],
+    [navigate]
+  )
+
   useEffect(() => {
     const dialog = dialogRef.current
     if (dialog && !dialog.open) dialog.showModal()
@@ -34,7 +52,7 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
     if (query.trim() === '') return
     let cancelled = false
     const timer = setTimeout(() => {
-      void runSearches(moduleSearches(), query).then((groups) => {
+      void searchEverywhere(sources, query).then((groups) => {
         if (cancelled) return
         setResult({ query, groups })
         setActive(0)
@@ -44,7 +62,7 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
       cancelled = true
       clearTimeout(timer)
     }
-  }, [query])
+  }, [query, sources])
 
   const searched = query.trim() !== ''
   const groups = useMemo(() => (searched ? result.groups : []), [searched, result.groups])
@@ -59,6 +77,7 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
   )
   const answered = searched && result.query === query
   const activeIndex = Math.min(active, Math.max(hits.length - 1, 0))
+  const capped = groups.some((g) => g.hits.length >= 6)
 
   useEffect(() => {
     listRef.current
@@ -68,7 +87,13 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
 
   const open = (hit: SearchHit): void => {
     onClose()
-    void navigate(hit.route)
+    if (hit.run) void hit.run()
+    else if (hit.route) void navigate(hit.route)
+  }
+
+  const seeAll = (): void => {
+    onClose()
+    void navigate(`/search?q=${encodeURIComponent(query)}`)
   }
 
   const onKeyDown = (event: React.KeyboardEvent): void => {
@@ -104,7 +129,7 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
           className={styles.input}
           type="text"
           autoFocus
-          placeholder="Search"
+          placeholder="Search, or type a command"
           aria-label="Search"
           role="combobox"
           aria-expanded={hits.length > 0}
@@ -137,13 +162,18 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
                   onClick={() => open(hit)}
                 >
                   <span className={styles.title}>{hit.title}</span>
-                  <span className={styles.detail}>{hit.detail}</span>
+                  {hit.detail && <span className={styles.detail}>{hit.detail}</span>}
                 </button>
               )
             })}
           </div>
         ))}
         {answered && hits.length === 0 && <p className={styles.empty}>No results.</p>}
+        {answered && capped && (
+          <button type="button" className={styles.seeAll} onClick={seeAll}>
+            See all results
+          </button>
+        )}
       </div>
     </dialog>,
     document.body
