@@ -97,3 +97,7 @@
   border-color: var(--accent);
   color: var(--accent);
 }
+/* Opened from a search hit for this person: a lasting tint, not a fading flash, since it stays true while this page is open. */
+.highlighted {
+  background: var(--selected-bg);
+}

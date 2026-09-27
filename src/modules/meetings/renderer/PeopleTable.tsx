@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { Dialog } from '@renderer/components/Dialog'
 import { PeopleError, updatePerson } from '@shared/people'
@@ -40,6 +40,8 @@ interface RowProps {
   onRemove?: () => void
   /** Given for archived people, who can only be restored. */
   onRestore?: () => void
+  /** Scrolled to and given a lasting tint: opened from a search hit for this person. */
+  highlighted?: boolean
 }
 
 function PersonRow({
@@ -52,12 +54,18 @@ function PersonRow({
   check,
   onInvalid,
   onRemove,
-  onRestore
+  onRestore,
+  highlighted
 }: RowProps): React.JSX.Element {
   const [name, setName] = useState(person.name)
   const [initials, setInitials] = useState(person.initials)
   const [me, setMe] = useState(person.me)
   const [confirming, setConfirming] = useState(false)
+  const rowRef = useRef<HTMLTableRowElement>(null)
+
+  useEffect(() => {
+    if (highlighted) rowRef.current?.scrollIntoView({ block: 'center' })
+  }, [highlighted])
 
   const patch: PersonPatch = {}
   if (name.trim().replace(/\s+/g, ' ') !== person.name) patch.name = name
@@ -87,7 +95,10 @@ function PersonRow({
 
   if (!editing) {
     return (
-      <tr className={styles.row}>
+      <tr
+        ref={rowRef}
+        className={[styles.row, highlighted && styles.highlighted].filter(Boolean).join(' ')}
+      >
         <td>
           {person.name}
           {person.me && <span className={styles.me}> (me)</span>}
@@ -253,6 +264,8 @@ interface PeopleTableProps {
   onRemove?: (person: Person) => void
   /** Makes this the table of archived people: each row offers Restore instead of Edit and Remove. */
   onRestore?: (person: Person) => void
+  /** The person to scroll to and tint, opened from a search hit. */
+  highlighted?: string | null
 }
 
 /** The people list as a table: name, initials, how many meetings and trainings mention them, and what you can do. */
@@ -266,7 +279,8 @@ export function PeopleTable({
   onSave,
   onInvalid,
   onRemove,
-  onRestore
+  onRestore,
+  highlighted
 }: PeopleTableProps): React.JSX.Element {
   const [editing, setEditing] = useState<string | null>(null)
   return (
@@ -307,6 +321,7 @@ export function PeopleTable({
               onInvalid={onInvalid}
               onRemove={onRemove && !person.me ? () => onRemove(person) : undefined}
               onRestore={onRestore ? () => onRestore(person) : undefined}
+              highlighted={highlighted === person.name}
             />
           ))}
         </tbody>

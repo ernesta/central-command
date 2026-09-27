@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router'
 import { sortPeople } from '@shared/people'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
@@ -29,6 +30,8 @@ export function PeoplePage(): React.JSX.Element {
 
   const current = sortPeople((people ?? []).filter((p) => !p.archived))
   const archived = sortPeople((people ?? []).filter((p) => p.archived))
+  // Opened from a search hit for this person ("?person=Name"): scroll to their row and tint it.
+  const highlighted = new URLSearchParams(useLocation().search).get('person')
 
   const report = (result: PeopleActionResult): string | null => {
     setError(result.error ?? (result.skipped.length > 0 ? skippedText(result.skipped) : null))
@@ -69,6 +72,7 @@ export function PeoplePage(): React.JSX.Element {
             everyone={people}
             usage={usage}
             adding={adding}
+            highlighted={highlighted}
             onAdd={async (name, initials) =>
               report(
                 await run(window.api.meetings.people.add({ name, initials: initials || undefined }))
