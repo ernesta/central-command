@@ -778,3 +778,27 @@ None needed a design decision; each follows what most Mac apps do. Each is teste
   notes): typing and quitting at once leaves the text on disk; a change made outside while the editor is clean is shown in it (status
   "Updated from an outside change"); a change made outside while typing brings up the conflict notice, nothing is overwritten, and
   "Use the file's version" loads the outside text.
+
+## Settings: categorised into tabs (27 Sep 2026, at the user's request)
+
+The long single-column list did not scale (five module sections plus a very long shortcuts list) and wasted the window's
+width. Redesigned around the Training plan's own layout, since it already solves "a sticky list of places to jump to
+beside the content" (`docs/DECISIONS.md` has no separate entry for it; see `TrainingPlanPage.module.css`'s `.layout`/`.outline`):
+a 220px category rail, sticky, beside a wider content panel (`SettingsPage` max width raised from 760px to 1040px). The
+active category uses the same `--selected-bg`/`--selected-text` look as `Pill` and `Segmented`, so it reads as the same
+kind of control across the app.
+
+- **Categories: General, one per module that has a `settingsSection`, Shortcuts, About.** A module's tab is named after
+  the module itself (`moduleSettingsSections()` now returns each section's module `label` too), so a new module's
+  settings get their own tab with no naming decision and no change to `SettingsPage`. General holds the fields that
+  belong to no module (Theme, the Build button's repository path and terminal). Shortcuts and About are the shell's own,
+  always last.
+- **Each module's tab is self-contained**, matching how Training already worked (`TrainingSettings` renders its own
+  `PathField` for the Trainings folder): the Zotero export path moved out of the old top-level list and into
+  `SyncSummary`, next to the sync status it feeds, so "Readings" is one card with everything about it. `AboutSettings`
+  gained its own heading and card to match.
+- **The chosen tab is remembered** between visits, the same way a list's filters are (`settings.ui.moduleState`, keyed
+  `"settings"`; `normaliseSettingsTab` falls back to the first tab if the remembered one no longer exists, e.g. a module
+  whose settings section was removed).
+- **The People link is gone from Settings** (it only ever pointed at the People page, which Research now links to
+  directly); nothing replaces it yet, per the user.
