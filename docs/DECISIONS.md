@@ -900,3 +900,20 @@ kind of control across the app.
 - Checked in the built app: `app.getName()`, the Dock menu's three labels, and simulating a Dock click (sending
   `IPC.appDockAction` directly, since Playwright cannot really right-click the Dock) correctly creates a note and
   opens it.
+
+## Training entry page: a side panel, matching Meetings (at the user's request, 27 Sep 2026)
+
+- **Same `.split` layout as `MeetingPage`** (`minmax(0, 1fr) 260px`, 40px gap, stacking under 900px):
+  `TrainingEntryPage` now has a side column holding two panels, `FilesPanel` (existing) above `NoteOutline` (new
+  here). Files stays first since it is the side panel Training already had; the outline is the addition.
+- **`NoteOutline` is reused as-is** from the Notes module (`@modules/notes/renderer/NoteOutline`), the same
+  cross-module import pattern Training already uses for Meetings' `shared/query` and `shared/hours`. It needed no
+  changes: it already takes plain `text` and a `docRef`, with no assumption about heading convention, so a
+  training entry's `## Summary` / `## Notes` template (and whatever the user adds under either) shows exactly as
+  typed — unlike Meetings' `TopicsPanel`, which is built from a checklist convention, this is pure navigation.
+- **Meetings itself does not get a second outline panel.** `TopicsPanel` already is Meetings' outline (the note's
+  own `###`/`##` headings, with a discussed checkbox added); a separate, plain outline beside it would duplicate
+  it. Revisit only if the user asks again after seeing Training's plain outline next to it.
+- Checked in the built app and dev mode (StrictMode) on a scratch library: a new training entry shows Files above
+  Outline in the 260px column, the outline lists the entry's own headings live as they're typed, and clicking one
+  scrolls the editor to it.

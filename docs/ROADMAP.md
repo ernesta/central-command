@@ -6,7 +6,10 @@ Commit as you go (small commits, per feature and per standalone part, as always)
 `docs/DECISIONS.md` as each part lands, the same way the rest of this file has been kept current. Order below is
 suggested (safe and self-contained first); reorder if a dependency makes more sense once you're in the code.
 
-### 1. Training entry page: a side panel, like Meetings has
+### 1. Training entry page: a side panel, like Meetings has — done
+
+See `docs/DECISIONS.md`, "Training entry page: a side panel, matching Meetings".
+
 
 Meetings' `MeetingPage` has a `.split` layout (`grid-template-columns: minmax(0, 1fr) 260px`): the note on the left,
 `TopicsPanel` (headings, click to jump, a discussed checkbox) on the right. Training's `TrainingEntryPage` currently
@@ -24,7 +27,7 @@ the same side-panel treatment Meetings has: **both** the file list and a heading
 - Two panels stacked in one column: decide the order (files above outline, or the reverse) by which is more often
   wanted first when opening an entry — files, most likely (that's the existing content), outline below it.
 
-### 2. Meetings: no separate outline (a deliberate no)
+### 2. Meetings: no separate outline (a deliberate no) — confirmed, nothing built
 
 The user asked "might I want headings on the side [for meetings] too?" — they already have this: `TopicsPanel` is
 built from the note's own headings (the `###` under `## Notes`, or `##` as a fallback), with a discussed checkbox
