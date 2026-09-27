@@ -1,5 +1,190 @@
 # Roadmap
 
+## For Claude: six things requested 27 Sep 2026, go-ahead given — work through these without further check-in
+
+Commit as you go (small commits, per feature and per standalone part, as always); do not push. Update this file and
+`docs/DECISIONS.md` as each part lands, the same way the rest of this file has been kept current. Order below is
+suggested (safe and self-contained first); reorder if a dependency makes more sense once you're in the code.
+
+### 1. Training entry page: a side panel, like Meetings has
+
+Meetings' `MeetingPage` has a `.split` layout (`grid-template-columns: minmax(0, 1fr) 260px`): the note on the left,
+`TopicsPanel` (headings, click to jump, a discussed checkbox) on the right. Training's `TrainingEntryPage` currently
+has `FilesPanel` (the linked folder's file listing) as a full-width block above the note
+(`src/modules/training/renderer/TrainingEntryPage.tsx`, `<FilesPanel folder={...} onChange={...} />`). The user wants
+the same side-panel treatment Meetings has: **both** the file list and a heading outline, on the side.
+
+- Give Training the same `.split` layout as Meetings (copy the CSS shape from `MeetingPage.module.css`).
+- Move `FilesPanel` into the side column.
+- Add a heading outline below or above it in that same column, using `NoteOutline`
+  (`src/modules/notes/renderer/NoteOutline.tsx`, built this session for Notes) rather than a new component —
+  it already does exactly this (headings, live, click to jump) and takes `text` and `docRef`. Training entries
+  don't have Meetings' "## Notes" structural convention, so use it the way Notes does (whichever heading levels
+  the entry's body actually has), not the way Meetings' `TopicsPanel` does.
+- Two panels stacked in one column: decide the order (files above outline, or the reverse) by which is more often
+  wanted first when opening an entry — files, most likely (that's the existing content), outline below it.
+
+### 2. Meetings: no separate outline (a deliberate no)
+
+The user asked "might I want headings on the side [for meetings] too?" — they already have this: `TopicsPanel` is
+built from the note's own headings (the `###` under `## Notes`, or `##` as a fallback), with a discussed checkbox
+added. Do **not** add a second, duplicate outline panel. If the user asks again once they see Training's plain
+outline next to Meetings' checkbox-outline, that's a real request to reconsider, not before.
+
+### 3. Find in the note: redesign as an inline, keyboard-first bar, with basic replace
+
+Currently (`src/renderer/src/notes/useNotesFind.tsx`, `notes-find.ts`, `NotesFindBar.module.css`, all built this
+session): a floating bar, `position: fixed`, bottom-centre of the window, opened by Cmd-F. The user wants it to feel
+inline instead — "not a disjointed popup, closer to where we have the word count", i.e. living near `EditorCard`'s
+sticky facts line, Emacs-style (incremental, keyboard-first, part of the document's own chrome, not a floating
+dialog) — plus more to do with the keyboard than today, and a basic find-and-replace.
+
+- Move the bar from a `position: fixed` portal into `EditorCard`'s own footer area (`src/renderer/src/notes/EditorCard.tsx`),
+  replacing the "Created · Edited · N words" line while find is open (or sitting right above it — try both, the
+  sticky-footer space is narrow). `EditorCard` will need to know whether find is open and render the bar instead of
+  (or alongside) its own facts line; the cleanest shape is probably for `useNotesFind` to expose the bar's JSX and
+  for `NotesEditor` to hand it to `EditorCard` somehow, or for `EditorCard` to grow a `find` slot prop. Whoever
+  builds this should feel free to restructure the boundary between `NotesEditor` and `EditorCard` if the current
+  one doesn't fit — they were designed before this requirement existed.
+- More keyboard: at minimum, typing should never require reaching for the mouse — next/previous/replace/replace all
+  all need keyboard equivalents (Enter/Shift-Enter already do next/previous; add something for replace, e.g.
+  Cmd-Return for "replace this one", Cmd-Shift-Return or a button for "replace all"). Look at how Emacs
+  (`isearch`/`query-replace`) and how VS Code's inline editor find/replace bar (Cmd-Option-F to add the replace row)
+  do this, and pick whichever reads more naturally in a Markdown notes editor, documenting the choice.
+- Replace: "nothing too complicated, but more than what we have currently" (which is nothing). A replace field, a
+  "replace this match" and a "replace all" action, using `findMatches`' positions (`notes-find.ts`) and a single
+  transaction per action (so replace-all is one undo step, not N). Keep the existing match-not-crossing-a-mark
+  limitation; document it again if it now matters more (a replace that would need to cross a mark boundary should
+  presumably just not offer to replace that match, or should be reported — decide and document).
+- Recheck the mutation-safety habit: replace edits the document, unlike plain find, so this is the first part of
+  Find that can lose text if it's wrong. Add a test that breaks replace (e.g. an off-by-one on the range) and
+  confirms a test catches it, the way other safety-critical code in this app is checked.
+- Re-verify in the built app and dev mode (StrictMode), on all five kinds of editor (Notes, Meetings, Training
+  entries, the Training plan, Readings notes), the way the original Find was checked.
+
+### 4. Reading lists (new feature)
+
+Grounded in a real example the user shared: `/Users/ernesta/Downloads/Readings/2026 09 26 Language of Instruction
+Papers.docx` (read it — a curated bibliography for their supervisor). Its shape: a list has a name, and is divided
+into named sections written as questions ("What do the reviews conclude?", "Does home language instruction improve
+learning?", "What happens to home language policies in practice?"); each section holds entries, one per paper
+(`Author (Year). Title. Journal, volume(issue), pages.`) followed by a one- or two-sentence annotation specific to
+_that list_ — not the paper's own (often much longer) notes file.
+
+What the user said, verbatim, matters here: "these notes might have to be accessible from each reading's notes but
+not the full thing, some of my notes are very lengthy" — so a reading's own page should show, for each list it is
+in, that list's short annotation (not the list's other entries, not the reading's full notes).
+
+Open design points to settle while building (write the decisions into `docs/DECISIONS.md`, "Reading lists", as you
+go, the way every other module's decisions are recorded):
+
+- **Not every paper is in Zotero yet** ("it doesn't have all papers in Zotero, but it will"). A list entry should be
+  able to point at an existing reading (by citekey) or, for one not yet synced, hold its own citation text as a
+  placeholder, with a way to attach it to a real reading later once the Zotero export catches up. Never invent a
+  fake citekey or a stub Readings row for a placeholder — keep it as list-only text until it is linked.
+- **Where lists live.** A new small module (`src/modules/reading-lists/` or similar, following the module pattern
+  in CLAUDE.md: `main/`, `renderer/`, `shared/`, an `index.ts` manifest) is probably right, rather than folding this
+  into the Readings module, since a list is its own object with its own page (name, sections, entries), not a
+  property of one reading. Follow the Notes/Meetings/Training pattern for the list-of-lists page (a landing card,
+  an "all lists" page, one page per list) and reuse `Landing`/`LandingPage`/`SearchInput`/etc. rather than building
+  new versions.
+- **Storage.** One Markdown file per list is consistent with everything else in this app (plain files, human- and
+  Claude-Code-editable, survive independently) — front matter for the list's name, then `##` sections and entries
+  as a list (`- ` items), each identifying its reading (citekey) or its placeholder citation text, plus the
+  annotation. Follow the guarded-save/content-hash pattern every other note type uses
+  (`src/main/notes/guarded-file.ts`); never overwrite a list file that changed since it was read.
+- **On a reading's own page**, add a small section (after the abstract, before or after the notes editor — try
+  it and see) listing which list(s) mention this reading, each with its own short annotation and a link to the
+  full list. Keep this compact; it is explicitly not meant to show the rest of the list.
+- **Search:** once this exists, add it to global search (`docs/DECISIONS.md`, "Global search") the same way every
+  other source was added — a `renderer/search.ts` and a manifest `search` entry — so a list and its entries are
+  findable, ideally added to `SEARCH_GROUP_ORDER` (`src/shared/search.ts`) at a sensible position (after Readings,
+  most likely, since a list entry is fundamentally about readings).
+- This is the most open-ended of the six items. If, once you're a few hours in, the shape above stops making sense
+  against the real data, change it and write down why — do not stall waiting for approval, but do leave a clear
+  trail of what changed and why for the user's review.
+
+### 5. A page per person, and links on each person
+
+From the ideas list already in this file (`## Ideas`, "People, extended", items 1 and 3), now to be built:
+
+- **A page per person** (`Research → People → a name`), reusing `LandingPage`/`LandingHeader`. Show: their meetings
+  and trainings, newest first (reuse `queryMeetings`/`queryTraining` filtered to where they appear); the open TODOs
+  they own (existing TODO parsing already tracks owners by initials); when you last met them and, if any, the next
+  upcoming meeting. Link to it from `PeopleTable`'s rows (a person's name becomes a link) and from search hits
+  (`src/modules/meetings/renderer/people-search.ts` currently routes to `peopleRoute` with `?person=`; once a real
+  page exists, route search hits there instead and keep the `peopleRoute?person=` highlight as the fallback for
+  the list view).
+- **Links per person**, "some named, like Google Scholar, others more generic": extend `Person`
+  (`src/shared/people.ts`) with an optional `links?: { label: string; url: string }[]` — a fixed set of common,
+  pre-named suggestions (Google Scholar, GitHub, Website, LinkedIn) the person picks from, or their own label, each
+  just a URL. Follow this app's existing rule for external links (`isSafeExternalUrl`, `src/main/urls.ts`: only
+  `http`/`https`) and open them the same way the editor's links open (Cmd-click convention does not apply here
+  since these are plain links on a page, not inside editable text — a normal click is fine). Add the edit UI to the
+  per-person page (not the table row, which is already tight), and to `PersonPatch`/`updatePerson`
+  (`src/shared/people.ts`) plus the main-process save path and the mutation-check tests that already guard
+  `people.json` writes.
+
+### 6. Work meetings: import from Obsidian, same treatment as Research
+
+**Vault:** the user gave `/Users/ernesta/Consulting/Luminos/Scribbles` as "all work notes"; the actual Obsidian vault
+(where `.obsidian` lives) is one level down, at `/Users/ernesta/Consulting/Luminos/Scribbles/Luminos`. Meeting notes
+are under `Meetings/<subfolder>/*.md` (subfolders seen: `Teaching & Learning`, `Impact` — these look like they'd map
+to `series`, the way Research uses Supervision/Rastle Lab). 19 files today. Two other top-level folders exist in the
+vault — `Admin & Compliance` (personal business admin: Wise, National Insurance, ICO — not meeting notes) and a
+nested `Luminos/Luminos/Taxpayer Reference.md` (a single stray file, not more notes) — **the request was specifically
+for meeting notes** ("create same setup of meetings for Work … import … meeting notes"), so treat "all work notes"
+in the user's answer as pointing at the vault, not as scope to also import Admin & Compliance as Notes-module
+content; say so explicitly when reporting back rather than silently deciding either way.
+
+**The format is not the Research format** — do not assume the existing importer (`scripts/import-meetings.mts`,
+built for a Word log plus Obsidian notes with YAML-ish conventions) applies unchanged. A sample file from this
+vault:
+
+```
+**Date**: Jul 3, 2026
+**Attendees**: Neha Raheel, Amrita Gopal, Ernesta Orlovaitė
+## Action items
+- **TODO(NR)**: Share previous conversations with Fab AI.
+- TOOD(EO): Start drafting detailed user requirements and acceptance criteria.
+## Summary of decisions
+| # | Topic | Decision |
+...
+## Notes
+### General updates
+#### Fab AI and procurement
+...
+```
+
+Differences from Research to design around: no YAML front matter (date and attendees are bold-label lines at the
+top, `**Date**: Jul 3, 2026` / `**Attendees**: A, B, C`); `## Action items` instead of a `## Previous TODOs`/carry-
+over convention; TODOs use the same `**TODO(XX)**:` marker Research uses (good — the existing TODO parser in
+`src/modules/meetings/shared/todos.ts` should mostly just work on the body once it's extracted), but there is at
+least one **typo to expect and handle or report, not silently drop**: `TOOD(EO)` instead of `TODO(EO)` (seen in the
+sample above) — decide whether to fix obvious typos like this during import (report them either way) or leave them
+for the user to fix by hand; a Markdown table of decisions under its own heading; more heading depth (`####`) than
+Research's meeting notes typically use.
+
+**Before writing an importer**, read a good sample of the 19 files by hand (not just the one above) to find the
+range of variation, the way every other importer in this app started. Write the plan into `docs/DECISIONS.md`
+("Work meetings import") the way the Research importer's plan and findings are recorded, including a safety check
+(compare the converted result against the source: TODO text, counts, any ticked boxes) before any file is written,
+matching the standing rule: "Give importers a safety check that compares the converted result with the source
+… and leaves out a note that fails it."
+
+**Work needs its own workspace wiring first**, which is already a known, described gap (`docs/ROADMAP.md`,
+"Meetings follow-ups": _"Meetings in Work: the code takes a workspace everywhere (`notes/meetings/<workspace>/`);
+Work needs a folder, a route and a landing page from the same components. `ACTIVE_WORKSPACES` in
+`meetings/main/register.ts` is the switch."_). Do that first, then the importer writes into
+`~/CentralCommand/notes/meetings/work/`.
+
+**Safety, as with every other importer in this app: dry run only.** Do not pass `--apply` against the real vault or
+the real `~/CentralCommand` without the user's explicit go-ahead once they are back and have read the dry run's
+output — this instruction to "go ahead and work" while they are away is not that go-ahead for this one step
+specifically, because applying an import is exactly the kind of hard-to-reverse, real-data action CLAUDE.md asks to
+confirm first. Get everything else in this list built and working; leave the Work import at "dry run reviewed and
+ready for `--apply`" and say so plainly when you report back.
+
 ## TODOs
 
 ### For the user (review and decisions)
