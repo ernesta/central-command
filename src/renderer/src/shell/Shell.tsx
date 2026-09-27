@@ -14,6 +14,7 @@ import { ErrorBoundary } from '../components/ErrorBoundary'
 import { Notice } from '../components/Notice'
 import { useSettings } from '../state/settings-context'
 import { GlobalSearch } from './GlobalSearch'
+import { SearchResultsPage } from './SearchResultsPage'
 import { SettingsPage } from './SettingsPage'
 import { ResearchLanding } from './ResearchLanding'
 import { TopBar } from './TopBar'
@@ -118,6 +119,7 @@ export function Shell(): React.JSX.Element {
             <Route path="/" element={<Navigate to={`/${settings.ui.workspace}`} replace />} />
             <Route path="/research" element={<ResearchLanding />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/search" element={<SearchResultsPage />} />
             <Route path="/life" element={<WorkspaceEmpty workspace="life" />} />
             <Route path="/work" element={<WorkspaceEmpty workspace="work" />} />
             {modules.flatMap((m) =>
