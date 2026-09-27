@@ -7,6 +7,7 @@ import {
   deriveInitials,
   findByInitials,
   findByName,
+  isSafeLinkUrl,
   makeInitialsUnique,
   mergePerson,
   normalisePeople,
@@ -98,6 +99,41 @@ describe('updatePerson', () => {
     updatePerson(base, 'Kathy Rastle', { initials: 'ZZ', me: true })
     expect(base).toEqual(copy)
   })
+
+  it('sets links, replacing the whole list, and leaves them alone when not given', () => {
+    const withLinks = updatePerson(base, 'Kathy Rastle', {
+      links: [{ label: 'Google Scholar', url: 'https://scholar.google.com/x' }]
+    })
+    expect(withLinks[0].links).toEqual([
+      { label: 'Google Scholar', url: 'https://scholar.google.com/x' }
+    ])
+    // A later change that says nothing about links keeps them.
+    const renamed = updatePerson(withLinks, 'Kathy Rastle', { name: 'Katherine Rastle' })
+    expect(renamed[0].links).toEqual(withLinks[0].links)
+    // An explicit empty list clears them.
+    expect(updatePerson(withLinks, 'Kathy Rastle', { links: [] })[0].links).toEqual([])
+  })
+
+  it('refuses a link with no label, or a URL that is not http(s) (a mutation check for the URL guard)', () => {
+    expect(() =>
+      updatePerson(base, 'Kathy Rastle', { links: [{ label: '', url: 'https://x.com' }] })
+    ).toThrow('needs a label')
+    for (const url of ['javascript:alert(1)', 'file:///etc/passwd', 'not a url']) {
+      expect(() => updatePerson(base, 'Kathy Rastle', { links: [{ label: 'X', url }] })).toThrow(
+        'not a web address'
+      )
+    }
+  })
+})
+
+describe('isSafeLinkUrl', () => {
+  it('accepts only http and https', () => {
+    expect(isSafeLinkUrl('https://example.com')).toBe(true)
+    expect(isSafeLinkUrl('http://example.com')).toBe(true)
+    expect(isSafeLinkUrl('javascript:alert(1)')).toBe(false)
+    expect(isSafeLinkUrl('file:///etc/passwd')).toBe(false)
+    expect(isSafeLinkUrl('not a url')).toBe(false)
+  })
 })
 
 describe('normalisePeople', () => {
@@ -139,6 +175,28 @@ describe('normalisePeople', () => {
     expect(normalisePeople(null)).toEqual([])
     expect(normalisePeople('x')).toEqual([])
     expect(normalisePeople({ people: 'x' })).toEqual([])
+  })
+
+  it('reads good links and drops one with no label or an unsafe URL, never crashing on a hand-edited file', () => {
+    const out = normalisePeople({
+      people: [
+        {
+          name: 'Kathy Rastle',
+          links: [
+            { label: 'Google Scholar', url: 'https://scholar.google.com/x' },
+            { label: '', url: 'https://dropped.example.com' },
+            { label: 'Bad', url: 'javascript:alert(1)' },
+            'not an object',
+            { label: 'No URL' }
+          ]
+        }
+      ]
+    })
+    expect(out[0].links).toEqual([{ label: 'Google Scholar', url: 'https://scholar.google.com/x' }])
+  })
+
+  it('leaves links out entirely for someone with none', () => {
+    expect(normalisePeople({ people: [{ name: 'A B' }] })[0].links).toBeUndefined()
   })
 })
 

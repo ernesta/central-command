@@ -1,3 +1,9 @@
+/** A named link on a person's own page (Google Scholar, GitHub, a website…), or their own label. */
+export interface PersonLink {
+  label: string
+  url: string
+}
+
 /** A person from the people list. Initials are unique (case-insensitively), archived people's included. */
 export interface Person {
   name: string
@@ -9,6 +15,18 @@ export interface Person {
    * resolve in old notes and their initials stay reserved.
    */
   archived?: boolean
+  /** Shown on their own page. Empty or omitted for most people. */
+  links?: PersonLink[]
+}
+
+/** Only http(s) is ever saved: the same rule `main/urls.ts` enforces before actually opening a link. */
+export function isSafeLinkUrl(url: string): boolean {
+  try {
+    const { protocol } = new URL(url)
+    return protocol === 'https:' || protocol === 'http:'
+  } catch {
+    return false
+  }
 }
 
 /** Thrown for a change the people list refuses (blank name, duplicate name or initials, unknown person). */
@@ -97,6 +115,8 @@ export interface PersonPatch {
   name?: string
   initials?: string
   me?: boolean
+  /** Replaces the whole list. A link with an unsafe URL (anything but http/https) is refused. */
+  links?: PersonLink[]
 }
 
 /** A new list with the person called `name` changed. Initials must stay unique. */
@@ -124,7 +144,17 @@ export function updatePerson(
     if (clash) throw new PeopleError(`The initials ${initials} are already used by ${clash.name}`)
   }
   const me = patch.me ?? target.me
-  const updated: Person = { ...target, name: newName, initials, me }
+  let links = target.links
+  if (patch.links !== undefined) {
+    links = patch.links
+      .map((l) => ({ label: l.label.trim(), url: l.url.trim() }))
+      .filter((l) => l.label !== '' || l.url !== '')
+    for (const l of links) {
+      if (l.label === '') throw new PeopleError('A link needs a label')
+      if (!isSafeLinkUrl(l.url)) throw new PeopleError(`"${l.url}" is not a web address`)
+    }
+  }
+  const updated: Person = { ...target, name: newName, initials, me, links }
   const list = people.map((p) => (p === target ? updated : { ...p }))
   return withMe(list, initials, me)
 }
@@ -199,11 +229,23 @@ export function normalisePeople(raw: unknown): Person[] {
       out.map((p) => p.initials)
     )
     const archived = o.archived === true
+    const rawLinks = Array.isArray(o.links) ? o.links : []
+    const links = rawLinks
+      .filter(
+        (l): l is { label: unknown; url: unknown } =>
+          !!l && typeof l === 'object' && typeof (l as Record<string, unknown>).url === 'string'
+      )
+      .map((l) => ({
+        label: typeof l.label === 'string' ? l.label.trim() : '',
+        url: (l.url as string).trim()
+      }))
+      .filter((l) => l.label !== '' && isSafeLinkUrl(l.url))
     out.push({
       name,
       initials,
       me: o.me === true && !archived && !out.some((p) => p.me),
-      ...(archived ? { archived } : {})
+      ...(archived ? { archived } : {}),
+      ...(links.length > 0 ? { links } : {})
     })
   }
   return out
