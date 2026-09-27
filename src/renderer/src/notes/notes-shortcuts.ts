@@ -1,4 +1,5 @@
 import { RANGE_KEY, type ShortcutGroup } from '@shared/shortcuts'
+import { FIND_SHORTCUT } from './notes-find'
 
 /**
  * The keys of the notes editor (Readings notes and meeting notes), for the Settings list. Most come from
@@ -34,6 +35,11 @@ export const NOTES_EDITOR_SHORTCUTS: ShortcutGroup = {
       action: 'Open a link',
       keys: ['Mod-Click'],
       note: 'A plain click puts the cursor in the link.'
+    },
+    {
+      action: 'Find in the note',
+      keys: [FIND_SHORTCUT],
+      note: 'Enter goes to the next match, Shift-Enter to the previous.'
     },
     { action: 'Undo', keys: ['Mod-z'] },
     { action: 'Redo', keys: ['Shift-Mod-z', 'Mod-y'] }
