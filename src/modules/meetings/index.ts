@@ -6,7 +6,6 @@ import { MeetingsLanding } from './renderer/MeetingsLanding'
 import { MeetingsPage } from './renderer/MeetingsPage'
 import { searchMeetings } from './renderer/search'
 import { PeoplePage } from './renderer/PeoplePage'
-import { PeopleSettings } from './renderer/PeopleSettings'
 import { MEETINGS_SHORTCUTS } from './shared/shortcuts'
 
 /** Meetings: notes for every meeting, with TODOs carried over from one meeting to the next. */
@@ -23,6 +22,5 @@ export const meetingsModule: LiveModuleManifest = {
   ],
   landingCard: MeetingsCard,
   search: searchMeetings,
-  settingsSection: PeopleSettings,
   shortcuts: MEETINGS_SHORTCUTS
 }
