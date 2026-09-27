@@ -1,10 +1,16 @@
 import { parseHeading, scanLines } from '@shared/sections'
 
 /**
- * One paper in a list. A bullet's leading bold run is its citation: `**[[citekey]]**` names an
- * existing reading (`linked`); any other bold text is a citation typed by hand, kept as plain text
- * until it is attached to a real reading once the Zotero export has it (`placeholder`). A bullet with
- * no leading bold run has no citation yet (`missing`) so it is never silently dropped.
+ * One paper in a list. A bullet's leading bold run is its citation: `**@citekey**` names an existing
+ * reading (`linked`); any other bold text is a citation typed by hand, kept as plain text until it is
+ * attached to a real reading once the Zotero export has it (`placeholder`). A bullet with no leading
+ * bold run has no citation yet (`missing`) so it is never silently dropped.
+ *
+ * `@citekey`, not `[[citekey]]`: Milkdown's Markdown serialiser escapes a literal `[` (`\[\[citekey]]`)
+ * wherever it appears, including inside a bold run, so the very next edit that touches the document
+ * would rewrite the file and quietly turn every linked entry back into an unrecognised one. `@` has no
+ * meaning in CommonMark and round-trips untouched (checked against a real Milkdown editor, not just
+ * this parser, since only that showed the escaping).
  */
 export type ListEntry =
   | { kind: 'linked'; citekey: string; annotation: string; offset: number }
@@ -19,7 +25,7 @@ export interface ListSection {
 
 const BULLET = /^ {0,3}[-*+][ \t]+(.*)$/
 const BOLD_LEAD = /^\*\*(.+?)\*\*[ \t]*(.*)$/
-const LINKED_CITEKEY = /^\[\[([^[\]]+)\]\]$/
+const LINKED_CITEKEY = /^@(\S+)$/
 
 function parseEntryText(text: string, offset: number): ListEntry {
   const bold = BOLD_LEAD.exec(text.trim())
@@ -57,7 +63,7 @@ export function parseListBody(body: string): ListSection[] {
 }
 
 /**
- * Rewrites the bullet starting at `lineStart` (an entry's `offset`) so its citation is `**[[citekey]]**`,
+ * Rewrites the bullet starting at `lineStart` (an entry's `offset`) so its citation is `**@citekey**`,
  * keeping the rest of the line (the annotation) exactly as it was. Used to attach a placeholder, or one
  * with no citation yet, to a reading once it is found; does nothing if `lineStart` is not really a
  * bullet line (the body changed under the caller).
@@ -70,6 +76,6 @@ export function attachReading(body: string, lineStart: number, citekey: string):
   if (!bullet) return body
   const prefix = line.slice(0, line.length - bullet[1].length)
   const { annotation } = parseEntryText(bullet[1], lineStart)
-  const newLine = `${prefix}**[[${citekey}]]**${annotation ? ` ${annotation}` : ''}`
+  const newLine = `${prefix}**@${citekey}**${annotation ? ` ${annotation}` : ''}`
   return body.slice(0, lineStart) + newLine + body.slice(lineEnd)
 }

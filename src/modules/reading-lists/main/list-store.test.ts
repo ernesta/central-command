@@ -75,10 +75,10 @@ describe('reindex: sections, entries and mentions', () => {
       {
         body:
           '## What do the reviews conclude?\n\n' +
-          '- **[[kim2020]]** Meta-analysis of 67 studies.\n' +
+          '- **@kim2020** Meta-analysis of 67 studies.\n' +
           '- **Author (2020). Title.** Not yet in Zotero.\n\n' +
           '## Does it help?\n\n' +
-          '- **[[taylor2016]]** Lower scores in English.\n'
+          '- **@taylor2016** Lower scores in English.\n'
       },
       list.note.hash
     )
@@ -101,12 +101,12 @@ describe('reindex: sections, entries and mentions', () => {
     const list = await store.create({ workspace: 'research', title: 'LOI' })
     const saved = await store.save(
       list.ref,
-      { body: '## S\n\n- **[[kim2020]]** note\n' },
+      { body: '## S\n\n- **@kim2020** note\n' },
       list.note.hash
     )
     if (saved.status !== 'saved') throw new Error('expected saved')
     expect(mentionsOf(db, 'kim2020')).toHaveLength(1)
-    await store.save(list.ref, { body: '## S\n\n- **[[other]]** note\n' }, saved.hash)
+    await store.save(list.ref, { body: '## S\n\n- **@other** note\n' }, saved.hash)
     expect(mentionsOf(db, 'kim2020')).toEqual([])
   })
 })
@@ -116,7 +116,7 @@ describe('save', () => {
     const list = await store.create({ workspace: 'research', title: 'Old name' })
     const saved = await store.save(
       list.ref,
-      { meta: { title: 'New name' }, body: '## S\n\n- **[[x]]** y\n' },
+      { meta: { title: 'New name' }, body: '## S\n\n- **@x** y\n' },
       list.note.hash
     )
     expect(saved).toMatchObject({ status: 'saved', renamedTo: 'New name' })
@@ -142,7 +142,7 @@ describe('save', () => {
 describe('delete', () => {
   it('moves the file to the Trash and drops the index row and its mentions', async () => {
     const list = await store.create({ workspace: 'research', title: 'A' })
-    await store.save(list.ref, { body: '## S\n\n- **[[x]]** y\n' }, list.note.hash)
+    await store.save(list.ref, { body: '## S\n\n- **@x** y\n' }, list.note.hash)
     await store.delete(list.ref)
     expect(trashed).toEqual([file('A')])
     expect(listListIds(db, 'research')).toEqual([])

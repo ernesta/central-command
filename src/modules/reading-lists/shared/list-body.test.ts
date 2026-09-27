@@ -6,12 +6,12 @@ describe('parseListBody', () => {
     const body = [
       '## What do the reviews conclude?',
       '',
-      '- **[[kim2020]]** Meta-analysis of 67 studies; no lasting difference in reading outcomes.',
+      '- **@kim2020** Meta-analysis of 67 studies; no lasting difference in reading outcomes.',
       '- **Melby-Lervåg & Lervåg (2014). Reading comprehension. Psych Bulletin, 140(2), 409–433.** Far behind on comprehension.',
       '',
       '## Does home language instruction improve learning?',
       '',
-      '- **[[taylor2016]]** Pupils taught in English scored lower.'
+      '- **@taylor2016** Pupils taught in English scored lower.'
     ].join('\n')
     const sections = parseListBody(body)
     expect(sections.map((s) => s.heading)).toEqual([
@@ -23,7 +23,7 @@ describe('parseListBody', () => {
         kind: 'linked',
         citekey: 'kim2020',
         annotation: 'Meta-analysis of 67 studies; no lasting difference in reading outcomes.',
-        offset: body.indexOf('- **[[kim2020]]**')
+        offset: body.indexOf('- **@kim2020**')
       },
       {
         kind: 'placeholder',
@@ -38,7 +38,7 @@ describe('parseListBody', () => {
         kind: 'linked',
         citekey: 'taylor2016',
         annotation: 'Pupils taught in English scored lower.',
-        offset: body.indexOf('- **[[taylor2016]]**')
+        offset: body.indexOf('- **@taylor2016**')
       }
     ])
   })
@@ -70,14 +70,14 @@ describe('parseListBody', () => {
   })
 
   it('keeps a `###` under a section as decoration, not a new section', () => {
-    const body = '## Section\n\n### A sub-heading\n\n- **[[x]]** note\n'
+    const body = '## Section\n\n### A sub-heading\n\n- **@x** note\n'
     const sections = parseListBody(body)
     expect(sections).toHaveLength(1)
     expect(sections[0].entries).toHaveLength(1)
   })
 
   it('does not confuse bold text inside the annotation with the citation', () => {
-    const body = '## S\n\n- **[[x]]** Findings held even for the **strongest** readers.\n'
+    const body = '## S\n\n- **@x** Findings held even for the **strongest** readers.\n'
     expect(parseListBody(body)[0].entries[0]).toMatchObject({
       kind: 'linked',
       citekey: 'x',
@@ -91,7 +91,7 @@ describe('attachReading', () => {
     const body = '## S\n\n- **Smith (2020). Title.** A short annotation.\n'
     const entry = parseListBody(body)[0].entries[0]
     const next = attachReading(body, entry.offset, 'smith2020')
-    expect(next).toBe('## S\n\n- **[[smith2020]]** A short annotation.\n')
+    expect(next).toBe('## S\n\n- **@smith2020** A short annotation.\n')
     expect(parseListBody(next)[0].entries[0]).toEqual({
       kind: 'linked',
       citekey: 'smith2020',
@@ -104,7 +104,7 @@ describe('attachReading', () => {
     const body = '## S\n\n- an annotation with no citation\n'
     const entry = parseListBody(body)[0].entries[0]
     const next = attachReading(body, entry.offset, 'x2020')
-    expect(next).toBe('## S\n\n- **[[x2020]]** an annotation with no citation\n')
+    expect(next).toBe('## S\n\n- **@x2020** an annotation with no citation\n')
   })
 
   it('leaves the body unchanged when the offset is no longer a bullet line', () => {
@@ -113,9 +113,9 @@ describe('attachReading', () => {
   })
 
   it('never touches anything outside the one bullet line (a mutation check: an off-by-one on lineEnd would leak into the next line)', () => {
-    const body = '## S\n\n- **Old citation.** note one\n- **[[other]]** note two\n'
+    const body = '## S\n\n- **Old citation.** note one\n- **@other** note two\n'
     const entry = parseListBody(body)[0].entries[0]
     const next = attachReading(body, entry.offset, 'new2020')
-    expect(next).toBe('## S\n\n- **[[new2020]]** note one\n- **[[other]]** note two\n')
+    expect(next).toBe('## S\n\n- **@new2020** note one\n- **@other** note two\n')
   })
 })
