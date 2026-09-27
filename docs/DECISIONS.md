@@ -834,3 +834,16 @@ kind of control across the app.
   whose settings section was removed).
 - **The People link is gone from Settings** (it only ever pointed at the People page, which Research now links to
   directly); nothing replaces it yet, per the user.
+
+## Notes outline (27 Sep 2026, at the user's request)
+
+- **A live outline beside the editor**, the same position and card look as Meetings' topics panel (`NoteOutline.tsx`, a `.split`
+  layout like `MeetingPage`'s): the note's own `#`, `##` and `###` headings, in order, generated from the text as it is typed (no
+  separate "add a heading" step, unlike Meetings' topics, which are ticked off; a note's outline is pure navigation). Clicking one
+  scrolls to the first heading of that level with that exact text. Empty note: "Headings you write appear here."
+- **The heading parser is now shared** (`src/shared/markdown-outline.ts`, `markdownOutline(markdown, levels)`): it used to live only
+  in the Training plan (`planOutline`, hard-coded to `##`/`###`), which now calls the shared function with `[2, 3]` and behaves
+  exactly as before (its own test file is unchanged). Notes calls it with `[1, 2, 3]`. A future editor wanting an outline needs no
+  new parsing, just the levels it cares about.
+- Checked in the built app: typing `##`/`###` headings updates the outline live, clicking a nested heading scrolls to it and not to
+  an outer heading sharing its text.
