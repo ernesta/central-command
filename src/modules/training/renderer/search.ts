@@ -12,17 +12,18 @@ import { DEFAULT_TRAINING_QUERY, queryTraining } from '../shared/rules'
 import type { TrainingIndexRow } from '../shared/types'
 import { entryRoute, trainingPlanRoute } from './training-paths'
 
-const LIMIT = 6
+const DEFAULT_LIMIT = 6
 
 /** The training entries that match, newest first: the part of the notes that matched, else the date and series. */
 export function trainingHits(
   rows: readonly TrainingIndexRow[],
   people: readonly Person[],
-  query: string
+  query: string,
+  limit = DEFAULT_LIMIT
 ): SearchHit[] {
   const terms = searchTerms(query)
   return queryTraining(rows, { ...DEFAULT_TRAINING_QUERY, search: query }, people)
-    .slice(0, LIMIT)
+    .slice(0, limit)
     .map((row) => {
       const inTitle = terms.every((t) => fold(row.title).includes(t))
       const details = [row.date ? formatShortDate(row.date) : 'No date yet', row.series]
@@ -69,7 +70,7 @@ export function planYears(dates: readonly string[], today: string): number[] {
   return academicYearsPresent([...dates, next], today)
 }
 
-export async function searchTraining(query: string): Promise<SearchHit[]> {
+export async function searchTraining(query: string, limit = DEFAULT_LIMIT): Promise<SearchHit[]> {
   const [rows, people] = await Promise.all([
     window.api.training.list('research'),
     window.api.meetings.people.list()
@@ -85,5 +86,5 @@ export async function searchTraining(query: string): Promise<SearchHit[]> {
     }))
   )
   // A plan comes first: there is at most one a year, and one that matches is probably what was wanted.
-  return [...planHits(plans, query), ...trainingHits(rows, people, query)].slice(0, LIMIT)
+  return [...planHits(plans, query), ...trainingHits(rows, people, query, limit)].slice(0, limit)
 }

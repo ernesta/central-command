@@ -35,7 +35,8 @@ export interface LiveModuleManifest extends BaseManifest {
   /** Mounted once by the shell on every page, for what must work anywhere in the app (a keyboard shortcut). Renders nothing. */
   globals?: ComponentType
   /** Finds this module's items for the global search: a few of the best matches for a query, most relevant first. */
-  search?: (query: string) => Promise<SearchHit[]>
+  /** `limit` is how many of the best matches to return; the module's own default (usually 6) when left out. */
+  search?: (query: string, limit?: number) => Promise<SearchHit[]>
   /** Listed in Settings under Keyboard shortcuts. Add a shortcut here whenever the module gets one. */
   shortcuts?: ShortcutGroup[]
 }

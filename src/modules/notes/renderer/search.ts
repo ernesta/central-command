@@ -7,13 +7,17 @@ import { DEFAULT_NOTES_QUERY, displayTitle, queryNotes } from '../shared/query'
 import type { NoteIndexRow } from '../shared/types'
 import { noteRoute } from './notes-paths'
 
-const LIMIT = 6
+const DEFAULT_LIMIT = 6
 
 /** The notes that match, most recently edited first: the part of the text that matched, else the group and date. */
-export function noteHits(rows: readonly NoteIndexRow[], query: string): SearchHit[] {
+export function noteHits(
+  rows: readonly NoteIndexRow[],
+  query: string,
+  limit = DEFAULT_LIMIT
+): SearchHit[] {
   const terms = searchTerms(query)
   return queryNotes(rows, { ...DEFAULT_NOTES_QUERY, search: query })
-    .slice(0, LIMIT)
+    .slice(0, limit)
     .map((row) => {
       const title = displayTitle(row)
       const inTitle = terms.every((t) => fold(title).includes(t))
@@ -27,6 +31,6 @@ export function noteHits(rows: readonly NoteIndexRow[], query: string): SearchHi
     })
 }
 
-export async function searchNotes(query: string): Promise<SearchHit[]> {
-  return noteHits(await window.api.notes.list('research'), query)
+export async function searchNotes(query: string, limit?: number): Promise<SearchHit[]> {
+  return noteHits(await window.api.notes.list('research'), query, limit)
 }

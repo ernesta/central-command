@@ -50,7 +50,7 @@ export function moduleGlobals(): { id: string; Global: ComponentType }[] {
 export function moduleSearches(): {
   id: string
   label: string
-  search: (query: string) => Promise<SearchHit[]>
+  search: (query: string, limit?: number) => Promise<SearchHit[]>
 }[] {
   return modules.flatMap((m) =>
     m.status === 'live' && m.search ? [{ id: m.id, label: m.label, search: m.search }] : []
