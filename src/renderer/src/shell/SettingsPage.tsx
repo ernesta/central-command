@@ -1,48 +1,80 @@
+import type { ComponentType } from 'react'
 import { moduleSettingsSections } from '@modules/index'
+import { useModuleState } from '../state/use-module-state'
 import { AboutSettings } from './AboutSettings'
-import { PathField } from './PathField'
+import { GeneralSettings } from './GeneralSettings'
+import { normaliseSettingsTab } from './settings-tabs'
 import { ShortcutsSettings } from './ShortcutsSettings'
-import { TerminalField } from './TerminalField'
-import { ThemeField } from './ThemeField'
-import { useSettings } from '../state/settings-context'
 import styles from './SettingsPage.module.css'
 
+interface SettingsTab {
+  id: string
+  label: string
+  Section: ComponentType
+}
+
+/** General first, then one tab per module that has something to configure (named after the module), then Shortcuts and About. */
+function tabs(): SettingsTab[] {
+  return [
+    { id: 'general', label: 'General', Section: GeneralSettings },
+    ...moduleSettingsSections(),
+    { id: 'shortcuts', label: 'Shortcuts', Section: ShortcutsSettings },
+    { id: 'about', label: 'About', Section: AboutSettings }
+  ]
+}
+
+/**
+ * Categories down the left, the chosen one's fields on the right: the same layout as the Training plan's
+ * outline, so settings do not read as one long scroll. The category is remembered between visits.
+ */
 export function SettingsPage(): React.JSX.Element {
-  const { settings, update } = useSettings()
+  const all = tabs()
+  const { value, update } = useModuleState('settings', (raw) =>
+    normaliseSettingsTab(
+      raw,
+      all.map((t) => t.id)
+    )
+  )
+  const current = all.find((t) => t.id === value.tab) ?? all[0]
+  const Section = current.Section
 
   return (
     <div className={styles.page}>
       <h1 className={styles.heading}>Settings</h1>
-      <div className={styles.section}>
-        <ThemeField value={settings.theme} onChange={(theme) => void update({ theme })} />
-        <PathField
-          label="Zotero export path"
-          help="The Better BibTeX auto-export file the Readings module syncs from. The app only reads it."
-          kind="file"
-          extensions={['bib']}
-          value={settings.zoteroExportPath}
-          onCommit={(zoteroExportPath) => void update({ zoteroExportPath })}
-        />
-        <PathField
-          label="Central Command repository path"
-          help="The Central Command code repository. The Build button opens a Claude Code session here so you can change the app itself."
-          kind="folder"
-          placeholder="/path/to/central-command"
-          value={settings.repoPath}
-          onCommit={(repoPath) => void update({ repoPath })}
-        />
-        <TerminalField
-          value={settings.terminal}
-          onChange={(terminal) => void update({ terminal })}
-        />
+      <div className={styles.layout}>
+        <div
+          className={styles.nav}
+          role="tablist"
+          aria-orientation="vertical"
+          aria-label="Settings categories"
+        >
+          {all.map((tab) => (
+            <button
+              key={tab.id}
+              id={`settings-tab-${tab.id}`}
+              type="button"
+              role="tab"
+              aria-selected={tab.id === current.id}
+              aria-controls={`settings-panel-${tab.id}`}
+              className={[styles.tab, tab.id === current.id && styles.active]
+                .filter(Boolean)
+                .join(' ')}
+              onClick={() => update({ tab: tab.id })}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <div
+          key={current.id}
+          id={`settings-panel-${current.id}`}
+          role="tabpanel"
+          aria-labelledby={`settings-tab-${current.id}`}
+          className={styles.panel}
+        >
+          <Section />
+        </div>
       </div>
-      {moduleSettingsSections().map(({ id, Section }) => (
-        <Section key={id} />
-      ))}
-      <div className={`${styles.section} ${styles.follows}`}>
-        <AboutSettings />
-      </div>
-      <ShortcutsSettings />
     </div>
   )
 }

@@ -30,10 +30,12 @@ export function plannedModulesFor(workspace: Workspace): PlannedModuleManifest[]
   )
 }
 
-/** Settings sections contributed by live modules, in registration order. */
-export function moduleSettingsSections(): { id: string; Section: ComponentType }[] {
+/** Settings sections contributed by live modules, in registration order. Each becomes its own tab, named after the module. */
+export function moduleSettingsSections(): { id: string; label: string; Section: ComponentType }[] {
   return modules.flatMap((m) =>
-    m.status === 'live' && m.settingsSection ? [{ id: m.id, Section: m.settingsSection }] : []
+    m.status === 'live' && m.settingsSection
+      ? [{ id: m.id, label: m.label, Section: m.settingsSection }]
+      : []
   )
 }
 

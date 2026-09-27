@@ -1,7 +1,6 @@
 .section {
   display: grid;
   gap: 24px;
-  margin-top: 24px;
   padding: 28px 32px;
   background: var(--surface);
   border: 1px solid var(--border-soft);

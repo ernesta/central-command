@@ -1,5 +1,5 @@
 .page {
-  max-width: 760px;
+  max-width: 1040px;
   padding: 48px 64px;
 }
 .heading {
@@ -7,15 +7,41 @@
   font-weight: 700;
   margin-bottom: 32px;
 }
-.section {
+.layout {
   display: grid;
-  gap: 28px;
-  padding: 28px 32px;
-  background: var(--surface);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-panel);
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
 }
-/* A section after the modules' own, spaced as they are. */
-.follows {
-  margin-top: 24px;
+/* The categories stay in view while a long tab (Keyboard shortcuts) scrolls. */
+.nav {
+  position: sticky;
+  top: 16px;
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+.tab {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-14);
+  text-align: left;
+}
+.tab:hover:not(.active) {
+  background: var(--hover-tint);
+  color: var(--ink);
+}
+.active {
+  background: var(--selected-bg);
+  color: var(--selected-text);
+  font-weight: 600;
+}
+.panel {
+  min-width: 0;
 }
