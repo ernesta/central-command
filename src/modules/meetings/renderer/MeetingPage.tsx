@@ -260,15 +260,18 @@ function MeetingView({
       <div className={styles.split}>
         <div className={styles.doc} ref={editorRef}>
           <EditorCard text={body} edited={updatedAt}>
-            <NotesEditor
-              key={snapshot.editorKey}
-              initial={snapshot.initialBody}
-              placeholder="Write your meeting notes…"
-              showPlaceholder={body.trim() === ''}
-              setup={todo.setup}
-              onChange={session.editBody.bind(session)}
-              onBlur={() => void session.flush()}
-            />
+            {(findSetup) => (
+              <NotesEditor
+                key={snapshot.editorKey}
+                initial={snapshot.initialBody}
+                placeholder="Write your meeting notes…"
+                showPlaceholder={body.trim() === ''}
+                setup={todo.setup}
+                findSetup={findSetup}
+                onChange={session.editBody.bind(session)}
+                onBlur={() => void session.flush()}
+              />
+            )}
           </EditorCard>
         </div>
         <TopicsPanel

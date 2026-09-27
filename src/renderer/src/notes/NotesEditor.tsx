@@ -3,7 +3,6 @@ import { Milkdown, MilkdownProvider, useEditor, useInstance } from '@milkdown/re
 import { useEffect, useRef } from 'react'
 import { notesChangeCtx } from './notes-change-plugin'
 import { withNotesPlugins } from './notes-editor-setup'
-import { useNotesFind } from './useNotesFind'
 import styles from './NotesEditor.module.css'
 
 interface NotesEditorProps {
@@ -20,6 +19,11 @@ interface NotesEditorProps {
    * once, when the editor is created, and before the shared plugins, so its key handling runs first.
    */
   setup?: (editor: Editor) => Editor
+  /**
+   * Wires up Cmd-F, from `EditorCard`'s `useNotesFind` (the card shows the bar in its own footer). Applied
+   * last, after the shared plugins, so its key handling is the outermost.
+   */
+  findSetup: (editor: Editor) => Editor
   /** Put the cursor in the note as soon as the editor is ready (a note started from quick capture). */
   autoFocus?: boolean
 }
@@ -31,13 +35,13 @@ function Inner({
   placeholder,
   showPlaceholder,
   setup,
+  findSetup,
   autoFocus
 }: NotesEditorProps): React.JSX.Element {
   const onChangeRef = useRef(onChange)
   useEffect(() => {
     onChangeRef.current = onChange
   })
-  const find = useNotesFind()
 
   useEditor((root) => {
     const editor = Editor.make().config((ctx) => {
@@ -45,7 +49,7 @@ function Inner({
       ctx.set(defaultValueCtx, initial)
       ctx.set(notesChangeCtx.key, (markdown) => onChangeRef.current(markdown))
     })
-    return find.setup(withNotesPlugins(setup ? setup(editor) : editor))
+    return findSetup(withNotesPlugins(setup ? setup(editor) : editor))
   })
   const [loading, getEditor] = useInstance()
 
@@ -82,7 +86,6 @@ function Inner({
         </div>
       )}
       <Milkdown />
-      {find.bar}
     </div>
   )
 }

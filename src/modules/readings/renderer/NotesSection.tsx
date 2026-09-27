@@ -78,14 +78,17 @@ export function NotesSection({ citekey }: { citekey: string }): React.JSX.Elemen
 
       {snapshot.status === 'ready' && (
         <EditorCard text={text} edited={updatedAt}>
-          <NotesEditor
-            key={snapshot.editorKey}
-            initial={snapshot.initial}
-            placeholder="Start writing your notes…"
-            showPlaceholder={!hasContent}
-            onChange={session.edit.bind(session)}
-            onBlur={() => void session.flush()}
-          />
+          {(findSetup) => (
+            <NotesEditor
+              key={snapshot.editorKey}
+              initial={snapshot.initial}
+              placeholder="Start writing your notes…"
+              showPlaceholder={!hasContent}
+              findSetup={findSetup}
+              onChange={session.edit.bind(session)}
+              onBlur={() => void session.flush()}
+            />
+          )}
         </EditorCard>
       )}
     </section>

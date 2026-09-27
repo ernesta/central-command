@@ -236,14 +236,17 @@ function EntryView({
       <div className={styles.split}>
         <div className={styles.doc} ref={docRef}>
           <EditorCard text={body} edited={updatedAt}>
-            <NotesEditor
-              key={snapshot.editorKey}
-              initial={snapshot.initialBody}
-              placeholder="Write your notes…"
-              showPlaceholder={body.trim() === ''}
-              onChange={session.editBody.bind(session)}
-              onBlur={() => void session.flush()}
-            />
+            {(findSetup) => (
+              <NotesEditor
+                key={snapshot.editorKey}
+                initial={snapshot.initialBody}
+                placeholder="Write your notes…"
+                showPlaceholder={body.trim() === ''}
+                findSetup={findSetup}
+                onChange={session.editBody.bind(session)}
+                onBlur={() => void session.flush()}
+              />
+            )}
           </EditorCard>
         </div>
         <div className={styles.side}>

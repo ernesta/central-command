@@ -236,16 +236,19 @@ function NoteView({
       <div className={styles.split}>
         <div className={styles.doc} ref={docRef}>
           <EditorCard text={body} created={meta.created || undefined} edited={updatedAt}>
-            <NotesEditor
-              key={snapshot.editorKey}
-              initial={snapshot.initialBody}
-              placeholder="Write your note…"
-              showPlaceholder={body.trim() === ''}
-              // Not after the file changed outside: that editor must not take the cursor.
-              autoFocus={startFocus === 'body' && !reloadedFromDisk}
-              onChange={session.editBody.bind(session)}
-              onBlur={() => void session.flush()}
-            />
+            {(findSetup) => (
+              <NotesEditor
+                key={snapshot.editorKey}
+                initial={snapshot.initialBody}
+                placeholder="Write your note…"
+                showPlaceholder={body.trim() === ''}
+                // Not after the file changed outside: that editor must not take the cursor.
+                autoFocus={startFocus === 'body' && !reloadedFromDisk}
+                findSetup={findSetup}
+                onChange={session.editBody.bind(session)}
+                onBlur={() => void session.flush()}
+              />
+            )}
           </EditorCard>
         </div>
         <NoteOutline text={body} docRef={docRef} />

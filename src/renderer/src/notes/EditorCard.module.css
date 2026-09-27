@@ -7,15 +7,18 @@
 .body {
   padding: 24px 28px;
 }
-/* A quiet line of facts about the note, under the text. It stays at the bottom of the window in a long note. */
+/* A quiet line of facts about the note, under the text; Find (Cmd-F) takes it over while open. It stays at
+   the bottom of the window in a long note. */
 .footer {
   position: sticky;
   bottom: 0;
-  margin: 0;
   background: var(--surface);
   border-radius: 0 0 var(--radius-card) var(--radius-card);
   padding: 10px 28px;
   border-top: 1px solid var(--border-soft);
+}
+.factsLine {
+  margin: 0;
   color: var(--text-muted);
   font-size: var(--text-12);
   font-variant-numeric: tabular-nums;

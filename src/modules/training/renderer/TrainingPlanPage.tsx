@@ -166,17 +166,20 @@ function PlanView({ year }: { year: number }): React.JSX.Element {
         )}
         {snapshot.status === 'ready' && (
           <EditorCard text={text} edited={updatedAt}>
-            <NotesEditor
-              key={snapshot.editorKey}
-              initial={snapshot.initial}
-              placeholder={`Write your training plan for ${academicYearLabel(year)}: priorities as headings, with what, why and how under each.`}
-              showPlaceholder={!hasContent}
-              onChange={(markdown) => {
-                session.edit(markdown)
-                setTyped({ editorKey: snapshot.editorKey, text: markdown })
-              }}
-              onBlur={() => void session.flush()}
-            />
+            {(findSetup) => (
+              <NotesEditor
+                key={snapshot.editorKey}
+                initial={snapshot.initial}
+                placeholder={`Write your training plan for ${academicYearLabel(year)}: priorities as headings, with what, why and how under each.`}
+                showPlaceholder={!hasContent}
+                findSetup={findSetup}
+                onChange={(markdown) => {
+                  session.edit(markdown)
+                  setTyped({ editorKey: snapshot.editorKey, text: markdown })
+                }}
+                onBlur={() => void session.flush()}
+              />
+            )}
           </EditorCard>
         )}
       </section>
