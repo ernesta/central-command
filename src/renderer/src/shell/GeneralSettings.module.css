@@ -1,0 +1,13 @@
+.section {
+  display: grid;
+  gap: 28px;
+  padding: 28px 32px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-panel);
+}
+.heading {
+  margin: 0;
+  font-size: var(--text-20);
+  font-weight: 600;
+}
