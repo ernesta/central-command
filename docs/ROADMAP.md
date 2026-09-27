@@ -116,7 +116,11 @@ go, the way every other module's decisions are recorded):
   against the real data, change it and write down why — do not stall waiting for approval, but do leave a clear
   trail of what changed and why for the user's review.
 
-### 5. A page per person, and links on each person
+### 5. A page per person, and links on each person — done
+
+See `docs/DECISIONS.md`, "A page per person, and links", including a real bug (people.json links were silently
+dropped by the update IPC handler) only found by driving the built app.
+
 
 From the ideas list already in this file (`## Ideas`, "People, extended", items 1 and 3), now to be built:
 
@@ -316,9 +320,9 @@ Grounded in what the app already stores. Numbers are the ones used in the conver
 
 **People, extended** (the list, rewrites and archive are built)
 
-1. A page per person: their meetings and trainings (newest first), the open TODOs they own, when you last met, the next meeting.
+1. **Built**: a page per person: their meetings and trainings (newest first), the open TODOs they own, when you last met, the next meeting.
 2. A "prepare for the meeting" view from an upcoming meeting: what you owe them, what they owe you, the last meeting's topics.
-3. Optional links per person (Scholar, GitHub, website), stored only. Pulling in their papers needs the network: later.
+3. **Built**: links per person (a fixed set of presets, or their own label), stored only. Pulling in their papers needs the network: later.
 4. A "haven't met in a while" line for chosen people, with a threshold in Settings.
 
 **Global search:** built (Mod-K; `docs/DECISIONS.md`, "Global search"), including whole-note text, the Training plans, people, `in:`

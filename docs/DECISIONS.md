@@ -1032,3 +1032,38 @@ for review, the same way every other module's decisions are.
   full reload from disk (the round-trip that found the `@citekey` decision above), a reading's own page showing
   "In your reading lists", global search finding a list, and deleting a list (to the Trash, with the same dialog
   copy every other kind of entry uses).
+
+## A page per person, and links (at the user's request, 27 Sep 2026)
+
+- **`PersonPage`** (`Research → People → a name`), reusing `LandingPage`/`LandingHeader`/`LandingSection`/`RecentList`
+  exactly as the rest of the app's landing-style pages do: their meetings and trainings, newest first
+  (`queryMeetings`/`queryTraining` filtered to them — already built for the two lists, so this needed no new
+  filtering logic), when you last met and the next upcoming meeting, their open TODOs, and their links.
+  `PeopleTable`'s name is now a link there; a search hit for a person (`people-search.ts`) routes straight to it
+  instead of the list with a highlight, which stays as a fallback (`PeoplePage`'s own `?person=` handling is
+  untouched, in case something else still links to the list that way).
+- **Open TODOs read every meeting's file, not the search index.** `usePersonProfile` calls `window.api.meetings.read`
+  for every meeting (one `read` each; fine for the handful of files this app expects) and runs the existing
+  `parseTodos`/`ownedBy` over the real body, rather than trusting the index's plain-text excerpt. The excerpt is
+  built for search, not structure: it cannot tell a ticked "Previous TODO" checkbox from an unticked one, so
+  trusting it here could have shown a finished TODO as still open.
+- **Links (`PersonLinks.tsx`)**: `Person` gained `links?: PersonLink[]` (see `src/shared/people.ts`); a fixed set of
+  common presets (Google Scholar, GitHub, Website, LinkedIn) fill the label, or the person types their own. Only
+  http(s) is ever saved (`isSafeLinkUrl`, the same rule `main/urls.ts` enforces before opening a link). These open
+  with a plain click, not the editor's Cmd-click convention, since they sit on an ordinary page rather than inside
+  editable text. The edit UI lives on the person's own page, not the table row, which is already tight, per the
+  brief's own note on this idea.
+- **A real bug, found only by driving the "Add link" flow in the built app.** It reported success and showed
+  nothing wrong, but nothing was ever saved: `MEETINGS_IPC.peopleUpdate`'s handler (`main/register.ts`) rebuilds
+  the patch it hands to `updatePerson` field by field (`name`, `initials`, `me`) and had never heard of `links`,
+  so it silently dropped them before they reached the part of the code that actually validates and saves a patch.
+  This is exactly the failure mode CLAUDE.md's "keep IPC handlers thin" rule exists to avoid, and this handler
+  wasn't thin: it re-implemented a piece of the patch shape instead of forwarding it. Fixed by validating and
+  passing `links` through the same way; `usePersonProfile` also gained a `refresh()` the page now calls after a
+  save, since nothing had been re-reading the profile after one either (a second, smaller staleness bug the same
+  test run surfaced once the save itself worked).
+- Checked in the built app and dev mode (StrictMode) on a scratch library: a person's meetings, trainings, last-met
+  and next-meeting dates, and an open TODO (added at a fresh line in a meeting's body, with the owner attending)
+  all appearing on their page; adding and removing a link, including that an unsafe URL (`javascript:`, `file:`)
+  cannot be added at all; the link surviving a full reload from disk; and global search opening the person's page
+  directly with the link showing.
