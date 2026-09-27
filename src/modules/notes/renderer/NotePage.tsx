@@ -16,6 +16,7 @@ import { canPin } from '../shared/pinning'
 import { UNTITLED } from '../shared/query'
 import type { NoteRef } from '../shared/types'
 import { GroupField } from './GroupField'
+import { NoteOutline } from './NoteOutline'
 import { noteRoute, notesBase } from './notes-paths'
 import { useNoteSession } from './useNoteSession'
 import { useNotesList } from './useNotesList'
@@ -78,6 +79,7 @@ function NoteView({
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const titleRef = useRef<HTMLInputElement>(null)
+  const docRef = useRef<HTMLDivElement>(null)
   const [startFocus] = useState(() => (location.state as NoteLocationState | null)?.focus ?? null)
   const titleFocused = useRef(false)
 
@@ -231,19 +233,22 @@ function NoteView({
         </div>
       )}
 
-      <div className={styles.doc}>
-        <EditorCard text={body} created={meta.created || undefined} edited={updatedAt}>
-          <NotesEditor
-            key={snapshot.editorKey}
-            initial={snapshot.initialBody}
-            placeholder="Write your note…"
-            showPlaceholder={body.trim() === ''}
-            // Not after the file changed outside: that editor must not take the cursor.
-            autoFocus={startFocus === 'body' && !reloadedFromDisk}
-            onChange={session.editBody.bind(session)}
-            onBlur={() => void session.flush()}
-          />
-        </EditorCard>
+      <div className={styles.split}>
+        <div className={styles.doc} ref={docRef}>
+          <EditorCard text={body} created={meta.created || undefined} edited={updatedAt}>
+            <NotesEditor
+              key={snapshot.editorKey}
+              initial={snapshot.initialBody}
+              placeholder="Write your note…"
+              showPlaceholder={body.trim() === ''}
+              // Not after the file changed outside: that editor must not take the cursor.
+              autoFocus={startFocus === 'body' && !reloadedFromDisk}
+              onChange={session.editBody.bind(session)}
+              onBlur={() => void session.flush()}
+            />
+          </EditorCard>
+        </div>
+        <NoteOutline text={body} docRef={docRef} />
       </div>
 
       <DeleteDialog

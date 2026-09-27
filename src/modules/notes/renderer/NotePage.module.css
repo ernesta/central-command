@@ -75,12 +75,25 @@
   display: flex;
   gap: 8px;
 }
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 40px;
+  align-items: start;
+}
 .doc {
   max-width: 780px;
   min-width: 0;
 }
+/* A heading the outline jumps to should not land under the edge of the window. */
+.doc :global(.ProseMirror) :is(h1, h2, h3, h4, h5, h6) {
+  scroll-margin-top: 24px;
+}
 @media (max-width: 900px) {
   .page {
     padding-inline: 24px;
+  }
+  .split {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
