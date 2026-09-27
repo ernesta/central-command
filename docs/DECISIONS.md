@@ -702,24 +702,56 @@ or found on the way:
 
 ## Global search (Mod-K, or the magnifier in the top bar)
 
-- **One field, results by module** (Readings, Meetings, Training, Notes: up to six each, most relevant first), in a window like the
-  other dialogs. Arrow keys move through all the results as one list, Enter opens, Escape or Mod-K again closes. A result shows the
-  title and one line: the part of the text that matched (with … around it) when the title itself did not match, else the details (a
-  note's group and date, a meeting's summary, a training entry's date and series, a reading's short citation). "No results." and nothing
-  else when nothing matches; nothing at all before typing.
-- **The shell knows no modules.** A module's manifest may offer `search(query)` returning `SearchHit`s (`src/shared/search.ts`); the
-  registry lists them (`moduleSearches`) and `runSearches` asks all of them, dropping one that fails. Adding a module to the search is
-  one function and one manifest line. Each module's `renderer/search.ts` reuses its own list query (`queryNotes`, `queryMeetings`,
-  `queryTraining`, the Readings list with a search), so a word matches here exactly as it does in that module's list (folded for case
-  and accents, every word must match, people found by name or initials).
-- **What is searched** is what the indexes hold: titles, fields and the plain text of each note, the whole of it (the index keeps up to
-  200,000 characters, `SEARCH_TEXT_LENGTH`; it was 4,000, and 300 for a reading's notes, before the search was completed), a
-  reading's title, authors, tags and notes, and the yearly Training plans (read from their files: the years with entries, this one and
-  the next). No new index, no new IPC. Each search asks the main process for the lists again (about a hundred rows each today, after a
-  120 ms pause in typing); if that ever feels slow, keep the lists between keystrokes.
-- **Not searched:** people (to be added with the People pages, when their design is settled), settings, and files that are not notes.
+- **One field, a command palette and a search at once.** Typing either finds things (notes, meetings, training, readings, people) or
+  matches a command's name (New note, New meeting, New training entry, Open Settings, Open People, Show your data folder), and both
+  can show at once ("new note" matches the command and any note whose text happens to contain those words). A result shows the title
+  and one line: the part of the text that matched (with … around it) when the title itself did not match, else the details (a note's
+  group and date, a meeting's summary, a reading's short citation, how often a person is mentioned). Arrow keys move through all the
+  results as one list, Enter opens or runs one, Escape or Mod-K again closes. "No results." when nothing matches; nothing at all
+  before typing.
+- **`in:` modifiers, Gmail- and Slack-style** (`src/shared/search.ts`, `parseSearchQuery`): `in:meetings luminos` searches only
+  Meetings; `in:notes`, `in:training`, `in:readings` and `in:people` do the same for the others (singular or plural, either works;
+  `in:meetings in:notes` searches both). Naming a source with nothing else lists everything in it (an empty search string is not
+  the same as "search nothing" once a source is named). An `in:` word that names nothing recognised (`in:progress`) is left as
+  ordinary text, so it is never silently swallowed.
+- **A "See all results" link** at the bottom of the window (shown once any group reaches its cap of six) opens `/search?q=…`, the
+  same search with a much higher cap (40) as a full page, grouped the same way, with the field still there to keep typing or add an
+  `in:` modifier.
+- **How results are ranked (`SEARCH_GROUP_ORDER` in `src/shared/search.ts`).** There is no relevance score across the whole app: a
+  match is either "in the title" or "in the text", and beyond that, order is two simple, fixed rules, deliberately, so this is easy
+  to reason about and to change later if it stops being good enough:
+  1. **Which group, fixed:** Actions (when any command matches), People, Notes, Meetings, Training, Readings. This is why searching
+     "Kathy" shows the person first, then any note mentioning her, then meetings, before her papers as a co-author: it is not a
+     judgement that a meeting matters more than a paper, just that Meetings is ordered before Readings.
+  2. **Within a group, whatever that module's own list already sorts by:** Notes and Meetings and Training entries are most recent
+     first (its own `compareRecent`/`compareNewestFirst`), Readings keeps the list's own sort (year, newest first, by default),
+     People are ordered by how often they are mentioned (meetings plus trainings), most first. None of this looks at how well a
+     result matches beyond title-vs-text; a future improvement, if wanted, is a real per-hit relevance score (term frequency, an
+     exact-phrase boost) instead of piggy-backing on each list's existing order.
+  3. A source this build does not recognise (a module search id not in `SEARCH_GROUP_ORDER`) is put last rather than dropped, so a
+     future module still shows up if this order list is not updated for it.
+- **People are searched** (`src/modules/meetings/renderer/people-search.ts`): by name or initials, archived people excluded (as
+  every other picker in the app excludes them). A hit opens the People page with `?person=<name>` in the address, which scrolls to
+  that row and tints it (`PeopleTable`'s `highlighted` prop) — there is no page of a person's own yet (see the ideas list).
+- **Commands share the same window** (`src/renderer/src/shell/commands.ts`) rather than a separate palette: each does exactly what
+  its own button does elsewhere (the same IPC calls as `NewMeetingButton`, `NewTrainingButton`, quick capture), so there is no
+  second way for a meeting or a note to be created. A command's hit has `run` instead of `route` (`SearchHit.run`, optional); the
+  window calls it instead of navigating.
+- **The shell knows no modules.** A module's manifest may offer `search(query, limit?)` returning `SearchHit`s; the registry lists
+  them (`moduleSearches`) and `searchEverywhere` (`src/renderer/src/shell/run-search.ts`) parses the query, asks the right sources
+  (dropping one that fails), and sorts the groups. Adding a module to the search is one function and one manifest line. Each
+  module's `renderer/search.ts` reuses its own list query (`queryNotes`, `queryMeetings`, `queryTraining`, the Readings list with a
+  search), so a word matches here exactly as it does in that module's list (folded for case and accents, every word must match).
+- **What is searched** is what the indexes hold: titles, fields and the plain text of each note, the whole of it (the index keeps up
+  to 200,000 characters, `SEARCH_TEXT_LENGTH`; it was 4,000, and 300 for a reading's notes, before the search was completed), a
+  reading's title, authors, tags and notes, the yearly Training plans (read from their files: the years with entries, this one and
+  the next), and the people list. No new index, no new IPC. Each search asks the main process for the lists again (about a hundred
+  rows each today, after a 120 ms pause in typing); if that ever feels slow, keep the lists between keystrokes.
+- **Not searched:** settings, and files that are not notes.
 - Checked in the built app and dev mode (StrictMode) on a scratch library: opening, typing, ArrowDown, Enter, no results, Escape,
-  the button, Mod-K from inside the editor. The field is a plain text input (a search input clears itself on the first Escape).
+  the button, Mod-K from inside the editor, an `in:` modifier, a command actually running (New note), "See all results" reaching
+  the full page, and a person hit landing on their highlighted row. The field is a plain text input (a search input clears itself
+  on the first Escape).
 
 ## Dark mode (Theme: System, Light or Dark, in Settings)
 

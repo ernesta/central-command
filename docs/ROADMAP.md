@@ -124,13 +124,11 @@ Grounded in what the app already stores. Numbers are the ones used in the conver
 3. Optional links per person (Scholar, GitHub, website), stored only. Pulling in their papers needs the network: later.
 4. A "haven't met in a while" line for chosen people, with a threshold in Settings.
 
-**A Home page before Life, Research and Work** (the brief's global dashboard; cards reuse the landing components) 5. Greeting, date and a small week strip (meetings and trainings as dots). 6. Weather (city and forecast only). Needs a decision: `CLAUDE.md` says never send user data over the network; weather would be an opt-in
-(off by default, the city typed in Settings, nothing else sent) and the rule amended to say exactly that. 7. Today: meetings, your open TODOs, trainings. 8. Progress: training hours against the aim, meeting hours, reading counts. 9. Pinned notes and recent edits (the Notes landing components). 10. A "resume" card back to the last note or reading.
+**Global search:** built (Mod-K; `docs/DECISIONS.md`, "Global search"), including whole-note text, the Training plans, people, `in:`
+modifiers and a command palette in the same window. No recent-items list when the field is empty (the user does not want one).
 
-**Writing and focus** 11. A daily writing tally from the word counts (days written, a streak, a weekly total; no target to set). 12. A thesis chapters view: a Notes group per chapter with words and a target (already noted under Notes, later). 13. A distraction-free writing mode for any note.
-
-**Small additions** 14. Global search: **built** (Mod-K; `docs/DECISIONS.md`, "Global search"), including whole-note text and the Training plans. Later:
-people as results (with the People pages) and recent items when the field is empty. 15. A weekly review page (meetings, trainings, notes edited, words written), exportable as a PDF with the existing export. 16. Gentle prompts ("no supervision meeting booked this month", "training hours are behind pace").
+**Home, writing and the rest of the numbered ideas (5 to 17):** superseded by the fuller, decided-on list in "Home (the overall
+landing page)" below, kept up to date there rather than in two places.
 
 ## Home (the overall landing page): ideas and open questions (26 Sep 2026; nothing designed yet)
 
