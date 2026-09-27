@@ -965,3 +965,70 @@ kind of control across the app.
 - Checked in the built app and dev mode (StrictMode) on a scratch library: a new training entry shows Files above
   Outline in the 260px column, the outline lists the entry's own headings live as they're typed, and clicking one
   scrolls the editor to it.
+
+## Reading lists (new module, at the user's request, 27 Sep 2026)
+
+Grounded in a real example the user shared (`Language of Instruction Papers.docx`): a list has a name, and is
+divided into named sections written as questions; each section holds entries, one per paper, each a citation
+followed by a one- or two-sentence annotation specific to that list. This was the most open-ended of the six
+things asked for that day, so several shapes below were decided rather than specified; each is written down here
+for review, the same way every other module's decisions are.
+
+- **Files and index, following Notes almost exactly.** One Markdown file per list in
+  `notes/reading-lists/<workspace>/` (only `research` today), front matter holding just `title` (a list has no
+  other fields at the top level — everything else is in the body). `ReadingListStore` (`main/list-store.ts`) is
+  `NotesStore` with grouping and pinning removed: the same guarded-file functions (`readNoteFile`,
+  `writeNoteFileGuarded`, `createNoteFileExclusive`, `renameNoteFileExclusive`), the same rebuild-from-the-folder
+  index, the same watcher, the same rename-on-title-change. A list is edited in the same shared `EditorCard` /
+  `NotesEditor` every other kind of note uses (headings and bullets, typed normally), not a bespoke form: building
+  a form for a variable number of sections and entries would just be re-inventing what a Markdown editor already
+  does well, and it keeps a list's file readable and editable outside the app too.
+- **A section is a `##` heading; an entry is a bullet under it, its citation the bullet's own leading bold run**
+  (`parseListBody`, `src/modules/reading-lists/shared/list-body.ts`, the same fence-aware line-scanning
+  (`@shared/sections`) every other structural parser in this app already uses). Three kinds, so nothing is ever
+  silently dropped: `linked` (`**@citekey**`, an existing reading), `placeholder` (any other bold text, a citation
+  typed by hand for a paper "not yet in Zotero, but it will be"), and `missing` (a bullet with no leading bold run
+  at all). The rest of the bullet's text is the annotation.
+- **`@citekey`, not `[[citekey]]`, and this one was only found by testing the real app, not by reading the code.**
+  `[[citekey]]` was the first design (Obsidian's own convention, and visually close to what the brief's example
+  read like). Typing it live is escaped by Milkdown already (see "Notes editor" and the wiki-link stripping in
+  "Importing notes from Obsidian", above) — expected, and worked around by never expecting it to be typed by
+  hand — but a second, worse problem only showed up driving the built app: even a citekey inserted programmatically
+  by "Attach a reading" survived the *first* render, but Milkdown's Markdown serialiser escapes a bare `[` on the
+  way back out (`**\[\[citekey]]**`), so the very next edit anywhere in the document would have silently turned
+  every linked entry in the file back into an unrecognised one on its next save. A quick check loading both forms
+  into a real Milkdown editor and reading `getMarkdown()` back confirmed it, and that `@citekey` round-trips
+  byte-for-byte with no escaping. Switched before this ever reached the user's files.
+- **Linking is one-way and deliberately only through "Attach a reading…".** Nothing lets you type a new linked
+  entry by hand (no citekey-insertion menu or shortcut): you write the citation as a placeholder, exactly as the
+  brief's example already does it, and a small search-as-you-type picker in the side panel (`EntriesPanel.tsx`,
+  `AttachControl`) rewrites that one bullet's citation in place (`attachReading`, one string reconstruction of the
+  bullet's own line, keeping the annotation) once you find the real reading. The search itself calls
+  `window.api.readings.list` per keystroke (debounced 150 ms), the same as the Readings list's own search box, not
+  a client-side filter of a fetched copy: readings can change from a sync while the list is open. A mutation check
+  (`list-body.test.ts`) confirms `attachReading` never leaks into a neighbouring bullet.
+- **A side panel resolves and previews the list, the same `.split` layout as Meetings and Training**: for each
+  section, each entry shown as the reading's real short citation (linked to its page) or the placeholder text
+  as typed, with the annotation, and "Attach a reading…" wherever there is no citekey yet (placeholder or
+  missing). This is a live, read-only view of what `parseListBody` sees in the body as you type, the same
+  relationship Meetings' `TopicsPanel` has to its note.
+- **A reading's own page shows which lists mention it** (`ReadingListMentions.tsx`, after the abstract and before
+  the notes editor, per the user's own suggestion), each with that list's own short annotation for it — never the
+  rest of the list, never the reading's own (often much longer) notes, matching what the user asked for verbatim.
+  This reads from a second table, `reading_list_mentions`, one row per linked entry, rebuilt alongside a list's
+  own index row at reindex time (`buildIndexRow`, `main/index-row.ts`) so the reading page never has to read every
+  list file to answer "which lists mention this".
+- **Global search**: a `renderer/search.ts` and a manifest `search` entry, `reading-lists` added to
+  `SEARCH_GROUP_ORDER` right after `readings` (a list is fundamentally about readings) and to the `in:` aliases
+  (`in:list`, `in:lists`).
+- **What was left out, on purpose, for now:** no dedicated "add section" / "add entry" buttons (typing `##` and
+  `- ` is the same as every other structured note in this app); no importer for the user's own example document
+  (`Language of Instruction Papers.docx`) — none of the six things asked for that day named one, and a docx
+  importer is a separate, sizeable piece of work with its own safety checks to design, in the same way the Work
+  meetings importer (below) was; no reordering of sections or entries beyond editing the Markdown by hand.
+- Checked in the built app and dev mode (StrictMode) on a scratch library: the landing card and page, creating a
+  list, typing sections and placeholder entries, the panel resolving and offering to attach, the search-and-attach
+  picker end to end, the citation rendering bold in the editor and still resolving correctly after a save and a
+  full reload from disk (the round-trip that found the `@citekey` decision above), a reading's own page showing
+  "In your reading lists", global search finding a list, and deleting a list (to the Trash, with the same dialog
+  copy every other kind of entry uses).

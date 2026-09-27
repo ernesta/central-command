@@ -68,7 +68,13 @@ dialog) — plus more to do with the keyboard than today, and a basic find-and-r
 - Re-verify in the built app and dev mode (StrictMode), on all five kinds of editor (Notes, Meetings, Training
   entries, the Training plan, Readings notes), the way the original Find was checked.
 
-### 4. Reading lists (new feature)
+### 4. Reading lists (new feature) — done
+
+See `docs/DECISIONS.md`, "Reading lists" for the full write-up, including the open design points settled while
+building and a real bug (`@citekey` vs `[[citekey]]`) only found by driving the built app. Not done: an importer
+for the user's own `Language of Instruction Papers.docx` (not asked for in this list; a separate piece of work if
+wanted), and reordering sections or entries other than by editing the Markdown.
+
 
 Grounded in a real example the user shared: `/Users/ernesta/Downloads/Readings/2026 09 26 Language of Instruction
 Papers.docx` (read it — a curated bibliography for their supervisor). Its shape: a list has a name, and is divided
