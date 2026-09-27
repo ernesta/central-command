@@ -130,10 +130,14 @@ function PersonRow({
           onChange={(event) => setName(event.target.value)}
           onKeyDown={submitOrCancel(submit, cancel)}
         />
-        <label className={styles.meLabel}>
-          <input type="checkbox" checked={me} onChange={(event) => setMe(event.target.checked)} />
-          This is me
-        </label>
+        <Button
+          size="small"
+          className={styles.meButton}
+          aria-pressed={me}
+          onClick={() => setMe(!me)}
+        >
+          {me ? 'This is me' : 'Set as me'}
+        </Button>
       </td>
       <td>
         <input

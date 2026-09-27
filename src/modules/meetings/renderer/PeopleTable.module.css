@@ -89,14 +89,11 @@
   font-family: var(--font-mono);
   text-transform: uppercase;
 }
-.meLabel {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+/* A toggle, like Pin on a note: only one person can ever be pressed at once (unrelated rows are never open together). */
+.meButton {
   margin-top: 8px;
-  color: var(--text-secondary);
-  font-size: var(--text-13);
 }
-.meLabel input {
-  accent-color: var(--accent);
+.meButton[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
 }
