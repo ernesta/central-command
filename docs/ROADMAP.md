@@ -141,7 +141,16 @@ From the ideas list already in this file (`## Ideas`, "People, extended", items 
   (`src/shared/people.ts`) plus the main-process save path and the mutation-check tests that already guard
   `people.json` writes.
 
-### 6. Work meetings: import from Obsidian, same treatment as Research
+### 6. Work meetings: import from Obsidian, same treatment as Research — importer built, dry run reviewed, not applied
+
+**Stopped here on purpose, per the instruction not to apply this one without checking back.** The importer
+(`scripts/import-work-meetings.mts`, `planWorkMeetingImport`) is built and tested; the dry run against the real
+vault, and everything it found needing your decision (two meetings on the same day, one name spelled two ways),
+is written up in `docs/DECISIONS.md`, "Work meetings import". Work's own workspace wiring (a folder, a route, a
+landing page) was **not** built: it turned out to be a bigger, separate piece of work than the importer, since
+Meetings' renderer hard-codes `workspace: 'research'` throughout rather than reading it from the route — see the
+same write-up for why. Needed before `--apply` can write anywhere real; not needed for the dry run, which only
+read the vault.
 
 **Vault:** the user gave `/Users/ernesta/Consulting/Luminos/Scribbles` as "all work notes"; the actual Obsidian vault
 (where `.obsidian` lives) is one level down, at `/Users/ernesta/Consulting/Luminos/Scribbles/Luminos`. Meeting notes
@@ -205,6 +214,11 @@ ready for `--apply`" and say so plainly when you report back.
 
 ### For the user (review and decisions)
 
+- [ ] **Work meetings import (dry run reviewed; see `docs/DECISIONS.md`, "Work meetings import"):** two meetings
+      on 2025-11-04, both "Impact" but with different attendees, need a way to tell their files apart (the
+      importer will not guess); "Chris Cumminskey" and "Chris Cummiskey" are almost certainly the same person
+      spelled two ways. Say what to do about both, whether "Impact" and "Teaching & Learning" should be added to
+      the fixed series list, and whether to go ahead with `--apply` once Work has somewhere to put the files.
 - [ ] **Review the exports** once there is data to look at: Training's **Export** (a PDF of an academic year, oldest first, no upcoming
       or planned entries) and Meetings' **Export** (the Supervision log as a PDF, same page layout as Training's). Say what to change in the
       layout and content of both.

@@ -1067,3 +1067,67 @@ for review, the same way every other module's decisions are.
   all appearing on their page; adding and removing a link, including that an unsafe URL (`javascript:`, `file:`)
   cannot be added at all; the link surviving a full reload from disk; and global search opening the person's page
   directly with the link showing.
+
+## Work meetings import (dry run only; not applied, at the user's explicit instruction)
+
+Read all 19 files by hand before writing anything, as every other importer in this app has: two sub-folders
+(`Impact`, `Teaching & Learning`), and far more variation than the one sample file the request was scoped
+around. Findings and decisions:
+
+- **The format varies file to file far more than Research's.** Only one of the 19 files uses the `**TODO(XX)**:`
+  initials convention Research does; most instead write `**TODO (Full Name)**:` (a space before the parenthesis,
+  a person's name instead of initials) or use no TODO marker at all, writing free-form `**Decision**:` / `**Next
+  step**:` bullets, or even plain `Decision: …` with no bold. Section headings vary too: `## Action items` (the
+  sample), `## Agenda` (Notes only, no action items), and a single-line `## Topic` with no Agenda or Action items
+  section at all. None of this needed new machinery: `parseObsidianMeeting` (built for Research's own
+  `**Date**:`/`**Attendees**:` header, in `meeting-import.ts`) already reads this shape as-is, and the app's
+  Markdown editor and `parseTopics`/`parseTodos` are structure-agnostic enough that every one of these shapes
+  converts and displays sensibly without a special case per format — checked by hand against the samples above,
+  not assumed.
+- **A new pure module, not a variant of the Research one**: `work-meeting-import.ts` (`planWorkMeetingImport`),
+  reusing `parseObsidianMeeting`, `transformBody`, `parseTodos` and `meetingBaseName` from the Research importer
+  rather than copying them, but with its own, much shorter planning loop: no Word log or Word notes to merge in
+  (there are none for Work), so start, end and a summary are always left empty; the series is the vault's own
+  sub-folder name, not a tag or a name pattern (`Impact`, `Teaching & Learning`) — neither is in the fixed
+  `SERIES` union (`Supervision`, `Rastle Lab`, `Luminos`, `Other`), so both will show as flagged front matter
+  until that union is extended or made to depend on the workspace, a decision left for the user, not guessed.
+- **The `TOOD(EO)` typo (in exactly one of the 19 files, checked with a plain grep) is fixed, not left**, since an
+  unfixed one would never be recognised as a TODO by the app at all (`parseTodos` looks for `TODO`), silently
+  losing an actionable item — worse than a one-character spelling fix that changes no meaning. Every fix is
+  reported by file, matching "report them either way".
+- **The safety check is the same shape every importer in this app uses**: every `TODO` marker and every ticked
+  checkbox in the source must still be in the converted body, word for word (counted independently of the
+  parser, `markerCount`), or the note is left out and reported rather than written with something missing. A
+  mutation check (an injected transform that deletes every line containing "TODO") confirms this actually stops
+  a bad conversion, not just that the check exists.
+- **The dry run (`npm run import:work-meetings -- --vault "/Users/ernesta/Consulting/Luminos/Scribbles/Luminos/Meetings"`),
+  against the real vault, found:**
+  - **18 of 19 notes would import cleanly.**
+  - **One pair needs the user's decision, not a guess**: two distinct meetings on 2025-11-04, both "Impact"
+    (`2025 11 04 Luminos (Biruke, William).md` and `2025 11 04 Luminos (Brian, Edward).md`), with different
+    attendees. The importer's own de-duplication (same date + series already seen) is exactly what stops it from
+    silently guessing which one to keep or merging them; it needs a name for whichever file namer would tell
+    them apart, since `meetingBaseName` alone would only produce `2025-11-04 Impact` for the first and has no
+    principled way to disambiguate the second beyond a bare "2" suffix, which would be no wiser than the
+    computer's.
+  - **One name is spelled two ways across two files**: "Chris Cumminskey" (in the 19 Feb 2026 meeting) and
+    "Chris Cummiskey" (in the 12 Mar 2026 meeting) are almost certainly the same person; the importer does not
+    guess this either, the same way the people-adding step of every importer in this app leaves spelling
+    decisions to the user.
+  - **9 distinct attendee names** across the 18 importable meetings, none of them yet in the people list (Work
+    has no people of its own yet, since nothing has been imported for it before).
+- **Work's own workspace wiring was not built.** The ROADMAP note that named it as a prerequisite ("Work needs a
+  folder, a route and a landing page from the same components") describes what `--apply` will need somewhere to
+  put these files and a page to show them on; it turned out to be a materially bigger piece of work than the
+  importer itself, because the Meetings renderer is not actually workspace-parameterised today — `workspace:
+  'research'` is hard-coded through `MeetingPage`, `PersonPage`, the session hooks and `meetings-paths.ts`'s own
+  `meetingsBase`, not read from the route. Building that properly (threading a real workspace through every one
+  of those, not just adding `'work'` to `ACTIVE_WORKSPACES`) is its own piece of work, separate from "write an
+  importer", and risks breaking Research's own Meetings if rushed. Left undone on purpose, flagged here rather
+  than silently skipped, and needed before `--apply` — which was not run, on the user's explicit instruction —
+  can have anywhere real to write to.
+- Checked: the pure `planWorkMeetingImport` module has its own test suite (`work-meeting-import.test.ts`,
+  including the mutation check above); typecheck, lint and the full test suite all pass; the dry run above was
+  run against the real vault, reading it only, with `CENTRAL_COMMAND_HOME` pointed at a scratch folder so even
+  the "already imported" check touched nothing real. Not checked in the built app, since there is nowhere in the
+  app yet for a Work meeting to appear (see the workspace-wiring point above).
