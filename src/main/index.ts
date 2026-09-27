@@ -14,9 +14,13 @@ import { runMigrations } from './db/migrate'
 import { mainModules } from '@modules/main-registry'
 import { defaultSettings } from '@shared/settings'
 import { buildContextMenu } from './context-menu'
+import { installDockMenu } from './dock-menu'
 import { restoreBounds } from './window-bounds'
 import { isSafeExternalUrl } from './urls'
 import icon from '../../resources/icon.png?asset'
+
+// Named early: macOS reads this for the Dock and the top menu bar (otherwise "Electron", the binary's own name).
+app.setName(APP_NAME)
 
 let isQuitting = false
 
@@ -104,6 +108,8 @@ function createWindow(settings: SettingsStore): void {
 
 app.whenReady().then(async () => {
   electronApp.setAppUserModelId('app.centralcommand.desktop')
+  app.setAboutPanelOptions({ applicationName: APP_NAME, applicationVersion: app.getVersion() })
+  installDockMenu()
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
