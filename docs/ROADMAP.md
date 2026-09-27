@@ -173,14 +173,14 @@ Nothing here is started; each is a choice, not just work. Already in place: pack
   would send.
 - **Other platforms:** the Build button and the trash move are macOS-first; Windows and Linux need checking.
 
-## Started and pulled back out: Find on the page (Cmd-F)
+## Find in the note: built, replacing the abandoned page-wide attempt
 
-Tried and reverted (27 Sep 2026), nothing left in the code. It used Electron's `webContents.findInPage`, with a bar like the
-other dialogs (match count, next/previous, Escape to close). Typing fast lost keystrokes when each one triggered a search
-immediately; adding a debounce (150 ms, as the other typing-driven searches use) fixed the field but then no results ever
-came back, and the cause was not found before time ran out. Worth another try, ideally starting from the debounced version
-and working out why `found-in-page` stopped firing (log from the main process, not just the renderer, since the built app
-gives no console).
+An earlier attempt (Cmd-F over the whole page, via Electron's `webContents.findInPage`) was tried and reverted the same day:
+typing fast lost keystrokes, and a debounce fix then left it never returning results, cause not found in time. The user then
+asked for it scoped to notes instead, which turned out to be the better design anyway: a ProseMirror plugin
+(`src/renderer/src/notes/notes-find.ts`) built into `NotesEditor` itself, so Notes, Meetings, Training entries, the plan and
+Readings notes all have it, with no page-wide search and no Electron IPC involved at all. See `docs/DECISIONS.md`, "Find in
+the note".
 
 ## Later, roughly in order (not for Phase 1)
 

@@ -90,12 +90,20 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   `npm run import:notes`, applied to the real library on 25 Sep 2026 (12 notes, ungrouped, wiki links stripped). Notes is pushed. Studies stays "Coming
   soon"; Ideas, Data Sources, Inbox and Thesis are not modules.
 - Since the Notes review: every editor sits in the shared `EditorCard` (`src/renderer/src/notes/`): a white window with a quiet line
-  "Created · Edited · N words" under the text (`docs/DECISIONS.md`, "Editor card"). Meetings' and Training's tables use the shared
-  `useRowNavigation`. All importers and the topic conversion are applied to the real library (dry runs find nothing left). Work since
-  the last push (26 Sep 2026) is committed but not pushed. Global search (Mod-K) is built: a module offers `search` in its manifest and
-  the shell searches them all (`docs/DECISIONS.md`, "Global search"). The ideas list (People pages, Home, writing) is at the top of
-  "Later" in `docs/ROADMAP.md`; none is started. Dark mode is built (Settings → Theme; `docs/DECISIONS.md`, "Dark mode"): colours are `light-dark()` pairs in `tokens.css`, so a new colour needs both values.
-- The app name lives in one place (`src/shared/app-info.ts`); it may be renamed again.
+  "Created · Edited · N words" under the text (`docs/DECISIONS.md`, "Editor card"), and a live outline of its own headings beside it
+  (`NoteOutline`, Notes only so far). Meetings' and Training's tables use the shared `useRowNavigation`. All importers and the topic
+  conversion are applied to the real library (dry runs find nothing left). Work since the last push (26 Sep 2026) is committed but not
+  pushed. Dark mode is built (Settings → Theme; `docs/DECISIONS.md`, "Dark mode"): colours are `light-dark()` pairs in `tokens.css`, so
+  a new colour needs both values. Settings is categorised into tabs (General, one per module, Shortcuts, About; `docs/DECISIONS.md`,
+  "Settings").
+- **Global search (Mod-K)** is built and since extended at the user's request: People, Notes, Meetings, Training and Readings, in that
+  fixed order; `in:meetings` (or any source, singular or plural) restricts to it; a small command palette (New note/meeting/training,
+  Settings, People, the data folder) shares the same window; "See all results" opens a full page. A module offers `search` in its
+  manifest and the shell asks them all (`docs/DECISIONS.md`, "Global search", including how results are ranked). **Find within a note**
+  (Cmd-F) is separate and built into `NotesEditor` itself (`docs/DECISIONS.md`, "Find in the note"). The ideas list (People pages, Home,
+  writing) is at the top of "Later" in `docs/ROADMAP.md`; none is started.
+- The app name lives in one place (`src/shared/app-info.ts`); it may be renamed again. A few Mac conventions were added (proper name
+  in the Dock, an About panel, a Dock menu with quick actions; `docs/DECISIONS.md`, "Mac conventions sweep").
 
 ## Testing the app for real (unit tests are not enough)
 
