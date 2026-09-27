@@ -13,6 +13,7 @@ import {
 import { ErrorBoundary } from '../components/ErrorBoundary'
 import { Notice } from '../components/Notice'
 import { useSettings } from '../state/settings-context'
+import { DockActions } from './DockActions'
 import { GlobalSearch } from './GlobalSearch'
 import { SearchResultsPage } from './SearchResultsPage'
 import { SettingsPage } from './SettingsPage'
@@ -110,6 +111,7 @@ export function Shell(): React.JSX.Element {
         </div>
       )}
       {searchOpen && <GlobalSearch onClose={() => setSearchOpen(false)} />}
+      <DockActions />
       {moduleGlobals().map(({ id, Global }) => (
         <Global key={id} />
       ))}
