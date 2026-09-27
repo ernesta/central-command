@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { searchTerms, snippet } from './search'
+import { parseSearchQuery, searchTerms, snippet } from './search'
 
 describe('searchTerms', () => {
   it('splits on spaces and ignores case and accents', () => {
@@ -43,5 +43,58 @@ describe('snippet', () => {
         .split(' ')
         .every((w) => ['alpha', 'needle', 'omega'].includes(w))
     ).toBe(true)
+  })
+})
+
+describe('parseSearchQuery', () => {
+  it('finds nothing to restrict when there is no in:', () => {
+    expect(parseSearchQuery('luminos studentship')).toEqual({
+      sources: null,
+      text: 'luminos studentship'
+    })
+  })
+
+  it('restricts to one source, singular or plural, and drops the modifier from the text', () => {
+    expect(parseSearchQuery('in:meetings luminos')).toEqual({
+      sources: ['meetings'],
+      text: 'luminos'
+    })
+    expect(parseSearchQuery('in:meeting luminos')).toEqual({
+      sources: ['meetings'],
+      text: 'luminos'
+    })
+    expect(parseSearchQuery('luminos in:reading')).toEqual({
+      sources: ['readings'],
+      text: 'luminos'
+    })
+  })
+
+  it('collects more than one in:, without duplicates', () => {
+    expect(parseSearchQuery('in:notes in:meetings in:note kathy').sources?.sort()).toEqual([
+      'meetings',
+      'notes'
+    ])
+  })
+
+  it('matches every alias to its source', () => {
+    expect(parseSearchQuery('in:person x').sources).toEqual(['people'])
+    expect(parseSearchQuery('in:people x').sources).toEqual(['people'])
+    expect(parseSearchQuery('in:training x').sources).toEqual(['training'])
+    expect(parseSearchQuery('in:trainings x').sources).toEqual(['training'])
+  })
+
+  it('is case-insensitive for the modifier itself', () => {
+    expect(parseSearchQuery('In:Meetings x')).toEqual({ sources: ['meetings'], text: 'x' })
+  })
+
+  it('leaves an in: it does not recognise as ordinary text', () => {
+    expect(parseSearchQuery('in:progress luminos')).toEqual({
+      sources: null,
+      text: 'in:progress luminos'
+    })
+  })
+
+  it('is fine with a modifier and nothing else (search everything in that source)', () => {
+    expect(parseSearchQuery('in:meetings')).toEqual({ sources: ['meetings'], text: '' })
   })
 })
