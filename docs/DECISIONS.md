@@ -875,6 +875,54 @@ kind of control across the app.
   round, Escape clearing the highlights and closing, the note file unchanged, and on a Meeting's notes (confirming
   it is not Notes-module-specific and does not conflict with that module's own shortcuts).
 
+## Find in the note, redesigned as an inline bar with replace (at the user's request, 27 Sep 2026)
+
+- **Moved from a floating, `position: fixed` portal into `EditorCard`'s own footer strip**, in place of its
+  "Created · Edited · N words" line while find is open. `EditorCard`'s `children` is now a render-prop,
+  `(findSetup) => ReactNode`, instead of a plain node: `EditorCard` owns `useNotesFind()` itself (the footer is
+  where the bar lives, so the footer's own component owns it), and hands `findSetup` down to whichever
+  `NotesEditor` its caller renders. `NotesEditor` grew a required `findSetup` prop alongside its existing
+  `setup`, applied last (outermost), exactly where it sat before this change. All five call sites (Notes,
+  Meetings, Training entries, the Training plan, Readings notes) changed the same way: `<EditorCard>`'s child
+  became `{(findSetup) => <NotesEditor ... findSetup={findSetup} />}`.
+- **This moved the bar's lifetime with it, which needed a real fix, not just a relocation.** Cmd-F used to live
+  inside `NotesEditor`'s own `Inner`, which is remounted (a fresh `useNotesFind()`) every time `key=
+  {snapshot.editorKey}` changes (a reload from disk). Now that `useNotesFind` lives in `EditorCard`, which does
+  not remount on that key, the same controller and its `view` reference would persist across a swap and go
+  stale. Fixed at the true source of the lifetime, not the React tree: `notesFindPlugin`'s `view()` now returns
+  `{ destroy: () => bridge.detach() }`, so whenever a ProseMirror `EditorView` is actually destroyed (a reload,
+  or React StrictMode's throwaway first mount) the bridge closes itself, regardless of which component
+  currently holds the React state.
+- **VS Code's inline find/replace bar, not Emacs' `isearch`/`query-replace`**, chosen because a second row that
+  only appears when wanted reads better in the narrow footer strip than two separate, differently-shaped modes
+  would. Cmd-F opens find alone; **Cmd-Option-F** (`REPLACE_TOGGLE_SHORTCUT`, VS Code's own chord) opens with
+  the replace row already shown, or toggles it if find is already open. Enter/Shift-Enter still move between
+  matches in either field; **Cmd-Return replaces the current match, Cmd-Shift-Return replaces every match**
+  (`REPLACE_ONE_SHORTCUT` / `REPLACE_ALL_SHORTCUT`), the exact chords suggested when this was scoped, chosen so
+  plain Enter keeps one meaning everywhere instead of splitting by which field has focus. All three are new
+  rows in `NOTES_EDITOR_SHORTCUTS`.
+- **Replace-all is one transaction (one undo step).** `replaceAllMatches` applies every match back-to-front
+  (highest position first) in a single `Transaction`, using `insertText`, which keeps a match's own marks
+  (bold stays bold) automatically. Applying from the end backwards is what keeps every earlier match's
+  position valid without remapping: replacing a match only ever changes text after its own start. A mutation
+  check (CLAUDE.md's habit for safety-critical logic) confirmed this matters: sorting the other way while
+  keeping the same positions corrupts every replacement after the first once the replacement text is a
+  different length than the query, and three tests in `notes-find.test.ts` catch it.
+- **The "does not cross a mark boundary" limitation needed no new rule for replace.** Every match `findMatches`
+  returns is already confined to one text node (that is exactly why it cannot be found split across a mark or
+  a block boundary), so a found match is always a plain, single-node edit; there is no case where replacing a
+  match would itself need to cross a boundary the way finding one can fail to.
+- **Escape had a real bug worth recording**: clicking "Replace all" (or a "Replace" that empties the matches)
+  disables that button, which blurs it to nothing focused at all; Escape sent to `document.body` never reached
+  the bar's own `onKeyDown`, since that only saw keys typed into its two fields. Fixed with a window-level
+  `keydown` listener while the bar is open, the same "escape hatch" every other pop-up in the app needs,
+  removed again on close; found by driving the real app, not by reading the code, which is why the testing
+  section of `CLAUDE.md` insists on it.
+- Checked in the built app and dev mode (StrictMode), on Notes and on a Meeting (to confirm no collision with
+  the TODO helper's own Cmd-Shift-T): opening with Cmd-F and Cmd-Option-F, the count, next/previous, toggling
+  the replace row, Replace and Replace all (by button and by chord), the facts line returning on Escape
+  including right after a click left nothing focused, and a single Undo restoring a whole replace-all at once.
+
 ## Mac conventions sweep (at the user's request, 27 Sep 2026)
 
 - **The app's real name, everywhere macOS shows one:** `app.setName(APP_NAME)` before the app is ready, so the Dock

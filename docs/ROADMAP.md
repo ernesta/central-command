@@ -34,7 +34,10 @@ built from the note's own headings (the `###` under `## Notes`, or `##` as a fal
 added. Do **not** add a second, duplicate outline panel. If the user asks again once they see Training's plain
 outline next to Meetings' checkbox-outline, that's a real request to reconsider, not before.
 
-### 3. Find in the note: redesign as an inline, keyboard-first bar, with basic replace
+### 3. Find in the note: redesign as an inline, keyboard-first bar, with basic replace — done
+
+See `docs/DECISIONS.md`, "Find in the note, redesigned as an inline bar with replace".
+
 
 Currently (`src/renderer/src/notes/useNotesFind.tsx`, `notes-find.ts`, `NotesFindBar.module.css`, all built this
 session): a floating bar, `position: fixed`, bottom-centre of the window, opened by Cmd-F. The user wants it to feel
