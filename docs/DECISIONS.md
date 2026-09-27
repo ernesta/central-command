@@ -874,3 +874,29 @@ kind of control across the app.
 - Checked in the built app and dev mode (StrictMode): opening, typing, the count, Enter and Shift-Enter wrapping
   round, Escape clearing the highlights and closing, the note file unchanged, and on a Meeting's notes (confirming
   it is not Notes-module-specific and does not conflict with that module's own shortcuts).
+
+## Mac conventions sweep (at the user's request, 27 Sep 2026)
+
+- **The app's real name, everywhere macOS shows one:** `app.setName(APP_NAME)` before the app is ready, so the Dock
+  and (if the default menu is ever shown) the menu bar say "Central Command", not "Electron" (the binary's own
+  name, which is what showed before, in dev). A native **About Central Command** panel
+  (`app.setAboutPanelOptions`) gives the version without a page for it.
+- **A Dock menu** (right-click or long-press the icon; `src/main/dock-menu.ts`, `app.dock` only exists on macOS)
+  offers the same three "start something now" actions as the command palette: New Note, New Meeting, New Training
+  Entry. The Dock menu runs in the main process and cannot call `window.api` itself, so it only sends which action
+  was chosen (`IPC.appDockAction`, `DockActionId`) to the focused window; the window does the actual creating,
+  through `DockActions` (renders nothing, mounted once in `Shell`) calling `runQuickAction`.
+- **One list of quick actions**, not two: `New note` / `New meeting` / `New training entry` used to be defined
+  only inside the command palette (`commands.ts`). They moved to `src/renderer/src/shell/quick-actions.ts`
+  (`QUICK_ACTIONS`, `runQuickAction`), which the command palette, the Dock menu and any future caller all share, so
+  there is exactly one place that knows how a meeting, a training entry or a note gets created from a shortcut.
+- **No custom application menu bar.** Electron's own default (Quit, Hide, Edit with Cut/Copy/Paste/Undo/Redo, the
+  Window menu with Minimize/Zoom/Close) already gives the core conventions (Cmd-Q, Cmd-W, Cmd-H, Cmd-M) for free.
+  Building a custom one was considered and dropped: its Edit menu's Undo/Redo roles call `webContents.undo()`
+  (Chromium's own undo), which would fight the notes editor's own history exactly the way the right-click menu's
+  Undo/Redo were left out for (see "Editor: opening links, and the right-click menu", above); omitting just those
+  two from a custom menu was possible but added risk (accelerators can still shadow a plugin's own key handling)
+  for little gain over what the default already provides.
+- Checked in the built app: `app.getName()`, the Dock menu's three labels, and simulating a Dock click (sending
+  `IPC.appDockAction` directly, since Playwright cannot really right-click the Dock) correctly creates a note and
+  opens it.
