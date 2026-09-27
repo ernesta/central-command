@@ -22,6 +22,8 @@ export type SettingsPatch = Partial<Omit<Settings, 'ui'>> & { ui?: Partial<Setti
  * Exposed as window.api by the preload script; every method maps to one
  * explicitly registered IPC handler. There is deliberately no generic invoke.
  */
+export type DockActionId = 'new-note' | 'new-meeting' | 'new-training'
+
 export interface AppInfo {
   name: string
   version: string
@@ -43,6 +45,8 @@ export interface Api {
     info(): Promise<AppInfo>
     /** Opens the data folder in Finder. */
     revealData(): Promise<void>
+    /** A quick action chosen from the Dock menu (macOS). Returns an unsubscribe function. */
+    onDockAction(listener: (action: DockActionId) => void): () => void
   }
   readings: ReadingsApi
   meetings: MeetingsApi
@@ -68,6 +72,7 @@ export const IPC = {
   dialogPickPath: 'dialog:pick-path',
   appInfo: 'app:info',
   appRevealData: 'app:reveal-data',
+  appDockAction: 'app:dock-action',
   appBeforeClose: 'app:before-close',
   appCloseReady: 'app:close-ready',
   buildOpenSession: 'build:open-session'

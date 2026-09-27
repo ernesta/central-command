@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import { IPC, type Api } from '@shared/api'
+import { IPC, type Api, type DockActionId } from '@shared/api'
 import { MEETINGS_IPC } from '@modules/meetings/shared/api'
 import type { MeetingChangedEvent } from '@modules/meetings/shared/api'
 import { NOTES_IPC } from '@modules/notes/shared/api'
@@ -20,7 +20,13 @@ const api: Api = {
   },
   app: {
     info: () => ipcRenderer.invoke(IPC.appInfo),
-    revealData: () => ipcRenderer.invoke(IPC.appRevealData)
+    revealData: () => ipcRenderer.invoke(IPC.appRevealData),
+    onDockAction: (listener) => {
+      const handler = (_event: Electron.IpcRendererEvent, action: DockActionId): void =>
+        listener(action)
+      ipcRenderer.on(IPC.appDockAction, handler)
+      return () => ipcRenderer.removeListener(IPC.appDockAction, handler)
+    }
   },
   readings: {
     sync: {
