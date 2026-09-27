@@ -175,6 +175,15 @@ Nothing here is started; each is a choice, not just work. Already in place: pack
   would send.
 - **Other platforms:** the Build button and the trash move are macOS-first; Windows and Linux need checking.
 
+## Started and pulled back out: Find on the page (Cmd-F)
+
+Tried and reverted (27 Sep 2026), nothing left in the code. It used Electron's `webContents.findInPage`, with a bar like the
+other dialogs (match count, next/previous, Escape to close). Typing fast lost keystrokes when each one triggered a search
+immediately; adding a debounce (150 ms, as the other typing-driven searches use) fixed the field but then no results ever
+came back, and the cause was not found before time ran out. Worth another try, ideally starting from the debounced version
+and working out why `found-in-page` stopped firing (log from the main process, not just the renderer, since the built app
+gives no console).
+
 ## Later, roughly in order (not for Phase 1)
 
 - Real Claude wiring for the Ask panel; embedded terminal for Build
