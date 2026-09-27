@@ -159,3 +159,13 @@
   background: var(--panel);
   font-weight: 600;
 }
+/* Find in the note (Cmd-F): every match highlighted, the current one stronger, both applied as decorations. */
+.wrap :global(.notes-find-match) {
+  background: var(--selected-bg);
+  border-radius: 2px;
+}
+.wrap :global(.notes-find-active) {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-radius: 2px;
+}

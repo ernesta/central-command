@@ -3,6 +3,7 @@ import { Milkdown, MilkdownProvider, useEditor, useInstance } from '@milkdown/re
 import { useEffect, useRef } from 'react'
 import { notesChangeCtx } from './notes-change-plugin'
 import { withNotesPlugins } from './notes-editor-setup'
+import { useNotesFind } from './useNotesFind'
 import styles from './NotesEditor.module.css'
 
 interface NotesEditorProps {
@@ -36,6 +37,7 @@ function Inner({
   useEffect(() => {
     onChangeRef.current = onChange
   })
+  const find = useNotesFind()
 
   useEditor((root) => {
     const editor = Editor.make().config((ctx) => {
@@ -43,7 +45,7 @@ function Inner({
       ctx.set(defaultValueCtx, initial)
       ctx.set(notesChangeCtx.key, (markdown) => onChangeRef.current(markdown))
     })
-    return withNotesPlugins(setup ? setup(editor) : editor)
+    return find.setup(withNotesPlugins(setup ? setup(editor) : editor))
   })
   const [loading, getEditor] = useInstance()
 
@@ -80,6 +82,7 @@ function Inner({
         </div>
       )}
       <Milkdown />
+      {find.bar}
     </div>
   )
 }
