@@ -1,11 +1,8 @@
 import type { NavigateFunction } from 'react-router'
-import { meetingRoute, peopleRoute } from '@modules/meetings/renderer/meetings-paths'
-import { SERIES } from '@modules/meetings/shared/types'
-import { noteRoute } from '@modules/notes/renderer/notes-paths'
-import { entryRoute } from '@modules/training/renderer/training-paths'
-import { searchTerms, type SearchHit } from '@shared/search'
-import { todayIso } from '@shared/time'
+import { peopleRoute } from '@modules/meetings/renderer/meetings-paths'
 import { fold } from '@shared/text'
+import { searchTerms, type SearchHit } from '@shared/search'
+import { QUICK_ACTIONS } from './quick-actions'
 
 const DEFAULT_LIMIT = 6
 
@@ -19,41 +16,7 @@ interface Command {
 /** Actions the search window offers alongside results, the way a command palette does. Each does what its own
  * button does elsewhere in the app; nothing here is a shortcut around a rule those buttons enforce. */
 const COMMANDS: Command[] = [
-  {
-    id: 'new-note',
-    title: 'New note',
-    detail: 'Starts now, in the group you are looking at.',
-    go: async (navigate) => {
-      const file = await window.api.notes.create({ workspace: 'research' })
-      navigate(noteRoute(file.ref.id), { state: { focus: 'body' } })
-    }
-  },
-  {
-    id: 'new-meeting',
-    title: 'New meeting',
-    detail: 'Starts today, filled in at leisure.',
-    go: async (navigate) => {
-      const file = await window.api.meetings.create({
-        workspace: 'research',
-        series: SERIES[0],
-        date: todayIso()
-      })
-      navigate(meetingRoute(file.ref.id))
-    }
-  },
-  {
-    id: 'new-training',
-    title: 'New training entry',
-    detail: 'Starts today, filled in at leisure.',
-    go: async (navigate) => {
-      const file = await window.api.training.create({
-        workspace: 'research',
-        title: 'Untitled',
-        date: todayIso()
-      })
-      navigate(entryRoute(file.ref.id), { state: { isNew: true } })
-    }
-  },
+  ...QUICK_ACTIONS,
   {
     id: 'open-settings',
     title: 'Open Settings',
