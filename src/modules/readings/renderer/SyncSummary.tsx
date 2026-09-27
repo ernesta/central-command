@@ -2,6 +2,7 @@ import { RefreshCw } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { formatRelativeTime } from '@renderer/lib/relative-time'
+import { PathField } from '@renderer/shell/PathField'
 import { useSettings } from '@renderer/state/settings-context'
 import type { ReadingCounts, SyncRun } from '../shared/types'
 import { useSyncStatus } from './useSyncStatus'
@@ -30,7 +31,7 @@ function useNow(intervalMs = 30_000): Date {
 }
 
 export function SyncSummary(): React.JSX.Element {
-  const { settings } = useSettings()
+  const { settings, update } = useSettings()
   const { status, counts, syncNow } = useSyncStatus()
   const now = useNow()
   const syncing = status?.state === 'syncing'
@@ -60,9 +61,11 @@ export function SyncSummary(): React.JSX.Element {
   }
 
   return (
-    <section className={styles.card} aria-label="Zotero sync">
+    <section className={styles.card} aria-labelledby="readings-settings">
       <div className={styles.header}>
-        <h2 className={styles.title}>Zotero sync</h2>
+        <h2 id="readings-settings" className={styles.title}>
+          Zotero sync
+        </h2>
         <Button
           size="small"
           icon={<RefreshCw size={14} strokeWidth={1.75} aria-hidden />}
@@ -72,6 +75,15 @@ export function SyncSummary(): React.JSX.Element {
           Sync now
         </Button>
       </div>
+
+      <PathField
+        label="Zotero export path"
+        help="The Better BibTeX auto-export file the Readings module syncs from. The app only reads it."
+        kind="file"
+        extensions={['bib']}
+        value={settings.zoteroExportPath}
+        onCommit={(zoteroExportPath) => void update({ zoteroExportPath })}
+      />
 
       <div className={styles.statusRow}>
         <span className={dot} aria-hidden />
