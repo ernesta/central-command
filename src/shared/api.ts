@@ -1,5 +1,6 @@
 import type { MeetingsApi } from '../modules/meetings/shared/api'
 import type { NotesApi } from '../modules/notes/shared/api'
+import type { ReadingListsApi } from '../modules/reading-lists/shared/api'
 import type { ReadingsApi } from '../modules/readings/shared/api'
 import type { TrainingApi } from '../modules/training/shared/api'
 import type { Settings } from './settings'
@@ -52,6 +53,7 @@ export interface Api {
   meetings: MeetingsApi
   training: TrainingApi
   notes: NotesApi
+  readingLists: ReadingListsApi
   lifecycle: {
     /**
      * Register work to finish before the window closes (e.g. saving notes). The window waits for

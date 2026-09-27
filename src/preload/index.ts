@@ -4,6 +4,8 @@ import { MEETINGS_IPC } from '@modules/meetings/shared/api'
 import type { MeetingChangedEvent } from '@modules/meetings/shared/api'
 import { NOTES_IPC } from '@modules/notes/shared/api'
 import type { NoteChangedEvent as NotesChangedEvent } from '@modules/notes/shared/api'
+import { READING_LISTS_IPC } from '@modules/reading-lists/shared/api'
+import type { ReadingListChangedEvent } from '@modules/reading-lists/shared/api'
 import { READINGS_IPC } from '@modules/readings/shared/api'
 import { TRAINING_IPC } from '@modules/training/shared/api'
 import type { TrainingChangedEvent } from '@modules/training/shared/api'
@@ -124,6 +126,21 @@ const api: Api = {
         listener(change)
       ipcRenderer.on(NOTES_IPC.changed, handler)
       return () => ipcRenderer.removeListener(NOTES_IPC.changed, handler)
+    }
+  },
+  readingLists: {
+    create: (input) => ipcRenderer.invoke(READING_LISTS_IPC.create, input),
+    read: (ref) => ipcRenderer.invoke(READING_LISTS_IPC.read, ref),
+    list: (workspace) => ipcRenderer.invoke(READING_LISTS_IPC.list, workspace),
+    save: (ref, changes, baseHash) =>
+      ipcRenderer.invoke(READING_LISTS_IPC.save, ref, changes, baseHash),
+    delete: (ref) => ipcRenderer.invoke(READING_LISTS_IPC.delete, ref),
+    forReading: (citekey) => ipcRenderer.invoke(READING_LISTS_IPC.forReading, citekey),
+    onChanged: (listener) => {
+      const handler = (_event: Electron.IpcRendererEvent, change: ReadingListChangedEvent): void =>
+        listener(change)
+      ipcRenderer.on(READING_LISTS_IPC.changed, handler)
+      return () => ipcRenderer.removeListener(READING_LISTS_IPC.changed, handler)
     }
   },
   lifecycle: {

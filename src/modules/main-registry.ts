@@ -4,6 +4,7 @@ import type { Migration } from '../main/db/migrate'
 import type { SettingsStore } from '../main/settings'
 import { meetingsMainModule } from './meetings/main/register'
 import { notesMainModule } from './notes/main/register'
+import { readingListsMainModule } from './reading-lists/main/register'
 import { readingsMainModule } from './readings/main/register'
 import { trainingMainModule } from './training/main/register'
 
@@ -26,5 +27,6 @@ export const mainModules: MainModule[] = [
   readingsMainModule,
   meetingsMainModule,
   trainingMainModule,
-  notesMainModule
+  notesMainModule,
+  readingListsMainModule
 ]
