@@ -1,3 +1,34 @@
+.section {
+  display: grid;
+  gap: 24px;
+  padding: 28px 32px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-panel);
+}
+.heading {
+  margin: 0;
+  font-size: var(--text-20);
+  font-weight: 600;
+}
+.field {
+  display: grid;
+  gap: 6px;
+}
+.label {
+  font-size: var(--text-14);
+  font-weight: 500;
+}
+.help {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+  line-height: 1.5;
+}
+.row {
+  display: flex;
+  gap: 8px;
+}
 .path {
   flex: 1;
   min-width: 0;
@@ -10,7 +41,11 @@
   font-size: var(--text-13);
   overflow-wrap: anywhere;
 }
-
 .show {
   align-self: flex-start;
+}
+.version {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-13);
 }
