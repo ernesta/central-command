@@ -115,6 +115,34 @@ describe('planWorkMeetingImport', () => {
     expect(plan.items[0]).toMatchObject({ status: 'attention' })
   })
 
+  it('imports two distinct meetings on the same date and series, named apart with a numeric suffix', () => {
+    const plan = planWorkMeetingImport({
+      obsidian: [
+        {
+          fileName: '2025 11 04 Luminos (Biruke, William).md',
+          folder: 'Impact',
+          text: '**Date**: Nov 4, 2025\n**Attendees**: Biruke Wesenseged, William\n## Notes\nFirst.\n'
+        },
+        {
+          fileName: '2025 11 04 Luminos (Brian, Edward).md',
+          folder: 'Impact',
+          text: '**Date**: Nov 4, 2025\n**Attendees**: Brian, Edward\n## Notes\nSecond.\n'
+        }
+      ],
+      existing: []
+    })
+    expect(plan.items).toHaveLength(2)
+    const [first, second] = plan.items
+    if (first.status !== 'import' || second.status !== 'import') {
+      throw new Error(`expected both to import, got ${first.status}, ${second.status}`)
+    }
+    expect(first.target).toBe('2025-11-04 Impact.md')
+    expect(second.target).toBe('2025-11-04 Impact 2.md')
+    expect(first.meta.attendees).toEqual(['Biruke Wesenseged', 'William'])
+    expect(second.meta.attendees).toEqual(['Brian', 'Edward'])
+    expect(second.notes.some((n) => /Also Impact on 2025-11-04/.test(n))).toBe(true)
+  })
+
   it('skips a note whose target already exists, never touching it', () => {
     const plan = planWorkMeetingImport({
       obsidian: [

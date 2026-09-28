@@ -84,19 +84,16 @@ export function planWorkMeetingImport(input: WorkPlanInput): WorkMeetingImportPl
 
     const key = `${parsed.date}|${series}`
     const already = seenKeys.get(key)
-    if (already !== undefined) {
-      items.push({
-        status: 'attention',
-        source: file.fileName,
-        problems: [
-          `Two notes are for ${series} on ${parsed.date} (also ${already}); nothing was guessed`
-        ]
-      })
-      continue
-    }
     seenKeys.set(key, file.fileName)
 
     const notes: string[] = [...parsed.problems]
+    // Two distinct meetings, same date and series: both import (the numeric suffix `meetingBaseName`
+    // already gives a second taken stem), named apart rather than guessing which one to keep.
+    if (already !== undefined) {
+      notes.push(
+        `Also ${series} on ${parsed.date}: ${already}. Named apart, not merged or guessed.`
+      )
+    }
     if (parsed.headerDate && parsed.headerDate !== parsed.date) {
       notes.push(`The Date line says ${parsed.headerDate}; using the file name date ${parsed.date}`)
     }
