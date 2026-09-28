@@ -59,7 +59,7 @@ export function AskLauncher(): React.JSX.Element {
           <span className={styles.dot} aria-hidden />
           Claude
         </span>
-        <IconButton label="Collapse" onClick={() => setOpen(false)}>
+        <IconButton label="Collapse" shortcut={ASK_SHORTCUT} onClick={() => setOpen(false)}>
           <Minus size={16} strokeWidth={1.75} aria-hidden />
         </IconButton>
       </header>

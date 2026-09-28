@@ -3,6 +3,7 @@ import type { EditorView } from '@milkdown/kit/prose/view'
 import { ChevronDown, ChevronUp, Replace, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@renderer/components/Button'
+import { IconButton } from '@renderer/components/IconButton'
 import { matchesShortcut } from '@shared/shortcuts'
 import {
   findBridgeCtx,
@@ -207,36 +208,36 @@ export function useNotesFind(): {
               ? 'No matches'
               : `${result.active + 1} of ${result.count}`}
         </span>
-        <button
-          type="button"
+        <IconButton
           className={styles.iconButton}
-          aria-label={showReplace ? 'Hide replace' : 'Show replace'}
+          label={showReplace ? 'Hide replace' : 'Show replace'}
+          shortcut={REPLACE_TOGGLE_SHORTCUT}
           aria-pressed={showReplace}
           onClick={toggleReplace}
         >
           <Replace size={16} strokeWidth={1.75} aria-hidden />
-        </button>
-        <button
-          type="button"
+        </IconButton>
+        <IconButton
           className={styles.iconButton}
-          aria-label="Previous match"
+          label="Previous match"
+          shortcut="Shift-Enter"
           disabled={result.count === 0}
           onClick={() => move(-1)}
         >
           <ChevronUp size={16} strokeWidth={1.75} aria-hidden />
-        </button>
-        <button
-          type="button"
+        </IconButton>
+        <IconButton
           className={styles.iconButton}
-          aria-label="Next match"
+          label="Next match"
+          shortcut="Enter"
           disabled={result.count === 0}
           onClick={() => move(1)}
         >
           <ChevronDown size={16} strokeWidth={1.75} aria-hidden />
-        </button>
-        <button type="button" className={styles.iconButton} aria-label="Close" onClick={close}>
+        </IconButton>
+        <IconButton className={styles.iconButton} label="Close" shortcut="Escape" onClick={close}>
           <X size={16} strokeWidth={1.75} aria-hidden />
-        </button>
+        </IconButton>
       </div>
       {showReplace && (
         <div className={styles.row}>

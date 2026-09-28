@@ -1,4 +1,5 @@
 import { Search, Settings as SettingsIcon, Terminal } from 'lucide-react'
+import { SEARCH_SHORTCUT, SETTINGS_SHORTCUT } from '@shared/shortcuts'
 import { WORKSPACES, type Workspace } from '@shared/settings'
 import { WORKSPACE_LABELS } from './workspaces'
 import { Button } from '../components/Button'
@@ -38,10 +39,10 @@ export function TopBar({
         >
           Build
         </Button>
-        <IconButton label="Search" onClick={onOpenSearch}>
+        <IconButton label="Search" shortcut={SEARCH_SHORTCUT} onClick={onOpenSearch}>
           <Search size={18} strokeWidth={1.75} aria-hidden />
         </IconButton>
-        <IconButton label="Settings" onClick={onOpenSettings}>
+        <IconButton label="Settings" shortcut={SETTINGS_SHORTCUT} onClick={onOpenSettings}>
           <SettingsIcon size={18} strokeWidth={1.75} aria-hidden />
         </IconButton>
       </div>

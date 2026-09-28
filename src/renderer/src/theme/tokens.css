@@ -27,6 +27,9 @@
   --danger-hover: light-dark(#953a37, #e79591);
   /* Behind a dialog. */
   --scrim: light-dark(rgba(27, 34, 43, 0.35), rgba(0, 0, 0, 0.6));
+  /* Always the opposite of --ink/--bg, so a tooltip reads the same in both themes. */
+  --tooltip-bg: light-dark(#1b222b, #e6eaee);
+  --tooltip-text: light-dark(#edeff2, #1b222b);
 
   /* Type */
   --font-display: 'Newsreader', Georgia, serif;
