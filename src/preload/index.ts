@@ -28,6 +28,12 @@ const api: Api = {
         listener(action)
       ipcRenderer.on(IPC.appDockAction, handler)
       return () => ipcRenderer.removeListener(IPC.appDockAction, handler)
+    },
+    onFullScreenChange: (listener) => {
+      const handler = (_event: Electron.IpcRendererEvent, isFullScreen: boolean): void =>
+        listener(isFullScreen)
+      ipcRenderer.on(IPC.appFullScreenChange, handler)
+      return () => ipcRenderer.removeListener(IPC.appFullScreenChange, handler)
     }
   },
   readings: {

@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow, Menu, clipboard, nativeTheme, screen } from 
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { APP_NAME } from '@shared/app-info'
+import { IPC } from '@shared/api'
 import { attachCloseGuard } from './close-guard'
 import { getAppPaths } from './paths'
 import { SettingsStore } from './settings'
@@ -103,6 +104,30 @@ function createWindow(settings: SettingsStore): void {
     if (url !== mainWindow.webContents.getURL()) {
       event.preventDefault()
       if (isSafeExternalUrl(url)) shell.openExternal(url)
+    }
+  })
+
+  // The renderer animates the top bar around the traffic lights differently in full screen (they are
+  // hidden until the pointer is at the very top edge, the same as every full-screen Mac app).
+  mainWindow.on('enter-full-screen', () =>
+    mainWindow.webContents.send(IPC.appFullScreenChange, true)
+  )
+  mainWindow.on('leave-full-screen', () =>
+    mainWindow.webContents.send(IPC.appFullScreenChange, false)
+  )
+  // A plain Escape (no modifiers) leaves full screen, the way most full-screen Mac apps behave; the
+  // renderer's own Escape handling (closing a dialog, the find bar, …) still runs independently.
+  mainWindow.webContents.on('before-input-event', (_event, input) => {
+    if (
+      input.type === 'keyDown' &&
+      input.key === 'Escape' &&
+      !input.meta &&
+      !input.control &&
+      !input.alt &&
+      !input.shift &&
+      mainWindow.isFullScreen()
+    ) {
+      mainWindow.setFullScreen(false)
     }
   })
 

@@ -48,6 +48,8 @@ export interface Api {
     revealData(): Promise<void>
     /** A quick action chosen from the Dock menu (macOS). Returns an unsubscribe function. */
     onDockAction(listener: (action: DockActionId) => void): () => void
+    /** The window entered or left full screen (macOS). Returns an unsubscribe function. */
+    onFullScreenChange(listener: (isFullScreen: boolean) => void): () => void
   }
   readings: ReadingsApi
   meetings: MeetingsApi
@@ -75,6 +77,7 @@ export const IPC = {
   appInfo: 'app:info',
   appRevealData: 'app:reveal-data',
   appDockAction: 'app:dock-action',
+  appFullScreenChange: 'app:full-screen-change',
   appBeforeClose: 'app:before-close',
   appCloseReady: 'app:close-ready',
   buildOpenSession: 'build:open-session'

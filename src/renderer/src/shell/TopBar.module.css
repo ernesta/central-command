@@ -8,9 +8,25 @@
   border-bottom: 1px solid var(--border-soft);
   /* The window's own drag handle, since the traffic lights are inset into it rather than a native title-bar row. */
   -webkit-app-region: drag;
+  transition: padding-left 220ms ease;
 }
-/* Room for the inset traffic lights (main/index.ts sets trafficLightPosition), macOS only. */
+/* Room for the inset traffic lights (main/index.ts sets trafficLightPosition), macOS only. Fixed in a
+   normal window (matches where the dots always sit); in full screen the dots (and the system menu bar)
+   are hidden until the pointer reaches the very top edge, so the room for them only opens up then too. */
 .bar.macInset {
+  padding-left: 84px;
+}
+.topSentinel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  z-index: 100;
+  /* Otherwise it inherits .bar's drag region, and a drag region gets no CSS :hover at all. */
+  -webkit-app-region: no-drag;
+}
+.bar:has(.topSentinel:hover) {
   padding-left: 84px;
 }
 .pills,
