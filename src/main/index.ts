@@ -43,6 +43,13 @@ function createWindow(settings: SettingsStore): void {
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#14181D' : '#EDEFF2',
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
+    // Traffic lights inset into the app's own top bar (`TopBar.module.css` reserves the space and marks
+    // it a drag region) rather than a separate native title-bar row. That row used to auto-hide and
+    // reappear over the app's own top bar in full screen, covering it; this way only the dots themselves
+    // do, sliding in over content that never moves.
+    ...(process.platform === 'darwin'
+      ? { titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 20, y: 24 } }
+      : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,

@@ -6,12 +6,19 @@
   padding: 0 32px;
   background: var(--surface);
   border-bottom: 1px solid var(--border-soft);
+  /* The window's own drag handle, since the traffic lights are inset into it rather than a native title-bar row. */
+  -webkit-app-region: drag;
+}
+/* Room for the inset traffic lights (main/index.ts sets trafficLightPosition), macOS only. */
+.bar.macInset {
+  padding-left: 84px;
 }
 .pills,
 .actions {
   display: flex;
   align-items: center;
   gap: 8px;
+  -webkit-app-region: no-drag;
 }
 .build {
   padding: 8px 16px;

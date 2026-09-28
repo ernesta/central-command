@@ -7,6 +7,8 @@ import { IconButton } from '../components/IconButton'
 import { Pill } from '../components/Pill'
 import styles from './TopBar.module.css'
 
+const isMac = /Mac/i.test(navigator.platform || navigator.userAgent)
+
 interface TopBarProps {
   workspace: Workspace
   onWorkspaceChange: (workspace: Workspace) => void
@@ -23,7 +25,7 @@ export function TopBar({
   onOpenSearch
 }: TopBarProps): React.JSX.Element {
   return (
-    <header className={styles.bar}>
+    <header className={[styles.bar, isMac && styles.macInset].filter(Boolean).join(' ')}>
       <nav className={styles.pills} aria-label="Workspaces">
         {WORKSPACES.map((w) => (
           <Pill key={w} active={w === workspace} onClick={() => onWorkspaceChange(w)}>
