@@ -1,4 +1,4 @@
-import { ChevronRight, File, Folder, FolderOpen, Link2Off } from 'lucide-react'
+import { ChevronRight, File, Folder, FolderOpen, FolderSymlink, Link2Off } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { IconButton } from '@renderer/components/IconButton'
@@ -106,9 +106,18 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
               <Link2Off size={15} strokeWidth={1.75} aria-hidden />
             </IconButton>
           )}
-          {root && (
+          {root && folder && (
+            <IconButton
+              className={styles.iconAction}
+              label="Change folder"
+              onClick={() => void link()}
+            >
+              <FolderSymlink size={15} strokeWidth={1.75} aria-hidden />
+            </IconButton>
+          )}
+          {root && !folder && (
             <Button size="small" onClick={() => void link()}>
-              {folder ? 'Change…' : 'Link a folder…'}
+              Link a folder…
             </Button>
           )}
         </div>
