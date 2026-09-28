@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { Link, useNavigate } from 'react-router'
 import { modulePath } from '@modules/types'
+import { AllLink } from '@renderer/components/Landing'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { SearchInput } from '@renderer/components/SearchInput'
 import { Segmented } from '@renderer/components/Segmented'
 import { Select } from '@renderer/components/Select'
+import { readingListsBase } from '@modules/reading-lists/renderer/reading-lists-paths'
 import { DEFAULT_READINGS_QUERY, type ReadingsView, type StatusFilter } from '../shared/query'
 import { SORT_PRESETS, nextSort, parseSortValue, sortOption } from '../shared/sort-options'
 import type { Reading } from '../shared/types'
@@ -120,7 +122,10 @@ export function ReadingsPage(): React.JSX.Element {
         Research
       </Link>
       <header className={styles.header}>
-        <h1 className={styles.heading}>Readings</h1>
+        <div className={styles.headingRow}>
+          <h1 className={styles.heading}>Readings</h1>
+          <AllLink to={readingListsBase}>Lists</AllLink>
+        </div>
         <div className={styles.controls}>
           <SearchInput
             label="Search readings"

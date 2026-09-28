@@ -10,10 +10,13 @@ import {
 } from '@renderer/components/Landing'
 import { isoDate } from '@shared/dates'
 import { formatDate } from '@shared/time'
+import { modulePath } from '@modules/types'
 import { displayTitle, compareRecent } from '@modules/reading-lists/shared/query'
 import { NewListButton } from './NewListButton'
 import { readingListRoute, readingListsListRoute } from './reading-lists-paths'
 import { useReadingListsList } from './useReadingListsList'
+
+const readingsBase = modulePath({ workspace: 'research', id: 'readings' })
 
 /** The Reading lists landing page: the lists edited most recently, and a link to see them all. */
 export function ReadingListsLanding(): React.JSX.Element {
@@ -33,8 +36,8 @@ export function ReadingListsLanding(): React.JSX.Element {
   return (
     <LandingPage>
       <LandingHeader
-        backTo="/research"
-        backLabel="Research"
+        backTo={readingsBase}
+        backLabel="Readings"
         title="Reading lists"
         actions={<NewListButton />}
       />

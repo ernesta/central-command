@@ -25,6 +25,11 @@
 .back:hover {
   color: var(--ink);
 }
+.headingRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 .heading {
   font-size: var(--text-28);
   font-weight: 700;
