@@ -96,3 +96,14 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+/* Wide enough (full screen on most Mac displays) to give Files and Outline their own columns,
+   rather than stacking two panels on top of each other in a narrow strip. */
+@media (min-width: 1400px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr) 520px;
+  }
+  .side {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}

@@ -24,7 +24,12 @@
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  gap: 4px;
+}
+/* Matches the small Button beside it in height. */
+.iconAction {
+  --icon-button-size: 28px;
 }
 .quiet {
   margin: 0;

@@ -1,6 +1,7 @@
 import { ChevronRight, File, Folder, FolderOpen, Link2Off } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '@renderer/components/Button'
+import { IconButton } from '@renderer/components/IconButton'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useSettings } from '@renderer/state/settings-context'
@@ -88,27 +89,26 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
         </h2>
         <div className={styles.actions}>
           {folder && root && (
-            <Button
-              size="small"
-              icon={<FolderOpen size={14} strokeWidth={1.75} aria-hidden />}
+            <IconButton
+              className={styles.iconAction}
+              label="Show in Finder"
               onClick={() => void act(() => window.api.training.files.reveal(folder, sub, ''))}
             >
-              Show in Finder
-            </Button>
+              <FolderOpen size={15} strokeWidth={1.75} aria-hidden />
+            </IconButton>
+          )}
+          {folder && (
+            <IconButton
+              className={styles.iconAction}
+              label="Unlink folder"
+              onClick={() => onChange(null)}
+            >
+              <Link2Off size={15} strokeWidth={1.75} aria-hidden />
+            </IconButton>
           )}
           {root && (
             <Button size="small" onClick={() => void link()}>
-              {folder ? 'Change folder…' : 'Link a folder…'}
-            </Button>
-          )}
-          {folder && (
-            <Button
-              size="small"
-              icon={<Link2Off size={14} strokeWidth={1.75} aria-hidden />}
-              onClick={() => onChange(null)}
-              title="Removes the link only; the folder and its files are not touched"
-            >
-              Unlink
+              {folder ? 'Change…' : 'Link a folder…'}
             </Button>
           )}
         </div>
