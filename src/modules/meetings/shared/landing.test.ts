@@ -66,6 +66,15 @@ describe('seriesSummaries', () => {
     )
     expect(only).toEqual({ series: 'Other', count: 0, last: null, next: null })
   })
+  it('seeds no zero-meeting series when fixedSeries is empty (a workspace with no fixed list of its own)', () => {
+    // Every name here comes from a real row; none is seeded just for being in a fixed list.
+    expect(seriesSummaries(rows, TODAY, []).map((s) => s.series)).toEqual([
+      'Supervision',
+      'Rastle Lab',
+      'Book Club',
+      'Other'
+    ])
+  })
 })
 
 describe('seriesLine', () => {

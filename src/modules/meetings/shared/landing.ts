@@ -11,9 +11,18 @@ export interface SeriesSummary {
   next: string | null
 }
 
-/** One summary per series: the fixed series first (even with no meetings), then any other series in the files. */
-export function seriesSummaries(rows: readonly MeetingIndexRow[], today: string): SeriesSummary[] {
-  const names = [...SERIES] as string[]
+/**
+ * One summary per series: `fixedSeries` first (even with no meetings — Research's own fixed list, `SERIES`,
+ * so a category can be opened before its first meeting), then any other series actually found in the files.
+ * A workspace with no fixed list of its own (Work's series are just its vault's folder names) should pass
+ * `[]`, so it only ever shows a series that has at least one meeting.
+ */
+export function seriesSummaries(
+  rows: readonly MeetingIndexRow[],
+  today: string,
+  fixedSeries: readonly string[] = SERIES
+): SeriesSummary[] {
+  const names = [...fixedSeries]
   for (const r of rows) if (r.series && !names.includes(r.series)) names.push(r.series)
   return names.map((series) => {
     const mine = rows.filter((r) => r.series === series && r.date !== '')

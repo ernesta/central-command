@@ -21,7 +21,7 @@ import { meetingsInYear } from '../shared/hours'
 import { mine, openTodos } from '../shared/open-todos'
 import { MODE_LABELS, initialsFor, isUpcoming } from '../shared/query'
 import { durationMinutes, formatDate, formatDuration, formatShortDate } from '../shared/time'
-import type { MeetingIndexRow } from '../shared/types'
+import { SERIES, type MeetingIndexRow } from '../shared/types'
 import { MeetingsHours } from './MeetingsHours'
 import { NewMeetingButton } from './NewMeetingButton'
 import { OpenTodos } from './OpenTodos'
@@ -67,7 +67,11 @@ export function MeetingsLanding(): React.JSX.Element {
     all.map((r) => r.date),
     today
   )
-  const summaries = seriesSummaries(meetingsInYear(all, year), today)
+  const summaries = seriesSummaries(
+    meetingsInYear(all, year),
+    today,
+    workspace === 'research' ? SERIES : []
+  )
 
   const recentRows: RecentRow[] = [...[...upcoming].reverse(), ...recent].map((row) => ({
     key: row.id,
@@ -126,7 +130,7 @@ export function MeetingsLanding(): React.JSX.Element {
 
           <LandingSection
             id="year"
-            label="Academic year"
+            label="Year"
             aside={<AcademicYearSelect year={year} years={years} onChange={setYear} />}
           >
             <MeetingsHours rows={all} year={year} today={today} />
