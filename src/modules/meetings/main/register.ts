@@ -73,15 +73,15 @@ function register({ db, paths }: MainContext): () => void {
   })
   const peopleService = new PeopleService({
     store: people,
-    meetingsDir: dirFor('research'),
+    meetingsDirFor: dirFor,
     trainingDir: join(paths.trainingNotes, 'research'),
     backupsDir: join(paths.root, 'backups'),
-    reindex: async (kind, fileName) => {
-      if (kind === 'meetings') await store.reindexFile('research', fileName)
+    reindex: async (kind, fileName, workspace) => {
+      if (kind === 'meetings') await store.reindexFile(workspace ?? 'research', fileName)
       else await trainingStore.reindexFile('research', fileName)
     },
     indexed: () => ({
-      meetings: listMeetingRows(db, 'research'),
+      meetings: ACTIVE_WORKSPACES.flatMap((workspace) => listMeetingRows(db, workspace)),
       trainings: listTrainingRows(db, 'research')
     })
   })

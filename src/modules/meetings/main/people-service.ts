@@ -12,12 +12,13 @@ import type { PeopleResult, RemoveHow } from '../shared/api'
 import { rewriteMeetingPeople } from '../shared/people-rewrite'
 import type { PersonPatch } from '../shared/people'
 import { personUsage, type PersonUsage } from '../shared/people-usage'
+import { MEETING_WORKSPACES, type MeetingWorkspace } from '../shared/types'
 import type { PeopleStore } from './people-store'
 
 interface PeopleServiceOptions {
   store: PeopleStore
-  /** The folders holding meeting notes and training entries. */
-  meetingsDir: string
+  /** The folder holding one workspace's meeting notes. People are shared, so every workspace is rewritten. */
+  meetingsDirFor: (workspace: MeetingWorkspace) => string
   trainingDir: string
   /** Where a change keeps copies of the notes it edits; a new folder for every change. */
   backupsDir: string
@@ -27,7 +28,11 @@ interface PeopleServiceOptions {
     trainings: Parameters<typeof personUsage>[2]
   }
   /** Bring the index up to date for a note this service just rewrote, so counts are right straight away. */
-  reindex: (kind: 'meetings' | 'training', fileName: string) => Promise<void>
+  reindex: (
+    kind: 'meetings' | 'training',
+    fileName: string,
+    workspace?: MeetingWorkspace
+  ) => Promise<void>
   now?: () => Date
 }
 
@@ -80,23 +85,29 @@ export class PeopleService {
 
   private async rewrite(change: PersonChange): Promise<RewriteReport> {
     if (isNoChange(change)) return NOTHING
-    const { meetingsDir, trainingDir, backupsDir, now = () => new Date() } = this.options
+    const { meetingsDirFor, trainingDir, backupsDir, now = () => new Date() } = this.options
     const backup = join(backupsDir, `people-${now().toISOString().replace(/[:.]/g, '-')}`)
-    const meetings = await rewriteNoteFiles({
-      dir: meetingsDir,
-      backupDir: join(backup, 'meetings'),
-      transform: (content) => rewriteMeetingPeople(content, change)
-    })
+    let meetingsChanged = 0
+    let meetingsSkipped: string[] = []
+    for (const workspace of MEETING_WORKSPACES) {
+      const result = await rewriteNoteFiles({
+        dir: meetingsDirFor(workspace),
+        backupDir: join(backup, 'meetings', workspace),
+        transform: (content) => rewriteMeetingPeople(content, change)
+      })
+      meetingsChanged += result.changed.length
+      meetingsSkipped = [...meetingsSkipped, ...result.skipped]
+      for (const name of result.changed) await this.options.reindex('meetings', name, workspace)
+    }
     const trainings = await rewriteNoteFiles({
       dir: trainingDir,
       backupDir: join(backup, 'training'),
       transform: (content) => rewriteTrainingPeople(content, change)
     })
-    for (const name of meetings.changed) await this.options.reindex('meetings', name)
     for (const name of trainings.changed) await this.options.reindex('training', name)
     return {
-      changed: meetings.changed.length + trainings.changed.length,
-      skipped: [...meetings.skipped, ...trainings.skipped]
+      changed: meetingsChanged + trainings.changed.length,
+      skipped: [...meetingsSkipped, ...trainings.skipped]
     }
   }
 }

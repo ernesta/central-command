@@ -43,9 +43,10 @@ async function run(): Promise<void> {
   const people = existsSync(peopleFile)
     ? normalisePeople(JSON.parse(readFileSync(peopleFile, 'utf8')))
     : []
-  const attendees = readFolder(join(root, 'notes', 'meetings', 'research')).map(
-    (text) => parseMeta(splitNote(text).head).meta.attendees
-  )
+  const attendees = [
+    ...readFolder(join(root, 'notes', 'meetings', 'research')),
+    ...readFolder(join(root, 'notes', 'meetings', 'work'))
+  ].map((text) => parseMeta(splitNote(text).head).meta.attendees)
   const leads = readFolder(join(root, 'notes', 'training', 'research')).map(
     (text) => parseTrainingMeta(splitNote(text).head).meta.leads
   )

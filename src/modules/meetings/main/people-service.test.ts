@@ -73,7 +73,10 @@ beforeEach(async () => {
   await store.add({ name: 'Joanna Young' })
   service = new PeopleService({
     store,
-    meetingsDir,
+    // 'work' points at a folder that is never created, so it behaves like a workspace with no
+    // meetings yet (the store's own ENOENT handling), leaving the existing assertions unchanged.
+    meetingsDirFor: (workspace) =>
+      workspace === 'work' ? join(root, 'meetings-work') : meetingsDir,
     trainingDir,
     backupsDir,
     indexed: () => ({
@@ -114,16 +117,18 @@ describe('PeopleService.update', () => {
     ])
     const [backup] = readdirSync(backupsDir)
     expect(backup).toBe('people-2026-09-25T10-00-00-000Z')
-    expect(read(join(backupsDir, backup, 'meetings'), '2026-01-01 Supervision.md')).toBe(MEETING)
+    expect(
+      read(join(backupsDir, backup, 'meetings', 'research'), '2026-01-01 Supervision.md')
+    ).toBe(MEETING)
     expect(read(join(backupsDir, backup, 'training'), '2026-01-03 Stats.md')).toBe(TRAINING)
   })
 
   it('leaves notes that do not mention the person exactly as they were', async () => {
     await service.update('Kathy Rastle', { name: 'Katherine Rastle', initials: 'KAT' })
     expect(read(meetingsDir, '2026-01-02 Supervision.md')).toBe(OTHER_MEETING)
-    expect(readdirSync(join(backupsDir, readdirSync(backupsDir)[0], 'meetings'))).toEqual([
-      '2026-01-01 Supervision.md'
-    ])
+    expect(
+      readdirSync(join(backupsDir, readdirSync(backupsDir)[0], 'meetings', 'research'))
+    ).toEqual(['2026-01-01 Supervision.md'])
   })
 
   it('changes only what changed: a new name alone leaves TODO owners, initials alone leaves attendees', async () => {
