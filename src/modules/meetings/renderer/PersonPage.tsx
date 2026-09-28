@@ -42,8 +42,8 @@ export function PersonPage(): React.JSX.Element {
   }
 
   const meetingRows: RecentRow[] = meetings.map((m) => ({
-    key: m.id,
-    to: meetingRoute(m.id),
+    key: `${m.workspace}/${m.id}`,
+    to: meetingRoute(m.workspace, m.id),
     date: m.date ? formatDate(m.date) : 'No date yet',
     title: meetingHeading(m.series, ''),
     people: [],
@@ -94,9 +94,15 @@ export function PersonPage(): React.JSX.Element {
         <LandingSection id="todos" label={`Open TODOs · ${openTodos.length}`}>
           <ul className={styles.todoList}>
             {openTodos.map((todo, i) => (
-              <li key={`${todo.meetingId}-${i}`} className={styles.todoRow}>
+              <li
+                key={`${todo.meetingWorkspace}/${todo.meetingId}-${i}`}
+                className={styles.todoRow}
+              >
                 <span className={styles.todoText}>{todo.text}</span>
-                <Link className={styles.todoMeeting} to={meetingRoute(todo.meetingId)}>
+                <Link
+                  className={styles.todoMeeting}
+                  to={meetingRoute(todo.meetingWorkspace, todo.meetingId)}
+                >
                   {todo.meetingHeading}
                 </Link>
               </li>

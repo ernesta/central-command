@@ -96,8 +96,11 @@ export interface MeetingsApi {
    * not listed yet. Only adds; never removes or edits an item or touches ticked state.
    */
   syncPreviousTodos(ref: MeetingRef, baseHash: string): Promise<SyncPreviousResult>
-  /** Ask where to save, then write the Supervision log of an academic year (its start year) as a PDF. */
-  exportPdf(year: number): Promise<MeetingsExportResult>
+  /**
+   * Ask where to save, then write the workspace's meetings log of an academic year (its start year) as
+   * a PDF. Research's is filtered to the Supervision series; Work's covers every meeting.
+   */
+  exportPdf(workspace: MeetingWorkspace, year: number): Promise<MeetingsExportResult>
   people: {
     list(): Promise<Person[]>
     /** Add a person (initials are worked out from the name and made unique unless given). Resolves with the new list. */

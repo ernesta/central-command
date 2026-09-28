@@ -1,15 +1,15 @@
 import { Link } from 'react-router'
-import { modulePath } from '@modules/types'
 import { seriesSummaries } from '../shared/landing'
 import { openTodos } from '../shared/open-todos'
 import { formatShortDate } from '../shared/time'
-import { todayIso } from './meetings-paths'
+import { meetingsBase, todayIso, useMeetingsWorkspace } from './meetings-paths'
 import { useMeetingsList } from './useMeetingsList'
 import styles from './MeetingsCard.module.css'
 
-/** The Meetings entry on the Research landing page. The title is a real link whose hit area covers the whole card. */
+/** The Meetings entry on a workspace's landing page. The title is a real link whose hit area covers the whole card. */
 export function MeetingsCard(): React.JSX.Element {
-  const { rows } = useMeetingsList()
+  const workspace = useMeetingsWorkspace()
+  const { rows } = useMeetingsList(workspace)
   const summaries = rows ? seriesSummaries(rows, todayIso()) : []
   const count = summaries.reduce((n, s) => n + s.count, 0)
   const next = summaries
@@ -21,7 +21,7 @@ export function MeetingsCard(): React.JSX.Element {
   return (
     <div className={styles.card}>
       <h2 className={styles.title}>
-        <Link className={styles.link} to={modulePath({ workspace: 'research', id: 'meetings' })}>
+        <Link className={styles.link} to={meetingsBase(workspace)}>
           Meetings
         </Link>
       </h2>

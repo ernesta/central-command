@@ -2,7 +2,7 @@ import { Link } from 'react-router'
 import { markdownToExcerpt } from '@shared/text'
 import type { OpenTodo } from '../shared/open-todos'
 import { formatShortDate } from '../shared/time'
-import type { Person } from '../shared/types'
+import type { MeetingWorkspace, Person } from '../shared/types'
 import { meetingRoute } from './meetings-paths'
 import { OwnerPill } from './OwnerPill'
 import styles from './OpenTodos.module.css'
@@ -13,16 +13,18 @@ import styles from './OpenTodos.module.css'
  */
 export function OpenTodos({
   todos,
-  people
+  people,
+  workspace
 }: {
   todos: OpenTodo[]
   people: Person[]
+  workspace: MeetingWorkspace
 }): React.JSX.Element {
   return (
     <ul className={styles.list}>
       {todos.map((todo, index) => (
         <li key={`${todo.meetingId}-${index}`}>
-          <Link className={styles.row} to={meetingRoute(todo.meetingId)}>
+          <Link className={styles.row} to={meetingRoute(workspace, todo.meetingId)}>
             <span className={styles.ring} aria-hidden />
             <span className={styles.text}>
               {markdownToExcerpt(todo.text, 400)}

@@ -1068,7 +1068,7 @@ for review, the same way every other module's decisions are.
   cannot be added at all; the link surviving a full reload from disk; and global search opening the person's page
   directly with the link showing.
 
-## Work meetings import (dry run only; not applied, at the user's explicit instruction)
+## Work meetings import (built, wired up and applied — see the follow-up note at the end)
 
 Read all 19 files by hand before writing anything, as every other importer in this app has: two sub-folders
 (`Impact`, `Teaching & Learning`), and far more variation than the one sample file the request was scoped
@@ -1129,5 +1129,30 @@ around. Findings and decisions:
 - Checked: the pure `planWorkMeetingImport` module has its own test suite (`work-meeting-import.test.ts`,
   including the mutation check above); typecheck, lint and the full test suite all pass; the dry run above was
   run against the real vault, reading it only, with `CENTRAL_COMMAND_HOME` pointed at a scratch folder so even
-  the "already imported" check touched nothing real. Not checked in the built app, since there is nowhere in the
-  app yet for a Work meeting to appear (see the workspace-wiring point above).
+  the "already imported" check touched nothing real.
+
+**Follow-up: Work's own workspace wiring, and the import applied.** The user asked for full parity with
+Research's Meetings, not a slimmed-down view. `ACTIVE_WORKSPACES` in `register.ts` now includes `'work'`
+(purely additive: an extra folder created and watched; the store classes were already workspace-generic).
+The renderer's `meetings` module is now built by `createMeetingsModule(workspace)`
+(`src/modules/meetings/index.ts`) and registered once per workspace in `src/modules/index.ts`; every
+hardcoded `'research'` in its pages, hooks and paths (`meetings-paths.ts`, `MeetingPage`, `MeetingsLanding`,
+`MeetingsPage`, `MeetingsCard`, `NewMeetingButton`, `useMeetingsList`, `useMeetingsView`, `search.ts`,
+`MeetingsTable`, `OpenTodos`) now reads the workspace from the URL (`useMeetingsWorkspace`, reading the
+route the same way `Shell.tsx` already did) or from the row it is showing. Work gets `/work`, a real landing
+page (`WorkLanding.tsx`; both it and `ResearchLanding.tsx` are now thin wrappers around a shared
+`WorkspaceLanding.tsx`, since the shape was identical). The PDF export (`report.ts`) took a `seriesFilter`:
+Research's stays the Supervision log; Work's, having no such series, exports every meeting in the year as a
+"Meetings log" instead. A new meeting's default series is `SERIES[0]` ("Supervision") for Research, "Other"
+for Work, since Research's fixed series aren't Work's.
+
+**People are shared, not duplicated.** `PeoplePage`/`PersonPage` are registered only once, under Research
+(`peopleRoute`/`personRoute` in `meetings-paths.ts` always point there, so a Work meeting's attendee still
+links to the one shared page). `usePersonProfile` now reads every `MEETING_WORKSPACES` entry and merges the
+rows (each `MeetingIndexRow` already carried its own `workspace`, so nothing needed to change there beyond
+querying twice and concatenating), so a person met in both workspaces shows both on their page, correctly
+routed back to whichever workspace each meeting belongs to. Verified in the built app, not just unit tests:
+a scratch library with a meeting created from each workspace's own "New meeting" button, a shared attendee
+added by hand, and the person's page confirmed to show both, oldest/newest ordering correct, and the link
+from the page back into the Work meeting landing on `/work/meetings/m/…` with the Work pill active — Research's
+own Meetings, People and person pages were re-driven the same way and are unchanged.

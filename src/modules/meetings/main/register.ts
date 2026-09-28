@@ -12,7 +12,7 @@ import {
   type CreateMeetingInput,
   type MeetingsExportResult
 } from '../shared/api'
-import { meetingsReportHtml, reportFileName } from '../shared/report'
+import { REPORT_SERIES, meetingsReportHtml, reportFileName } from '../shared/report'
 import type { MeetingChanges } from '../shared/front-matter'
 import { MEETING_WORKSPACES, type MeetingRef, type MeetingWorkspace } from '../shared/types'
 import { meetingPath } from './file-name'
@@ -25,8 +25,8 @@ import { PeopleService } from './people-service'
 import { PeopleStore } from './people-store'
 import type { RemoveHow } from '../shared/api'
 
-/** Workspaces whose meetings folder is created and watched. Work joins when it gets its own page. */
-const ACTIVE_WORKSPACES: readonly MeetingWorkspace[] = ['research']
+/** Workspaces whose meetings folder is created and watched. */
+const ACTIVE_WORKSPACES: readonly MeetingWorkspace[] = ['research', 'work']
 
 function asObject(value: unknown, what: string): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value))
@@ -91,18 +91,26 @@ function register({ db, paths }: MainContext): () => void {
   )
   ipcMain.handle(
     MEETINGS_IPC.exportPdf,
-    async (event, year: unknown): Promise<MeetingsExportResult> => {
+    async (event, workspace: unknown, year: unknown): Promise<MeetingsExportResult> => {
+      if (
+        typeof workspace !== 'string' ||
+        !(MEETING_WORKSPACES as readonly string[]).includes(workspace)
+      ) {
+        throw new Error('Invalid workspace')
+      }
       if (typeof year !== 'number' || !Number.isInteger(year) || year < 1900 || year > 3000) {
         throw new Error('Invalid academic year')
       }
+      const seriesFilter = workspace === 'research' ? REPORT_SERIES : undefined
       return exportHtmlAsPdf(event.sender, {
         html: meetingsReportHtml({
-          rows: listMeetingRows(db, 'research'),
+          rows: listMeetingRows(db, workspace as MeetingWorkspace),
           year,
-          today: todayIso()
+          today: todayIso(),
+          seriesFilter
         }),
-        dialogTitle: 'Export the supervision log',
-        fileName: reportFileName(year)
+        dialogTitle: seriesFilter ? 'Export the supervision log' : 'Export the meetings log',
+        fileName: reportFileName(year, seriesFilter)
       })
     }
   )

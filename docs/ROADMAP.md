@@ -150,16 +150,14 @@ From the ideas list already in this file (`## Ideas`, "People, extended", items 
   (`src/shared/people.ts`) plus the main-process save path and the mutation-check tests that already guard
   `people.json` writes.
 
-### 6. Work meetings: import from Obsidian, same treatment as Research — importer built, dry run reviewed, not applied
+### 6. Work meetings: import from Obsidian, same treatment as Research — done, since built on further
 
-**Stopped here on purpose, per the instruction not to apply this one without checking back.** The importer
-(`scripts/import-work-meetings.mts`, `planWorkMeetingImport`) is built and tested; the dry run against the real
-vault, and everything it found needing your decision (two meetings on the same day, one name spelled two ways),
-is written up in `docs/DECISIONS.md`, "Work meetings import". Work's own workspace wiring (a folder, a route, a
-landing page) was **not** built: it turned out to be a bigger, separate piece of work than the importer, since
-Meetings' renderer hard-codes `workspace: 'research'` throughout rather than reading it from the route — see the
-same write-up for why. Needed before `--apply` can write anywhere real; not needed for the dry run, which only
-read the vault.
+**Originally stopped at a dry run on purpose; since finished at the user's go-ahead (they chose full parity for
+Work's own Meetings view, and gave the two per-file decisions the dry run needed).** The importer
+(`scripts/import-work-meetings.mts`, `planWorkMeetingImport`) was already built and tested; Work's own workspace
+wiring (Meetings' renderer threading a real workspace everywhere instead of hard-coding `workspace: 'research'`, a
+landing page, a factory module registered once per workspace) is now built too, and `--apply` has run for real.
+Full write-up in `docs/DECISIONS.md`, "Work meetings import".
 
 **Vault:** the user gave `/Users/ernesta/Consulting/Luminos/Scribbles` as "all work notes"; the actual Obsidian vault
 (where `.obsidian` lives) is one level down, at `/Users/ernesta/Consulting/Luminos/Scribbles/Luminos`. Meeting notes
@@ -223,11 +221,6 @@ ready for `--apply`" and say so plainly when you report back.
 
 ### For the user (review and decisions)
 
-- [ ] **Work meetings import (dry run reviewed; see `docs/DECISIONS.md`, "Work meetings import"):** two meetings
-      on 2025-11-04, both "Impact" but with different attendees, need a way to tell their files apart (the
-      importer will not guess); "Chris Cumminskey" and "Chris Cummiskey" are almost certainly the same person
-      spelled two ways. Say what to do about both, whether "Impact" and "Teaching & Learning" should be added to
-      the fixed series list, and whether to go ahead with `--apply` once Work has somewhere to put the files.
 - [ ] **Try the Training entry page's new side panel** (Files above Outline, matching Meetings; see `docs/DECISIONS.md`,
       "Training entry page: a side panel"). Say what to change, and whether Meetings should get a second, plain outline
       after all now that you've seen Training's (a deliberate no for now, see item 2 above).
@@ -315,8 +308,6 @@ the meeting page, the list, the landing page, People settings and remembered lis
   Google Scholar, LinkedIn) and even pull their recent papers, posts or tweets. Training leads and meeting attendees both use it.
 - **Export the supervision log as a PDF**: built (`meetings/shared/report.ts`; printing in `src/main/export-pdf.ts` and the page
   shell in `src/shared/report-page.ts` are shared with Training). Awaiting the user's review of the layout.
-- **Meetings in Work**: the code takes a workspace everywhere (`notes/meetings/<workspace>/`); Work needs a folder,
-  a route and a landing page from the same components. `ACTIVE_WORKSPACES` in `meetings/main/register.ts` is the switch.
 - **Imported notes with bold pseudo-headings** (`**Topic**`): converted (`npm run convert:topics`, applied 25 Sep 2026; a dry run now finds nothing).
 - **Imported previous items with a status word** (`(Cancelled) **TODO(EO)**: …`) are ownerless Previous TODOs and carry
   over while unticked; the user may want to tick or delete them in the newest notes.

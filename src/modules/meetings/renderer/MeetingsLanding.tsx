@@ -25,7 +25,13 @@ import type { MeetingIndexRow } from '../shared/types'
 import { MeetingsHours } from './MeetingsHours'
 import { NewMeetingButton } from './NewMeetingButton'
 import { OpenTodos } from './OpenTodos'
-import { meetingRoute, meetingsListRoute, seriesRoute, todayIso } from './meetings-paths'
+import {
+  meetingRoute,
+  meetingsListRoute,
+  seriesRoute,
+  todayIso,
+  useMeetingsWorkspace
+} from './meetings-paths'
 import { useMeetingsList } from './useMeetingsList'
 
 type Whose = 'everyone' | 'mine'
@@ -47,7 +53,8 @@ function noteFor(row: MeetingIndexRow, today: string): string {
 
 /** The Meetings landing page: open TODOs, the series, and the recent and upcoming meetings. */
 export function MeetingsLanding(): React.JSX.Element {
-  const { rows, people } = useMeetingsList()
+  const workspace = useMeetingsWorkspace()
+  const { rows, people } = useMeetingsList(workspace)
   const [whose, setWhose] = useState<Whose>('everyone')
   const today = todayIso()
 
@@ -64,7 +71,7 @@ export function MeetingsLanding(): React.JSX.Element {
 
   const recentRows: RecentRow[] = [...[...upcoming].reverse(), ...recent].map((row) => ({
     key: row.id,
-    to: meetingRoute(row.id),
+    to: meetingRoute(workspace, row.id),
     date: row.date ? formatDate(row.date) : 'No date yet',
     badge: isUpcoming(row, today) ? (row.date ? 'Upcoming' : 'Planned') : undefined,
     title: row.series,
@@ -75,8 +82,8 @@ export function MeetingsLanding(): React.JSX.Element {
   return (
     <LandingPage>
       <LandingHeader
-        backTo="/research"
-        backLabel="Research"
+        backTo={workspace === 'research' ? '/research' : '/work'}
+        backLabel={workspace === 'research' ? 'Research' : 'Work'}
         title="Meetings"
         actions={<NewMeetingButton />}
       />
@@ -102,7 +109,7 @@ export function MeetingsLanding(): React.JSX.Element {
           >
             <LandingBox>
               {shown.length > 0 ? (
-                <OpenTodos todos={shown} people={people} />
+                <OpenTodos todos={shown} people={people} workspace={workspace} />
               ) : (
                 <LandingNone>
                   {whose === 'mine'
@@ -126,7 +133,7 @@ export function MeetingsLanding(): React.JSX.Element {
             <SeriesCards
               cards={summaries.map((s) => ({
                 key: s.series,
-                to: seriesRoute(s.series, year),
+                to: seriesRoute(workspace, s.series, year),
                 title: s.series,
                 line: seriesLine(s, formatShortDate)
               }))}
@@ -137,7 +144,7 @@ export function MeetingsLanding(): React.JSX.Element {
             id="recent"
             label="Recent and upcoming"
             aside={
-              <SeeAllLink to={`${meetingsListRoute}?year=${year}`}>
+              <SeeAllLink to={`${meetingsListRoute(workspace)}?year=${year}`}>
                 See all meetings
                 <ArrowRight size={14} strokeWidth={1.75} aria-hidden />
               </SeeAllLink>

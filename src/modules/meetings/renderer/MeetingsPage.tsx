@@ -27,7 +27,7 @@ import { meetingsInYearOrPlanned } from '../shared/hours'
 import { MeetingsHours } from './MeetingsHours'
 import { MeetingsTable } from './MeetingsTable'
 import { NewMeetingButton } from './NewMeetingButton'
-import { meetingsBase, todayIso } from './meetings-paths'
+import { meetingsBase, todayIso, useMeetingsWorkspace } from './meetings-paths'
 import { useMeetingsList } from './useMeetingsList'
 import { useMeetingsView } from './useMeetingsView'
 import styles from './MeetingsPage.module.css'
@@ -37,11 +37,13 @@ import styles from './MeetingsPage.module.css'
  * Upcoming meetings are included and marked.
  */
 export function MeetingsPage(): React.JSX.Element {
-  const { rows, people } = useMeetingsList()
+  const workspace = useMeetingsWorkspace()
+  const { rows, people } = useMeetingsList(workspace)
   // A series card on the landing page opens the list already filtered to that series (for this visit only, with the other filters cleared so the series is what you see).
   const [params] = useSearchParams()
   const seriesParam = params.get('series')
   const { query: saved, setQuery } = useMeetingsView(
+    workspace,
     seriesParam ? { ...DEFAULT_MEETINGS_QUERY, series: seriesParam } : undefined
   )
   const [exporting, setExporting] = useState(false)
@@ -79,11 +81,11 @@ export function MeetingsPage(): React.JSX.Element {
     setExporting(true)
     setExportNotice(null)
     try {
-      const result = await window.api.meetings.exportPdf(year)
+      const result = await window.api.meetings.exportPdf(workspace, year)
       if (result.status === 'saved') {
         setExportNotice({
           tone: 'info',
-          text: `Saved the supervision log for ${academicYearLabel(year)} to ${result.path}`
+          text: `Saved the ${workspace === 'research' ? 'supervision' : 'meetings'} log for ${academicYearLabel(year)} to ${result.path}`
         })
       }
     } catch (e) {
@@ -117,7 +119,7 @@ export function MeetingsPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <Link className={styles.back} to={meetingsBase}>
+      <Link className={styles.back} to={meetingsBase(workspace)}>
         <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
         Meetings
       </Link>
@@ -127,7 +129,7 @@ export function MeetingsPage(): React.JSX.Element {
           <ExportButton
             busy={exporting}
             disabled={rows === null}
-            title={`Exports the Supervision log for ${academicYearLabel(year)} as a PDF, oldest first, without upcoming meetings`}
+            title={`Exports the ${workspace === 'research' ? 'Supervision' : 'meetings'} log for ${academicYearLabel(year)} as a PDF, oldest first, without upcoming meetings`}
             onClick={() => void exportPdf()}
           />
           <NewMeetingButton />

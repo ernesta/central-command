@@ -14,7 +14,7 @@ import { ownerOptions } from '../shared/people'
 import { meetingHeading } from '../shared/time'
 import { appendTopic, parseTopics, type Topic } from '../shared/topics'
 import type { MeetingRef, Person } from '../shared/types'
-import { meetingRoute, meetingsBase } from './meetings-paths'
+import { meetingRoute, meetingsBase, useMeetingsWorkspace } from './meetings-paths'
 import { MetaFields } from './MetaFields'
 import { TopicsPanel } from './TopicsPanel'
 import { useMeetingSession } from './useMeetingSession'
@@ -37,6 +37,7 @@ function statusText(save: SaveState, reloaded: boolean): string {
 /** One meeting: its details, its note (Summary, Previous TODOs, Notes) and the topics panel. */
 export function MeetingPage(): React.JSX.Element {
   const { id = '' } = useParams()
+  const workspace = useMeetingsWorkspace()
   const navigate = useNavigate()
   // Changing the date or series renames the file, and so changes the id in the address. The page keeps
   // its state (and the cursor) by staying mounted under the id it opened with: `ids` are the names this
@@ -46,12 +47,12 @@ export function MeetingPage(): React.JSX.Element {
   return (
     <MeetingView
       key={key}
-      meetingRef={{ workspace: 'research', id: key }}
+      meetingRef={{ workspace, id: key }}
       onRenamed={(newId) => {
         setKnown((prev) =>
           prev.key === key ? { key, ids: [...prev.ids, newId] } : { key, ids: [key, newId] }
         )
-        void navigate(meetingRoute(newId), { replace: true })
+        void navigate(meetingRoute(workspace, newId), { replace: true })
       }}
     />
   )
@@ -92,7 +93,7 @@ function MeetingView({
 
   // Back goes to wherever the user came from (the landing page or the list); with no history, the landing page.
   const goBack = (): void =>
-    void (location.key !== 'default' ? navigate(-1) : navigate(meetingsBase))
+    void (location.key !== 'default' ? navigate(-1) : navigate(meetingsBase(meetingRef.workspace)))
 
   const addPerson = useCallback(async (name: string): Promise<Person> => {
     const list = await window.api.meetings.people.add({ name })
@@ -155,7 +156,7 @@ function MeetingView({
     try {
       await session.dispose() // saves anything pending first
       await window.api.meetings.delete(session.getRef())
-      void navigate(meetingsBase)
+      void navigate(meetingsBase(meetingRef.workspace))
     } catch (e) {
       setDeleteError(ipcErrorMessage(e))
       setDeleting(false)

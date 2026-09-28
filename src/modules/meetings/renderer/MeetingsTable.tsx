@@ -26,7 +26,7 @@ export function MeetingsTable({
   const navigate = useNavigate()
   const { tableProps, rowProps } = useRowNavigation(
     rows.length,
-    (index) => void navigate(meetingRoute(rows[index].id))
+    (index) => void navigate(meetingRoute(rows[index].workspace, rows[index].id))
   )
 
   return (
@@ -53,13 +53,13 @@ export function MeetingsTable({
                 key={`${row.workspace}/${row.id}`}
                 className={styles.row}
                 {...rowProps(index)}
-                onClick={() => void navigate(meetingRoute(row.id))}
+                onClick={() => void navigate(meetingRoute(row.workspace, row.id))}
               >
                 <td className={styles.nowrap}>
                   <Link
                     className={styles.link}
                     tabIndex={-1}
-                    to={meetingRoute(row.id)}
+                    to={meetingRoute(row.workspace, row.id)}
                     // The row handles the click; the link is for the keyboard and for assistive technology.
                     onClick={(event) => event.stopPropagation()}
                   >

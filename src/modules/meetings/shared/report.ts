@@ -6,7 +6,7 @@ import { compareNewestFirst, isUpcoming } from './query'
 import { durationMinutes, formatDate } from './time'
 import type { MeetingIndexRow } from './types'
 
-/** The series the log is kept for. */
+/** The series Research's log is kept for. Work has no such series, so its export covers every meeting. */
 export const REPORT_SERIES = 'Supervision'
 
 const MODE_LABELS = { 'in-person': 'In person', online: 'Online' } as const
@@ -15,25 +15,29 @@ export interface MeetingsReportInput {
   rows: readonly MeetingIndexRow[]
   year: number
   today: string
+  /** Only meetings of this series, titled "<seriesFilter> log"; omitted, every meeting, titled "Meetings log". */
+  seriesFilter?: string
 }
 
 /** The file name suggested for the export, for example "Supervision log 2025-26.pdf". */
-export function reportFileName(year: number): string {
-  return `${REPORT_SERIES} log ${academicYearLabel(year).replace('–', '-')}.pdf`
+export function reportFileName(year: number, seriesFilter?: string): string {
+  const title = seriesFilter ?? 'Meetings'
+  return `${title} log ${academicYearLabel(year).replace('–', '-')}.pdf`
 }
 
 /**
- * The supervision log of one academic year as a printable page: the totals, then one row per meeting,
- * oldest first. Meetings that have not happened yet are left out. Pure: the same input gives the same HTML.
+ * One academic year's meetings as a printable page: the totals, then one row per meeting, oldest first.
+ * Meetings that have not happened yet are left out. Pure: the same input gives the same HTML.
  */
 export function meetingsReportHtml(input: MeetingsReportInput): string {
-  const { year, today } = input
-  const supervision = input.rows.filter((r) => r.series === REPORT_SERIES)
-  const rows = meetingsInYear(supervision, year)
+  const { year, today, seriesFilter } = input
+  const included = seriesFilter ? input.rows.filter((r) => r.series === seriesFilter) : input.rows
+  const rows = meetingsInYear(included, year)
     .filter((r) => !isUpcoming(r, today))
     .sort((a, b) => -compareNewestFirst(a, b))
-  const hours = meetingHours(supervision, year, today)
+  const hours = meetingHours(included, year, today)
   const label = academicYearLabel(year)
+  const title = seriesFilter ?? 'Meetings'
 
   const body = rows
     .map((r) => {
@@ -57,7 +61,7 @@ export function meetingsReportHtml(input: MeetingsReportInput): string {
     .join(' · ')
 
   return reportPageHtml({
-    title: `${REPORT_SERIES} log ${label}`,
+    title: `${title} log ${label}`,
     subtitle: `Generated ${formatDate(today)}. Meetings that have not happened yet are not included.`,
     totalsHtml: `<strong>${escapeHtml(formatHours(hours.minutes))}</strong> in ${hours.meetings} ${hours.meetings === 1 ? 'meeting' : 'meetings'}${hours.withoutTimes > 0 ? ` (${hours.withoutTimes} without times, counted as 0)` : ''}.${skills ? `<br>Hours per skill (a meeting counts towards each of its skills): ${skills}` : ''}`,
     headHtml:

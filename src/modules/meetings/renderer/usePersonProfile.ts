@@ -4,10 +4,16 @@ import { DEFAULT_TRAINING_QUERY, queryTraining } from '@modules/training/shared/
 import type { TrainingIndexRow } from '@modules/training/shared/types'
 import { ownedBy, parseTodos, type TodoItem } from '../shared/todos'
 import { DEFAULT_MEETINGS_QUERY, queryMeetings } from '../shared/query'
-import type { MeetingIndexRow, Person } from '../shared/types'
+import {
+  MEETING_WORKSPACES,
+  type MeetingIndexRow,
+  type MeetingWorkspace,
+  type Person
+} from '../shared/types'
 
 /** One open TODO this person owns, with enough of its meeting to link to it. */
 export interface OwnedTodo extends TodoItem {
+  meetingWorkspace: MeetingWorkspace
   meetingId: string
   meetingHeading: string
   meetingDate: string
@@ -61,12 +67,14 @@ export function usePersonProfile(name: string): {
   useEffect(() => {
     let cancelled = false
     void (async () => {
-      const [people, meetingRows, trainingRows] = await Promise.all([
+      const [people, meetingRowsByWorkspace, trainingRows] = await Promise.all([
         window.api.meetings.people.list(),
-        window.api.meetings.list('research'),
+        Promise.all(MEETING_WORKSPACES.map((w) => window.api.meetings.list(w))),
         window.api.training.list('research')
       ])
       if (cancelled) return
+      // Every workspace's meetings, merged: a person is the same person whichever workspace met them.
+      const meetingRows = meetingRowsByWorkspace.flat()
       const person = people.find((p) => p.name === name) ?? null
 
       const meetings = queryMeetings(
@@ -88,7 +96,7 @@ export function usePersonProfile(name: string): {
 
       const bodies = await Promise.all(
         meetingRows.map((row) =>
-          window.api.meetings.read({ workspace: 'research', id: row.id }).catch(() => null)
+          window.api.meetings.read({ workspace: row.workspace, id: row.id }).catch(() => null)
         )
       )
       if (cancelled) return
@@ -101,6 +109,7 @@ export function usePersonProfile(name: string): {
               .filter((t) => !t.done && ownedBy(t, initials))
               .map((t) => ({
                 ...t,
+                meetingWorkspace: row.workspace,
                 meetingId: row.id,
                 meetingHeading: `${row.series || 'Meeting'} · ${row.date || 'No date yet'}`,
                 meetingDate: row.date

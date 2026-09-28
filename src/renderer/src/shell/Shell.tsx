@@ -19,6 +19,7 @@ import { SearchResultsPage } from './SearchResultsPage'
 import { SettingsPage } from './SettingsPage'
 import { ResearchLanding } from './ResearchLanding'
 import { TopBar } from './TopBar'
+import { WorkLanding } from './WorkLanding'
 import { WorkspaceEmpty } from './WorkspaceEmpty'
 import styles from './Shell.module.css'
 
@@ -123,7 +124,7 @@ export function Shell(): React.JSX.Element {
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/search" element={<SearchResultsPage />} />
             <Route path="/life" element={<WorkspaceEmpty workspace="life" />} />
-            <Route path="/work" element={<WorkspaceEmpty workspace="work" />} />
+            <Route path="/work" element={<WorkLanding />} />
             {modules.flatMap((m) =>
               m.status === 'live'
                 ? m.routes.map((r) => (

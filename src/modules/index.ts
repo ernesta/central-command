@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 import type { Workspace } from '@shared/settings'
 import type { SearchHit } from '@shared/search'
 import type { ShortcutGroup } from '@shared/shortcuts'
-import { meetingsModule } from './meetings'
+import { createMeetingsModule } from './meetings'
 import { notesModule } from './notes'
 import { plannedModules } from './planned'
 import { readingListsModule } from './reading-lists'
@@ -13,10 +13,11 @@ import type { LiveModuleManifest, ModuleManifest, PlannedModuleManifest } from '
 /** Add a new module by appending its manifest here; the shell builds routes and landing pages from this list. */
 export const modules: ModuleManifest[] = [
   readingsModule,
-  meetingsModule,
+  createMeetingsModule('research'),
   trainingModule,
   notesModule,
   readingListsModule,
+  createMeetingsModule('work'),
   ...plannedModules
 ]
 

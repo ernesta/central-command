@@ -3,7 +3,7 @@ import { searchTerms, snippet, type SearchHit } from '@shared/search'
 import { fold } from '@shared/text'
 import { meetingHeading } from '@shared/time'
 import { DEFAULT_MEETINGS_QUERY, queryMeetings } from '../shared/query'
-import type { MeetingIndexRow } from '../shared/types'
+import type { MeetingIndexRow, MeetingWorkspace } from '../shared/types'
 import { meetingRoute } from './meetings-paths'
 
 const DEFAULT_LIMIT = 6
@@ -25,15 +25,19 @@ export function meetingHits(
         key: row.id,
         title,
         detail: (!inTitle && snippet(row.excerpt, terms)) || row.summary || 'No summary yet.',
-        route: meetingRoute(row.id)
+        route: meetingRoute(row.workspace, row.id)
       }
     })
 }
 
-export async function searchMeetings(query: string, limit?: number): Promise<SearchHit[]> {
-  const [rows, people] = await Promise.all([
-    window.api.meetings.list('research'),
-    window.api.meetings.people.list()
-  ])
-  return meetingHits(rows, people, query, limit)
+export function searchMeetings(
+  workspace: MeetingWorkspace
+): (query: string, limit?: number) => Promise<SearchHit[]> {
+  return async (query, limit) => {
+    const [rows, people] = await Promise.all([
+      window.api.meetings.list(workspace),
+      window.api.meetings.people.list()
+    ])
+    return meetingHits(rows, people, query, limit)
+  }
 }

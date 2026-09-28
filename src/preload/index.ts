@@ -65,7 +65,7 @@ const api: Api = {
     delete: (ref) => ipcRenderer.invoke(MEETINGS_IPC.delete, ref),
     syncPreviousTodos: (ref, baseHash) =>
       ipcRenderer.invoke(MEETINGS_IPC.syncPrevious, ref, baseHash),
-    exportPdf: (year) => ipcRenderer.invoke(MEETINGS_IPC.exportPdf, year),
+    exportPdf: (workspace, year) => ipcRenderer.invoke(MEETINGS_IPC.exportPdf, workspace, year),
     people: {
       list: () => ipcRenderer.invoke(MEETINGS_IPC.peopleList),
       add: (input) => ipcRenderer.invoke(MEETINGS_IPC.peopleAdd, input),

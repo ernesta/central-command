@@ -41,7 +41,7 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
         series: SERIES[0],
         date: todayIso()
       })
-      navigate(meetingRoute(file.ref.id))
+      navigate(meetingRoute('research', file.ref.id))
     }
   },
   {
