@@ -3,6 +3,7 @@
    swapping between the two doesn't jump. */
 .bar {
   display: grid;
+  width: 100%;
   gap: 4px;
 }
 .row {
