@@ -683,7 +683,7 @@ or found on the way:
   300 ms and only asks if the session is still disposed, because in development React unmounts and mounts a new page at once. Not
   swept at start-up, so an empty note left by a crash stays until opened and left.
 
-### Editor card (after the first Notes review)
+### Editor card (after the first Notes review) (the "Created" part below was later dropped: see "Moving a note or meeting")
 
 - Every notes editor (Notes, Meetings, Training entries, the Training plan, Readings notes) sits in one shared `EditorCard`: a white window
   with a quiet line under the text, "Created … · Edited … · 412 words", which stays at the bottom of the window in a long note. The
@@ -1218,3 +1218,7 @@ Reference`. The Meetings folder is left to `import:work-meetings`. **The Admin &
   The name is worked out again for the new folder.
 - **A latent bug found on the way:** `MeetingPage` was keyed by the meeting id alone, so the same file name in the other workspace could
   reuse the old session; it is now keyed by workspace and id, as `NotePage` already was.
+- **"Created" is no longer shown (the user's call, 29 Sep 2026).** With notes able to move between workspaces a creation date would mislead
+  more than inform. The facts line is now "Saved · Edited … · N words" on every editor. Notes still record a `created` key in their front
+  matter (written on creation and by the importers, kept by moves); nothing displays it, and it can be dropped from the files later if wanted.
+  "Edited" is the file's modified time, so a move now gives the copy the original's modified time (`utimes`): moving is not an edit.
