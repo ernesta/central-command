@@ -30,8 +30,36 @@ export const markdownLinkRule = $inputRule(
 )
 
 /**
+ * A web address typed out in full becomes a link when the space after it goes in, so no address in a note is
+ * ever plain text you cannot click. Trailing punctuation ("see https://example.org.") stays outside the link.
+ */
+export const typedAddressRule = $inputRule(
+  () =>
+    new InputRule(
+      /(?<![\w/@.])((?:https?:\/\/|www\.)[^\s<>]+?)([.,;:!?)\]]*)\s$/i,
+      (state, match, start, end) => {
+        const type = state.schema.marks.link
+        const [, address, trailing] = match
+        const href = pastedLinkTarget(address)
+        if (!type || !href || !state.doc.resolve(start).parent.type.allowsMarkType(type))
+          return null
+        const code = state.schema.marks.inlineCode
+        if (state.doc.rangeHasMark(start, start + address.length, type)) return null
+        if (code && state.doc.rangeHasMark(start, start + address.length, code)) return null
+        return state.tr
+          .replaceWith(start, end, [
+            state.schema.text(address, [type.create({ href })]),
+            state.schema.text(`${trailing} `)
+          ])
+          .removeStoredMark(type)
+      }
+    )
+)
+
+/**
  * Pasting a web address while text is selected links that text to it (as in Slack) instead of replacing the
- * text with the address. Anything else pastes as usual, and so does a plain paste (no clipboard data attached).
+ * text with the address; pasting one with nothing selected inserts it as a link. Anything else pastes as usual,
+ * and so does a plain paste (no clipboard data attached).
  */
 export const pasteOverSelectionLink = $prose(
   () =>
@@ -40,10 +68,20 @@ export const pasteOverSelectionLink = $prose(
         handlePaste(view, event) {
           // Only a real paste: the plain paste (Cmd-Shift-V) is sent to the editor as a made-up event, and must not link.
           if (!event.isTrusted) return false
-          const href = pastedLinkTarget(event.clipboardData?.getData('text/plain') ?? '')
+          const pasted = event.clipboardData?.getData('text/plain') ?? ''
+          const href = pastedLinkTarget(pasted)
           const { selection, schema } = view.state
           const type = schema.marks.link
-          if (!href || !type || selection.empty) return false
+          if (!href || !type) return false
+          if (selection.empty) {
+            if (!selection.$from.parent.type.allowsMarkType(type)) return false
+            view.dispatch(
+              view.state.tr
+                .replaceSelectionWith(schema.text(pasted.trim(), [type.create({ href })]), false)
+                .removeStoredMark(type)
+            )
+            return true
+          }
           const { $from, $to, from, to } = selection
           if (!$from.sameParent($to) || !$from.parent.inlineContent) return false
           if (!$from.parent.type.allowsMarkType(type)) return false

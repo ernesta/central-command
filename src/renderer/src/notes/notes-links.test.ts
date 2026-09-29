@@ -120,8 +120,49 @@ describe('pasting an address over selected text', () => {
       expect(paste(view, 'just words')).toBe(false)
       expect(paste(view, null)).toBe(false)
       view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, 3)))
-      expect(paste(view, 'https://example.org')).toBe(false)
+      expect(paste(view, 'not an address')).toBe(false)
       expect(read()).toBe('Some word here\n')
+    })
+  })
+})
+
+describe('addresses are always links', () => {
+  it('links a pasted address when nothing is selected', async () => {
+    await withEditor('Some word here\n', (view, read) => {
+      view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, 6)))
+      expect(paste(view, 'https://example.org/a')).toBe(true)
+      expect(read()).toBe('Some <https://example.org/a>word here\n')
+    })
+  })
+
+  it('links a typed address at the space, keeping trailing punctuation outside', async () => {
+    await withEditor('', (view) => {
+      type(view, 'See https://example.org/a. Or www.example.org now')
+      const links = [...view.dom.querySelectorAll('a')].map((a) => [
+        a.textContent,
+        a.getAttribute('href')
+      ])
+      expect(links).toEqual([
+        ['https://example.org/a', 'https://example.org/a'],
+        ['www.example.org', 'https://www.example.org']
+      ])
+      expect(view.dom.textContent).toBe('See https://example.org/a. Or www.example.org now')
+    })
+  })
+
+  it('does not link inside inline code, and leaves typing after the link outside it', async () => {
+    await withEditor('`https://example.org` x\n', (view) => {
+      view.dispatch(view.state.tr.setSelection(TextSelection.atEnd(view.state.doc)))
+      type(view, 'y https://b.org z')
+      expect([...view.dom.querySelectorAll('a')].map((a) => a.textContent)).toEqual([
+        'https://b.org'
+      ])
+    })
+  })
+
+  it('loads an address already in a file as a link', async () => {
+    await withEditor('See https://example.org now\n', (view) => {
+      expect(view.dom.querySelector('a')?.getAttribute('href')).toBe('https://example.org')
     })
   })
 })
