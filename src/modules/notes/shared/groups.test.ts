@@ -21,6 +21,7 @@ function row(id: string, group = '', subgroup = '', edited = 1): NoteIndexRow {
   return {
     workspace: 'research',
     id,
+    uid: '',
     title: id,
     group,
     subgroup,

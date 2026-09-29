@@ -5,6 +5,7 @@ import { noteHits } from './search'
 const note = (over: Partial<NoteIndexRow>): NoteIndexRow => ({
   workspace: 'research',
   id: 'Methods',
+  uid: '',
   title: 'Methods',
   group: 'Thesis',
   subgroup: '',

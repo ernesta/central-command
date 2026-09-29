@@ -1,5 +1,6 @@
 import { readdir } from 'fs/promises'
 import type { Database } from 'better-sqlite3'
+import { addUid, newUid, readUid } from '@shared/entities'
 import { moveNoteFile } from '../../../main/notes/move-file'
 import type { NoteContent } from '@shared/notes'
 import {
@@ -11,6 +12,7 @@ import {
 import {
   NEW_MEETING_BODY,
   applyChanges,
+  joinNote,
   isValidDate,
   normaliseTime,
   parseMeta,
@@ -257,6 +259,34 @@ export class MeetingsStore {
     }
     await this.trash(path)
     deleteMeetingRow(this.db, ref.workspace, ref.id)
+  }
+
+  /**
+   * The id mentions of this meeting use, written into its front matter the first time it is asked for (see
+   * `NotesStore.ensureUid`: same rules, same hash guard).
+   */
+  async ensureUid(ref: MeetingRef): Promise<string> {
+    const path = this.pathOf(ref)
+    const disk = await readNoteFile(path)
+    if (!disk.exists) throw new MeetingError(`Meeting not found: ${ref.id}`)
+    const { head, body } = splitNote(disk.content)
+    const existing = readUid(head)
+    if (existing) return existing
+    const taken = new Set(
+      MEETING_WORKSPACES.flatMap((w) => listMeetingRows(this.db, w).map((r) => r.uid))
+    )
+    let uid = newUid()
+    while (taken.has(uid)) uid = newUid()
+    const { result, wrote } = await writeNoteFileGuarded(
+      path,
+      joinNote({ head: addUid(head, uid), body }),
+      disk.hash
+    )
+    if (result.status === 'conflict' || !wrote) {
+      throw new MeetingError('The meeting changed while it was being linked; try again')
+    }
+    await this.reindex(ref)
+    return uid
   }
 
   /**

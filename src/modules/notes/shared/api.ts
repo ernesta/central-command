@@ -59,6 +59,8 @@ export interface NotesApi {
   save(ref: NoteRef, changes: NoteChanges, baseHash: string): Promise<NoteSaveResult>
   /** Move the note's file to the Trash. The caller is responsible for asking the user first. */
   delete(ref: NoteRef): Promise<void>
+  /** The id a mention of this note uses, added to its front matter the first time (see `NotesStore.ensureUid`). */
+  ensureUid(ref: NoteRef): Promise<string>
   /**
    * Move the note to the other workspace (see `NotesStore.move`); resolves with it there. The caller saves first.
    */
@@ -79,6 +81,7 @@ export const NOTES_IPC = {
   save: 'notes:save',
   delete: 'notes:delete',
   move: 'notes:move',
+  ensureUid: 'notes:ensure-uid',
   discardIfEmpty: 'notes:discard-if-empty',
   changed: 'notes:changed'
 } as const

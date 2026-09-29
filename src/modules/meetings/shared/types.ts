@@ -49,6 +49,8 @@ export type { Person } from '@shared/people'
 export interface MeetingIndexRow {
   workspace: MeetingWorkspace
   id: string
+  /** The id mentions of this meeting use (`cc://meeting/<uid>`); '' until something first links to it. */
+  uid: string
   series: string
   date: string
   start: string | null

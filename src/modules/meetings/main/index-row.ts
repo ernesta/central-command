@@ -1,3 +1,4 @@
+import { readUid } from '@shared/entities'
 import { hashContent } from '../../../main/notes/guarded-file'
 import { SEARCH_TEXT_LENGTH, markdownToExcerpt } from '../../../main/notes/excerpt'
 import { parseMeta, splitNote, isValidDate } from '../shared/front-matter'
@@ -34,6 +35,7 @@ export function buildIndexRow(
   return {
     workspace,
     id,
+    uid: readUid(head),
     series: meta.series,
     date,
     start: meta.start,

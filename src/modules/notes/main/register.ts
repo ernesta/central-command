@@ -64,6 +64,7 @@ function register({ db, paths }: MainContext): () => void {
     return store.save(asRef(ref), asObject(changes, 'changes') as NoteChanges, baseHash)
   })
   ipcMain.handle(NOTES_IPC.delete, (_event, ref: unknown) => store.delete(asRef(ref)))
+  ipcMain.handle(NOTES_IPC.ensureUid, (_event, ref: unknown) => store.ensureUid(asRef(ref)))
   ipcMain.handle(NOTES_IPC.move, (_event, ref: unknown, to: unknown) =>
     store.move(asRef(ref), asWorkspace(to))
   )

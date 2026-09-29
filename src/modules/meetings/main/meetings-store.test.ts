@@ -53,6 +53,43 @@ beforeEach(() => {
 })
 afterEach(() => rmSync(root, { recursive: true, force: true }))
 
+describe('ensureUid', () => {
+  it('adds a uid once without touching the rest of the file, and indexes it', async () => {
+    const made = await store.create({
+      workspace: 'research',
+      series: 'Luminos',
+      date: '2026-09-24',
+      body: 'kept\n'
+    })
+    const uid = await store.ensureUid(made.ref)
+    expect(uid).toMatch(/^[a-z0-9]{8}$/)
+    expect(await store.ensureUid(made.ref)).toBe(uid)
+    const file = disk('2026-09-24 Luminos')
+    expect(file).toContain(`uid: ${uid}\n`)
+    expect(splitNote(file).body).toBe('kept\n')
+    expect(file.replace(`uid: ${uid}\n`, '')).toBe(made.note.content)
+    expect(getMeetingRow(db, 'research', '2026-09-24 Luminos')?.uid).toBe(uid)
+  })
+
+  it('survives a rename (date changed) and a move to the other workspace', async () => {
+    const made = await store.create({
+      workspace: 'research',
+      series: 'Luminos',
+      date: '2026-09-24'
+    })
+    const uid = await store.ensureUid(made.ref)
+    const now = await store.read(made.ref)
+    const saved = await store.save(made.ref, { meta: { date: '2026-10-01' } }, now.note.hash)
+    expect(saved).toMatchObject({ status: 'saved', renamedTo: '2026-10-01 Luminos' })
+    const moved = await store.move({ workspace: 'research', id: '2026-10-01 Luminos' }, 'work')
+    expect(getMeetingRow(db, 'work', moved.ref.id)?.uid).toBe(uid)
+  })
+
+  it('refuses a missing meeting', async () => {
+    await expect(store.ensureUid(ref('missing'))).rejects.toThrow(MeetingError)
+  })
+})
+
 describe('move', () => {
   it('moves a meeting, text and all, to the other workspace', async () => {
     const made = await store.create({

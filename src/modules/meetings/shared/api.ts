@@ -91,6 +91,8 @@ export interface MeetingsApi {
   save(ref: MeetingRef, changes: MeetingChanges, baseHash: string): Promise<MeetingSaveResult>
   /** Move the meeting's file to the Trash. The caller is responsible for asking the user first. */
   delete(ref: MeetingRef): Promise<void>
+  /** The id a mention of this meeting uses, added to its front matter the first time (see `MeetingsStore.ensureUid`). */
+  ensureUid(ref: MeetingRef): Promise<string>
   /** Move the meeting to the other workspace (see `MeetingsStore.move`); resolves with it there. The caller saves first. */
   move(ref: MeetingRef, to: MeetingWorkspace): Promise<MeetingFile>
   /**
@@ -133,6 +135,7 @@ export const MEETINGS_IPC = {
   save: 'meetings:save',
   delete: 'meetings:delete',
   move: 'meetings:move',
+  ensureUid: 'meetings:ensure-uid',
   syncPrevious: 'meetings:sync-previous',
   exportPdf: 'meetings:export-pdf',
   peopleList: 'meetings:people-list',

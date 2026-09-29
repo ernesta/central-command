@@ -10,6 +10,7 @@ let db: Database.Database
 const row = (id: string, over: Partial<NoteIndexRow> = {}): NoteIndexRow => ({
   workspace: 'research',
   id,
+  uid: '',
   title: id,
   group: 'Thesis',
   subgroup: 'Methods',

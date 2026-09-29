@@ -30,6 +30,8 @@ export interface NoteIndexRow {
   group: string
   subgroup: string
   pinned: boolean
+  /** The id mentions of this note use (`cc://note/<uid>`); '' until something first links to it. */
+  uid: string
   /** The file's modified time in milliseconds, so edits made in another tool show too. */
   edited: number
   /** The first line of text in the note, without Markdown marks; shown when the note has no title. */

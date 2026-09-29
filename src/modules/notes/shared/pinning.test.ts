@@ -5,6 +5,7 @@ import type { NoteIndexRow } from './types'
 const note = (id: string, pinned: boolean, edited = 1): NoteIndexRow => ({
   workspace: 'research',
   id,
+  uid: '',
   title: id,
   group: '',
   subgroup: '',

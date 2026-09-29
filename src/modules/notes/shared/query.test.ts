@@ -15,6 +15,7 @@ function note(id: string, over: Partial<NoteIndexRow> = {}): NoteIndexRow {
   return {
     workspace: 'research',
     id,
+    uid: '',
     title: id,
     group: '',
     subgroup: '',

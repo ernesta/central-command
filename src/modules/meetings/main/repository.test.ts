@@ -14,6 +14,7 @@ import {
 const row = (id: string, over: Partial<MeetingIndexRow> = {}): MeetingIndexRow => ({
   workspace: 'research',
   id,
+  uid: '',
   series: 'Supervision',
   date: id.slice(0, 10),
   start: null,

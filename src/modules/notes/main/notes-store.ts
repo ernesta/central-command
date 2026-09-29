@@ -8,10 +8,12 @@ import {
   writeNoteFileGuarded
 } from '../../../main/notes/guarded-file'
 import { moveNoteFile } from '../../../main/notes/move-file'
+import { addUid, newUid, readUid } from '@shared/entities'
 import { parseHead } from '@shared/front-matter'
 import {
   NEW_NOTE_BODY,
   applyChanges,
+  joinNote,
   parseMeta,
   splitNote,
   updateHead,
@@ -205,6 +207,35 @@ export class NotesStore {
     }
     await this.trash(path)
     deleteNoteRow(this.db, ref.workspace, ref.id)
+  }
+
+  /**
+   * The id mentions of this note use, written into its front matter the first time it is asked for (only a note something
+   * links to ever gets one). Written under the same hash guard as every save: if the file changed meanwhile nothing is
+   * written and the caller is told to try again. The uid never changes once there, and moves keep it (the file is copied).
+   */
+  async ensureUid(ref: NoteRef): Promise<string> {
+    const path = this.pathOf(ref)
+    const disk = await readNoteFile(path)
+    if (!disk.exists) throw new NoteError(`Note not found: ${ref.id}`)
+    const { head, body } = splitNote(disk.content)
+    const existing = readUid(head)
+    if (existing) return existing
+    const taken = new Set(
+      NOTE_WORKSPACES.flatMap((w) => listNoteRows(this.db, w).map((r) => r.uid))
+    )
+    let uid = newUid()
+    while (taken.has(uid)) uid = newUid()
+    const { result, wrote } = await writeNoteFileGuarded(
+      path,
+      joinNote({ head: addUid(head, uid), body }),
+      disk.hash
+    )
+    if (result.status === 'conflict' || !wrote) {
+      throw new NoteError('The note changed while it was being linked; try again')
+    }
+    await this.reindex(ref)
+    return uid
   }
 
   /**

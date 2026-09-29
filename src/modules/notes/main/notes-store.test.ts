@@ -121,6 +121,46 @@ describe('workspaces', () => {
   })
 })
 
+describe('ensureUid', () => {
+  it('adds a uid to the front matter once, keeps everything else, and indexes it', async () => {
+    const made = await store.create({
+      workspace: 'research',
+      title: 'Plan',
+      group: 'Thesis',
+      body: 'text\n'
+    })
+    const uid = await store.ensureUid(made.ref)
+    expect(uid).toMatch(/^[a-z0-9]{8}$/)
+    expect(await store.ensureUid(made.ref)).toBe(uid)
+    expect(disk('Plan')).toBe(`---\ntitle: Plan\ngroup: Thesis\nuid: ${uid}\n---\n\ntext\n`)
+    expect(getNoteRow(db, 'research', 'Plan')?.uid).toBe(uid)
+  })
+
+  it('survives a rename, a save and a move to the other workspace', async () => {
+    const made = await store.create({ workspace: 'research', title: 'Plan' })
+    const uid = await store.ensureUid(made.ref)
+    const now = await store.read(made.ref)
+    const saved = await store.save(made.ref, { meta: { title: 'Renamed' } }, now.note.hash)
+    expect(saved).toMatchObject({ status: 'saved', renamedTo: 'Renamed' })
+    expect(getNoteRow(db, 'research', 'Renamed')?.uid).toBe(uid)
+    const moved = await store.move({ workspace: 'research', id: 'Renamed' }, 'work')
+    expect(getNoteRow(db, 'work', moved.ref.id)?.uid).toBe(uid)
+  })
+
+  it('gives different notes different uids, and refuses a missing note', async () => {
+    const a = await store.create({ workspace: 'research', title: 'A' })
+    const b = await store.create({ workspace: 'work', title: 'B' })
+    expect(await store.ensureUid(a.ref)).not.toBe(await store.ensureUid(b.ref))
+    await expect(store.ensureUid(ref('missing'))).rejects.toThrow(NoteError)
+  })
+
+  it('makes a note that has a uid something the empty-note clean-up leaves alone', async () => {
+    const made = await store.create({ workspace: 'research' })
+    await store.ensureUid(made.ref)
+    expect(await store.discardIfEmpty(made.ref)).toBe(false)
+  })
+})
+
 describe('move', () => {
   it('moves a note, fields and text, to the other workspace', async () => {
     const made = await store.create({

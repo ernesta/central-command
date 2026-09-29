@@ -5,6 +5,7 @@ import type { MeetingIndexRow } from './types'
 const row = (date: string, over: Partial<MeetingIndexRow> = {}): MeetingIndexRow => ({
   workspace: 'research',
   id: `${date} Supervision`,
+  uid: '',
   series: 'Supervision',
   date,
   start: '10:00',

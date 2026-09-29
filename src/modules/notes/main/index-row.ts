@@ -1,3 +1,4 @@
+import { readUid } from '@shared/entities'
 import { hashContent } from '../../../main/notes/guarded-file'
 import { SEARCH_TEXT_LENGTH, markdownToExcerpt } from '../../../main/notes/excerpt'
 import { parseMeta, splitNote } from '../shared/front-matter'
@@ -33,6 +34,7 @@ export function buildIndexRow(
     group: meta.group,
     subgroup: meta.subgroup,
     pinned: meta.pinned,
+    uid: readUid(head),
     edited: Math.floor(edited),
     firstLine: firstLineOf(body),
     excerpt: markdownToExcerpt(body, SEARCH_TEXT_LENGTH),
