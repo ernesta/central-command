@@ -19,7 +19,6 @@ suggested (safe and self-contained first); reorder if a dependency makes more se
 
 See `docs/DECISIONS.md`, "Training entry page: a side panel, matching Meetings".
 
-
 Meetings' `MeetingPage` has a `.split` layout (`grid-template-columns: minmax(0, 1fr) 260px`): the note on the left,
 `TopicsPanel` (headings, click to jump, a discussed checkbox) on the right. Training's `TrainingEntryPage` currently
 has `FilesPanel` (the linked folder's file listing) as a full-width block above the note
@@ -46,7 +45,6 @@ outline next to Meetings' checkbox-outline, that's a real request to reconsider,
 ### 3. Find in the note: redesign as an inline, keyboard-first bar, with basic replace — done
 
 See `docs/DECISIONS.md`, "Find in the note, redesigned as an inline bar with replace".
-
 
 Currently (`src/renderer/src/notes/useNotesFind.tsx`, `notes-find.ts`, `NotesFindBar.module.css`, all built this
 session): a floating bar, `position: fixed`, bottom-centre of the window, opened by Cmd-F. The user wants it to feel
@@ -83,7 +81,6 @@ See `docs/DECISIONS.md`, "Reading lists" for the full write-up, including the op
 building and a real bug (`@citekey` vs `[[citekey]]`) only found by driving the built app. Not done: an importer
 for the user's own `Language of Instruction Papers.docx` (not asked for in this list; a separate piece of work if
 wanted), and reordering sections or entries other than by editing the Markdown.
-
 
 Grounded in a real example the user shared: `/Users/ernesta/Downloads/Readings/2026 09 26 Language of Instruction
 Papers.docx` (read it — a curated bibliography for their supervisor). Its shape: a list has a name, and is divided
@@ -129,7 +126,6 @@ go, the way every other module's decisions are recorded):
 
 See `docs/DECISIONS.md`, "A page per person, and links", including a real bug (people.json links were silently
 dropped by the update IPC handler) only found by driving the built app.
-
 
 From the ideas list already in this file (`## Ideas`, "People, extended", items 1 and 3), now to be built:
 
@@ -411,6 +407,29 @@ asked for it scoped to notes instead, which turned out to be the better design a
 (`src/renderer/src/notes/notes-find.ts`) built into `NotesEditor` itself, so Notes, Meetings, Training entries, the plan and
 Readings notes all have it, with no page-wide search and no Electron IPC involved at all. See `docs/DECISIONS.md`, "Find in
 the note".
+
+## Ideas to think about (parked 29 Sep 2026; none started, the user decides)
+
+**Editor**
+
+- **Link editing (Cmd-K on selected text):** set, change or remove a link's address without touching the Markdown.
+- **"Paste without formatting" in the right-click menu:** reuses the Cmd-Shift-V code, and works even if the key chord misbehaves.
+- **Plan text width:** cap the Training plan's text at 780px like Notes and Meetings (it is full width now).
+- **Plan outline levels:** the plan's outline now also lists `#` headings, since it shares the Notes outline. Keep, or go back to `##`/`###` only?
+- **Created dates everywhere:** add a `created:` front-matter key to new meetings, training entries and plans (and optionally backfill from
+  file dates with a one-off importer). Only Notes record it today.
+
+**Bigger, for a long unattended stretch** (each would get a short plan first, then be built and checked in the app)
+
+1. **Prepare for a meeting** (People idea 2): from a person or an upcoming meeting, one page with what you owe them, what they owe you,
+   the last meeting's topics and its open TODOs.
+2. **Home page** first version, from the decided list in "Home" below: today's meetings, open TODOs due, pinned notes, training hours.
+3. **TODO overview:** every open `TODO(XX)` across meetings in one filterable list (by owner, series, year), each linking to its meeting.
+4. **Work workspace wiring:** Work's own Meetings module on the already-written importer, mirroring Research.
+5. **Backup and export:** one command that zips the data folder (notes, plans, people) to a chosen place, plus a "last backed up" line in Settings.
+6. **Unlinked mentions:** on a person's or note's page, meetings and notes that mention the name but do not link it.
+7. **Tags across modules:** one tag vocabulary for notes, readings and reading lists, with a filter row on each list.
+8. **Weekly review page:** what changed this week (meetings held, notes edited, training hours), generated from files' dates.
 
 ## Later, roughly in order (not for Phase 1)
 

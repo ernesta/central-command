@@ -1176,3 +1176,6 @@ own Meetings, People and person pages were re-driven the same way and are unchan
   driven by Playwright (menu accelerators are not synthetic key events), so try it by hand.
 - **Uneven bullet spacing**: a list nested in an item kept the top-level list's bottom margin, so the gap after an item depended on
   whether it had children. Nested lists now have no margin, and a second paragraph in an item has a small one.
+- **Addresses are always links.** A typed `https://…` or `www.…` becomes a link at the space after it (trailing punctuation stays outside;
+  not in inline code); a pasted address with nothing selected is inserted as a link. Addresses already in a file load as links (the editor
+  writes them back as `<https://…>`, as before). Enter straight after a typed address does not convert it; the next space or a paste does.
