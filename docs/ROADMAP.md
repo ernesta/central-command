@@ -437,6 +437,8 @@ the note".
 
 - Real Claude wiring for the Ask panel; embedded terminal for Build
 - Shared task engine (tasks, dates, time tracking, lists, subtasks, table/board/calendar views) and a one-time ClickUp import
+- **Hours and Time off** (replace the user's two Google Sheets; sessions later feed Tasks): designed 29 Sep 2026, not built; plan in
+  `docs/TIME_PLAN.md` (eight stages, open questions at the end).
 - **Training** (the formal training log, a notes page per entry, linked files, PDF export): the plan and mockup are drafted in
   `docs/TRAINING_PLAN.md` and `docs/design/training-mockup.html`; built; see the Training section above.
 - **Notes** (one module for free notes with a group per note, pinned notes, quick capture; replaces Thesis, Data Sources and Inbox): plan
