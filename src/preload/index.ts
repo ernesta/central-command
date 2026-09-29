@@ -34,6 +34,11 @@ const api: Api = {
         listener(isFullScreen)
       ipcRenderer.on(IPC.appFullScreenChange, handler)
       return () => ipcRenderer.removeListener(IPC.appFullScreenChange, handler)
+    },
+    onPastePlain: (listener) => {
+      const handler = (_event: Electron.IpcRendererEvent, text: string): void => listener(text)
+      ipcRenderer.on(IPC.appPastePlain, handler)
+      return () => ipcRenderer.removeListener(IPC.appPastePlain, handler)
     }
   },
   readings: {

@@ -14,6 +14,7 @@ import { ErrorBoundary } from '../components/ErrorBoundary'
 import { Notice } from '../components/Notice'
 import { useSettings } from '../state/settings-context'
 import { DockActions } from './DockActions'
+import { usePastePlain } from './usePastePlain'
 import { GlobalSearch } from './GlobalSearch'
 import { SearchResultsPage } from './SearchResultsPage'
 import { SettingsPage } from './SettingsPage'
@@ -34,6 +35,7 @@ export function Shell(): React.JSX.Element {
   const navigate = useNavigate()
   const [buildError, setBuildError] = useState<string | null>(null)
   const [searchOpen, setSearchOpen] = useState(false)
+  usePastePlain()
 
   const openBuild = async (): Promise<void> => {
     const result = await window.api.build.openSession()

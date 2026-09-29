@@ -16,6 +16,7 @@ import { mainModules } from '@modules/main-registry'
 import { defaultSettings } from '@shared/settings'
 import { buildContextMenu } from './context-menu'
 import { installDockMenu } from './dock-menu'
+import { isPastePlainChord } from './paste-plain'
 import { restoreBounds } from './window-bounds'
 import { isSafeExternalUrl } from './urls'
 import icon from '../../resources/icon.png?asset'
@@ -117,7 +118,12 @@ function createWindow(settings: SettingsStore): void {
   )
   // A plain Escape (no modifiers) leaves full screen, the way most full-screen Mac apps behave; the
   // renderer's own Escape handling (closing a dialog, the find bar, …) still runs independently.
-  mainWindow.webContents.on('before-input-event', (_event, input) => {
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (isPastePlainChord(input, process.platform)) {
+      event.preventDefault()
+      mainWindow.webContents.send(IPC.appPastePlain, clipboard.readText())
+      return
+    }
     if (
       input.type === 'keyDown' &&
       input.key === 'Escape' &&

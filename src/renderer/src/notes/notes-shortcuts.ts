@@ -42,6 +42,16 @@ export const NOTES_EDITOR_SHORTCUTS: ShortcutGroup = {
       note: 'A plain click puts the cursor in the link.'
     },
     {
+      action: 'Link the selected text',
+      keys: ['Mod-v'],
+      note: 'Paste a web address while text is selected. Typing [text](address) also makes a link.'
+    },
+    {
+      action: 'Paste without formatting',
+      keys: ['Mod-Shift-v'],
+      note: 'Works in every text field.'
+    },
+    {
       action: 'Find in the note',
       keys: [FIND_SHORTCUT],
       note: 'Enter goes to the next match, Shift-Enter to the previous.'

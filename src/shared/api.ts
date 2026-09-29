@@ -50,6 +50,8 @@ export interface Api {
     onDockAction(listener: (action: DockActionId) => void): () => void
     /** The window entered or left full screen (macOS). Returns an unsubscribe function. */
     onFullScreenChange(listener: (isFullScreen: boolean) => void): () => void
+    /** Cmd-Shift-V was pressed: the clipboard's text, to paste without formatting. Returns an unsubscribe function. */
+    onPastePlain(listener: (text: string) => void): () => void
   }
   readings: ReadingsApi
   meetings: MeetingsApi
@@ -78,6 +80,7 @@ export const IPC = {
   appRevealData: 'app:reveal-data',
   appDockAction: 'app:dock-action',
   appFullScreenChange: 'app:full-screen-change',
+  appPastePlain: 'app:paste-plain',
   appBeforeClose: 'app:before-close',
   appCloseReady: 'app:close-ready',
   buildOpenSession: 'build:open-session'
