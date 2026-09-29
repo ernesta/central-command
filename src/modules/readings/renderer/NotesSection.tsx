@@ -1,24 +1,9 @@
 import { Button } from '@renderer/components/Button'
 import { Notice } from '@renderer/components/Notice'
-import type { SaveState } from '@renderer/notes/notes-session'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { NotesEditor } from '@renderer/notes/NotesEditor'
 import { useNotesSession } from '@renderer/notes/useNotesSession'
 import styles from './NotesSection.module.css'
-
-function statusText(save: SaveState, hasContent: boolean, reloaded: boolean): string {
-  switch (save) {
-    case 'saving':
-      return 'Saving…'
-    case 'dirty':
-      return 'Unsaved changes'
-    case 'error':
-      return 'Couldn’t save'
-    case 'clean':
-      if (reloaded) return 'Updated from an outside change'
-      return hasContent ? 'Saved' : ''
-  }
-}
 
 /**
  * A reading's notes: a live-render Markdown editor backed by `<citekey>.md`, with autosave and
@@ -32,14 +17,6 @@ export function NotesSection({ citekey }: { citekey: string }): React.JSX.Elemen
     <section className={styles.section} aria-label="Notes">
       <div className={styles.header}>
         <h2 className={styles.label}>Notes</h2>
-        <span
-          className={[styles.status, save === 'error' && styles.statusError]
-            .filter(Boolean)
-            .join(' ')}
-          role="status"
-        >
-          {statusText(save, hasContent, reloadedFromDisk)}
-        </span>
       </div>
 
       {(conflict || error) && (
@@ -77,7 +54,13 @@ export function NotesSection({ citekey }: { citekey: string }): React.JSX.Elemen
       )}
 
       {snapshot.status === 'ready' && (
-        <EditorCard text={text} edited={updatedAt}>
+        <EditorCard
+          text={text}
+          edited={updatedAt}
+          save={save}
+          reloaded={reloadedFromDisk}
+          hasContent={hasContent}
+        >
           {(findSetup) => (
             <NotesEditor
               key={snapshot.editorKey}

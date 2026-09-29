@@ -3,6 +3,8 @@ import { useMemo } from 'react'
 import { isoDate } from '@shared/dates'
 import { formatDate } from '@shared/time'
 import { wordCount, wordCountLabel } from '@shared/words'
+import type { SaveState } from './notes-session'
+import { saveStatusText } from './save-status'
 import { useNotesFind } from './useNotesFind'
 import styles from './EditorCard.module.css'
 
@@ -18,6 +20,12 @@ interface EditorCardProps {
   created?: string
   /** When the file was last changed (milliseconds); null when not known yet. */
   edited: number | null
+  /** Where saving stands; shown first on the line ("Saved · Edited …"). Leave out for a card that never saves. */
+  save?: SaveState
+  /** True after the note was refreshed from disk because another tool changed it. */
+  reloaded?: boolean
+  /** Whether the note has any text yet; with none, "Saved" is not shown. */
+  hasContent?: boolean
 }
 
 /**
@@ -29,10 +37,14 @@ export function EditorCard({
   children,
   text,
   created,
-  edited
+  edited,
+  save,
+  reloaded = false,
+  hasContent = true
 }: EditorCardProps): React.JSX.Element {
   const find = useNotesFind()
   const words = useMemo(() => wordCount(text), [text])
+  const status = save ? saveStatusText(save, reloaded, hasContent) : ''
   const parts = [
     created ? `Created ${formatDate(created)}` : null,
     edited === null ? null : `Edited ${formatDate(isoDate(edited))}`,
@@ -43,7 +55,21 @@ export function EditorCard({
     <div className={styles.card}>
       <div className={styles.body}>{children(find.setup)}</div>
       <div className={styles.footer}>
-        {find.open ? find.bar : <p className={styles.factsLine}>{parts.join(' · ')}</p>}
+        {find.open ? (
+          find.bar
+        ) : (
+          <p className={styles.factsLine}>
+            {status && (
+              <>
+                <span className={save === 'error' ? styles.statusError : undefined} role="status">
+                  {status}
+                </span>
+                {' · '}
+              </>
+            )}
+            {parts.join(' · ')}
+          </p>
+        )}
       </div>
     </div>
   )

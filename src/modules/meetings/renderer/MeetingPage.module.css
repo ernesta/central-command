@@ -36,13 +36,6 @@
   align-items: center;
   gap: 16px;
 }
-.status {
-  color: var(--text-muted);
-  font-size: var(--text-12);
-}
-.statusError {
-  color: var(--danger);
-}
 .delete {
   color: var(--danger);
   border-color: var(--danger);

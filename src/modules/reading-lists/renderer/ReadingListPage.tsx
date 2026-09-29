@@ -9,26 +9,12 @@ import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { NotesEditor } from '@renderer/notes/NotesEditor'
-import type { SaveState } from '@renderer/notes/notes-session'
 import { attachReading, parseListBody } from '@modules/reading-lists/shared/list-body'
 import type { ReadingListRef } from '@modules/reading-lists/shared/types'
 import { EntriesPanel } from './EntriesPanel'
 import { readingListRoute, readingListsBase } from './reading-lists-paths'
 import { useListSession } from './useListSession'
 import styles from './ReadingListPage.module.css'
-
-function statusText(save: SaveState, reloaded: boolean): string {
-  switch (save) {
-    case 'saving':
-      return 'Saving…'
-    case 'dirty':
-      return 'Unsaved changes'
-    case 'error':
-      return 'Couldn’t save'
-    case 'clean':
-      return reloaded ? 'Updated from an outside change' : 'Saved'
-  }
-}
 
 /** One reading list: its title, its sections and entries (a Markdown note), and the entries panel. */
 export function ReadingListPage(): React.JSX.Element {
@@ -142,14 +128,6 @@ function ListView({
           }
         />
         <div className={styles.actions}>
-          <span
-            className={[styles.status, save === 'error' && styles.statusError]
-              .filter(Boolean)
-              .join(' ')}
-            role="status"
-          >
-            {statusText(save, reloadedFromDisk)}
-          </span>
           <Button size="small" className={styles.delete} onClick={() => setConfirmDelete(true)}>
             Delete list
           </Button>
@@ -197,7 +175,7 @@ function ListView({
 
       <div className={styles.split}>
         <div className={styles.doc}>
-          <EditorCard text={body} edited={updatedAt}>
+          <EditorCard text={body} edited={updatedAt} save={save} reloaded={reloadedFromDisk}>
             {(findSetup) => (
               <NotesEditor
                 key={snapshot.editorKey}

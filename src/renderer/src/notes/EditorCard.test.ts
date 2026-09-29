@@ -40,6 +40,20 @@ describe('EditorCard', () => {
     expect(footer({ text: '', edited: null })).toBe('0 words')
   })
 
+  it('starts the line with how saving stands', () => {
+    expect(footer({ text: 'one', edited: noon(2026, 9, 25), save: 'clean' })).toBe(
+      '<span role="status">Saved</span> · Edited Sep 25, 2026 · 1 word'
+    )
+    expect(footer({ text: 'one', edited: null, save: 'saving' })).toContain('Saving…')
+  })
+
+  it('marks a failed save in red and says nothing for a note with no text yet', () => {
+    expect(footer({ text: 'one', edited: null, save: 'error' })).toMatch(
+      /^<span class="[^"]+" role="status">Couldn’t save<\/span>/
+    )
+    expect(footer({ text: '', edited: null, save: 'clean', hasContent: false })).toBe('0 words')
+  })
+
   it('puts the editor above the facts line', () => {
     const html = render({ text: '', edited: null })
     expect(html.indexOf('editor')).toBeLessThan(html.indexOf('0 words'))

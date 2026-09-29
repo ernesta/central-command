@@ -9,7 +9,6 @@ import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { NotesEditor } from '@renderer/notes/NotesEditor'
-import type { SaveState } from '@renderer/notes/notes-session'
 import { ownerOptions } from '../shared/people'
 import { meetingHeading } from '../shared/time'
 import { appendTopic, parseTopics, type Topic } from '../shared/topics'
@@ -20,19 +19,6 @@ import { TopicsPanel } from './TopicsPanel'
 import { useMeetingSession } from './useMeetingSession'
 import { useTodoHelper } from './useTodoHelper'
 import styles from './MeetingPage.module.css'
-
-function statusText(save: SaveState, reloaded: boolean): string {
-  switch (save) {
-    case 'saving':
-      return 'Saving…'
-    case 'dirty':
-      return 'Unsaved changes'
-    case 'error':
-      return 'Couldn’t save'
-    case 'clean':
-      return reloaded ? 'Updated from an outside change' : 'Saved'
-  }
-}
 
 /** One meeting: its details, its note (Summary, Previous TODOs, Notes) and the topics panel. */
 export function MeetingPage(): React.JSX.Element {
@@ -193,14 +179,6 @@ function MeetingView({
       <div className={styles.head}>
         <h1 className={styles.title}>{heading}</h1>
         <div className={styles.actions}>
-          <span
-            className={[styles.status, save === 'error' && styles.statusError]
-              .filter(Boolean)
-              .join(' ')}
-            role="status"
-          >
-            {statusText(save, reloadedFromDisk)}
-          </span>
           <Button size="small" className={styles.delete} onClick={() => setConfirmDelete(true)}>
             Delete meeting
           </Button>
@@ -260,7 +238,7 @@ function MeetingView({
 
       <div className={styles.split}>
         <div className={styles.doc} ref={editorRef}>
-          <EditorCard text={body} edited={updatedAt}>
+          <EditorCard text={body} edited={updatedAt} save={save} reloaded={reloadedFromDisk}>
             {(findSetup) => (
               <NotesEditor
                 key={snapshot.editorKey}

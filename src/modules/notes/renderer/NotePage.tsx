@@ -9,7 +9,6 @@ import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { NotesEditor } from '@renderer/notes/NotesEditor'
-import type { SaveState } from '@renderer/notes/notes-session'
 import { markdownToExcerpt } from '@shared/text'
 import { deriveGroups } from '../shared/groups'
 import { canPin } from '../shared/pinning'
@@ -25,19 +24,6 @@ import styles from './NotePage.module.css'
 /** Where the cursor starts in a note that was just made: the title (New note) or the text (quick capture). */
 export interface NoteLocationState {
   focus?: 'title' | 'body'
-}
-
-function statusText(save: SaveState, reloaded: boolean): string {
-  switch (save) {
-    case 'saving':
-      return 'Saving…'
-    case 'dirty':
-      return 'Unsaved changes'
-    case 'error':
-      return 'Couldn’t save'
-    case 'clean':
-      return reloaded ? 'Updated from an outside change' : 'Saved'
-  }
 }
 
 /** One note: its title, group and pin above the text. */
@@ -175,14 +161,6 @@ function NoteView({
           >
             {meta.pinned ? 'Pinned' : 'Pin'}
           </Button>
-          <span
-            className={[styles.status, save === 'error' && styles.statusError]
-              .filter(Boolean)
-              .join(' ')}
-            role="status"
-          >
-            {statusText(save, reloadedFromDisk)}
-          </span>
           <Button size="small" className={styles.delete} onClick={() => setConfirmDelete(true)}>
             Delete note
           </Button>
@@ -235,7 +213,13 @@ function NoteView({
 
       <div className={styles.split}>
         <div className={styles.doc} ref={docRef}>
-          <EditorCard text={body} created={meta.created || undefined} edited={updatedAt}>
+          <EditorCard
+            text={body}
+            created={meta.created || undefined}
+            edited={updatedAt}
+            save={save}
+            reloaded={reloadedFromDisk}
+          >
             {(findSetup) => (
               <NotesEditor
                 key={snapshot.editorKey}

@@ -9,7 +9,6 @@ import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { NotesEditor } from '@renderer/notes/NotesEditor'
-import type { SaveState } from '@renderer/notes/notes-session'
 import { NoteOutline } from '@modules/notes/renderer/NoteOutline'
 import type { Person } from '@shared/people'
 import { formatDate } from '@shared/time'
@@ -20,19 +19,6 @@ import { entryRoute, trainingBase } from './training-paths'
 import { TrainingMetaFields } from './TrainingMetaFields'
 import { useTrainingSession } from './useTrainingSession'
 import styles from './TrainingEntryPage.module.css'
-
-function statusText(save: SaveState, reloaded: boolean): string {
-  switch (save) {
-    case 'saving':
-      return 'Saving…'
-    case 'dirty':
-      return 'Unsaved changes'
-    case 'error':
-      return 'Couldn’t save'
-    case 'clean':
-      return reloaded ? 'Updated from an outside change' : 'Saved'
-  }
-}
 
 /** One training entry: its details and its note (Summary and Notes). */
 export function TrainingEntryPage(): React.JSX.Element {
@@ -167,14 +153,6 @@ function EntryView({
           }
         />
         <div className={styles.actions}>
-          <span
-            className={[styles.status, save === 'error' && styles.statusError]
-              .filter(Boolean)
-              .join(' ')}
-            role="status"
-          >
-            {statusText(save, reloadedFromDisk)}
-          </span>
           <Button size="small" className={styles.delete} onClick={() => setConfirmDelete(true)}>
             Delete entry
           </Button>
@@ -235,7 +213,7 @@ function EntryView({
 
       <div className={styles.split}>
         <div className={styles.doc} ref={docRef}>
-          <EditorCard text={body} edited={updatedAt}>
+          <EditorCard text={body} edited={updatedAt} save={save} reloaded={reloadedFromDisk}>
             {(findSetup) => (
               <NotesEditor
                 key={snapshot.editorKey}

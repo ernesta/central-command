@@ -17,13 +17,6 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-.status {
-  color: var(--text-muted);
-  font-size: var(--text-12);
-}
-.statusError {
-  color: var(--danger);
-}
 .notices {
   display: grid;
   gap: 8px;
