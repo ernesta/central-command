@@ -1,6 +1,6 @@
 # Hours and Time off: plan
 
-Status: **designed, not built** (29 Sep 2026). Read it with `CLAUDE.md` and `docs/DECISIONS.md`. Meetings and Training are the patterns to copy
+Status: **designed, not built** (29 Sep 2026). The mockup is `docs/design/hours-mockup.html` (open it in a browser; four screens, light and dark). Read it with `CLAUDE.md` and `docs/DECISIONS.md`. Meetings and Training are the patterns to copy
 (`docs/MEETINGS_PLAN.md`, `docs/TRAINING_PLAN.md`). "Proposed" means the user has not confirmed it; the open questions are at the end, each with the
 default to use if the user does not answer.
 
@@ -27,6 +27,10 @@ Two workbooks, one per tracking year, with the same two tabs. The user has 2025�
 - **The year is 52 weeks starting on a Monday** (22 Sep 2025 to 20 Sep 2026; then 21 Sep 2026 to 19 Sep 2027). That is **not** the app's academic year
   (1 Sep to 31 Aug); it looks like a contract or funding year.
 - **Numbers for the year so far, 2025–26:** 1,527.5 h over 220 planned days, balance −122.5 h, average week 34.7 h.
+  **The sheet disagrees with itself:** the 364 daily rows add up to 1,523.5 h (three dates are missing: 27 and 28 Sep and 26 Oct 2025), but the
+  weekly total says 1,527.5 h. Week 5's formula range overlaps its neighbour's, so 4 h are counted twice (the sheet says 49 h, the days say 45 h).
+  The true balance is −126.5 h, not −122.5 h. The importer must use the daily rows and report the difference; the "matches the sheet" test
+  below compares against the daily rows, with this one known 4 h difference written into the test.
   The weekly plan is 37.5 h (7.5 h × 5).
 
 **Time Off Tracker** (`Year`, `Away Date`, `Done`, `Type`, and a small summary block)
@@ -104,7 +108,7 @@ only free text next to the hours, and a new workbook every year.
   present. Replaces the typed `Days` column.
 - `weekPlanMinutes = plannedDays × hoursPerDay × 60`; `weekBalance = hours − plan`; the **year balance** and **average week**
   (`hours ÷ plannedDays × 5`) keep the sheet's formulas, so the imported 2025–26 numbers match the sheet exactly (a test against
-  1,527.5 h, 220 days, −122.5 h, 34.716).
+  1,523.5 h from the daily rows, 220 days, −126.5 h, average week 34.6; see the discrepancy above).
 - **Change from the sheet: the current week's plan counts only the days up to and including today** (the sheet subtracts a whole week's plan
   on Monday, so the balance reads −29.75 h before the week has happened). Future weeks are not in the balance at all; the year
   plan total (52 weeks) is shown separately. Decide at build time how a partly finished _today_ is treated (default: today's plan counts

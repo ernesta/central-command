@@ -1,0 +1,1435 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hours and Time off Mockup</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@600;700&display=swap"
+    />
+    <style>
+      :root {
+        --bg: light-dark(#edeff2, #14181d);
+        --panel: light-dark(#e1e5ea, #1b2128);
+        --surface: light-dark(#ffffff, #1f262e);
+        --ink: light-dark(#1b222b, #e6eaee);
+        --text-secondary: light-dark(#3a4652, #c2cad2);
+        --text-muted: light-dark(#5c6672, #98a3af);
+        --border-soft: light-dark(#d3d8de, #2f3843);
+        --border-strong: light-dark(#c3cad2, #3d4855);
+        --border-faint: light-dark(#e6e9ed, #262e37);
+        --hover-tint: light-dark(#f4f6f8, #262e37);
+        --accent: light-dark(#35577a, #86aad0);
+        --accent-contrast: light-dark(#ffffff, #0f1620);
+        --selected-bg: light-dark(#dce6ee, #2a3b4d);
+        --selected-text: light-dark(#1f3a52, #d3e3f2);
+        --danger: light-dark(#a8433f, #dc7c77);
+        --shadow-color: light-dark(rgba(27, 34, 43, 0.18), rgba(0, 0, 0, 0.55));
+        /* New for charts: bars below plan. The one new token this feature needs. */
+        --chart-under: light-dark(#9aa7b4, #5f6c79);
+        --font-display: 'Newsreader', Georgia, serif;
+        --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+        --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+        color-scheme: light;
+      }
+      :root[data-theme='dark'] {
+        color-scheme: dark;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-body);
+        font-size: 14px;
+        line-height: 1.5;
+        padding-inline: 16px;
+        padding-block: 20px 48px;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: var(--font-display);
+        margin: 0;
+        text-wrap: balance;
+      }
+      p {
+        margin: 0;
+      }
+      button,
+      input {
+        font: inherit;
+        color: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      svg.i {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.75;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex: none;
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        display: grid;
+        gap: 20px;
+      }
+      .intro {
+        display: grid;
+        gap: 4px;
+        max-width: 78ch;
+      }
+      .intro h1 {
+        font-size: 28px;
+      }
+      .intro p {
+        color: var(--text-secondary);
+      }
+      .controls {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .tab {
+        padding: 8px 16px;
+        border: 1px solid var(--border-strong);
+        border-radius: 999px;
+        background: var(--surface);
+        color: var(--text-secondary);
+      }
+      .tab[aria-pressed='true'] {
+        background: var(--selected-bg);
+        color: var(--selected-text);
+        border-color: var(--selected-bg);
+        font-weight: 600;
+      }
+      .frame {
+        background: var(--bg);
+        border: 1px solid var(--border-strong);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+      .topbar {
+        height: 56px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border-soft);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-inline: 24px;
+        gap: 12px;
+      }
+      .pills {
+        display: flex;
+        gap: 4px;
+      }
+      .pill {
+        padding: 6px 16px;
+        border-radius: 999px;
+        color: var(--text-secondary);
+      }
+      .pill.on {
+        background: var(--selected-bg);
+        color: var(--selected-text);
+        font-weight: 600;
+      }
+      .topright {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .timerchip {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        border: 1px solid var(--border-strong);
+        border-radius: 999px;
+        padding: 4px 6px 4px 12px;
+        background: var(--surface);
+        font-variant-numeric: tabular-nums;
+      }
+      .timerchip .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+      .timerchip .name {
+        max-width: 14ch;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--text-secondary);
+      }
+      .timerchip button {
+        border: 0;
+        border-radius: 999px;
+        padding: 3px 10px;
+        background: var(--selected-bg);
+        color: var(--selected-text);
+        font-weight: 600;
+        font-size: 12px;
+      }
+      .build {
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-weight: 500;
+        background: var(--surface);
+      }
+      .page {
+        padding: 40px 48px 48px;
+        display: grid;
+        gap: 24px;
+      }
+      .back {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        color: var(--text-muted);
+        text-decoration: none;
+        width: fit-content;
+      }
+      .head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .head h2 {
+        font-size: 28px;
+        font-weight: 700;
+      }
+      .btn {
+        border: 1px solid var(--border-strong);
+        background: var(--surface);
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-weight: 500;
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .btn.primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-contrast);
+      }
+      .btn.small {
+        padding: 5px 10px;
+        font-size: 13px;
+      }
+      .quiet {
+        border: 0;
+        background: transparent;
+        color: var(--text-muted);
+        padding: 7px 10px;
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .label {
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      .muted {
+        color: var(--text-muted);
+      }
+      .box {
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+        border-radius: 12px;
+      }
+      .pad {
+        padding: 20px 24px;
+      }
+      .sel {
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        padding: 7px 12px;
+        background: var(--surface);
+        display: inline-flex;
+        gap: 10px;
+        align-items: center;
+        min-width: 110px;
+        justify-content: space-between;
+      }
+      .field {
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        padding: 8px 12px;
+        background: var(--surface);
+        min-width: 0;
+      }
+      .seg {
+        display: inline-flex;
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--surface);
+      }
+      .seg button {
+        padding: 5px 12px;
+        border: 0;
+        background: transparent;
+        color: var(--text-secondary);
+        white-space: nowrap;
+      }
+      .seg button[aria-pressed='true'] {
+        background: var(--selected-bg);
+        color: var(--selected-text);
+        font-weight: 600;
+      }
+      .num {
+        font-variant-numeric: tabular-nums;
+      }
+      .stat {
+        display: grid;
+        gap: 2px;
+      }
+      .stat b {
+        font-family: var(--font-display);
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1.1;
+        font-variant-numeric: tabular-nums;
+      }
+      .stat b small {
+        font-family: var(--font-body);
+        font-size: 13px;
+        font-weight: 400;
+        color: var(--text-muted);
+      }
+      .cols {
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+        gap: 20px;
+        align-items: start;
+      }
+      .stack {
+        display: grid;
+        gap: 20px;
+      }
+      .cardhead {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .cardhead h3 {
+        font-size: 18px;
+      }
+      /* Today */
+      .startrow {
+        display: flex;
+        gap: 10px;
+      }
+      .startrow .field {
+        flex: 1;
+        color: var(--text-muted);
+      }
+      .suggest {
+        margin-top: 6px;
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        border: 1px solid var(--border-strong);
+        border-radius: 999px;
+        padding: 2px 10px;
+        font-size: 13px;
+        color: var(--text-secondary);
+        background: var(--surface);
+      }
+      .running {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        background: var(--selected-bg);
+        color: var(--selected-text);
+      }
+      .running .clock {
+        font-family: var(--font-display);
+        font-size: 28px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+      .running .what {
+        flex: 1;
+        min-width: 0;
+      }
+      .running .what small {
+        display: block;
+        opacity: 0.8;
+      }
+      .sessions {
+        list-style: none;
+        margin: 16px 0 0;
+        padding: 0;
+        border-top: 1px solid var(--border-faint);
+      }
+      .sessions li {
+        display: grid;
+        grid-template-columns: 116px 64px minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border-faint);
+      }
+      .sessions .times {
+        font-variant-numeric: tabular-nums;
+        color: var(--text-secondary);
+      }
+      .sessions .dur {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        font-weight: 500;
+      }
+      .sessions .tools {
+        display: flex;
+        gap: 2px;
+        color: var(--text-muted);
+      }
+      .total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 12px;
+      }
+      /* Tables */
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+      th {
+        text-align: left;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border-soft);
+      }
+      td {
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--border-faint);
+        vertical-align: top;
+      }
+      tr:last-child td {
+        border-bottom: 0;
+      }
+      td.r,
+      th.r {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      tr.week td {
+        background: var(--hover-tint);
+        font-weight: 600;
+        border-bottom: 1px solid var(--border-soft);
+      }
+      tr.week td small {
+        font-weight: 400;
+        color: var(--text-muted);
+      }
+      .tag {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 1px 10px;
+        font-size: 12px;
+        background: var(--panel);
+        color: var(--text-secondary);
+      }
+      .added {
+        color: var(--text-muted);
+      }
+      .up {
+        color: var(--selected-text);
+      }
+      .down {
+        color: var(--danger);
+      }
+      /* Charts */
+      .chart {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .chart text {
+        fill: var(--text-muted);
+        font-family: var(--font-body);
+        font-size: 11px;
+      }
+      .legend {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+        color: var(--text-secondary);
+        font-size: 13px;
+      }
+      .legend i {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+        margin-right: 6px;
+        vertical-align: -1px;
+      }
+      .charts {
+        display: grid;
+        gap: 20px;
+      }
+      .two {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 20px;
+      }
+      .placeholder {
+        border: 1px dashed var(--border-strong);
+        border-radius: 12px;
+        padding: 20px 24px;
+        color: var(--text-muted);
+      }
+      .note {
+        border: 1px solid var(--border-strong);
+        border-radius: 10px;
+        padding: 12px 16px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--surface);
+      }
+      .addform {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        padding: 16px 24px;
+      }
+      .addform label {
+        display: grid;
+        gap: 4px;
+      }
+      /* Landing */
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+      }
+      .card {
+        display: grid;
+        gap: 12px;
+        padding: 20px 24px;
+      }
+      .card h3 {
+        font-size: 18px;
+      }
+      .mini {
+        display: flex;
+        gap: 3px;
+        align-items: flex-end;
+        height: 40px;
+      }
+      .mini span {
+        flex: 1;
+        border-radius: 2px 2px 0 0;
+        background: var(--accent);
+      }
+      .palette {
+        width: min(520px, 100%);
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+        border-radius: 14px;
+        box-shadow: 0 8px 24px var(--shadow-color);
+        overflow: hidden;
+      }
+      .palette .q {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border-faint);
+        color: var(--text-muted);
+      }
+      .palette .row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 9px 16px;
+      }
+      .palette .row.on {
+        background: var(--selected-bg);
+        color: var(--selected-text);
+      }
+      .dock {
+        width: 260px;
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+        border-radius: 10px;
+        box-shadow: 0 8px 24px var(--shadow-color);
+        padding: 6px;
+      }
+      .dock div {
+        padding: 6px 12px;
+        border-radius: 6px;
+      }
+      .dock div.on {
+        background: var(--accent);
+        color: var(--accent-contrast);
+      }
+      .dock hr {
+        border: 0;
+        border-top: 1px solid var(--border-faint);
+        margin: 4px 0;
+      }
+      .around {
+        display: flex;
+        gap: 32px;
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+      .around section {
+        display: grid;
+        gap: 8px;
+      }
+      @media (max-width: 900px) {
+        .cols,
+        .two {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        .page {
+          padding: 24px 16px 32px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="intro">
+        <h1>Hours and Time off mockup</h1>
+        <p>
+          Four screens. The charts and the 2025–26 time-off list are your real data (daily hours
+          from the sheet; days the sheet is missing count as zero). The 2026–27 week, today's
+          sessions and the running timer are illustrative: the sheet's scratch rows have no date, so
+          they are placed on today, Tue 29 Sep 2026, at 15:10. Dark mode is the switch on the right.
+        </p>
+      </div>
+      <div class="controls">
+        <div class="tabs" role="group" aria-label="Screen">
+          <button class="tab" aria-pressed="true" data-tab="hours">1. Hours</button>
+          <button class="tab" aria-pressed="false" data-tab="views">2. Data views</button>
+          <button class="tab" aria-pressed="false" data-tab="off">3. Time off</button>
+          <button class="tab" aria-pressed="false" data-tab="around">4. Landing and shell</button>
+        </div>
+        <div class="seg" role="group" aria-label="Theme">
+          <button aria-pressed="true" data-theme-set="light">Light</button>
+          <button aria-pressed="false" data-theme-set="dark">Dark</button>
+        </div>
+      </div>
+
+      <div class="frame">
+        <div class="topbar">
+          <div class="pills">
+            <span class="pill">Life</span><span class="pill on">Research</span
+            ><span class="pill">Work</span>
+          </div>
+          <div class="topright">
+            <span class="timerchip" id="chip">
+              <span class="dot"></span><span class="name">Deck</span><span class="num">0:21</span
+              ><button>Stop</button>
+            </span>
+            <span class="build">Build</span>
+          </div>
+        </div>
+
+        <!-- 1. HOURS -->
+        <div class="page" data-screen="hours">
+          <a class="back" href="#"
+            ><svg class="i" viewBox="0 0 24 24"><path d="M19 12H5m6-6-6 6 6 6" /></svg>Research</a
+          >
+          <div class="head">
+            <h2>Hours</h2>
+            <span class="sel"
+              >2026–27 <svg class="i" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg
+            ></span>
+          </div>
+          <div class="cols">
+            <div class="stack">
+              <div class="box pad">
+                <div class="cardhead">
+                  <h3>Today <span class="muted" style="font-size: 14px">Tue 29 Sep</span></h3>
+                  <div class="seg" role="group" aria-label="Mockup state (not part of the app)">
+                    <button aria-pressed="true" data-run="on">Running</button>
+                    <button aria-pressed="false" data-run="off">Stopped</button>
+                  </div>
+                </div>
+                <div data-state="on">
+                  <div class="running">
+                    <span class="clock">0:21</span>
+                    <span class="what">Deck<small>Started 14:49</small></span>
+                    <button class="btn small">
+                      <svg class="i" viewBox="0 0 24 24">
+                        <rect x="6" y="6" width="12" height="12" rx="1" /></svg
+                      >Stop
+                    </button>
+                  </div>
+                </div>
+                <div data-state="off" hidden>
+                  <div class="startrow">
+                    <span class="field">What are you working on?</span>
+                    <button class="btn primary">
+                      <svg class="i" viewBox="0 0 24 24"><path d="M6 4v16l14-8z" /></svg>Start
+                    </button>
+                  </div>
+                  <div class="suggest">
+                    <span class="chip">Deck</span><span class="chip">Set up Central Command</span
+                    ><span class="chip">Look at Inkpath</span>
+                  </div>
+                </div>
+                <ul class="sessions">
+                  <li>
+                    <span class="times">10:30–12:15</span><span class="dur">1.75 h</span
+                    ><span>Prepare a presentation for lab meeting with Michael Crawford</span>
+                    <span class="tools"
+                      ><button class="quiet" aria-label="Edit">
+                        <svg class="i" viewBox="0 0 24 24">
+                          <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+                        </svg>
+                      </button>
+                      <button class="quiet" aria-label="Delete">
+                        <svg class="i" viewBox="0 0 24 24">
+                          <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" />
+                        </svg></button
+                    ></span>
+                  </li>
+                  <li>
+                    <span class="times">14:34–14:49</span><span class="dur">0.25 h</span
+                    ><span>Set up Central Command for Research</span>
+                    <span class="tools"
+                      ><button class="quiet" aria-label="Edit">
+                        <svg class="i" viewBox="0 0 24 24">
+                          <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+                        </svg>
+                      </button>
+                      <button class="quiet" aria-label="Delete">
+                        <svg class="i" viewBox="0 0 24 24">
+                          <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" />
+                        </svg></button
+                    ></span>
+                  </li>
+                  <li data-state="on">
+                    <span class="times">14:49–now</span><span class="dur">0.35 h</span
+                    ><span>Deck</span><span class="tools"></span>
+                  </li>
+                </ul>
+                <div class="total">
+                  <button class="quiet">
+                    <svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>Add time
+                  </button>
+                  <span class="stat"
+                    ><span class="label">Today</span
+                    ><b id="todayTotal">2.35 <small>h</small></b></span
+                  >
+                </div>
+              </div>
+
+              <div class="box">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Day</th>
+                      <th>What</th>
+                      <th class="r">Hours</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="week">
+                      <td colspan="2">Week 2 <small>28 Sep – 4 Oct · 2 of 5 days so far</small></td>
+                      <td class="r">10.10 <small class="down">−4.90</small></td>
+                    </tr>
+                    <tr>
+                      <td>Tue 29 Sep</td>
+                      <td class="added">3 sessions, one running</td>
+                      <td class="r">2.35</td>
+                    </tr>
+                    <tr>
+                      <td>Mon 28 Sep</td>
+                      <td class="added">Added time</td>
+                      <td class="r">7.75</td>
+                    </tr>
+                    <tr class="week">
+                      <td colspan="2">Week 1 <small>21–27 Sep · 5 days</small></td>
+                      <td class="r">42.50 <small class="up">+5.00</small></td>
+                    </tr>
+                    <tr>
+                      <td>Sun 27 Sep</td>
+                      <td class="added">Added time</td>
+                      <td class="r">0.75</td>
+                    </tr>
+                    <tr>
+                      <td>Sat 26 Sep</td>
+                      <td class="added">Added time</td>
+                      <td class="r">3.25</td>
+                    </tr>
+                    <tr>
+                      <td>Fri 25 Sep</td>
+                      <td class="added">Added time</td>
+                      <td class="r">10.00</td>
+                    </tr>
+                    <tr>
+                      <td>Thu 24 Sep</td>
+                      <td class="added">Added time</td>
+                      <td class="r">7.75</td>
+                    </tr>
+                    <tr>
+                      <td>Wed 23 Sep</td>
+                      <td>send rabia ai stuff <span class="tag">note</span></td>
+                      <td class="r">4.25</td>
+                    </tr>
+                    <tr>
+                      <td>Tue 22 Sep</td>
+                      <td>look at inkpath <span class="tag">note</span></td>
+                      <td class="r">7.75</td>
+                    </tr>
+                    <tr>
+                      <td>Mon 21 Sep</td>
+                      <td class="added">Added time</td>
+                      <td class="r">8.75</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="stack">
+              <div class="box pad">
+                <div class="cardhead">
+                  <h3>This week</h3>
+                  <span class="muted">Week 2</span>
+                </div>
+                <svg class="chart" id="weekChart" viewBox="0 0 336 150" role="img"></svg>
+                <div class="stat" style="margin-top: 10px">
+                  <span class="label">Hours</span>
+                  <b>10.10 <small>of 37.5 planned · 15.0 by today</small></b>
+                </div>
+              </div>
+              <div class="box pad">
+                <div class="cardhead">
+                  <h3>Year</h3>
+                  <span class="muted">2026–27</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px">
+                  <div class="stat">
+                    <span class="label">Balance</span><b class="up">+0.10 <small>h</small></b>
+                  </div>
+                  <div class="stat">
+                    <span class="label">Average week</span><b>37.6 <small>h</small></b>
+                  </div>
+                  <div class="stat">
+                    <span class="label">Hours so far</span><b>52.60 <small>h</small></b>
+                  </div>
+                  <div class="stat">
+                    <span class="label">Planned, whole year</span
+                    ><b>1,845 <small>h · 246 days</small></b>
+                  </div>
+                </div>
+                <p class="muted" style="margin-top: 12px; font-size: 13px">
+                  Balance counts the plan up to today. Planned days already leave out the 14 days
+                  off.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. DATA VIEWS -->
+        <div class="page" data-screen="views" hidden>
+          <a class="back" href="#"
+            ><svg class="i" viewBox="0 0 24 24"><path d="M19 12H5m6-6-6 6 6 6" /></svg>Hours</a
+          >
+          <div class="head">
+            <h2>Hours over the year</h2>
+            <span class="sel"
+              >2025–26 <svg class="i" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg
+            ></span>
+          </div>
+          <div class="charts">
+            <div class="box pad">
+              <div class="cardhead">
+                <h3>Weeks</h3>
+                <span class="muted" id="weeksNote"></span>
+              </div>
+              <svg class="chart" id="weeksChart" viewBox="0 0 1000 220" role="img"></svg>
+              <div class="legend">
+                <span><i style="background: var(--accent)"></i>At or over the week's plan</span>
+                <span><i style="background: var(--chart-under)"></i>Under</span>
+                <span
+                  ><i
+                    style="
+                      background: none;
+                      border-top: 2px dashed var(--text-muted);
+                      height: 0;
+                      border-radius: 0;
+                    "
+                  ></i
+                  >37.5 h, a full week</span
+                >
+              </div>
+            </div>
+            <div class="box pad">
+              <div class="cardhead">
+                <h3>Balance</h3>
+                <span class="muted" id="balNote"></span>
+              </div>
+              <svg class="chart" id="balChart" viewBox="0 0 1000 200" role="img"></svg>
+              <p class="muted" style="margin-top: 8px; font-size: 13px">
+                Hours minus 7.5 h for each planned day, added up week by week. Above the line is
+                ahead of plan.
+              </p>
+            </div>
+            <div class="box pad">
+              <div class="cardhead">
+                <h3>Days</h3>
+                <span class="muted">Each column is a week, Monday at the top</span>
+              </div>
+              <svg class="chart" id="heat" viewBox="0 0 1000 150" role="img"></svg>
+              <div class="legend">
+                <span><i style="background: var(--border-faint)"></i>No time</span>
+                <span id="heatScale"></span>
+                <span
+                  ><i
+                    style="
+                      background: none;
+                      border: 2px solid var(--accent);
+                      width: 8px;
+                      height: 8px;
+                    "
+                  ></i
+                  >Holiday</span
+                >
+              </div>
+            </div>
+            <div class="two">
+              <div class="box pad">
+                <div class="cardhead">
+                  <h3>Typical week</h3>
+                  <span class="muted">Average on days with time</span>
+                </div>
+                <svg class="chart" id="dowChart" viewBox="0 0 440 190" role="img"></svg>
+              </div>
+              <div class="placeholder">
+                <h3 style="color: var(--ink); font-size: 18px; margin-bottom: 8px">Time of day</h3>
+                When in the day the work happens. It needs sessions with start and end times, which
+                the sheet never had, so it appears once some are recorded. With Tasks, a fifth view
+                shows hours per task.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. TIME OFF -->
+        <div class="page" data-screen="off" hidden>
+          <a class="back" href="#"
+            ><svg class="i" viewBox="0 0 24 24"><path d="M19 12H5m6-6-6 6 6 6" /></svg>Research</a
+          >
+          <div class="head">
+            <h2>Time off</h2>
+            <div style="display: flex; gap: 12px">
+              <div class="seg" role="group" aria-label="Year">
+                <button aria-pressed="true" data-offyear="27">2026–27</button>
+                <button aria-pressed="false" data-offyear="26">2025–26</button>
+              </div>
+              <button class="btn primary" id="addToggle">
+                <svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>Add
+              </button>
+            </div>
+          </div>
+          <div class="box addform" id="addForm" hidden>
+            <label><span class="label">From</span><span class="field">Mon 28 Dec 2026</span></label>
+            <label><span class="label">To</span><span class="field">Fri 1 Jan 2027</span></label>
+            <label
+              ><span class="label">Type</span
+              ><span class="sel"
+                >Annual leave <svg class="i" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg
+              ></span>
+            </label>
+            <button class="btn primary">Add</button>
+            <span class="muted" style="align-self: center">5 weekdays, weekends skipped</span>
+          </div>
+          <div class="box pad" style="display: flex; gap: 40px; flex-wrap: wrap">
+            <div class="stat"><span class="label">Allowance</span><b id="offAllow">40</b></div>
+            <div class="stat"><span class="label">Booked</span><b id="offBooked"></b></div>
+            <div class="stat"><span class="label">Left</span><b id="offLeft"></b></div>
+            <div class="muted" id="offTypes" style="margin-left: auto; align-self: flex-end"></div>
+          </div>
+          <div class="note" id="creditNote" hidden>
+            <span
+              >This year has ended with 1 day left. Crediting it adds 7.5 h to Sun 20 Sep 2026, as
+              you did by hand.</span
+            >
+            <button class="btn small">Credit 1 day</button>
+          </div>
+          <div class="box">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Day</th>
+                  <th>Type</th>
+                  <th class="r">Days</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="offRows"></tbody>
+            </table>
+          </div>
+          <p class="muted" style="font-size: 13px">
+            Dates outside the year are refused. Weekend dates never count. Taken means the date has
+            passed; there is no Done column to keep up.
+          </p>
+        </div>
+
+        <!-- 4. LANDING AND SHELL -->
+        <div class="page" data-screen="around" hidden>
+          <div class="head"><h2>Research</h2></div>
+          <div class="cards">
+            <div class="box card">
+              <div class="cardhead" style="margin: 0">
+                <h3>Hours</h3>
+                <span class="muted">Week 2</span>
+              </div>
+              <div class="stat">
+                <span class="label">Today</span><b>2.35 <small>h · Deck running</small></b>
+              </div>
+              <div class="mini" aria-hidden="true">
+                <span style="height: 100%"></span><span style="height: 30%"></span
+                ><span style="height: 0"></span><span style="height: 0"></span
+                ><span style="height: 0"></span><span style="height: 0"></span
+                ><span style="height: 0"></span>
+              </div>
+              <span class="muted">10.10 of 37.5 h this week · balance +0.10 h</span>
+            </div>
+            <div class="box card">
+              <div class="cardhead" style="margin: 0">
+                <h3>Time off</h3>
+                <span class="muted">2026–27</span>
+              </div>
+              <div class="stat">
+                <span class="label">Left</span><b>26 <small>of 40 days</small></b>
+              </div>
+              <span class="muted">Next: Thu 24 Dec, University holiday</span>
+            </div>
+            <div class="box card">
+              <div class="cardhead" style="margin: 0"><h3>Training</h3></div>
+              <span class="muted">(unchanged, shown for scale)</span>
+            </div>
+          </div>
+          <div class="around">
+            <section>
+              <span class="label">Search (Mod-K) commands</span>
+              <div class="palette">
+                <div class="q">stop</div>
+                <div class="row on">
+                  <svg class="i" viewBox="0 0 24 24">
+                    <rect x="6" y="6" width="12" height="12" rx="1" /></svg
+                  >Stop timer <span class="muted" style="margin-left: auto">Deck, 0:21</span>
+                </div>
+              </div>
+              <div class="palette" style="margin-top: 8px">
+                <div class="q">start</div>
+                <div class="row on">
+                  <svg class="i" viewBox="0 0 24 24"><path d="M6 4v16l14-8z" /></svg>Start timer
+                </div>
+              </div>
+            </section>
+            <section>
+              <span class="label">Dock menu</span>
+              <div class="dock">
+                <div>New note</div>
+                <div>New meeting</div>
+                <div>New training</div>
+                <hr />
+                <div class="on">Stop timer (Deck, 0:21)</div>
+              </div>
+            </section>
+            <section>
+              <span class="label">Settings → Hours</span>
+              <div class="box pad" style="display: grid; gap: 10px; min-width: 300px">
+                <div style="display: flex; justify-content: space-between; gap: 24px">
+                  <span>Hours per day</span><span class="field num">7.5</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; gap: 24px">
+                  <span>Days off a year</span><span class="field num">40</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; gap: 24px">
+                  <span>Year starts</span><span class="field num">Mon 21 Sep 2026</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; gap: 24px">
+                  <span>Time-off types</span
+                  ><span class="muted">Public holiday, University holiday, Annual leave</span>
+                </div>
+              </div>
+            </section>
+          </div>
+          <p class="muted" style="max-width: 70ch">
+            The chip in the top bar is on every page while a timer runs; clicking Stop ends the
+            session. Hours and Time off sit in Research beside Training.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const D = {
+        start: 45922,
+        days: [
+          5.5, 9.0, 7.5, 8.0, 7.5, 0, 0, 8.5, 7.0, 9.5, 6.5, 5.25, 3.0, 1.75, 4.0, 8.0, 8.0, 8.75,
+          7.0, 6.5, 0.5, 3.0, 8.0, 6.75, 10.5, 4.0, 11.0, 2.25, 6.5, 5.0, 7.25, 12.0, 9.0, 5.25, 0,
+          10.5, 8.0, 6.25, 10.0, 6.5, 5.75, 3.75, 11.0, 9.5, 7.25, 10.5, 5.25, 3.5, 3.0, 12.75,
+          8.25, 7.0, 12.0, 9.0, 2.5, 0.5, 4.75, 10.75, 8.25, 6.5, 0.75, 1.5, 2.0, 6.0, 12.75, 6.25,
+          9.75, 5.0, 0.5, 0.25, 4.0, 8.5, 4.5, 3.0, 6.0, 6.5, 3.75, 3.0, 5.5, 4.75, 0.0, 5.25, 1.0,
+          5.25, 8.0, 7.25, 2.5, 1.75, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, 4.5, 10.5, 7.25, 3.0, 5.25, 3.5, 0.0, 5.5, 3.0, 3.5, 3.0, 7.25, 5.75,
+          0.0, 0.0, 7.5, 9.25, 4.5, 1.0, 0.0, 0.0, 6.0, 5.25, 6.0, 7.25, 4.5, 1.0, 0.0, 0.0, 11.0,
+          9.5, 8.0, 5.75, 0.0, 0.0, 0.0, 10.25, 6.75, 7.5, 0.0, 2.5, 0.0, 0.0, 8.0, 5.0, 7.5, 3.75,
+          0.0, 0.0, 0.75, 8.25, 0.75, 5.75, 5.25, 0.0, 0.0, 0.5, 0.75, 8.0, 8.25, 2.25, 6.75, 0.75,
+          0.0, 1.0, 2.75, 3.0, 3.5, 6.75, 4.25, 6.25, 3.0, 7.75, 6.25, 3.0, 5.75, 1.5, 5.0, 3.0,
+          3.0, 4.25, 2.5, 0.0, 0.0, 5.0, 8.75, 11.0, 4.75, 0.75, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 6.5, 3.5, 4.75, 0.0, 1.0, 6.5,
+          8.5, 8.0, 2.25, 2.25, 0.0, 0.0, 0.0, 0.0, 0.0, 6.25, 4.0, 4.25, 0.75, 9.75, 6.75, 6.75,
+          4.0, 3.75, 5.5, 4.0, 10.25, 10.25, 5.75, 2.5, 1.75, 1.0, 0.0, 0.75, 10.75, 10.5, 7.25,
+          3.75, 0.5, 0.0, 1.75, 5.75, 2.0, 3.5, 6.25, 4.0, 2.25, 7.75, 10.0, 5.0, 7.5, 7.25, 0.0,
+          0.0, 7.25, 6.5, 8.5, 2.5, 3.0, 0.0, 0.0, 5.75, 1.5, 5.75, 7.25, 3.0, 0.0, 0.0, 8.5, 0.0,
+          7.25, 8.0, 4.0, 0.0, 3.75, 0.0, 0.0, 4.25, 6.25, 11.25, 0.0, 0.0, 7.5, 7.75, 6.0, 3.25,
+          9.5, 6.75, 0.0, 7.5, 7.75, 0.0, 2.5, 4.25, 2.25, 6.25, 7.5, 5.25, 5.5, 6.25, 7.25, 8.25,
+          0.0, 0.0, 13.5, 11.75, 10.5, 6.75, 1.0, 1.0, 0.0, 1.75, 4.75, 6.5, 7.0, 3.75, 8.5, 9.5,
+          5.25, 2.5, 0.0, 9.25, 0.0, 8.5, 10.25, 10.25, 11.0, 10.25, 16.5, 0.0, 0.0, 8.25, 7.5,
+          5.25, 9.5, 1.25, 0.0, 0.0, 0.0, 0.0, 0.75, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 7.5
+        ],
+        plannedDays: [
+          5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 2.0, 0.0, 5.0, 5.0, 5.0,
+          5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 3.0, 0.0, 0.0, 3.0, 5.0, 2.0, 5.0, 5.0, 4.0,
+          5.0, 5.0, 5.0, 5.0, 5.0, 3.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 3.0, 0.0, 0.0
+        ],
+        sheetWeeks: [
+          37.5, 41.5, 42.75, 45.5, 49.0, 50.75, 50.0, 52.0, 34.5, 40.5, 36.25, 24.75, 19.5, 0.0,
+          4.5, 35.0, 22.5, 28.25, 24.0, 34.25, 27.0, 25.0, 20.5, 26.75, 27.5, 32.25, 17.75, 25.25,
+          0.0, 0.0, 15.75, 27.5, 15.25, 40.5, 31.5, 33.5, 25.5, 37.5, 27.75, 23.25, 31.5, 21.75,
+          40.75, 30.5, 40.0, 44.5, 32.25, 35.0, 58.25, 31.75, 0.75, 7.5
+        ]
+      }
+      const $ = (s) => document.querySelector(s)
+      const NS = 'http://www.w3.org/2000/svg'
+      const h1 = (n) => n.toFixed(1)
+      const dateOf = (serial) => new Date(Date.UTC(1899, 11, 30) + serial * 864e5)
+      const fmt = (d, o) => d.toLocaleDateString('en-GB', { timeZone: 'UTC', ...o })
+      const sv = (svg, html) => (svg.innerHTML = html)
+
+      // Tabs, theme, mock state
+      document.querySelectorAll('[data-tab]').forEach((b) =>
+        b.addEventListener('click', () => {
+          document
+            .querySelectorAll('[data-tab]')
+            .forEach((x) => x.setAttribute('aria-pressed', String(x === b)))
+          document.querySelectorAll('[data-screen]').forEach((s) => {
+            s.hidden = s.dataset.screen !== b.dataset.tab
+          })
+        })
+      )
+      document.querySelectorAll('[data-theme-set]').forEach((b) =>
+        b.addEventListener('click', () => {
+          document
+            .querySelectorAll('[data-theme-set]')
+            .forEach((x) => x.setAttribute('aria-pressed', String(x === b)))
+          document.documentElement.dataset.theme = b.dataset.themeSet
+        })
+      )
+      document.querySelectorAll('[data-run]').forEach((b) =>
+        b.addEventListener('click', () => {
+          const on = b.dataset.run === 'on'
+          document
+            .querySelectorAll('[data-run]')
+            .forEach((x) => x.setAttribute('aria-pressed', String(x === b)))
+          document.querySelectorAll('[data-state]').forEach((s) => {
+            s.hidden = (s.dataset.state === 'on') !== on
+          })
+          $('#chip').hidden = !on
+          $('#todayTotal').innerHTML = on ? '2.35 <small>h</small>' : '2.00 <small>h</small>'
+        })
+      )
+      $('#addToggle').addEventListener('click', () => {
+        $('#addForm').hidden = !$('#addForm').hidden
+      })
+
+      // This week (illustrative)
+      {
+        const vals = [7.75, 2.35, null, null, null, null, null]
+        const names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        const x0 = 28,
+          w = 40,
+          gap = 4,
+          base = 120,
+          k = 9
+        let s = ''
+        for (const v of [0, 5, 10]) {
+          const y = base - v * k
+          s += `<line x1="${x0}" x2="332" y1="${y}" y2="${y}" stroke="var(--border-faint)"/><text x="0" y="${y + 4}">${v}</text>`
+        }
+        const py = base - 7.5 * k
+        s += `<line x1="${x0}" x2="332" y1="${py}" y2="${py}" stroke="var(--text-muted)" stroke-dasharray="4 3"/>`
+        vals.forEach((v, i) => {
+          const x = x0 + i * (w + gap)
+          if (v !== null) {
+            const hgt = v * k
+            const color = v >= 7.5 ? 'var(--accent)' : 'var(--chart-under)'
+            s += `<rect x="${x}" y="${base - hgt}" width="${w}" height="${hgt}" rx="3" fill="${color}"/>`
+            s += `<text x="${x + w / 2}" y="${base - hgt - 4}" text-anchor="middle" style="fill:var(--text-secondary)">${v}</text>`
+          } else {
+            s += `<rect x="${x}" y="${base - 2}" width="${w}" height="2" fill="var(--border-strong)"/>`
+          }
+          s += `<text x="${x + w / 2}" y="140" text-anchor="middle">${names[i]}</text>`
+        })
+        sv($('#weekChart'), s)
+      }
+
+      // 2025-26 data
+      const days = D.days
+      const weekCount = 52
+      const weeks = []
+      for (let w = 0; w < weekCount; w++) {
+        const hrs = days.slice(w * 7, w * 7 + 7).reduce((a, b) => a + b, 0)
+        weeks.push({ hrs, planned: D.plannedDays[w], plan: 7.5 * D.plannedDays[w] })
+      }
+      const total = days.reduce((a, b) => a + b, 0)
+      const plannedTotal = weeks.reduce((a, w) => a + w.planned, 0)
+      let cum = 0
+      const bal = weeks.map((w) => (cum += w.hrs - w.plan))
+      $('#weeksNote').textContent =
+        `${total.toLocaleString('en-GB')} h over ${plannedTotal} planned days · average week ${h1((total / plannedTotal) * 5)} h`
+      $('#balNote').textContent =
+        `${bal[bal.length - 1] > 0 ? '+' : '−'}${Math.abs(bal[bal.length - 1]).toFixed(1)} h at the end of the year`
+
+      // Weeks bars
+      {
+        const x0 = 30,
+          W = 970,
+          bw = W / weekCount,
+          base = 190,
+          k = 3
+        let s = ''
+        for (const v of [0, 20, 40, 60]) {
+          const y = base - v * k
+          s += `<line x1="${x0}" x2="1000" y1="${y}" y2="${y}" stroke="var(--border-faint)"/><text x="0" y="${y + 4}">${v}</text>`
+        }
+        weeks.forEach((w, i) => {
+          const x = x0 + i * bw
+          const hgt = w.hrs * k
+          const ok = w.hrs >= w.plan
+          if (w.hrs > 0)
+            s += `<rect x="${x + 1}" y="${base - hgt}" width="${bw - 2}" height="${hgt}" rx="2" fill="${ok ? 'var(--accent)' : 'var(--chart-under)'}"><title>Week ${i + 1}: ${w.hrs} h, plan ${w.plan} h</title></rect>`
+          if (i % 4 === 0) s += `<text x="${x}" y="208">${i + 1}</text>`
+        })
+        const py = base - 37.5 * k
+        s += `<line x1="${x0}" x2="1000" y1="${py}" y2="${py}" stroke="var(--text-muted)" stroke-dasharray="5 4"/>`
+
+        sv($('#weeksChart'), s)
+      }
+
+      // Balance line
+      {
+        const x0 = 40,
+          W = 940,
+          lo = Math.min(...bal, 0),
+          hi = Math.max(...bal, 0)
+        const top = 14,
+          hgt = 160
+        const y = (v) => top + ((hi - v) / (hi - lo)) * hgt
+        const x = (i) => x0 + (i / (weekCount - 1)) * W
+        let s = ''
+        const step = 50
+        for (let v = Math.ceil(lo / step) * step; v <= hi; v += step)
+          s += `<line x1="${x0}" x2="1000" y1="${y(v)}" y2="${y(v)}" stroke="${v === 0 ? 'var(--text-muted)' : 'var(--border-faint)'}"/><text x="0" y="${y(v) + 4}">${v}</text>`
+        s += `<polyline fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" points="${bal.map((v, i) => `${x(i)},${y(v)}`).join(' ')}"/>`
+        const lx = x(weekCount - 1),
+          ly = y(bal[weekCount - 1])
+        s += `<circle cx="${lx}" cy="${ly}" r="4" fill="var(--accent)"/><text x="${lx - 8}" y="${ly - 10}" text-anchor="end" style="fill:var(--text-secondary)">${bal[weekCount - 1].toFixed(1)} h</text>`
+        const mons = ['Sep', 'Nov', 'Jan', 'Mar', 'May', 'Jul', 'Sep']
+        mons.forEach(
+          (m, i) => (s += `<text x="${x0 + (i / 6) * W}" y="194" text-anchor="middle">${m}</text>`)
+        )
+        sv($('#balChart'), s)
+      }
+
+      // Heat map (holidays outlined)
+      {
+        const holidays = [
+          45015, 46015, 46016, 46017, 46020, 46021, 46022, 46023, 46024, 46115, 46118, 46119, 46120,
+          46146, 46167, 46265
+        ].slice(1)
+        const hs = new Set(holidays)
+        const cell = 15,
+          gap = 3,
+          x0 = 34
+        let s = ''
+        ;['Mon', '', 'Wed', '', 'Fri', '', 'Sun'].forEach(
+          (n, r) => (s += `<text x="0" y="${r * (cell + gap) + 12}">${n}</text>`)
+        )
+        const shade = (v) => {
+          const pct = Math.min(1, v / 10)
+          return `color-mix(in srgb, var(--accent) ${Math.round(20 + pct * 80)}%, var(--surface))`
+        }
+        days.forEach((v, i) => {
+          const w = Math.floor(i / 7),
+            r = i % 7
+          const x = x0 + w * (cell + gap),
+            y = r * (cell + gap)
+          const off = hs.has(D.start + i)
+          s += `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" rx="3" fill="${v > 0 ? shade(v) : 'var(--border-faint)'}" ${off ? 'stroke="var(--accent)" stroke-width="2"' : ''}><title>${fmt(dateOf(D.start + i), { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}: ${v} h${off ? ', holiday' : ''}</title></rect>`
+        })
+        for (let m = 0; m < 12; m++) {
+          const d = dateOf(D.start + 7 * Math.round((m * 30.4) / 7))
+          if (m % 1 === 0)
+            s += `<text x="${x0 + Math.round((m * 30.4) / 7) * (cell + gap)}" y="146">${fmt(d, { month: 'short', timeZone: 'UTC' })}</text>`
+        }
+        sv($('#heat'), s)
+        $('#heatScale').innerHTML = [2, 5, 8, 10]
+          .map((v) => `<i style="background:${shade(v)}"></i>${v}${v === 10 ? '+' : ''} h`)
+          .join(' &nbsp; ')
+      }
+
+      // Typical week
+      {
+        const names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        const avg = names.map((_, d) => {
+          const v = days.filter((h, i) => i % 7 === d && h > 0)
+          return v.length ? v.reduce((a, b) => a + b, 0) / v.length : 0
+        })
+        const x0 = 30,
+          w = 44,
+          gap = 8,
+          base = 150,
+          k = 11
+        let s = ''
+        for (const v of [0, 4, 8, 12]) {
+          const y = base - v * k
+          s += `<line x1="${x0}" x2="440" y1="${y}" y2="${y}" stroke="var(--border-faint)"/><text x="0" y="${y + 4}">${v}</text>`
+        }
+        avg.forEach((v, i) => {
+          const x = x0 + i * (w + gap)
+          s += `<rect x="${x}" y="${base - v * k}" width="${w}" height="${v * k}" rx="3" fill="var(--accent)"/><text x="${x + w / 2}" y="${base - v * k - 4}" text-anchor="middle" style="fill:var(--text-secondary)">${h1(v)}</text><text x="${x + w / 2}" y="170" text-anchor="middle">${names[i]}</text>`
+        })
+        sv($('#dowChart'), s)
+      }
+
+      // Time off
+      const OFF = {
+        27: {
+          allow: 40,
+          rows: [
+            ['2026-12-24', 'University holiday', 1],
+            ['2026-12-25', 'Public holiday', 1],
+            ['2026-12-28', 'Public holiday', 1],
+            ['2026-12-29', 'University holiday', 1],
+            ['2026-12-30', 'University holiday', 1],
+            ['2026-12-31', 'University holiday', 1],
+            ['2027-01-01', 'Public holiday', 1],
+            ['2027-03-26', 'Public holiday', 1],
+            ['2027-03-29', 'Public holiday', 1],
+            ['2027-03-30', 'University holiday', 1],
+            ['2027-03-31', 'University holiday', 1],
+            ['2027-05-03', 'Public holiday', 1],
+            ['2027-05-31', 'Public holiday', 1],
+            ['2027-08-30', 'Public holiday', 1]
+          ]
+        },
+        26: {
+          allow: 40,
+          rows: [
+            ['2025-12-24', 'University holiday', 1],
+            ['2025-12-25', 'Public holiday', 1],
+            ['2025-12-26', 'Public holiday', 1],
+            ['2025-12-29', 'University holiday', 1],
+            ['2025-12-30', 'University holiday', 1],
+            ['2025-12-31', 'University holiday', 1],
+            ['2026-01-01', 'Public holiday', 1],
+            ['2026-01-02', 'University holiday', 1],
+            ['2026-04-01', 'Annual leave', 9, 'by month'],
+            ['2026-04-03', 'Public holiday', 1],
+            ['2026-04-06', 'Public holiday', 1],
+            ['2026-04-07', 'University holiday', 1],
+            ['2026-04-08', 'University holiday', 1],
+            ['2026-05-01', 'Annual leave', 2, 'by month'],
+            ['2026-05-04', 'Public holiday', 1],
+            ['2026-05-25', 'Public holiday', 1],
+            ['2026-07-01', 'Annual leave', 2, 'by month'],
+            ['2026-08-31', 'Public holiday', 1],
+            ['2026-09-01', 'Annual leave', 11, 'by month']
+          ]
+        }
+      }
+      const TODAY = '2026-09-29'
+      function renderOff(y) {
+        const { allow, rows } = OFF[y]
+        const booked = rows.reduce((a, r) => a + r[2], 0)
+        const by = {}
+        rows.forEach((r) => (by[r[1]] = (by[r[1]] || 0) + r[2]))
+        $('#offBooked').textContent = booked
+        $('#offLeft').textContent = allow - booked
+        $('#offTypes').innerHTML = ['Public holiday', 'University holiday', 'Annual leave']
+          .map((t) => `${t === 'Annual leave' ? t : t + 's'} <b class="num">${by[t] || 0}</b>`)
+          .join(' &nbsp;·&nbsp; ')
+        $('#creditNote').hidden = y !== '26'
+        $('#offRows').innerHTML = rows
+          .slice()
+          .reverse()
+          .map(([d, t, n, note]) => {
+            const dt = new Date(d + 'T00:00:00Z')
+            const past = d < TODAY
+            return `<tr><td class="num">${fmt(dt, { day: 'numeric', month: 'short', year: 'numeric' })}</td><td>${note ? '<span class="muted">' + note + '</span>' : fmt(dt, { weekday: 'short' })}</td><td><span class="tag">${t}</span></td><td class="r">${n}</td><td class="${past ? 'muted' : ''}">${past ? 'Taken' : 'Upcoming'}</td></tr>`
+          })
+          .join('')
+      }
+      document.querySelectorAll('[data-offyear]').forEach((b) =>
+        b.addEventListener('click', () => {
+          document
+            .querySelectorAll('[data-offyear]')
+            .forEach((x) => x.setAttribute('aria-pressed', String(x === b)))
+          renderOff(b.dataset.offyear)
+        })
+      )
+      renderOff('27')
+    </script>
+  </body>
+</html>
