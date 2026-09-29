@@ -81,6 +81,8 @@ only free text next to the hours, and a new workbook every year.
 - The four remaining questions: the running clock shows real elapsed time (yes); **edits are truth** (see "The timer and the rounding"); today counts in the
   balance in full (yes); how Work differs is answered later.
 - **The year is app-level**: it starts the same day in every workspace and is not an Hours setting (see "The year").
+- **The academic year is this year, everywhere, including Training and Meetings** (answered 29 Sep 2026): the 1 Sep to 31 Aug definition is retired and
+  Training, Meetings and Hours use the one shared year (see "The year" and stage 4).
 - **No explanatory text on any page** (rounding, what counts, click hints, refused dates): the rules live here and in the reply to the user, not in the
   UI. No idle suggestion chips, no card title that repeats the year selector.
 - **"Add"** (the quiet link under Today and under an opened day) is for time the user forgot to track, for any task and any day: an inline row
@@ -89,6 +91,11 @@ only free text next to the hours, and a new workbook every year.
 ## Design
 
 ### Modules
+
+- **Work fits the model** (asked 29 Sep 2026: "I need to do 8 hours a week"): the plan is a weekly total plus the days worked, not a fixed day. Work would be
+  `hoursPerWeek` 8:00 and its own `workDays` (all five would give a 1:36 aim per day, which is probably not how it is worked; two or three chosen days
+  gives 4:00 or 2:40), with the same balance, weeks, charts and timer. What is not known yet, and is asked before Work is built: which days, whether
+  Work has time off and how many days, and whether a holiday should take a share off the week.
 
 - **Hours** (`id: hours`) and **Time off** (`id: time-off`) are two module manifests, each with a landing card and its own pages, created by
   factories per workspace like Meetings and Notes (`createHoursModule(workspace)`, `createTimeOffModule(workspace)`). **Only Research is
@@ -104,8 +111,7 @@ only free text next to the hours, and a new workbook every year.
 - **One concept for the whole app.** A year starts on a Monday and lasts **52 weeks**; it is named by its start year (`2026–27`). It is a top-level
   setting in `Settings` (like `trainingAimHours`), edited in **Settings → General** ("Year starts", "Next year starts"), not in the Hours tab. Research and
   Work, Hours and Time off all use it, and any module may adopt it later. Pure code (`src/shared/year.ts`, with a `YearSelect` component in the shell)
-  gives a date's year, its weeks (Monday to Sunday, numbered from 1) and its end. **Do not reuse `academic-year.ts`** (1 Sep to 31 Aug); Training and
-  Meetings keep the academic year for now (open question 2).
+  gives a date's year, its weeks (Monday to Sunday, numbered from 1) and its end. **Do not reuse `academic-year.ts`** (1 Sep to 31 Aug); It replaces `academic-year.ts` in Training and Meetings.
 - **Stored as a list of starts**, oldest first (`['2025-09-22', '2026-09-21']`). The current year's start is fixed once it has data; the **next** year's
   start defaults to this start + 52 weeks (21 Sep 2026 + 364 days = 20 Sep 2027) and can be edited any time before it begins. The user's real
   2025–26 start is added on first run.
@@ -132,7 +138,7 @@ only free text next to the hours, and a new workbook every year.
 {
   "version": 1,
   "start": "2026-09-21",                         // a Monday; the year is 52 weeks (from the app-level year list)
-  "plan": { "hoursPerDay": 450, "allowanceDays": 40 },   // minutes: 7:30
+  "plan": { "hoursPerWeek": 2250, "workDays": [1,2,3,4,5], "allowanceDays": 40 },   // minutes: 37:30 a week; Mon–Fri
   "carryIn": 0,                                  // seconds; the previous year's final carry
   "sessions": [ { "id": "k3f9a2x1", "date": "2026-09-29", "start": "14:49:12", "end": "15:10:40" | null,
                   "minutes": 15 | absent,        // reported time, frozen when the session ends; absent while it runs
@@ -167,11 +173,12 @@ only free text next to the hours, and a new workbook every year.
 
 ### Rules (pure functions in `src/shared/tracking/`, unit-tested)
 
-- `plannedDays(week)`: Mon–Fri days not in `timeOff` (weekend dates in `timeOff` are ignored), or `weekDays[weekStart]` when present. The daily aim
-  is `hoursPerDay` (7:30) on a planned day; weekends and days off have no aim, and time worked on them still counts as hours.
-- `weekPlan = plannedDays × hoursPerDay`; `weekBalance = hours − plan`; **the year balance and the week's balance count the plan up to and
-  including today** (future days and weeks are not in it), and the year's whole plan (52 weeks) is shown separately. The **average week** is
-  `hours ÷ plannedDays × 5`, as in the sheet.
+- `plannedDays(week)`: the week's **work days** (`plan.workDays`, Monday=1; Mon–Fri for Research) that are not in `timeOff` (weekend dates in `timeOff`
+  are ignored), or `weekDays[weekStart]` when present. The **daily aim** is `hoursPerWeek ÷ number of work days` (7:30 for 37:30 over five days) on a planned
+  day; other days and days off have no aim, and time worked on them still counts as hours.
+- `weekPlan = hoursPerWeek × plannedDays ÷ number of work days` (a day off takes its share off the week); `weekBalance = hours − plan`; **the year
+  balance and the week's balance count the plan up to and including today** (future days and weeks are not in it), and the year's whole plan (52
+  weeks) is shown separately. The **average week** is `hours ÷ plannedDays × number of work days`, as in the sheet.
 - Format: one shared `formatHours(minutes)` gives `7:45`, `1,523:30`, `−2:30`, and a signed form for balances.
 - The sheet's real numbers as a test: the 2025–26 daily rows give 1,523:30, 220 planned days, balance −126:30, average week 34:38 (the sheet's
   own weekly total says 1,527:30 and −122:30 because of the overlap described above).
@@ -219,7 +226,7 @@ Shape of the existing pages: shared landing and page patterns, plain CSS with to
   Mounted through the manifest's `globals`.
 - **Dock menu** "Stop timer (name…)" or "Start timer", and **palette** commands "Start timer" and "Stop timer" (names cut the same way). A shortcut
   only if the user wants one (check for a free chord; list it in Settings).
-- **Settings → Hours** (per workspace): hours per day (7:30) and days off a year (40). The year's start is in Settings → General.
+- **Settings → Hours** (per workspace): hours per week (37:30), the days worked (Mon–Fri), and days off a year (40). The year's start is in Settings → General.
 - Search (Mod-K) does not index sessions at first.
 
 ### Import (`npm run import:hours -- --old <xlsx> --new <xlsx> [--apply]`)
@@ -243,13 +250,18 @@ Dry run by default; reads .xlsx with Node built-ins (reuse the Training importer
 2. **Store:** the year file in `src/main/tracking/` (atomic, guarded, corrupt file set aside, unknown keys kept, new year created on demand, per
    workspace), IPC and `Api` methods, tests. A running session persists across a simulated quit; switching is one write.
 3. **Importer:** built and tested, then **dry run on the real files; stop and show the user the output.**
-4. **Hours page:** Today, the week list, the balance card, editing a task's time and Add, the Settings tab. Before this, in the shell: the app-level year
+4. **Adopt the year in Training and Meetings** (its own commits, before the Hours page): replace `academic-year.ts` (and its `AcademicYearSelect` and
+   `use-academic-year`) with the shared year in the 17 files that use it (Meetings' hours, landing, page and report; Training's page, landing, card, plan,
+   rules, report and search) and rename the select. Years before the first recorded start are derived backwards, 52 weeks each, until the user gives their
+   real starts. The real library was checked read-only on 29 Sep 2026: no meeting or training is dated 1–21 Sep 2025 or 1–20 Sep 2026 (the earliest
+   are 23 and 24 Sep 2025), so **no entry changes year**. Tests, then look at Training and Meetings in the app on a scratch library.
+5. **Hours page:** Today, the week list, the balance card, editing a task's time and Add, the Settings tab. Before this, in the shell: the app-level year
    (settings, `year.ts`, `YearSelect`, Settings → General).
-5. **Charts and weeks:** the views above, one at a time, each looked at in light and dark.
-6. **Time off:** store methods, page, the link to planned days.
-7. **Around the pages:** landing cards, top-bar chip and popover, Dock item, palette commands, shortcut entry if any.
-8. **Polish, QA, docs:** `docs/DECISIONS.md` ("Hours and Time off"), `docs/ROADMAP.md`, `CLAUDE.md` (status, the new import command).
-9. **Later, with the user:** Work's Hours and Time off (after question 1), and Tasks.
+6. **Charts and weeks:** the views above, one at a time, each looked at in light and dark.
+7. **Time off:** store methods, page, the link to planned days.
+8. **Around the pages:** landing cards, top-bar chip and popover, Dock item, palette commands, shortcut entry if any.
+9. **Polish, QA, docs:** `docs/DECISIONS.md` ("Hours and Time off"), `docs/ROADMAP.md`, `CLAUDE.md` (status, the new import command).
+10. **Later, with the user:** Work's Hours and Time off (after question 1), and Tasks.
 
 **Testing for real** (CLAUDE.md): a scratch library via `CENTRAL_COMMAND_HOME`, Playwright, the built app and dev mode. Type real keystrokes into the
 field; Start then quit at once and reopen (the session must still be running); switch tasks many times quickly and check the day's total equals the
@@ -259,7 +271,5 @@ the chip, the popover, the Dock and the palette.
 
 ## Still open (default in bold; answer before or during the build)
 
-1. **How does Work differ?** (hours per day, allowance, whether it has time off at all, its own tasks; the year is shared.) Asked before stage 9; nothing
+1. **How does Work differ?** (hours per day, allowance, whether it has time off at all, its own tasks; the year is shared.) Asked before stage 10; nothing
    depends on it now.
-2. **Should Training and Meetings also move from the academic year (1 Sep to 31 Aug) to this year?** Default: **no**; their 200-hour aim and Inkpath
-   report follow the academic year. The shared year is built so that switching later is a small change.
