@@ -118,6 +118,17 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   save because the IPC handler had never heard of the field) — both fixed. Full write-up in `docs/DECISIONS.md`; immediate
   TODOs for the user are at the top of `docs/ROADMAP.md`'s "For the user" list.
 
+- **29 Sep 2026, a long round of feedback and features, all pushed** (details in `docs/DECISIONS.md`, from "Editor feedback round" on): editor
+  fixes (links: `[text](url)`, paste a URL over selected text, plain URLs always links, Cmd-hover pointer; Cmd-Shift-V plain paste, caught in
+  the main process because Electron's menu owns that chord; even bullet spacing; "Saved" in the card's facts line, which no longer shows
+  Created); the Training plan laid out like a note; **Notes for Work** (`createNotesModule(workspace)`, like Meetings) with the Work notes
+  imported; the palette and Dock "New note/meeting" follow the current workspace; a **Workspace menu on note and meeting pages** moves the
+  item (`moveNoteFile`: copy first, Trash the original after, never overwrite, keeps the modified time); `created` removed from notes
+  entirely (`npm run strip:created`, applied); and **entities**: `@` in any editor mentions a person, reading, meeting or note as a
+  `[label](cc://kind/key)` link drawn as a chip (registry of providers in module manifests, `src/renderer/src/entities/`, format in
+  `src/shared/entities.ts`; notes and meetings get a `uid` in their front matter when first linked; person renames rewrite mentions;
+  "Mentioned in" panels read the note folders on request). Tasks, when built, add one provider and one kind.
+
 ## Testing the app for real (unit tests are not enough)
 
 Several bugs (a launch crash from an ESM-only dependency, lost keystrokes, a dev-only editor

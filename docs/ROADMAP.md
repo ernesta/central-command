@@ -412,6 +412,8 @@ the note".
 
 **Editor**
 
+- **Entities are built** (29 Sep 2026, `docs/DECISIONS.md`, "Entities: mentions with `@`"): the earlier "links between notes / unlinked mentions" idea is now
+  partly done (mentions and "Mentioned in"); "unlinked mentions" (plain names that could be mentions) and tasks as a kind are not.
 - **Link editing (Cmd-K on selected text):** set, change or remove a link's address without touching the Markdown.
 - **"Paste without formatting" in the right-click menu:** reuses the Cmd-Shift-V code, and works even if the key chord misbehaves.
 - **Plan text width:** cap the Training plan's text at 780px like Notes and Meetings (it is full width now).
