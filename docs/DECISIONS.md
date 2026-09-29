@@ -1203,3 +1203,18 @@ own Meetings, People and person pages were re-driven the same way and are unchan
 Reference`. The Meetings folder is left to `import:work-meetings`. **The Admin & Compliance notes hold account, tax and insurance numbers,
   and every note's text is searchable**, so they can show in search results; delete or keep them as you like. Same safety checks as the
   Research import; a second run imports nothing.
+
+## Moving a note or meeting to the other workspace (29 Sep 2026, at the user's request)
+
+- **A Workspace menu on the note and meeting pages** (`WorkspaceSelect`, in the header beside Group/Pin and Delete). Choosing the other one
+  moves the item there and the page follows it (the address, and the top bar's workspace, change). There is no pop-up and no choice at
+  creation: the default (the workspace being looked at) is simply fixable afterwards. A move is easy to undo by choosing the first one again.
+- **Safe by construction** (`main/notes/move-file.ts`, `moveNoteFile`, shared by both stores): the copy is created first, exclusively (an
+  existing file is never replaced; a taken name gets ` 2`), and only then is the original sent to the Trash. If the Trash move fails the copy is
+  removed again and the original is untouched, so a failure never leaves two copies. Mutation checks: without the clean-up or the exclusive
+  create, a test fails. The page saves what is pending before asking (`session.dispose()`), and the whole file as it is on disk is copied.
+- **What changes.** A note keeps its group and subgroup (groups are derived per workspace, so the group simply appears in the new one), and
+  arrives **unpinned** if the other workspace already has four pinned. A meeting keeps its series and date; series are not per workspace.
+  The name is worked out again for the new folder.
+- **A latent bug found on the way:** `MeetingPage` was keyed by the meeting id alone, so the same file name in the other workspace could
+  reuse the old session; it is now keyed by workspace and id, as `NotePage` already was.
