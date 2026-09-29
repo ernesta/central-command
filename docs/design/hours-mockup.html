@@ -802,6 +802,29 @@
         gap: 8px;
         align-items: center;
       }
+
+      .tbtn {
+        border: 0;
+        background: transparent;
+        border-radius: 8px;
+        padding: 2px 8px;
+        font: inherit;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        font-size: 16px;
+        color: inherit;
+      }
+      .tbtn:hover {
+        background: var(--hover-tint);
+      }
+      .trow.live .tbtn:hover {
+        background: transparent;
+        outline: 1px solid var(--accent);
+      }
+      select.sel {
+        appearance: auto;
+        color: var(--ink);
+      }
     </style>
   </head>
   <body>
@@ -884,28 +907,9 @@
                     <svg class="i" viewBox="0 0 24 24"><path d="M6 4v16l14-8z" /></svg>Start
                   </button>
                 </div>
-                <div
-                  class="suggest"
-                  style="margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap"
-                >
-                  <span
-                    class="chip"
-                    style="
-                      max-width: 100%;
-                      overflow: hidden;
-                      text-overflow: ellipsis;
-                      white-space: nowrap;
-                    "
-                    >Look at Inkpath</span
-                  ><span class="chip">Send Rabia AI stuff</span>
-                </div>
-                <p class="help">
-                  Times are rounded to 15 minutes. What is rounded off carries over, so the total
-                  stays true.
-                </p>
                 <div style="margin-top: 4px">
                   <button class="quiet">
-                    <svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>Add time
+                    <svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>Add
                   </button>
                 </div>
               </div>
@@ -938,10 +942,6 @@
 
             <div class="stack">
               <div class="box pad">
-                <div class="cardhead">
-                  <h3>Year</h3>
-                  <span class="muted">2026–27</span>
-                </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px">
                   <div class="stat">
                     <span class="label">Balance</span><b>0:00 <small>on plan</small></b>
@@ -952,12 +952,8 @@
                     <span class="label">Planned, 246 days</span><b>1,845:00</b>
                   </div>
                 </div>
-                <p class="help">
-                  Balance counts the plan up to today. Planned days already leave out the 14 days
-                  off.
-                </p>
                 <button class="quiet" style="margin-top: 8px; padding-left: 0">
-                  Charts and all weeks
+                  Charts
                   <svg class="i" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></svg>
                 </button>
               </div>
@@ -1005,17 +1001,11 @@
                 <span class="muted" id="balNote"></span>
               </div>
               <svg class="chart" id="balChart" viewBox="0 0 1000 200" role="img"></svg>
-              <p class="help">
-                Hours minus 7:30 for each planned day, added up week by week. Above the line is
-                ahead of plan.
-              </p>
             </div>
             <div class="box pad">
               <div class="cardhead">
                 <h3>Days</h3>
-                <span class="muted"
-                  >Each column is a week, Monday at the top. Click a day to open its week.</span
-                >
+                <span class="muted">Each column is a week, Monday at the top</span>
               </div>
               <svg class="chart" id="heat" viewBox="0 0 1000 150" role="img"></svg>
               <div class="legend">
@@ -1034,7 +1024,7 @@
                 >
               </div>
             </div>
-            <div class="two">
+            <div>
               <div class="box pad">
                 <div class="cardhead">
                   <h3>Typical week</h3>
@@ -1042,18 +1032,48 @@
                 </div>
                 <svg class="chart" id="dowChart" viewBox="0 0 440 190" role="img"></svg>
               </div>
-              <div class="placeholder">
-                <h3 style="color: var(--ink); font-size: 18px; margin-bottom: 8px">
-                  Hours per task
-                </h3>
-                Where the time goes, once tasks have been recorded. The old sheet only had day
-                totals, so this fills in from now on.
+            </div>
+            <div class="box">
+              <div class="cardhead" style="padding: 20px 24px 0">
+                <h3>Years</h3>
               </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Year</th>
+                    <th>Dates</th>
+                    <th class="r">Hours</th>
+                    <th class="r">Plan so far</th>
+                    <th class="r">Balance</th>
+                    <th class="r">Average week</th>
+                    <th class="r">Days off taken</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="day">
+                    <td>2026–27</td>
+                    <td>21 Sep 2026 – 19 Sep 2027</td>
+                    <td class="r">52:30</td>
+                    <td class="r">52:30</td>
+                    <td class="r">0:00</td>
+                    <td class="r">37:30</td>
+                    <td class="r">0</td>
+                  </tr>
+                  <tr class="day">
+                    <td>2025–26</td>
+                    <td>22 Sep 2025 – 20 Sep 2026</td>
+                    <td class="r">1,523:30</td>
+                    <td class="r">1,650:00</td>
+                    <td class="r down">−126:30</td>
+                    <td class="r">34:38</td>
+                    <td class="r">15</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
             <div class="box">
               <div class="cardhead" style="padding: 20px 24px 0">
                 <h3>All weeks</h3>
-                <span class="muted">Click a week to open it</span>
               </div>
               <div class="scroll" tabindex="0" aria-label="All weeks">
                 <table>
@@ -1082,10 +1102,10 @@
           <div class="head">
             <h2>Time off</h2>
             <div style="display: flex; gap: 12px">
-              <div class="seg" role="group" aria-label="Year">
-                <button aria-pressed="true" data-offyear="27">2026–27</button>
-                <button aria-pressed="false" data-offyear="26">2025–26</button>
-              </div>
+              <select class="sel" id="offYear" aria-label="Year">
+                <option value="27">2026–27</option>
+                <option value="26">2025–26</option>
+              </select>
               <button class="btn primary" id="addToggle">
                 <svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>Add
               </button>
@@ -1117,7 +1137,7 @@
             <div class="muted" id="offTypes"></div>
           </div>
           <div class="note" id="leaveNote" hidden>
-            <span>No annual leave is recorded for this year yet. Add the days you took.</span>
+            <span>No annual leave yet.</span>
           </div>
           <div class="box">
             <table>
@@ -1132,10 +1152,6 @@
               <tbody id="offRows"></tbody>
             </table>
           </div>
-          <p class="muted" style="font-size: 13px">
-            Dates outside the year are refused and weekends never count. Taken means the date has
-            passed.
-          </p>
         </div>
 
         <!-- 4. LANDING AND SHELL -->
@@ -1195,10 +1211,6 @@
                   >Stop
                 </button>
               </div>
-              <p class="help" style="max-width: 36ch">
-                In the top bar a long name is cut with an ellipsis; the full name shows on hover and
-                here.
-              </p>
             </section>
             <section>
               <span class="label">Search (Mod-K) commands</span>
@@ -1229,6 +1241,17 @@
               </div>
             </section>
             <section>
+              <span class="label">Settings → General</span>
+              <div class="box pad" style="display: grid; gap: 10px; min-width: 300px">
+                <div style="display: flex; justify-content: space-between; gap: 24px">
+                  <span>Year starts</span><span class="field num">Mon 21 Sep 2026</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; gap: 24px">
+                  <span>Next year starts</span><span class="field num">Mon 20 Sep 2027</span>
+                </div>
+              </div>
+            </section>
+            <section>
               <span class="label">Settings → Hours</span>
               <div class="box pad" style="display: grid; gap: 10px; min-width: 300px">
                 <div style="display: flex; justify-content: space-between; gap: 24px">
@@ -1236,9 +1259,6 @@
                 </div>
                 <div style="display: flex; justify-content: space-between; gap: 24px">
                   <span>Days off a year</span><span class="field num">40</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; gap: 24px">
-                  <span>Year starts</span><span class="field num">Mon 21 Sep 2026</span>
                 </div>
               </div>
             </section>
@@ -1348,7 +1368,7 @@
         $('#todayTotal').innerHTML = '2:15 <small>of 7:30</small>'
         $('#todayTasks').innerHTML = TASKS.map(([name, t], i) => {
           const live = running && i === 2
-          return `<div class="trow${live ? ' live' : ''}"><button class="pbtn" aria-label="${live ? 'Stop' : 'Switch to this task'}">${live ? STOP : PLAY}</button><span>${name}</span><span class="t">${t}</span></div>`
+          return `<div class="trow${live ? ' live' : ''}"><button class="pbtn" aria-label="${live ? 'Stop' : 'Switch to this task'}">${live ? STOP : PLAY}</button><span>${name}</span><button class="tbtn" aria-label="Edit time">${t}</button></div>`
         }).join('')
       }
       renderToday()
@@ -1633,14 +1653,7 @@
           })
           .join('')
       }
-      document.querySelectorAll('[data-offyear]').forEach((b) =>
-        b.addEventListener('click', () => {
-          document
-            .querySelectorAll('[data-offyear]')
-            .forEach((x) => x.setAttribute('aria-pressed', String(x === b)))
-          renderOff(b.dataset.offyear)
-        })
-      )
+      $('#offYear').addEventListener('change', (e) => renderOff(e.target.value))
       renderOff('27')
     </script>
   </body>

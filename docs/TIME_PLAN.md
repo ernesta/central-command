@@ -76,6 +76,16 @@ only free text next to the hours, and a new workbook every year.
 - **The top-bar timer chip is loved, but real task names are long** (for example "Prepare a presentation for lab meeting with Michael
   Crawford"): the chip cuts with an ellipsis and a click opens the full name, a Switch list and Stop.
 
+**Third round (29 Sep 2026)**
+
+- The four remaining questions: the running clock shows real elapsed time (yes); **edits are truth** (see "The timer and the rounding"); today counts in the
+  balance in full (yes); how Work differs is answered later.
+- **The year is app-level**: it starts the same day in every workspace and is not an Hours setting (see "The year").
+- **No explanatory text on any page** (rounding, what counts, click hints, refused dates): the rules live here and in the reply to the user, not in the
+  UI. No idle suggestion chips, no card title that repeats the year selector.
+- **"Add"** (the quiet link under Today and under an opened day) is for time the user forgot to track, for any task and any day: an inline row
+  (task, hours:minutes). Editing a task's time in place and Add are the only ways to type time.
+
 ## Design
 
 ### Modules
@@ -89,12 +99,27 @@ only free text next to the hours, and a new workbook every year.
 - **One timer for the whole app** (a person works on one thing at a time), even with two workspaces: starting a task in Work while one runs in
   Research switches the timer, and the chip names the workspace when it is not the current one.
 
-### The tracking year
+### The year (app-level, shared by every workspace)
 
-- Starts on a Monday, **52 weeks**, named by its start year (`2026–27`). The next defaults to start + 52 weeks (21 Sep 2026 + 364 days = 20 Sep
-  2027). **Do not reuse `academic-year.ts`** (1 Sep to 31 Aug) and do not call it "academic year" in the UI. Weeks run Monday to Sunday and
-  are numbered from 1.
-- Opening the app in a new year with no file creates one with the defaults, without asking, and says so once.
+- **One concept for the whole app.** A year starts on a Monday and lasts **52 weeks**; it is named by its start year (`2026–27`). It is a top-level
+  setting in `Settings` (like `trainingAimHours`), edited in **Settings → General** ("Year starts", "Next year starts"), not in the Hours tab. Research and
+  Work, Hours and Time off all use it, and any module may adopt it later. Pure code (`src/shared/year.ts`, with a `YearSelect` component in the shell)
+  gives a date's year, its weeks (Monday to Sunday, numbered from 1) and its end. **Do not reuse `academic-year.ts`** (1 Sep to 31 Aug); Training and
+  Meetings keep the academic year for now (open question 2).
+- **Stored as a list of starts**, oldest first (`['2025-09-22', '2026-09-21']`). The current year's start is fixed once it has data; the **next** year's
+  start defaults to this start + 52 weeks (21 Sep 2026 + 364 days = 20 Sep 2027) and can be edited any time before it begins. The user's real
+  2025–26 start is added on first run.
+- **More than one year:**
+  - Every year is its own file per workspace and stays complete for ever; nothing is copied, archived or reset.
+  - **Rollover is automatic**: the first time the app opens after a year ends, it appends the next start and creates the new file with the previous
+    year's plan values (hours per day, days off), and does not ask. Time off does not carry over (the user adds leftovers by hand if wanted).
+  - The **year selector** (the same control on Hours, Time off and the charts) lists every year that has a file plus the current one, newest first, and
+    opens on the current year. Older years stay editable, unprompted.
+  - **A session belongs to the year its date falls in.** A timer running over the year boundary is split at midnight like any other day. The
+    rounding carry passes on: each file records `carryIn`, the previous year's final carry.
+  - **Charts and weeks has a "Years" table**: one row per year (dates, hours, plan so far, balance, average week, days off taken), so years can be
+    compared. Every other view is about the selected year.
+- Opening the app in a new year with no file creates it without asking.
 
 ### Data: one plain file per workspace and year
 
@@ -106,11 +131,13 @@ only free text next to the hours, and a new workbook every year.
 ```
 {
   "version": 1,
-  "start": "2026-09-21",                         // a Monday; the year is 52 weeks
+  "start": "2026-09-21",                         // a Monday; the year is 52 weeks (from the app-level year list)
   "plan": { "hoursPerDay": 450, "allowanceDays": 40 },   // minutes: 7:30
+  "carryIn": 0,                                  // seconds; the previous year's final carry
   "sessions": [ { "id": "k3f9a2x1", "date": "2026-09-29", "start": "14:49:12", "end": "15:10:40" | null,
+                  "minutes": 15 | absent,        // reported time, frozen when the session ends; absent while it runs
                   "label": "Prepare a presentation for lab meeting with Michael Crawford", "task": "<uid>" | absent } ],
-  "adds": [ { "id": "…", "date": "2026-09-29", "label": "Deck", "minutes": 30 } ],      // typed time, multiples of 15
+  "adjusts": [ { "id": "…", "date": "2026-09-29", "label": "Deck", "minutes": 30 } ],     // typed time, signed, multiples of 15
   "days": { "2026-09-28": { "minutes": 465, "note": "look at inkpath" } },               // imported history: a typed total
   "timeOff": [ { "date": "2026-12-24", "type": "university" | "public" | "leave" } ],
   "weekDays": { "2025-09-22": 5 }                // imported history only: planned days typed in the old sheet
@@ -123,19 +150,20 @@ only free text next to the hours, and a new workbook every year.
   one click. **Stop** ends it. At most one session runs. A session does not cross midnight: one still running from an earlier day shows
   "Started yesterday 14:49. Set an end time." on Today and counts only once it has an end. Starting a session writes the file immediately and
   synchronously (the lost-keystrokes lesson: quitting right after Start must not lose it); a running session survives quitting the app.
-- **What is reported is always a multiple of 15 minutes, computed as a running total, not block by block.** Let `E` be the exact minutes of all
-  sessions in the tracking year, in order, and `R = round15(E)` (nearest 15, halves up). A session's reported time is `R(after it) − R(before it)`,
-  given to its task. So the year's reported total is always exactly `round15(exact total)`: it is never more than 7½ minutes off, however often
-  the user switches. The carry, `E − R`, is the user's "running counter"; it is derived, never stored or shown.
-- Consequences to accept: a 2-minute block can show 0:00 or 0:15 depending on where the carry stands (that is what keeps the total true);
-  editing or deleting an earlier session can move later days by a quarter hour, because everything after it is re-derived on read (nothing
-  stores reported time). If this bothers the user later, freeze each day when it ends.
+- **What is reported is always a multiple of 15 minutes, worked out once, when a session ends, with a running carry.** The carry is the exact
+  time not yet reported: `carry = carryIn + Σ (exact − reported)` over every ended session of the year (derived from the stored `minutes`, never
+  stored on its own). When a session ends after `d` exact minutes: `reported = round15(carry + d)` (nearest 15, halves up), stored in the session as `minutes`,
+  and the new carry is `carry + d − reported`. So the year's reported total from timers stays within 7½ minutes of the exact total however often the
+  user switches. A 2-minute block can show 0:00 or 0:15 depending on where the carry stands; that is what keeps the total true.
+- **Reported time is frozen and edits are truth.** Nothing is re-derived later: editing or deleting a session or a task's time never moves another block
+  or day. The user edits a **task's time for a day** in place (typed as hours:minutes, in 15-minute steps); that is saved as an `adjusts` entry equal to
+  the difference from the timer time (so the row shows exactly what was typed), and later timer time on that task that day adds on top. Setting it to
+  0:00 removes the row. **Adjusts, Add and imported day totals do not touch the carry.** There is no start/end editor: the times stay in the file
+  but are never shown or edited.
+- The running task's row shows what would be reported if it ended now (it changes in quarter-hour steps; it is provisional, nothing is stored until it ends).
 - **A day shows one row per task** (same label after trimming and ignoring case; the first spelling wins), in the order first used, so rows do
-  not jump while switching. Task, day and week totals are all sums of these reported quarter hours.
-- **Adds** (typed time for a task, in 15-minute steps) and **imported day totals** are already whole quarters: they count in the day but do not
-  touch the carry.
-- The running task's row shows the reported time so far (it changes in quarter-hour steps). The **clock** in the chip and on Today's running row is the
-  timer itself: hours and minutes since this block started, ticking (the one place exact time is shown; see "Still open" 2).
+  not jump while switching. Task, day and week totals are all sums of reported quarter hours.
+- The **clock** in the chip and in the popover is the timer itself: hours and minutes since this block started, ticking (the one place exact time is shown).
 
 ### Rules (pure functions in `src/shared/tracking/`, unit-tested)
 
@@ -155,20 +183,19 @@ only free text next to the hours, and a new workbook every year.
 Shape of the existing pages: shared landing and page patterns, plain CSS with tokens (both themes), Lucide icons, no gradients. Reuse
 `HoursStrip` and the shared components where they fit; ask before inventing a variant.
 
-- **Today:** the total against the aim (`2:15 of 7:30`), one row per task with a round button (▶ switch to this task, ■ stop it) and the
-  quarter-hour time, the running task highlighted (no "Running" label anywhere), a field "What are you working on?" with **Start**
-  (suggesting earlier task names as chips; once Tasks exist, a task picker limited to existing tasks), one line of help ("Times are rounded to
-  15 minutes. What is rounded off carries over, so the total stays true."), and a quiet **Add time**. Long names wrap here.
+- **Today:** the total against the aim (`2:15 of 7:30`), one row per task with a round button (▶ switch to this task, ■ stop it) and its
+  quarter-hour time (click the time to edit it), the running task highlighted (no "Running" label anywhere), a field "What are you working on?" with
+  **Start** (earlier task names are suggested only while typing; once Tasks exist, a task picker limited to existing tasks), and a quiet **Add**.
+  Long names wrap here.
 - **The week:** a list of seven days with arrows (‹ Week 2 · 28 Sep – 4 Oct ›): day, hours, and a small bar against the 7:30 aim (a tick at the
-  aim; weekends and days off have none). Future days show a dash. Clicking a day shows its tasks and their times; an "Edit" link there opens that
-  task's sessions with their start and end times (the only place times appear) for fixing a forgotten stop. Footer: hours against the plan so
-  far and the balance. **No "what" column.**
-- **Year:** balance, average week, hours so far, and the whole year's plan (with the days it is made of), and a link to the charts.
+  aim; weekends and days off have none). Future days show a dash. Clicking a day shows its tasks and times, editable in place, and **Add**.
+  Footer: hours against the plan so far and the balance. **No "what" column.**
+- **Balance, average week, hours so far and planned hours** sit in a card with no title (the year selector above already says which year) and a link
+  to the charts.
 - **Charts and weeks** (`/hours/year`; hand-drawn SVG from tokens, no chart library; use the `dataviz` skill; every number also in text or a
   hover): weeks of the year against 37:30 (over and under in two colours: one new token, `--chart-under`), the running balance, a heat map of the
-  year with holidays outlined (**clicking a day opens its week**), the typical week, a placeholder for hours per task that fills once tasks
-  are recorded, and **All weeks**: a compact table (week, dates, hours, plan, balance, year balance), newest first, in a scroll box with padding
-  for focus rings, clicking a row opens the week. This is the answer to "the list of all days will be very many".
+  year with holidays outlined (a day opens its week), the typical week, **Years** (one row per year, see "The year"), and **All weeks**: a compact table (week, dates, hours, plan, balance, year balance), newest first, in a scroll box with padding
+  for focus rings, a row opens its week. This is the answer to "the list of all days will be very many".
 - A day may carry a short **note** (the sheet's loose column M), shown in its expanded row.
 
 ### Time off page (Research → Time off)
@@ -192,7 +219,7 @@ Shape of the existing pages: shared landing and page patterns, plain CSS with to
   Mounted through the manifest's `globals`.
 - **Dock menu** "Stop timer (name…)" or "Start timer", and **palette** commands "Start timer" and "Stop timer" (names cut the same way). A shortcut
   only if the user wants one (check for a free chord; list it in Settings).
-- **Settings → Hours** (per workspace): hours per day (7:30), days off a year (40), the year's start.
+- **Settings → Hours** (per workspace): hours per day (7:30) and days off a year (40). The year's start is in Settings → General.
 - Search (Mod-K) does not index sessions at first.
 
 ### Import (`npm run import:hours -- --old <xlsx> --new <xlsx> [--apply]`)
@@ -210,13 +237,14 @@ Dry run by default; reads .xlsx with Node built-ins (reuse the Training importer
 
 ## Stages (one small commit per stage, or per standalone part of one)
 
-1. **Rules:** `src/shared/tracking/`: year and weeks, planned days, the rounding (running total), day/week/year totals, balance and average, time-off
+1. **Rules:** `src/shared/year.ts` and `src/shared/tracking/`: year and weeks, planned days, the rounding (running total), day/week/year totals, balance and average, time-off
    counts, `formatHours`. Tests include the sheet's numbers. **Mutation-check** the rules that protect the total: remove the carry (the year total
-   must then fail a test), let a session cross midnight, allow two running sessions, accept a date outside the year.
+   must then fail a test), re-derive a frozen `minutes` (an edit must not move another day), let a session cross midnight, allow two running sessions, accept a date outside the year.
 2. **Store:** the year file in `src/main/tracking/` (atomic, guarded, corrupt file set aside, unknown keys kept, new year created on demand, per
    workspace), IPC and `Api` methods, tests. A running session persists across a simulated quit; switching is one write.
 3. **Importer:** built and tested, then **dry run on the real files; stop and show the user the output.**
-4. **Hours page:** Today, the week list, the Year card, Add time, the session editor, the Settings tab.
+4. **Hours page:** Today, the week list, the balance card, editing a task's time and Add, the Settings tab. Before this, in the shell: the app-level year
+   (settings, `year.ts`, `YearSelect`, Settings → General).
 5. **Charts and weeks:** the views above, one at a time, each looked at in light and dark.
 6. **Time off:** store methods, page, the link to planned days.
 7. **Around the pages:** landing cards, top-bar chip and popover, Dock item, palette commands, shortcut entry if any.
@@ -225,17 +253,13 @@ Dry run by default; reads .xlsx with Node built-ins (reuse the Training importer
 
 **Testing for real** (CLAUDE.md): a scratch library via `CENTRAL_COMMAND_HOME`, Playwright, the built app and dev mode. Type real keystrokes into the
 field; Start then quit at once and reopen (the session must still be running); switch tasks many times quickly and check the day's total equals the
-rounded exact total; a session left running overnight (fake the clock in a test, not the machine); focus rings on every screen (the weeks table's
+rounded exact total (within 7½ minutes); edit a task's time and check no other day moves; a year rollover on a faked clock; a session left running overnight (fake the clock in a test, not the machine); focus rings on every screen (the weeks table's
 scroll box especially); screenshots of every screen in light and dark, checking clipping and contrast, not only that things render; a long task name in
 the chip, the popover, the Dock and the palette.
 
 ## Still open (default in bold; answer before or during the build)
 
-1. **How does Work differ?** (hours per day, allowance, year start, whether it has time off at all, its own tasks.) Asked before stage 9; nothing
+1. **How does Work differ?** (hours per day, allowance, whether it has time off at all, its own tasks; the year is shared.) Asked before stage 9; nothing
    depends on it now.
-2. **The clock on the running task** shows the block's real elapsed time, ticking (`0:21`), while every list stays in quarter hours. Default: **yes**;
-   the alternative is to show only the quarter-hour value everywhere.
-3. **Editing an old session can move later days by a quarter hour** (the price of a total that is always true). Default: **accept**; the alternative
-   is to freeze each day when it ends.
-4. **Today counts in the balance in full from the start of the day**, so the balance dips in the morning and recovers as you work (the mockup shows
-   0:00 with 2:15 done). Default: **yes**, as "up to today" was answered; the alternative is up to yesterday.
+2. **Should Training and Meetings also move from the academic year (1 Sep to 31 Aug) to this year?** Default: **no**; their 200-hour aim and Inkpath
+   report follow the academic year. The shared year is built so that switching later is a small change.
