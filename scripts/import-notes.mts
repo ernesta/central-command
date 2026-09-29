@@ -1,6 +1,8 @@
 /**
  * One-off importer: copy the free-standing notes of an Obsidian vault (Data Sources, Ideas, Thesis and Placement)
- * into Central Command's Notes folder. Never modifies the vault; never replaces a file.
+ * into Central Command's Notes folder. With `--workspace work` it reads a Work vault instead: the notes loose at the
+ * top of the vault plus the folders `Admin & Compliance` and `Luminos` (the meetings are Meetings' own importer's),
+ * into the Work notes folder. Never modifies the vault; never replaces a file.
  *
  *   npm run import:notes -- --vault ~/path/to/vault            # dry run: shows every note and the front matter it would get
  *   npm run import:notes -- --vault ~/path/to/vault --apply    # creates the new note files
@@ -15,8 +17,8 @@
  * one (a name that is taken gets ` 2`). Running it twice does not import anything twice: a note whose
  * `imported-from` is already in the folder is skipped.
  *
- * Options: --folders "Data Sources,Ideas,Thesis,Placement" (which vault folders to read), --notes <dir>
- * (default: ~/CentralCommand/notes/notes/research).
+ * Options: --workspace research|work (default research), --folders "Data Sources,Ideas,Thesis,Placement" (which vault
+ * folders to read), --notes <dir> (default: ~/CentralCommand/notes/notes/<workspace>).
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
 import { homedir } from 'os'
@@ -26,6 +28,7 @@ import { splitNote } from '../src/modules/notes/shared/front-matter'
 import { isoDate } from '../src/shared/dates'
 import {
   IMPORT_FOLDERS,
+  WORK_IMPORT_FOLDERS,
   importedFromOf,
   planNoteImport,
   type PlanItem,
@@ -47,15 +50,24 @@ const vault = expand(vaultArg)
 const apply = process.argv.includes('--apply')
 const home = process.env.CENTRAL_COMMAND_HOME || homedir()
 const dataRoot = join(home, 'CentralCommand')
+const workspace = arg('workspace') ?? 'research'
+if (workspace !== 'research' && workspace !== 'work') {
+  console.error('--workspace must be research or work')
+  process.exit(1)
+}
 const notesDir = arg('notes')
   ? expand(arg('notes') as string)
-  : join(dataRoot, 'notes', 'notes', 'research')
+  : join(dataRoot, 'notes', 'notes', workspace)
 const folders = arg('folders')
   ? (arg('folders') as string)
       .split(',')
       .map((f) => f.trim())
       .filter(Boolean)
-  : [...IMPORT_FOLDERS]
+  : workspace === 'work'
+    ? [...WORK_IMPORT_FOLDERS]
+    : [...IMPORT_FOLDERS]
+// Work's vault keeps some notes loose at the top; Research's does not.
+const topLevel = workspace === 'work'
 
 if (!existsSync(vault)) {
   console.error(`Vault not found: ${vault}`)
@@ -103,8 +115,28 @@ for (const folder of folders) {
     } else ignored.push(`${folder}/${entry.name}`)
   }
 }
+if (topLevel) {
+  for (const entry of readdirSync(vault, { withFileTypes: true }).sort((a, b) =>
+    a.name.localeCompare(b.name)
+  )) {
+    if (entry.name.startsWith('.') || entry.isDirectory()) continue
+    const path = join(vault, entry.name)
+    if (!entry.name.endsWith('.md')) {
+      ignored.push(entry.name)
+      continue
+    }
+    const stats = statSync(path)
+    const born = stats.birthtimeMs > 0 ? stats.birthtimeMs : stats.mtimeMs
+    sources.push({ path: entry.name, content: readFileSync(path, 'utf8'), created: isoDate(born) })
+  }
+}
 const elsewhere = readdirSync(vault, { withFileTypes: true })
-  .filter((e) => !e.name.startsWith('.') && !folders.includes(e.name))
+  .filter(
+    (e) =>
+      !e.name.startsWith('.') &&
+      !folders.includes(e.name) &&
+      !(topLevel && e.isFile() && e.name.endsWith('.md'))
+  )
   .map((e) => (e.isDirectory() ? `${e.name}/` : e.name))
   .sort()
 

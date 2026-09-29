@@ -5,6 +5,13 @@ import { noteBaseName } from '../file-name'
 /** The vault folders whose notes are imported. Readings, Meetings, Training and Assets already have their own homes. */
 export const IMPORT_FOLDERS = ['Data Sources', 'Ideas', 'Thesis', 'Placement'] as const
 
+/**
+ * The vault folders read for Work's notes (`--workspace work`), besides the notes loose at the top of the vault. The
+ * meetings folder is not here: those are Meetings (`npm run import:work-meetings`). `Luminos` is a stray nested
+ * folder holding one note.
+ */
+export const WORK_IMPORT_FOLDERS = ['Admin & Compliance', 'Luminos'] as const
+
 /** One note in the vault, as the importer sees it. */
 export interface SourceNote {
   /** Relative to the vault, with `/`: "Data Sources/ASER.md". */
