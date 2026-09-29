@@ -7,6 +7,7 @@ import type { SearchHit } from '@shared/search'
 import { EmptyState } from '../components/EmptyState'
 import { SearchInput } from '../components/SearchInput'
 import { searchCommands } from './commands'
+import { useQuickActionWorkspace } from './useQuickActionWorkspace'
 import { searchEverywhere, type SearchGroup, type Searchable } from './run-search'
 import styles from './SearchResultsPage.module.css'
 
@@ -40,6 +41,7 @@ function Hit({ hit, onRun }: { hit: SearchHit; onRun: () => void }): React.JSX.E
  */
 export function SearchResultsPage(): React.JSX.Element {
   const navigate = useNavigate()
+  const workspace = useQuickActionWorkspace()
   const location = useLocation()
   const [params, setParams] = useSearchParams()
   const [query, setQuery] = useState(params.get('q') ?? '')
@@ -53,12 +55,12 @@ export function SearchResultsPage(): React.JSX.Element {
       {
         id: 'actions',
         label: 'Actions',
-        search: (q: string, limit?: number) => searchCommands(q, navigate, limit)
+        search: (q: string, limit?: number) => searchCommands(q, navigate, limit, workspace)
       },
       { id: 'people', label: 'People', search: searchPeople },
       ...moduleSearches()
     ],
-    [navigate]
+    [navigate, workspace]
   )
 
   // Search a moment after typing stops; an answer for words that have since changed is dropped.

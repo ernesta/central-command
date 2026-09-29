@@ -8,6 +8,11 @@ export type MeetingWorkspace = (typeof MEETING_WORKSPACES)[number]
 export const SERIES = ['Supervision', 'Rastle Lab', 'Luminos', 'Other'] as const
 export type Series = (typeof SERIES)[number]
 
+/** Research's fixed series aren't Work's; 'Other' is the one sensible shared default there, edited right after. */
+export function defaultSeries(workspace: MeetingWorkspace): Series {
+  return workspace === 'research' ? SERIES[0] : 'Other'
+}
+
 export const MEETING_MODES = ['in-person', 'online'] as const
 export type MeetingMode = (typeof MEETING_MODES)[number]
 

@@ -104,7 +104,7 @@ export function MeetingsPage(): React.JSX.Element {
       ) : (
         <EmptyState
           heading={`No meetings in ${academicYearLabel(year)}`}
-          message="Create a meeting, or choose another academic year."
+          message="Create a meeting, or choose another year."
         />
       )
   } else if (visible.length === 0) {

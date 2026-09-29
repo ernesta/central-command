@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
-import { SERIES } from '../shared/types'
+import { defaultSeries } from '../shared/types'
 import { meetingRoute, todayIso, useMeetingsWorkspace } from './meetings-paths'
 
 /**
@@ -22,8 +22,7 @@ export function NewMeetingButton(): React.JSX.Element {
     try {
       const file = await window.api.meetings.create({
         workspace,
-        // Research's fixed series aren't Work's; 'Other' is the one sensible shared default, edited right after.
-        series: workspace === 'research' ? SERIES[0] : 'Other',
+        series: defaultSeries(workspace),
         date: todayIso()
       })
       void navigate(meetingRoute(workspace, file.ref.id))

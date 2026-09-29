@@ -6,6 +6,7 @@ import { searchPeople } from '@modules/meetings/renderer/people-search'
 import { moduleSearches } from '@modules/index'
 import type { SearchHit } from '@shared/search'
 import { searchCommands } from './commands'
+import { useQuickActionWorkspace } from './useQuickActionWorkspace'
 import { searchEverywhere, type SearchGroup, type Searchable } from './run-search'
 import styles from './GlobalSearch.module.css'
 
@@ -19,6 +20,7 @@ const DELAY_MS = 120
  */
 export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.Element {
   const navigate = useNavigate()
+  const workspace = useQuickActionWorkspace()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const [query, setQuery] = useState('')
@@ -34,12 +36,12 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
       {
         id: 'actions',
         label: 'Actions',
-        search: (q: string, limit?: number) => searchCommands(q, navigate, limit)
+        search: (q: string, limit?: number) => searchCommands(q, navigate, limit, workspace)
       },
       { id: 'people', label: 'People', search: searchPeople },
       ...moduleSearches()
     ],
-    [navigate]
+    [navigate, workspace]
   )
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 import type { NavigateFunction } from 'react-router'
 import { meetingRoute } from '@modules/meetings/renderer/meetings-paths'
-import { SERIES } from '@modules/meetings/shared/types'
+import { defaultSeries } from '@modules/meetings/shared/types'
 import { noteRoute } from '@modules/notes/renderer/notes-paths'
 import { entryRoute } from '@modules/training/renderer/training-paths'
 import type { DockActionId } from '@shared/api'
@@ -13,7 +13,21 @@ export interface QuickAction {
   id: QuickActionId
   title: string
   detail: string
-  go: (navigate: NavigateFunction) => void | Promise<void>
+  go: (navigate: NavigateFunction, workspace: QuickActionWorkspace) => void | Promise<void>
+}
+
+/** Where a quick action starts things: the workspace being looked at, Research anywhere else (Life has none). */
+export type QuickActionWorkspace = 'research' | 'work'
+
+/**
+ * The workspace of the page (`/work/…`). A page outside any workspace (the search results, Settings) uses the
+ * `remembered` one, the workspace last visited.
+ */
+export function quickActionWorkspace(pathname: string, remembered = ''): QuickActionWorkspace {
+  const segment = pathname.split('/')[1]
+  return (segment === 'work' || segment === 'research' ? segment : remembered) === 'work'
+    ? 'work'
+    : 'research'
 }
 
 /**
@@ -26,27 +40,28 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
     id: 'new-note',
     title: 'New note',
     detail: 'Starts now, in the group you are looking at.',
-    go: async (navigate) => {
-      const file = await window.api.notes.create({ workspace: 'research' })
-      navigate(noteRoute('research', file.ref.id), { state: { focus: 'body' } })
+    go: async (navigate, workspace) => {
+      const file = await window.api.notes.create({ workspace })
+      navigate(noteRoute(workspace, file.ref.id), { state: { focus: 'body' } })
     }
   },
   {
     id: 'new-meeting',
     title: 'New meeting',
     detail: 'Starts today, filled in at leisure.',
-    go: async (navigate) => {
+    go: async (navigate, workspace) => {
       const file = await window.api.meetings.create({
-        workspace: 'research',
-        series: SERIES[0],
+        workspace,
+        series: defaultSeries(workspace),
         date: todayIso()
       })
-      navigate(meetingRoute('research', file.ref.id))
+      navigate(meetingRoute(workspace, file.ref.id))
     }
   },
   {
     id: 'new-training',
     title: 'New training entry',
+    // Training exists only in Research, so this starts there from anywhere.
     detail: 'Starts today, filled in at leisure.',
     go: async (navigate) => {
       const file = await window.api.training.create({
@@ -61,7 +76,8 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
 
 export function runQuickAction(
   id: QuickActionId,
-  navigate: NavigateFunction
+  navigate: NavigateFunction,
+  workspace: QuickActionWorkspace = 'research'
 ): void | Promise<void> {
-  return QUICK_ACTIONS.find((a) => a.id === id)?.go(navigate)
+  return QUICK_ACTIONS.find((a) => a.id === id)?.go(navigate, workspace)
 }
