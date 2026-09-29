@@ -3,32 +3,18 @@ import { useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { AcademicYearSelect } from '@renderer/components/AcademicYearSelect'
 import { Button } from '@renderer/components/Button'
+import { IconButton } from '@renderer/components/IconButton'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { NotesEditor } from '@renderer/notes/NotesEditor'
-import type { SaveState } from '@renderer/notes/notes-session'
 import { useNotesSession } from '@renderer/notes/useNotesSession'
+import { NoteOutline } from '@modules/notes/renderer/NoteOutline'
 import { useAcademicYear } from '@renderer/state/use-academic-year'
 import { academicYearLabel, academicYearRange, currentAcademicYear } from '@shared/academic-year'
-import { planOutline, type OutlineItem } from '../shared/plan'
 import { todayIso, trainingBase } from './training-paths'
 import { useTrainingList } from './useTrainingList'
 import styles from './TrainingPlanPage.module.css'
-
-function statusText(save: SaveState, hasContent: boolean, reloaded: boolean): string {
-  switch (save) {
-    case 'saving':
-      return 'Saving…'
-    case 'dirty':
-      return 'Unsaved changes'
-    case 'error':
-      return 'Couldn’t save'
-    case 'clean':
-      if (reloaded) return 'Updated from an outside change'
-      return hasContent ? 'Saved' : ''
-  }
-}
 
 /** The training plan of one academic year: a Markdown document with an outline of its headings. */
 export function TrainingPlanPage(): React.JSX.Element {
@@ -60,13 +46,9 @@ export function TrainingPlanPage(): React.JSX.Element {
         <h1 className={styles.heading}>Training plan</h1>
         <div className={styles.actions}>
           <AcademicYearSelect year={year} years={years} onChange={setYear} />
-          <Button
-            icon={<FolderOpen size={14} strokeWidth={1.75} aria-hidden />}
-            title="Open the folder that holds the plans"
-            onClick={() => void openFolder()}
-          >
-            Open folder
-          </Button>
+          <IconButton label="Show in Finder" onClick={() => void openFolder()}>
+            <FolderOpen size={15} strokeWidth={1.75} aria-hidden />
+          </IconButton>
         </div>
       </header>
       {folderError && (
@@ -79,15 +61,6 @@ export function TrainingPlanPage(): React.JSX.Element {
   )
 }
 
-/** The outline entry's heading in the editor: the first heading of that level with that text. */
-function scrollToHeading(root: HTMLElement | null, item: OutlineItem): void {
-  const tag = item.level === 2 ? 'h2' : 'h3'
-  const heading = Array.from(root?.querySelectorAll<HTMLElement>(`.ProseMirror ${tag}`) ?? []).find(
-    (h) => (h.textContent ?? '').replace(/\s+/g, ' ').trim() === item.text
-  )
-  heading?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
-
 function PlanView({ year }: { year: number }): React.JSX.Element {
   const { session, snapshot } = useNotesSession(String(year), window.api.training.plan)
   const { save, error, conflict, hasContent, reloadedFromDisk, updatedAt } = snapshot
@@ -95,42 +68,15 @@ function PlanView({ year }: { year: number }): React.JSX.Element {
   // from disk (a new editor) starts from the file's text again.
   const [typed, setTyped] = useState<{ editorKey: number; text: string } | null>(null)
   const text = typed && typed.editorKey === snapshot.editorKey ? typed.text : snapshot.initial
-  const outline = planOutline(text)
   const docRef = useRef<HTMLElement>(null)
 
   return (
     <div className={styles.layout}>
-      <nav className={styles.outline} aria-label="Outline">
-        {outline.length === 0 ? (
-          <p className={styles.outlineEmpty}>Headings you write appear here.</p>
-        ) : (
-          outline.map((item, i) => (
-            <button
-              key={`${i}-${item.text}`}
-              type="button"
-              className={item.level === 2 ? styles.group : styles.item}
-              onClick={() => scrollToHeading(docRef.current, item)}
-            >
-              {item.text}
-            </button>
-          ))
-        )}
-      </nav>
       <section
         className={styles.doc}
         ref={docRef}
         aria-label={`Training plan ${academicYearLabel(year)}`}
       >
-        <div className={styles.docHead}>
-          <span
-            className={[styles.status, save === 'error' && styles.statusError]
-              .filter(Boolean)
-              .join(' ')}
-            role="status"
-          >
-            {statusText(save, hasContent, reloadedFromDisk)}
-          </span>
-        </div>
         {(conflict || error) && (
           <div className={styles.notices}>
             {conflict && (
@@ -165,7 +111,13 @@ function PlanView({ year }: { year: number }): React.JSX.Element {
           </div>
         )}
         {snapshot.status === 'ready' && (
-          <EditorCard text={text} edited={updatedAt}>
+          <EditorCard
+            text={text}
+            edited={updatedAt}
+            save={save}
+            reloaded={reloadedFromDisk}
+            hasContent={hasContent}
+          >
             {(findSetup) => (
               <NotesEditor
                 key={snapshot.editorKey}
@@ -183,6 +135,7 @@ function PlanView({ year }: { year: number }): React.JSX.Element {
           </EditorCard>
         )}
       </section>
+      <NoteOutline text={text} docRef={docRef} />
     </div>
   )
 }
