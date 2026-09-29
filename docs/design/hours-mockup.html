@@ -632,29 +632,207 @@
           padding: 24px 16px 32px;
         }
       }
+
+      .timerchip .name {
+        max-width: 26ch;
+      }
+      .pbtn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1px solid var(--border-strong);
+        background: var(--surface);
+        display: inline-grid;
+        place-items: center;
+        color: var(--text-secondary);
+        flex: none;
+      }
+      .trow {
+        display: grid;
+        grid-template-columns: 32px minmax(0, 1fr) auto;
+        gap: 14px;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: 10px;
+      }
+      .trow + .trow {
+        margin-top: 2px;
+      }
+      .trow.live {
+        background: var(--selected-bg);
+        color: var(--selected-text);
+      }
+      .trow.live .pbtn {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-contrast);
+      }
+      .trow .t {
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        font-size: 16px;
+      }
+      .startrow {
+        margin-top: 14px;
+      }
+      .help {
+        color: var(--text-muted);
+        font-size: 13px;
+        margin-top: 12px;
+      }
+      .weeknav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .weeknav .lbl {
+        min-width: 15ch;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+      }
+      .iconbtn {
+        border: 1px solid var(--border-strong);
+        background: var(--surface);
+        border-radius: 8px;
+        width: 32px;
+        height: 32px;
+        display: inline-grid;
+        place-items: center;
+        color: var(--text-secondary);
+      }
+      .iconbtn:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+      .daybar {
+        position: relative;
+        height: 10px;
+        border-radius: 5px;
+        background: var(--border-faint);
+        min-width: 120px;
+      }
+      .daybar i {
+        position: absolute;
+        inset: 0 auto 0 0;
+        border-radius: 5px;
+      }
+      .daybar b {
+        position: absolute;
+        top: -3px;
+        bottom: -3px;
+        width: 2px;
+        background: var(--text-muted);
+      }
+      tr.day td {
+        vertical-align: middle;
+        cursor: pointer;
+      }
+      tr.day:hover td {
+        background: var(--hover-tint);
+      }
+      tr.day.weekend td:first-child {
+        color: var(--text-muted);
+      }
+      tr.sub td {
+        padding-block: 4px 4px;
+        border-bottom: 0;
+        color: var(--text-secondary);
+        font-size: 13px;
+      }
+      tr.sub td:first-child {
+        padding-left: 32px;
+      }
+      tr.sub:last-child td,
+      tr.sub.end td {
+        border-bottom: 1px solid var(--border-faint);
+        padding-bottom: 10px;
+      }
+      .scroll {
+        max-height: 380px;
+        overflow: auto;
+        padding: 4px;
+        scroll-padding: 4px;
+      }
+      .scroll thead th {
+        position: sticky;
+        top: 0;
+        background: var(--surface);
+      }
+      .split {
+        display: flex;
+        height: 14px;
+        border-radius: 7px;
+        overflow: hidden;
+        background: var(--border-faint);
+        border: 1px solid var(--border-soft);
+      }
+      .split i {
+        display: block;
+        height: 100%;
+      }
+      .popover {
+        width: min(380px, 100%);
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+        border-radius: 12px;
+        box-shadow: 0 8px 24px var(--shadow-color);
+        padding: 16px;
+        display: grid;
+        gap: 12px;
+      }
+      .popover .name {
+        font-weight: 600;
+      }
+      .popover .switch {
+        display: grid;
+        gap: 2px;
+      }
+      .popover .switch div {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 6px 8px;
+        border-radius: 8px;
+      }
+      .popover .switch div:hover {
+        background: var(--hover-tint);
+      }
+      .timerctl {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
     </style>
   </head>
   <body>
     <div class="wrap">
       <div class="intro">
-        <h1>Hours and Time off mockup</h1>
+        <h1>Hours and Time off mockup (round 2)</h1>
         <p>
-          Four screens. The charts and the 2025–26 time-off list are your real data (daily hours
-          from the sheet; days the sheet is missing count as zero). The 2026–27 week, today's
-          sessions and the running timer are illustrative: the sheet's scratch rows have no date, so
-          they are placed on today, Tue 29 Sep 2026, at 15:10. Dark mode is the switch on the right.
+          Four screens. The charts, the weeks table and the 2025–26 holidays are your real data
+          (daily hours from the sheet; days the sheet is missing count as zero). Today's tasks and
+          this week are illustrative: your sheet's scratch rows have no date, so they sit on today,
+          Tue 29 Sep 2026, at 15:10. Times are hours:minutes, and everything reported is a multiple
+          of 15 minutes. The switches below the tabs only change what the mockup shows.
         </p>
       </div>
       <div class="controls">
         <div class="tabs" role="group" aria-label="Screen">
           <button class="tab" aria-pressed="true" data-tab="hours">1. Hours</button>
-          <button class="tab" aria-pressed="false" data-tab="views">2. Data views</button>
+          <button class="tab" aria-pressed="false" data-tab="views">2. Charts and weeks</button>
           <button class="tab" aria-pressed="false" data-tab="off">3. Time off</button>
           <button class="tab" aria-pressed="false" data-tab="around">4. Landing and shell</button>
         </div>
-        <div class="seg" role="group" aria-label="Theme">
-          <button aria-pressed="true" data-theme-set="light">Light</button>
-          <button aria-pressed="false" data-theme-set="dark">Dark</button>
+        <div class="timerctl">
+          <span class="muted">Mockup only:</span>
+          <div class="seg" role="group" aria-label="Show the app with a timer running or not">
+            <button aria-pressed="true" data-run="on">Timer running</button>
+            <button aria-pressed="false" data-run="off">Nothing running</button>
+          </div>
+          <div class="seg" role="group" aria-label="Theme">
+            <button aria-pressed="true" data-theme-set="light">Light</button>
+            <button aria-pressed="false" data-theme-set="dark">Dark</button>
+          </div>
         </div>
       </div>
 
@@ -666,8 +844,12 @@
           </div>
           <div class="topright">
             <span class="timerchip" id="chip">
-              <span class="dot"></span><span class="name">Deck</span><span class="num">0:21</span
-              ><button>Stop</button>
+              <span class="dot"></span
+              ><span
+                class="name"
+                title="Prepare a presentation for lab meeting with Michael Crawford"
+                >Prepare a presentation for lab meeting with Michael Crawford</span
+              ><span class="num">0:21</span><button>Stop</button>
             </span>
             <span class="build">Build</span>
           </div>
@@ -689,145 +871,67 @@
               <div class="box pad">
                 <div class="cardhead">
                   <h3>Today <span class="muted" style="font-size: 14px">Tue 29 Sep</span></h3>
-                  <div class="seg" role="group" aria-label="Mockup state (not part of the app)">
-                    <button aria-pressed="true" data-run="on">Running</button>
-                    <button aria-pressed="false" data-run="off">Stopped</button>
-                  </div>
+                  <span class="stat"
+                    ><b id="todayTotal">2:15 <small>of 7:30</small></b></span
+                  >
                 </div>
-                <div data-state="on">
-                  <div class="running">
-                    <span class="clock">0:21</span>
-                    <span class="what">Deck<small>Started 14:49</small></span>
-                    <button class="btn small">
-                      <svg class="i" viewBox="0 0 24 24">
-                        <rect x="6" y="6" width="12" height="12" rx="1" /></svg
-                      >Stop
-                    </button>
-                  </div>
+                <div id="todayTasks"></div>
+                <div class="startrow" style="display: flex; gap: 10px">
+                  <span class="field" style="flex: 1; color: var(--text-muted)"
+                    >What are you working on?</span
+                  >
+                  <button class="btn primary">
+                    <svg class="i" viewBox="0 0 24 24"><path d="M6 4v16l14-8z" /></svg>Start
+                  </button>
                 </div>
-                <div data-state="off" hidden>
-                  <div class="startrow">
-                    <span class="field">What are you working on?</span>
-                    <button class="btn primary">
-                      <svg class="i" viewBox="0 0 24 24"><path d="M6 4v16l14-8z" /></svg>Start
-                    </button>
-                  </div>
-                  <div class="suggest">
-                    <span class="chip">Deck</span><span class="chip">Set up Central Command</span
-                    ><span class="chip">Look at Inkpath</span>
-                  </div>
+                <div
+                  class="suggest"
+                  style="margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap"
+                >
+                  <span
+                    class="chip"
+                    style="
+                      max-width: 100%;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                      white-space: nowrap;
+                    "
+                    >Look at Inkpath</span
+                  ><span class="chip">Send Rabia AI stuff</span>
                 </div>
-                <ul class="sessions">
-                  <li>
-                    <span class="times">10:30–12:15</span><span class="dur">1.75 h</span
-                    ><span>Prepare a presentation for lab meeting with Michael Crawford</span>
-                    <span class="tools"
-                      ><button class="quiet" aria-label="Edit">
-                        <svg class="i" viewBox="0 0 24 24">
-                          <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
-                        </svg>
-                      </button>
-                      <button class="quiet" aria-label="Delete">
-                        <svg class="i" viewBox="0 0 24 24">
-                          <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" />
-                        </svg></button
-                    ></span>
-                  </li>
-                  <li>
-                    <span class="times">14:34–14:49</span><span class="dur">0.25 h</span
-                    ><span>Set up Central Command for Research</span>
-                    <span class="tools"
-                      ><button class="quiet" aria-label="Edit">
-                        <svg class="i" viewBox="0 0 24 24">
-                          <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
-                        </svg>
-                      </button>
-                      <button class="quiet" aria-label="Delete">
-                        <svg class="i" viewBox="0 0 24 24">
-                          <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" />
-                        </svg></button
-                    ></span>
-                  </li>
-                  <li data-state="on">
-                    <span class="times">14:49–now</span><span class="dur">0.35 h</span
-                    ><span>Deck</span><span class="tools"></span>
-                  </li>
-                </ul>
-                <div class="total">
+                <p class="help">
+                  Times are rounded to 15 minutes. What is rounded off carries over, so the total
+                  stays true.
+                </p>
+                <div style="margin-top: 4px">
                   <button class="quiet">
                     <svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>Add time
                   </button>
-                  <span class="stat"
-                    ><span class="label">Today</span
-                    ><b id="todayTotal">2.35 <small>h</small></b></span
-                  >
                 </div>
               </div>
 
               <div class="box">
+                <div class="cardhead" style="padding: 20px 24px 0">
+                  <div class="weeknav">
+                    <button class="iconbtn" id="prevWeek" aria-label="Previous week">
+                      <svg class="i" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></svg>
+                    </button>
+                    <span class="lbl" id="weekLabel"></span>
+                    <button class="iconbtn" id="nextWeek" aria-label="Next week">
+                      <svg class="i" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></svg>
+                    </button>
+                  </div>
+                  <span class="muted" id="weekSummary"></span>
+                </div>
                 <table>
                   <thead>
                     <tr>
                       <th>Day</th>
-                      <th>What</th>
                       <th class="r">Hours</th>
+                      <th>Aim 7:30</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    <tr class="week">
-                      <td colspan="2">Week 2 <small>28 Sep – 4 Oct · 2 of 5 days so far</small></td>
-                      <td class="r">10.10 <small class="down">−4.90</small></td>
-                    </tr>
-                    <tr>
-                      <td>Tue 29 Sep</td>
-                      <td class="added">3 sessions, one running</td>
-                      <td class="r">2.35</td>
-                    </tr>
-                    <tr>
-                      <td>Mon 28 Sep</td>
-                      <td class="added">Added time</td>
-                      <td class="r">7.75</td>
-                    </tr>
-                    <tr class="week">
-                      <td colspan="2">Week 1 <small>21–27 Sep · 5 days</small></td>
-                      <td class="r">42.50 <small class="up">+5.00</small></td>
-                    </tr>
-                    <tr>
-                      <td>Sun 27 Sep</td>
-                      <td class="added">Added time</td>
-                      <td class="r">0.75</td>
-                    </tr>
-                    <tr>
-                      <td>Sat 26 Sep</td>
-                      <td class="added">Added time</td>
-                      <td class="r">3.25</td>
-                    </tr>
-                    <tr>
-                      <td>Fri 25 Sep</td>
-                      <td class="added">Added time</td>
-                      <td class="r">10.00</td>
-                    </tr>
-                    <tr>
-                      <td>Thu 24 Sep</td>
-                      <td class="added">Added time</td>
-                      <td class="r">7.75</td>
-                    </tr>
-                    <tr>
-                      <td>Wed 23 Sep</td>
-                      <td>send rabia ai stuff <span class="tag">note</span></td>
-                      <td class="r">4.25</td>
-                    </tr>
-                    <tr>
-                      <td>Tue 22 Sep</td>
-                      <td>look at inkpath <span class="tag">note</span></td>
-                      <td class="r">7.75</td>
-                    </tr>
-                    <tr>
-                      <td>Mon 21 Sep</td>
-                      <td class="added">Added time</td>
-                      <td class="r">8.75</td>
-                    </tr>
-                  </tbody>
+                  <tbody id="weekRows"></tbody>
                 </table>
               </div>
             </div>
@@ -835,45 +939,33 @@
             <div class="stack">
               <div class="box pad">
                 <div class="cardhead">
-                  <h3>This week</h3>
-                  <span class="muted">Week 2</span>
-                </div>
-                <svg class="chart" id="weekChart" viewBox="0 0 336 150" role="img"></svg>
-                <div class="stat" style="margin-top: 10px">
-                  <span class="label">Hours</span>
-                  <b>10.10 <small>of 37.5 planned · 15.0 by today</small></b>
-                </div>
-              </div>
-              <div class="box pad">
-                <div class="cardhead">
                   <h3>Year</h3>
                   <span class="muted">2026–27</span>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px">
                   <div class="stat">
-                    <span class="label">Balance</span><b class="up">+0.10 <small>h</small></b>
+                    <span class="label">Balance</span><b>0:00 <small>on plan</small></b>
                   </div>
+                  <div class="stat"><span class="label">Average week</span><b>37:30</b></div>
+                  <div class="stat"><span class="label">Hours so far</span><b>52:30</b></div>
                   <div class="stat">
-                    <span class="label">Average week</span><b>37.6 <small>h</small></b>
-                  </div>
-                  <div class="stat">
-                    <span class="label">Hours so far</span><b>52.60 <small>h</small></b>
-                  </div>
-                  <div class="stat">
-                    <span class="label">Planned, whole year</span
-                    ><b>1,845 <small>h · 246 days</small></b>
+                    <span class="label">Planned, 246 days</span><b>1,845:00</b>
                   </div>
                 </div>
-                <p class="muted" style="margin-top: 12px; font-size: 13px">
+                <p class="help">
                   Balance counts the plan up to today. Planned days already leave out the 14 days
                   off.
                 </p>
+                <button class="quiet" style="margin-top: 8px; padding-left: 0">
+                  Charts and all weeks
+                  <svg class="i" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></svg>
+                </button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 2. DATA VIEWS -->
+        <!-- 2. CHARTS AND WEEKS -->
         <div class="page" data-screen="views" hidden>
           <a class="back" href="#"
             ><svg class="i" viewBox="0 0 24 24"><path d="M19 12H5m6-6-6 6 6 6" /></svg>Hours</a
@@ -903,7 +995,7 @@
                       border-radius: 0;
                     "
                   ></i
-                  >37.5 h, a full week</span
+                  >37:30, a full week</span
                 >
               </div>
             </div>
@@ -913,15 +1005,17 @@
                 <span class="muted" id="balNote"></span>
               </div>
               <svg class="chart" id="balChart" viewBox="0 0 1000 200" role="img"></svg>
-              <p class="muted" style="margin-top: 8px; font-size: 13px">
-                Hours minus 7.5 h for each planned day, added up week by week. Above the line is
+              <p class="help">
+                Hours minus 7:30 for each planned day, added up week by week. Above the line is
                 ahead of plan.
               </p>
             </div>
             <div class="box pad">
               <div class="cardhead">
                 <h3>Days</h3>
-                <span class="muted">Each column is a week, Monday at the top</span>
+                <span class="muted"
+                  >Each column is a week, Monday at the top. Click a day to open its week.</span
+                >
               </div>
               <svg class="chart" id="heat" viewBox="0 0 1000 150" role="img"></svg>
               <div class="legend">
@@ -949,10 +1043,32 @@
                 <svg class="chart" id="dowChart" viewBox="0 0 440 190" role="img"></svg>
               </div>
               <div class="placeholder">
-                <h3 style="color: var(--ink); font-size: 18px; margin-bottom: 8px">Time of day</h3>
-                When in the day the work happens. It needs sessions with start and end times, which
-                the sheet never had, so it appears once some are recorded. With Tasks, a fifth view
-                shows hours per task.
+                <h3 style="color: var(--ink); font-size: 18px; margin-bottom: 8px">
+                  Hours per task
+                </h3>
+                Where the time goes, once tasks have been recorded. The old sheet only had day
+                totals, so this fills in from now on.
+              </div>
+            </div>
+            <div class="box">
+              <div class="cardhead" style="padding: 20px 24px 0">
+                <h3>All weeks</h3>
+                <span class="muted">Click a week to open it</span>
+              </div>
+              <div class="scroll" tabindex="0" aria-label="All weeks">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Week</th>
+                      <th>Dates</th>
+                      <th class="r">Hours</th>
+                      <th class="r">Plan</th>
+                      <th class="r">Balance</th>
+                      <th class="r">Year balance</th>
+                    </tr>
+                  </thead>
+                  <tbody id="weeksTable"></tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -987,18 +1103,21 @@
             <button class="btn primary">Add</button>
             <span class="muted" style="align-self: center">5 weekdays, weekends skipped</span>
           </div>
-          <div class="box pad" style="display: flex; gap: 40px; flex-wrap: wrap">
-            <div class="stat"><span class="label">Allowance</span><b id="offAllow">40</b></div>
-            <div class="stat"><span class="label">Booked</span><b id="offBooked"></b></div>
-            <div class="stat"><span class="label">Left</span><b id="offLeft"></b></div>
-            <div class="muted" id="offTypes" style="margin-left: auto; align-self: flex-end"></div>
+          <div class="box pad" style="display: grid; gap: 16px">
+            <div style="display: flex; gap: 40px; flex-wrap: wrap">
+              <div class="stat"><span class="label">Days a year</span><b id="offAllow">40</b></div>
+              <div class="stat"><span class="label">Taken</span><b id="offTaken"></b></div>
+              <div class="stat">
+                <span class="label">Booked, not yet taken</span><b id="offBooked"></b>
+              </div>
+              <div class="stat"><span class="label">Left to book</span><b id="offLeft"></b></div>
+            </div>
+            <div class="split" id="offSplit" role="img"></div>
+            <div class="legend" style="margin: 0" id="offLegend"></div>
+            <div class="muted" id="offTypes"></div>
           </div>
-          <div class="note" id="creditNote" hidden>
-            <span
-              >This year has ended with 1 day left. Crediting it adds 7.5 h to Sun 20 Sep 2026, as
-              you did by hand.</span
-            >
-            <button class="btn small">Credit 1 day</button>
+          <div class="note" id="leaveNote" hidden>
+            <span>No annual leave is recorded for this year yet. Add the days you took.</span>
           </div>
           <div class="box">
             <table>
@@ -1007,7 +1126,6 @@
                   <th>Date</th>
                   <th>Day</th>
                   <th>Type</th>
-                  <th class="r">Days</th>
                   <th>Status</th>
                 </tr>
               </thead>
@@ -1015,8 +1133,8 @@
             </table>
           </div>
           <p class="muted" style="font-size: 13px">
-            Dates outside the year are refused. Weekend dates never count. Taken means the date has
-            passed; there is no Done column to keep up.
+            Dates outside the year are refused and weekends never count. Taken means the date has
+            passed.
           </p>
         </div>
 
@@ -1030,7 +1148,7 @@
                 <span class="muted">Week 2</span>
               </div>
               <div class="stat">
-                <span class="label">Today</span><b>2.35 <small>h · Deck running</small></b>
+                <span class="label">Today</span><b>2:15 <small>of 7:30</small></b>
               </div>
               <div class="mini" aria-hidden="true">
                 <span style="height: 100%"></span><span style="height: 30%"></span
@@ -1038,7 +1156,7 @@
                 ><span style="height: 0"></span><span style="height: 0"></span
                 ><span style="height: 0"></span>
               </div>
-              <span class="muted">10.10 of 37.5 h this week · balance +0.10 h</span>
+              <span class="muted">10:00 of 37:30 this week · balance 0:00</span>
             </div>
             <div class="box card">
               <div class="cardhead" style="margin: 0">
@@ -1046,9 +1164,9 @@
                 <span class="muted">2026–27</span>
               </div>
               <div class="stat">
-                <span class="label">Left</span><b>26 <small>of 40 days</small></b>
+                <span class="label">Left to book</span><b>26 <small>of 40 days</small></b>
               </div>
-              <span class="muted">Next: Thu 24 Dec, University holiday</span>
+              <span class="muted">0 taken · 14 booked · next Thu 24 Dec</span>
             </div>
             <div class="box card">
               <div class="cardhead" style="margin: 0"><h3>Training</h3></div>
@@ -1057,13 +1175,40 @@
           </div>
           <div class="around">
             <section>
+              <span class="label">The timer chip, clicked</span>
+              <div class="popover">
+                <div class="name">Prepare a presentation for lab meeting with Michael Crawford</div>
+                <div class="muted">Started 14:49 · 0:21 so far</div>
+                <div class="switch">
+                  <span class="label">Switch to</span>
+                  <div>
+                    <svg class="i" viewBox="0 0 24 24"><path d="M6 4v16l14-8z" /></svg>Set up
+                    Central Command for Research
+                  </div>
+                  <div>
+                    <svg class="i" viewBox="0 0 24 24"><path d="M6 4v16l14-8z" /></svg>Deck
+                  </div>
+                </div>
+                <button class="btn" style="justify-self: start">
+                  <svg class="i" viewBox="0 0 24 24">
+                    <rect x="6" y="6" width="12" height="12" rx="1" /></svg
+                  >Stop
+                </button>
+              </div>
+              <p class="help" style="max-width: 36ch">
+                In the top bar a long name is cut with an ellipsis; the full name shows on hover and
+                here.
+              </p>
+            </section>
+            <section>
               <span class="label">Search (Mod-K) commands</span>
               <div class="palette">
                 <div class="q">stop</div>
                 <div class="row on">
                   <svg class="i" viewBox="0 0 24 24">
                     <rect x="6" y="6" width="12" height="12" rx="1" /></svg
-                  >Stop timer <span class="muted" style="margin-left: auto">Deck, 0:21</span>
+                  >Stop timer
+                  <span class="muted" style="margin-left: auto">Prepare a presentation for…</span>
                 </div>
               </div>
               <div class="palette" style="margin-top: 8px">
@@ -1080,14 +1225,14 @@
                 <div>New meeting</div>
                 <div>New training</div>
                 <hr />
-                <div class="on">Stop timer (Deck, 0:21)</div>
+                <div class="on">Stop timer (Prepare a presentation for…)</div>
               </div>
             </section>
             <section>
               <span class="label">Settings → Hours</span>
               <div class="box pad" style="display: grid; gap: 10px; min-width: 300px">
                 <div style="display: flex; justify-content: space-between; gap: 24px">
-                  <span>Hours per day</span><span class="field num">7.5</span>
+                  <span>Hours per day</span><span class="field num">7:30</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; gap: 24px">
                   <span>Days off a year</span><span class="field num">40</span>
@@ -1095,17 +1240,9 @@
                 <div style="display: flex; justify-content: space-between; gap: 24px">
                   <span>Year starts</span><span class="field num">Mon 21 Sep 2026</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; gap: 24px">
-                  <span>Time-off types</span
-                  ><span class="muted">Public holiday, University holiday, Annual leave</span>
-                </div>
               </div>
             </section>
           </div>
-          <p class="muted" style="max-width: 70ch">
-            The chip in the top bar is on every page while a timer runs; clicking Stop ends the
-            session. Hours and Time off sit in Research beside Training.
-          </p>
         </div>
       </div>
     </div>
@@ -1151,11 +1288,21 @@
         ]
       }
       const $ = (s) => document.querySelector(s)
-      const NS = 'http://www.w3.org/2000/svg'
-      const h1 = (n) => n.toFixed(1)
       const dateOf = (serial) => new Date(Date.UTC(1899, 11, 30) + serial * 864e5)
       const fmt = (d, o) => d.toLocaleDateString('en-GB', { timeZone: 'UTC', ...o })
       const sv = (svg, html) => (svg.innerHTML = html)
+      const hm = (m) => {
+        m = Math.round(m)
+        const s = m < 0 ? '−' : ''
+        m = Math.abs(m)
+        return (
+          s + Math.floor(m / 60).toLocaleString('en-GB') + ':' + String(m % 60).padStart(2, '0')
+        )
+      }
+      const hmSigned = (m) => (Math.round(m) > 0 ? '+' : '') + hm(m)
+      const PLAY = '<svg class="i" viewBox="0 0 24 24"><path d="M6 4v16l14-8z"/></svg>'
+      const STOP =
+        '<svg class="i" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>'
 
       // Tabs, theme, mock state
       document.querySelectorAll('[data-tab]').forEach((b) =>
@@ -1176,117 +1323,172 @@
           document.documentElement.dataset.theme = b.dataset.themeSet
         })
       )
+      let running = true
       document.querySelectorAll('[data-run]').forEach((b) =>
         b.addEventListener('click', () => {
-          const on = b.dataset.run === 'on'
+          running = b.dataset.run === 'on'
           document
             .querySelectorAll('[data-run]')
             .forEach((x) => x.setAttribute('aria-pressed', String(x === b)))
-          document.querySelectorAll('[data-state]').forEach((s) => {
-            s.hidden = (s.dataset.state === 'on') !== on
-          })
-          $('#chip').hidden = !on
-          $('#todayTotal').innerHTML = on ? '2.35 <small>h</small>' : '2.00 <small>h</small>'
+          $('#chip').hidden = !running
+          renderToday()
         })
       )
       $('#addToggle').addEventListener('click', () => {
         $('#addForm').hidden = !$('#addForm').hidden
       })
 
-      // This week (illustrative)
-      {
-        const vals = [7.75, 2.35, null, null, null, null, null]
-        const names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-        const x0 = 28,
-          w = 40,
-          gap = 4,
-          base = 120,
-          k = 9
-        let s = ''
-        for (const v of [0, 5, 10]) {
-          const y = base - v * k
-          s += `<line x1="${x0}" x2="332" y1="${y}" y2="${y}" stroke="var(--border-faint)"/><text x="0" y="${y + 4}">${v}</text>`
-        }
-        const py = base - 7.5 * k
-        s += `<line x1="${x0}" x2="332" y1="${py}" y2="${py}" stroke="var(--text-muted)" stroke-dasharray="4 3"/>`
-        vals.forEach((v, i) => {
-          const x = x0 + i * (w + gap)
-          if (v !== null) {
-            const hgt = v * k
-            const color = v >= 7.5 ? 'var(--accent)' : 'var(--chart-under)'
-            s += `<rect x="${x}" y="${base - hgt}" width="${w}" height="${hgt}" rx="3" fill="${color}"/>`
-            s += `<text x="${x + w / 2}" y="${base - hgt - 4}" text-anchor="middle" style="fill:var(--text-secondary)">${v}</text>`
-          } else {
-            s += `<rect x="${x}" y="${base - 2}" width="${w}" height="2" fill="var(--border-strong)"/>`
-          }
-          s += `<text x="${x + w / 2}" y="140" text-anchor="middle">${names[i]}</text>`
-        })
-        sv($('#weekChart'), s)
+      // Today: tasks in the order first used, time rounded to 15 minutes
+      const TASKS = [
+        ['Deck', '1:45'],
+        ['Set up Central Command for Research', '0:15'],
+        ['Prepare a presentation for lab meeting with Michael Crawford', '0:15']
+      ]
+      function renderToday() {
+        $('#todayTotal').innerHTML = '2:15 <small>of 7:30</small>'
+        $('#todayTasks').innerHTML = TASKS.map(([name, t], i) => {
+          const live = running && i === 2
+          return `<div class="trow${live ? ' live' : ''}"><button class="pbtn" aria-label="${live ? 'Stop' : 'Switch to this task'}">${live ? STOP : PLAY}</button><span>${name}</span><span class="t">${t}</span></div>`
+        }).join('')
       }
+      renderToday()
+
+      // Week list (illustrative for 2026-27)
+      const WEEKS = {
+        2: {
+          label: 'Week 2',
+          dates: '28 Sep – 4 Oct',
+          days: [
+            ['Mon 28 Sep', 465, 1],
+            ['Tue 29 Sep', 135, 1, 'today'],
+            ['Wed 30 Sep', null, 1],
+            ['Thu 1 Oct', null, 1],
+            ['Fri 2 Oct', null, 1],
+            ['Sat 3 Oct', null, 0],
+            ['Sun 4 Oct', null, 0]
+          ]
+        },
+        1: {
+          label: 'Week 1',
+          dates: '21–27 Sep',
+          days: [
+            ['Mon 21 Sep', 525, 1],
+            ['Tue 22 Sep', 465, 1],
+            ['Wed 23 Sep', 255, 1],
+            ['Thu 24 Sep', 465, 1],
+            ['Fri 25 Sep', 600, 1],
+            ['Sat 26 Sep', 195, 0],
+            ['Sun 27 Sep', 45, 0]
+          ]
+        }
+      }
+      let cur = 2
+      function renderWeek() {
+        const w = WEEKS[cur]
+        $('#weekLabel').textContent = `${w.label} · ${w.dates}`
+        $('#prevWeek').disabled = cur === 1
+        $('#nextWeek').disabled = cur === 2
+        let hours = 0,
+          plan = 0
+        const rows = w.days
+          .map(([name, m, work, flag], i) => {
+            const past = m !== null
+            if (past) hours += m
+            if (work && (past || flag)) plan += 450
+            const bar = past
+              ? `<div class="daybar"><i style="width:${Math.min(m / 450, 1.4) * 71.4}%;background:${m >= 450 || !work ? 'var(--accent)' : 'var(--chart-under)'}"></i>${work ? '<b style="left:71.4%"></b>' : ''}</div>`
+              : ''
+            const label = `<td>${name}${flag ? ' <span class="tag">today</span>' : ''}</td>`
+            const row = `<tr class="day${work ? '' : ' weekend'}" data-i="${i}">${label}<td class="r">${past ? hm(m) : '<span class="muted">—</span>'}</td><td>${bar}</td></tr>`
+            const sub = flag
+              ? TASKS.map(
+                  ([n, t], k) =>
+                    `<tr class="sub${k === TASKS.length - 1 ? ' end' : ''}" data-sub="${i}" hidden><td>${n}</td><td class="r">${t}</td><td></td></tr>`
+                ).join('')
+              : ''
+            return row + sub
+          })
+          .join('')
+        $('#weekRows').innerHTML = rows
+        $('#weekSummary').textContent =
+          `${hm(hours)} of ${hm(plan)} so far · ${hmSigned(hours - plan)}`
+        document.querySelectorAll('tr.day').forEach((tr) =>
+          tr.addEventListener('click', () => {
+            document
+              .querySelectorAll(`[data-sub="${tr.dataset.i}"]`)
+              .forEach((s) => (s.hidden = !s.hidden))
+          })
+        )
+      }
+      $('#prevWeek').addEventListener('click', () => {
+        cur = 1
+        renderWeek()
+      })
+      $('#nextWeek').addEventListener('click', () => {
+        cur = 2
+        renderWeek()
+      })
+      renderWeek()
 
       // 2025-26 data
-      const days = D.days
+      const days = D.days.map((h) => h * 60)
       const weekCount = 52
       const weeks = []
       for (let w = 0; w < weekCount; w++) {
-        const hrs = days.slice(w * 7, w * 7 + 7).reduce((a, b) => a + b, 0)
-        weeks.push({ hrs, planned: D.plannedDays[w], plan: 7.5 * D.plannedDays[w] })
+        const m = days.slice(w * 7, w * 7 + 7).reduce((a, b) => a + b, 0)
+        weeks.push({ m, planned: D.plannedDays[w], plan: 450 * D.plannedDays[w] })
       }
       const total = days.reduce((a, b) => a + b, 0)
       const plannedTotal = weeks.reduce((a, w) => a + w.planned, 0)
       let cum = 0
-      const bal = weeks.map((w) => (cum += w.hrs - w.plan))
+      const bal = weeks.map((w) => (cum += w.m - w.plan))
       $('#weeksNote').textContent =
-        `${total.toLocaleString('en-GB')} h over ${plannedTotal} planned days · average week ${h1((total / plannedTotal) * 5)} h`
-      $('#balNote').textContent =
-        `${bal[bal.length - 1] > 0 ? '+' : '−'}${Math.abs(bal[bal.length - 1]).toFixed(1)} h at the end of the year`
+        `${hm(total)} over ${plannedTotal} planned days · average week ${hm((total / plannedTotal) * 5)}`
+      $('#balNote').textContent = `${hmSigned(bal[bal.length - 1])} at the end of the year`
 
       // Weeks bars
       {
-        const x0 = 30,
-          W = 970,
+        const x0 = 34,
+          W = 966,
           bw = W / weekCount,
           base = 190,
-          k = 3
+          k = 3 / 60
         let s = ''
         for (const v of [0, 20, 40, 60]) {
-          const y = base - v * k
-          s += `<line x1="${x0}" x2="1000" y1="${y}" y2="${y}" stroke="var(--border-faint)"/><text x="0" y="${y + 4}">${v}</text>`
+          const y = base - v * 60 * k
+          s += `<line x1="${x0}" x2="1000" y1="${y}" y2="${y}" stroke="var(--border-faint)"/><text x="0" y="${y + 4}">${v} h</text>`
         }
         weeks.forEach((w, i) => {
-          const x = x0 + i * bw
-          const hgt = w.hrs * k
-          const ok = w.hrs >= w.plan
-          if (w.hrs > 0)
-            s += `<rect x="${x + 1}" y="${base - hgt}" width="${bw - 2}" height="${hgt}" rx="2" fill="${ok ? 'var(--accent)' : 'var(--chart-under)'}"><title>Week ${i + 1}: ${w.hrs} h, plan ${w.plan} h</title></rect>`
+          const x = x0 + i * bw,
+            hgt = w.m * k
+          if (w.m > 0)
+            s += `<rect x="${x + 1}" y="${base - hgt}" width="${bw - 2}" height="${hgt}" rx="2" fill="${w.m >= w.plan ? 'var(--accent)' : 'var(--chart-under)'}"><title>Week ${i + 1}: ${hm(w.m)}, plan ${hm(w.plan)}</title></rect>`
           if (i % 4 === 0) s += `<text x="${x}" y="208">${i + 1}</text>`
         })
-        const py = base - 37.5 * k
+        const py = base - 37.5 * 3
         s += `<line x1="${x0}" x2="1000" y1="${py}" y2="${py}" stroke="var(--text-muted)" stroke-dasharray="5 4"/>`
-
         sv($('#weeksChart'), s)
       }
 
       // Balance line
       {
-        const x0 = 40,
-          W = 940,
-          lo = Math.min(...bal, 0),
-          hi = Math.max(...bal, 0)
-        const top = 14,
+        const bh = bal.map((m) => m / 60)
+        const x0 = 44,
+          W = 936,
+          lo = Math.min(...bh, 0),
+          hi = Math.max(...bh, 0),
+          top = 14,
           hgt = 160
         const y = (v) => top + ((hi - v) / (hi - lo)) * hgt
         const x = (i) => x0 + (i / (weekCount - 1)) * W
         let s = ''
-        const step = 50
-        for (let v = Math.ceil(lo / step) * step; v <= hi; v += step)
-          s += `<line x1="${x0}" x2="1000" y1="${y(v)}" y2="${y(v)}" stroke="${v === 0 ? 'var(--text-muted)' : 'var(--border-faint)'}"/><text x="0" y="${y(v) + 4}">${v}</text>`
-        s += `<polyline fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" points="${bal.map((v, i) => `${x(i)},${y(v)}`).join(' ')}"/>`
+        for (let v = Math.ceil(lo / 50) * 50; v <= hi; v += 50)
+          s += `<line x1="${x0}" x2="1000" y1="${y(v)}" y2="${y(v)}" stroke="${v === 0 ? 'var(--text-muted)' : 'var(--border-faint)'}"/><text x="0" y="${y(v) + 4}">${v < 0 ? '−' : ''}${Math.abs(v)} h</text>`
+        s += `<polyline fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" points="${bh.map((v, i) => `${x(i)},${y(v)}`).join(' ')}"/>`
         const lx = x(weekCount - 1),
-          ly = y(bal[weekCount - 1])
-        s += `<circle cx="${lx}" cy="${ly}" r="4" fill="var(--accent)"/><text x="${lx - 8}" y="${ly - 10}" text-anchor="end" style="fill:var(--text-secondary)">${bal[weekCount - 1].toFixed(1)} h</text>`
-        const mons = ['Sep', 'Nov', 'Jan', 'Mar', 'May', 'Jul', 'Sep']
-        mons.forEach(
+          ly = y(bh[weekCount - 1])
+        s += `<circle cx="${lx}" cy="${ly}" r="4" fill="var(--accent)"/><text x="${lx - 8}" y="${ly - 10}" text-anchor="end" style="fill:var(--text-secondary)">${hm(bal[weekCount - 1])}</text>`
+        ;['Sep', 'Nov', 'Jan', 'Mar', 'May', 'Jul', 'Sep'].forEach(
           (m, i) => (s += `<text x="${x0 + (i / 6) * W}" y="194" text-anchor="middle">${m}</text>`)
         )
         sv($('#balChart'), s)
@@ -1294,11 +1496,10 @@
 
       // Heat map (holidays outlined)
       {
-        const holidays = [
-          45015, 46015, 46016, 46017, 46020, 46021, 46022, 46023, 46024, 46115, 46118, 46119, 46120,
-          46146, 46167, 46265
-        ].slice(1)
-        const hs = new Set(holidays)
+        const hs = new Set([
+          46015, 46016, 46017, 46020, 46021, 46022, 46023, 46024, 46115, 46118, 46119, 46120, 46146,
+          46167, 46265
+        ])
         const cell = 15,
           gap = 3,
           x0 = 34
@@ -1306,26 +1507,21 @@
         ;['Mon', '', 'Wed', '', 'Fri', '', 'Sun'].forEach(
           (n, r) => (s += `<text x="0" y="${r * (cell + gap) + 12}">${n}</text>`)
         )
-        const shade = (v) => {
-          const pct = Math.min(1, v / 10)
-          return `color-mix(in srgb, var(--accent) ${Math.round(20 + pct * 80)}%, var(--surface))`
-        }
-        days.forEach((v, i) => {
+        const shade = (m) =>
+          `color-mix(in srgb, var(--accent) ${Math.round(20 + Math.min(1, m / 600) * 80)}%, var(--surface))`
+        days.forEach((m, i) => {
           const w = Math.floor(i / 7),
             r = i % 7
-          const x = x0 + w * (cell + gap),
-            y = r * (cell + gap)
           const off = hs.has(D.start + i)
-          s += `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" rx="3" fill="${v > 0 ? shade(v) : 'var(--border-faint)'}" ${off ? 'stroke="var(--accent)" stroke-width="2"' : ''}><title>${fmt(dateOf(D.start + i), { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}: ${v} h${off ? ', holiday' : ''}</title></rect>`
+          s += `<rect x="${x0 + w * (cell + gap)}" y="${r * (cell + gap)}" width="${cell}" height="${cell}" rx="3" fill="${m > 0 ? shade(m) : 'var(--border-faint)'}" ${off ? 'stroke="var(--accent)" stroke-width="2"' : ''}><title>${fmt(dateOf(D.start + i), { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}: ${hm(m)}${off ? ', holiday' : ''}</title></rect>`
         })
         for (let m = 0; m < 12; m++) {
-          const d = dateOf(D.start + 7 * Math.round((m * 30.4) / 7))
-          if (m % 1 === 0)
-            s += `<text x="${x0 + Math.round((m * 30.4) / 7) * (cell + gap)}" y="146">${fmt(d, { month: 'short', timeZone: 'UTC' })}</text>`
+          const wk = Math.round((m * 30.4) / 7)
+          s += `<text x="${x0 + wk * (cell + gap)}" y="146">${fmt(dateOf(D.start + 7 * wk), { month: 'short' })}</text>`
         }
         sv($('#heat'), s)
-        $('#heatScale').innerHTML = [2, 5, 8, 10]
-          .map((v) => `<i style="background:${shade(v)}"></i>${v}${v === 10 ? '+' : ''} h`)
+        $('#heatScale').innerHTML = [120, 300, 480, 600]
+          .map((m) => `<i style="background:${shade(m)}"></i>${hm(m)}${m === 600 ? '+' : ''}`)
           .join(' &nbsp; ')
       }
 
@@ -1333,91 +1529,107 @@
       {
         const names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
         const avg = names.map((_, d) => {
-          const v = days.filter((h, i) => i % 7 === d && h > 0)
+          const v = days.filter((m, i) => i % 7 === d && m > 0)
           return v.length ? v.reduce((a, b) => a + b, 0) / v.length : 0
         })
-        const x0 = 30,
+        const x0 = 34,
           w = 44,
           gap = 8,
           base = 150,
-          k = 11
+          k = 11 / 60
         let s = ''
         for (const v of [0, 4, 8, 12]) {
-          const y = base - v * k
-          s += `<line x1="${x0}" x2="440" y1="${y}" y2="${y}" stroke="var(--border-faint)"/><text x="0" y="${y + 4}">${v}</text>`
+          const y = base - v * 60 * k
+          s += `<line x1="${x0}" x2="440" y1="${y}" y2="${y}" stroke="var(--border-faint)"/><text x="0" y="${y + 4}">${v} h</text>`
         }
-        avg.forEach((v, i) => {
+        avg.forEach((m, i) => {
           const x = x0 + i * (w + gap)
-          s += `<rect x="${x}" y="${base - v * k}" width="${w}" height="${v * k}" rx="3" fill="var(--accent)"/><text x="${x + w / 2}" y="${base - v * k - 4}" text-anchor="middle" style="fill:var(--text-secondary)">${h1(v)}</text><text x="${x + w / 2}" y="170" text-anchor="middle">${names[i]}</text>`
+          s += `<rect x="${x}" y="${base - m * k}" width="${w}" height="${m * k}" rx="3" fill="var(--accent)"/><text x="${x + w / 2}" y="${base - m * k - 4}" text-anchor="middle" style="fill:var(--text-secondary)">${hm(m)}</text><text x="${x + w / 2}" y="170" text-anchor="middle">${names[i]}</text>`
         })
         sv($('#dowChart'), s)
       }
 
+      // All weeks table, newest first
+      {
+        const rows = weeks
+          .map((w, i) => {
+            const start = D.start + i * 7
+            const d = w.m - w.plan
+            return `<tr class="day"><td>Week ${i + 1}</td><td>${fmt(dateOf(start), { day: 'numeric', month: 'short' })} – ${fmt(dateOf(start + 6), { day: 'numeric', month: 'short' })}</td><td class="r">${hm(w.m)}</td><td class="r">${hm(w.plan)}</td><td class="r ${d < 0 ? 'down' : ''}">${hmSigned(d)}</td><td class="r muted">${hmSigned(bal[i])}</td></tr>`
+          })
+          .reverse()
+          .join('')
+        $('#weeksTable').innerHTML = rows
+      }
+
       // Time off
+      const H = (a) => a.map((d) => [d[0], d[1]])
       const OFF = {
-        27: {
-          allow: 40,
-          rows: [
-            ['2026-12-24', 'University holiday', 1],
-            ['2026-12-25', 'Public holiday', 1],
-            ['2026-12-28', 'Public holiday', 1],
-            ['2026-12-29', 'University holiday', 1],
-            ['2026-12-30', 'University holiday', 1],
-            ['2026-12-31', 'University holiday', 1],
-            ['2027-01-01', 'Public holiday', 1],
-            ['2027-03-26', 'Public holiday', 1],
-            ['2027-03-29', 'Public holiday', 1],
-            ['2027-03-30', 'University holiday', 1],
-            ['2027-03-31', 'University holiday', 1],
-            ['2027-05-03', 'Public holiday', 1],
-            ['2027-05-31', 'Public holiday', 1],
-            ['2027-08-30', 'Public holiday', 1]
-          ]
-        },
-        26: {
-          allow: 40,
-          rows: [
-            ['2025-12-24', 'University holiday', 1],
-            ['2025-12-25', 'Public holiday', 1],
-            ['2025-12-26', 'Public holiday', 1],
-            ['2025-12-29', 'University holiday', 1],
-            ['2025-12-30', 'University holiday', 1],
-            ['2025-12-31', 'University holiday', 1],
-            ['2026-01-01', 'Public holiday', 1],
-            ['2026-01-02', 'University holiday', 1],
-            ['2026-04-01', 'Annual leave', 9, 'by month'],
-            ['2026-04-03', 'Public holiday', 1],
-            ['2026-04-06', 'Public holiday', 1],
-            ['2026-04-07', 'University holiday', 1],
-            ['2026-04-08', 'University holiday', 1],
-            ['2026-05-01', 'Annual leave', 2, 'by month'],
-            ['2026-05-04', 'Public holiday', 1],
-            ['2026-05-25', 'Public holiday', 1],
-            ['2026-07-01', 'Annual leave', 2, 'by month'],
-            ['2026-08-31', 'Public holiday', 1],
-            ['2026-09-01', 'Annual leave', 11, 'by month']
-          ]
-        }
+        27: [
+          ['2026-12-24', 'University holiday'],
+          ['2026-12-25', 'Public holiday'],
+          ['2026-12-28', 'Public holiday'],
+          ['2026-12-29', 'University holiday'],
+          ['2026-12-30', 'University holiday'],
+          ['2026-12-31', 'University holiday'],
+          ['2027-01-01', 'Public holiday'],
+          ['2027-03-26', 'Public holiday'],
+          ['2027-03-29', 'Public holiday'],
+          ['2027-03-30', 'University holiday'],
+          ['2027-03-31', 'University holiday'],
+          ['2027-05-03', 'Public holiday'],
+          ['2027-05-31', 'Public holiday'],
+          ['2027-08-30', 'Public holiday']
+        ],
+        26: [
+          ['2025-12-24', 'University holiday'],
+          ['2025-12-25', 'Public holiday'],
+          ['2025-12-26', 'Public holiday'],
+          ['2025-12-29', 'University holiday'],
+          ['2025-12-30', 'University holiday'],
+          ['2025-12-31', 'University holiday'],
+          ['2026-01-01', 'Public holiday'],
+          ['2026-01-02', 'University holiday'],
+          ['2026-04-03', 'Public holiday'],
+          ['2026-04-06', 'Public holiday'],
+          ['2026-04-07', 'University holiday'],
+          ['2026-04-08', 'University holiday'],
+          ['2026-05-04', 'Public holiday'],
+          ['2026-05-25', 'Public holiday'],
+          ['2026-08-31', 'Public holiday']
+        ]
       }
       const TODAY = '2026-09-29'
       function renderOff(y) {
-        const { allow, rows } = OFF[y]
-        const booked = rows.reduce((a, r) => a + r[2], 0)
-        const by = {}
-        rows.forEach((r) => (by[r[1]] = (by[r[1]] || 0) + r[2]))
+        const rows = OFF[y],
+          allow = 40
+        const taken = rows.filter((r) => r[0] < TODAY).length
+        const booked = rows.length - taken
+        const left = allow - taken - booked
+        $('#offTaken').textContent = taken
         $('#offBooked').textContent = booked
-        $('#offLeft').textContent = allow - booked
-        $('#offTypes').innerHTML = ['Public holiday', 'University holiday', 'Annual leave']
-          .map((t) => `${t === 'Annual leave' ? t : t + 's'} <b class="num">${by[t] || 0}</b>`)
+        $('#offLeft').textContent = left
+        const seg = (n, c) => `<i style="width:${(n / allow) * 100}%;background:${c}"></i>`
+        $('#offSplit').innerHTML =
+          seg(taken, 'var(--accent)') +
+          seg(booked, 'color-mix(in srgb, var(--accent) 45%, var(--surface))')
+        $('#offSplit').setAttribute(
+          'aria-label',
+          `${taken} taken, ${booked} booked, ${left} left to book, of ${allow}`
+        )
+        $('#offLegend').innerHTML =
+          `<span><i style="background:var(--accent)"></i>Taken ${taken}</span><span><i style="background:color-mix(in srgb, var(--accent) 45%, var(--surface))"></i>Booked ${booked}</span><span><i style="background:var(--border-faint);border:1px solid var(--border-strong)"></i>Left to book ${left}</span>`
+        const by = { 'Public holiday': 0, 'University holiday': 0, 'Annual leave': 0 }
+        rows.forEach((r) => by[r[1]]++)
+        $('#offTypes').innerHTML = Object.entries(by)
+          .map(([t, n]) => `${t === 'Annual leave' ? t : t + 's'} <b class="num">${n}</b>`)
           .join(' &nbsp;·&nbsp; ')
-        $('#creditNote').hidden = y !== '26'
+        $('#leaveNote').hidden = y !== '26'
         $('#offRows').innerHTML = rows
-          .slice()
-          .reverse()
-          .map(([d, t, n, note]) => {
+          .map(([d, t]) => {
             const dt = new Date(d + 'T00:00:00Z')
             const past = d < TODAY
-            return `<tr><td class="num">${fmt(dt, { day: 'numeric', month: 'short', year: 'numeric' })}</td><td>${note ? '<span class="muted">' + note + '</span>' : fmt(dt, { weekday: 'short' })}</td><td><span class="tag">${t}</span></td><td class="r">${n}</td><td class="${past ? 'muted' : ''}">${past ? 'Taken' : 'Upcoming'}</td></tr>`
+            return `<tr><td class="num">${fmt(dt, { day: 'numeric', month: 'short', year: 'numeric' })}</td><td>${fmt(dt, { weekday: 'short' })}</td><td><span class="tag">${t}</span></td><td class="${past ? 'muted' : ''}">${past ? 'Taken' : 'Booked'}</td></tr>`
           })
           .join('')
       }
