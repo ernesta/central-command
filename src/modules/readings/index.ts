@@ -1,5 +1,6 @@
 import { createElement } from 'react'
 import type { LiveModuleManifest } from '../types'
+import { readingEntities } from './renderer/entities'
 import { ReadingDetailPage } from './renderer/ReadingDetailPage'
 import { ReadingsCard } from './renderer/ReadingsCard'
 import { ReadingsPage } from './renderer/ReadingsPage'
@@ -18,5 +19,6 @@ export const readingsModule: LiveModuleManifest = {
   ],
   landingCard: ReadingsCard,
   search: searchReadings,
+  entities: [readingEntities],
   settingsSection: SyncSummary
 }

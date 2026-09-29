@@ -257,6 +257,7 @@ function NoteView({
                 // Not after the file changed outside: that editor must not take the cursor.
                 autoFocus={startFocus === 'body' && !reloadedFromDisk}
                 findSetup={findSetup}
+                entitySelf={{ kind: 'note', workspace: noteRef.workspace, id: session.getRef().id }}
                 onChange={session.editBody.bind(session)}
                 onBlur={() => void session.flush()}
               />

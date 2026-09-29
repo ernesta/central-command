@@ -1,6 +1,14 @@
 import { Editor, defaultValueCtx, editorViewCtx, rootCtx } from '@milkdown/kit/core'
 import { Milkdown, MilkdownProvider, useEditor, useInstance } from '@milkdown/react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useNavigate } from 'react-router'
+import { parseEntityHref } from '@shared/entities'
+import { entityHostCtx } from '../entities/entity-plugin'
+import { EntityHoverCard, type HoverTarget } from '../entities/EntityHoverCard'
+import { EntityPicker } from '../entities/EntityPicker'
+import { entityIconVars } from '../entities/icons'
+import { EntityPickerController } from '../entities/picker-controller'
+import { providerFor, type EntitySelf } from '../entities/registry'
 import { notesChangeCtx } from './notes-change-plugin'
 import { withNotesPlugins } from './notes-editor-setup'
 import styles from './NotesEditor.module.css'
@@ -26,7 +34,11 @@ interface NotesEditorProps {
   findSetup: (editor: Editor) => Editor
   /** Put the cursor in the note as soon as the editor is ready (a note started from quick capture). */
   autoFocus?: boolean
+  /** The note or meeting this text belongs to, so `@` never offers it as a link to itself. */
+  entitySelf?: EntitySelf
 }
+
+const HOVER_DELAY_MS = 350
 
 function Inner({
   initial,
@@ -36,18 +48,29 @@ function Inner({
   showPlaceholder,
   setup,
   findSetup,
-  autoFocus
+  autoFocus,
+  entitySelf
 }: NotesEditorProps): React.JSX.Element {
+  const navigate = useNavigate()
   const onChangeRef = useRef(onChange)
   useEffect(() => {
     onChangeRef.current = onChange
   })
+
+  // The `@` picker and what mentions point at, for this editor (see `src/renderer/src/entities`).
+  const [controller] = useState(() => new EntityPickerController())
+  const [iconVars] = useState(entityIconVars)
+  const picker = useSyncExternalStore(controller.subscribe, controller.getSnapshot)
+  useEffect(() => {
+    controller.setSelf(entitySelf ?? null)
+  }, [controller, entitySelf])
 
   useEditor((root) => {
     const editor = Editor.make().config((ctx) => {
       ctx.set(rootCtx, root)
       ctx.set(defaultValueCtx, initial)
       ctx.set(notesChangeCtx.key, (markdown) => onChangeRef.current(markdown))
+      ctx.set(entityHostCtx.key, controller)
     })
     return findSetup(withNotesPlugins(setup ? setup(editor) : editor))
   })
@@ -83,14 +106,60 @@ function Inner({
     }
   }, [])
 
+  // A mention the pointer rests on shows what it points at (a card under it); moving on, typing or scrolling hides it.
+  const [hover, setHover] = useState<HoverTarget | null>(null)
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const stopHover = (): void => {
+    if (hoverTimer.current) clearTimeout(hoverTimer.current)
+    hoverTimer.current = null
+    setHover(null)
+  }
+  useEffect(() => {
+    const hide = (): void => {
+      if (hoverTimer.current) clearTimeout(hoverTimer.current)
+      hoverTimer.current = null
+      setHover(null)
+    }
+    window.addEventListener('keydown', hide)
+    window.addEventListener('scroll', hide, true)
+    return () => {
+      window.removeEventListener('keydown', hide)
+      window.removeEventListener('scroll', hide, true)
+    }
+  }, [])
+  const startHover = (event: React.MouseEvent): void => {
+    const mention = (event.target as HTMLElement).closest<HTMLElement>('.ProseMirror .entity')
+    if (!mention) return
+    const kind = mention.dataset.kind
+    const key = mention.dataset.key
+    const ref = kind && key ? parseEntityHref(`cc://${kind}/${encodeURIComponent(key)}`) : null
+    if (!ref) return
+    if (hoverTimer.current) clearTimeout(hoverTimer.current)
+    const rect = mention.getBoundingClientRect()
+    const label = mention.textContent ?? ''
+    hoverTimer.current = setTimeout(
+      () => setHover({ ref, label, rect: { left: rect.left, bottom: rect.bottom } }),
+      HOVER_DELAY_MS
+    )
+  }
+
   // Clicking the empty space around the text should still put the cursor in the note. A link is opened with Cmd (or
-  // Ctrl) held: a plain click puts the cursor in it, as in any editor. The main process opens web addresses in the
-  // browser and refuses anything else.
+  // Ctrl) held: a plain click puts the cursor in it, as in any editor. A web address opens in the browser (the main
+  // process refuses anything else); a mention opens what it points at, inside the app.
   const focusEditor = (event: React.MouseEvent): void => {
     const link = (event.target as HTMLElement).closest('a[href]')
     if ((event.metaKey || event.ctrlKey) && link) {
       event.preventDefault()
-      window.open(link.getAttribute('href') ?? '', '_blank')
+      const href = link.getAttribute('href') ?? ''
+      const ref = parseEntityHref(href)
+      if (ref) {
+        stopHover()
+        void providerFor(ref.kind)
+          ?.resolve(ref.key)
+          .then((summary) => {
+            if (summary) void navigate(summary.route)
+          })
+      } else window.open(href, '_blank')
       return
     }
     if (loading || (event.target as HTMLElement).closest('.ProseMirror')) return
@@ -98,13 +167,30 @@ function Inner({
   }
 
   return (
-    <div ref={wrapRef} className={styles.wrap} onBlur={onBlur} onClick={focusEditor}>
+    <div
+      ref={wrapRef}
+      className={styles.wrap}
+      style={iconVars}
+      onBlur={() => {
+        controller.dismiss()
+        onBlur()
+      }}
+      onClick={focusEditor}
+      onMouseOver={startHover}
+      onMouseOut={stopHover}
+    >
       {showPlaceholder && (
         <div className={styles.placeholder} aria-hidden>
           {placeholder}
         </div>
       )}
       <Milkdown />
+      <EntityPicker
+        snapshot={picker}
+        onHover={controller.setActive}
+        onChoose={(index) => void controller.choose(index)}
+      />
+      {hover && <EntityHoverCard controller={controller} target={hover} />}
     </div>
   )
 }

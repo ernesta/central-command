@@ -279,6 +279,11 @@ function MeetingView({
                 showPlaceholder={body.trim() === ''}
                 setup={todo.setup}
                 findSetup={findSetup}
+                entitySelf={{
+                  kind: 'meeting',
+                  workspace: meetingRef.workspace,
+                  id: session.getRef().id
+                }}
                 onChange={session.editBody.bind(session)}
                 onBlur={() => void session.flush()}
               />

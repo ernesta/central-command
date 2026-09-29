@@ -2,6 +2,12 @@ import { Editor, remarkStringifyOptionsCtx } from '@milkdown/kit/core'
 import { history } from '@milkdown/kit/plugin/history'
 import { commonmark } from '@milkdown/kit/preset/commonmark'
 import { gfm } from '@milkdown/kit/preset/gfm'
+import {
+  entityHostCtx,
+  entityLinkSchema,
+  entityMentionPlugin,
+  entitySuggestPlugin
+} from '../entities/entity-plugin'
 import { listBackspaceKeymap } from './notes-list-keymap'
 import { notesChangeCtx, notesChangePlugin } from './notes-change-plugin'
 import { markdownLinkRule, pasteOverSelectionLink, typedAddressRule } from './notes-links'
@@ -37,7 +43,11 @@ export function withNotesPlugins(editor: Editor): Editor {
       // First, so it runs before Milkdown's default Backspace handling.
       .use(listBackspaceKeymap)
       .use(commonmark)
+      .use(entityLinkSchema)
       .use(gfm)
+      .use(entityHostCtx)
+      .use(entityMentionPlugin)
+      .use(entitySuggestPlugin)
       .use(markdownLinkRule)
       .use(typedAddressRule)
       .use(pasteOverSelectionLink)

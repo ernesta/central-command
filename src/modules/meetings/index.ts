@@ -1,5 +1,6 @@
 import { createElement } from 'react'
 import type { LiveModuleManifest } from '../types'
+import { meetingEntities, personEntities } from './renderer/entities'
 import { MeetingPage } from './renderer/MeetingPage'
 import { MeetingsCard } from './renderer/MeetingsCard'
 import { MeetingsLanding } from './renderer/MeetingsLanding'
@@ -36,6 +37,8 @@ export function createMeetingsModule(workspace: MeetingWorkspace): LiveModuleMan
     ],
     landingCard: MeetingsCard,
     search: searchMeetings(workspace),
-    shortcuts: workspace === 'research' ? MEETINGS_SHORTCUTS : []
+    shortcuts: workspace === 'research' ? MEETINGS_SHORTCUTS : [],
+    // Every workspace's people and meetings are offered from wherever a note is written, so one instance carries them.
+    entities: workspace === 'research' ? [personEntities, meetingEntities] : []
   }
 }

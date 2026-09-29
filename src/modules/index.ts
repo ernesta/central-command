@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react'
 import type { Workspace } from '@shared/settings'
 import type { SearchHit } from '@shared/search'
+import type { EntityProvider } from '@renderer/entities/registry'
 import type { ShortcutGroup } from '@shared/shortcuts'
 import { createMeetingsModule } from './meetings'
 import { createNotesModule } from './notes'
@@ -53,6 +54,11 @@ export function moduleGlobals(): { id: string; Global: ComponentType }[] {
 /** Work's results are headed "Work meetings", "Work notes": the same module under a second workspace would otherwise repeat a heading. */
 function searchLabel(m: LiveModuleManifest): string {
   return m.workspace === 'work' ? `Work ${m.label.toLowerCase()}` : m.label
+}
+
+/** What a note can mention, from every module, in registration order (the order of the picker's groups). */
+export function moduleEntityProviders(): EntityProvider[] {
+  return modules.flatMap((m) => (m.status === 'live' ? (m.entities ?? []) : []))
 }
 
 /** The modules that can be searched, in registration order. */
