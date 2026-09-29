@@ -91,6 +91,8 @@ export interface MeetingsApi {
   save(ref: MeetingRef, changes: MeetingChanges, baseHash: string): Promise<MeetingSaveResult>
   /** Move the meeting's file to the Trash. The caller is responsible for asking the user first. */
   delete(ref: MeetingRef): Promise<void>
+  /** Move the meeting to the other workspace (see `MeetingsStore.move`); resolves with it there. The caller saves first. */
+  move(ref: MeetingRef, to: MeetingWorkspace): Promise<MeetingFile>
   /**
    * Add to this meeting's Previous TODOs whatever is open in the previous meeting of the series and
    * not listed yet. Only adds; never removes or edits an item or touches ticked state.
@@ -130,6 +132,7 @@ export const MEETINGS_IPC = {
   list: 'meetings:list',
   save: 'meetings:save',
   delete: 'meetings:delete',
+  move: 'meetings:move',
   syncPrevious: 'meetings:sync-previous',
   exportPdf: 'meetings:export-pdf',
   peopleList: 'meetings:people-list',

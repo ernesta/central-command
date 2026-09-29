@@ -130,6 +130,12 @@ function register({ db, paths }: MainContext): () => void {
     return store.save(asRef(ref), asObject(changes, 'changes') as MeetingChanges, baseHash)
   })
   ipcMain.handle(MEETINGS_IPC.delete, (_event, ref: unknown) => store.delete(asRef(ref)))
+  ipcMain.handle(MEETINGS_IPC.move, (_event, ref: unknown, to: unknown) => {
+    if (typeof to !== 'string' || !(MEETING_WORKSPACES as readonly string[]).includes(to)) {
+      throw new Error('Invalid workspace')
+    }
+    return store.move(asRef(ref), to as MeetingWorkspace)
+  })
   ipcMain.handle(MEETINGS_IPC.syncPrevious, (_event, ref: unknown, baseHash: unknown) => {
     if (typeof baseHash !== 'string') throw new Error('Invalid sync request')
     return store.syncPreviousTodos(asRef(ref), baseHash)

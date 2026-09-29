@@ -53,6 +53,70 @@ beforeEach(() => {
 })
 afterEach(() => rmSync(root, { recursive: true, force: true }))
 
+describe('move', () => {
+  it('moves a meeting, text and all, to the other workspace', async () => {
+    const made = await store.create({
+      workspace: 'research',
+      series: 'Luminos',
+      date: '2026-09-24',
+      body: 'kept text\n'
+    })
+    const moved = await store.move(made.ref, 'work')
+    expect(moved.ref).toEqual({ workspace: 'work', id: '2026-09-24 Luminos' })
+    expect(readFileSync(join(root, 'work', '2026-09-24 Luminos.md'), 'utf8')).toBe(
+      made.note.content
+    )
+    expect(existsSync(join(root, 'research', '2026-09-24 Luminos.md'))).toBe(false)
+    expect(trashed).toHaveLength(1)
+    expect(getMeetingRow(db, 'research', '2026-09-24 Luminos')).toBeNull()
+    expect(getMeetingRow(db, 'work', '2026-09-24 Luminos')?.series).toBe('Luminos')
+  })
+
+  it('never replaces a meeting already there: it takes the next free name', async () => {
+    await store.create({
+      workspace: 'work',
+      series: 'Luminos',
+      date: '2026-09-24',
+      body: 'theirs\n'
+    })
+    const mine = await store.create({
+      workspace: 'research',
+      series: 'Luminos',
+      date: '2026-09-24',
+      body: 'mine\n'
+    })
+    const moved = await store.move(mine.ref, 'work')
+    expect(moved.ref.id).toBe('2026-09-24 Luminos 2')
+    expect(splitNote(readFileSync(join(root, 'work', '2026-09-24 Luminos.md'), 'utf8')).body).toBe(
+      'theirs\n'
+    )
+  })
+
+  it('leaves the meeting where it was, with no copy, when the Trash is unavailable', async () => {
+    const made = await store.create({
+      workspace: 'research',
+      series: 'Luminos',
+      date: '2026-09-24'
+    })
+    trashFails = true
+    await expect(store.move(made.ref, 'work')).rejects.toThrow('Trash unavailable')
+    expect(existsSync(join(root, 'research', '2026-09-24 Luminos.md'))).toBe(true)
+    expect(existsSync(join(root, 'work', '2026-09-24 Luminos.md'))).toBe(false)
+    expect(getMeetingRow(db, 'research', '2026-09-24 Luminos')).toBeDefined()
+  })
+
+  it('refuses moving to the same workspace, an unknown one, or a meeting that is gone', async () => {
+    const made = await store.create({
+      workspace: 'research',
+      series: 'Luminos',
+      date: '2026-09-24'
+    })
+    await expect(store.move(made.ref, 'research')).rejects.toThrow(MeetingError)
+    await expect(store.move(made.ref, 'nope' as 'work')).rejects.toThrow(MeetingError)
+    await expect(store.move(ref('missing'), 'work')).rejects.toThrow(MeetingError)
+  })
+})
+
 describe('create', () => {
   it('writes the template with front matter and indexes it', async () => {
     const meeting = await store.create({

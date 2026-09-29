@@ -7,6 +7,7 @@ import {
   renameNoteFileExclusive,
   writeNoteFileGuarded
 } from '../../../main/notes/guarded-file'
+import { moveNoteFile } from '../../../main/notes/move-file'
 import { parseHead } from '@shared/front-matter'
 import {
   NEW_NOTE_BODY,
@@ -211,6 +212,38 @@ export class NotesStore {
     }
     await this.trash(path)
     deleteNoteRow(this.db, ref.workspace, ref.id)
+  }
+
+  /**
+   * Move a note to the other workspace: the same text and fields, filed under the name its title calls for there.
+   * The whole file is copied as it is on disk (so nothing pending is lost, as long as the caller saved first), except that a
+   * pinned note arrives unpinned when the other workspace already has four pinned. Never replaces a file there, and
+   * the original goes to the Trash only once the copy exists (see `moveNoteFile`). Returns the note as it is now.
+   */
+  async move(ref: NoteRef, to: NoteWorkspace): Promise<NoteFile> {
+    const target = checkWorkspace(to)
+    if (target === checkWorkspace(ref.workspace)) throw new NoteError('The note is already there')
+    const sourcePath = this.pathOf(ref)
+    const disk = await readNoteFile(sourcePath)
+    if (!disk.exists) throw new NoteError(`Note not found: ${ref.id}`)
+    const { meta } = parseMeta(splitNote(disk.content).head)
+    const content =
+      meta.pinned && !canPin(listNoteRows(this.db, target), '')
+        ? applyChanges(disk.content, { meta: { pinned: false } })
+        : disk.content
+    const dir = this.dirFor(target)
+    const id = await moveNoteFile({
+      sourcePath,
+      content,
+      pickTarget: async () => {
+        const name = noteBaseName(meta.title, await this.baseNamesOnDisk(target))
+        return { id: name, path: notesPath(dir, name) }
+      },
+      trash: this.trash
+    })
+    deleteNoteRow(this.db, ref.workspace, ref.id)
+    await this.reindex({ workspace: target, id })
+    return this.read({ workspace: target, id })
   }
 
   /**

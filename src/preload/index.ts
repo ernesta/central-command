@@ -74,6 +74,7 @@ const api: Api = {
     list: (workspace) => ipcRenderer.invoke(MEETINGS_IPC.list, workspace),
     save: (ref, changes, baseHash) => ipcRenderer.invoke(MEETINGS_IPC.save, ref, changes, baseHash),
     delete: (ref) => ipcRenderer.invoke(MEETINGS_IPC.delete, ref),
+    move: (ref, to) => ipcRenderer.invoke(MEETINGS_IPC.move, ref, to),
     syncPreviousTodos: (ref, baseHash) =>
       ipcRenderer.invoke(MEETINGS_IPC.syncPrevious, ref, baseHash),
     exportPdf: (workspace, year) => ipcRenderer.invoke(MEETINGS_IPC.exportPdf, workspace, year),
@@ -131,6 +132,7 @@ const api: Api = {
     list: (workspace) => ipcRenderer.invoke(NOTES_IPC.list, workspace),
     save: (ref, changes, baseHash) => ipcRenderer.invoke(NOTES_IPC.save, ref, changes, baseHash),
     delete: (ref) => ipcRenderer.invoke(NOTES_IPC.delete, ref),
+    move: (ref, to) => ipcRenderer.invoke(NOTES_IPC.move, ref, to),
     discardIfEmpty: (ref) => ipcRenderer.invoke(NOTES_IPC.discardIfEmpty, ref),
     onChanged: (listener) => {
       const handler = (_event: Electron.IpcRendererEvent, change: NotesChangedEvent): void =>

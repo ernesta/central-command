@@ -124,6 +124,67 @@ describe('workspaces', () => {
   })
 })
 
+describe('move', () => {
+  it('moves a note, fields and text, to the other workspace', async () => {
+    const made = await store.create({
+      workspace: 'research',
+      title: 'Plan',
+      group: 'Thesis',
+      body: 'kept\n'
+    })
+    const moved = await store.move(made.ref, 'work')
+    expect(moved.ref).toEqual({ workspace: 'work', id: 'Plan' })
+    expect(moved.note.content).toBe(made.note.content)
+    expect(moved.meta.group).toBe('Thesis')
+    expect(existsSync(join(dir, 'Plan.md'))).toBe(false)
+    expect(trashed).toHaveLength(1)
+    expect(listNoteRows(db, 'research')).toHaveLength(0)
+    expect(listNoteRows(db, 'work').map((r) => r.id)).toEqual(['Plan'])
+  })
+
+  it('never replaces a note already there: it takes the next free name', async () => {
+    await store.create({ workspace: 'work', title: 'Plan', body: 'theirs\n' })
+    const mine = await store.create({ workspace: 'research', title: 'Plan', body: 'mine\n' })
+    const moved = await store.move(mine.ref, 'work')
+    expect(moved.ref.id).toBe('Plan 2')
+    expect(readFileSync(join(root, 'work', 'Plan.md'), 'utf8')).toContain('theirs')
+  })
+
+  it('arrives unpinned when the other workspace already has four pinned', async () => {
+    for (const id of ['a', 'b', 'c', 'd']) {
+      const n = await store.create({ workspace: 'work', title: id })
+      await store.save(n.ref, { meta: { pinned: true } }, n.note.hash)
+    }
+    const mine = await store.create({ workspace: 'research', title: 'Mine' })
+    await store.save(mine.ref, { meta: { pinned: true } }, mine.note.hash)
+    const moved = await store.move(mine.ref, 'work')
+    expect(moved.meta.pinned).toBe(false)
+    expect(moved.body).toBe((await store.read({ workspace: 'work', id: 'a' })).body)
+  })
+
+  it('keeps a pinned note pinned when there is room', async () => {
+    const mine = await store.create({ workspace: 'research', title: 'Mine' })
+    await store.save(mine.ref, { meta: { pinned: true } }, mine.note.hash)
+    expect((await store.move(mine.ref, 'work')).meta.pinned).toBe(true)
+  })
+
+  it('leaves the note where it was, with no copy, when the Trash is unavailable', async () => {
+    const made = await store.create({ workspace: 'research', title: 'Plan' })
+    trashFails = true
+    await expect(store.move(made.ref, 'work')).rejects.toThrow('Trash unavailable')
+    expect(existsSync(join(dir, 'Plan.md'))).toBe(true)
+    expect(existsSync(join(root, 'work', 'Plan.md'))).toBe(false)
+    expect(listNoteRows(db, 'research')).toHaveLength(1)
+  })
+
+  it('refuses the same workspace, an unknown one and a missing note', async () => {
+    const made = await store.create({ workspace: 'research', title: 'Plan' })
+    await expect(store.move(made.ref, 'research')).rejects.toThrow(NoteError)
+    await expect(store.move(made.ref, 'nope' as 'work')).rejects.toThrow(NoteError)
+    await expect(store.move(ref('missing'), 'work')).rejects.toThrow(NoteError)
+  })
+})
+
 describe('save', () => {
   it('changes the body and leaves the front matter alone', async () => {
     const note = await store.create({ workspace: 'research', title: 'Ideas', group: 'Thesis' })

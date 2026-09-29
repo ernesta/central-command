@@ -1,5 +1,6 @@
 import { readdir } from 'fs/promises'
 import type { Database } from 'better-sqlite3'
+import { moveNoteFile } from '../../../main/notes/move-file'
 import type { NoteContent } from '@shared/notes'
 import {
   createNoteFileExclusive,
@@ -256,6 +257,35 @@ export class MeetingsStore {
     }
     await this.trash(path)
     deleteMeetingRow(this.db, ref.workspace, ref.id)
+  }
+
+  /**
+   * Move a meeting to the other workspace: the whole file as it is on disk (so nothing pending is lost, as long as
+   * the caller saved first), filed under the name its date and series call for there. Never replaces a file, and the
+   * original goes to the Trash only once the copy exists (see `moveNoteFile`). Returns the meeting as it is now.
+   */
+  async move(ref: MeetingRef, to: MeetingWorkspace): Promise<MeetingFile> {
+    const target = checkWorkspace(to)
+    if (target === checkWorkspace(ref.workspace)) {
+      throw new MeetingError('The meeting is already there')
+    }
+    const sourcePath = this.pathOf(ref)
+    const disk = await readNoteFile(sourcePath)
+    if (!disk.exists) throw new MeetingError(`Meeting not found: ${ref.id}`)
+    const { meta } = parseMeta(splitNote(disk.content).head)
+    const dir = this.dirFor(target)
+    const id = await moveNoteFile({
+      sourcePath,
+      content: disk.content,
+      pickTarget: async () => {
+        const name = meetingBaseName(meta.date, meta.series, await this.baseNamesOnDisk(target))
+        return { id: name, path: meetingPath(dir, name) }
+      },
+      trash: this.trash
+    })
+    deleteMeetingRow(this.db, ref.workspace, ref.id)
+    await this.reindex({ workspace: target, id })
+    return this.read({ workspace: target, id })
   }
 
   /** Recompute one meeting's index row from its file; a file that is gone loses its row. */

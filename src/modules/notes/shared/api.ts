@@ -60,6 +60,10 @@ export interface NotesApi {
   /** Move the note's file to the Trash. The caller is responsible for asking the user first. */
   delete(ref: NoteRef): Promise<void>
   /**
+   * Move the note to the other workspace (see `NotesStore.move`); resolves with it there. The caller saves first.
+   */
+  move(ref: NoteRef, to: NoteWorkspace): Promise<NoteFile>
+  /**
    * Remove the note if it was never written in (no title, no text, not pinned). Resolves with whether it was removed.
    * The one case where a file is deleted without the Trash, because nothing is lost.
    */
@@ -74,6 +78,7 @@ export const NOTES_IPC = {
   list: 'notes:list',
   save: 'notes:save',
   delete: 'notes:delete',
+  move: 'notes:move',
   discardIfEmpty: 'notes:discard-if-empty',
   changed: 'notes:changed'
 } as const
