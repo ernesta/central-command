@@ -7,6 +7,7 @@ import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { ReadingListMentions } from '@modules/reading-lists/renderer/ReadingListMentions'
 import type { Reading } from '../shared/types'
+import { MentionedIn } from '@renderer/entities/MentionedIn'
 import { AbstractBlock } from './AbstractBlock'
 import { NotesSection } from './NotesSection'
 import { ReferenceBlock } from './ReferenceBlock'
@@ -102,6 +103,7 @@ export function ReadingDetailPage(): React.JSX.Element {
         <ReferenceBlock reading={reading} />
         {reading.abstract && <AbstractBlock abstract={reading.abstract} />}
         <ReadingListMentions key={reading.citekey} citekey={reading.citekey} />
+        <MentionedIn kind="reading" entityKey={reading.citekey} />
         <NotesSection key={reading.citekey} citekey={reading.citekey} />
       </article>
     </div>

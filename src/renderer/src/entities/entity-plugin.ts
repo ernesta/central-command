@@ -126,7 +126,18 @@ export const entitySuggestPlugin = $prose((ctx) => {
   const host = ctx.get(entityHostCtx.key)
   return new Plugin({
     props: {
-      handleKeyDown: (_view, event) => host.handleKey(event)
+      handleKeyDown: (_view, event) => host.handleKey(event),
+      // A mention is followed by a space when it is chosen; typing punctuation right after it takes that space back,
+      // so "[Kathy](…), and" is not "Kathy , and".
+      handleTextInput: (view, from, to, text) => {
+        if (from !== to || from < 2 || !/^[,.;:!?)]$/.test(text)) return false
+        const { doc, tr } = view.state
+        if (doc.textBetween(from - 1, from) !== ' ') return false
+        const link = doc.nodeAt(from - 2)?.marks.find((m) => m.type.name === 'link')
+        if (!link || !parseEntityHref(String(link.attrs.href ?? ''))) return false
+        view.dispatch(tr.insertText(text, from - 1, to))
+        return true
+      }
     },
     view: (view) => {
       host.suggest(view, findSuggestion(view.state))

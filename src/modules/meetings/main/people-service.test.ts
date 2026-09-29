@@ -149,6 +149,52 @@ describe('PeopleService.update', () => {
   })
 })
 
+describe('PeopleService and mentions in other notes', () => {
+  const NOTE =
+    'Met [Kathy Rastle](cc://person/Kathy%20Rastle) and [Kath](cc://person/Kathy%20Rastle); not [Joanna Young](cc://person/Joanna%20Young).\n'
+  let notesDir: string
+
+  beforeEach(() => {
+    notesDir = join(root, 'notes')
+    mkdirSync(notesDir)
+    writeFileSync(join(notesDir, 'A note.md'), NOTE)
+    writeFileSync(join(notesDir, 'Unrelated.md'), 'Nothing here.\n')
+    service = new PeopleService({
+      store,
+      meetingsDirFor: () => join(root, 'nowhere'),
+      trainingDir: join(root, 'nowhere-either'),
+      linkDirs: [notesDir, join(root, 'missing-folder')],
+      backupsDir,
+      indexed: () => ({ meetings: [], trainings: [] }),
+      reindex: async () => undefined,
+      now: () => new Date('2026-09-25T10:00:00Z')
+    })
+  })
+
+  it('rewrites the mentions of a renamed person (and a label that was the name), backing the note up first', async () => {
+    const { report } = await service.update('Kathy Rastle', { name: 'Katherine Rastle' })
+    expect(report).toEqual({ changed: 1, skipped: [] })
+    expect(read(notesDir, 'A note.md')).toBe(
+      'Met [Katherine Rastle](cc://person/Katherine%20Rastle) and [Kath](cc://person/Katherine%20Rastle); not [Joanna Young](cc://person/Joanna%20Young).\n'
+    )
+    expect(read(notesDir, 'Unrelated.md')).toBe('Nothing here.\n')
+    const [backup] = readdirSync(backupsDir)
+    expect(read(join(backupsDir, backup, 'linked-0'), 'A note.md')).toBe(NOTE)
+    expect(readdirSync(join(backupsDir, backup, 'linked-0'))).toEqual(['A note.md'])
+  })
+
+  it('points a merged person’s mentions at the person they were merged into', async () => {
+    await service.remove('Kathy Rastle', { how: 'merge', into: 'Kathryn Rastle' })
+    expect(read(notesDir, 'A note.md')).toContain('[Kathryn Rastle](cc://person/Kathryn%20Rastle)')
+    expect(read(notesDir, 'A note.md')).not.toContain('Kathy%20Rastle')
+  })
+
+  it('leaves the mentions alone when only the initials change', async () => {
+    await service.update('Kathy Rastle', { initials: 'KAT' })
+    expect(read(notesDir, 'A note.md')).toBe(NOTE)
+  })
+})
+
 describe('PeopleService.remove', () => {
   it('deletes someone no note mentions, and refuses everyone else', async () => {
     const { people } = await service.remove('Joanna Young', { how: 'delete' })

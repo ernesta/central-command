@@ -1,3 +1,4 @@
+import { MentionedIn } from '@renderer/entities/MentionedIn'
 import { Link, useParams } from 'react-router'
 import { EmptyState } from '@renderer/components/EmptyState'
 import {
@@ -118,6 +119,8 @@ export function PersonPage(): React.JSX.Element {
           <RecentList rows={meetingRows} />
         )}
       </LandingSection>
+
+      {person && <MentionedIn kind="person" entityKey={person.name} />}
 
       <LandingSection id="trainings" label={`Trainings · ${trainings.length}`}>
         {trainingRows.length === 0 ? (

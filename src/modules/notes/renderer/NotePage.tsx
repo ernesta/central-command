@@ -15,6 +15,7 @@ import { canPin } from '../shared/pinning'
 import { UNTITLED } from '../shared/query'
 import type { NoteRef, NoteWorkspace } from '../shared/types'
 import { GroupField } from './GroupField'
+import { MentionedIn } from '@renderer/entities/MentionedIn'
 import { NoteOutline } from './NoteOutline'
 import { WorkspaceSelect, type MovableWorkspace } from '@renderer/components/WorkspaceSelect'
 import { noteRoute, notesBase, useNotesWorkspace } from './notes-paths'
@@ -264,7 +265,13 @@ function NoteView({
             )}
           </EditorCard>
         </div>
-        <NoteOutline text={body} docRef={docRef} />
+        <div className={styles.side}>
+          <NoteOutline text={body} docRef={docRef} />
+          <MentionedIn
+            kind="note"
+            entityKey={rows?.find((r) => r.id === session.getRef().id)?.uid || null}
+          />
+        </div>
       </div>
 
       <DeleteDialog

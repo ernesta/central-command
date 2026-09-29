@@ -10,6 +10,7 @@ import { registerSettingsIpc } from './ipc/settings'
 import { registerDialogIpc } from './ipc/dialog'
 import { registerAppIpc } from './ipc/app'
 import { registerBuildIpc } from './ipc/build'
+import { registerEntitiesIpc } from './ipc/entities'
 import { openDatabase } from './db/connection'
 import { runMigrations } from './db/migrate'
 import { mainModules } from '@modules/main-registry'
@@ -165,6 +166,7 @@ app.whenReady().then(async () => {
   registerDialogIpc()
   registerAppIpc(paths.root)
   registerBuildIpc(settings)
+  registerEntitiesIpc(paths)
 
   const db = openDatabase(paths.database)
   runMigrations(

@@ -75,6 +75,14 @@ function register({ db, paths }: MainContext): () => void {
     store: people,
     meetingsDirFor: dirFor,
     trainingDir: join(paths.trainingNotes, 'research'),
+    // Where else a note can mention a person: free notes (both workspaces), readings' notes, reading lists, the training plans.
+    linkDirs: [
+      join(paths.noteFiles, 'research'),
+      join(paths.noteFiles, 'work'),
+      paths.readingsNotes,
+      join(paths.readingListFiles, 'research'),
+      paths.trainingPlans
+    ],
     backupsDir: join(paths.root, 'backups'),
     reindex: async (kind, fileName, workspace) => {
       if (kind === 'meetings') await store.reindexFile(workspace ?? 'research', fileName)

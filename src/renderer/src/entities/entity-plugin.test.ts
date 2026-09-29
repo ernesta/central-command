@@ -86,6 +86,33 @@ describe('mentions in the editor', () => {
   })
 })
 
+describe('punctuation after a mention', () => {
+  /** Types `text` where the cursor is after the first space that follows `after`. */
+  const typeAfter = (view: EditorView, after: string, text: string): boolean => {
+    const pos = view.state.doc.textContent.indexOf(after) + after.length + 1 + 1
+    view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, pos)))
+    const { from, to } = view.state.selection
+    return !!view.someProp('handleTextInput', (f) => f(view, from, to, text, () => view.state.tr))
+  }
+
+  it('takes back the space a mention was followed by', async () => {
+    await withEditor('A [Kathy](cc://person/Kathy%20Rastle) and\n', (view, read) => {
+      expect(typeAfter(view, 'Kathy', ',')).toBe(true)
+      expect(read()).toBe('A [Kathy](cc://person/Kathy%20Rastle),and\n')
+    })
+  })
+
+  it('leaves a space after ordinary text and after a web link alone, and other characters', async () => {
+    await withEditor('A word and\n', (view) => expect(typeAfter(view, 'word', ',')).toBe(false))
+    await withEditor('A [web](https://x.org) and\n', (view) =>
+      expect(typeAfter(view, 'web', ',')).toBe(false)
+    )
+    await withEditor('A [Kathy](cc://person/Kathy%20Rastle) and\n', (view) =>
+      expect(typeAfter(view, 'Kathy', 'x')).toBe(false)
+    )
+  })
+})
+
 describe('findSuggestion', () => {
   const at = (view: EditorView, text: string): void => {
     view.dispatch(view.state.tr.insertText(text, view.state.doc.content.size - 1))

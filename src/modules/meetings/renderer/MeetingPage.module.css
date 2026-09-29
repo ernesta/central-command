@@ -70,3 +70,11 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+/* The side column: the outline (or topics) with, under it, where this is mentioned; it stays in view while the text scrolls. */
+.side {
+  position: sticky;
+  top: 16px;
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}

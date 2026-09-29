@@ -16,7 +16,9 @@ import { appendTopic, parseTopics, type Topic } from '../shared/topics'
 import type { MeetingRef, MeetingWorkspace, Person } from '../shared/types'
 import { meetingRoute, meetingsBase, useMeetingsWorkspace } from './meetings-paths'
 import { MetaFields } from './MetaFields'
+import { MentionedIn } from '@renderer/entities/MentionedIn'
 import { TopicsPanel } from './TopicsPanel'
+import { useMeetingsList } from './useMeetingsList'
 import { useMeetingSession } from './useMeetingSession'
 import { useTodoHelper } from './useTodoHelper'
 import styles from './MeetingPage.module.css'
@@ -60,6 +62,7 @@ function MeetingView({
   const navigate = useNavigate()
   const location = useLocation()
   const { session, snapshot } = useMeetingSession(meetingRef, onRenamed)
+  const { rows: meetingRows } = useMeetingsList(meetingRef.workspace)
   const [people, setPeople] = useState<Person[]>([])
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -290,12 +293,18 @@ function MeetingView({
             )}
           </EditorCard>
         </div>
-        <TopicsPanel
-          topics={topics}
-          onToggle={toggleTopic}
-          onJump={(topic: Topic, occurrence: number) => jumpTo(topic.text, occurrence)}
-          onAdd={addTopic}
-        />
+        <div className={styles.side}>
+          <TopicsPanel
+            topics={topics}
+            onToggle={toggleTopic}
+            onJump={(topic: Topic, occurrence: number) => jumpTo(topic.text, occurrence)}
+            onAdd={addTopic}
+          />
+          <MentionedIn
+            kind="meeting"
+            entityKey={meetingRows?.find((r) => r.id === session.getRef().id)?.uid || null}
+          />
+        </div>
       </div>
       {todo.menu}
 

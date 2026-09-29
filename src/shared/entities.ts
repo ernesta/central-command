@@ -137,3 +137,19 @@ export function addUid(head: string, uid: string): string {
   const order = [...(parseHead(head)?.entries.map((e) => e.key) ?? []), 'uid']
   return updateHeadKeys(head, { uid }, { order, style: () => 'plain' })
 }
+
+/** Where a mention is written: what kind of file, in which workspace, and its id (file name without the extension). */
+export interface BacklinkSource {
+  kind: 'note' | 'meeting' | 'training' | 'reading-list' | 'reading-notes' | 'plan'
+  workspace: string
+  id: string
+}
+
+/** One place an entity is mentioned. */
+export interface Backlink {
+  source: BacklinkSource
+  /** What to call the place: a note's title, a meeting's date, a reading's citekey. */
+  title: string
+  /** The line the mention is in, as plain text. */
+  context: string
+}

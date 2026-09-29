@@ -14,6 +14,7 @@ const OURS = new Set([
   'Backspace',
   'Mod-Click',
   'Mod-v',
+  '@',
   'Mod-Shift-v',
   'Mod-f',
   'Mod-Alt-f',

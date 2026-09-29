@@ -41,6 +41,9 @@ const api: Api = {
       return () => ipcRenderer.removeListener(IPC.appPastePlain, handler)
     }
   },
+  entities: {
+    backlinks: (ref) => ipcRenderer.invoke(IPC.entitiesBacklinks, ref)
+  },
   readings: {
     sync: {
       now: () => ipcRenderer.invoke(READINGS_IPC.syncNow),

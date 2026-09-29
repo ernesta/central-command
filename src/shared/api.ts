@@ -1,3 +1,4 @@
+import type { Backlink, EntityRef } from './entities'
 import type { MeetingsApi } from '../modules/meetings/shared/api'
 import type { NotesApi } from '../modules/notes/shared/api'
 import type { ReadingListsApi } from '../modules/reading-lists/shared/api'
@@ -53,6 +54,10 @@ export interface Api {
     /** Cmd-Shift-V was pressed: the clipboard's text, to paste without formatting. Returns an unsubscribe function. */
     onPastePlain(listener: (text: string) => void): () => void
   }
+  entities: {
+    /** Where an entity is mentioned (`@mentions` in any note), read from the note files. */
+    backlinks(ref: EntityRef): Promise<Backlink[]>
+  }
   readings: ReadingsApi
   meetings: MeetingsApi
   training: TrainingApi
@@ -83,5 +88,6 @@ export const IPC = {
   appPastePlain: 'app:paste-plain',
   appBeforeClose: 'app:before-close',
   appCloseReady: 'app:close-ready',
+  entitiesBacklinks: 'entities:backlinks',
   buildOpenSession: 'build:open-session'
 } as const

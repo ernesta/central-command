@@ -1230,3 +1230,41 @@ Reference`. The Meetings folder is left to `import:work-meetings`. **The Admin &
 - **A bug found by driving the move twice:** a page remembers the names an item has had (`known` in `NotePage`/`MeetingPage`) so a rename does
   not remount it. That memory survived a move, so moving back used the item's original name and reported "Note not found". Each workspace
   now gets a fresh page (`key={workspace}`), and the round trip (rename, move, move back) is checked in the built app for a note and a meeting.
+
+## Entities: mentions with `@` (at the user's request, 29 Sep 2026)
+
+A note can mention a **person, reading, meeting or note** (tasks later): type `@` and a few letters, pick one, and it is written as a
+chip with the icon of its kind. The mechanism is the same everywhere an editor is used (notes, meetings, training entries, plans, reading
+lists, readings' notes), since they all share `NotesEditor`.
+
+- **The file format is an ordinary Markdown link with the app's own scheme:** `[Kathy Rastle](cc://person/Kathy%20Rastle)`. It is valid
+  everywhere, survives Milkdown's serialiser (the reading lists' `[[citekey]]` lesson), and reads fine in any other tool or to Claude Code.
+  `@shared/entities` holds the format (`entityHref`, `parseEntityHref`, `findMentions`, `renamePersonMentions`), tested.
+- **What the address names, per kind.** `reading`: the citekey (stable while the reading is in Zotero; a reading gone from the export is
+  still found and marked). `person`: the name (a rename or merge **rewrites the mentions** in every note folder, with the same backup and
+  hash guard as the other people rewrites; a label that was the old name follows, a label the writer chose stays). `meeting`, `note`: a
+  **`uid` in the item's front matter, added the first time something links to it** (never to items nothing links to), so a link survives
+  renames (file names follow titles and dates) and moves between workspaces (the file is copied byte for byte). `ensureUid` writes it
+  under the usual hash guard; the index has a `uid` column (migrations `notes/0003_uid`, `meetings/0004_uid`) filled from the files at start.
+  A note is never offered a link to itself (writing its uid would clash with its own open editor).
+- **A registry, not a list in the editor.** A module gives the shell `entities: EntityProvider[]` in its manifest (`search` for the picker,
+  `resolve` for what a mention points at now, an icon, a heading); `main.tsx` registers them all. The editor knows nothing about readings or
+  meetings. A new kind is a new provider plus one entry in `ENTITY_KINDS`. Only the Research instance of Meetings and Notes carries its
+  providers, and they cover both workspaces. The picker lists kinds in the order of `ENTITY_KINDS`: people, readings, meetings, notes.
+- **In the editor** (`src/renderer/src/entities/`): `EntityPickerController` is a plain object (as `useNotesFind` is) that the two Milkdown
+  plugins talk to and React reads. `@` opens the picker only at the start of a word (so `a@b.org` and `meet @ noon` are left alone), not in
+  code or inside a link, and not for a long or two-space query; Escape closes it until that `@` is gone. Enter or Tab links, arrows
+  move, a click picks without taking the cursor out of the text. Typing punctuation straight after a mention takes back the space the
+  mention was followed by. Mentions are drawn by decorations: a chip, its icon a CSS mask (the same Lucide icons, made into CSS variables by
+  `entityIconVars`), struck through in red when what they point at is gone. Hovering shows a card (kind, current name, one line) and
+  Cmd-click opens it inside the app. The editor's link schema had to be extended (`entityLinkSchema`): Milkdown writes an empty `href` into
+  the page for any scheme but http, https, mailto, tel and ftp.
+- **Where a thing is mentioned** (`MentionedIn`, on a person's page, a reading's page and the side column of a note and a meeting): the main
+  process reads the note folders on request (`findBacklinks`, IPC `entities:backlinks`). No index: a few hundred small files are quick to read
+  and the answer can never be out of date. Each place is listed once with the line the mention is on.
+- **Checked in the built app on a scratch library:** all four kinds picked with the keyboard and the mouse (the `uid` appears in the linked
+  note's and meeting's front matter), chips with icons, the hover card, Cmd-click to a note and to a person, the panel on a note, a meeting and
+  a person, a rename through the people API (the mention in another note rewritten, backup made), and a deleted note's chip.
+- **Not done, on purpose:** mentions in the command palette's search results (search already finds the notes themselves); tasks (they do not
+  exist yet); a "convert this plain name into a mention" action; renaming a note or meeting does not change the label of existing mentions
+  of it (a label is the writer's text; the hover card and opening always show what it is called now).

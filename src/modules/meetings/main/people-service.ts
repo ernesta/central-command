@@ -1,4 +1,5 @@
 import { join } from 'path'
+import { renamePersonMentions } from '@shared/entities'
 import { findByName, PeopleError, type Person } from '@shared/people'
 import {
   isNoChange,
@@ -20,6 +21,11 @@ interface PeopleServiceOptions {
   /** The folder holding one workspace's meeting notes. People are shared, so every workspace is rewritten. */
   meetingsDirFor: (workspace: MeetingWorkspace) => string
   trainingDir: string
+  /**
+   * Every other folder of notes, where a person may be mentioned (`[Name](cc://person/Name)`, see `@shared/entities`): a rename
+   * or merge rewrites those mentions too. Optional: none when omitted.
+   */
+  linkDirs?: readonly string[]
   /** Where a change keeps copies of the notes it edits; a new folder for every change. */
   backupsDir: string
   /** The indexed notes, for counting who is mentioned where. */
@@ -93,7 +99,8 @@ export class PeopleService {
       const result = await rewriteNoteFiles({
         dir: meetingsDirFor(workspace),
         backupDir: join(backup, 'meetings', workspace),
-        transform: (content) => rewriteMeetingPeople(content, change)
+        transform: (content) =>
+          renamePersonMentions(rewriteMeetingPeople(content, change), change.names)
       })
       meetingsChanged += result.changed.length
       meetingsSkipped = [...meetingsSkipped, ...result.skipped]
@@ -102,12 +109,25 @@ export class PeopleService {
     const trainings = await rewriteNoteFiles({
       dir: trainingDir,
       backupDir: join(backup, 'training'),
-      transform: (content) => rewriteTrainingPeople(content, change)
+      transform: (content) =>
+        renamePersonMentions(rewriteTrainingPeople(content, change), change.names)
     })
     for (const name of trainings.changed) await this.options.reindex('training', name)
+    let linkedChanged = 0
+    let linkedSkipped: string[] = []
+    for (const [i, dir] of (this.options.linkDirs ?? []).entries()) {
+      // Their index (if they have one) follows the folder watcher; nothing counts people in them.
+      const linked = await rewriteNoteFiles({
+        dir,
+        backupDir: join(backup, `linked-${i}`),
+        transform: (content) => renamePersonMentions(content, change.names)
+      })
+      linkedChanged += linked.changed.length
+      linkedSkipped = [...linkedSkipped, ...linked.skipped]
+    }
     return {
-      changed: meetingsChanged + trainings.changed.length,
-      skipped: [...meetingsSkipped, ...trainings.skipped]
+      changed: meetingsChanged + trainings.changed.length + linkedChanged,
+      skipped: [...meetingsSkipped, ...trainings.skipped, ...linkedSkipped]
     }
   }
 }

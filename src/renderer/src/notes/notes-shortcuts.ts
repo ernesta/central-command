@@ -42,6 +42,11 @@ export const NOTES_EDITOR_SHORTCUTS: ShortcutGroup = {
       note: 'A plain click puts the cursor in the link.'
     },
     {
+      action: 'Mention a person, reading, meeting or note',
+      keys: ['@'],
+      note: 'Type @ and a few letters. Arrows choose, Enter or Tab links, Escape closes. Cmd-click a mention to open it.'
+    },
+    {
       action: 'Link the selected text',
       keys: ['Mod-v'],
       note: 'Paste a web address while text is selected. Typing [text](address) also makes a link.'
