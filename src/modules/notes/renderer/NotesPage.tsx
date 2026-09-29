@@ -16,7 +16,7 @@ import {
 import { DEFAULT_NOTES_QUERY, queryNotes, reconcileQuery, type NotesQuery } from '../shared/query'
 import { setCaptureGroup } from './capture-group'
 import { NewNoteButton } from './NewNoteButton'
-import { notesBase } from './notes-paths'
+import { notesBase, useNotesWorkspace } from './notes-paths'
 import { NotesTable } from './NotesTable'
 import { useNotesList } from './useNotesList'
 import { useNotesView } from './useNotesView'
@@ -37,7 +37,8 @@ function valueFilter(value: string): GroupFilter {
 
 /** All notes: search, a group selector and the list. The page is titled with the group when one is chosen. */
 export function NotesPage(): React.JSX.Element {
-  const rows = useNotesList()
+  const workspace = useNotesWorkspace()
+  const rows = useNotesList(workspace)
   // A group card on the landing page opens the list already filtered to that group (for this visit only, with the
   // search cleared so the group is what you see).
   const [params] = useSearchParams()
@@ -86,7 +87,7 @@ export function NotesPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <Link className={styles.back} to={notesBase}>
+      <Link className={styles.back} to={notesBase(workspace)}>
         <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
         Notes
       </Link>

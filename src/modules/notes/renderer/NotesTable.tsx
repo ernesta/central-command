@@ -26,7 +26,7 @@ export function NotesTable({ rows }: { rows: NoteIndexRow[] }): React.JSX.Elemen
   const navigate = useNavigate()
   const { tableProps, rowProps } = useRowNavigation(
     rows.length,
-    (index) => void navigate(noteRoute(rows[index].id))
+    (index) => void navigate(noteRoute(rows[index].workspace, rows[index].id))
   )
 
   return (
@@ -49,7 +49,7 @@ export function NotesTable({ rows }: { rows: NoteIndexRow[] }): React.JSX.Elemen
                 key={`${row.workspace}/${row.id}`}
                 className={styles.row}
                 {...rowProps(index)}
-                onClick={() => void navigate(noteRoute(row.id))}
+                onClick={() => void navigate(noteRoute(row.workspace, row.id))}
               >
                 <td className={styles.titleCell}>
                   {row.pinned && (
@@ -64,7 +64,7 @@ export function NotesTable({ rows }: { rows: NoteIndexRow[] }): React.JSX.Elemen
                   <Link
                     className={styles.link}
                     tabIndex={-1}
-                    to={noteRoute(row.id)}
+                    to={noteRoute(row.workspace, row.id)}
                     // The row handles the click; the link is for the keyboard and for assistive technology.
                     onClick={(event) => event.stopPropagation()}
                   >

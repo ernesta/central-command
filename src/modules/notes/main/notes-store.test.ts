@@ -103,6 +103,27 @@ describe('create', () => {
   })
 })
 
+describe('workspaces', () => {
+  it('keeps each workspace’s notes in its own folder and list, even under the same name and group', async () => {
+    const r = await store.create({ workspace: 'research', title: 'Plan', group: 'Thesis' })
+    const w = await store.create({
+      workspace: 'work',
+      title: 'Plan',
+      group: 'Thesis',
+      body: 'work\n'
+    })
+    expect(r.ref).toEqual({ workspace: 'research', id: 'Plan' })
+    expect(w.ref).toEqual({ workspace: 'work', id: 'Plan' })
+    expect(readdirSync(dir)).toEqual(['Plan.md'])
+    expect(readdirSync(join(root, 'work'))).toEqual(['Plan.md'])
+    expect(listNoteRows(db, 'research')).toHaveLength(1)
+    expect(listNoteRows(db, 'work')).toHaveLength(1)
+    await store.delete({ workspace: 'work', id: 'Plan' })
+    expect(listNoteRows(db, 'research')).toHaveLength(1)
+    expect(existsSync(join(dir, 'Plan.md'))).toBe(true)
+  })
+})
+
 describe('save', () => {
   it('changes the body and leaves the front matter alone', async () => {
     const note = await store.create({ workspace: 'research', title: 'Ideas', group: 'Thesis' })

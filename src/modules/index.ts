@@ -3,7 +3,7 @@ import type { Workspace } from '@shared/settings'
 import type { SearchHit } from '@shared/search'
 import type { ShortcutGroup } from '@shared/shortcuts'
 import { createMeetingsModule } from './meetings'
-import { notesModule } from './notes'
+import { createNotesModule } from './notes'
 import { plannedModules } from './planned'
 import { readingListsModule } from './reading-lists'
 import { readingsModule } from './readings'
@@ -15,9 +15,10 @@ export const modules: ModuleManifest[] = [
   readingsModule,
   createMeetingsModule('research'),
   trainingModule,
-  notesModule,
+  createNotesModule('research'),
   readingListsModule,
   createMeetingsModule('work'),
+  createNotesModule('work'),
   ...plannedModules
 ]
 
@@ -49,6 +50,11 @@ export function moduleGlobals(): { id: string; Global: ComponentType }[] {
   )
 }
 
+/** Work's results are headed "Work meetings", "Work notes": the same module under a second workspace would otherwise repeat a heading. */
+function searchLabel(m: LiveModuleManifest): string {
+  return m.workspace === 'work' ? `Work ${m.label.toLowerCase()}` : m.label
+}
+
 /** The modules that can be searched, in registration order. */
 export function moduleSearches(): {
   id: string
@@ -56,7 +62,7 @@ export function moduleSearches(): {
   search: (query: string, limit?: number) => Promise<SearchHit[]>
 }[] {
   return modules.flatMap((m) =>
-    m.status === 'live' && m.search ? [{ id: m.id, label: m.label, search: m.search }] : []
+    m.status === 'live' && m.search ? [{ id: m.id, label: searchLabel(m), search: m.search }] : []
   )
 }
 

@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react'
-import type { NoteIndexRow } from '../shared/types'
+import type { NoteIndexRow, NoteWorkspace } from '../shared/types'
 
 /**
- * Every note in the Research workspace from the index. Refreshed when a note file changes (from this app
+ * Every note in a workspace from the index. Refreshed when a note file changes (from this app
  * or another tool). `rows` is null until the first load.
  */
-export function useNotesList(): NoteIndexRow[] | null {
+export function useNotesList(workspace: NoteWorkspace): NoteIndexRow[] | null {
   const [rows, setRows] = useState<NoteIndexRow[] | null>(null)
 
   useEffect(() => {
     let cancelled = false
     let timer: ReturnType<typeof setTimeout> | null = null
     const load = (): void => {
-      void window.api.notes.list('research').then((list) => {
+      void window.api.notes.list(workspace).then((list) => {
         if (!cancelled) setRows(list)
       })
     }
@@ -27,7 +27,7 @@ export function useNotesList(): NoteIndexRow[] | null {
       if (timer) clearTimeout(timer)
       off()
     }
-  }, [])
+  }, [workspace])
 
   return rows
 }

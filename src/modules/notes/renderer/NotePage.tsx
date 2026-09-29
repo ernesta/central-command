@@ -16,7 +16,7 @@ import { UNTITLED } from '../shared/query'
 import type { NoteRef } from '../shared/types'
 import { GroupField } from './GroupField'
 import { NoteOutline } from './NoteOutline'
-import { noteRoute, notesBase } from './notes-paths'
+import { noteRoute, notesBase, useNotesWorkspace } from './notes-paths'
 import { useNoteSession } from './useNoteSession'
 import { useNotesList } from './useNotesList'
 import styles from './NotePage.module.css'
@@ -31,6 +31,7 @@ export function NotePage(): React.JSX.Element {
   const { id = '' } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
+  const workspace = useNotesWorkspace()
   // Changing the title renames the file, and so changes the id in the address. The page keeps its state
   // (and the cursor) by staying mounted under the id it opened with: `ids` are the names this note has
   // had, so the address moving from one to the next does not remount it.
@@ -38,13 +39,13 @@ export function NotePage(): React.JSX.Element {
   const key = known.ids.includes(id) ? known.key : id
   return (
     <NoteView
-      key={key}
-      noteRef={{ workspace: 'research', id: key }}
+      key={`${workspace}/${key}`}
+      noteRef={{ workspace, id: key }}
       onRenamed={(newId) => {
         setKnown((prev) =>
           prev.key === key ? { key, ids: [...prev.ids, newId] } : { key, ids: [key, newId] }
         )
-        void navigate(noteRoute(newId), { replace: true, state: location.state })
+        void navigate(noteRoute(workspace, newId), { replace: true, state: location.state })
       }}
     />
   )
@@ -60,7 +61,7 @@ function NoteView({
   const navigate = useNavigate()
   const location = useLocation()
   const { session, snapshot } = useNoteSession(noteRef, onRenamed)
-  const rows = useNotesList()
+  const rows = useNotesList(noteRef.workspace)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
@@ -83,7 +84,8 @@ function NoteView({
   useDocumentTitle(meta.title)
 
   // Back goes to wherever the user came from (the landing page or a list); with no history, the landing page.
-  const goBack = (): void => void (location.key !== 'default' ? navigate(-1) : navigate(notesBase))
+  const goBack = (): void =>
+    void (location.key !== 'default' ? navigate(-1) : navigate(notesBase(noteRef.workspace)))
 
   const confirmAndDelete = async (): Promise<void> => {
     setDeleting(true)
@@ -91,7 +93,7 @@ function NoteView({
     try {
       await session.dispose() // saves anything pending first
       await window.api.notes.delete(session.getRef())
-      void navigate(notesBase)
+      void navigate(notesBase(noteRef.workspace))
     } catch (e) {
       setDeleteError(ipcErrorMessage(e))
       setDeleting(false)

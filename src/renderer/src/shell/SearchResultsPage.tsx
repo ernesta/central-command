@@ -107,9 +107,9 @@ export function SearchResultsPage(): React.JSX.Element {
         <EmptyState heading="No results" message={`Nothing matches “${query.trim()}”.`} />
       )}
       <div className={styles.groups}>
-        {groups.map((group) => (
-          <section key={group.id} className={styles.group} aria-labelledby={`results-${group.id}`}>
-            <h2 id={`results-${group.id}`} className={styles.groupTitle}>
+        {groups.map((group, index) => (
+          <section key={group.label} className={styles.group} aria-labelledby={`results-${index}`}>
+            <h2 id={`results-${index}`} className={styles.groupTitle}>
               {group.label}
             </h2>
             <div className={styles.list}>

@@ -4,7 +4,7 @@ import { fold } from '@shared/text'
 import { formatShortDate } from '@shared/time'
 import { groupLabel } from '../shared/groups'
 import { DEFAULT_NOTES_QUERY, displayTitle, queryNotes } from '../shared/query'
-import type { NoteIndexRow } from '../shared/types'
+import type { NoteIndexRow, NoteWorkspace } from '../shared/types'
 import { noteRoute } from './notes-paths'
 
 const DEFAULT_LIMIT = 6
@@ -26,11 +26,13 @@ export function noteHits(
         key: row.id,
         title,
         detail: (!inTitle && snippet(row.excerpt, terms)) || details,
-        route: noteRoute(row.id)
+        route: noteRoute(row.workspace, row.id)
       }
     })
 }
 
-export async function searchNotes(query: string, limit?: number): Promise<SearchHit[]> {
-  return noteHits(await window.api.notes.list('research'), query, limit)
+export function searchNotes(
+  workspace: NoteWorkspace
+): (query: string, limit?: number) => Promise<SearchHit[]> {
+  return async (query, limit) => noteHits(await window.api.notes.list(workspace), query, limit)
 }

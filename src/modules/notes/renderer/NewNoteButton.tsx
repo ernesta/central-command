@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
-import { noteRoute } from './notes-paths'
+import { noteRoute, useNotesWorkspace } from './notes-paths'
 
 /**
  * "New note": creates an untitled note at once and opens its page with the cursor in the title, where the group
@@ -17,6 +17,7 @@ export function NewNoteButton({
   subgroup?: string
 }): React.JSX.Element {
   const navigate = useNavigate()
+  const workspace = useNotesWorkspace()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -24,8 +25,8 @@ export function NewNoteButton({
     setBusy(true)
     setError(null)
     try {
-      const file = await window.api.notes.create({ workspace: 'research', group, subgroup })
-      void navigate(noteRoute(file.ref.id), { state: { focus: 'title' } })
+      const file = await window.api.notes.create({ workspace, group, subgroup })
+      void navigate(noteRoute(workspace, file.ref.id), { state: { focus: 'title' } })
     } catch (e) {
       setError(ipcErrorMessage(e))
       setBusy(false)

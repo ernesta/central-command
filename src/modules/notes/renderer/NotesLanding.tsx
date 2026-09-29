@@ -18,13 +18,20 @@ import { groupLabel, landingGroups } from '../shared/groups'
 import { MAX_PINNED, pinnedNotes } from '../shared/pinning'
 import { displayTitle, noteCount, recentNotes } from '../shared/query'
 import { NewNoteButton } from './NewNoteButton'
-import { groupRoute, noteRoute, notesListRoute, ungroupedRoute } from './notes-paths'
+import {
+  groupRoute,
+  noteRoute,
+  notesListRoute,
+  ungroupedRoute,
+  useNotesWorkspace
+} from './notes-paths'
 import { useNotesList } from './useNotesList'
 import styles from './NotesLanding.module.css'
 
 /** The Notes landing page: pinned notes, the groups, and the notes edited most recently. */
 export function NotesLanding(): React.JSX.Element {
-  const rows = useNotesList()
+  const workspace = useNotesWorkspace()
+  const rows = useNotesList(workspace)
   const [showAll, setShowAll] = useState(false)
   const all = rows ?? []
   const pinned = pinnedNotes(all)
@@ -33,7 +40,7 @@ export function NotesLanding(): React.JSX.Element {
 
   const pinnedCards: SeriesCard[] = pinned.map((row) => ({
     key: row.id,
-    to: noteRoute(row.id),
+    to: noteRoute(row.workspace, row.id),
     title: displayTitle(row),
     line: [groupLabel(row.group, row.subgroup), `edited ${formatShortDate(isoDate(row.edited))}`]
       .filter(Boolean)
@@ -45,14 +52,14 @@ export function NotesLanding(): React.JSX.Element {
     card.kind === 'ungrouped'
       ? {
           key: '\u0000ungrouped',
-          to: ungroupedRoute,
+          to: ungroupedRoute(workspace),
           title: 'Ungrouped',
           line: `${noteCount(card.count)} · last ${formatShortDate(isoDate(card.edited))}`,
           dashed: true
         }
       : {
           key: card.group.name,
-          to: groupRoute(card.group.name),
+          to: groupRoute(workspace, card.group.name),
           title: card.group.name,
           line: `${noteCount(card.group.count)} · last ${formatShortDate(isoDate(card.group.edited))}`,
           extra: card.group.subgroups.map((s) => s.name).join(', ') || undefined
@@ -61,7 +68,7 @@ export function NotesLanding(): React.JSX.Element {
 
   const recentRows: RecentRow[] = recentNotes(all).map((row) => ({
     key: row.id,
-    to: noteRoute(row.id),
+    to: noteRoute(row.workspace, row.id),
     date: formatDate(isoDate(row.edited)),
     title: displayTitle(row),
     people: [],
@@ -71,8 +78,8 @@ export function NotesLanding(): React.JSX.Element {
   return (
     <LandingPage>
       <LandingHeader
-        backTo="/research"
-        backLabel="Research"
+        backTo={`/${workspace}`}
+        backLabel={workspace === 'research' ? 'Research' : 'Work'}
         title="Notes"
         actions={<NewNoteButton />}
       />
@@ -115,7 +122,7 @@ export function NotesLanding(): React.JSX.Element {
                 <ul className={styles.more} aria-label="More groups">
                   {more.map((g) => (
                     <li key={g.name}>
-                      <Link className={styles.chip} to={groupRoute(g.name)}>
+                      <Link className={styles.chip} to={groupRoute(workspace, g.name)}>
                         {g.name}
                         <b>{g.count}</b>
                       </Link>
@@ -130,7 +137,7 @@ export function NotesLanding(): React.JSX.Element {
             id="recent"
             label="Recent"
             aside={
-              <SeeAllLink to={notesListRoute}>
+              <SeeAllLink to={notesListRoute(workspace)}>
                 See all notes
                 <ArrowRight size={14} strokeWidth={1.75} aria-hidden />
               </SeeAllLink>

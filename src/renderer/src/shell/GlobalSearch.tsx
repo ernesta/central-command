@@ -142,7 +142,7 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
       </div>
       <div className={styles.results} id="global-search-results" role="listbox" ref={listRef}>
         {groups.map((group, groupIndex) => (
-          <div key={group.id} role="group" aria-label={group.label}>
+          <div key={group.label} role="group" aria-label={group.label}>
             <h2 className={styles.heading}>{group.label}</h2>
             {group.hits.map((hit, hitIndex) => {
               const i = starts[groupIndex] + hitIndex

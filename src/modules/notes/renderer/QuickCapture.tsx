@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router'
 import { matchesShortcut } from '@shared/shortcuts'
 import { QUICK_CAPTURE_SHORTCUT } from '../shared/shortcuts'
 import { getCaptureGroup } from './capture-group'
-import { noteRoute } from './notes-paths'
+import { noteRoute, useNotesWorkspace } from './notes-paths'
 import type { NoteLocationState } from './NotePage'
 
 /**
@@ -13,6 +13,8 @@ import type { NoteLocationState } from './NotePage'
  */
 export function QuickCapture(): null {
   const navigate = useNavigate()
+  // A note starts in the workspace being looked at (Research anywhere that is not Work).
+  const workspace = useNotesWorkspace()
   const busy = useRef(false)
 
   useEffect(() => {
@@ -23,9 +25,11 @@ export function QuickCapture(): null {
       busy.current = true
       const { group, subgroup } = getCaptureGroup()
       window.api.notes
-        .create({ workspace: 'research', group, subgroup })
+        .create({ workspace, group, subgroup })
         .then((file) =>
-          navigate(noteRoute(file.ref.id), { state: { focus: 'body' } satisfies NoteLocationState })
+          navigate(noteRoute(workspace, file.ref.id), {
+            state: { focus: 'body' } satisfies NoteLocationState
+          })
         )
         .catch((error: unknown) => console.error('Could not start a note:', error))
         .finally(() => {
@@ -34,7 +38,7 @@ export function QuickCapture(): null {
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [navigate])
+  }, [navigate, workspace])
 
   return null
 }

@@ -13,8 +13,8 @@ import { notesMigrations } from './migrations'
 import { NotesStore } from './notes-store'
 import { listNoteRows } from './repository'
 
-/** Workspaces whose notes folder is created and watched. Work joins when it gets its own page. */
-const ACTIVE_WORKSPACES: readonly NoteWorkspace[] = ['research']
+/** Workspaces whose notes folder is created and watched. */
+const ACTIVE_WORKSPACES: readonly NoteWorkspace[] = ['research', 'work']
 
 function asObject(value: unknown, what: string): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value))

@@ -28,7 +28,7 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
     detail: 'Starts now, in the group you are looking at.',
     go: async (navigate) => {
       const file = await window.api.notes.create({ workspace: 'research' })
-      navigate(noteRoute(file.ref.id), { state: { focus: 'body' } })
+      navigate(noteRoute('research', file.ref.id), { state: { focus: 'body' } })
     }
   },
   {
