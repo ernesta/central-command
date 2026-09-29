@@ -21,8 +21,7 @@ export const EMPTY_NOTE_META: NoteMeta = {
   title: '',
   group: '',
   subgroup: '',
-  pinned: false,
-  created: ''
+  pinned: false
 }
 
 /**

@@ -19,7 +19,6 @@ function note(id: string, over: Partial<NoteIndexRow> = {}): NoteIndexRow {
     group: '',
     subgroup: '',
     pinned: false,
-    created: '',
     edited: 1,
     firstLine: '',
     excerpt: '',

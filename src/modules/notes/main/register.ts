@@ -1,7 +1,6 @@
 import { mkdir } from 'fs/promises'
 import { join } from 'path'
 import { BrowserWindow, ipcMain, shell } from 'electron'
-import { todayIso } from '@shared/time'
 import { readNoteFile } from '../../../main/notes/guarded-file'
 import { NotesWatcher } from '../../../main/notes/watcher'
 import type { MainContext, MainModule } from '../../main-registry'
@@ -40,7 +39,6 @@ function register({ db, paths }: MainContext): () => void {
   const store = new NotesStore({
     db,
     dirFor,
-    today: todayIso,
     trash: (path) => shell.trashItem(path)
   })
 

@@ -22,6 +22,8 @@ ask the user.
   default)
 - `npm run people:from-notes [-- --apply]`: list people named in meeting attendees and training leads who are not in the people list, with
   proposed initials (dry run by default; apply only with the app closed)
+- `npm run strip:created [-- --apply]`: remove the retired `created:` line from every note's front matter (dry run by default; applied on
+  29 Sep 2026, so a dry run now finds nothing)
 - `npm run convert:topics [-- --apply]`: turn bold pseudo-headings (`**Topic**`) in meeting notes into `###` topics (dry run by
   default; `--apply` backs each note up first)
 

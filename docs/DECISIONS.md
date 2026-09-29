@@ -1222,3 +1222,11 @@ Reference`. The Meetings folder is left to `import:work-meetings`. **The Admin &
   more than inform. The facts line is now "Saved · Edited … · N words" on every editor. Notes still record a `created` key in their front
   matter (written on creation and by the importers, kept by moves); nothing displays it, and it can be dropped from the files later if wanted.
   "Edited" is the file's modified time, so a move now gives the copy the original's modified time (`utimes`): moving is not an edit.
+- **`created` is gone entirely (the user's follow-up, same day).** It is no longer written (new notes, the importers), read, indexed
+  (migration `notes/0002_drop_created` drops the column) or shown, and a new note with nothing to record starts with no front matter
+  block. `npm run strip:created` removed the line from the existing notes (18 notes in Research and Work, applied to the real
+  library on 29 Sep 2026, originals in `~/CentralCommand/backups/strip-created-<time>/`); a note that still carries a `created:` line by
+  hand is left alone, like any other unknown key.
+- **A bug found by driving the move twice:** a page remembers the names an item has had (`known` in `NotePage`/`MeetingPage`) so a rename does
+  not remount it. That memory survived a move, so moving back used the item's original name and reported "Note not found". Each workspace
+  now gets a fresh page (`key={workspace}`), and the round trip (rename, move, move back) is checked in the built app for a note and a meeting.

@@ -9,7 +9,6 @@ const note = (id: string, pinned: boolean, edited = 1): NoteIndexRow => ({
   group: '',
   subgroup: '',
   pinned,
-  created: '',
   edited,
   firstLine: '',
   excerpt: '',

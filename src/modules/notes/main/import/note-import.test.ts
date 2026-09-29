@@ -10,20 +10,14 @@ import {
   type SourceNote
 } from './note-import'
 
-const src = (path: string, content: string, created = '2025-03-02'): SourceNote => ({
-  path,
-  content,
-  created
-})
+const src = (path: string, content: string): SourceNote => ({ path, content })
 
 describe('convertNote', () => {
-  it('adds a title, created date and origin to a note with no front matter, and copies the text as it is', () => {
+  it('adds a title and origin to a note with no front matter, and copies the text as it is', () => {
     const body = '# ASER\r\n\n- [x] done\n- [ ] open  \n\nplain text, [a](b) and *emphasis*\n\n\n'
     const { markdown, title } = convertNote(src('Data Sources/ASER.md', body))
     expect(title).toBe('ASER')
-    expect(markdown).toBe(
-      `---\ntitle: ASER\ncreated: 2025-03-02\nimported-from: Data Sources/ASER.md\n---\n\n${body}`
-    )
+    expect(markdown).toBe(`---\ntitle: ASER\nimported-from: Data Sources/ASER.md\n---\n\n${body}`)
     expect(splitNote(markdown).body).toBe(body)
   })
 
@@ -33,14 +27,13 @@ describe('convertNote', () => {
     expect(markdown).toContain('tags: [thesis, ideas]')
     expect(markdown).toContain('title: My own title')
     expect(markdown).toContain('# a comment')
-    expect(markdown).toContain('created: 2025-03-02')
     expect(markdown).toContain('imported-from: Ideas/Thing.md')
     expect(markdown).not.toContain('title: Thing')
     expect(splitNote(markdown).body).toBe('Text\n')
   })
 
-  it('leaves created out when the vault does not say, and never adds a group', () => {
-    const { markdown } = convertNote(src('Thesis/Journals.md', 'x', ''))
+  it('never adds a created date or a group', () => {
+    const { markdown } = convertNote(src('Thesis/Journals.md', 'x'))
     expect(markdown).not.toContain('created')
     expect(markdown).not.toContain('group')
   })
@@ -86,8 +79,8 @@ describe('checkConversion', () => {
   it('catches a result that does not read back as a note', () => {
     const noTitle = good.replace(/title: A\n/, '')
     expect(checkConversion(source, noTitle)).toContain('The note has no title')
-    const badDate = good.replace('created: 2025-03-02', 'created: last week')
-    expect(checkConversion(source, badDate).join()).toContain('Invalid created date')
+    const orphan = good.replace('title: A\n', 'title: A\nsubgroup: B\n')
+    expect(checkConversion(source, orphan).join()).toContain('A subgroup without a group')
   })
 })
 
@@ -122,7 +115,7 @@ describe('planNoteImport', () => {
 
   it('leaves out a note whose conversion does not match its source', () => {
     // A vault note whose front matter is broken in a way the converter cannot keep faithfully.
-    const odd = src('Ideas/Odd.md', '---\ncreated: yesterday\n---\n\nText\n')
+    const odd = src('Ideas/Odd.md', '---\nsubgroup: Methods\n---\n\nText\n')
     const plan = planNoteImport([odd, src('Ideas/Fine.md', 'ok')], [])
     expect(plan[0]).toMatchObject({ status: 'failed-check' })
     expect(plan[1]).toMatchObject({ status: 'import', target: 'Fine.md' })

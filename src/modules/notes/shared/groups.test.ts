@@ -25,7 +25,6 @@ function row(id: string, group = '', subgroup = '', edited = 1): NoteIndexRow {
     group,
     subgroup,
     pinned: false,
-    created: '',
     edited,
     firstLine: '',
     excerpt: '',

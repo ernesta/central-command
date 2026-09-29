@@ -44,7 +44,6 @@ beforeEach(() => {
   store = new NotesStore({
     db,
     dirFor: (w) => join(root, w),
-    today: () => '2026-09-25',
     trash: async (path) => {
       if (trashFails) throw new Error('Trash unavailable')
       mkdirSync(trashDir, { recursive: true })
@@ -59,10 +58,8 @@ describe('create', () => {
   it('writes a note with front matter and indexes it', async () => {
     const note = await store.create({ workspace: 'research', title: 'Methods: participants' })
     expect(note.ref).toEqual(ref('Methods participants'))
-    expect(disk('Methods participants')).toBe(
-      "---\ntitle: 'Methods: participants'\ncreated: 2026-09-25\n---\n\n"
-    )
-    expect(note.meta).toMatchObject({ title: 'Methods: participants', created: '2026-09-25' })
+    expect(disk('Methods participants')).toBe("---\ntitle: 'Methods: participants'\n---\n\n")
+    expect(note.meta).toMatchObject({ title: 'Methods: participants' })
     expect(note.problems).toEqual([])
     expect(note.note.hash).toBe(hashContent(disk('Methods participants')))
     expect(getNoteRow(db, 'research', 'Methods participants')?.title).toBe('Methods: participants')
@@ -72,7 +69,7 @@ describe('create', () => {
     const a = await store.create({ workspace: 'research' })
     const b = await store.create({ workspace: 'research' })
     expect([a.ref.id, b.ref.id]).toEqual(['Untitled', 'Untitled 2'])
-    expect(disk('Untitled')).toBe('---\ncreated: 2026-09-25\n---\n\n')
+    expect(disk('Untitled')).toBe('')
   })
 
   it('files a new note in a group using the spelling already in use', async () => {
@@ -237,7 +234,6 @@ describe('save', () => {
     for (const meta of [
       { title: 'two\nlines' },
       { group: 'a›b' },
-      { created: 'yesterday' },
       { pinned: 'yes' as unknown as boolean }
     ]) {
       await expect(store.save(ref('Ideas'), { meta }, h)).rejects.toThrow(NoteError)

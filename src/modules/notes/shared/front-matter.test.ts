@@ -6,7 +6,6 @@ title: Methods: participants
 group: Thesis
 subgroup: Methods
 pinned: true
-created: 2026-09-03
 imported-from: Thesis/Methods.md
 ---
 
@@ -20,23 +19,21 @@ describe('parseMeta', () => {
       title: 'Methods: participants',
       group: 'Thesis',
       subgroup: 'Methods',
-      pinned: true,
-      created: '2026-09-03'
+      pinned: true
     })
     expect(problems).toEqual([])
   })
 
   it('accepts a note with no front matter', () => {
     const { meta, problems } = parseMeta('')
-    expect(meta).toEqual({ title: '', group: '', subgroup: '', pinned: false, created: '' })
+    expect(meta).toEqual({ title: '', group: '', subgroup: '', pinned: false })
     expect(problems).toEqual([])
   })
 
-  it('ignores a subgroup without a group and a bad created date, and says so', () => {
-    const { meta, problems } = parseMeta('---\nsubgroup: Methods\ncreated: 3 May\n---\n')
+  it('ignores a subgroup without a group, and says so', () => {
+    const { meta, problems } = parseMeta('---\nsubgroup: Methods\n---\n')
     expect(meta.subgroup).toBe('')
-    expect(meta.created).toBe('')
-    expect(problems).toEqual(['A subgroup without a group', 'Invalid created date: 3 May'])
+    expect(problems).toEqual(['A subgroup without a group'])
   })
 
   it('reads quoted titles and tidies group spacing', () => {
@@ -50,14 +47,11 @@ describe('updateHead', () => {
   it('creates a block in the canonical order', () => {
     expect(
       updateHead('', {
-        created: '2026-09-25',
         title: 'Methods: participants',
         group: 'Thesis',
         pinned: true
       })
-    ).toBe(
-      "---\ntitle: 'Methods: participants'\ngroup: Thesis\npinned: true\ncreated: 2026-09-25\n---\n\n"
-    )
+    ).toBe("---\ntitle: 'Methods: participants'\ngroup: Thesis\npinned: true\n---\n\n")
   })
 
   it('changes only the keys it is given and keeps unknown keys', () => {
@@ -74,7 +68,7 @@ describe('updateHead', () => {
     const next = updateHead(head, { group: '' })
     expect(parseMeta(next).meta).toMatchObject({ group: '', subgroup: '' })
     expect(next).not.toContain('subgroup')
-    const ungrouped = updateHead('---\ncreated: 2026-01-01\n---\n', { subgroup: 'Methods' })
+    const ungrouped = updateHead('---\nfoo: bar\n---\n', { subgroup: 'Methods' })
     expect(ungrouped).not.toContain('subgroup')
   })
 
@@ -85,9 +79,9 @@ describe('updateHead', () => {
     expect(next).toContain('group: Thesis')
   })
 
-  it('writes the created date and pinned flag as plain values', () => {
-    const next = updateHead('', { created: '2026-09-25', pinned: true })
-    expect(parseMeta(next).meta).toMatchObject({ created: '2026-09-25', pinned: true })
+  it('writes the pinned flag as a plain value', () => {
+    const next = updateHead('', { pinned: true })
+    expect(parseMeta(next).meta).toMatchObject({ pinned: true })
     expect(next).toContain('pinned: true\n')
   })
 })

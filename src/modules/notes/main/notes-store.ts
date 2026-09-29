@@ -12,7 +12,6 @@ import { parseHead } from '@shared/front-matter'
 import {
   NEW_NOTE_BODY,
   applyChanges,
-  isValidDate,
   parseMeta,
   splitNote,
   updateHead,
@@ -38,8 +37,6 @@ interface NotesStoreOptions {
   dirFor: (workspace: NoteWorkspace) => string
   /** Moves a file to the operating system's Trash (Electron's `shell.trashItem`). Injected so tests need no Electron. */
   trash: (path: string) => Promise<void>
-  /** Today's date as YYYY-MM-DD, for a new note's `created`. Injected for tests. */
-  today: () => string
 }
 
 function checkWorkspace(workspace: string): NoteWorkspace {
@@ -67,9 +64,6 @@ function checkPatch(patch: MetaPatch): void {
   if (patch.pinned !== undefined && typeof patch.pinned !== 'boolean') {
     throw new NoteError('Pinned must be true or false')
   }
-  if (patch.created !== undefined && patch.created !== '' && !isValidDate(patch.created)) {
-    throw new NoteError(`Invalid created date: ${patch.created}`)
-  }
 }
 
 /**
@@ -82,13 +76,11 @@ export class NotesStore {
   private readonly db: Database
   private readonly dirFor: (workspace: NoteWorkspace) => string
   private readonly trash: (path: string) => Promise<void>
-  private readonly today: () => string
 
-  constructor({ db, dirFor, trash, today }: NotesStoreOptions) {
+  constructor({ db, dirFor, trash }: NotesStoreOptions) {
     this.db = db
     this.dirFor = dirFor
     this.trash = trash
-    this.today = today
   }
 
   private pathOf(ref: NoteRef): string {
@@ -101,9 +93,10 @@ export class NotesStore {
     const title = (input.title ?? '').trim()
     const rows = listNoteRows(this.db, workspace)
     const names = resolveNames(rows, input.group ?? '', input.subgroup ?? '')
-    const patch: MetaPatch = { title, ...names, created: this.today() }
+    const patch: MetaPatch = { title, ...names }
     checkPatch(patch)
-    const head = updateHead('', patch)
+    // A note with nothing to record starts with no front matter block at all.
+    const head = Object.values(patch).some((v) => v) ? updateHead('', patch) : ''
     const body = input.body ?? NEW_NOTE_BODY
 
     const dir = this.dirFor(workspace)
@@ -258,6 +251,7 @@ export class NotesStore {
     if (!note.exists) return false
     const { head, body } = splitNote(note.content)
     const { meta } = parseMeta(head)
+    // `created` is no longer kept, but an older empty note may still carry it: that is not something to keep.
     const owned = ['title', 'group', 'subgroup', 'pinned', 'created']
     const foreign = parseHead(head)?.entries.some((e) => !owned.includes(e.key)) ?? false
     if (meta.title || meta.pinned || body.trim() !== '' || foreign) return false

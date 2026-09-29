@@ -14,7 +14,6 @@ const row = (id: string, over: Partial<NoteIndexRow> = {}): NoteIndexRow => ({
   group: 'Thesis',
   subgroup: 'Methods',
   pinned: true,
-  created: '2026-09-03',
   edited: 100,
   firstLine: 'First',
   excerpt: 'First and more',

@@ -33,7 +33,6 @@ export function buildIndexRow(
     group: meta.group,
     subgroup: meta.subgroup,
     pinned: meta.pinned,
-    created: meta.created,
     edited: Math.floor(edited),
     firstLine: firstLineOf(body),
     excerpt: markdownToExcerpt(body, SEARCH_TEXT_LENGTH),

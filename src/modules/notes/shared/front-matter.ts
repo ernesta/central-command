@@ -1,6 +1,5 @@
 import {
   asText,
-  isValidDate,
   parseHead,
   readValue,
   splitNote,
@@ -34,17 +33,12 @@ export function parseMeta(head: string): ParsedMeta {
     subgroup = ''
   }
 
-  const created = asText(value('created')).trim()
-  const createdOk = isValidDate(created)
-  if (created && !createdOk) problems.push(`Invalid created date: ${created}`)
-
   return {
     meta: {
       title: asText(value('title')).trim(),
       group,
       subgroup,
-      pinned: /^true$/i.test(asText(value('pinned')).trim()),
-      created: createdOk ? created : ''
+      pinned: /^true$/i.test(asText(value('pinned')).trim())
     },
     problems
   }
@@ -54,7 +48,7 @@ export function parseMeta(head: string): ParsedMeta {
 
 export type MetaPatch = { [K in keyof NoteMeta]?: NoteMeta[K] }
 
-const ORDER: (keyof NoteMeta)[] = ['title', 'group', 'subgroup', 'pinned', 'created']
+const ORDER: (keyof NoteMeta)[] = ['title', 'group', 'subgroup', 'pinned']
 
 /**
  * Apply `patch` to a note's head and return the new head. Only the keys in the patch are touched: their
@@ -75,7 +69,7 @@ export function updateHead(head: string, patch: MetaPatch): string {
   if (!group && ('group' in patch || 'subgroup' in patch)) changes.subgroup = null
   return updateHeadKeys(head, changes, {
     order: ORDER,
-    style: (key) => (key === 'created' || key === 'pinned' ? 'plain' : 'auto')
+    style: (key) => (key === 'pinned' ? 'plain' : 'auto')
   })
 }
 

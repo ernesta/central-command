@@ -16,7 +16,6 @@ describe('buildIndexRow', () => {
       group: 'Thesis',
       subgroup: 'Design',
       pinned: true,
-      created: '2026-09-03',
       edited: 1_700_000_000_000,
       firstLine: 'Participants',
       excerpt: 'Participants Schools were recruited through Luminos.',

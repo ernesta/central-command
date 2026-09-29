@@ -8,8 +8,7 @@
  *   npm run import:notes -- --vault ~/path/to/vault --apply    # creates the new note files
  *
  * Every note arrives ungrouped; you group them afterwards. The text is copied exactly as it is, except that
- * `[[wiki links]]` become plain text (`[[Note]]` is `Note`, `[[Note|Shown]]` is `Shown`); a note with an `![[embed]]` is left out and reported. The front matter gets a `title` (the file name), a `created` date (when the
- * file was created) and `imported-from` (its place in the vault), each only if the note does not already have one;
+ * `[[wiki links]]` become plain text (`[[Note]]` is `Note`, `[[Note|Shown]]` is `Shown`); a note with an `![[embed]]` is left out and reported. The front matter gets a `title` (the file name) and `imported-from` (its place in the vault), each only if the note does not already have one;
  * anything the note already had in its front matter is kept. Each converted note is checked against its source
  * (same text, same TODOs and boxes, same front matter lines); a note that fails is left out and reported.
  *
@@ -20,12 +19,11 @@
  * Options: --workspace research|work (default research), --folders "Data Sources,Ideas,Thesis,Placement" (which vault
  * folders to read), --notes <dir> (default: ~/CentralCommand/notes/notes/<workspace>).
  */
-import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
+import { existsSync, readFileSync, readdirSync } from 'fs'
 import { homedir } from 'os'
 import { join, resolve } from 'path'
 import { createNoteFileExclusive } from '../src/main/notes/guarded-file'
 import { splitNote } from '../src/modules/notes/shared/front-matter'
-import { isoDate } from '../src/shared/dates'
 import {
   IMPORT_FOLDERS,
   WORK_IMPORT_FOLDERS,
@@ -105,12 +103,9 @@ for (const folder of folders) {
     if (entry.isDirectory()) {
       deeper.push(`${folder}/${entry.name}  (${markdownBelow(path).length} notes)`)
     } else if (entry.name.endsWith('.md')) {
-      const stats = statSync(path)
-      const born = stats.birthtimeMs > 0 ? stats.birthtimeMs : stats.mtimeMs
       sources.push({
         path: `${folder}/${entry.name}`,
-        content: readFileSync(path, 'utf8'),
-        created: isoDate(born)
+        content: readFileSync(path, 'utf8')
       })
     } else ignored.push(`${folder}/${entry.name}`)
   }
@@ -125,9 +120,7 @@ if (topLevel) {
       ignored.push(entry.name)
       continue
     }
-    const stats = statSync(path)
-    const born = stats.birthtimeMs > 0 ? stats.birthtimeMs : stats.mtimeMs
-    sources.push({ path: entry.name, content: readFileSync(path, 'utf8'), created: isoDate(born) })
+    sources.push({ path: entry.name, content: readFileSync(path, 'utf8') })
   }
 }
 const elsewhere = readdirSync(vault, { withFileTypes: true })

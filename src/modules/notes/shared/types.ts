@@ -14,8 +14,6 @@ export interface NoteMeta {
   /** '' when there is none; only ever set together with a group (two levels at most). */
   subgroup: string
   pinned: boolean
-  /** YYYY-MM-DD, or '' when missing or malformed. */
-  created: string
 }
 
 /** Which note: the folder (workspace) and the file's base name, e.g. "Methods participants". */
@@ -32,7 +30,6 @@ export interface NoteIndexRow {
   group: string
   subgroup: string
   pinned: boolean
-  created: string
   /** The file's modified time in milliseconds, so edits made in another tool show too. */
   edited: number
   /** The first line of text in the note, without Markdown marks; shown when the note has no title. */

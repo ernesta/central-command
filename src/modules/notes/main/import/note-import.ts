@@ -17,8 +17,6 @@ export interface SourceNote {
   /** Relative to the vault, with `/`: "Data Sources/ASER.md". */
   path: string
   content: string
-  /** When the file was created (YYYY-MM-DD), or '' when the vault does not say. */
-  created: string
 }
 
 export type PlanItem =
@@ -38,7 +36,7 @@ export type PlanItem =
   /** A converted note that did not match its source, so it is left out. */
   | { status: 'failed-check'; source: SourceNote; problems: string[] }
 
-const ORDER = ['title', 'group', 'subgroup', 'pinned', 'created', 'imported-from']
+const ORDER = ['title', 'group', 'subgroup', 'pinned', 'imported-from']
 
 /** The note's name without the folder and the extension. */
 export function titleOf(path: string): string {
@@ -65,7 +63,7 @@ export function stripWikiLinks(text: string): { text: string; count: number } {
 
 /**
  * The note as it will be written: the body is copied as it is except that wiki links become plain text, and the front matter gets a title (the
- * file name), a created date and where it came from, each only if the note does not already say so. Everything
+ * file name) and where it came from, each only if the note does not already say so. Everything
  * the note already had in its front matter stays as it was. The note arrives ungrouped.
  */
 export function convertNote(source: SourceNote): {
@@ -78,11 +76,10 @@ export function convertNote(source: SourceNote): {
   const title = titleOf(source.path)
   const patch: Record<string, Value> = {}
   if (!existing.has('title')) patch.title = title
-  if (!existing.has('created') && source.created) patch.created = source.created
   if (!existing.has('imported-from')) patch['imported-from'] = source.path
   const newHead = updateHeadKeys(head, patch, {
     order: ORDER,
-    style: (key) => (key === 'created' ? 'plain' : 'auto')
+    style: () => 'auto'
   })
   const stripped = stripWikiLinks(body)
   return { markdown: newHead + stripped.text, title, linksStripped: stripped.count }

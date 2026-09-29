@@ -8,7 +8,6 @@ interface Row {
   group_name: string
   subgroup: string
   pinned: number
-  created: string
   edited: number
   first_line: string
   excerpt: string
@@ -24,7 +23,6 @@ function toIndexRow(row: Row): NoteIndexRow {
     group: row.group_name,
     subgroup: row.subgroup,
     pinned: row.pinned === 1,
-    created: row.created,
     edited: row.edited,
     firstLine: row.first_line,
     excerpt: row.excerpt,
@@ -36,13 +34,13 @@ function toIndexRow(row: Row): NoteIndexRow {
 /** Insert or replace the index row for one note file. */
 export function upsertNote(db: Database, row: NoteIndexRow): void {
   db.prepare(
-    `INSERT INTO notes (workspace, note_id, title, group_name, subgroup, pinned, created, edited,
+    `INSERT INTO notes (workspace, note_id, title, group_name, subgroup, pinned, edited,
                         first_line, excerpt, problems, content_hash)
-     VALUES (@workspace, @id, @title, @group, @subgroup, @pinned, @created, @edited,
+     VALUES (@workspace, @id, @title, @group, @subgroup, @pinned, @edited,
              @firstLine, @excerpt, @problems, @contentHash)
      ON CONFLICT (workspace, note_id) DO UPDATE SET
        title = excluded.title, group_name = excluded.group_name, subgroup = excluded.subgroup,
-       pinned = excluded.pinned, created = excluded.created, edited = excluded.edited,
+       pinned = excluded.pinned, edited = excluded.edited,
        first_line = excluded.first_line, excerpt = excluded.excerpt, problems = excluded.problems,
        content_hash = excluded.content_hash`
   ).run({ ...row, pinned: row.pinned ? 1 : 0, problems: JSON.stringify(row.problems) })

@@ -9,7 +9,6 @@ const note = (over: Partial<NoteIndexRow>): NoteIndexRow => ({
   group: 'Thesis',
   subgroup: '',
   pinned: false,
-  created: '2026-03-04',
   edited: new Date(2026, 8, 25, 12).getTime(),
   firstLine: '',
   excerpt: '',
