@@ -1,4 +1,4 @@
-import { rm } from 'fs/promises'
+import { rm, stat, utimes } from 'fs/promises'
 import { createNoteFileExclusive } from './guarded-file'
 
 interface MoveOptions {
@@ -23,10 +23,13 @@ export async function moveNoteFile({
   pickTarget,
   trash
 }: MoveOptions): Promise<string> {
+  // "Edited" is the file's modified time, so the copy keeps the original's: a move is not an edit.
+  const { atime, mtime } = await stat(sourcePath)
   for (let attempt = 0; attempt < 50; attempt++) {
     const { id, path } = await pickTarget()
     if (!(await createNoteFileExclusive(path, content))) continue
     try {
+      await utimes(path, atime, mtime)
       await trash(sourcePath)
     } catch (error) {
       await rm(path, { force: true })

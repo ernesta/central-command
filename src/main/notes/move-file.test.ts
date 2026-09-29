@@ -1,4 +1,6 @@
 import {
+  statSync,
+  utimesSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -42,6 +44,18 @@ const pick = (): Promise<{ id: string; path: string }> => {
 }
 
 describe('moveNoteFile', () => {
+  it('keeps the original’s modified time, so a move does not look like an edit', async () => {
+    const then = new Date('2026-03-04T12:00:00Z')
+    utimesSync(join(from, 'A.md'), then, then)
+    await moveNoteFile({
+      sourcePath: join(from, 'A.md'),
+      content: 'mine\n',
+      pickTarget: pick,
+      trash
+    })
+    expect(statSync(join(to, 'A.md')).mtimeMs).toBe(then.getTime())
+  })
+
   it('creates the file in the other folder and trashes the original', async () => {
     const id = await moveNoteFile({
       sourcePath: join(from, 'A.md'),

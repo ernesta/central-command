@@ -26,14 +26,10 @@ function footer(props: Omit<Props, 'children'>): string {
 }
 
 describe('EditorCard', () => {
-  it('shows created, edited and the word count, in that order', () => {
-    expect(
-      footer({ text: 'one two three', created: '2026-03-04', edited: noon(2026, 9, 25) })
-    ).toBe('Created Mar 4, 2026 · Edited Sep 25, 2026 · 3 words')
-  })
-
-  it('leaves Created out for notes that do not record it', () => {
-    expect(footer({ text: 'one', edited: noon(2026, 9, 25) })).toBe('Edited Sep 25, 2026 · 1 word')
+  it('shows edited and the word count, in that order', () => {
+    expect(footer({ text: 'one two three', edited: noon(2026, 9, 25) })).toBe(
+      'Edited Sep 25, 2026 · 3 words'
+    )
   })
 
   it('leaves Edited out until it is known, and still says 0 words for an empty note', () => {

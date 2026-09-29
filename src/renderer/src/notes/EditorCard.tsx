@@ -16,8 +16,6 @@ interface EditorCardProps {
   children: (findSetup: (editor: Editor) => Editor) => React.ReactNode
   /** The text as it stands now, for the word count. */
   text: string
-  /** When the note was made, as `YYYY-MM-DD`, for kinds of note that record it. */
-  created?: string
   /** When the file was last changed (milliseconds); null when not known yet. */
   edited: number | null
   /** Where saving stands; shown first on the line ("Saved · Edited …"). Leave out for a card that never saves. */
@@ -29,14 +27,13 @@ interface EditorCardProps {
 }
 
 /**
- * The window every notes editor sits in: a white page with a quiet line of dates and the word count under
+ * The window every notes editor sits in: a white page with a quiet line with the save status, the date it was last edited and the word count under
  * it. Find (Cmd-F) takes over that line while it is open, since the sticky footer is where it reads as part
  * of the document's own chrome rather than a floating dialog.
  */
 export function EditorCard({
   children,
   text,
-  created,
   edited,
   save,
   reloaded = false,
@@ -46,7 +43,6 @@ export function EditorCard({
   const words = useMemo(() => wordCount(text), [text])
   const status = save ? saveStatusText(save, reloaded, hasContent) : ''
   const parts = [
-    created ? `Created ${formatDate(created)}` : null,
     edited === null ? null : `Edited ${formatDate(isoDate(edited))}`,
     wordCountLabel(words)
   ].filter((part): part is string => part !== null)

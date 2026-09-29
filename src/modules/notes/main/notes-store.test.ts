@@ -142,6 +142,15 @@ describe('move', () => {
     expect(listNoteRows(db, 'work').map((r) => r.id)).toEqual(['Plan'])
   })
 
+  it('keeps when the note was last edited', async () => {
+    const made = await store.create({ workspace: 'research', title: 'Plan' })
+    const then = new Date('2026-03-04T12:00:00Z')
+    utimesSync(join(dir, 'Plan.md'), then, then)
+    const moved = await store.move(made.ref, 'work')
+    expect(moved.edited).toBe(then.getTime())
+    expect(listNoteRows(db, 'work')[0].edited).toBe(then.getTime())
+  })
+
   it('never replaces a note already there: it takes the next free name', async () => {
     await store.create({ workspace: 'work', title: 'Plan', body: 'theirs\n' })
     const mine = await store.create({ workspace: 'research', title: 'Plan', body: 'mine\n' })

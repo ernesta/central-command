@@ -242,13 +242,7 @@ function NoteView({
 
       <div className={styles.split}>
         <div className={styles.doc} ref={docRef}>
-          <EditorCard
-            text={body}
-            created={meta.created || undefined}
-            edited={updatedAt}
-            save={save}
-            reloaded={reloadedFromDisk}
-          >
+          <EditorCard text={body} edited={updatedAt} save={save} reloaded={reloadedFromDisk}>
             {(findSetup) => (
               <NotesEditor
                 key={snapshot.editorKey}
