@@ -1179,3 +1179,18 @@ own Meetings, People and person pages were re-driven the same way and are unchan
 - **Addresses are always links.** A typed `https://…` or `www.…` becomes a link at the space after it (trailing punctuation stays outside;
   not in inline code); a pasted address with nothing selected is inserted as a link. Addresses already in a file load as links (the editor
   writes them back as `<https://…>`, as before). Enter straight after a typed address does not convert it; the next space or a paste does.
+
+## Notes for Work (29 Sep 2026)
+
+- **Same pattern as Meetings.** `createNotesModule(workspace)` (`src/modules/notes/index.ts`) is registered once per workspace; every route
+  helper in `notes-paths.ts` takes a workspace and the pages read it from the URL (`useNotesWorkspace`), or from the row they show. Work's
+  notes are files in `notes/notes/work/`, indexed in the same table (the `workspace` column and the main-process code already handled it;
+  only the folder creation and watching had to be switched on). `NotePage` is keyed by workspace and id, so the same file name in the other
+  workspace can never reuse a session.
+- **Quick capture and its shortcut listing belong to the app,** so only the Research instance carries them (two copies would make two notes per
+  key press). Cmd-Shift-N makes the note in the workspace being looked at (Research away from Work). The command palette's and Dock menu's
+  "New note" still start in Research: they have no page to ask.
+- **Search:** Work's results are headed "Work notes" (and "Work meetings"); the same heading twice would also have shared a React key. `in:notes`
+  searches both workspaces. Groups are per workspace (each list derives its own).
+- **Checked** in the built app and dev mode on a scratch library: a note from the Work landing, Cmd-Shift-N in Work, both in `notes/notes/work/`
+  and none in Research, search, the back link. Not done: Training and Reading lists for Work (still Research-only), and no importer for Work notes.
