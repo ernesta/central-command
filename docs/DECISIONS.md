@@ -1189,8 +1189,17 @@ own Meetings, People and person pages were re-driven the same way and are unchan
   workspace can never reuse a session.
 - **Quick capture and its shortcut listing belong to the app,** so only the Research instance carries them (two copies would make two notes per
   key press). Cmd-Shift-N makes the note in the workspace being looked at (Research away from Work). The command palette's and Dock menu's
-  "New note" still start in Research: they have no page to ask.
+  "New note" still start in Research: they have no page to ask (changed the same day: see below).
 - **Search:** Work's results are headed "Work notes" (and "Work meetings"); the same heading twice would also have shared a React key. `in:notes`
   searches both workspaces. Groups are per workspace (each list derives its own).
 - **Checked** in the built app and dev mode on a scratch library: a note from the Work landing, Cmd-Shift-N in Work, both in `notes/notes/work/`
   and none in Research, search, the back link. Not done: Training and Reading lists for Work (still Research-only), and no importer for Work notes.
+- **Quick actions follow the workspace (same day, at the user's request).** The command palette's and Dock menu's "New note" and "New meeting"
+  start in the workspace of the page (`quickActionWorkspace`); on a page outside any workspace (search results, Settings) they use the
+  workspace last visited, and Life counts as Research. "New training entry" is always Research (Training is Research-only). A Work meeting
+  starts with the series Other (`defaultSeries`, shared with the New meeting button).
+- **Work notes imported** (`npm run import:notes -- --vault … --workspace work`, applied 29 Sep 2026 to the real library, 6 notes, all
+  ungrouped, as for Research): the loose `Document Automation Notes` and the four notes in `Admin & Compliance` plus `Luminos/Taxpayer
+Reference`. The Meetings folder is left to `import:work-meetings`. **The Admin & Compliance notes hold account, tax and insurance numbers,
+  and every note's text is searchable**, so they can show in search results; delete or keep them as you like. Same safety checks as the
+  Research import; a second run imports nothing.

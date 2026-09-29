@@ -11,7 +11,8 @@ ask the user.
   N-API prebuilds so no Electron rebuild is needed)
 - `npm run lint`, `npm run typecheck`, `npm run format`
 - `npm run import:obsidian -- --vault <path> [--apply]`: import reading notes from an Obsidian vault (dry run by default)
-- `npm run import:notes -- --vault <path> [--apply]`: import the free notes (Data Sources, Ideas, Thesis, Placement) from an Obsidian
+- `npm run import:notes -- --vault <path> [--workspace work] [--apply]`: import the free notes (Data Sources, Ideas, Thesis, Placement; with
+  `--workspace work`, the loose notes plus Admin & Compliance) from an Obsidian
   vault into Notes, all ungrouped (dry run by default; only ever creates files)
 - `npm run import:meetings -- --vault <path> --meeting-notes <path> [--apply] [--add-people]`: import meeting notes from
   Obsidian and the Word log and notes (dry run by default; macOS only)
