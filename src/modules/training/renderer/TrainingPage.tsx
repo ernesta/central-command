@@ -101,7 +101,7 @@ export function TrainingPage(): React.JSX.Element {
       ) : (
         <EmptyState
           heading={`No training in ${academicYearLabel(year)}`}
-          message="Create an entry, or choose another academic year."
+          message="Create an entry, or choose another year."
         />
       )
   } else if (visible.length === 0) {

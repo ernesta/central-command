@@ -99,7 +99,7 @@ export function TrainingLanding(): React.JSX.Element {
         <>
           <LandingSection
             id="year"
-            label="Academic year"
+            label="Year"
             aside={<AcademicYearSelect year={year} years={years} onChange={setYear} />}
           >
             <HoursStrip

@@ -13,7 +13,7 @@ export function AcademicYearSelect({
 }): React.JSX.Element {
   return (
     <Select
-      label="Academic year"
+      label="Year"
       value={String(year)}
       options={years.map((y) => ({ value: String(y), label: academicYearLabel(y) }))}
       onChange={(value) => onChange(Number(value))}

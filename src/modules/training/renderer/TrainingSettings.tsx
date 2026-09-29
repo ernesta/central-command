@@ -42,7 +42,7 @@ export function TrainingSettings(): React.JSX.Element {
           Yearly training aim (hours)
         </label>
         <p className={styles.help}>
-          Training shows the hours you have done towards this each academic year.
+          Training shows the hours you have done towards this each year.
         </p>
         <Input
           id="training-aim"
