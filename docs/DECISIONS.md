@@ -887,7 +887,7 @@ kind of control across the app.
   became `{(findSetup) => <NotesEditor ... findSetup={findSetup} />}`.
 - **This moved the bar's lifetime with it, which needed a real fix, not just a relocation.** Cmd-F used to live
   inside `NotesEditor`'s own `Inner`, which is remounted (a fresh `useNotesFind()`) every time `key=
-  {snapshot.editorKey}` changes (a reload from disk). Now that `useNotesFind` lives in `EditorCard`, which does
+{snapshot.editorKey}` changes (a reload from disk). Now that `useNotesFind` lives in `EditorCard`, which does
   not remount on that key, the same controller and its `view` reference would persist across a swap and go
   stale. Fixed at the true source of the lifetime, not the React tree: `notesFindPlugin`'s `view()` now returns
   `{ destroy: () => bridge.detach() }`, so whenever a ProseMirror `EditorView` is actually destroyed (a reload,
@@ -994,7 +994,7 @@ for review, the same way every other module's decisions are.
   read like). Typing it live is escaped by Milkdown already (see "Notes editor" and the wiki-link stripping in
   "Importing notes from Obsidian", above) — expected, and worked around by never expecting it to be typed by
   hand — but a second, worse problem only showed up driving the built app: even a citekey inserted programmatically
-  by "Attach a reading" survived the *first* render, but Milkdown's Markdown serialiser escapes a bare `[` on the
+  by "Attach a reading" survived the _first_ render, but Milkdown's Markdown serialiser escapes a bare `[` on the
   way back out (`**\[\[citekey]]**`), so the very next edit anywhere in the document would have silently turned
   every linked entry in the file back into an unrecognised one on its next save. A quick check loading both forms
   into a real Milkdown editor and reading `getMarkdown()` back confirmed it, and that `@citekey` round-trips
@@ -1077,7 +1077,7 @@ around. Findings and decisions:
 - **The format varies file to file far more than Research's.** Only one of the 19 files uses the `**TODO(XX)**:`
   initials convention Research does; most instead write `**TODO (Full Name)**:` (a space before the parenthesis,
   a person's name instead of initials) or use no TODO marker at all, writing free-form `**Decision**:` / `**Next
-  step**:` bullets, or even plain `Decision: …` with no bold. Section headings vary too: `## Action items` (the
+step**:` bullets, or even plain `Decision: …` with no bold. Section headings vary too: `## Action items` (the
   sample), `## Agenda` (Notes only, no action items), and a single-line `## Topic` with no Agenda or Action items
   section at all. None of this needed new machinery: `parseObsidianMeeting` (built for Research's own
   `**Date**:`/`**Attendees**:` header, in `meeting-import.ts`) already reads this shape as-is, and the app's
@@ -1120,7 +1120,7 @@ around. Findings and decisions:
   folder, a route and a landing page from the same components") describes what `--apply` will need somewhere to
   put these files and a page to show them on; it turned out to be a materially bigger piece of work than the
   importer itself, because the Meetings renderer is not actually workspace-parameterised today — `workspace:
-  'research'` is hard-coded through `MeetingPage`, `PersonPage`, the session hooks and `meetings-paths.ts`'s own
+'research'` is hard-coded through `MeetingPage`, `PersonPage`, the session hooks and `meetings-paths.ts`'s own
   `meetingsBase`, not read from the route. Building that properly (threading a real workspace through every one
   of those, not just adding `'work'` to `ACTIVE_WORKSPACES`) is its own piece of work, separate from "write an
   importer", and risks breaking Research's own Meetings if rushed. Left undone on purpose, flagged here rather
@@ -1156,3 +1156,23 @@ a scratch library with a meeting created from each workspace's own "New meeting"
 added by hand, and the person's page confirmed to show both, oldest/newest ordering correct, and the link
 from the page back into the Work meeting landing on `/work/meetings/m/…` with the Work pill active — Research's
 own Meetings, People and person pages were re-driven the same way and are unchanged.
+
+## Editor feedback round (29 Sep 2026)
+
+- **Save status lives in the card's facts line** ("Saved · Created … · Edited … · N words"), not above the editor. `EditorCard` takes
+  `save`, `reloaded` and `hasContent`; the wording is `saveStatusText` (`notes/save-status.ts`), which replaced six copies of `statusText`.
+  A failed save turns the word red. **Created** is still only shown for Notes: it is recorded in their front matter, and a file's own
+  creation time is lost by the write-then-rename save. Meetings and Training show their own date in their fields. Adding a `created` key
+  to the other kinds of file is the way to get it everywhere, if wanted.
+- **Training plan** now has the same arrangement as a note (text, outline on the right, via the shared `NoteOutline`; `planOutline` was
+  removed) and its folder button is the same icon button and "Show in Finder" label as the Files panel of a training entry.
+- **Links** (`notes-links.ts`): typing `[text](address)` makes a link; pasting a web address over selected text links it (Slack-style;
+  a plain paste never does, because it arrives as a made-up event and `handlePaste` ignores untrusted ones). While Cmd/Ctrl is held the
+  pointer over a link becomes a hand (`data-open-links` on the editor).
+- **Paste without formatting (Cmd-Shift-V)** never worked because Electron's default Edit menu owns that chord ("Paste and Match Style") and
+  the page then gets an ordinary paste with the HTML still on the clipboard. The main process now catches the chord in `before-input-event`
+  (`paste-plain.ts`) and sends the clipboard's text to the renderer (`app.onPastePlain`), which pastes it as plain text into the focused
+  editor or text field (`usePastePlain`). Checked by sending the IPC message in the built app; the physical key chord itself cannot be
+  driven by Playwright (menu accelerators are not synthetic key events), so try it by hand.
+- **Uneven bullet spacing**: a list nested in an item kept the top-level list's bottom margin, so the gap after an item depended on
+  whether it had children. Nested lists now have no margin, and a second paragraph in an item has a small one.
