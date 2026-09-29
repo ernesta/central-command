@@ -13,7 +13,7 @@ import { markdownToExcerpt } from '@shared/text'
 import { deriveGroups } from '../shared/groups'
 import { canPin } from '../shared/pinning'
 import { UNTITLED } from '../shared/query'
-import type { NoteRef } from '../shared/types'
+import type { NoteRef, NoteWorkspace } from '../shared/types'
 import { GroupField } from './GroupField'
 import { NoteOutline } from './NoteOutline'
 import { WorkspaceSelect, type MovableWorkspace } from '@renderer/components/WorkspaceSelect'
@@ -29,10 +29,15 @@ export interface NoteLocationState {
 
 /** One note: its title, group and pin above the text. */
 export function NotePage(): React.JSX.Element {
+  // A move to the other workspace starts the page afresh: the names the note had in the first one mean nothing in the second.
+  const workspace = useNotesWorkspace()
+  return <NotePageIn key={workspace} workspace={workspace} />
+}
+
+function NotePageIn({ workspace }: { workspace: NoteWorkspace }): React.JSX.Element {
   const { id = '' } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
-  const workspace = useNotesWorkspace()
   // Changing the title renames the file, and so changes the id in the address. The page keeps its state
   // (and the cursor) by staying mounted under the id it opened with: `ids` are the names this note has
   // had, so the address moving from one to the next does not remount it.

@@ -13,7 +13,7 @@ import { NotesEditor } from '@renderer/notes/NotesEditor'
 import { ownerOptions } from '../shared/people'
 import { meetingHeading } from '../shared/time'
 import { appendTopic, parseTopics, type Topic } from '../shared/topics'
-import type { MeetingRef, Person } from '../shared/types'
+import type { MeetingRef, MeetingWorkspace, Person } from '../shared/types'
 import { meetingRoute, meetingsBase, useMeetingsWorkspace } from './meetings-paths'
 import { MetaFields } from './MetaFields'
 import { TopicsPanel } from './TopicsPanel'
@@ -23,8 +23,13 @@ import styles from './MeetingPage.module.css'
 
 /** One meeting: its details, its note (Summary, Previous TODOs, Notes) and the topics panel. */
 export function MeetingPage(): React.JSX.Element {
-  const { id = '' } = useParams()
+  // A move to the other workspace starts the page afresh: the names the item had in the first one mean nothing in the second.
   const workspace = useMeetingsWorkspace()
+  return <MeetingPageIn key={workspace} workspace={workspace} />
+}
+
+function MeetingPageIn({ workspace }: { workspace: MeetingWorkspace }): React.JSX.Element {
+  const { id = '' } = useParams()
   const navigate = useNavigate()
   // Changing the date or series renames the file, and so changes the id in the address. The page keeps
   // its state (and the cursor) by staying mounted under the id it opened with: `ids` are the names this
