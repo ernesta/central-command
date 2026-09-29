@@ -106,6 +106,15 @@
 .wrap :global(.ProseMirror) li > p {
   margin: 0;
 }
+/* A list inside an item (and a second paragraph in it) must not add the gap a top-level list has, or the space
+   between bullets varies with what is nested under them. */
+.wrap :global(.ProseMirror) li > ul,
+.wrap :global(.ProseMirror) li > ol {
+  margin: 0;
+}
+.wrap :global(.ProseMirror) li > p + p {
+  margin-top: 0.4em;
+}
 .wrap :global(.ProseMirror) blockquote {
   margin: 0 0 0.9em;
   padding: 0 0 0 1em;
@@ -142,6 +151,10 @@
   color: var(--accent);
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+/* Cmd (Ctrl) held: a click opens the link, so the pointer says so (set by NotesEditor). */
+.wrap[data-open-links] :global(.ProseMirror) a {
+  cursor: pointer;
 }
 .wrap :global(.ProseMirror) table {
   width: 100%;

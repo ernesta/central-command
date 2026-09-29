@@ -4,6 +4,7 @@ import { commonmark } from '@milkdown/kit/preset/commonmark'
 import { gfm } from '@milkdown/kit/preset/gfm'
 import { listBackspaceKeymap } from './notes-list-keymap'
 import { notesChangeCtx, notesChangePlugin } from './notes-change-plugin'
+import { markdownLinkRule, pasteOverSelectionLink } from './notes-links'
 import { taskListToggle } from './notes-task-list'
 
 /**
@@ -37,6 +38,8 @@ export function withNotesPlugins(editor: Editor): Editor {
       .use(listBackspaceKeymap)
       .use(commonmark)
       .use(gfm)
+      .use(markdownLinkRule)
+      .use(pasteOverSelectionLink)
       .use(taskListToggle)
       .use(history)
       .use(notesChangeCtx)

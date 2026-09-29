@@ -64,6 +64,25 @@ function Inner({
     getEditorRef.current()?.action((ctx) => ctx.get(editorViewCtx).focus())
   }, [loading, autoFocus])
 
+  // Holding Cmd (Ctrl) turns a click on a link into "open it", so show the pointer for as long as it is held.
+  const wrapRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const show = (event: KeyboardEvent | MouseEvent): void => {
+      wrapRef.current?.toggleAttribute('data-open-links', event.metaKey || event.ctrlKey)
+    }
+    const hide = (): void => wrapRef.current?.removeAttribute('data-open-links')
+    window.addEventListener('keydown', show)
+    window.addEventListener('keyup', show)
+    window.addEventListener('mousemove', show)
+    window.addEventListener('blur', hide)
+    return () => {
+      window.removeEventListener('keydown', show)
+      window.removeEventListener('keyup', show)
+      window.removeEventListener('mousemove', show)
+      window.removeEventListener('blur', hide)
+    }
+  }, [])
+
   // Clicking the empty space around the text should still put the cursor in the note. A link is opened with Cmd (or
   // Ctrl) held: a plain click puts the cursor in it, as in any editor. The main process opens web addresses in the
   // browser and refuses anything else.
@@ -79,7 +98,7 @@ function Inner({
   }
 
   return (
-    <div className={styles.wrap} onBlur={onBlur} onClick={focusEditor}>
+    <div ref={wrapRef} className={styles.wrap} onBlur={onBlur} onClick={focusEditor}>
       {showPlaceholder && (
         <div className={styles.placeholder} aria-hidden>
           {placeholder}
