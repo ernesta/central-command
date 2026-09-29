@@ -109,8 +109,8 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   with Cmd-Option-F replace (Cmd-Return / Cmd-Shift-Return); **Reading lists** is a new module (a list is sections of
   entries, each linked to a reading or held as a placeholder citation, with an "Attach a reading…" picker); a page per
   person is built (their meetings, trainings, open TODOs, last-met/next-meeting, and links); and a Work meetings importer
-  was built and dry-run against the real vault but not applied (Work's own workspace wiring is a separate, bigger piece of
-  work than the importer, not yet started). Two real bugs were found only by driving the built app, not by reading code
+  was built and dry-run against the real vault (since then Work got its own Meetings module, `createMeetingsModule('work')`,
+  and the import was applied; `docs/DECISIONS.md`, "Work meetings import"). Two real bugs were found only by driving the built app, not by reading code
   (a citekey marker that Milkdown's own serialiser would have silently corrupted; a person's links silently failing to
   save because the IPC handler had never heard of the field) — both fixed. Full write-up in `docs/DECISIONS.md`; immediate
   TODOs for the user are at the top of `docs/ROADMAP.md`'s "For the user" list.

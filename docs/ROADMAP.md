@@ -425,7 +425,7 @@ the note".
    the last meeting's topics and its open TODOs.
 2. **Home page** first version, from the decided list in "Home" below: today's meetings, open TODOs due, pinned notes, training hours.
 3. **TODO overview:** every open `TODO(XX)` across meetings in one filterable list (by owner, series, year), each linking to its meeting.
-4. **Work workspace wiring:** Work's own Meetings module on the already-written importer, mirroring Research.
+4. ~~Work workspace wiring~~ **already built** (Work's Meetings, landing and import; found 29 Sep 2026). What Work still lacks is Notes, Training and Reading lists: each is Research-only today.
 5. **Backup and export:** one command that zips the data folder (notes, plans, people) to a chosen place, plus a "last backed up" line in Settings.
 6. **Unlinked mentions:** on a person's or note's page, meetings and notes that mention the name but do not link it.
 7. **Tags across modules:** one tag vocabulary for notes, readings and reading lists, with a filter row on each list.
