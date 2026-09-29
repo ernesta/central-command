@@ -16,6 +16,7 @@ import { UNTITLED } from '../shared/query'
 import type { NoteRef } from '../shared/types'
 import { GroupField } from './GroupField'
 import { NoteOutline } from './NoteOutline'
+import { WorkspaceSelect, type MovableWorkspace } from '@renderer/components/WorkspaceSelect'
 import { noteRoute, notesBase, useNotesWorkspace } from './notes-paths'
 import { useNoteSession } from './useNoteSession'
 import { useNotesList } from './useNotesList'
@@ -84,6 +85,22 @@ function NoteView({
   useDocumentTitle(meta.title)
 
   // Back goes to wherever the user came from (the landing page or a list); with no history, the landing page.
+  const [moving, setMoving] = useState(false)
+  const [moveError, setMoveError] = useState<string | null>(null)
+  const moveTo = async (target: MovableWorkspace): Promise<void> => {
+    setMoving(true)
+    setMoveError(null)
+    try {
+      await session.dispose() // saves anything pending first
+      const moved = await window.api.notes.move(session.getRef(), target)
+      void navigate(noteRoute(moved.ref.workspace, moved.ref.id), { replace: true })
+    } catch (e) {
+      setMoveError(ipcErrorMessage(e))
+      setMoving(false)
+      void session.start()
+    }
+  }
+
   const goBack = (): void =>
     void (location.key !== 'default' ? navigate(-1) : navigate(notesBase(noteRef.workspace)))
 
@@ -140,6 +157,11 @@ function NoteView({
           }
         />
         <div className={styles.actions}>
+          <WorkspaceSelect
+            value={noteRef.workspace}
+            disabled={moving}
+            onChange={(target) => void moveTo(target)}
+          />
           <GroupField
             group={meta.group}
             subgroup={meta.subgroup}
@@ -169,7 +191,7 @@ function NoteView({
         </div>
       </div>
 
-      {(conflict || error || deleteError || problems.length > 0) && (
+      {(conflict || error || deleteError || moveError || problems.length > 0) && (
         <div className={styles.notices}>
           {conflict && (
             <Notice
@@ -198,6 +220,11 @@ function NoteView({
               }
             >
               Couldn’t save this note: {error}
+            </Notice>
+          )}
+          {moveError && (
+            <Notice tone="error" onDismiss={() => setMoveError(null)}>
+              Couldn’t move the note: {moveError}
             </Notice>
           )}
           {deleteError && (

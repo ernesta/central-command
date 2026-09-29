@@ -7,6 +7,7 @@ import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
+import { WorkspaceSelect, type MovableWorkspace } from '@renderer/components/WorkspaceSelect'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { NotesEditor } from '@renderer/notes/NotesEditor'
 import { ownerOptions } from '../shared/people'
@@ -32,7 +33,7 @@ export function MeetingPage(): React.JSX.Element {
   const key = known.ids.includes(id) ? known.key : id
   return (
     <MeetingView
-      key={key}
+      key={`${workspace}/${key}`}
       meetingRef={{ workspace, id: key }}
       onRenamed={(newId) => {
         setKnown((prev) =>
@@ -136,6 +137,22 @@ function MeetingView({
     return () => clearTimeout(timer)
   }, [snapshot.editorKey, snapshot.status, jumpTo])
 
+  const [moving, setMoving] = useState(false)
+  const [moveError, setMoveError] = useState<string | null>(null)
+  const moveTo = async (target: MovableWorkspace): Promise<void> => {
+    setMoving(true)
+    setMoveError(null)
+    try {
+      await session.dispose() // saves anything pending first
+      const moved = await window.api.meetings.move(session.getRef(), target)
+      void navigate(meetingRoute(moved.ref.workspace, moved.ref.id), { replace: true })
+    } catch (e) {
+      setMoveError(ipcErrorMessage(e))
+      setMoving(false)
+      void session.start()
+    }
+  }
+
   const confirmAndDelete = async (): Promise<void> => {
     setDeleting(true)
     setDeleteError(null)
@@ -179,13 +196,18 @@ function MeetingView({
       <div className={styles.head}>
         <h1 className={styles.title}>{heading}</h1>
         <div className={styles.actions}>
+          <WorkspaceSelect
+            value={meetingRef.workspace}
+            disabled={moving}
+            onChange={(target) => void moveTo(target)}
+          />
           <Button size="small" className={styles.delete} onClick={() => setConfirmDelete(true)}>
             Delete meeting
           </Button>
         </div>
       </div>
 
-      {(conflict || error || deleteError || problems.length > 0) && (
+      {(conflict || error || deleteError || moveError || problems.length > 0) && (
         <div className={styles.notices}>
           {conflict && (
             <Notice
@@ -214,6 +236,11 @@ function MeetingView({
               }
             >
               Couldn’t save this meeting: {error}
+            </Notice>
+          )}
+          {moveError && (
+            <Notice tone="error" onDismiss={() => setMoveError(null)}>
+              Couldn’t move the meeting: {moveError}
             </Notice>
           )}
           {deleteError && (
