@@ -58,7 +58,7 @@ export function MeetingsPage(): React.JSX.Element {
     everything.map((r) => r.date),
     today
   )
-  const all = meetingsInYearOrPlanned(everything, year)
+  const all = meetingsInYearOrPlanned(everything, year, today)
   // A remembered series or attendee that no longer exists in the files must not hide everything.
   const query =
     rows === null

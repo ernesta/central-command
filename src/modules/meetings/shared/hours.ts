@@ -1,4 +1,4 @@
-import { inAcademicYear } from '@shared/academic-year'
+import { currentAcademicYear, inAcademicYear } from '@shared/academic-year'
 import { minutesPerSkill } from '@shared/skills'
 import { isUpcoming } from './query'
 import { durationMinutes } from './time'
@@ -18,12 +18,17 @@ export function meetingsInYear(rows: readonly MeetingIndexRow[], year: number): 
   return rows.filter((r) => inAcademicYear(r.date, year))
 }
 
-/** What the list shows for an academic year: its meetings, plus every planned meeting with no date yet. */
+/**
+ * What the list shows for an academic year: its meetings, plus, in the current year only, every
+ * planned meeting with no date yet (an earlier year must not show this year's plans).
+ */
 export function meetingsInYearOrPlanned(
   rows: readonly MeetingIndexRow[],
-  year: number
+  year: number,
+  today: string
 ): MeetingIndexRow[] {
-  return rows.filter((r) => r.date === '' || inAcademicYear(r.date, year))
+  const showPlanned = year === currentAcademicYear(today)
+  return rows.filter((r) => (r.date === '' ? showPlanned : inAcademicYear(r.date, year)))
 }
 
 /**

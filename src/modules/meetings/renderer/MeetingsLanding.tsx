@@ -17,7 +17,7 @@ import {
 import { Segmented } from '@renderer/components/Segmented'
 import { useAcademicYear } from '@renderer/state/use-academic-year'
 import { recentAndUpcoming, seriesLine, seriesSummaries } from '../shared/landing'
-import { meetingsInYear } from '../shared/hours'
+import { meetingsInYear, meetingsInYearOrPlanned } from '../shared/hours'
 import { mine, openTodos } from '../shared/open-todos'
 import { MODE_LABELS, initialsFor, isUpcoming } from '../shared/query'
 import { durationMinutes, formatDate, formatDuration, formatShortDate } from '../shared/time'
@@ -62,11 +62,11 @@ export function MeetingsLanding(): React.JSX.Element {
   const all = rows ?? []
   const open = openTodos(all)
   const shown = whose === 'mine' && me ? mine(open, me.initials) : open
-  const { upcoming, recent } = recentAndUpcoming(all, today)
   const { year, years, setYear } = useAcademicYear(
     all.map((r) => r.date),
     today
   )
+  const { upcoming, recent } = recentAndUpcoming(meetingsInYearOrPlanned(all, year, today), today)
   const summaries = seriesSummaries(
     meetingsInYear(all, year),
     today,

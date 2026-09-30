@@ -1307,5 +1307,5 @@ Reported as "last year's training list shows this year's training". Two separate
   academic year (tested in `rules.test.ts`). This was found first and was not what the user saw; it is still a real leak.
 - Not yet checked in the running app for the landing change, and it has no unit test (the fix is in the page, not a pure function).
   The user confirmed it fixed what they saw.
-- **Open:** Meetings has the same two patterns (`meetingsInYearOrPlanned` in `meetings/shared/hours.ts` includes planned meetings in
-  every year; `MeetingsLanding` passes all meetings to its own `recentAndUpcoming`). Left alone because the user only reported Training.
+- **Meetings fixed the same way** (same day, at the user's request): `meetingsInYearOrPlanned` takes `today`, and `MeetingsLanding` feeds
+  `recentAndUpcoming` the selected year's meetings. Open TODOs on the Meetings landing still span all years (they are not a year view).

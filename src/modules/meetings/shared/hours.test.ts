@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { meetingHours, meetingsInYear } from './hours'
+import { meetingHours, meetingsInYear, meetingsInYearOrPlanned } from './hours'
 import type { MeetingIndexRow } from './types'
 
 const row = (date: string, over: Partial<MeetingIndexRow> = {}): MeetingIndexRow => ({
@@ -66,5 +66,15 @@ describe('meetingHours', () => {
       { skill: 'Networking (RP)', minutes: 120 },
       { skill: 'Leadership (RP)', minutes: 60 }
     ])
+  })
+})
+
+describe('meetingsInYearOrPlanned', () => {
+  const rows = [row('2025-10-01'), row('2026-10-01'), row('', { title: 'Planned' })]
+  const today = '2026-09-30' // in 2026–27
+
+  it('shows planned meetings in the current academic year only', () => {
+    expect(meetingsInYearOrPlanned(rows, 2026, today)).toHaveLength(2)
+    expect(meetingsInYearOrPlanned(rows, 2025, today).map((r) => r.date)).toEqual(['2025-10-01'])
   })
 })
