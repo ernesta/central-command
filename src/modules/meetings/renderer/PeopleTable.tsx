@@ -23,6 +23,17 @@ function submitOrCancel(submit: () => void, cancel: () => void) {
   }
 }
 
+/** Which input a refusal is about: the initials, or otherwise the name. */
+const isInitialsProblem = (message: string): boolean => /initials/i.test(message)
+
+function FieldError({ message }: { message: string }): React.JSX.Element {
+  return (
+    <p className={styles.error} role="alert">
+      {message}
+    </p>
+  )
+}
+
 function changeTitle(nameChanged: boolean, initialsChanged: boolean): string {
   if (nameChanged && initialsChanged) return 'Change name and initials?'
   return nameChanged ? 'Change name?' : 'Change initials?'
@@ -37,7 +48,6 @@ interface RowProps {
   onSave: Save
   /** The reason a change would be refused (taken initials, a blank name), or null. */
   check: (name: string, patch: PersonPatch) => string | null
-  onInvalid: (message: string) => void
   /** Leave out for someone who cannot be removed (you). */
   onRemove?: () => void
   /** Given for archived people, who can only be restored. */
@@ -54,7 +64,6 @@ function PersonRow({
   onDone,
   onSave,
   check,
-  onInvalid,
   onRemove,
   onRestore,
   highlighted
@@ -63,6 +72,7 @@ function PersonRow({
   const [initials, setInitials] = useState(person.initials)
   const [me, setMe] = useState(person.me)
   const [confirming, setConfirming] = useState(false)
+  const [problem, setProblem] = useState<string | null>(null)
   const rowRef = useRef<HTMLTableRowElement>(null)
 
   useEffect(() => {
@@ -80,11 +90,13 @@ function PersonRow({
   const save = async (): Promise<void> => {
     setConfirming(false)
     if (Object.keys(patch).length === 0) return onDone()
-    if ((await onSave(person.name, patch)) === null) onDone()
+    const refused = await onSave(person.name, patch)
+    if (refused === null) onDone()
+    else setProblem(refused)
   }
   const submit = (): void => {
-    const problem = check(person.name, patch)
-    if (problem) return onInvalid(problem)
+    const refused = check(person.name, patch)
+    if (refused) return setProblem(refused)
     if (sentences.length > 0) setConfirming(true)
     else void save()
   }
@@ -92,6 +104,7 @@ function PersonRow({
     setName(person.name)
     setInitials(person.initials)
     setMe(person.me)
+    setProblem(null)
     onDone()
   }
 
@@ -142,9 +155,31 @@ function PersonRow({
           value={name}
           aria-label={`Name of ${person.name}`}
           autoFocus
-          onChange={(event) => setName(event.target.value)}
+          onChange={(event) => {
+            setName(event.target.value)
+            setProblem(null)
+          }}
           onKeyDown={submitOrCancel(submit, cancel)}
         />
+        {problem && !isInitialsProblem(problem) && <FieldError message={problem} />}
+      </td>
+      <td>
+        <input
+          className={`${styles.input} ${styles.initials}`}
+          value={initials}
+          maxLength={6}
+          aria-label={`Initials of ${person.name}`}
+          onChange={(event) => {
+            setInitials(event.target.value)
+            setProblem(null)
+          }}
+          onKeyDown={submitOrCancel(submit, cancel)}
+        />
+        {problem && isInitialsProblem(problem) && <FieldError message={problem} />}
+      </td>
+      <td className={styles.count}>{usage?.meetings ?? 0}</td>
+      <td className={styles.count}>{usage?.trainings ?? 0}</td>
+      <td className={styles.actions}>
         <Button
           size="small"
           className={styles.meButton}
@@ -153,20 +188,6 @@ function PersonRow({
         >
           {me ? 'This is me' : 'Set as me'}
         </Button>
-      </td>
-      <td>
-        <input
-          className={`${styles.input} ${styles.initials}`}
-          value={initials}
-          maxLength={6}
-          aria-label={`Initials of ${person.name}`}
-          onChange={(event) => setInitials(event.target.value)}
-          onKeyDown={submitOrCancel(submit, cancel)}
-        />
-      </td>
-      <td className={styles.count}>{usage?.meetings ?? 0}</td>
-      <td className={styles.count}>{usage?.trainings ?? 0}</td>
-      <td className={styles.actions}>
         <Button size="small" variant="primary" onClick={submit}>
           Save
         </Button>
@@ -205,9 +226,12 @@ interface AddRowProps {
 function AddRow({ onAdd, onDone }: AddRowProps): React.JSX.Element {
   const [name, setName] = useState('')
   const [initials, setInitials] = useState('')
+  const [problem, setProblem] = useState<string | null>(null)
   const submit = async (): Promise<void> => {
     if (name.trim() === '') return
-    if ((await onAdd(name, initials)) === null) onDone()
+    const refused = await onAdd(name, initials)
+    if (refused === null) onDone()
+    else setProblem(refused)
   }
   const keys = submitOrCancel(() => void submit(), onDone)
   return (
@@ -219,9 +243,13 @@ function AddRow({ onAdd, onDone }: AddRowProps): React.JSX.Element {
           placeholder="Full name"
           aria-label="Name of the new person"
           autoFocus
-          onChange={(event) => setName(event.target.value)}
+          onChange={(event) => {
+            setName(event.target.value)
+            setProblem(null)
+          }}
           onKeyDown={keys}
         />
+        {problem && !isInitialsProblem(problem) && <FieldError message={problem} />}
       </td>
       <td>
         <input
@@ -230,9 +258,13 @@ function AddRow({ onAdd, onDone }: AddRowProps): React.JSX.Element {
           maxLength={6}
           placeholder="Auto"
           aria-label="Initials of the new person"
-          onChange={(event) => setInitials(event.target.value)}
+          onChange={(event) => {
+            setInitials(event.target.value)
+            setProblem(null)
+          }}
           onKeyDown={keys}
         />
+        {problem && isInitialsProblem(problem) && <FieldError message={problem} />}
       </td>
       <td className={styles.count} />
       <td className={styles.count} />
@@ -264,7 +296,6 @@ interface PeopleTableProps {
   onAdd?: AddRowProps['onAdd']
   onAddDone?: () => void
   onSave: Save
-  onInvalid: (message: string) => void
   onRemove?: (person: Person) => void
   /** Makes this the table of archived people: each row offers Restore instead of Edit and Remove. */
   onRestore?: (person: Person) => void
@@ -281,7 +312,6 @@ export function PeopleTable({
   onAdd,
   onAddDone,
   onSave,
-  onInvalid,
   onRemove,
   onRestore,
   highlighted
@@ -322,7 +352,6 @@ export function PeopleTable({
                   throw error
                 }
               }}
-              onInvalid={onInvalid}
               onRemove={onRemove && !person.me ? () => onRemove(person) : undefined}
               onRestore={onRestore ? () => onRestore(person) : undefined}
               highlighted={highlighted === person.name}

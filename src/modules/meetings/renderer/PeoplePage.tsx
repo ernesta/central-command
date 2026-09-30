@@ -34,7 +34,8 @@ export function PeoplePage(): React.JSX.Element {
   const highlighted = new URLSearchParams(useLocation().search).get('person')
 
   const report = (result: PeopleActionResult): string | null => {
-    setError(result.error ?? (result.skipped.length > 0 ? skippedText(result.skipped) : null))
+    // A refusal (taken initials, a blank name) is shown beside the field by the row; only a partial result goes up here.
+    setError(result.skipped.length > 0 ? skippedText(result.skipped) : null)
     return result.error
   }
 
@@ -79,7 +80,6 @@ export function PeoplePage(): React.JSX.Element {
               )
             }
             onAddDone={() => setAdding(false)}
-            onInvalid={setError}
             onSave={async (name: string, patch: PersonPatch) =>
               report(await run(window.api.meetings.people.update(name, patch)))
             }
@@ -94,7 +94,6 @@ export function PeoplePage(): React.JSX.Element {
             people={archived}
             everyone={people}
             usage={usage}
-            onInvalid={setError}
             onSave={async () => null}
             onRestore={async (person) =>
               void report(await run(window.api.meetings.people.restore(person.name)))
