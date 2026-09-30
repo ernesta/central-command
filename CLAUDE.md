@@ -24,6 +24,8 @@ ask the user.
   proposed initials (dry run by default; apply only with the app closed)
 - `npm run strip:created [-- --apply]`: remove the retired `created:` line from every note's front matter (dry run by default; applied on
   29 Sep 2026, so a dry run now finds nothing)
+- `npm run tidy:series [-- --apply]`: one-off tidy of training series and titles (series = full programme name, title = the session; applied
+  on 30 Sep 2026, so a dry run now finds nothing)
 - `npm run convert:topics [-- --apply]`: turn bold pseudo-headings (`**Topic**`) in meeting notes into `###` topics (dry run by
   default; `--apply` backs each note up first)
 
