@@ -220,8 +220,13 @@ ready for `--apply`" and say so plainly when you report back.
 ### For the user (review and decisions)
 
 - [ ] **Try the new editor's keys and lists** (stage 3 of live markup; switch it on with `localStorage.setItem('central-command.liveEditor', '1')`
-      in the developer tools, then reload). Things to try, and what to say if you dislike the result: - Cmd-Option-1 to 6 on a line that is already a heading: it changes the level (it does not go back to a paragraph; Cmd-Option-0 does that). Would you rather the same key toggled it off? - Cmd-B with the cursor in the middle of a long bold sentence: it un-bolds the whole sentence, not just the word you selected. - Tab in an ordinary paragraph: the cursor leaves the editor (it only indents inside lists). Would you rather it inserted a tab or spaces? - A heading's `#` shows over the text cursor when the cursor is at the very start of a heading line (looks glitchy; to be tuned in stage 7).
-      Also just use it: bullets, numbered lists, checkboxes (click one), Enter/Tab/Backspace in lists, pasting from a web page or Word (plain text only), pasting a web address over selected text.
+      in the developer tools, then reload). Use it for real: bullets, numbered lists, checkboxes (click one), Enter, Tab and Backspace in lists,
+      pasting from a web page or Word (plain text only), pasting a web address over selected text. Then answer the four questions below.
+- [ ] **Live editor question 1:** Cmd-Option-1 to 6 on a line that is already a heading changes its level (Cmd-Option-0 makes it a paragraph). Should the same key
+      instead switch the heading off?
+- [ ] **Live editor question 2:** Cmd-B with the cursor inside a long bold sentence un-bolds the whole sentence, not only the word. Is that fine?
+- [ ] **Live editor question 3:** Tab in an ordinary paragraph moves the cursor out of the editor (it only indents inside lists). Should it insert spaces instead?
+- [ ] **Live editor glitch to tune in stage 7:** with the cursor at the very start of a heading line, the `#` is drawn over the text cursor.
 
 - [ ] **Review the Training data after the 30 Sep 2026 tidy** (series, titles, file names; originals in
       `~/CentralCommand/backups/tidy-training-series-*`). Fix what you don't like: institutions that are really people or providers
