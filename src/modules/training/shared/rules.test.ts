@@ -3,6 +3,7 @@ import type { Person } from '@shared/people'
 import {
   DEFAULT_TRAINING_QUERY,
   entriesInYear,
+  entriesInYearOrPlanned,
   isUpcoming,
   leadNames,
   meetingsLine,
@@ -199,5 +200,18 @@ describe('option lists', () => {
 
   it('words the meetings line', () => {
     expect(meetingsLine(2190)).toBe('plus 36.5 h of meetings, which Inkpath also counts')
+  })
+})
+
+describe('entriesInYearOrPlanned', () => {
+  const rows = [row('2025-10-01'), row('2026-10-01'), row('', { title: 'Planned' })]
+  const today = '2026-09-30' // in 2026–27
+
+  it('shows planned entries in the current academic year only', () => {
+    expect(entriesInYearOrPlanned(rows, 2026, today).map((r) => r.title)).toEqual([
+      'Talk',
+      'Planned'
+    ])
+    expect(entriesInYearOrPlanned(rows, 2025, today).map((r) => r.title)).toEqual(['Talk'])
   })
 })

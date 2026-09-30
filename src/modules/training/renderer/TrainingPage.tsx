@@ -57,7 +57,7 @@ export function TrainingPage(): React.JSX.Element {
     [...everything.map((r) => r.date), ...meetings.map((m) => m.date)],
     today
   )
-  const all = entriesInYearOrPlanned(everything, year)
+  const all = entriesInYearOrPlanned(everything, year, today)
 
   // A remembered filter whose value no longer exists in the files must not hide everything.
   const query =

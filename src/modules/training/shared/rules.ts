@@ -1,4 +1,4 @@
-import { academicYearLabel, inAcademicYear } from '@shared/academic-year'
+import { academicYearLabel, currentAcademicYear, inAcademicYear } from '@shared/academic-year'
 import { fold } from '@shared/text'
 import { formatDate, durationMinutes } from '@shared/time'
 import { formatHours, minutesPerSkill } from '@shared/skills'
@@ -11,12 +11,17 @@ export function isUpcoming(row: Pick<TrainingIndexRow, 'date'>, today: string): 
   return row.date === '' || row.date > today
 }
 
-/** What the list shows for an academic year: its entries, plus every planned entry with no date yet. */
+/**
+ * What the list shows for an academic year: its entries, plus, in the current year only, every
+ * planned entry with no date yet (an earlier year must not show this year's plans).
+ */
 export function entriesInYearOrPlanned(
   rows: readonly TrainingIndexRow[],
-  year: number
+  year: number,
+  today: string
 ): TrainingIndexRow[] {
-  return rows.filter((r) => r.date === '' || inAcademicYear(r.date, year))
+  const showPlanned = year === currentAcademicYear(today)
+  return rows.filter((r) => (r.date === '' ? showPlanned : inAcademicYear(r.date, year)))
 }
 
 /** The entries dated within an academic year (start year), upcoming ones included. */
