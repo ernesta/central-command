@@ -49,6 +49,22 @@ Markers are not text in that model. Two ways to get the Typora behaviour were we
 code or footnotes. So tables are the only hard rendering case and are small; images and HTML are not needed at first (they show as
 their text).
 
+## Shortcuts (designed 30 Sep 2026; every key in Settings → Shortcuts → Notes editor keeps its chord and visible result)
+
+CodeMirror has no ready-made Markdown formatting keys, so `live-keymap.ts` writes them, and `notes-shortcuts.test.ts` keeps the Settings list
+honest (its Milkdown-source check is replaced by a test per shortcut that presses the key and checks the resulting text).
+
+- **Inline (`Mod-b`, `Mod-i`, `Mod-Alt-x`, `Mod-e`):** wrap or unwrap `**`, `*`, `~~`, `` ` `` around the selection. Selection already marked:
+  remove the markers. No selection, cursor in a word: mark the word (or unmark it). Empty spot: insert the pair with the cursor between.
+  Typing the markers by hand gives the same result.
+- **Block (`Mod-Alt-1` to `6`, `Mod-Alt-0`, `Mod-Shift-b`, `Mod-Alt-8`, `Mod-Alt-7`, `Mod-Alt-c`):** set, change or remove the line's prefix
+  (`#` × level, `> `, `- `, `1. `) or wrap the lines in a fence.
+- **Lists:** Tab, Shift-Tab, `Mod-]`, `Mod-[` indent and outdent; Enter continues, and on an empty item ends the list; Backspace at the start
+  of an item's content removes the bullet or checkbox as one step (outdent first, then a plain paragraph). The user confirmed this.
+- **Unchanged:** undo/redo, Find and replace keys, `@`, Cmd-click, paste-over-selection, `Mod-Shift-v` (existing IPC), `Shift-Enter` (inserts a
+  backslash line break, as the editor writes today).
+- **Until stage 6:** Tab in a table row indents as plain text; table-cell navigation comes with tables.
+
 ## Architecture
 
 - `src/renderer/src/editor/` (new): `LiveEditor.tsx` with the same props contract as `NotesEditor` (initial, onChange, onBlur,
@@ -111,8 +127,9 @@ with real keystrokes, look at screenshots, quit right after typing)
 ## Progress (30 Sep 2026)
 
 - Stage 1 done, commit `bd26898`, not pushed.
-- Design revised to the CodeMirror model above after the user chose the Typora way. Nothing else started; stage 2 waits for the user's
-  go-ahead on replacing Milkdown.
+- Design revised to the CodeMirror model above after the user chose the Typora way. The user approved the mockup
+  (`docs/design/editor-live-markup-mockup.html`), the list/checkbox behaviour and the shortcut design. Design is complete; nothing else started.
+  Stage 2 (the spike) is next and needs only the user's go-ahead to start.
 - Checking recipe: scratch library under the session scratchpad with `CENTRAL_COMMAND_HOME`, `playwright-core` installed there,
   Cmd-Shift-N to make a note, real keystrokes, `app.close()` straight after typing; dev mode via `electron-vite dev` with
   `--remote-debugging-port=9333` and `connectOverCDP`.
