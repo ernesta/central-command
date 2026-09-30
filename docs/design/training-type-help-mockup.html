@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Training type help: options</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@600;700&display=swap" />
+    <style>
+      :root {
+        --bg: #edeff2; --surface: #fff; --ink: #1b222b; --text-secondary: #3a4652; --text-muted: #5c6672;
+        --border-soft: #d3d8de; --border-strong: #aab2bb; --hover-tint: #f4f6f8; --accent: #35577a; --selected-bg: #dce6ee; --panel: #e9edf1;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 'IBM Plex Sans', system-ui, sans-serif; padding: 24px 16px 48px; }
+      h1, h2 { font-family: 'Newsreader', Georgia, serif; margin: 0; }
+      p { margin: 0; }
+      .wrap { max-width: 980px; margin: 0 auto; display: grid; gap: 36px; }
+      .note { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+      .card { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 20px 28px; padding: 16px 20px; background: var(--surface); border: 1px solid var(--border-soft); border-radius: 10px; align-items: flex-start; position: relative; }
+      .field { display: grid; gap: 6px; }
+      .lab { color: var(--text-muted); font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; }
+      .ctl { padding: 7px 12px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface); min-width: 170px; display: flex; justify-content: space-between; gap: 12px; }
+      .ctl.plain { min-width: 110px; }
+      .chev { color: var(--text-muted); }
+      .hint { color: var(--text-muted); font-size: 12px; max-width: 34ch; }
+      /* A */
+      .info { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border-strong); color: var(--text-muted); font-size: 12px; align-self: center; margin-left: 4px; }
+      .row { display: flex; align-items: center; gap: 4px; }
+      .pop { position: absolute; left: 200px; top: 74px; z-index: 1; background: var(--ink); color: #fff; font-size: 12px; padding: 6px 10px; border-radius: 8px; max-width: 260px; }
+      /* B */
+      .menu { position: absolute; top: 76px; left: 20px; z-index: 1; width: 360px; background: var(--surface); border: 1px solid var(--border-soft); border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,.12); padding: 6px; }
+      .grp { color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; padding: 6px 10px 2px; }
+      .opt { padding: 6px 10px; border-radius: 6px; }
+      .opt small { display: block; color: var(--text-muted); font-size: 12px; }
+      .opt.on { background: var(--selected-bg); }
+      /* C */
+      .slot { min-height: 36px; }
+      /* D */
+      .type-d { display: flex; align-items: center; gap: 12px; }
+      .type-d .hint { max-width: none; }
+      .wide { flex-basis: 100%; }
+      /* E */
+      .cap { flex-basis: 100%; display: flex; gap: 10px; align-items: baseline; padding-top: 12px; border-top: 1px solid var(--border-soft); font-size: 13px; }
+      .pill { padding: 1px 10px; border-radius: 999px; background: var(--panel); color: var(--text-secondary); font-weight: 500; white-space: nowrap; }
+      .spacer { height: 130px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div>
+        <h1>Training type: where should the help go?</h1>
+        <p class="note">The problem: help under the dropdown moves it; help at the bottom of the card is not visibly about it. Each option below shows “Research methods” selected.</p>
+      </div>
+
+      <section>
+        <h2>A. An info mark beside the dropdown, help on hover or focus</h2>
+        <p class="note">Nothing ever shifts. The link to the control is direct. The help is hidden until asked for (also works with the keyboard).</p>
+        <div class="card">
+          <div class="field"><span class="lab">Series</span><span class="ctl plain">None</span></div>
+          <div class="field"><span class="lab">Type</span><span class="row"><span class="ctl">Research methods <span class="chev">▾</span></span><span class="info">i</span></span></div>
+          <div class="field"><span class="lab">Format</span><span class="ctl plain">In person</span></div>
+          <div class="pop">Methods, statistics, research design, data and software</div>
+        </div>
+        <div class="spacer" style="height:50px"></div>
+      </section>
+
+      <section>
+        <h2>B. Help inside the open list, under each option</h2>
+        <p class="note">You read what a type means at the moment of choosing it, right where it is attached to the control. Nothing is shown once closed, so nothing shifts.</p>
+        <div class="card">
+          <div class="field"><span class="lab">Type</span><span class="ctl">Research methods <span class="chev">▾</span></span></div>
+          <div class="field"><span class="lab">Format</span><span class="ctl plain">In person</span></div>
+          <div class="menu">
+            <div class="grp">Courses</div>
+            <div class="opt on">Research methods<small>Methods, statistics, research design, data and software</small></div>
+            <div class="opt">Academic skills<small>Writing, presenting, publishing, CV</small></div>
+            <div class="opt">General skills<small>Skills useful beyond research: wellbeing, leadership, careers</small></div>
+            <div class="grp">Conferences</div>
+            <div class="opt">Attending<small>You went as a visitor</small></div>
+          </div>
+        </div>
+        <div class="spacer"></div>
+      </section>
+
+      <section>
+        <h2>C. A reserved space under the dropdown</h2>
+        <p class="note">Every field is top-aligned and the Type field always keeps two lines free, so the help appears directly under its dropdown and nothing moves. Cost: a little permanent empty space in the card.</p>
+        <div class="card">
+          <div class="field"><span class="lab">Series</span><span class="ctl plain">None</span></div>
+          <div class="field"><span class="lab">Type</span><span class="ctl">Research methods <span class="chev">▾</span></span><span class="hint slot">Methods, statistics, research design, data and software</span></div>
+          <div class="field"><span class="lab">Format</span><span class="ctl plain">In person</span></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>D. Type on a row of its own, help beside it</h2>
+        <p class="note">Type gets the full width of its own row: dropdown, then the help on the same line. Reads as one unit. When no type is chosen the row stays the same height.</p>
+        <div class="card">
+          <div class="field"><span class="lab">Series</span><span class="ctl plain">None</span></div>
+          <div class="field"><span class="lab">Format</span><span class="ctl plain">In person</span></div>
+          <div class="field wide"><span class="lab">Type</span><span class="type-d"><span class="ctl">Research methods <span class="chev">▾</span></span><span class="hint">Methods, statistics, research design, data and software</span></span></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>E. Both: help in the open list (B) and the description under the field, in a fixed strip (C)</h2>
+        <p class="note">Not shown separately: if you like B, I suggest B alone. It is the least clutter, and the chosen type’s name already says most of it.</p>
+      </section>
+    </div>
+  </body>
+</html>
