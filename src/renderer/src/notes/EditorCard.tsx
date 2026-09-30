@@ -5,6 +5,7 @@ import { formatDate } from '@shared/time'
 import { wordCount, wordCountLabel } from '@shared/words'
 import type { SaveState } from './notes-session'
 import { saveStatusText } from './save-status'
+import { FindContext } from './FindContext'
 import { useNotesFind } from './useNotesFind'
 import styles from './EditorCard.module.css'
 
@@ -49,7 +50,9 @@ export function EditorCard({
 
   return (
     <div className={styles.card}>
-      <div className={styles.body}>{children(find.setup)}</div>
+      <FindContext.Provider value={find.bridge}>
+        <div className={styles.body}>{children(find.setup)}</div>
+      </FindContext.Provider>
       <div className={styles.footer}>
         {find.open ? (
           find.bar

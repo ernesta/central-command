@@ -4,7 +4,7 @@ import {
   REPLACE_ALL_SHORTCUT,
   REPLACE_ONE_SHORTCUT,
   REPLACE_TOGGLE_SHORTCUT
-} from './notes-find'
+} from './find-types'
 
 /**
  * The keys of the notes editor (Readings notes and meeting notes), for the Settings list. Most come from

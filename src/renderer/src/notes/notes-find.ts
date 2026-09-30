@@ -4,29 +4,26 @@ import { Decoration, DecorationSet } from '@milkdown/kit/prose/view'
 import type { EditorView } from '@milkdown/kit/prose/view'
 import { $ctx, $prose } from '@milkdown/kit/utils'
 import { matchesShortcut } from '@shared/shortcuts'
+import {
+  FIND_SHORTCUT,
+  REPLACE_TOGGLE_SHORTCUT,
+  noFindBridge,
+  type FindBridge,
+  type FindMatch,
+  type FindTarget
+} from './find-types'
 
-export const FIND_SHORTCUT = 'Mod-f'
-/** Opens find with the replace row already shown, the same chord VS Code's inline editor find uses. */
-export const REPLACE_TOGGLE_SHORTCUT = 'Mod-Alt-f'
-export const REPLACE_ONE_SHORTCUT = 'Mod-Enter'
-export const REPLACE_ALL_SHORTCUT = 'Mod-Shift-Enter'
+export {
+  FIND_SHORTCUT,
+  REPLACE_ALL_SHORTCUT,
+  REPLACE_ONE_SHORTCUT,
+  REPLACE_TOGGLE_SHORTCUT,
+  type FindBridge,
+  type FindMatch,
+  type FindTarget
+} from './find-types'
 
-export interface FindMatch {
-  from: number
-  to: number
-}
-
-/** Where the editor's Cmd-F reaches the find bar. Set by `useNotesFind` when the editor is created. */
-export interface FindBridge {
-  isOpen(): boolean
-  open(view: EditorView, showReplace: boolean): void
-  /** The view was just destroyed (a reload from disk, or React StrictMode's throwaway mount): close without
-      touching it again. */
-  detach(): void
-}
-
-const noBridge: FindBridge = { isOpen: () => false, open: () => undefined, detach: () => undefined }
-export const findBridgeCtx = $ctx<FindBridge, 'notesFind'>(noBridge, 'notesFind')
+export const findBridgeCtx = $ctx<FindBridge, 'notesFind'>(noFindBridge, 'notesFind')
 
 interface FindMeta {
   matches: readonly FindMatch[]
@@ -104,7 +101,7 @@ export function replaceAllMatches(
  * entry, the plan and Readings notes get this for free, since they all share `NotesEditor`.
  */
 export const notesFindPlugin = $prose((ctx) => {
-  let bridge: FindBridge = noBridge
+  let bridge: FindBridge = noFindBridge
   return new Plugin({
     key: findPluginKey,
     state: {
@@ -132,12 +129,12 @@ export const notesFindPlugin = $prose((ctx) => {
         if (bridge.isOpen()) return false
         if (matchesShortcut(event, REPLACE_TOGGLE_SHORTCUT)) {
           event.preventDefault()
-          bridge.open(view, true)
+          bridge.open(proseFindTarget(view), true)
           return true
         }
         if (!matchesShortcut(event, FIND_SHORTCUT)) return false
         event.preventDefault()
-        bridge.open(view, false)
+        bridge.open(proseFindTarget(view), false)
         return true
       }
     },
@@ -150,3 +147,14 @@ export const notesFindPlugin = $prose((ctx) => {
     }
   })
 })
+
+/** The find bar's view of a Milkdown editor. */
+export function proseFindTarget(view: EditorView): FindTarget {
+  return {
+    search: (query) => findMatches(view.state.doc, query),
+    highlight: (matches, active) => setFindMatches(view, matches, active),
+    scrollTo: (match) => scrollToMatch(view, match),
+    replace: (match, replacement) => replaceMatch(view, match, replacement),
+    replaceAll: (matches, replacement) => replaceAllMatches(view, matches, replacement)
+  }
+}

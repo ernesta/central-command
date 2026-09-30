@@ -1,91 +1,101 @@
 import type { Editor } from '@milkdown/kit/core'
-import type { EditorView } from '@milkdown/kit/prose/view'
 import { ChevronDown, ChevronUp, Replace, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { IconButton } from '@renderer/components/IconButton'
 import { matchesShortcut } from '@shared/shortcuts'
 import {
-  findBridgeCtx,
-  findMatches,
-  notesFindPlugin,
   REPLACE_ALL_SHORTCUT,
   REPLACE_ONE_SHORTCUT,
   REPLACE_TOGGLE_SHORTCUT,
-  replaceAllMatches,
-  replaceMatch,
-  scrollToMatch,
-  setFindMatches,
   type FindBridge,
-  type FindMatch
-} from './notes-find'
+  type FindMatch,
+  type FindTarget
+} from './find-types'
+import { findBridgeCtx, notesFindPlugin } from './notes-find'
 import styles from './NotesFindBar.module.css'
 
 /**
- * Find (and replace) within one note's text, as `notesFindPlugin`'s Cmd-F and Cmd-Option-F open it. Keeps its
- * own copy of what the plugin's key handler needs (a view once the editor exists) and tells React through the
- * callbacks it is built with, so the plugin never sees a stale closure (the same shape as `TodoMenuController`).
+ * Find (and replace) within one note's text, as an editor's Cmd-F and Cmd-Option-F open it (`notesFindPlugin` for
+ * Milkdown, `live-find.ts` for the live editor). Keeps its own copy of what the editors' key handlers need (a target
+ * once the editor exists) and tells React through the callbacks it is built with, so an editor never sees a stale
+ * closure (the same shape as `TodoMenuController`). It works on a `FindTarget`, so it does not know which editor it serves.
  */
-class NotesFindController implements FindBridge {
-  view: EditorView | null = null
+export class NotesFindController implements FindBridge {
+  target: FindTarget | null = null
   matches: FindMatch[] = []
   active = 0
-
   constructor(
-    private readonly onOpen: (view: EditorView, showReplace: boolean) => void,
+    private readonly onOpen: (showReplace: boolean) => void,
     private readonly onClose: () => void
   ) {}
 
-  isOpen = (): boolean => this.view !== null
+  isOpen = (): boolean => this.target !== null
 
-  open = (view: EditorView, showReplace: boolean): void => {
-    this.view = view
-    this.onOpen(view, showReplace)
+  open = (target: FindTarget, showReplace: boolean): void => {
+    this.target = target
+    this.onOpen(showReplace)
   }
 
   close = (): void => {
-    if (this.view) setFindMatches(this.view, [], 0)
-    this.view = null
+    this.target?.highlight([], 0)
+    this.reset()
+  }
+
+  /** The editor is gone: leave it alone (nothing to un-highlight) and close. */
+  detach = (): void => {
+    if (this.target) this.reset()
+  }
+
+  private reset(): void {
+    this.target = null
     this.matches = []
     this.active = 0
     this.onClose()
   }
 
-  detach = (): void => {
-    if (this.view) this.close()
+  private show(): void {
+    this.target?.highlight(this.matches, this.active)
+    this.target?.scrollTo(this.matches[this.active])
   }
 
   search = (query: string): void => {
-    if (!this.view) return
-    this.matches = findMatches(this.view.state.doc, query)
+    if (!this.target) return
+    this.matches = this.target.search(query)
     this.active = 0
-    setFindMatches(this.view, this.matches, this.active)
-    scrollToMatch(this.view, this.matches[this.active])
+    this.show()
   }
 
   move = (step: 1 | -1): void => {
-    if (!this.view || this.matches.length === 0) return
+    if (!this.target || this.matches.length === 0) return
     this.active = (this.active + step + this.matches.length) % this.matches.length
-    setFindMatches(this.view, this.matches, this.active)
-    scrollToMatch(this.view, this.matches[this.active])
+    this.show()
   }
 
-  /** Replaces the current match, then lands on whichever match now takes its place (or the next one). */
+  /**
+   * Replaces the current match, then lands on whichever match now takes its place (or the next one). The matches are found
+   * again first: the text may have changed under them (typing in the note while the bar is open), and a replacement
+   * must only ever land on text that matches now.
+   */
   replaceOne = (replacement: string, query: string): void => {
-    if (!this.view || this.matches.length === 0) return
-    replaceMatch(this.view, this.matches[this.active], replacement)
-    this.matches = findMatches(this.view.state.doc, query)
+    if (!this.target) return
+    this.matches = this.target.search(query)
+    if (this.matches.length === 0) return
+    this.active = Math.min(this.active, this.matches.length - 1)
+    this.target.replace(this.matches[this.active], replacement)
+    this.matches = this.target.search(query)
     this.active = this.matches.length === 0 ? 0 : this.active % this.matches.length
-    setFindMatches(this.view, this.matches, this.active)
-    scrollToMatch(this.view, this.matches[this.active])
+    this.show()
   }
 
-  replaceAll = (replacement: string): void => {
-    if (!this.view || this.matches.length === 0) return
-    replaceAllMatches(this.view, this.matches, replacement)
+  replaceAll = (replacement: string, query: string): void => {
+    if (!this.target) return
+    this.matches = this.target.search(query)
+    if (this.matches.length === 0) return
+    this.target.replaceAll(this.matches, replacement)
     this.matches = []
     this.active = 0
-    setFindMatches(this.view, [], 0)
+    this.target.highlight([], 0)
   }
 }
 
@@ -96,6 +106,8 @@ class NotesFindController implements FindBridge {
  */
 export function useNotesFind(): {
   setup: (editor: Editor) => Editor
+  /** What the live editor's Cmd-F reaches (`FindContext`); `setup` is the same for Milkdown. */
+  bridge: FindBridge
   open: boolean
   bar: React.ReactNode
 } {
@@ -104,7 +116,7 @@ export function useNotesFind(): {
   const [controller] = useState(
     () =>
       new NotesFindController(
-        (_view, replace) => {
+        (replace) => {
           setOpen(true)
           setShowReplace(replace)
         },
@@ -143,7 +155,7 @@ export function useNotesFind(): {
   }
   const replaceAll = (): void => {
     if (query === '' || result.count === 0) return
-    controller.replaceAll(replacement)
+    controller.replaceAll(replacement, query)
     setResult({ count: 0, active: 0 })
   }
   const toggleReplace = (): void => setShowReplace((v) => !v)
@@ -261,5 +273,5 @@ export function useNotesFind(): {
     </div>
   ) : null
 
-  return { setup, open, bar }
+  return { setup, bridge: controller, open, bar }
 }
