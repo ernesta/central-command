@@ -1,6 +1,7 @@
 # Notes editor: live markup, the Typora way (plan, revised 30 Sep 2026)
 
-Requested 30 Sep 2026. Mockup of the look: `docs/design/editor-markup-mockup.html` (option 3). Applies to every editor (Notes,
+Requested 30 Sep 2026. Mockups: `docs/design/editor-live-markup-mockup.html` (today against proposed, scenario by scenario) and, for the original options,
+`docs/design/editor-markup-mockup.html`. Applies to every editor (Notes,
 Meetings, Training, Reading lists, Readings notes), because they all share `NotesEditor` (`src/renderer/src/notes/`).
 Stage 1 (Backspace no longer jumps) is built on the old editor (`docs/DECISIONS.md`, "Live markup … stage 1").
 
@@ -81,8 +82,8 @@ with real keystrokes, look at screenshots, quit right after typing)
    over every file of a copy of the real library (open, no edit: zero changes reported; simulated edit elsewhere: the rest of the text
    byte-identical). Screenshots to the user before continuing. If the look or feel is wrong, this is where we stop or adjust.
 3. **Lists, tasks, quotes and paste.** Bullets and numbers drawn as units, checkbox toggle (click writes `[x]`), continue/indent/outdent
-   keys and the Backspace rule, nested quotes, Cmd-Shift-V (the existing IPC), paste as plain text. Formatted paste (web, Word) as plain
-   text at first; converting HTML to Markdown is a possible later addition (adds a small dependency; ask first).
+   keys and the Backspace rule, nested quotes, Cmd-Shift-V (the existing IPC), paste as plain text. Formatted paste (web, Word) is
+   pasted as plain text (the user's call, 30 Sep 2026); converting HTML to Markdown is a possible later addition (adds a small dependency; ask first).
 4. **Entities.** Chips, atomic behaviour, `@` picker, hover card, Cmd-click, "Mentioned in" unaffected (it reads files). Includes a
    mutation check on the "Backspace removes the whole chip" logic.
 5. **Find and replace, outline, word count, Meetings TODO helper.** Find matches source text, so a word inside `**bold**` is found; a

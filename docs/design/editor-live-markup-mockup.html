@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Editor live markup: today and proposed</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@600;700&display=swap"
+    />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: light-dark(#edeff2, #14181d);
+        --panel: light-dark(#e1e5ea, #1b2128);
+        --surface: light-dark(#ffffff, #1f262e);
+        --ink: light-dark(#1b222b, #e6eaee);
+        --text-muted: light-dark(#5c6672, #98a3af);
+        --border-soft: light-dark(#d3d8de, #2f3843);
+        --border-faint: light-dark(#e6e9ed, #262e37);
+        --accent: light-dark(#35577a, #86aad0);
+        --selected-bg: light-dark(#dce6ee, #2a3b4d);
+        --danger: light-dark(#a8433f, #dc7c77);
+        --good: light-dark(#2f6b45, #7fc59a);
+        --marker: light-dark(#8a6d2f, #c9a95a);
+        --line: light-dark(#f4f7fa, #232b34);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          14px/1.5 'IBM Plex Sans',
+          system-ui,
+          sans-serif;
+        padding: 24px 16px 56px;
+      }
+      h1,
+      h2 {
+        font-family: 'Newsreader', Georgia, serif;
+        margin: 0;
+      }
+      p {
+        margin: 0;
+      }
+      .wrap {
+        max-width: 1040px;
+        margin: 0 auto;
+        display: grid;
+        gap: 44px;
+      }
+      .note {
+        color: var(--text-muted);
+        font-size: 13px;
+        margin-top: 4px;
+        max-width: 72ch;
+      }
+      .pair {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-top: 14px;
+      }
+      @media (max-width: 760px) {
+        .pair {
+          grid-template-columns: 1fr;
+        }
+      }
+      .col > .head {
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        font-weight: 600;
+      }
+      .col.today > .head {
+        color: var(--text-muted);
+      }
+      .col.new > .head {
+        color: var(--accent);
+      }
+      .frame {
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 10px;
+      }
+      .frame > .cap {
+        font-size: 12px;
+        color: var(--text-muted);
+        padding: 6px 16px 0;
+      }
+      .frame > .body {
+        padding: 8px 16px 14px;
+      }
+      .frame > .result {
+        border-top: 1px solid var(--border-faint);
+        padding: 6px 16px;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+      .bad {
+        color: var(--danger);
+      }
+      .good {
+        color: var(--good);
+      }
+      .h1 {
+        font-family: 'Newsreader', Georgia, serif;
+        font-size: 22px;
+        font-weight: 700;
+        margin: 0 0 4px;
+      }
+      .h3 {
+        font-family: 'Newsreader', Georgia, serif;
+        font-size: 18px;
+        font-weight: 700;
+        margin: 6px 0 4px;
+      }
+      .caret {
+        display: inline-block;
+        width: 1.5px;
+        height: 1.1em;
+        background: var(--ink);
+        vertical-align: text-bottom;
+      }
+      .m {
+        color: var(--marker);
+        font-family: 'IBM Plex Mono', monospace;
+        font-weight: 400;
+        font-size: 0.85em;
+      }
+      .mono {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 13px;
+      }
+      a,
+      .link {
+        color: var(--accent);
+        text-decoration: underline;
+      }
+      .sel {
+        background: var(--selected-bg);
+      }
+      .line {
+        border-left: 2px solid var(--accent);
+        padding-left: 10px;
+        margin-left: -12px;
+        background: var(--line);
+      }
+      .kbd {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11px;
+        background: var(--panel);
+        padding: 1px 6px;
+        border-radius: 5px;
+      }
+      .chip {
+        background: var(--selected-bg);
+        color: var(--accent);
+        border-radius: 999px;
+        padding: 0 8px;
+        font-size: 13px;
+      }
+      ul.b {
+        margin: 2px 0;
+        padding-left: 20px;
+      }
+      .quote {
+        border-left: 3px solid var(--border-soft);
+        padding-left: 10px;
+        color: var(--text-muted);
+      }
+      .code {
+        background: var(--panel);
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 13px;
+      }
+      .box {
+        display: inline-block;
+        width: 13px;
+        height: 13px;
+        border: 1.5px solid var(--text-muted);
+        border-radius: 3px;
+        vertical-align: -2px;
+        margin-right: 6px;
+      }
+      .rule {
+        margin-top: 10px;
+        color: var(--text-muted);
+        font-size: 13px;
+        max-width: 72ch;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div>
+        <h1>Notes editor: today and proposed</h1>
+        <p class="note">
+          Left: how the editor behaves now. Right: the Typora way. The one rule on the right:
+          <b>the text you edit is the Markdown itself.</b> The block or word under the cursor shows
+          its markers (in <span class="m">this colour</span>), everything else is drawn formatted.
+          Markers are ordinary characters, so you select, copy, delete and type them like any other
+          text.
+        </p>
+      </div>
+
+      <section>
+        <h2>1. Making a heading</h2>
+        <p class="note">You type <span class="kbd">## Results</span> on a new line.</p>
+        <div class="pair">
+          <div class="col today">
+            <div class="head">Today</div>
+            <div class="frame">
+              <div class="cap">After “## ”</div>
+              <div class="body">
+                <p>Last week.</p>
+                <p class="h3"><span class="caret"></span></p>
+              </div>
+              <div class="result">The “##” vanished the moment you typed the space.</div>
+            </div>
+            <div class="frame">
+              <div class="cap">After “Results”, cursor still in the heading</div>
+              <div class="body">
+                <p>Last week.</p>
+                <p class="h3">Results<span class="caret"></span></p>
+              </div>
+              <div class="result bad">No sign it is level 2 or how to change it.</div>
+            </div>
+          </div>
+          <div class="col new">
+            <div class="head">Proposed</div>
+            <div class="frame">
+              <div class="cap">After “## ”</div>
+              <div class="body">
+                <p>Last week.</p>
+                <div class="line">
+                  <p class="h3"><span class="m">## </span><span class="caret"></span></p>
+                </div>
+              </div>
+              <div class="result good">Formatted as a heading, marker still there.</div>
+            </div>
+            <div class="frame">
+              <div class="cap">After “Results”, cursor in the heading</div>
+              <div class="body">
+                <p>Last week.</p>
+                <div class="line">
+                  <p class="h3"><span class="m">## </span>Results<span class="caret"></span></p>
+                </div>
+              </div>
+              <div class="result good">You can see it is level 2.</div>
+            </div>
+            <div class="frame">
+              <div class="cap">Cursor moves to the paragraph above</div>
+              <div class="body">
+                <p>Last week.<span class="caret"></span></p>
+                <p class="h3">Results</p>
+              </div>
+              <div class="result good">Marker hides again.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>2. Changing or removing the heading level</h2>
+        <p class="note">Cursor is in “Results”, a level 2 heading.</p>
+        <div class="pair">
+          <div class="col today">
+            <div class="head">Today</div>
+            <div class="frame">
+              <div class="cap">Backspace at the start of the heading</div>
+              <div class="body"><p class="h3">Results</p></div>
+              <div class="result">
+                Lowers it one level; level 1 becomes a paragraph. You cannot see the level, and you
+                cannot raise it by typing <span class="kbd">#</span>.
+              </div>
+            </div>
+          </div>
+          <div class="col new">
+            <div class="head">Proposed</div>
+            <div class="frame">
+              <div class="cap">Type <span class="kbd">#</span> after the marker: “### ”</div>
+              <div class="body">
+                <div class="line">
+                  <p class="h3"><span class="m">### </span>Results</p>
+                </div>
+              </div>
+              <div class="result good">Raised to level 3. It is just a character.</div>
+            </div>
+            <div class="frame">
+              <div class="cap">
+                Backspace twice (one <span class="kbd">#</span>, then the space)…
+              </div>
+              <div class="body">
+                <div class="line">
+                  <p class="h3"><span class="m">#</span>Results</p>
+                </div>
+              </div>
+              <div class="result">
+                …keeps going: delete all markers and it is a paragraph again. No jump upward, ever.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>3. Bold</h2>
+        <p class="note">You type <span class="kbd">**pilot**</span> in a sentence.</p>
+        <div class="pair">
+          <div class="col today">
+            <div class="head">Today</div>
+            <div class="frame">
+              <div class="cap">Second “**” typed</div>
+              <div class="body">
+                <p>The <b>pilot</b><span class="caret"></span> ran on time.</p>
+              </div>
+              <div class="result">
+                Bold instantly, stars gone. To un-bold: select and press the shortcut, or Backspace
+                and hope.
+              </div>
+            </div>
+          </div>
+          <div class="col new">
+            <div class="head">Proposed</div>
+            <div class="frame">
+              <div class="cap">Cursor inside or touching the bold word</div>
+              <div class="body">
+                <p>
+                  The <span class="m">**</span><b>pilot</b><span class="m">**</span
+                  ><span class="caret"></span> ran on time.
+                </p>
+              </div>
+              <div class="result good">
+                Stars shown. Backspace deletes a star: the bold is gone.
+              </div>
+            </div>
+            <div class="frame">
+              <div class="cap">Cursor elsewhere</div>
+              <div class="body">
+                <p>The <b>pilot</b> ran on time.<span class="caret"></span></p>
+              </div>
+              <div class="result good">Looks exactly as today.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>4. Links, and copying a web address</h2>
+        <div class="pair">
+          <div class="col today">
+            <div class="head">Today</div>
+            <div class="frame">
+              <div class="cap">Cursor in the link</div>
+              <div class="body">
+                <p>
+                  See <span class="link">the protocol</span><span class="caret"></span> for details.
+                </p>
+              </div>
+              <div class="result bad">
+                The address is not visible. To copy it you open the link or use the existing link
+                editing.
+              </div>
+            </div>
+          </div>
+          <div class="col new">
+            <div class="head">Proposed</div>
+            <div class="frame">
+              <div class="cap">Cursor in the link</div>
+              <div class="body">
+                <p>
+                  See <span class="m">[</span><span class="link">the protocol</span
+                  ><span class="m">](</span><span class="sel mono">https://osf.io/abc12</span
+                  ><span class="m">)</span> for details.
+                </p>
+              </div>
+              <div class="result good">
+                The address is text: select it, Cmd-C, or edit it in place.
+              </div>
+            </div>
+            <div class="frame">
+              <div class="cap">Cursor elsewhere</div>
+              <div class="body">
+                <p>See <span class="link">the protocol</span> for details.</p>
+              </div>
+              <div class="result good">Cmd-click still opens it.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>5. Selecting across several blocks</h2>
+        <div class="pair">
+          <div class="col today">
+            <div class="head">Today</div>
+            <div class="frame">
+              <div class="body">
+                <p class="h3"><span class="sel">Results</span></p>
+                <p>
+                  <span class="sel">The <b>pilot</b> ran</span> on time.
+                </p>
+              </div>
+              <div class="result">
+                Copy gives rich text (pasted elsewhere in the app it keeps formatting).
+              </div>
+            </div>
+          </div>
+          <div class="col new">
+            <div class="head">Proposed</div>
+            <div class="frame">
+              <div class="body">
+                <p class="h3"><span class="sel">Results</span></p>
+                <p>
+                  <span class="sel">The <b>pilot</b> ran</span> on time.
+                </p>
+              </div>
+              <div class="result good">
+                Looks the same: no markers while several blocks are selected. Copy gives the
+                Markdown (<span class="mono">## Results</span>,
+                <span class="mono">**pilot**</span>), which keeps its formatting when pasted into
+                another note.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>6. Quotes, lists, tasks, code, mentions</h2>
+        <div class="pair">
+          <div class="col today">
+            <div class="head">Today</div>
+            <div class="frame">
+              <div class="cap">Quote</div>
+              <div class="body">
+                <div class="quote">
+                  Nested quote<br /><span
+                    style="
+                      display: inline-block;
+                      border-left: 3px solid var(--border-soft);
+                      padding-left: 10px;
+                    "
+                    >Inner</span
+                  >
+                </div>
+              </div>
+              <div class="result">Markers never shown.</div>
+            </div>
+            <div class="frame">
+              <div class="cap">List and task</div>
+              <div class="body">
+                <ul class="b">
+                  <li>Send draft</li>
+                </ul>
+                <span class="box"></span>Book room
+              </div>
+            </div>
+            <div class="frame">
+              <div class="cap">Mention</div>
+              <div class="body">
+                <p>Ask <span class="chip">Kathy Rastle</span> about it.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col new">
+            <div class="head">Proposed</div>
+            <div class="frame">
+              <div class="cap">Cursor in the inner quote</div>
+              <div class="body">
+                <div class="line">
+                  <span class="m">&gt; </span>Nested quote<br /><span class="m">&gt; &gt; </span
+                  >Inner<span class="caret"></span>
+                </div>
+              </div>
+              <div class="result good">One “&gt;” per level, as you type it.</div>
+            </div>
+            <div class="frame">
+              <div class="cap">List and task: as today (your choice)</div>
+              <div class="body">
+                <ul class="b">
+                  <li>Send draft<span class="caret"></span></li>
+                </ul>
+                <span class="box"></span>Book room
+              </div>
+              <div class="result">
+                The bullet and checkbox stay drawn. Backspace at the start of an item removes the
+                bullet as one step.
+              </div>
+            </div>
+            <div class="frame">
+              <div class="cap">Code block, cursor inside</div>
+              <div class="body">
+                <div class="code">
+                  <span class="m">```python</span><br />x = 1<span class="caret"></span><br /><span
+                    class="m"
+                    >```</span
+                  >
+                </div>
+              </div>
+              <div class="result good">Fence lines shown only while you are inside.</div>
+            </div>
+            <div class="frame">
+              <div class="cap">Mention: as today</div>
+              <div class="body">
+                <p>Ask <span class="chip">Kathy Rastle</span> about it.</p>
+              </div>
+              <div class="result">
+                Always a chip; Backspace removes it whole. The file format is unchanged.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>What else changes</h2>
+        <p class="rule">
+          <b>Files:</b> what is in the editor is exactly what is in the file. Opening never rewrites
+          a note, and your own spacing and bullet characters are left alone (today the editor may
+          normalise <span class="kbd">*</span> bullets and escapes when you first edit).<br />
+          <b>Undo:</b> plain text undo, no format steps hidden in between.<br />
+          <b>Find:</b> matches the Markdown text, so a word inside
+          <span class="kbd">**bold**</span> is found; searching for stars finds stars.<br />
+          <b>Paste:</b> plain text always, from Word and the web too (formatting is not kept, for
+          now).<br />
+          <b>Tables:</b> shown as a grid away from the cursor, as pipes while you are in the table.
+        </p>
+      </section>
+    </div>
+  </body>
+</html>
