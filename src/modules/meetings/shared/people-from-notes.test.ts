@@ -32,7 +32,7 @@ describe('addNamedPeople', () => {
       { name: 'Rob Moon', meetings: 1, trainings: 0 }
     ]
     const list = addNamedPeople(people, named)
-    expect(list.map((p) => p.initials)).toEqual(['EO', 'RM', 'RM2', 'RM3'])
+    expect(list.map((p) => p.initials)).toEqual(['EO', 'RM', 'RMU', 'RMO'])
     expect(people).toHaveLength(2)
   })
 })

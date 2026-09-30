@@ -37,15 +37,55 @@ const INITIALS = /^[\p{L}\p{N}]{1,6}$/u
 
 const key = (initials: string): string => initials.toUpperCase()
 
-/** Initials for a name: the first letters of the first and last words, ignoring titles ("Prof Kathy Rastle" gives KR). */
-export function deriveInitials(name: string): string {
-  const words = name
+function nameWords(name: string): string[] {
+  return name
     .split(/\s+/)
     .map((w) => w.replace(/^[^\p{L}\p{N}]+/u, ''))
     .filter((w) => w !== '' && !TITLES.has(w.replace(/\.$/, '').toLowerCase()))
+}
+
+const first = (word: string): string => Array.from(word)[0].toUpperCase()
+
+/**
+ * Initials for a name: the first letters of the first and last words, ignoring titles ("Prof Kathy Rastle" gives
+ * KR). A hyphenated last name gives a letter for each part ("Roger Giner-Sorolla" gives RGS).
+ */
+export function deriveInitials(name: string): string {
+  const words = nameWords(name)
   if (words.length === 0) return ''
-  const letters = words.length === 1 ? [words[0]] : [words[0], words[words.length - 1]]
-  return letters.map((w) => Array.from(w)[0].toUpperCase()).join('')
+  if (words.length === 1) return first(words[0])
+  const last = words[words.length - 1].split('-').filter((part) => part !== '')
+  return [words[0], ...last].map(first).join('')
+}
+
+/**
+ * Initials for a new person that no one else has: the usual ones if free, otherwise better ones rather than a
+ * number: the capitals inside the last name ("Ryan McKay" gives RMK), the middle names, then more letters of the
+ * last name. A number is the last resort.
+ */
+export function suggestInitials(name: string, taken: Iterable<string>): string {
+  const base = deriveInitials(name)
+  if (!base) return ''
+  const used = new Set([...taken].map(key))
+  const words = nameWords(name)
+  const candidates: string[] = []
+  if (words.length > 1) {
+    const last = words[words.length - 1]
+    const head = first(words[0])
+    const capitals = Array.from(last)
+      .filter((c, i) => i > 0 && c !== c.toLowerCase() && c === c.toUpperCase())
+      .join('')
+    if (capitals) candidates.push(`${head}${first(last)}${capitals}`.toUpperCase())
+    const middle = words.slice(1, -1).map(first).join('')
+    if (middle) candidates.push(`${head}${middle}${deriveInitials(`x ${last}`).slice(1)}`)
+    const letters = Array.from(last.replace(/-/g, '')).map((c) => c.toUpperCase())
+    for (let n = 2; n <= letters.length; n++)
+      candidates.push(`${head}${letters.slice(0, n).join('')}`)
+  }
+  for (const candidate of [base, ...candidates]) {
+    if (isValidInitials(candidate) && !used.has(key(candidate))) return candidate
+  }
+  return makeInitialsUnique(base, taken)
 }
 
 /** `base` if free, otherwise `base2`, `base3`, … Comparison ignores case. */
@@ -102,8 +142,8 @@ export function addPerson(people: readonly Person[], input: NewPerson): Person[]
   } else {
     const base = deriveInitials(name)
     if (!base) throw new PeopleError('Could not work out initials from that name')
-    initials = makeInitialsUnique(
-      base,
+    initials = suggestInitials(
+      name,
       people.map((p) => p.initials)
     )
   }

@@ -9,6 +9,7 @@ import {
   findByName,
   isSafeLinkUrl,
   makeInitialsUnique,
+  suggestInitials,
   mergePerson,
   normalisePeople,
   ownerOptions,
@@ -40,6 +41,19 @@ describe('deriveInitials', () => {
   })
 })
 
+describe('hyphenated names and clashes', () => {
+  it('gives a hyphenated last name a letter per part', () => {
+    expect(deriveInitials('Roger Giner-Sorolla')).toBe('RGS')
+  })
+  it('prefers the capitals in the last name to a number', () => {
+    expect(suggestInitials('Ryan McKay', ['RM'])).toBe('RMK')
+  })
+  it('then tries more letters of the last name, then a number', () => {
+    expect(suggestInitials('Rachel Miller', ['RM'])).toBe('RMI')
+    expect(suggestInitials('Al Bo', ['AB', 'ABO'])).toBe('AB2')
+  })
+})
+
 describe('makeInitialsUnique', () => {
   it('keeps a free value and numbers a clash, ignoring case', () => {
     expect(makeInitialsUnique('KR', ['AC'])).toBe('KR')
@@ -57,7 +71,7 @@ describe('addPerson', () => {
   })
   it('makes derived initials unique instead of refusing', () => {
     const list = addPerson([p('Kathy Rastle', 'KR')], { name: 'Karl Rowe' })
-    expect(list.map((x) => x.initials)).toEqual(['KR', 'KR2'])
+    expect(list.map((x) => x.initials)).toEqual(['KR', 'KRO'])
   })
   it('refuses explicit initials that clash, and invalid ones', () => {
     const list = [p('Kathy Rastle', 'KR')]
@@ -280,7 +294,7 @@ describe('archived people', () => {
     expect(() => addPerson(archived, { name: 'Chloe Hart', initials: 'CH' })).toThrow(
       /already used/
     )
-    expect(addPerson(archived, { name: 'Chloe Hart' }).at(-1)?.initials).toBe('CH2')
+    expect(addPerson(archived, { name: 'Chloe Hart' }).at(-1)?.initials).toBe('CHA')
   })
 
   it('stays archived when edited, and is read back from the file', () => {

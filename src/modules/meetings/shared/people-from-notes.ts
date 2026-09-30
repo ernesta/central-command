@@ -35,7 +35,7 @@ export function namedInNotes(
   return [...found.values()].sort((a, b) => a.name.localeCompare(b.name))
 }
 
-/** The list with each named person added, initials worked out from the name and made unique (KR, KR2, …). */
+/** The list with each named person added, initials worked out from the name and made unique (RM, then RMK, …). */
 export function addNamedPeople(
   people: readonly Person[],
   named: readonly NamedInNotes[]
