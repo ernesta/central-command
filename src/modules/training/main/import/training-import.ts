@@ -312,7 +312,7 @@ export function planTrainingImport(input: ImportInput): ImportPlan {
       (noteBody ? `\n${noteBody}` : '')
     const content = head + body
 
-    const target = `${trainingBaseName(row.startDate, title, taken)}.md`
+    const target = `${trainingBaseName(row.startDate, title, series, taken)}.md`
     const check = verifyPlanned(
       row,
       title,

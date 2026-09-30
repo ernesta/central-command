@@ -5,14 +5,22 @@ import {
   notePath
 } from '../../../main/notes/file-name'
 
-const MAX_TITLE_LENGTH = 80
+const MAX_NAME_LENGTH = 120
 
 /**
- * The base name (no extension) for an entry: `YYYY-MM-DD Title`, and `… 2`, `… 3` when the same date
- * and title are taken. Characters that are unsafe in a file name (the colon in `SEDarc: …`) become `_`.
+ * The base name (no extension) for an entry: `YYYY-MM-DD Series - Title` (just `YYYY-MM-DD Title` with no
+ * series), and `… 2`, `… 3` when that is taken. The series is in the name so files can be found by it.
+ * Characters that are unsafe in a file name (a colon in a title) become `_`.
  */
-export function trainingBaseName(date: string, title: string, taken: Iterable<string>): string {
-  return datedBaseName(date, title, taken, { fallback: 'Untitled', maxLength: MAX_TITLE_LENGTH })
+export function trainingBaseName(
+  date: string,
+  title: string,
+  series: string | null | undefined,
+  taken: Iterable<string>
+): string {
+  const label =
+    series?.trim() && title.trim() ? `${series.trim()} - ${title.trim()}` : title || series || ''
+  return datedBaseName(date, label, taken, { fallback: 'Untitled', maxLength: MAX_NAME_LENGTH })
 }
 
 export { dateFromBaseName }

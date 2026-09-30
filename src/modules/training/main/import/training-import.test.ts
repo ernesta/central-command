@@ -38,7 +38,7 @@ describe('planTrainingImport: the row becomes an entry', () => {
   it('maps every field and reads back exactly', () => {
     const p = plan([row()])
     const [entry] = imported(p)
-    expect(entry.target).toBe('2025-10-08 SEDarc_ Mixed Methods Research Designs.md')
+    expect(entry.target).toBe('2025-10-08 SEDarc - SEDarc_ Mixed Methods Research Designs.md')
     const { head, body } = splitNote(entry.content)
     const { meta, problems } = parseTrainingMeta(head)
     expect(problems).toEqual([])

@@ -144,7 +144,7 @@ export class TrainingStore {
     // Names already taken, from the folder itself (not just the index) so nothing is ever replaced.
     for (let attempt = 0; attempt < 50; attempt++) {
       const taken = await this.baseNamesOnDisk(workspace)
-      const id = trainingBaseName(input.date ?? '', input.title, taken)
+      const id = trainingBaseName(input.date ?? '', input.title, input.series, taken)
       if (await createNoteFileExclusive(trainingPath(dir, id), head + body)) {
         await this.reindex({ workspace, id })
         return this.read({ workspace, id })
@@ -184,7 +184,7 @@ export class TrainingStore {
       wrote &&
       result.status === 'saved' &&
       changes.meta &&
-      ('date' in changes.meta || 'title' in changes.meta)
+      ('date' in changes.meta || 'title' in changes.meta || 'series' in changes.meta)
     ) {
       const renamedTo = await this.renameToMatch(ref, next)
       if (renamedTo) return { ...result, renamedTo }
@@ -193,8 +193,8 @@ export class TrainingStore {
   }
 
   /**
-   * Give an entry's file the name its date and title call for (`YYYY-MM-DD Title`, with ` 2` when that
-   * is taken), so file names stay consistent after either is edited. Never replaces a file; if the
+   * Give an entry's file the name its date, series and title call for (`YYYY-MM-DD Series - Title`, with ` 2` when that
+   * is taken), so file names stay consistent after any of them is edited. Never replaces a file; if the
    * rename fails the note is still saved under its old name. Returns the new id, or null.
    */
   private async renameToMatch(ref: TrainingRef, content: string): Promise<string | null> {
@@ -204,7 +204,7 @@ export class TrainingStore {
     try {
       for (let attempt = 0; attempt < 50; attempt++) {
         const others = (await this.baseNamesOnDisk(ref.workspace)).filter((id) => id !== ref.id)
-        const id = trainingBaseName(meta.date, meta.title, others)
+        const id = trainingBaseName(meta.date, meta.title, meta.series, others)
         if (id === ref.id) return null
         if (await renameNoteFileExclusive(trainingPath(dir, ref.id), trainingPath(dir, id))) {
           deleteTrainingRow(this.db, ref.workspace, ref.id)

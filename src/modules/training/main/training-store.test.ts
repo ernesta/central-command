@@ -72,7 +72,7 @@ describe('create', () => {
       skills: ['Data management and analysis (GS)'],
       leads: ['Robert Darby']
     })
-    expect(entry.ref).toEqual(ref('2025-12-10 Data Management and Security'))
+    expect(entry.ref).toEqual(ref('2025-12-10 SEDarc - Data Management and Security'))
     expect(disk(entry.ref.id)).toBe(
       "---\ndate: 2025-12-10\nstart: '10:00'\nend: '11:30'\ntitle: Data Management and Security\nseries: SEDarc\ntype: Research methods\nmode: online\nskills: [Data management and analysis (GS)]\nleads: [Robert Darby]\n---\n\n## Summary\n\n## Notes\n"
     )
@@ -121,8 +121,10 @@ describe('save', () => {
     const text = disk(entry.ref.id).replace('---\n\n', 'future: keep # me\n---\n\n')
     writeFileSync(file(entry.ref.id), text)
     const res = await store.save(entry.ref, { meta: { series: 'DataCamp' } }, hashContent(text))
-    expect(res.status).toBe('saved')
-    const after = disk(entry.ref.id)
+    expect(res.status === 'saved' && res.renamedTo).toBe(
+      '2025-12-10 DataCamp - Data Management and Security'
+    )
+    const after = disk('2025-12-10 DataCamp - Data Management and Security')
     expect(after).toContain('series: DataCamp')
     expect(after).toContain('future: keep # me')
     expect(splitNote(after).body).toBe('## Summary\n\n  odd   spacing\t\n\n## Notes\n\nText\n')
@@ -202,9 +204,24 @@ describe('renaming when the date or title changes', () => {
     expect(disk('2025-12-10 Ethics')).toContain('title: Ethics')
   })
 
-  it('does not rename for other edits or when the title is emptied', async () => {
+  it('puts the series in the name, and drops it when the series is cleared', async () => {
     const entry = await make()
     const a = await store.save(entry.ref, { meta: { series: 'SEDarc' } }, entry.note.hash)
+    expect(a.status === 'saved' && a.renamedTo).toBe(
+      '2025-12-10 SEDarc - Data Management and Security'
+    )
+    if (a.status !== 'saved') return
+    const b = await store.save(
+      ref('2025-12-10 SEDarc - Data Management and Security'),
+      { meta: { series: null } },
+      a.hash
+    )
+    expect(b.status === 'saved' && b.renamedTo).toBe('2025-12-10 Data Management and Security')
+  })
+
+  it('does not rename for other edits or when the title is emptied', async () => {
+    const entry = await make()
+    const a = await store.save(entry.ref, { meta: { type: 'Research methods' } }, entry.note.hash)
     expect(a.status === 'saved' && a.renamedTo).toBeFalsy()
     if (a.status !== 'saved') return
     const b = await store.save(entry.ref, { meta: { title: '' } }, a.hash)
