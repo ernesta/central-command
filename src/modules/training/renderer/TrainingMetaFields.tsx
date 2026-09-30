@@ -1,6 +1,6 @@
 import { Segmented } from '@renderer/components/Segmented'
 import { PeopleField } from '@renderer/components/PeopleField'
-import { Select } from '@renderer/components/Select'
+import { DescribedSelect } from '@renderer/components/DescribedSelect'
 import { SkillsField } from '@renderer/components/SkillsField'
 import type { Person } from '@shared/people'
 import { durationMinutes, formatDuration } from '@shared/time'
@@ -41,9 +41,13 @@ export function TrainingMetaFields({
   const typeOptions = [
     { value: '', label: 'No type yet' },
     ...(knownType ? [] : [{ value: meta.type ?? '', label: `${meta.type} (not on the list)` }]),
-    ...TRAINING_TYPES.map((t) => ({ value: t.name, label: t.name, group: t.group }))
+    ...TRAINING_TYPES.map((t) => ({
+      value: t.name,
+      label: t.name,
+      group: t.group,
+      description: t.description
+    }))
   ]
-  const current = TRAINING_TYPES.find((t) => t.name === meta.type)
 
   const time = (
     key: 'start' | 'end'
@@ -127,7 +131,7 @@ export function TrainingMetaFields({
         <label className={styles.label} htmlFor="training-type">
           Type
         </label>
-        <Select
+        <DescribedSelect
           id="training-type"
           label="Type"
           value={meta.type ?? ''}
@@ -174,11 +178,6 @@ export function TrainingMetaFields({
         <span className={styles.label}>Skills</span>
         <SkillsField skills={meta.skills} onChange={(skills) => onChange({ skills })} />
       </div>
-      {current?.description && (
-        <p className={styles.hint}>
-          <span className={styles.hintType}>{current.name}</span> {current.description}
-        </p>
-      )}
     </div>
   )
 }

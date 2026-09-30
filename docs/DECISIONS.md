@@ -1279,6 +1279,7 @@ lists, readings' notes), since they all share `NotesEditor`.
 - **Person page**: open TODOs removed (and the read of every meeting behind them); an empty Trainings section is left out; links are
   one line of pills with an icon, no presets. `RecentList` (shared) now keeps the title on one line and ellipsises the note,
   left-aligned.
-- **Training entry**: the type's help text is a line under all the fields, so it never moves the dropdown; at wide widths Files is
-  the rightmost column.
-- Not yet checked by driving the built app.
+- **Training entry**: the type's help is shown in the open list, under each type's name (`DescribedSelect`, a listbox, since a
+  native `<select>` cannot show a second line; chosen from mockup `docs/design/training-type-help-mockup.html`). Closed, it has a fixed
+  minimum width, so nothing moves. At wide widths Files is the rightmost column.
+- Checked in the built app: the list opens with descriptions, arrow keys and Enter choose, and the button does not move.
