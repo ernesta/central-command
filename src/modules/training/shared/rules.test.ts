@@ -176,12 +176,13 @@ describe('remembered query', () => {
 })
 
 describe('option lists', () => {
-  it('lists the start series first, then others; leads and skills sorted', () => {
+  it('lists only series found in the files, sorted; leads and skills sorted', () => {
     const rows = [
       row('2025-10-01', { series: 'SENSS', leads: ['B B', 'A A'], skills: ['Z', 'A'] }),
       row('2025-10-02', { series: 'DataCamp', leads: ['A A'] })
     ]
-    expect(seriesOptions(rows, ['SEDarc', 'DataCamp'])).toEqual(['SEDarc', 'DataCamp', 'SENSS'])
+    expect(seriesOptions(rows)).toEqual(['DataCamp', 'SENSS'])
+    expect(seriesOptions([])).toEqual([])
     expect(leadNames(rows)).toEqual(['A A', 'B B'])
   })
 

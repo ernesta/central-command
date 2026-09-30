@@ -27,7 +27,7 @@ import {
   trainingHours,
   yearHoursTitle
 } from '../shared/rules'
-import { TRAINING_MODE_LABELS, TRAINING_SERIES, type TrainingIndexRow } from '../shared/types'
+import { TRAINING_MODE_LABELS, type TrainingIndexRow } from '../shared/types'
 import { NewTrainingButton } from './NewTrainingButton'
 import {
   entryRoute,
@@ -64,7 +64,7 @@ export function TrainingLanding(): React.JSX.Element {
   const hours = trainingHours(all, year, today, aim)
   const meetingMinutes = meetingHours(meetings, year, today).minutes
   const { upcoming, recent } = recentAndUpcoming(all, today)
-  const summaries = seriesSummaries(entriesInYear(all, year), TRAINING_SERIES, today)
+  const summaries = seriesSummaries(entriesInYear(all, year), today)
 
   const noteParts = [
     `${hours.entries} ${hours.entries === 1 ? 'entry' : 'entries'}`,

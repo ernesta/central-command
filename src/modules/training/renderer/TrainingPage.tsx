@@ -29,7 +29,7 @@ import {
   trainingHours,
   yearHoursTitle
 } from '../shared/rules'
-import { TRAINING_SERIES, TRAINING_TYPES } from '../shared/types'
+import { TRAINING_TYPES } from '../shared/types'
 import { NewTrainingButton } from './NewTrainingButton'
 import { TrainingTable } from './TrainingTable'
 import { todayIso, trainingBase } from './training-paths'
@@ -64,7 +64,7 @@ export function TrainingPage(): React.JSX.Element {
     rows === null
       ? saved
       : reconcileTrainingQuery(saved, {
-          series: seriesOptions(everything, TRAINING_SERIES),
+          series: seriesOptions(everything),
           types: TRAINING_TYPES.map((t) => t.name),
           skills: skillsIn(everything),
           leads: leadNames(everything)
@@ -161,7 +161,7 @@ export function TrainingPage(): React.JSX.Element {
           value={query.series}
           options={[
             { value: 'all', label: 'All series' },
-            ...seriesOptions(everything, TRAINING_SERIES).map((s) => ({ value: s, label: s }))
+            ...seriesOptions(everything).map((s) => ({ value: s, label: s }))
           ]}
           onChange={(series) => setQuery({ series })}
         />

@@ -13,7 +13,7 @@ import { NoteOutline } from '@modules/notes/renderer/NoteOutline'
 import type { Person } from '@shared/people'
 import { formatDate } from '@shared/time'
 import { seriesOptions } from '../shared/rules'
-import { TRAINING_SERIES, type TrainingRef } from '../shared/types'
+import type { TrainingRef } from '../shared/types'
 import { FilesPanel } from './FilesPanel'
 import { entryRoute, trainingBase } from './training-paths'
 import { TrainingMetaFields } from './TrainingMetaFields'
@@ -54,7 +54,7 @@ function EntryView({
   const location = useLocation()
   const { session, snapshot } = useTrainingSession(entryRef, onRenamed)
   const [people, setPeople] = useState<Person[]>([])
-  const [seriesUsed, setSeriesUsed] = useState<string[]>([...TRAINING_SERIES])
+  const [seriesUsed, setSeriesUsed] = useState<string[]>([])
   const [confirmDelete, setConfirmDelete] = useState(false)
   const titleRef = useRef<HTMLInputElement>(null)
   const docRef = useRef<HTMLDivElement>(null)
@@ -68,7 +68,7 @@ function EntryView({
       if (!cancelled) setPeople(list)
     })
     void window.api.training.list('research').then((rows) => {
-      if (!cancelled) setSeriesUsed(seriesOptions(rows, TRAINING_SERIES))
+      if (!cancelled) setSeriesUsed(seriesOptions(rows))
     })
     return () => {
       cancelled = true

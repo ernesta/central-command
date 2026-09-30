@@ -118,9 +118,6 @@ export const TRAINING_MODE_LABELS: Record<TrainingMode, string> = {
   'self-paced': 'Self-paced'
 }
 
-/** Series to start with; the user adds more by typing a new name. */
-export const TRAINING_SERIES = ['SEDarc', 'DataCamp'] as const
-
 /**
  * An entry's front matter, as far as the app understands it. Reading is lenient (a hand-edited file
  * never crashes the app); `problems` on the parse result says what was off.

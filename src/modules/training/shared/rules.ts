@@ -179,15 +179,10 @@ export function queryTraining(
     .sort(compareNewestFirst)
 }
 
-/** Series to offer in the filter and the chooser: the start list, then any other series found in the files. */
-export function seriesOptions(
-  rows: readonly TrainingIndexRow[],
-  start: readonly string[]
-): string[] {
-  const extra = [
-    ...new Set(rows.map((r) => r.series).filter((s): s is string => !!s && !start.includes(s)))
-  ]
-  return [...start, ...extra.sort((a, b) => a.localeCompare(b))]
+/** Series to offer in the filter and the chooser: those found in the files, so a series with no entries does not exist. */
+export function seriesOptions(rows: readonly TrainingIndexRow[]): string[] {
+  const found = new Set(rows.map((r) => r.series).filter((s): s is string => !!s))
+  return [...found].sort((a, b) => a.localeCompare(b))
 }
 
 /** Everyone who appears as a lead in these entries, by name. */
@@ -229,13 +224,9 @@ export interface SeriesSummary {
   minutes: number
 }
 
-/** One summary per series for the rows given: the start series first (even with no entries), then any others. */
-export function seriesSummaries(
-  rows: readonly TrainingIndexRow[],
-  start: readonly string[],
-  today: string
-): SeriesSummary[] {
-  return seriesOptions(rows, start).map((series) => {
+/** One summary per series that has entries among the rows given. */
+export function seriesSummaries(rows: readonly TrainingIndexRow[], today: string): SeriesSummary[] {
+  return seriesOptions(rows).map((series) => {
     const mine = rows.filter((r) => r.series === series && !isUpcoming(r, today))
     return {
       series,
