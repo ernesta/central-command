@@ -1,4 +1,3 @@
-import type { Editor } from '@milkdown/kit/core'
 import { useMemo } from 'react'
 import { isoDate } from '@shared/dates'
 import { formatDate } from '@shared/time'
@@ -10,11 +9,8 @@ import { useNotesFind } from './useNotesFind'
 import styles from './EditorCard.module.css'
 
 interface EditorCardProps {
-  /**
-   * The editor (and anything that belongs inside the window with it). Takes the find setup to hand to
-   * `NotesEditor`'s own `setup`, so Cmd-F reaches the bar this card shows in its own footer.
-   */
-  children: (findSetup: (editor: Editor) => Editor) => React.ReactNode
+  /** The editor (and anything that belongs inside the window with it). Its Cmd-F reaches the bar this card shows in its own footer (`FindContext`). */
+  children: React.ReactNode
   /** The text as it stands now, for the word count. */
   text: string
   /** When the file was last changed (milliseconds); null when not known yet. */
@@ -51,7 +47,7 @@ export function EditorCard({
   return (
     <div className={styles.card}>
       <FindContext.Provider value={find.bridge}>
-        <div className={styles.body}>{children(find.setup)}</div>
+        <div className={styles.body}>{children}</div>
       </FindContext.Provider>
       <div className={styles.footer}>
         {find.open ? (

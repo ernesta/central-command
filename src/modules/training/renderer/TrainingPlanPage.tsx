@@ -7,7 +7,7 @@ import { IconButton } from '@renderer/components/IconButton'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { EditorCard } from '@renderer/notes/EditorCard'
-import { NotesEditor } from '@renderer/notes/NotesEditor'
+import { LiveEditor } from '@renderer/editor/LiveEditor'
 import { useNotesSession } from '@renderer/notes/useNotesSession'
 import { NoteOutline } from '@modules/notes/renderer/NoteOutline'
 import { useAcademicYear } from '@renderer/state/use-academic-year'
@@ -118,20 +118,17 @@ function PlanView({ year }: { year: number }): React.JSX.Element {
             reloaded={reloadedFromDisk}
             hasContent={hasContent}
           >
-            {(findSetup) => (
-              <NotesEditor
-                key={snapshot.editorKey}
-                initial={snapshot.initial}
-                placeholder={`Write your training plan for ${academicYearLabel(year)}: priorities as headings, with what, why and how under each.`}
-                showPlaceholder={!hasContent}
-                findSetup={findSetup}
-                onChange={(markdown) => {
-                  session.edit(markdown)
-                  setTyped({ editorKey: snapshot.editorKey, text: markdown })
-                }}
-                onBlur={() => void session.flush()}
-              />
-            )}
+            <LiveEditor
+              key={snapshot.editorKey}
+              initial={snapshot.initial}
+              placeholder={`Write your training plan for ${academicYearLabel(year)}: priorities as headings, with what, why and how under each.`}
+              showPlaceholder={!hasContent}
+              onChange={(markdown) => {
+                session.edit(markdown)
+                setTyped({ editorKey: snapshot.editorKey, text: markdown })
+              }}
+              onBlur={() => void session.flush()}
+            />
           </EditorCard>
         )}
       </section>

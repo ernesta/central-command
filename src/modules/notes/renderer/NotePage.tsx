@@ -8,7 +8,7 @@ import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
-import { NotesEditor } from '@renderer/notes/NotesEditor'
+import { LiveEditor } from '@renderer/editor/LiveEditor'
 import { markdownToExcerpt } from '@shared/text'
 import { deriveGroups } from '../shared/groups'
 import { canPin } from '../shared/pinning'
@@ -249,20 +249,17 @@ function NoteView({
       <div className={styles.split}>
         <div className={styles.doc} ref={docRef}>
           <EditorCard text={body} edited={updatedAt} save={save} reloaded={reloadedFromDisk}>
-            {(findSetup) => (
-              <NotesEditor
-                key={snapshot.editorKey}
-                initial={snapshot.initialBody}
-                placeholder="Write your note…"
-                showPlaceholder={body.trim() === ''}
-                // Not after the file changed outside: that editor must not take the cursor.
-                autoFocus={startFocus === 'body' && !reloadedFromDisk}
-                findSetup={findSetup}
-                entitySelf={{ kind: 'note', workspace: noteRef.workspace, id: session.getRef().id }}
-                onChange={session.editBody.bind(session)}
-                onBlur={() => void session.flush()}
-              />
-            )}
+            <LiveEditor
+              key={snapshot.editorKey}
+              initial={snapshot.initialBody}
+              placeholder="Write your note…"
+              showPlaceholder={body.trim() === ''}
+              // Not after the file changed outside: that editor must not take the cursor.
+              autoFocus={startFocus === 'body' && !reloadedFromDisk}
+              entitySelf={{ kind: 'note', workspace: noteRef.workspace, id: session.getRef().id }}
+              onChange={session.editBody.bind(session)}
+              onBlur={() => void session.flush()}
+            />
           </EditorCard>
         </div>
         <div className={styles.side}>

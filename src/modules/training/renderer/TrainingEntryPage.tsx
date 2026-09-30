@@ -8,7 +8,7 @@ import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
-import { NotesEditor } from '@renderer/notes/NotesEditor'
+import { LiveEditor } from '@renderer/editor/LiveEditor'
 import { NoteOutline } from '@modules/notes/renderer/NoteOutline'
 import type { Person } from '@shared/people'
 import { formatDate } from '@shared/time'
@@ -218,17 +218,14 @@ function EntryView({
       <div className={styles.split}>
         <div className={styles.doc} ref={docRef}>
           <EditorCard text={body} edited={updatedAt} save={save} reloaded={reloadedFromDisk}>
-            {(findSetup) => (
-              <NotesEditor
-                key={snapshot.editorKey}
-                initial={snapshot.initialBody}
-                placeholder="Write your notes…"
-                showPlaceholder={body.trim() === ''}
-                findSetup={findSetup}
-                onChange={session.editBody.bind(session)}
-                onBlur={() => void session.flush()}
-              />
-            )}
+            <LiveEditor
+              key={snapshot.editorKey}
+              initial={snapshot.initialBody}
+              placeholder="Write your notes…"
+              showPlaceholder={body.trim() === ''}
+              onChange={session.editBody.bind(session)}
+              onBlur={() => void session.flush()}
+            />
           </EditorCard>
         </div>
         <div className={styles.side}>

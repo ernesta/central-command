@@ -8,7 +8,7 @@ import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
-import { NotesEditor } from '@renderer/notes/NotesEditor'
+import { LiveEditor } from '@renderer/editor/LiveEditor'
 import { attachReading, parseListBody } from '@modules/reading-lists/shared/list-body'
 import type { ReadingListRef } from '@modules/reading-lists/shared/types'
 import { EntriesPanel } from './EntriesPanel'
@@ -176,17 +176,14 @@ function ListView({
       <div className={styles.split}>
         <div className={styles.doc}>
           <EditorCard text={body} edited={updatedAt} save={save} reloaded={reloadedFromDisk}>
-            {(findSetup) => (
-              <NotesEditor
-                key={snapshot.editorKey}
-                initial={snapshot.initialBody}
-                placeholder="Write a section as a heading, then each paper as a bullet: **Citation.** An annotation."
-                showPlaceholder={body.trim() === ''}
-                findSetup={findSetup}
-                onChange={session.editBody.bind(session)}
-                onBlur={() => void session.flush()}
-              />
-            )}
+            <LiveEditor
+              key={snapshot.editorKey}
+              initial={snapshot.initialBody}
+              placeholder="Write a section as a heading, then each paper as a bullet: **Citation.** An annotation."
+              showPlaceholder={body.trim() === ''}
+              onChange={session.editBody.bind(session)}
+              onBlur={() => void session.flush()}
+            />
           </EditorCard>
         </div>
         <EntriesPanel sections={sections} onAttach={attach} />

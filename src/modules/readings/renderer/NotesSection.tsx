@@ -1,7 +1,7 @@
 import { Button } from '@renderer/components/Button'
 import { Notice } from '@renderer/components/Notice'
 import { EditorCard } from '@renderer/notes/EditorCard'
-import { NotesEditor } from '@renderer/notes/NotesEditor'
+import { LiveEditor } from '@renderer/editor/LiveEditor'
 import { useNotesSession } from '@renderer/notes/useNotesSession'
 import styles from './NotesSection.module.css'
 
@@ -61,17 +61,14 @@ export function NotesSection({ citekey }: { citekey: string }): React.JSX.Elemen
           reloaded={reloadedFromDisk}
           hasContent={hasContent}
         >
-          {(findSetup) => (
-            <NotesEditor
-              key={snapshot.editorKey}
-              initial={snapshot.initial}
-              placeholder="Start writing your notes…"
-              showPlaceholder={!hasContent}
-              findSetup={findSetup}
-              onChange={session.edit.bind(session)}
-              onBlur={() => void session.flush()}
-            />
-          )}
+          <LiveEditor
+            key={snapshot.editorKey}
+            initial={snapshot.initial}
+            placeholder="Start writing your notes…"
+            showPlaceholder={!hasContent}
+            onChange={session.edit.bind(session)}
+            onBlur={() => void session.flush()}
+          />
         </EditorCard>
       )}
     </section>

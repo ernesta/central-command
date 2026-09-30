@@ -10,7 +10,7 @@ import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { WorkspaceSelect, type MovableWorkspace } from '@renderer/components/WorkspaceSelect'
 import { liveViewIn, placeCursorOnLine } from '@renderer/editor/live-outline'
 import { EditorCard } from '@renderer/notes/EditorCard'
-import { NotesEditor } from '@renderer/notes/NotesEditor'
+import { LiveEditor } from '@renderer/editor/LiveEditor'
 import { ownerOptions } from '../shared/people'
 import { meetingHeading } from '../shared/time'
 import { appendTopic, parseTopics, topicOffset, type Topic } from '../shared/topics'
@@ -282,24 +282,20 @@ function MeetingView({
       <div className={styles.split}>
         <div className={styles.doc} ref={editorRef}>
           <EditorCard text={body} edited={updatedAt} save={save} reloaded={reloadedFromDisk}>
-            {(findSetup) => (
-              <NotesEditor
-                key={snapshot.editorKey}
-                initial={snapshot.initialBody}
-                placeholder="Write your meeting notes…"
-                showPlaceholder={body.trim() === ''}
-                setup={todo.setup}
-                extensions={[todo.live]}
-                findSetup={findSetup}
-                entitySelf={{
-                  kind: 'meeting',
-                  workspace: meetingRef.workspace,
-                  id: session.getRef().id
-                }}
-                onChange={session.editBody.bind(session)}
-                onBlur={() => void session.flush()}
-              />
-            )}
+            <LiveEditor
+              key={snapshot.editorKey}
+              initial={snapshot.initialBody}
+              placeholder="Write your meeting notes…"
+              showPlaceholder={body.trim() === ''}
+              extensions={[todo.live]}
+              entitySelf={{
+                kind: 'meeting',
+                workspace: meetingRef.workspace,
+                id: session.getRef().id
+              }}
+              onChange={session.editBody.bind(session)}
+              onBlur={() => void session.flush()}
+            />
           </EditorCard>
         </div>
         <div className={styles.side}>

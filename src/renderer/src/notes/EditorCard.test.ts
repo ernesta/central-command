@@ -8,12 +8,8 @@ const noon = (y: number, m: number, d: number): number => new Date(y, m - 1, d, 
 type Props = Parameters<typeof EditorCard>[0]
 
 function render(props: Omit<Props, 'children'>): string {
-  // The child is a function (it takes the find setup); the cast is for the required `children` prop.
   return renderToStaticMarkup(
-    createElement(EditorCard, {
-      ...props,
-      children: () => createElement('div', null, 'editor')
-    } as Props)
+    createElement(EditorCard, props as Props, createElement('div', null, 'editor'))
   )
 }
 
