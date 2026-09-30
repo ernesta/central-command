@@ -97,7 +97,11 @@ export function ComboField({
           className={styles.toggle}
           aria-label={`Show ${label.toLowerCase()} list`}
           onMouseDown={(event) => event.preventDefault()}
-          onClick={() => (open ? setOpen(false) : show())}
+          onClick={() => {
+            inputRef.current?.focus()
+            if (open) setOpen(false)
+            else show()
+          }}
         >
           <ChevronDown size={12} strokeWidth={2} aria-hidden />
         </button>

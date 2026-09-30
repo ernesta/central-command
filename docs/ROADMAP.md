@@ -323,8 +323,11 @@ both have been applied to the real library.
 - **Series naming (agreed and applied 30 Sep 2026, 46 entries; originals in `backups/tidy-training-series-*`):** a series is the full programme or module name, code included
   ("PS5210 Applied Neuroscience Methods", "SENSS Experimental Methods in the Social Sciences", "DataCamp"); the title is only the
   session ("Introduction"). A series now exists only while an entry uses it (the fixed SEDarc/DataCamp start list is gone). The user will review the data.
-- **Institution as a drop-down** (asked 30 Sep 2026, not built): the field is free text today (`TrainingMetaFields`). It should offer
-  the institutions already used, and still accept a new one typed in. Reuse the shared field pattern that series uses.
+- **Institution as a drop-down** (asked and built 30 Sep 2026): Series and Institution use the shared `ComboField` (a text field with a list of
+  the values in use; a new one can be typed). Some institutions in the data are really people or providers ("Dr Robert De Vries", "DataCamp",
+  "SEDarc DTP"); the user will tidy them.
+- **Training file names** are `YYYY-MM-DD Series - Title` (just the title with no series, or when the title is the series); they follow the
+  series and title when either is edited. Applied to the library on 30 Sep 2026.
 - **Imports and conversions are all applied** (checked on 26 Sep 2026: every dry run reports nothing left to write: training 129 already
   there, 35 meeting files agree with the log, 12 notes, 17 reading notes, topics converted, people added). What is left is for you to
   decide: 10 Obsidian training notes found no matching activity (Psychology/Peer Review, Starting Your PhD, Annual Reviews and Upgrade;
