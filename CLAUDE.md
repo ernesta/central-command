@@ -131,15 +131,19 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   `src/shared/entities.ts`; notes and meetings get a `uid` in their front matter when first linked; person renames rewrite mentions;
   "Mentioned in" panels read the note folders on request). Tasks, when built, add one provider and one kind.
 
-- **Live markup editor (30 Sep 2026, in progress)**: the notes editor is being replaced by `src/renderer/src/editor/` (CodeMirror 6, the
-  Markdown text is the document, markers drawn only where the cursor is). Plan: `docs/EDITOR_LIVE_MARKUP_PLAN.md`; write-ups in
-  `docs/DECISIONS.md` ("Live markup … stage 1/2/3"). Stages 1 to 3 are done and pushed (stage 4 is committed, not pushed) (stage 3: formatting keys, lists drawn as units, list
-  keys, plain paste); it is behind a hidden switch (`localStorage` `central-command.liveEditor` = `1`, then reload) until stage 8, so
-  Milkdown stays the default. Stage 4 (entities: chips, `@` picker, hover card) is done and committed, not pushed; stage 5 (Find and replace, outline, word count, TODO helper: `find-types.ts`, `live-find.ts`, `live-outline.ts`, `todo-live.ts`) is done and committed, not pushed; stage 6 (tables: grid away from the cursor, text in it, Tab between cells, `live-tables.ts`; fenced code: fence lines shown only in the block, `live-fences.ts`) is done and committed, not pushed; stage 7 (interactions: composition guard, one undo step per command, escapes hidden, no layout jump, quote/heading/code padding that never applied, performance measured: nothing to fix) is done and pushed; stage 8 (switch and remove Milkdown) is next, after the user's review. A CSS rule that pads a `.cm-line` class must be spelled `.wrap .cm-editor .cm-line.live-x` or the editor's own `.cm-line` reset wins (it hid nested-quote indents and heading spacing for six stages). Pitfalls: `markdown()` brings its own Enter/Backspace keymap and
+- **Live markup editor (30 Sep 2026; stages 1 to 8 done, stage 8 committed but not pushed, stage 9 write-up next after the user's review)**: the notes editor is
+  `src/renderer/src/editor/` (CodeMirror 6, the Markdown text is the document, markers drawn only where the cursor is). `LiveEditor` is the only
+  editor: Notes, Work notes, Meetings, Training entries and plan, Reading lists and Readings notes all render it, and Milkdown and its
+  dependencies were removed in stage 8. Plan: `docs/EDITOR_LIVE_MARKUP_PLAN.md`; write-ups in `docs/DECISIONS.md` ("Live markup … stage 1" to "stage 8").
+  Find, `@`, the outline and the Meetings TODO helper talk to it through small bridge objects (`notes/find-types.ts`, `entities/mention-target.ts`,
+  `modules/meetings/renderer/todo-live.ts`). A CSS rule that pads a `.cm-line` class must be spelled `.wrap .cm-editor .cm-line.live-x` or the editor's
+  own `.cm-line` reset wins (it hid nested-quote indents and heading spacing for six stages). Pitfalls: `markdown()` brings its own Enter/Backspace keymap and
   paste-URL handler (both switched off); a keymap binding with `preventDefault: true` looks handled when it is not; a line break is one position but two
   characters in a CRLF note (`withBreaks`, `positions` in `live-lines.ts`); after `prettier --write` re-check any scripted text replacement. The
   real-library gate (`LIVE_EDITOR_LIBRARY=<copy of ~/CentralCommand/notes and backups> npx vitest run src/renderer/src/editor/live-library`) must pass
-  before each stage is finished. Two more pitfalls: `syntaxTree(state)` keeps the first ~3,000 characters' tree until a transaction follows the full parse (`stateFor` parses first, then sets the selection; a test that builds states any other way sees a long note's tail as plain text), and every hidden (replaced) range is an empty element in its line that a CSS grid makes a cell of its own (see `LiveEditor.module.css`, table rows). Never write scratch files (logs, screenshots) outside the session scratchpad.
+  before each editor change is finished. Two more pitfalls: `syntaxTree(state)` keeps the first ~3,000 characters' tree until a transaction
+  follows the full parse (`stateFor` parses first, then sets the selection; a test that builds states any other way sees a long note's tail as plain text), and every hidden (replaced)
+  range is an empty element in its line that a CSS grid makes a cell of its own (see `LiveEditor.module.css`, table rows). Never write scratch files (logs, screenshots) outside the session scratchpad.
 
 ## Testing the app for real (unit tests are not enough)
 
