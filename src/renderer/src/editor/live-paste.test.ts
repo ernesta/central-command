@@ -80,6 +80,12 @@ describe('the paste event', () => {
     expect(event.defaultPrevented).toBe(true)
   })
 
+  it('a made-up paste event (Cmd-Shift-V) puts a web address in as text, even over a selection', () => {
+    const { view } = openView('pick |this|')
+    view.contentDOM.dispatchEvent(pasteEvent({ 'text/plain': 'https://x.org' }))
+    expect(view.state.sliceDoc()).toBe('pick https://x.org')
+  })
+
   it('pastes nothing, and keeps the browser from pasting formatted content, when there is no text', () => {
     const { view } = openView('a|')
     const event = pasteEvent({ 'text/html': '<b>bold</b>' })

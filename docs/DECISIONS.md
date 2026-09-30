@@ -1363,3 +1363,47 @@ all five kinds of editor switch together.
 The user answered the three questions: (1) the inline and block shortcut keys (`live-keymap.ts`) move to the start of stage 3, with the list keys;
 (2) the library's Enter rules stay until stage 3 replaces them; (3) marker size in headings, escape backslashes and blank-line/heading spacing are
 stage 7 tuning.
+
+## Live markup in the notes editor, stage 3: keys, lists, tasks and paste (30 Sep 2026)
+
+Plan: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. Still behind the hidden switch. Every key is an edit of the Markdown text; nothing is rebuilt from a tree.
+
+- **Formatting keys** (`live-format.ts`, bound in `live-keymap.ts`). Inline (`Mod-b`, `Mod-i`, `Mod-Alt-x`, `Mod-e`): a selection is wrapped, with its edge white space kept
+  outside the markers; already marked (found in the syntax tree, so `_x_`, `__x__` count) means the pair comes off; a cursor in a word marks the word and keeps the
+  cursor where it was; an empty spot gets a pair with the cursor between, and an empty pair goes again. Pairs of the same kind already inside the selection are removed
+  first (else `**a **b** c**`). Block keys set the prefix of every selected line: headings 1 to 6 **set or change** the level (Mod-Alt-0 takes it off; they do not
+  toggle), quote, bullets and numbers **toggle** (quote takes off one `>` level at a time), numbers count 1., 2., 3. down the selected lines, code block wraps in a fence or,
+  inside one, takes the fence lines away. Known limit: with the selection inside a longer bold span, Cmd-B takes the whole span's markers off, it does not split the span.
+- **Lists drawn as units** (`live-widgets.ts`, in `live-decorations.ts`): the indentation, marker and following space of an item (`2. `, `- [x] `, with any nesting in front) is one atomic
+  replace widget (bullet, number, checkbox); it is drawn only once the space after the marker exists, so a `-` still being typed stays a dash. Arrow keys and clicks skip it.
+  A click on the checkbox writes `[x]`/`[ ]` (one character, one undo step). Ticked items get a muted, struck-through text. Wrapped lines hang under the text.
+- **Enter, Shift-Enter, Tab, Backspace, Delete** (`live-lists.ts`, `live-lines.ts` parses a line into quote, indent, marker, text). `lang-markdown`'s own keymap
+  (`addKeymap`) and link-on-paste (`pasteURLAsLink`) are off. Enter continues bullets, numbers (renumbering the items below **only when they counted up by one** before, so a
+  hand-numbered `1. 1. 1.` is left alone), unticked checkboxes and quotes; on an empty item it ends the list (a nested one moves out a level first); on an empty quoted line it
+  **leaves the quote entirely**, however deep (the library's rule took one level per press); nothing continues inside code. Shift-Enter writes `\` and a new line indented under the item's text (a plain new line
+  in a heading or code). Tab, Mod-] nest an item under the one before it (its children and continuation lines move too); Shift-Tab, Mod-[ move it out a level; on the first
+  item or a top-level item they do nothing but keep the key. Outside lists Tab is not ours (focus moves on); Mod-] and Mod-[ fall back to CodeMirror's plain indent. Backspace at the
+  start of an item's text: nested means out a level, top level means the whole bullet, number or checkbox goes as one step, with a blank line put before it when it would otherwise
+  run into the paragraph above. Backspace just before the drawn marker, and Delete at the end of the line above, join the item's text onto that line without its marker.
+  Quotes have no Backspace rule (their `>` is text).
+- **Home and Cmd-Left** (`live-motion.ts`) go to the first non-space character, which for an indented item is inside the marker; the cursor is moved to the start of the text.
+  Found by driving the app: Backspace from there deleted the indentation instead of running the list rule.
+- **Paste** (`live-paste.ts`): the clipboard's plain text only, always (web pages and Word leave their formatting behind; a clipboard with no text pastes nothing); line ends become the note's own;
+  a web address, `www.` address or `mailto:` pasted over a one-line selection makes `[selection](address)` (unbalanced brackets in the selection are escaped). Cmd-Shift-V arrives as
+  a made-up event through the existing IPC (`shell/usePastePlain.ts`) and never links.
+- **Windows line ends**: a line break is one position in the document but two characters in an inserted string, and a bare `\n` inserted into a CRLF note stays a bare `\n`.
+  A test with a CRLF note found the cursor going out of range after a paste; every command now inserts the note's own break and counts positions with `state.toText`.
+- **Shortcut list**: `notes-shortcuts.test.ts` has a second check against the live editor's keymap (a chord listed but not bound fails; find, `@` and Enter-with-Mod belong to later stages and
+  are listed as such). One press-the-key test per chord in `live-keymap.test.ts` and `live-lists.test.ts` (keys are pressed through `runScopeHandlers`, the way a keydown reaches the keymaps).
+- **Mutation checks**: 18 mutations of the Backspace, Delete, Enter, Shift-Enter and Tab rules (`live-lists.ts`) and 5 of paste were each killed by a test; one survived at first
+  (Enter inside code, because the tree check also stopped list continuation there) and got a test with a `> ` line in a fence. The real-library gate was checked the same way (Backspace eating one extra character fails it).
+- **Real-library gate** (`live-library.test.ts`, on a copy of `~/CentralCommand/notes` and `backups`, 406 files) now also presses every formatting and list key at 25 places per note
+  (as a cursor and over the word there): the content, once markers, white space and digits are set aside, never changes; one undo gives the note back byte for byte; text before the cursor's line is
+  untouched; every drawn unit covers exactly the marker; a checkbox click changes one character; pasting an address over a word changes nothing else. It caught nothing in the code, and three
+  mistakes in its own first version (Enter over a selection replaces it; `2|016.` split across lines is a number to a parser; `_x_` is a marker).
+- **Found only by driving the built app** (scratch library, `--user-data-dir`): (1) the list CSS lost to the editor's own `.cm-line { padding: 0 }` (same specificity trap), so bullets hung outside the
+  text and nesting had no indent; (2) the checkbox widget had no height, so it could not be clicked; (3) `lang-markdown`'s own paste handler ran before ours and linked on the made-up Cmd-Shift-V paste
+  (a jsdom test of the event, now added, fails without the fix); (4) Home landed inside a marker (above). Playwright's keys skip Electron's `before-input-event`, so the Cmd-Shift-V check
+  sends the same IPC message from the main process. Option keys were sent as a Mac sends them (`≈`, `¡`, `ç`… with the plain key code) and all bound correctly.
+- **Not done, on purpose**: the `#`/`##` of a heading being revealed with the cursor at the line start draws over the caret (stage 7 tuning); the outline does not read the live editor yet (stage 5);
+  Tab in a table row is plain Tab (stage 6); splitting a bold span with Cmd-B.

@@ -62,6 +62,18 @@ describe('in the running editor', () => {
     expect(show(view)).toBe('- [ ] |task')
   })
 
+  it('Home goes to the start of an indented item’s text, never into the marker', () => {
+    const { view } = openView('- a\n    - b|c')
+    press(view, 'Home')
+    expect(show(view)).toBe('- a\n    - |bc')
+  })
+
+  it('Shift-Home selects up to the start of the text, keeping the other end', () => {
+    const { view } = openView('- a\n  - bc|')
+    press(view, 'Shift-Home')
+    expect(show(view)).toBe('- a\n  - |bc|')
+  })
+
   it('a click on the checkbox writes [x], and another writes [ ] again', () => {
     const { view, reports } = openView('- [ ] task\n\nafter')
     const box = (): Element => view.dom.querySelector('.live-checkbox') as Element

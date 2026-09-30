@@ -136,6 +136,10 @@ with real keystrokes, look at screenshots, quit right after typing)
   Not in the spike, by design: lists drawn as units, task checkboxes, Enter/Tab/Backspace list rules (stage 3), `@` chips and picker
   (4), Cmd-F, outline-by-click, the Meetings TODO helper (5), tables and fences (6), IME/perf/dark-mode checks (7). The user answered the
   questions (shortcuts move into stage 3; marker size, escapes and spacing are stage 7) and asked for stage 3 in a fresh context.
+- **Stage 3 done (30 Sep 2026), not pushed:** `live-format.ts` (inline and block keys), `live-lists.ts` (Enter, Shift-Enter, Backspace,
+  Delete, Tab, Shift-Tab, Mod-], Mod-[), `live-widgets.ts` (bullet, number, checkbox drawn as units), `live-motion.ts` (Home/Cmd-Left stay out
+  of markers), `live-paste.ts`, `live-keymap.ts` (all bindings), `live-lines.ts` (line parsing shared by them). Details, findings and the
+  choices made are in `docs/DECISIONS.md`, "Live markup … stage 3". Stage 4 (entities) is next, after the user's review.
 - Checking recipe: scratch library under the session scratchpad with `CENTRAL_COMMAND_HOME`, `playwright-core` installed there,
   Cmd-Shift-N to make a note, real keystrokes, `app.close()` straight after typing; dev mode via `electron-vite dev` with
   `--remote-debugging-port=9333` and `connectOverCDP`.

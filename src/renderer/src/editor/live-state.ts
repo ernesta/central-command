@@ -1,9 +1,10 @@
-import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
+import { history, historyKeymap } from '@codemirror/commands'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { EditorState, type Extension } from '@codemirror/state'
 import { drawSelection, EditorView, keymap } from '@codemirror/view'
 import { liveLayer } from './live-decorations'
 import { liveKeymap } from './live-keymap'
+import { motionKeymap } from './live-motion'
 import { linkTargetAt } from './live-links'
 import { livePaste } from './live-paste'
 
@@ -27,7 +28,7 @@ export function lineSeparatorFor(text: string): string {
 }
 
 /** `Mod-i` is "select parent syntax" in the default keymap; it is italic in this editor (`live-keymap.ts`). */
-const keys = defaultKeymap.filter((binding) => binding.key !== 'Mod-i')
+const keys = motionKeymap.filter((binding) => binding.key !== 'Mod-i')
 
 export function liveExtensions(options: LiveOptions): Extension[] {
   return [
@@ -35,8 +36,9 @@ export function liveExtensions(options: LiveOptions): Extension[] {
     history(),
     drawSelection(),
     EditorView.lineWrapping,
-    // Its own Enter and Backspace rules (`addKeymap`) are replaced by `live-lists.ts`.
-    markdown({ base: markdownLanguage, addKeymap: false }),
+    // Its own Enter and Backspace rules (`addKeymap`) are replaced by `live-lists.ts`, and its link-on-paste by `live-paste.ts`
+    // (which knows a made-up paste, Cmd-Shift-V, must not link).
+    markdown({ base: markdownLanguage, addKeymap: false, pasteURLAsLink: false }),
     liveKeymap,
     keymap.of([...keys, ...historyKeymap]),
     liveLayer,

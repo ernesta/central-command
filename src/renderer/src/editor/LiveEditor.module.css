@@ -165,7 +165,8 @@
 }
 
 /* Lists: a bullet, number or checkbox stands for the marker; wrapped lines hang under the text, not under the marker. */
-.wrap :global(.live-li) {
+/* (Spelled out to outrank the `.cm-line` padding reset above.) */
+.wrap :global(.cm-editor) :global(.cm-line.live-li) {
   padding-left: calc(var(--li-cols, 0) * 0.5em + 1.6em);
   text-indent: -1.6em;
 }
@@ -176,7 +177,6 @@
   box-sizing: border-box;
   width: 1.6em;
   text-indent: 0;
-  vertical-align: baseline;
 }
 .wrap :global(.live-bullet),
 .wrap :global(.live-number) {
@@ -187,12 +187,14 @@
 }
 .wrap :global(.live-checkbox) {
   position: relative;
+  height: 1.3em;
+  vertical-align: middle;
   cursor: pointer;
 }
 .wrap :global(.live-checkbox)::before {
   content: '';
   position: absolute;
-  top: 0.45em;
+  top: 0.15em;
   left: 0.1em;
   width: 1em;
   height: 1em;
