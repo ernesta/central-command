@@ -184,7 +184,7 @@ notes plus the Rastle Lab one). Read Word files with macOS `textutil -convert tx
 - The meeting metadata row (series, date, start, end, calculated duration, type, attendees) is one flex row that wraps between fields,
   never inside one: values, the In person / Online segments and initials chips are `white-space: nowrap`.
 - In the all-meetings list the Series column is plain weight (not bold), Type never wraps, and the Attendees column is only as wide as
-  three initials pills; more people show as a muted `+N` after the third. Columns: Date, Time, Duration, Series, Type, Summary, Attendees.
+  three initials pills; more people show as a muted `+N` after the third. Columns: Date, Time, Duration, Type, Series, Summary, Attendees.
   A dash means no time recorded yet.
 - Export is a quiet, borderless "Export" control with a download icon, right-aligned in the filter row (disabled until built; it will
   act on the Supervision view, oldest first). It is used about once a year, so it must never look prominent. No header button, no long label.

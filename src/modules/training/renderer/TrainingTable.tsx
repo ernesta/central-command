@@ -13,7 +13,7 @@ import styles from './TrainingTable.module.css'
 const VISIBLE_LEADS = 3
 
 /**
- * Date, Time, Duration, Series, Type, Title and summary, Skills, Leads. Clicking anywhere on a row opens
+ * Date, Time, Duration, Type, Series, Title and summary, Skills, Leads. Clicking anywhere on a row opens
  * the entry. Like the Notes table, it is one tab stop: arrow keys, Home/End and PageUp/PageDown move
  * between rows and Enter opens the entry.
  */
@@ -41,8 +41,8 @@ export function TrainingTable({
               'Date',
               'Time',
               'Duration',
-              'Series',
               'Type',
+              'Series',
               'Title and summary',
               'Skills',
               'Leads'
@@ -83,7 +83,6 @@ export function TrainingTable({
                 <td className={styles.nowrap}>
                   {duration === null ? '—' : formatDuration(duration)}
                 </td>
-                <td className={styles.nowrap}>{row.series || '—'}</td>
                 <td className={styles.nowrap}>
                   {row.type ? (
                     typeLabel(row.type)
@@ -91,6 +90,7 @@ export function TrainingTable({
                     <span className={styles.noType}>No type yet</span>
                   )}
                 </td>
+                <td className={styles.nowrap}>{row.series || '—'}</td>
                 <td className={styles.titleCell}>
                   {(row.hasNotes || row.folder) && (
                     <span className={styles.marks}>

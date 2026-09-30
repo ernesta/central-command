@@ -23,7 +23,7 @@ A place in Research to keep the **training log** the user reports each academic 
 2. Type: the full Inkpath list, renamed slightly and harmonised so it is easy to choose (a proposal is in the Type section).
 3. The list shows title and summary (the summary is the notes' `## Summary`, as in Meetings).
 4. No days or per-type totals; hours, skills and the 200-hour aim instead.
-5. The list matches the Meetings list: Date, Time, Duration, Series, Type, Title and summary, then Skills and Leads.
+5. The list matches the Meetings list: Date, Time, Duration, Type, Series, Title and summary, then Skills and Leads.
 6. **Series** replaces "Programme" and behaves like a Meetings series (a chip and a filter). It starts with SEDarc and DataCamp.
 7. **Leads** are people, several allowed, chosen exactly like meeting attendees from the shared people list.
 8. Files are linked to existing folders, never copied.
@@ -213,7 +213,7 @@ posts or tweets; that is recorded in the roadmap, not built.
 
 1. **Training list** (`/research/training`), oldest first like the log. Header with the academic-year selector and New entry. Totals strip
    (hours of 200, hours per skill). Search and filters: series, type, skill, leads. Columns in the Meetings order: **Date, Time,
-   Duration, Series, Type, Title and summary, Skills, Leads**. Row marks show notes and a linked folder. Filters are remembered
+   Duration, Type, Series, Title and summary, Skills, Leads**. Row marks show notes and a linked folder. Filters are remembered
    (`useModuleState`). Export controls are quiet, at the right of the filter row.
 2. **Entry page** (`/research/training/t/:id`): title, a row of fields (date, start, end, calculated duration, series, type, format,
    leads), the skills (up to three chips), Summary and Notes in the editor, and a Files panel. Delete asks and moves to the Trash.
