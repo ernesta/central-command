@@ -50,8 +50,9 @@
 .hint {
   color: var(--text-muted);
   font-size: var(--text-12);
-  white-space: normal;
-  max-width: 28ch;
+  /* A line of its own under all the fields, so showing it never moves a control. */
+  flex-basis: 100%;
+  margin: 0;
 }
 .input[list],
 #training-institution {

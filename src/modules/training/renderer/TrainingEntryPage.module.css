@@ -99,4 +99,8 @@
     grid-template-columns: 1fr 1fr;
     align-items: start;
   }
+  /* Outline in the middle, Files on the very right. */
+  .side > :first-child {
+    order: 2;
+  }
 }

@@ -134,7 +134,6 @@ export function TrainingMetaFields({
           options={typeOptions}
           onChange={(type) => onChange({ type: type || null })}
         />
-        {current?.description && <span className={styles.hint}>{current.description}</span>}
       </div>
       <div className={styles.field}>
         <span className={styles.label}>Format</span>
@@ -175,6 +174,7 @@ export function TrainingMetaFields({
         <span className={styles.label}>Skills</span>
         <SkillsField skills={meta.skills} onChange={(skills) => onChange({ skills })} />
       </div>
+      {current?.description && <p className={styles.hint}>{current.description}</p>}
     </div>
   )
 }
