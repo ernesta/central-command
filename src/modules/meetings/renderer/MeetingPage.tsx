@@ -8,11 +8,12 @@ import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { WorkspaceSelect, type MovableWorkspace } from '@renderer/components/WorkspaceSelect'
+import { liveViewIn, placeCursorOnLine } from '@renderer/editor/live-outline'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { NotesEditor } from '@renderer/notes/NotesEditor'
 import { ownerOptions } from '../shared/people'
 import { meetingHeading } from '../shared/time'
-import { appendTopic, parseTopics, type Topic } from '../shared/topics'
+import { appendTopic, parseTopics, topicOffset, type Topic } from '../shared/topics'
 import type { MeetingRef, MeetingWorkspace, Person } from '../shared/types'
 import { meetingRoute, meetingsBase, useMeetingsWorkspace } from './meetings-paths'
 import { MetaFields } from './MetaFields'
@@ -109,6 +110,13 @@ function MeetingView({
 
   /** Scroll to a topic's heading in the note and put the cursor there. */
   const jumpTo = useCallback((text: string, occurrence: number): void => {
+    const live = liveViewIn(editorRef.current)
+    if (live) {
+      // The live editor draws only the lines near the screen: go by position, through the view.
+      const pos = topicOffset(live.state.doc.toString(), text, occurrence)
+      if (pos !== null) placeCursorOnLine(live, pos)
+      return
+    }
     const root = editorRef.current?.querySelector('.ProseMirror')
     if (!root) return
     const headings = Array.from(root.querySelectorAll('h2, h3')).filter(

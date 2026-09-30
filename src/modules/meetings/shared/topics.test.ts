@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { appendTopic, parseTopics } from './topics'
+import { appendTopic, parseTopics, topicOffset } from './topics'
 
 const NOTE = `## Summary
 
@@ -143,5 +143,18 @@ describe('appendTopic', () => {
       expect(out).toContain('### ZZ new')
       expect(appendTopic(out, '')).toBe(out)
     }
+  })
+})
+
+describe('topicOffset', () => {
+  it('is where the topic’s heading starts, counting topics with the same text in order', () => {
+    const body = '## Notes\n\n### A\n\ntext\n\n### B\n\n### A\n'
+    expect(topicOffset(body, 'A', 0)).toBe(body.indexOf('### A'))
+    expect(topicOffset(body, 'A', 1)).toBe(body.lastIndexOf('### A'))
+    expect(topicOffset(body, 'B', 0)).toBe(body.indexOf('### B'))
+  })
+  it('is null for a topic that is not there', () => {
+    expect(topicOffset('## Notes\n\n### A\n', 'A', 1)).toBeNull()
+    expect(topicOffset('## Notes\n\n### A\n', 'Z', 0)).toBeNull()
   })
 })

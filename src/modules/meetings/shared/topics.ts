@@ -38,6 +38,14 @@ export function parseTopics(body: string, discussed: readonly string[] = []): To
   return level3.length > 0 ? level3 : level2
 }
 
+/**
+ * Where the `occurrence`-th (from 0) topic with this text starts in `body`, or null. `body` must be text whose offsets are
+ * the editor's positions: the live editor's text with its line breaks joined as `\n`, whatever the file uses.
+ */
+export function topicOffset(body: string, text: string, occurrence: number): number | null {
+  return parseTopics(body).filter((topic) => topic.text === text)[occurrence]?.offset ?? null
+}
+
 /** A heading line's text: one line, no leading hashes. */
 function cleanTitle(title: string): string {
   return title
