@@ -4,9 +4,12 @@ import type { EditorView } from '@codemirror/view'
 import { readdirSync, readFileSync, statSync } from 'fs'
 import { join } from 'path'
 import { describe, expect, it } from 'vitest'
+import { insertTodoText, todoTriggerAt } from '@modules/meetings/renderer/todo-live'
 import { findMentions } from '@shared/entities'
 import { splitNote } from '@shared/front-matter'
+import { wordCount, wordsOf } from '@shared/words'
 import { deleteChip, findSuggestion, liveTarget } from './live-entities'
+import { findInDoc, liveFindTarget } from './live-find'
 import { formatBindings, listBindings } from './live-keymap'
 import { parseLine } from './live-lines'
 import { pasteText } from './live-paste'
@@ -263,6 +266,120 @@ function checkMentions(file: string, text: string): { chips: number } {
   return { chips }
 }
 
+/** A view that only has a state and records what is dispatched: enough for the commands that read and write text. */
+function fakeView(state: EditorState): { view: EditorView; last: () => Transaction | null } {
+  let last: Transaction | null = null
+  const view = {
+    state,
+    dispatch: (spec: TransactionSpec) => (last = state.update(spec)),
+    focus: () => undefined
+  } as unknown as EditorView
+  return { view, last: () => last }
+}
+
+/**
+ * Find and replace over the real markup. For a spread of words in each note: the matches are exactly those an independent
+ * search (a regular expression over the text) finds, replace-all and replace-one give exactly the text with those stretches
+ * replaced and nothing else, and one undo gives the note back byte for byte.
+ */
+function checkFind(file: string, text: string): { searched: number } {
+  let searched = 0
+  const step = Math.max(1, Math.floor(text.length / 25))
+  for (let pos = 0; pos <= text.length; pos += step) {
+    const state = stateFor(text, pos)
+    const word = state.wordAt(pos)
+    if (!word) continue
+    const label = state.sliceDoc(word.from, word.to)
+    if (!/^[\p{L}\p{N}]+$/u.test(label)) continue
+    const doc = state.doc.toString()
+    const expected = [...doc.matchAll(new RegExp(label, 'giu'))].map((m) => ({
+      from: m.index,
+      to: m.index + m[0].length
+    }))
+    const found = findInDoc(state.doc, label)
+    expect(found, `${file} find "${label}"`).toEqual(expected)
+    searched += 1
+    expect(found.length, file).toBeGreaterThan(0)
+
+    const replaceWith = (ranges: { from: number; to: number }[], insert: string): string =>
+      ranges.reduceRight((out, r) => out.slice(0, r.from) + insert + out.slice(r.to), doc)
+
+    const all = fakeView(state)
+    liveFindTarget(all.view).replaceAll(found, 'ΩΩ')
+    expect(all.last()?.newDoc.toString(), `${file} replace all "${label}"`).toBe(
+      replaceWith(found, 'ΩΩ')
+    )
+    const undoneAll = run(undo as never, (all.last() as Transaction).state)
+    expect(undoneAll.tr?.newDoc.sliceString(0), `${file} undo all`).toBe(text)
+
+    for (const match of [found[0], found[found.length - 1]]) {
+      const one = fakeView(state)
+      liveFindTarget(one.view).replace(match, '')
+      expect(one.last()?.newDoc.toString(), `${file} replace one "${label}"`).toBe(
+        replaceWith([match], '')
+      )
+      const undone = run(undo as never, (one.last() as Transaction).state)
+      expect(undone.tr?.newDoc.sliceString(0), `${file} undo one`).toBe(text)
+    }
+  }
+  return { searched }
+}
+
+/**
+ * The TODO helper among the real markup. At a spread of places, writing a TODO there (or over the word there) changes
+ * exactly that stretch to `**TODO(EO)**: ` with the cursor after it, and one undo gives the note back; the `/todo` trigger
+ * is recognised only after white space or at a line start, and only for exactly those five characters.
+ */
+function checkTodo(file: string, text: string): { triggers: number } {
+  let triggers = 0
+  const step = Math.max(1, Math.floor(text.length / 25))
+  for (let pos = 0; pos <= text.length; pos += step) {
+    const state = stateFor(text, pos)
+    const doc = state.doc.toString()
+    const word = state.wordAt(pos)
+    for (const [from, to, owner] of [
+      [pos, pos, 'EO'],
+      ...(word ? [[word.from, word.to, null] as const] : [])
+    ] as [number, number, string | null][]) {
+      const here = fakeView(state)
+      insertTodoText(here.view, from, to, owner)
+      const tr = here.last() as Transaction
+      const inserted = `**${owner ? `TODO(${owner})` : 'TODO'}**: `
+      expect(tr.newDoc.toString(), `${file} todo @${from}-${to}`).toBe(
+        doc.slice(0, from) + inserted + doc.slice(to)
+      )
+      expect(tr.newSelection.main.head, `${file} todo cursor`).toBe(from + inserted.length)
+      const undone = run(undo as never, tr.state)
+      expect(undone.tr?.newDoc.sliceString(0), `${file} todo undo`).toBe(text)
+    }
+    // `/todo` typed here.
+    const typed = `${doc.slice(0, pos)}/todo${doc.slice(pos)}`
+    const end = pos + 5
+    const at = todoTriggerAt({ state: stateFor(typed, end) } as EditorView, end)
+    if (at !== null) {
+      triggers += 1
+      expect(at, `${file} trigger start`).toBe(pos)
+      const line = state.doc.lineAt(pos)
+      const lead = doc.slice(line.from, pos)
+      expect(lead === '' || /\s$/.test(lead), `${file} trigger lead "${lead}"`).toBe(true)
+    }
+  }
+  return { triggers }
+}
+
+/**
+ * The word count has no Markdown left in it: no word that is only marker characters, nothing of a link's address. (`=`, `>`, `|` and `#` are left out of the marker set: real prose has `mean = 500` and `a > b`, and one real note has
+ * a heading written `## ## Title`, whose second `##` is text.)
+ */
+function checkWords(file: string, text: string): void {
+  const words = wordsOf(text)
+  expect(wordCount(text), file).toBe(words.length)
+  for (const word of words) {
+    expect(/^[*_~`\\]+$/.test(word), `${file}: "${word}" is only markers`).toBe(false)
+    expect(word.includes(']('), `${file}: "${word}" has an address in it`).toBe(false)
+  }
+}
+
 describe.skipIf(!root)('every note of a real library', () => {
   const files = root ? markdownFiles(root) : []
 
@@ -301,6 +418,31 @@ describe.skipIf(!root)('every note of a real library', () => {
     // A check that finds nothing to check proves nothing.
     expect(chips).toBeGreaterThan(files.length)
   }, 1_200_000)
+
+  it('finds words as an independent search does, and replace (all or one) changes exactly the matches, undone in one step', () => {
+    let searched = 0
+    for (const file of files) {
+      const whole = readFileSync(file, 'utf8')
+      searched += checkFind(file, splitNote(whole).body).searched
+    }
+    expect(searched).toBeGreaterThan(files.length)
+  }, 1_200_000)
+
+  it('writes a TODO exactly over the range it is given, undone in one step, and opens the menu only where /todo belongs', () => {
+    let triggers = 0
+    for (const file of files) {
+      const whole = readFileSync(file, 'utf8')
+      triggers += checkTodo(file, splitNote(whole).body).triggers
+    }
+    expect(triggers).toBeGreaterThan(files.length)
+  }, 1_200_000)
+
+  it('counts words without counting Markdown', () => {
+    for (const file of files) {
+      const whole = readFileSync(file, 'utf8')
+      for (const text of [splitNote(whole).body, whole]) checkWords(file, text)
+    }
+  }, 600_000)
 
   it('pastes a web address over a word as a link and changes nothing else', () => {
     for (const file of files) {
