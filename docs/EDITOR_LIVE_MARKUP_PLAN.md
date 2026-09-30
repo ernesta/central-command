@@ -97,7 +97,7 @@ with real keystrokes, look at screenshots, quit right after typing)
    or new editor per app (`localStorage`, not shown in Settings), so nothing changes for the user until parity. Gate: an identity test
    over every file of a copy of the real library (open, no edit: zero changes reported; simulated edit elsewhere: the rest of the text
    byte-identical). Screenshots to the user before continuing. If the look or feel is wrong, this is where we stop or adjust.
-3. **Lists, tasks, quotes and paste.** Bullets and numbers drawn as units, checkbox toggle (click writes `[x]`), continue/indent/outdent
+3. **Shortcut keys, lists, tasks, quotes and paste.** (Starts with `live-keymap.ts`: the inline and block keys from "Shortcuts", with a test per key; agreed 30 Sep 2026.) Bullets and numbers drawn as units, checkbox toggle (click writes `[x]`), continue/indent/outdent
    keys and the Backspace rule, nested quotes, Cmd-Shift-V (the existing IPC), paste as plain text. Formatted paste (web, Word) is
    pasted as plain text (the user's call, 30 Sep 2026); converting HTML to Markdown is a possible later addition (adds a small dependency; ask first).
 4. **Entities.** Chips, atomic behaviour, `@` picker, hover card, Cmd-click, "Mentioned in" unaffected (it reads files). Includes a
@@ -134,8 +134,8 @@ with real keystrokes, look at screenshots, quit right after typing)
   `localStorage.setItem('central-command.liveEditor', '1')` in the developer tools and reload; `NotesEditor` then renders `LiveEditor`
   (every consumer, one import). The identity gate passed over all 406 files of a copy of the real library (see `docs/DECISIONS.md`).
   Not in the spike, by design: lists drawn as units, task checkboxes, Enter/Tab/Backspace list rules (stage 3), `@` chips and picker
-  (4), Cmd-F, outline-by-click, the Meetings TODO helper (5), tables and fences (6), IME/perf/dark-mode checks (7). Waiting for the
-  user's decision to continue.
+  (4), Cmd-F, outline-by-click, the Meetings TODO helper (5), tables and fences (6), IME/perf/dark-mode checks (7). The user answered the
+  questions (shortcuts move into stage 3; marker size, escapes and spacing are stage 7) and asked for stage 3 in a fresh context.
 - Checking recipe: scratch library under the session scratchpad with `CENTRAL_COMMAND_HOME`, `playwright-core` installed there,
   Cmd-Shift-N to make a note, real keystrokes, `app.close()` straight after typing; dev mode via `electron-vite dev` with
   `--remote-debugging-port=9333` and `connectOverCDP`.

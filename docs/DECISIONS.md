@@ -1357,3 +1357,9 @@ all five kinds of editor switch together.
 - Escapes such as `\*` show their backslash (a real character); hiding it was not in the design. Blank lines are drawn shorter than a line of text
   (0.9 line-height) so paragraphs are spaced like today; a heading has half a line of space above it. Both are tuning for stage 7.
 - Mixed `* ` and `- ` lists, hand spacing and so on stay untouched, as designed (18 of the 406 files use `* `).
+
+### Answers (30 Sep 2026)
+
+The user answered the three questions: (1) the inline and block shortcut keys (`live-keymap.ts`) move to the start of stage 3, with the list keys;
+(2) the library's Enter rules stay until stage 3 replaces them; (3) marker size in headings, escape backslashes and blank-line/heading spacing are
+stage 7 tuning.

@@ -1,6 +1,6 @@
 # Roadmap
 
-**Next, requested 30 Sep 2026: live markup in the notes editor, the Typora way**: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. Redesigned the same day: the editor moves from Milkdown to CodeMirror 6 so markers are real text. Stages 1 and 2 are done and committed (stage 2: `LiveEditor` behind a hidden switch, see the plan's Progress). **Waiting for the user's look at the stage 2 screenshots and answers to the questions in `docs/DECISIONS.md`, "Live markup … stage 2", before stage 3.** Nothing is pushed.
+**Next, requested 30 Sep 2026: live markup in the notes editor, the Typora way**: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. Redesigned the same day: the editor moves from Milkdown to CodeMirror 6 so markers are real text. Stages 1 and 2 are done and committed (stage 2: `LiveEditor` behind a hidden switch, see the plan's Progress). Stage 2 is reviewed and pushed; **stage 3 is next** (it now starts with the shortcut keys).
 
 ## For Claude: six things requested 27 Sep 2026, go-ahead given — work through these without further check-in
 
