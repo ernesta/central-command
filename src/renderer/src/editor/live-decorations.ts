@@ -1,5 +1,5 @@
 import { syntaxTree } from '@codemirror/language'
-import type { EditorState, Extension, Range } from '@codemirror/state'
+import { StateEffect, type EditorState, type Extension, type Range } from '@codemirror/state'
 import {
   Decoration,
   type DecorationSet,
@@ -253,25 +253,48 @@ export function buildDecorations(
   return Decoration.set(out, true)
 }
 
-/** Rebuilds the decorations when the text, selection, focus, viewport or parse changes. */
+/** Sent a moment after a composition ends, so what was held back while it lasted is drawn. */
+const compositionEnded = StateEffect.define<null>()
+
+/**
+ * Rebuilds the decorations when the text, selection, focus, viewport or parse changes. **Not while an input method is
+ * composing** (a dead key, Japanese, Chinese, Korean): showing or hiding a marker then changes the DOM round the text
+ * being composed, which can end the composition or drop what was typed. Until it ends, what is drawn is only moved along
+ * with the edits; the redraw comes with the first update after it.
+ */
 export const liveDecorations = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet
     /** The drawn units (bullet, number, checkbox): the cursor moves over each in one step. */
     atomic: DecorationSet
+    /** Was a composition going on at the last update? */
+    composing = false
     constructor(view: EditorView) {
       this.decorations = this.build(view)
       this.atomic = atomicOf(this.decorations)
     }
     update(update: ViewUpdate): void {
+      const composing = update.view.compositionStarted
+      if (composing) {
+        if (update.docChanged) {
+          this.decorations = this.decorations.map(update.changes)
+          this.atomic = atomicOf(this.decorations)
+        }
+        this.composing = true
+        return
+      }
       if (
+        this.composing ||
         update.docChanged ||
         update.selectionSet ||
         update.viewportChanged ||
         update.focusChanged ||
-        update.transactions.some((tr) => tr.effects.some((effect) => effect.is(refreshMentions))) ||
+        update.transactions.some((tr) =>
+          tr.effects.some((effect) => effect.is(refreshMentions) || effect.is(compositionEnded))
+        ) ||
         syntaxTree(update.startState) !== syntaxTree(update.state)
       ) {
+        this.composing = false
         this.decorations = this.build(update.view)
         this.atomic = atomicOf(this.decorations)
       }
@@ -284,7 +307,18 @@ export const liveDecorations = ViewPlugin.fromClass(
       )
     }
   },
-  { decorations: (plugin) => plugin.decorations }
+  {
+    decorations: (plugin) => plugin.decorations,
+    eventHandlers: {
+      // CodeMirror clears its composition a moment after the event and does not always send an update, so ask for one.
+      compositionend(_event, view) {
+        setTimeout(() => {
+          if (view.dom.isConnected && !view.compositionStarted)
+            view.dispatch({ effects: compositionEnded.of(null) })
+        }, 80)
+      }
+    }
+  }
 )
 
 const atomicOf = (set: DecorationSet): DecorationSet =>
