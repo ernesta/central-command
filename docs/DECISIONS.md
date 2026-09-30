@@ -1407,3 +1407,6 @@ Plan: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. Still behind the hidden switch. Every k
   sends the same IPC message from the main process. Option keys were sent as a Mac sends them (`≈`, `¡`, `ç`… with the plain key code) and all bound correctly.
 - **Not done, on purpose**: the `#`/`##` of a heading being revealed with the cursor at the line start draws over the caret (stage 7 tuning); the outline does not read the live editor yet (stage 5);
   Tab in a table row is plain Tab (stage 6); splitting a bold span with Cmd-B.
+- **Marker colour**: the user found stage 2's gold `--marker` ugly; it is now a slate, `light-dark(#7a8592, #8794a1)`, checked in light and dark. One token, easy to retune.
+- **Pitfalls worth remembering** (also in `CLAUDE.md`): after `prettier --write`, a scripted `str.replace` on the same file can silently miss (it did, twice, and the list keys were not bound
+  until a test noticed); CodeMirror's `keymap` `preventDefault: true` makes an unhandled key look handled; `markdown()` brings its own Enter/Backspace keymap and paste handler.
