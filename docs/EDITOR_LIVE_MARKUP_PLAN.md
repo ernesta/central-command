@@ -56,6 +56,16 @@ link. Move away and it becomes formatting again. No mode to switch.
 - Lists: keep bullets and checkboxes as they are (proposed), or show `- ` too?
 - A selection across several blocks: markers for none, or for the block the selection ends in?
 
+## Progress (30 Sep 2026)
+
+- Stage 1 done, commit `bd26898`, not pushed. Files: `notes-block-keymap.ts` and its test. Milkdown already lowers headings on
+  Backspace, so only the input-rule undo and the quote unwrap were added. `###`, space, Backspace leaves `### ` (with the space).
+- Stage 2 not started; the three open questions are unanswered. Recommended defaults: keep the current link-address editing; keep
+  bullets and checkboxes as they are; show markers for no block when the selection spans several.
+- Checking recipe used: scratch library under the session scratchpad with `CENTRAL_COMMAND_HOME`, `playwright-core` installed there,
+  Cmd-Shift-N to make a note, real keystrokes, `app.close()` straight after typing; dev mode via `electron-vite dev` with
+  `--remote-debugging-port=9333` and `connectOverCDP`.
+
 ## Not in scope
 
 Source mode (option 2 in the mockup) is separate and can come later; nothing here prevents it.
