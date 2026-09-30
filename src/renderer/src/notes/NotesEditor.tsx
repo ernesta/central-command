@@ -1,3 +1,4 @@
+import type { Extension } from '@codemirror/state'
 import { Editor, defaultValueCtx, editorViewCtx, rootCtx } from '@milkdown/kit/core'
 import { Milkdown, MilkdownProvider, useEditor, useInstance } from '@milkdown/react'
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
@@ -34,6 +35,8 @@ interface NotesEditorProps {
    * last, after the shared plugins, so its key handling is the outermost.
    */
   findSetup: (editor: Editor) => Editor
+  /** The same as `setup`, for the live editor: CodeMirror extensions for one kind of note. Applied once, when the editor is created. */
+  extensions?: readonly Extension[]
   /** Put the cursor in the note as soon as the editor is ready (a note started from quick capture). */
   autoFocus?: boolean
   /** The note or meeting this text belongs to, so `@` never offers it as a link to itself. */

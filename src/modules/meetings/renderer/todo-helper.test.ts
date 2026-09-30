@@ -63,6 +63,8 @@ async function harness(markdown: string): Promise<Harness> {
   ).create()
   h.editor = editor
   h.view = editor.action((ctx) => ctx.get(editorViewCtx))
+  // jsdom has no layout: say where a position is on the screen (the menu opens at the start of what it replaces).
+  h.view.coordsAtPos = (pos) => ({ left: pos, right: pos, top: 0, bottom: pos + 20 })
   h.markdown = () => editor.action(getMarkdown())
   h.cursorAfter = (text) => {
     let pos = -1
@@ -153,6 +155,15 @@ describe('typing /todo', () => {
     expect(h.markdown()).toBe('Point one /todo\n')
   })
 
+  it('hands the menu a way to write the TODO over the /todo', async () => {
+    h = await harness('Point one /tod')
+    h.cursorAfter('/tod')
+    h.type('o')
+    await vi.runAllTimersAsync()
+    h.opened[0].insert('KR')
+    expect(h.markdown()).toBe('Point one **TODO(KR)**: \n')
+  })
+
   it('also works at the very start of a line', async () => {
     h = await harness('/tod')
     h.cursorAfter('/tod')
@@ -196,7 +207,7 @@ describe('keys', () => {
       handled: true,
       prevented: true
     })
-    expect(h.opened[0]).toMatchObject({ from: at, to: at })
+    expect(h.opened[0]).toMatchObject({ from: at, to: at, at: { left: at, bottom: at + 20 } })
     h.open = false
     h.press('t', { ctrlKey: true, shiftKey: true })
     expect(h.opened).toHaveLength(2)

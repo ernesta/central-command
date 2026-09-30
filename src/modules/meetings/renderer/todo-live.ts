@@ -1,0 +1,144 @@
+import { EditorSelection, Prec, type Extension } from '@codemirror/state'
+import { EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view'
+import type { SyntaxNode } from '@lezer/common'
+import { treeTo } from '@renderer/editor/live-lines'
+import { matchesShortcut } from '@shared/shortcuts'
+import { TODO_SHORTCUT } from '../shared/shortcuts'
+import { type MenuKey, type TodoMenuBridge } from './todo-helper'
+
+/*
+ * The TODO helper for the live editor (the Milkdown one is `todoHelperPlugin`, in `todo-helper.ts`): typing `/todo` (at the
+ * start of a line or after a space) or pressing Cmd/Ctrl+Shift+T opens the menu of owners, which is `useTodoHelper`'s and
+ * knows nothing of the editor. While it is open it takes the arrow keys, Enter, Tab and Escape; typing, Backspace or
+ * moving the cursor closes it. Choosing writes `**TODO(XX)**: ` as plain text.
+ */
+
+const TRIGGER = '/todo'
+const KEYS: Record<string, MenuKey> = {
+  ArrowUp: 'up',
+  ArrowDown: 'down',
+  Enter: 'enter',
+  Escape: 'escape',
+  Tab: 'enter'
+}
+
+/**
+ * Replace `[from, to)` with a bold `TODO(XX)` (or `TODO`) followed by a colon and a space, and put the cursor after it, outside
+ * the bold. What results is `**TODO(XX)**: `, which is exactly what the TODO parser reads, so typing it by hand and using the
+ * helper are the same thing.
+ */
+export function insertTodoText(
+  view: EditorView,
+  from: number,
+  to: number,
+  owner: string | null
+): void {
+  const text = `**${owner ? `TODO(${owner})` : 'TODO'}**: `
+  view.dispatch({
+    changes: { from, to, insert: text },
+    selection: EditorSelection.cursor(from + text.length),
+    scrollIntoView: true,
+    userEvent: 'input.complete'
+  })
+  view.focus()
+}
+
+const NOT_A_PLACE_FOR_A_TODO = new Set(['InlineCode', 'FencedCode', 'CodeBlock', 'CodeText'])
+
+/**
+ * Whether `/todo` ends exactly at `pos`, at the start of the line or after white space, and not in code. Returns where it starts.
+ */
+export function todoTriggerAt(view: EditorView, pos: number): number | null {
+  const line = view.state.doc.lineAt(pos)
+  const before = view.state.sliceDoc(line.from, pos)
+  if (!before.endsWith(TRIGGER)) return null
+  const lead = before.slice(0, -TRIGGER.length)
+  if (lead !== '' && !/\s$/.test(lead)) return null
+  for (
+    let node: SyntaxNode | null = treeTo(view.state, pos).resolveInner(pos, -1);
+    node;
+    node = node.parent
+  )
+    if (NOT_A_PLACE_FOR_A_TODO.has(node.name)) return null
+  return pos - TRIGGER.length
+}
+
+/** Whether this update is one letter typed at a cursor (not a paste, not a replaced selection); returns where the cursor is. */
+function typedLetter(update: ViewUpdate): number | null {
+  if (!update.transactions.some((tr) => tr.isUserEvent('input.type'))) return null
+  let count = 0
+  let cursor: number | null = null
+  update.changes.iterChanges((fromA, toA, _fromB, toB, inserted) => {
+    count += 1
+    if (fromA === toA && inserted.length === 1) cursor = toB
+  })
+  return count === 1 ? cursor : null
+}
+
+/** The TODO helper for a live editor, talking to the menu through `bridge`. */
+export function liveTodoHelper(bridge: TodoMenuBridge): Extension {
+  const openAt = (view: EditorView, from: number, to: number): void => {
+    bridge.open({
+      from,
+      to,
+      at: view.coordsAtPos(from) ?? { left: 0, bottom: 0 },
+      insert: (owner) => insertTodoText(view, from, to, owner)
+    })
+  }
+  return [
+    ViewPlugin.fromClass(
+      class {
+        update(update: ViewUpdate): void {
+          // Typing or moving the cursor elsewhere closes the menu (choosing has closed it already, before it writes).
+          if (bridge.isOpen() && (update.docChanged || update.selectionSet)) bridge.close()
+          const cursor = update.docChanged ? typedLetter(update) : null
+          if (cursor === null) return
+          const from = todoTriggerAt(update.view, cursor)
+          if (from === null) return
+          // The menu goes where the text is on screen, which cannot be read in the middle of an update.
+          update.view.requestMeasure({
+            key: this,
+            read: (view) => view.coordsAtPos(from),
+            write: (at, view) => {
+              // Typed on since: the `/todo` is no longer there, or the cursor has left it.
+              const head = view.state.selection.main
+              if (!head.empty || head.head !== cursor || todoTriggerAt(view, cursor) !== from)
+                return
+              bridge.open({
+                from,
+                to: cursor,
+                at: at ?? { left: 0, bottom: 0 },
+                insert: (owner) => insertTodoText(view, from, cursor, owner)
+              })
+            }
+          })
+        }
+        destroy(): void {
+          bridge.close()
+        }
+      }
+    ),
+    Prec.highest(
+      EditorView.domEventHandlers({
+        keydown(event, view) {
+          if (bridge.isOpen()) {
+            const key = KEYS[event.key]
+            if (key && bridge.key(key)) {
+              event.preventDefault()
+              return true
+            }
+            if (!event.metaKey && !event.ctrlKey && !event.altKey && event.key.length === 1)
+              bridge.close()
+            if (event.key === 'Backspace') bridge.close()
+            return false
+          }
+          if (!matchesShortcut(event, TODO_SHORTCUT)) return false
+          event.preventDefault()
+          const { from, to } = view.state.selection.main
+          openAt(view, from, to)
+          return true
+        }
+      })
+    )
+  ]
+}

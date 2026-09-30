@@ -289,6 +289,7 @@ function MeetingView({
                 placeholder="Write your meeting notes…"
                 showPlaceholder={body.trim() === ''}
                 setup={todo.setup}
+                extensions={[todo.live]}
                 findSetup={findSetup}
                 entitySelf={{
                   kind: 'meeting',

@@ -5,16 +5,22 @@ import { $ctx, $prose } from '@milkdown/kit/utils'
 import { matchesShortcut } from '@shared/shortcuts'
 import { TODO_SHORTCUT } from '../shared/shortcuts'
 
-/** Where the menu should open, and the text the chosen TODO replaces (the typed `/todo`, or nothing). */
+/**
+ * Where the menu should open, and the text the chosen TODO replaces (the typed `/todo`, or nothing). Made by an editor
+ * (`todoHelperPlugin` for Milkdown, `todo-live.ts` for the live one), so the menu does not know which library it serves.
+ */
 export interface TodoMenuRequest {
-  view: EditorView
   from: number
   to: number
+  /** Where the menu goes: the bottom left of the text it is for, in viewport pixels. */
+  at: { left: number; bottom: number }
+  /** Write the TODO (for this owner's initials, or none) in place of `[from, to)` and put the cursor after it. */
+  insert(owner: string | null): void
 }
 
 export type MenuKey = 'up' | 'down' | 'enter' | 'escape'
 
-/** How the plugin talks to the menu component. Set by `useTodoHelper` when the editor is created. */
+/** How an editor talks to the menu component. Set by `useTodoHelper` when the editor is created. */
 export interface TodoMenuBridge {
   open(request: TodoMenuRequest): void
   close(): void
@@ -56,6 +62,16 @@ export function insertTodo(view: EditorView, from: number, to: number, owner: st
   tr.setSelection(TextSelection.create(tr.doc, end)).setStoredMarks([])
   view.dispatch(tr)
   view.focus()
+}
+
+/** The menu's request for Milkdown: it opens at `from` and writes the TODO with `insertTodo`. */
+function requestFor(view: EditorView, from: number, to: number): TodoMenuRequest {
+  return {
+    from,
+    to,
+    at: view.coordsAtPos(from),
+    insert: (owner) => insertTodo(view, from, to, owner)
+  }
 }
 
 /** The text between the start of the current block and `pos`. */
@@ -101,7 +117,7 @@ export const todoHelperPlugin = $prose((ctx) => {
         if (matchesShortcut(event, TODO_SHORTCUT)) {
           event.preventDefault()
           const { from, to } = view.state.selection
-          bridge.open({ view, from, to })
+          bridge.open(requestFor(view, from, to))
           return true
         }
         return false
@@ -115,7 +131,7 @@ export const todoHelperPlugin = $prose((ctx) => {
         // Let the letter be typed, then open the menu over the whole `/todo`.
         setTimeout(() => {
           const end = from + text.length
-          bridge.open({ view, from: end - TRIGGER.length, to: end })
+          bridge.open(requestFor(view, end - TRIGGER.length, end))
         }, 0)
         return false
       }

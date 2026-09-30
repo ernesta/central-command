@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
+import type { Extension } from '@codemirror/state'
 import type { Editor } from '@milkdown/kit/core'
 import type { OwnerOption } from '../shared/people'
 import {
-  insertTodo,
   todoHelperPlugin,
   todoMenuCtx,
   type MenuKey,
   type TodoMenuBridge,
   type TodoMenuRequest
 } from './todo-helper'
+import { liveTodoHelper } from './todo-live'
 import styles from './TodoMenu.module.css'
 
 interface Item {
@@ -43,8 +44,7 @@ class TodoMenuController implements TodoMenuBridge {
   ) {}
 
   open = (request: TodoMenuRequest): void => {
-    const at = request.view.coordsAtPos(request.from)
-    this.current = { request, x: at.left, y: at.bottom }
+    this.current = { request, x: request.at.left, y: request.at.bottom }
     this.activeIndex = 0
     this.setActive(0)
     this.setOpen(this.current)
@@ -71,8 +71,7 @@ class TodoMenuController implements TodoMenuBridge {
     const item = this.items[index]
     if (!current || !item) return
     this.close()
-    const { view, from, to } = current.request
-    insertTodo(view, from, to, item.initials)
+    current.request.insert(item.initials)
   }
 
   key = (key: MenuKey): boolean => {
@@ -90,6 +89,8 @@ class TodoMenuController implements TodoMenuBridge {
  */
 export function useTodoHelper(owners: readonly OwnerOption[]): {
   setup: (editor: Editor) => Editor
+  /** The same helper for the live editor: `NotesEditor`'s `extensions`. */
+  live: Extension
   menu: React.ReactNode
 } {
   const [open, setOpen] = useState<Open | null>(null)
@@ -115,6 +116,8 @@ export function useTodoHelper(owners: readonly OwnerOption[]): {
           .use(todoMenuCtx)
           .use(todoHelperPlugin)
   )
+
+  const [live] = useState(() => liveTodoHelper(controller))
 
   // A click anywhere outside the menu closes it.
   useEffect(() => {
@@ -158,5 +161,5 @@ export function useTodoHelper(owners: readonly OwnerOption[]): {
     </div>
   ) : null
 
-  return { setup, menu }
+  return { setup, live, menu }
 }
