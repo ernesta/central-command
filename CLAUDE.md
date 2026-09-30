@@ -135,11 +135,11 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   Markdown text is the document, markers drawn only where the cursor is). Plan: `docs/EDITOR_LIVE_MARKUP_PLAN.md`; write-ups in
   `docs/DECISIONS.md` ("Live markup … stage 1/2/3"). Stages 1 to 3 are done and pushed (stage 4 is committed, not pushed) (stage 3: formatting keys, lists drawn as units, list
   keys, plain paste); it is behind a hidden switch (`localStorage` `central-command.liveEditor` = `1`, then reload) until stage 8, so
-  Milkdown stays the default. Stage 4 (entities: chips, `@` picker, hover card) is done and committed, not pushed; stage 5 (Find and replace, outline, word count, TODO helper: `find-types.ts`, `live-find.ts`, `live-outline.ts`, `todo-live.ts`) is done and committed, not pushed; stage 6 (tables and fenced code) is next, after the user's review. Pitfalls: `markdown()` brings its own Enter/Backspace keymap and
+  Milkdown stays the default. Stage 4 (entities: chips, `@` picker, hover card) is done and committed, not pushed; stage 5 (Find and replace, outline, word count, TODO helper: `find-types.ts`, `live-find.ts`, `live-outline.ts`, `todo-live.ts`) is done and committed, not pushed; stage 6 (tables: grid away from the cursor, text in it, Tab between cells, `live-tables.ts`; fenced code: fence lines shown only in the block, `live-fences.ts`) is done and committed, not pushed; stage 7 (interactions) is next, after the user's review. Pitfalls: `markdown()` brings its own Enter/Backspace keymap and
   paste-URL handler (both switched off); a keymap binding with `preventDefault: true` looks handled when it is not; a line break is one position but two
   characters in a CRLF note (`withBreaks`, `positions` in `live-lines.ts`); after `prettier --write` re-check any scripted text replacement. The
   real-library gate (`LIVE_EDITOR_LIBRARY=<copy of ~/CentralCommand/notes and backups> npx vitest run src/renderer/src/editor/live-library`) must pass
-  before each stage is finished. Never write scratch files (logs, screenshots) outside the session scratchpad.
+  before each stage is finished. Two more pitfalls: `syntaxTree(state)` keeps the first ~3,000 characters' tree until a transaction follows the full parse (`stateFor` parses first, then sets the selection; a test that builds states any other way sees a long note's tail as plain text), and every hidden (replaced) range is an empty element in its line that a CSS grid makes a cell of its own (see `LiveEditor.module.css`, table rows). Never write scratch files (logs, screenshots) outside the session scratchpad.
 
 ## Testing the app for real (unit tests are not enough)
 

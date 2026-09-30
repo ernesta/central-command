@@ -63,7 +63,7 @@ honest (its Milkdown-source check is replaced by a test per shortcut that presse
   of an item's content removes the bullet or checkbox as one step (outdent first, then a plain paragraph). The user confirmed this.
 - **Unchanged:** undo/redo, Find and replace keys, `@`, Cmd-click, paste-over-selection, `Mod-Shift-v` (existing IPC), `Shift-Enter` (inserts a
   backslash line break, as the editor writes today).
-- **Until stage 6:** Tab in a table row indents as plain text; table-cell navigation comes with tables.
+- **Tables (stage 6):** Tab and Shift-Tab move between cells; Tab in the last cell adds a row.
 
 ## Architecture
 
@@ -104,7 +104,7 @@ with real keystrokes, look at screenshots, quit right after typing)
    mutation check on the "Backspace removes the whole chip" logic.
 5. **DONE (30 Sep 2026). Find and replace, outline, word count, Meetings TODO helper.** Find matches source text, so a word inside `**bold**` is found; a
    query of only marker characters matches markers (acceptable, recorded). Word count strips markers.
-6. **Tables and fenced code.** Tables: styled monospace pipes while the cursor is in the table, a rendered grid otherwise (three notes
+6. **DONE (30 Sep 2026). Tables and fenced code.** Tables: styled monospace pipes while the cursor is in the table, a rendered grid otherwise (three notes
    use them, so this can be the plainest thing that reads well). Fenced code: fence lines while the cursor is in.
 7. **Interactions.** IME composition (no reveal changes mid-composition), selection across blocks, undo/redo never surprising, very long
    note performance (a 20,000-word note types without lag), dark mode, caret and focus ring against the marker colour, no layout jump
@@ -145,6 +145,7 @@ with real keystrokes, look at screenshots, quit right after typing)
   "Live markup … stage 4". Stage 5 is next, after the user's review.
 - **Stage 5 done (30 Sep 2026), not pushed:** `editor/live-find.ts` (Find and replace on a `FindTarget`, `notes/find-types.ts`), `editor/live-outline.ts` (outline and Meetings' topics jump through the view), `wordCount` reads Markdown as typed,
   `meetings/renderer/todo-live.ts` (the TODO helper), `LiveEditor` takes `extensions`. Details, findings and the choices made are in `docs/DECISIONS.md`, "Live markup … stage 5". Stage 6 (tables and fenced code) is next, after the user's review.
+- **Stage 6 done (30 Sep 2026), not pushed:** `editor/live-tables.ts` (grid away from the cursor, text in it, `tableTab`), `editor/live-fences.ts`, the gate extended for both (and its test states now carry the full syntax tree, which they had not: see `docs/DECISIONS.md`, "Live markup … stage 6"). Stage 7 (interactions) is next, after the user's review.
 - Checking recipe: scratch library under the session scratchpad with `CENTRAL_COMMAND_HOME`, `playwright-core` installed there,
   Cmd-Shift-N to make a note, real keystrokes, `app.close()` straight after typing; dev mode via `electron-vite dev` with
   `--remote-debugging-port=9333` and `connectOverCDP`.

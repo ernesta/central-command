@@ -1,6 +1,6 @@
 # Roadmap
 
-**Next, requested 30 Sep 2026: live markup in the notes editor, the Typora way**: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. Redesigned the same day: the editor moves from Milkdown to CodeMirror 6 so markers are real text. Stages 1 and 2 are done and committed (stage 2: `LiveEditor` behind a hidden switch, see the plan's Progress). Stage 2 is reviewed and pushed. **Stage 3 (shortcut keys, lists and tasks, paste) is built and committed, not pushed, and awaits the user's review**; **Stage 4 (entities: chips, `@` picker, hover card, Cmd-click) is built and committed, not pushed, and awaits the user's review**; **Stage 5 (Find and replace, outline, word count, Meetings TODO helper) is built and committed, not pushed, and awaits the user's review**; stage 6 (tables and fenced code) is next, after that review.
+**Next, requested 30 Sep 2026: live markup in the notes editor, the Typora way**: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. Redesigned the same day: the editor moves from Milkdown to CodeMirror 6 so markers are real text. Stages 1 and 2 are done and committed (stage 2: `LiveEditor` behind a hidden switch, see the plan's Progress). Stage 2 is reviewed and pushed. **Stage 3 (shortcut keys, lists and tasks, paste) is built and committed, not pushed, and awaits the user's review**; **Stage 4 (entities: chips, `@` picker, hover card, Cmd-click) is built and committed, not pushed, and awaits the user's review**; **Stage 5 (Find and replace, outline, word count, Meetings TODO helper) is built and committed, not pushed, and awaits the user's review**; **Stage 6 (tables and fenced code) is built and committed, not pushed, and awaits the user's review**; stage 7 (interactions) is next, after that review.
 
 ## For Claude: six things requested 27 Sep 2026, go-ahead given — work through these without further check-in
 
@@ -218,6 +218,13 @@ ready for `--apply`" and say so plainly when you report back.
 ## TODOs
 
 ### For the user (review and decisions)
+
+- [ ] **Try tables and code blocks in the new editor** (stage 6 of live markup; switch on as below). A table away from the cursor is a grid (open the research note "Agent-Based Modelling Research Questions" or the Work meeting of 3 Jul 2026); click in it and it becomes text with grey pipes. Tab and Shift-Tab move between cells. Type `| a | b |`, Enter, `|---|---|`, Enter, `| 1 | 2 |`, then Tab for a new row. A code block (Cmd-Option-C, or type three backticks) shows its fence lines while you are in it and hides them otherwise.
+- [ ] **Live editor question 7:** Tab in the last cell of a table adds a new empty row (as in Word). Would you rather it did nothing, so a stray Tab cannot add a row?
+- [ ] **Live editor question 8:** Enter inside a table row is an ordinary new line (it breaks the row in two, like any text). Should Enter at the end of a row start the next row instead?
+- [ ] **Live editor question 9:** a table inside a quote or a bullet list stays as plain text with its pipes showing (only tables in the page itself become a grid). Fine?
+- [ ] **Live editor question 10:** a code block whose closing fence is missing keeps its opening line showing (everything below it is code, and the note would look wrong otherwise). Fine, or hide it like the others?
+- [ ] **Live editor question 11:** table column widths follow the longest text in each column, not an exact fit, and a Find match on a whole cell shades the whole cell. Fine?
 
 - [ ] **Try Find, the outline and the TODO helper in the new editor** (stage 5 of live markup; switch on as below). Cmd-F highlights every match and Enter steps through; Cmd-Option-F adds replace (Cmd-Enter replaces one, Cmd-Shift-Enter all, also with the cursor in the note); the outline and Meetings' topics jump to a heading; in a meeting `/todo` or Cmd-Shift-T opens the owner menu. The file format does not change.
 - [ ] **Live editor question 5:** Find reads the Markdown text, as you asked, so it also finds words inside a link's address and inside a mention's hidden address (searching `person` or `example.org` finds something you cannot see, and nothing lights up). Should Find skip hidden addresses, so it only finds what is drawn? (Markers themselves stay findable either way.)
