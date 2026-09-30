@@ -70,7 +70,7 @@ describe('meetingHours', () => {
 })
 
 describe('meetingsInYearOrPlanned', () => {
-  const rows = [row('2025-10-01'), row('2026-10-01'), row('', { title: 'Planned' })]
+  const rows = [row('2025-10-01'), row('2026-10-01'), row('')]
   const today = '2026-09-30' // in 2026–27
 
   it('shows planned meetings in the current academic year only', () => {
