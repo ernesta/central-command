@@ -24,7 +24,7 @@
   --selected-bg: light-dark(#dce6ee, #2a3b4d);
   --selected-text: light-dark(#1f3a52, #d3e3f2);
   /* The Markdown characters an editor shows around the block or span the cursor is in (`###`, `**`, `](url)`). */
-  --marker: light-dark(#8a6d2f, #c9a95a);
+  --marker: light-dark(#7a8592, #8794a1);
   --danger: light-dark(#a8433f, #dc7c77);
   --danger-hover: light-dark(#953a37, #e79591);
   /* Behind a dialog. */
