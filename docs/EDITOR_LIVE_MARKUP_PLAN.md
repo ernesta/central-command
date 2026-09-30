@@ -129,7 +129,13 @@ with real keystrokes, look at screenshots, quit right after typing)
 - Stage 1 done, commit `bd26898`, not pushed.
 - Design revised to the CodeMirror model above after the user chose the Typora way. The user approved the mockup
   (`docs/design/editor-live-markup-mockup.html`), the list/checkbox behaviour and the shortcut design. Design is complete; nothing else started.
-  Stage 2 (the spike) is next and needs only the user's go-ahead to start.
+- **Stage 2 done (30 Sep 2026), not pushed:** `src/renderer/src/editor/` (`LiveEditor`, `live-reveal`, `live-decorations`, `live-links`,
+  `live-state`, `live-switch`), commits `2b484d0` (packages) and `b0b8038`. Switch: run
+  `localStorage.setItem('central-command.liveEditor', '1')` in the developer tools and reload; `NotesEditor` then renders `LiveEditor`
+  (every consumer, one import). The identity gate passed over all 406 files of a copy of the real library (see `docs/DECISIONS.md`).
+  Not in the spike, by design: lists drawn as units, task checkboxes, Enter/Tab/Backspace list rules (stage 3), `@` chips and picker
+  (4), Cmd-F, outline-by-click, the Meetings TODO helper (5), tables and fences (6), IME/perf/dark-mode checks (7). Waiting for the
+  user's decision to continue.
 - Checking recipe: scratch library under the session scratchpad with `CENTRAL_COMMAND_HOME`, `playwright-core` installed there,
   Cmd-Shift-N to make a note, real keystrokes, `app.close()` straight after typing; dev mode via `electron-vite dev` with
   `--remote-debugging-port=9333` and `connectOverCDP`.

@@ -1309,3 +1309,51 @@ Reported as "last year's training list shows this year's training". Two separate
   The user confirmed it fixed what they saw.
 - **Meetings fixed the same way** (same day, at the user's request): `meetingsInYearOrPlanned` takes `today`, and `MeetingsLanding` feeds
   `recentAndUpcoming` the selected year's meetings. Open TODOs on the Meetings landing still span all years (they are not a year view).
+
+## Live markup in the notes editor, stage 2: LiveEditor on CodeMirror 6, behind a hidden switch (30 Sep 2026)
+
+Plan: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. New folder `src/renderer/src/editor/`; nothing changes for the user until they set the switch
+(`localStorage` key `central-command.liveEditor` = `1`, then reload; no Settings entry). `NotesEditor` delegates to `LiveEditor` when it is on, so
+all five kinds of editor switch together.
+
+- **The document is the file's text.** `live-state.ts` builds the CodeMirror state with the Markdown language (GFM), history, `drawSelection`,
+  line wrapping and the default keymap (minus `Mod-i`, kept for italic later). `lang-markdown`'s own keymap is on, so Enter continues
+  lists and quotes for now (see the questions below). Change reporting is `EditorView.updateListener`, synchronous, full text, only when the
+  document changed; opening reports nothing.
+- **Line breaks are kept.** Found by a test, not by reading: `Text.toString()` always joins with `\n`, so a file with `\r\n` would have been
+  rewritten on the first edit. The state now uses the file's own separator (`\r\n` if it has one, else `\n`, so a lone `\r` stays a
+  character) and reports with `state.sliceDoc()`. The real library has no CRLF file; this protects imports and other tools.
+- **Reveal rules** (`live-reveal.ts`, pure and unit-tested): nothing shows while the editor is not focused (else a note opens with its first
+  `#` showing); a span's markers (`**`, `*`, `~~`, `` ` ``, link brackets and address) show while any selection range touches it, cursor at either
+  edge included; a block's markers (`### `, `> `, `---`) show while the cursor is in the block's lines; a selection that starts and ends in different
+  blocks shows nothing anywhere (a selection ending at the start of a line, as a triple-click does, counts as ending in the line before).
+  Consequence, tested for every cursor position: a hidden range never has the cursor inside it, because touching it reveals it. So no atomic
+  ranges are needed for markers.
+- **Decorations** (`live-decorations.ts`, one `ViewPlugin` over the visible ranges): classes for headings 1–6 (ATX and setext), emphasis, strong,
+  strike, inline code, links (label, and the address as marker-coloured text while revealed), addresses written out in the text, quotes (one
+  rule, indent per level), rules, tables and code blocks as monospace text, list marks quiet. Markers are hidden with `Decoration.replace`,
+  shown with the `live-marker` class (new token `--marker`, both values). A link with an empty label, reference links and images are not hidden.
+  Setext underlines and a heading's closing `##` are ordinary markers (a first version kept them always visible, which broke "nothing shows
+  across blocks"; the whole-file library check found it).
+- **Cmd-click** opens the link under the pointer (web address in the browser, `cc://` inside the app), using the syntax tree
+  (`live-links.ts`). Pasting stays plain text because CodeMirror's paste only reads `text/plain`.
+- **Identity gate** (`live-library.test.ts`, opt-in: `LIVE_EDITOR_LIBRARY=<copy of the notes folder> npx vitest run src/renderer/src/editor/live-library`):
+  for all 406 Markdown files, body and whole file: same text on load; an edit at the start, middle and end leaves the rest byte-identical; at a
+  spread of cursor positions no hidden range contains the cursor and hidden ranges stay on one line; select-all across blocks shows no marker.
+  Mutation check: making the state trim trailing spaces on load fails it at once.
+- **Driven in the built app and in dev mode** (scratch library, `--user-data-dir` so the switch never touched the real profile): typed a mixed
+  note with real keystrokes; the reveal followed the cursor for bold, links and headings; select-all hid the markers; hand-typed `### x`, Backspace
+  on the space and Cmd-Z behaved as text; three real notes were opened, clicked into and left, and no file changed (hashes compared);
+  quitting immediately after typing saved the last words, in the built app and (dev, disconnect right after typing) too. No console errors.
+
+### Findings and questions for the user
+
+- **What it feels like** is for the user to judge from the screenshots (session scratchpad `shots/`): headings, bold, italic and links reveal and
+  hide as designed. A `#` revealed in a 28 px heading is small and mono, which reads a little cramped; easy to change (size or weight of the marker).
+- **Not in the spike, so Cmd-B, Cmd-I, Cmd-F, `@`, Tab in lists and the Meetings TODO helper do nothing yet.** No stage in the plan owns the inline and block
+  shortcut keys (`live-keymap.ts`, "Shortcuts" section). Proposal: add them to the start of stage 3 with the list keys.
+- **Enter continuation is the library's** (`insertNewlineContinueMarkup`): on an empty line inside a nested quote (`> > >`) it removes only one
+  level's worth, so leaving a nested quote by Enter-Enter takes several presses. Stage 3 replaces these rules with the designed ones.
+- Escapes such as `\*` show their backslash (a real character); hiding it was not in the design. Blank lines are drawn shorter than a line of text
+  (0.9 line-height) so paragraphs are spaced like today; a heading has half a line of space above it. Both are tuning for stage 7.
+- Mixed `* ` and `- ` lists, hand spacing and so on stay untouched, as designed (18 of the 406 files use `* `).
