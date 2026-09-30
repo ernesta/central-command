@@ -13,9 +13,12 @@ export function stateFor(doc: string, anchor = 0, head = anchor): EditorState {
     onChange: () => undefined,
     openLink: () => undefined
   })
-  const state = base.update({ selection: EditorSelection.single(anchor, head) }).state
-  ensureSyntaxTree(state, state.doc.length, 10_000)
-  return state
+  // A state starts with the tree of the first few thousand characters only, and `syntaxTree(state)` keeps returning that
+  // one however far `ensureSyntaxTree` parses afterwards: the next transaction is what picks the finished tree up. (The
+  // running editor gets there as the parser works in idle time; a test has to do it here, or it sees a long note's tail
+  // as plain text.)
+  ensureSyntaxTree(base, base.doc.length, 10_000)
+  return base.update({ selection: EditorSelection.single(anchor, head) }).state
 }
 
 export interface Seen {

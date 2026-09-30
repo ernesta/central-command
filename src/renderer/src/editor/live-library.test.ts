@@ -7,13 +7,17 @@ import { describe, expect, it } from 'vitest'
 import { insertTodoText, todoTriggerAt } from '@modules/meetings/renderer/todo-live'
 import { findMentions } from '@shared/entities'
 import { splitNote } from '@shared/front-matter'
+import { locatedOutline } from '@shared/markdown-outline'
 import { wordCount, wordsOf } from '@shared/words'
 import { deleteChip, findSuggestion, liveTarget } from './live-entities'
 import { findInDoc, liveFindTarget } from './live-find'
+import { toggleCodeBlock } from './live-format'
 import { formatBindings, listBindings } from './live-keymap'
 import { parseLine } from './live-lines'
+import { headingStart } from './live-outline'
 import { pasteText } from './live-paste'
 import { computeReveal } from './live-reveal'
+import { tableTab } from './live-tables'
 import { toggleTaskAt } from './live-widgets'
 import { decorationsOf, stateFor } from './live-test-utils'
 
@@ -57,9 +61,14 @@ function checkNote(file: string, text: string): void {
 
   // The whole note selected: when that reaches across blocks, no marker shows.
   const all = stateFor(text, 0, text.length)
+  // (The one exception, on purpose: the opening fence of a code block that is never closed stays showing, since
+  // everything below it is code and the note would look broken without the reason.)
   if (computeReveal(all, true).none)
     expect(
-      decorationsOf(all).filter((seen) => seen.kind === 'live-marker'),
+      decorationsOf(all).filter(
+        (seen) =>
+          seen.kind === 'live-marker' && !/^(`{3,}|~{3,})/.test(all.sliceDoc(seen.from, seen.to))
+      ),
       file
     ).toEqual([])
 }
@@ -380,6 +389,346 @@ function checkWords(file: string, text: string): void {
   }
 }
 
+/*
+ * Tables and fenced code. The real library has two tables and no fenced code, so as well as those, a table and a fence are
+ * written into every note at a spread of places (between two plain paragraphs) and checked the same way. Everything here
+ * reads the text itself (a regular expression per line), not the editor's own table parser, so the two can disagree.
+ */
+const SYN_TABLE = '| A | B |\n|:--|--:|\n| 1 | **x** \\| y |\n| | z |'
+const SYN_FENCE = '```js\nconst a = 1\n\nlet b\n```'
+const SYN_FENCE_HEADING = '```\n## not a heading\nx\n```'
+
+/** Where a block can go as a paragraph of its own: a blank line between two plain paragraphs (at most `max` of them, spread out), and the end of the note. */
+function blockSpots(text: string, max: number): number[] {
+  const spots: number[] = []
+  for (const match of text.matchAll(/\n\n(?=[A-Za-z])/g)) {
+    const before = text.slice(text.lastIndexOf('\n', match.index - 1) + 1, match.index)
+    if (/^[A-Za-z]/.test(before)) spots.push(match.index)
+  }
+  const spread =
+    spots.length <= max
+      ? spots
+      : Array.from({ length: max }, (_, i) => spots[Math.floor((i * spots.length) / max)])
+  // The end of the note is always a place for one (so a note with a single paragraph is checked too).
+  return [...spread, text.length]
+}
+
+const injectAt = (text: string, at: number, block: string): string =>
+  `${text.slice(0, at)}\n\n${block}${text.slice(at)}`
+
+/** The cells of a table line, read without the editor: split at pipes not preceded by a backslash. */
+function indepCells(line: string): string[] {
+  let body = line.trim()
+  if (body.startsWith('|')) body = body.slice(1)
+  if (/(?<!\\)\|$/.test(body)) body = body.slice(0, -1)
+  return body.split(/(?<!\\)\|/).map((cell) => cell.trim())
+}
+
+/** Where Tab should put the cursor in each cell of a table line (document positions), worked out from the text alone: the start of the cell's text, or after the first space of an empty cell. */
+function cellCarets(line: { from: number; text: string }): number[] {
+  const pipes = [...line.text.matchAll(/(?<!\\)\|/g)].map((match) => match.index as number)
+  const carets: number[] = []
+  pipes.forEach((pipe, i) => {
+    const from = pipe + 1
+    const to = i + 1 < pipes.length ? pipes[i + 1] : line.text.trimEnd().length
+    if (to <= from && i + 1 === pipes.length) return
+    const gap = line.text.slice(from, to)
+    carets.push(
+      line.from +
+        (gap.trim() === '' ? Math.min(from + 1, to) : from + gap.length - gap.trimStart().length)
+    )
+  })
+  return carets
+}
+
+const DELIMITER = /^\|?[ \t]*:?-+:?[ \t]*(?:\|[ \t]*:?-+:?[ \t]*)*\|?[ \t]*$/
+
+/** Line numbers of the document (from 1). */
+interface TableAt {
+  first: number
+  last: number
+}
+
+/** The tables of a document: a line that starts with a pipe, a delimiter line under it, and the lines under that that start with one. */
+function tablesOf(state: EditorState): TableAt[] {
+  const lines = state.doc.toString().split('\n')
+  const found: TableAt[] = []
+  for (let k = 0; k + 1 < lines.length; k++) {
+    if (!lines[k].startsWith('|') || !lines[k + 1].startsWith('|') || !DELIMITER.test(lines[k + 1]))
+      continue
+    let end = k + 1
+    while (end + 1 < lines.length && lines[end + 1].startsWith('|')) end += 1
+    found.push({ first: k + 1, last: end + 1 })
+    k = end
+  }
+  return found
+}
+
+/**
+ * One table in a note whose text is `text`, line breaks `nl`: drawn as a grid away from the cursor and as text in it, hidden
+ * text never under the cursor, Tab visits every cell once without touching the text, Tab after the last adds exactly one row,
+ * and typing in a cell changes that cell and no other.
+ */
+function checkTable(file: string, text: string, table: TableAt, nl: string): { cells: number } {
+  const probe = stateFor(text)
+  const doc = probe.doc
+  const from = doc.line(table.first).from
+  const to = doc.line(table.last).to
+  const where = `${file} table@${from}`
+  // A document position in the string `text`: each earlier line break is one position but `nl.length` characters.
+  const offset = (pos: number): number => pos + (doc.lineAt(pos).number - 1) * (nl.length - 1)
+  const lineNumbers = Array.from(
+    { length: table.last - table.first + 1 },
+    (_, i) => table.first + i
+  )
+  const rows = lineNumbers.filter((n) => n !== table.first + 1)
+
+  // Away from the cursor: a grid. Every pipe and the whole delimiter line hidden; one drawn cell per cell; only the cells' text left.
+  const outside = from > 0 ? 0 : doc.length
+  if (outside < from || outside > to) {
+    const state = stateFor(text, outside)
+    const seen = decorationsOf(state)
+    const hidden = new Set<number>()
+    for (const one of seen)
+      if (one.kind === 'hidden') for (let i = one.from; i < one.to; i++) hidden.add(i)
+    for (const n of lineNumbers) {
+      const line = doc.line(n)
+      if (n === table.first + 1) {
+        for (let i = line.from; i < line.to; i++)
+          expect(hidden.has(i), `${where} delimiter @${i}`).toBe(true)
+        continue
+      }
+      for (const pipe of line.text.matchAll(/(?<!\\)\|/g))
+        expect(hidden.has(line.from + (pipe.index as number)), `${where} line ${n} pipe`).toBe(true)
+      expect(
+        seen.filter((one) => one.from === line.from && one.kind.startsWith('live-table-row')),
+        `${where} line ${n} row`
+      ).toHaveLength(1)
+      const drawn = seen.filter(
+        (one) =>
+          one.from >= line.from &&
+          one.from <= line.to &&
+          (one.kind.startsWith('live-cell') || one.kind === 'widget')
+      )
+      expect(drawn.length, `${where} line ${n} cells`).toBe(indepCells(line.text).length)
+      // What is left to read is the cells' text (bold marks aside).
+      const visible = [...line.text]
+        .filter((_, i) => !hidden.has(line.from + i))
+        .join('')
+        .replace(/[\s*]/g, '')
+      expect(visible, `${where} line ${n} text`).toBe(
+        indepCells(line.text).join('').replace(/[\s*]/g, '')
+      )
+    }
+  }
+
+  // With the cursor anywhere in the table or beside it: nothing hidden under it; in the table, no pipe is hidden at all.
+  const step = Math.max(1, Math.floor((to - from) / 60))
+  for (let pos = Math.max(0, from - 2); pos <= Math.min(doc.length, to + 2); pos += step) {
+    const state = stateFor(text, pos)
+    const inside = pos >= from && pos <= to
+    for (const one of decorationsOf(state)) {
+      if (one.kind !== 'hidden') continue
+      expect(one.from < pos && pos < one.to, `${where} cursor ${pos} inside hidden`).toBe(false)
+      if (inside && one.from >= from && one.to <= to)
+        expect(
+          state.sliceDoc(one.from, one.to).includes('|'),
+          `${where} cursor ${pos}: pipe hidden`
+        ).toBe(false)
+    }
+  }
+
+  // Tab: every cell once, in reading order, never the delimiter line, the text untouched; then exactly one new row.
+  const cellsOf = (source: EditorState): string[][] =>
+    rows.map((n) => indepCells(source.doc.line(n).text))
+  const before = cellsOf(probe)
+  const total = before.reduce((sum, cells) => sum + cells.length, 0)
+  const headLine = doc.line(table.first)
+  const expectedCarets = rows.flatMap((n) => cellCarets(doc.line(n)))
+  expect(expectedCarets.length, `${where} cells`).toBe(total)
+  let state = stateFor(text, expectedCarets[0])
+  const carets = [state.selection.main.head]
+  for (let i = 1; i < total; i++) {
+    const { handled, tr } = run(tableTab(true), state)
+    expect(handled, `${where} Tab ${i}`).toBe(true)
+    expect(tr?.docChanged, `${where} Tab ${i} changed the text`).toBe(false)
+    state = (tr as Transaction).state
+    carets.push(state.selection.main.head)
+  }
+  expect(carets, `${where} Tab visits each cell's text start, in order`).toEqual(expectedCarets)
+
+  const added = run(tableTab(true), state)
+  expect(added.tr?.docChanged, `${where} Tab after the last cell`).toBe(true)
+  const row = `|${'  |'.repeat(indepCells(headLine.text).length)}`
+  const end = offset(to)
+  expect(added.tr?.state.sliceDoc(), `${where} new row`).toBe(
+    `${text.slice(0, end)}${nl}${row}${text.slice(end)}`
+  )
+  const undone = run(undo as never, (added.tr as Transaction).state)
+  expect(undone.tr?.state.sliceDoc(), `${where} undo`).toBe(text)
+
+  // Typing in each cell changes that cell and no other.
+  let index = 0
+  rows.forEach((_, r) => {
+    before[r].forEach((_, c) => {
+      const caret = expectedCarets[index++]
+      const edited = probe.update({ changes: { from: caret, insert: 'Ω' } }).state
+      expect(edited.sliceDoc(), `${where} typed`).toBe(
+        `${text.slice(0, offset(caret))}Ω${text.slice(offset(caret))}`
+      )
+      cellsOf(edited).forEach((cells, i) =>
+        cells.forEach((cell, j) =>
+          expect(cell, `${where} cell ${i}:${j} after typing in ${r}:${c}`).toBe(
+            i === r && j === c ? `Ω${before[i][j]}` : before[i][j]
+          )
+        )
+      )
+    })
+  })
+  return { cells: total }
+}
+
+/** A fenced block at `start`..`end` (document positions), its opening and closing lines 5 and 3 characters as in `SYN_FENCE`. */
+function checkFence(file: string, text: string, start: number, end: number): void {
+  const where = `${file} fence@${start}`
+  const open = { from: start, to: start + 5 }
+  const close = { from: end - 3, to: end }
+  const hiddenOf = (state: EditorState): { from: number; to: number }[] =>
+    decorationsOf(state).filter((one) => one.kind === 'hidden')
+  const covers = (
+    list: { from: number; to: number }[],
+    range: { from: number; to: number }
+  ): boolean => list.some((one) => one.from === range.from && one.to === range.to)
+
+  const away = stateFor(text, 0)
+  expect(covers(hiddenOf(away), open), `${where} opening fence hidden`).toBe(true)
+  expect(covers(hiddenOf(away), close), `${where} closing fence hidden`).toBe(true)
+  const kinds = decorationsOf(away).filter((one) => one.from >= start && one.from <= end)
+  expect(kinds.filter((one) => one.kind === 'live-codeblock live-fence-hidden')).toHaveLength(2)
+  expect(kinds.filter((one) => one.kind === 'live-codeblock')).toHaveLength(3)
+
+  for (
+    let pos = Math.max(0, start - 2);
+    pos <= Math.min(stateFor(text).doc.length, end + 2);
+    pos++
+  ) {
+    const state = stateFor(text, pos)
+    const inside = pos >= start && pos <= end
+    const hidden = hiddenOf(state)
+    for (const one of hidden)
+      expect(one.from < pos && pos < one.to, `${where} cursor ${pos} inside hidden`).toBe(false)
+    expect(covers(hidden, open), `${where} cursor ${pos}: opening fence`).toBe(!inside)
+    expect(covers(hidden, close), `${where} cursor ${pos}: closing fence`).toBe(!inside)
+  }
+
+  // Cmd-Option-C inside the block takes the fence lines away, and one undo puts them back.
+  const { tr } = run(toggleCodeBlock, stateFor(text, start + 8))
+  expect(tr?.state.sliceDoc(), `${where} unwrap`).toBe(
+    `${text.slice(0, start)}const a = 1\n\nlet b${text.slice(end)}`
+  )
+  expect(
+    run(undo as never, (tr as Transaction).state).tr?.state.sliceDoc(),
+    `${where} unwrap undo`
+  ).toBe(text)
+}
+
+/** Replace-all and find over a word of the written-in block, compared with an independent search. */
+function checkFindIn(file: string, text: string, label: string): void {
+  const state = stateFor(text)
+  const doc = state.doc.toString()
+  const expected = [...doc.matchAll(new RegExp(label, 'giu'))].map((m) => ({
+    from: m.index,
+    to: m.index + m[0].length
+  }))
+  const found = findInDoc(state.doc, label)
+  expect(found, `${file} find "${label}"`).toEqual(expected)
+  const all = fakeView(state)
+  liveFindTarget(all.view).replaceAll(found, 'ΩΩ')
+  expect(all.last()?.newDoc.toString(), `${file} replace all "${label}"`).toBe(
+    expected.reduceRight((out, r) => `${out.slice(0, r.from)}ΩΩ${out.slice(r.to)}`, doc)
+  )
+  expect(run(undo as never, (all.last() as Transaction).state).tr?.newDoc.sliceString(0)).toBe(text)
+}
+
+/** The outline of a note with something written into it: the same headings, and each still found by its line. */
+function checkOutline(file: string, base: string, changed: string): void {
+  const texts = (markdown: string): string[] =>
+    locatedOutline(markdown, [1, 2, 3, 4, 5, 6]).map((h) => h.text)
+  expect(texts(changed), `${file} outline`).toEqual(texts(base))
+  const state = stateFor(changed)
+  for (const item of locatedOutline(changed, [1, 2, 3, 4, 5, 6]))
+    expect(headingStart(state, item.line), `${file} heading "${item.text}"`).not.toBeNull()
+}
+
+function checkBlocks(file: string, text: string): { tables: number; fences: number } {
+  let tables = 0
+  let fences = 0
+  const base = wordCount(text)
+
+  // The tables the note has.
+  for (const table of tablesOf(stateFor(text))) {
+    checkTable(file, text, table, '\n')
+    tables += 1
+  }
+
+  for (const at of blockSpots(text, 3)) {
+    // A table written in, in a note with LF and (to see that a Windows note is no different) with CRLF.
+    const withTable = injectAt(text, at, SYN_TABLE)
+    expect(tablesOf(stateFor(withTable)).length, `${file} table written at ${at}`).toBeGreaterThan(
+      0
+    )
+    for (const [note, nl] of [
+      [withTable, '\n'],
+      [withTable.replace(/\n/g, '\r\n'), '\r\n']
+    ] as const) {
+      const written = tablesOf(stateFor(note)).find(
+        (table) => stateFor(note).doc.line(table.first).text === '| A | B |'
+      )
+      expect(written, `${file} the written table is found`).toBeDefined()
+      checkTable(file, note, written as TableAt, nl)
+      tables += 1
+    }
+    checkNote(file, withTable)
+    expect(wordCount(withTable), `${file} words with a table`).toBe(base + 6)
+    checkOutline(file, text, withTable)
+    checkFindIn(file, withTable, 'z')
+    checkFindIn(file, withTable, 'x')
+
+    // A fence written in.
+    const withFence = injectAt(text, at, SYN_FENCE)
+    checkFence(file, withFence, at + 2, at + 2 + SYN_FENCE.length)
+    checkNote(file, withFence)
+    expect(wordCount(withFence), `${file} words with a fence`).toBe(base + 6)
+    fences += 1
+
+    // Headings inside a fence are not headings: not in the outline, not drawn as one.
+    const withHeading = injectAt(text, at, SYN_FENCE_HEADING)
+    checkOutline(file, text, withHeading)
+    const headingState = stateFor(withHeading, 0)
+    const headingLine = headingState.doc.lineAt(at + 2 + 4)
+    expect(headingLine.text, file).toBe('## not a heading')
+    expect(
+      decorationsOf(headingState).filter(
+        (one) => one.from === headingLine.from && one.kind.startsWith('live-h')
+      ),
+      `${file} heading drawn inside a fence`
+    ).toEqual([])
+
+    // A fence that is never closed keeps its opening line showing, and nothing is hidden under the cursor.
+    const unclosed = injectAt(text, at, '```\nx')
+    const state = stateFor(unclosed, 0)
+    const opening = { from: at + 2, to: at + 5 }
+    expect(
+      decorationsOf(state).some(
+        (one) => one.kind === 'hidden' && one.from < opening.to && one.to > opening.from
+      ),
+      `${file} unclosed fence hidden`
+    ).toBe(false)
+    checkNote(file, unclosed)
+  }
+  return { tables, fences }
+}
+
 describe.skipIf(!root)('every note of a real library', () => {
   const files = root ? markdownFiles(root) : []
 
@@ -436,6 +785,20 @@ describe.skipIf(!root)('every note of a real library', () => {
     }
     expect(triggers).toBeGreaterThan(files.length)
   }, 1_200_000)
+
+  it('draws tables as a grid away from the cursor and as text in it, Tab visits each cell and adds one row, and typing changes one cell', () => {
+    let tables = 0
+    let fences = 0
+    for (const file of files) {
+      const whole = readFileSync(file, 'utf8')
+      const found = checkBlocks(file, splitNote(whole).body)
+      tables += found.tables
+      fences += found.fences
+    }
+    // A check that finds nothing to check proves nothing.
+    expect(tables).toBeGreaterThan(files.length)
+    expect(fences).toBeGreaterThan(files.length)
+  }, 3_600_000)
 
   it('counts words without counting Markdown', () => {
     for (const file of files) {
