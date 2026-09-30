@@ -6,6 +6,7 @@ import { liveLayer } from './live-decorations'
 import { entityExtensions, type LiveEntities } from './live-entities'
 import { findExtension } from './live-find'
 import type { FindBridge } from '../notes/find-types'
+import { liveHistory } from './live-history'
 import { liveKeymap } from './live-keymap'
 import { motionKeymap } from './live-motion'
 import { linkTargetAt } from './live-links'
@@ -43,6 +44,7 @@ export function liveExtensions(options: LiveOptions): Extension[] {
   return [
     EditorState.lineSeparator.of(lineSeparatorFor(options.doc)),
     history(),
+    liveHistory,
     drawSelection(),
     EditorView.lineWrapping,
     // Its own Enter and Backspace rules (`addKeymap`) are replaced by `live-lists.ts`, and its link-on-paste by `live-paste.ts`

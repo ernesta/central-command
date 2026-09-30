@@ -153,7 +153,7 @@ export const deleteChip =
     view.dispatch({
       changes: { from: chip.from, to: chip.to },
       scrollIntoView: true,
-      userEvent: forward ? 'delete.forward' : 'delete.backward'
+      userEvent: 'delete.chip'
     })
     return true
   }
