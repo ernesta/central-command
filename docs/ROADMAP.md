@@ -438,6 +438,12 @@ the note".
 ## Later, roughly in order (not for Phase 1)
 
 - Real Claude wiring for the Ask panel; embedded terminal for Build
+- **Ask "recipes"** (use case noted 30 Sep 2026, not planned): on a page, type a short command such as "Summarise" in Ask and Claude
+  acts on that page. First recipe: on a training entry, write the one-sentence Summary from the Notes text, or from the slides in
+  the entry's linked folder when Notes is empty; fill only an empty Summary, never overwrite one. Sample summaries are in
+  `notes/training/research/` (e.g. the SENSS entries). Open points for the plan: what the Ask panel sends to Claude (CLAUDE.md says
+  never send user data over the network, so this needs the user's explicit decision, e.g. a confirmation per action), and reading PDF
+  slides (no PDF text tool in the app yet).
 - Shared task engine (tasks, dates, time tracking, lists, subtasks, table/board/calendar views) and a one-time ClickUp import
 - **Hours and Time off** (replace the user's two Google Sheets; sessions later feed Tasks): designed 29 Sep 2026, not built; plan in
   `docs/TIME_PLAN.md` (eight stages, open questions at the end).
