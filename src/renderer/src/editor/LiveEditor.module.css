@@ -188,6 +188,7 @@
   font-weight: 700;
 }
 .wrap :global(.live-cell) {
+  display: block;
   min-width: 0;
   overflow-wrap: anywhere;
 }
@@ -206,8 +207,18 @@
   line-height: 0;
 }
 /* Each hidden range is an empty element in the line (with CodeMirror's spacers beside it), and each would be a cell of the grid. */
-.wrap :global(.cm-editor) :global(.cm-line.live-table-row) > :not(:global(.live-cell)) {
+.wrap
+  :global(.cm-editor)
+  :global(.cm-line.live-table-row)
+  :is(:global(.cm-widgetBuffer), span[contenteditable='false']:empty):not(:global(.live-cell)) {
   display: none;
+}
+/* Something drawn round a whole cell (a find match) is the grid's item, and the cell sits in it as a block so that its alignment still applies. */
+.wrap
+  :global(.cm-editor)
+  :global(.cm-line.live-table-row)
+  > :not(:global(.live-cell)):has(:global(.live-cell)) {
+  min-width: 0;
 }
 
 /* Lists: a bullet, number or checkbox stands for the marker; wrapped lines hang under the text, not under the marker. */
