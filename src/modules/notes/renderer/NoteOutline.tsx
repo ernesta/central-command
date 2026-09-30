@@ -5,21 +5,12 @@ import styles from './NoteOutline.module.css'
 /** Levels shown: a note's own top-level structure, not every sub-sub-heading. */
 const LEVELS = [1, 2, 3]
 
-/**
- * Take the editor to the outline entry's heading. The live editor is sent to the heading's line; Milkdown's page is
- * searched for the first heading of that level with that text.
- */
+/** Take the editor to the outline entry's heading: the editor is sent to the heading's line (it draws only the lines near the screen). */
 function scrollToHeading(root: HTMLElement | null, item: LocatedOutlineItem): void {
   const live = liveViewIn(root)
-  if (live) {
-    const pos = headingStart(live.state, item.line)
-    if (pos !== null) scrollToPos(live, pos)
-    return
-  }
-  const heading = Array.from(
-    root?.querySelectorAll<HTMLElement>(`.ProseMirror h${item.level}`) ?? []
-  ).find((h) => (h.textContent ?? '').replace(/\s+/g, ' ').trim() === item.text)
-  heading?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  if (!live) return
+  const pos = headingStart(live.state, item.line)
+  if (pos !== null) scrollToPos(live, pos)
 }
 
 /**

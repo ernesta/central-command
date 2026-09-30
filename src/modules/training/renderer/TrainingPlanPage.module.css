@@ -59,7 +59,3 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
-/* A heading the outline jumps to should not land under the edge of the window. */
-.doc :global(.ProseMirror) :is(h1, h2, h3, h4, h5, h6) {
-  scroll-margin-top: 24px;
-}

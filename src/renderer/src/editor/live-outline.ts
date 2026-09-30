@@ -8,7 +8,7 @@ import { EditorView } from '@codemirror/view'
  * the view (`scrollIntoView`) instead of the page.
  */
 
-/** The live editor inside `root`, or null (nothing there, or the old editor is). */
+/** The live editor inside `root`, or null (nothing there). */
 export function liveViewIn(root: Element | null): EditorView | null {
   const dom = root?.querySelector<HTMLElement>('.cm-editor')
   return dom ? EditorView.findFromDOM(dom) : null

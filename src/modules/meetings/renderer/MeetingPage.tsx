@@ -111,23 +111,10 @@ function MeetingView({
   /** Scroll to a topic's heading in the note and put the cursor there. */
   const jumpTo = useCallback((text: string, occurrence: number): void => {
     const live = liveViewIn(editorRef.current)
-    if (live) {
-      // The live editor draws only the lines near the screen: go by position, through the view.
-      const pos = topicOffset(live.state.doc.toString(), text, occurrence)
-      if (pos !== null) placeCursorOnLine(live, pos)
-      return
-    }
-    const root = editorRef.current?.querySelector('.ProseMirror')
-    if (!root) return
-    const headings = Array.from(root.querySelectorAll('h2, h3')).filter(
-      (h) => h.textContent?.trim() === text
-    )
-    const target = headings[occurrence]
-    if (!target) return
-    target.scrollIntoView({ block: 'start', behavior: 'smooth' })
-    ;(root as HTMLElement).focus({ preventScroll: true })
-    const selection = window.getSelection()
-    selection?.collapse(target, target.childNodes.length)
+    if (!live) return
+    // The editor draws only the lines near the screen: go by position, through the view.
+    const pos = topicOffset(live.state.doc.toString(), text, occurrence)
+    if (pos !== null) placeCursorOnLine(live, pos)
   }, [])
 
   const addTopic = (title: string): void => {
