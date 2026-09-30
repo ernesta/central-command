@@ -1268,3 +1268,17 @@ lists, readings' notes), since they all share `NotesEditor`.
 - **Not done, on purpose:** mentions in the command palette's search results (search already finds the notes themselves); tasks (they do not
   exist yet); a "convert this plain name into a mention" action; renaming a note or meeting does not change the label of existing mentions
   of it (a label is the writer's text; the hover card and opening always show what it is called now).
+
+## People and Person page feedback (30 Sep 2026)
+
+- **Initials**: a hyphenated last name gives a letter per part (Roger Giner-Sorolla, RGS). When the usual initials are taken,
+  `suggestInitials` tries the capitals inside the last name (Ryan McKay, RMK), then the middle names, then more letters of the
+  last name (RMI), and only then a number.
+- **Refusals sit beside the field** (taken initials under the initials input, a blank or duplicate name under the name), not in the
+  page banner; the banner is left for partial results. "Set as me" moved to the row's actions at the right.
+- **Person page**: open TODOs removed (and the read of every meeting behind them); an empty Trainings section is left out; links are
+  one line of pills with an icon, no presets. `RecentList` (shared) now keeps the title on one line and ellipsises the note,
+  left-aligned.
+- **Training entry**: the type's help text is a line under all the fields, so it never moves the dropdown; at wide widths Files is
+  the rightmost column.
+- Not yet checked by driving the built app.
