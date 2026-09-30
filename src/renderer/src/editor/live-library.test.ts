@@ -67,7 +67,8 @@ function checkNote(file: string, text: string): void {
     expect(
       decorationsOf(all).filter(
         (seen) =>
-          seen.kind === 'live-marker' && !/^(`{3,}|~{3,})/.test(all.sliceDoc(seen.from, seen.to))
+          seen.kind.split(' ')[0] === 'live-marker' &&
+          !/^(`{3,}|~{3,})/.test(all.sliceDoc(seen.from, seen.to))
       ),
       file
     ).toEqual([])

@@ -12,7 +12,7 @@ function drawn(view: EditorView): { hidden: string[]; shown: string[] } {
   set.between(0, view.state.doc.length, (from, to, value) => {
     const text = view.state.sliceDoc(from, to)
     if (value.point && !value.spec.class && !value.spec.widget) hidden.push(text)
-    if ((value.spec as { class?: string }).class === 'live-marker') shown.push(text)
+    if ((value.spec as { class?: string }).class?.startsWith('live-marker')) shown.push(text)
   })
   return { hidden, shown }
 }

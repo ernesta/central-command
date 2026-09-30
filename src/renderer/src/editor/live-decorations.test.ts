@@ -193,3 +193,65 @@ describe('the cursor is never inside hidden text', () => {
     }
   })
 })
+
+describe('escapes', () => {
+  const doc = 'A \\* star and a \\_ bar and \\\\ slash'
+
+  it('hides the backslash away from the cursor, and only the backslash', () => {
+    expect(hiddenText(stateFor(doc, 0))).toEqual(['\\', '\\', '\\'])
+    expect(hiddenText(stateFor(doc, at(doc, 'star')))).toEqual(['\\', '\\', '\\'])
+  })
+
+  it('shows it while the cursor touches the pair, at either edge', () => {
+    for (const cursor of [at(doc, '\\*'), at(doc, '\\*', 1), at(doc, '\\*', 2)]) {
+      const state = stateFor(doc, cursor)
+      expect(shownMarkers(state), `cursor ${cursor}`).toEqual(['\\'])
+      expect(hiddenText(state), `cursor ${cursor}`).toEqual(['\\', '\\'])
+    }
+  })
+
+  it('shows nothing with the whole note selected, or while the editor has no focus', () => {
+    const two = `${doc}\n\nsecond \\* paragraph`
+    expect(hiddenText(stateFor(two, 0, two.length))).toEqual(['\\', '\\', '\\', '\\'])
+    expect(shownMarkers(stateFor(doc, 3), false)).toEqual([])
+  })
+
+  it('leaves the backslash in a table cell alone (it keeps a pipe in its cell)', () => {
+    const table = '| a | b \\| c |\n|---|---|\n| 1 | 2 |\n\nafter'
+    expect(hiddenText(stateFor(table, table.length))).not.toContain('\\')
+  })
+
+  it('leaves a backslash that escapes nothing, and one in code, as text', () => {
+    expect(hiddenText(stateFor('a \\q b `x \\* y`', 0))).toEqual(['`', '`'])
+  })
+})
+
+describe('a marker at the start of its line', () => {
+  const lead = (doc: string, at: number): string[] => {
+    const state = stateFor(doc, at)
+    return decorationsOf(state)
+      .filter((seen) => seen.kind.includes('live-marker-lead'))
+      .map((seen) => state.doc.sliceString(seen.from, seen.to))
+  }
+
+  it('gets room for the caret when a heading, quote or rule shows it', () => {
+    expect(lead('## Title\n\ntext', 3)).toEqual(['## '])
+    expect(lead('> quoted\n\ntext', 3)).toEqual(['> '])
+    expect(lead('text\n\n---\n\nmore', 7)).toEqual(['---'])
+  })
+
+  it('does not for a marker in the middle of a line, or one that is hidden', () => {
+    expect(lead('a **b** c', 4)).toEqual([])
+    expect(lead('## Title\n\ntext', 12)).toEqual([])
+    expect(lead('> > deep\n\ntext', 6)).toEqual(['> '])
+  })
+})
+
+describe('blank lines', () => {
+  it('counts a line of only spaces as blank, as the real notes have between list items', () => {
+    const doc = '- one\n    \n- two\n\nend'
+    const state = stateFor(doc, doc.length)
+    const blank = decorationsOf(state).filter((seen) => seen.kind === 'live-blank')
+    expect(blank.map((seen) => state.doc.lineAt(seen.from).text)).toEqual(['    ', ''])
+  })
+})

@@ -56,6 +56,6 @@ export function hiddenText(state: EditorState, focused = true): string[] {
 /** The text drawn in the marker colour (markers that are showing), in order. */
 export function shownMarkers(state: EditorState, focused = true): string[] {
   return decorationsOf(state, focused)
-    .filter((seen) => seen.kind === 'live-marker')
+    .filter((seen) => seen.kind.split(' ')[0] === 'live-marker')
     .map((seen) => state.doc.sliceString(seen.from, seen.to))
 }

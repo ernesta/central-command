@@ -26,6 +26,8 @@ import { BulletWidget, CheckboxWidget, NumberWidget } from './live-widgets'
 
 const hidden = Decoration.replace({})
 const markerMark = Decoration.mark({ class: 'live-marker' })
+/** A marker that starts its line (`# `, `> `, `---`): the caret sits at the line's edge, so it gets a little room of its own. */
+const leadMarkerMark = Decoration.mark({ class: 'live-marker live-marker-lead' })
 
 function classMark(name: string): Decoration {
   return Decoration.mark({ class: name })
@@ -89,7 +91,9 @@ export function buildDecorations(
 
   /** A marker: hidden, or shown in the marker colour when its span or block is revealed. */
   const marker = (from: number, to: number, shown: boolean): void => {
-    if (from < to) add('marker', from, to, shown ? markerMark : hidden)
+    if (from >= to) return
+    const lead = from === doc.lineAt(from).from
+    add('marker', from, to, shown ? (lead ? leadMarkerMark : markerMark) : hidden)
   }
   /** The marker and the single space that follows it (`### `, `> `). */
   const markerAndSpace = (from: number, to: number, shown: boolean): void =>
@@ -103,7 +107,8 @@ export function buildDecorations(
     // Blank lines are shorter than text lines, so the gap between paragraphs is a paragraph gap.
     for (let pos = range.from; pos <= range.to;) {
       const line = doc.lineAt(pos)
-      if (line.length === 0) add('blank', line.from, line.from, lineDeco('live-blank'))
+      // A line of only spaces (the real notes have them between list items) is as blank as an empty one.
+      if (/^[ \t]*$/.test(line.text)) add('blank', line.from, line.from, lineDeco('live-blank'))
       pos = line.to + 1
     }
 
@@ -203,6 +208,13 @@ export function buildDecorations(
           }
           case 'TaskMarker':
             return
+          case 'Escape': {
+            // The backslash of `\*` is hidden away from the cursor, and shows (as a marker) while the cursor touches the pair.
+            // Not in a table, where `\|` is what keeps a pipe inside its cell and is worth seeing.
+            for (let up = node.node.parent; up; up = up.parent) if (up.name === 'Table') return
+            marker(node.from, node.from + 1, spanRevealed(reveal, node.from, node.to))
+            return
+          }
           case 'Link': {
             // A mention is drawn as a chip, whatever the cursor does (`live-entities.ts`); its own marks and label are not decorated.
             const chip = chipOf(state, node.node)
