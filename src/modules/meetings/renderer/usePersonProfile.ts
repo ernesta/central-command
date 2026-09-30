@@ -2,22 +2,8 @@ import { useEffect, useState } from 'react'
 import { todayIso } from '@shared/time'
 import { DEFAULT_TRAINING_QUERY, queryTraining } from '@modules/training/shared/rules'
 import type { TrainingIndexRow } from '@modules/training/shared/types'
-import { ownedBy, parseTodos, type TodoItem } from '../shared/todos'
 import { DEFAULT_MEETINGS_QUERY, queryMeetings } from '../shared/query'
-import {
-  MEETING_WORKSPACES,
-  type MeetingIndexRow,
-  type MeetingWorkspace,
-  type Person
-} from '../shared/types'
-
-/** One open TODO this person owns, with enough of its meeting to link to it. */
-export interface OwnedTodo extends TodoItem {
-  meetingWorkspace: MeetingWorkspace
-  meetingId: string
-  meetingHeading: string
-  meetingDate: string
-}
+import { MEETING_WORKSPACES, type MeetingIndexRow, type Person } from '../shared/types'
 
 export interface PersonProfile {
   person: Person | null
@@ -29,8 +15,6 @@ export interface PersonProfile {
   lastMet: MeetingIndexRow | null
   /** The nearest upcoming meeting with them, if any. */
   nextMeeting: MeetingIndexRow | null
-  /** Their open TODOs across every meeting, oldest first (the ones waited on longest). */
-  openTodos: OwnedTodo[]
 }
 
 const EMPTY: PersonProfile = {
@@ -38,16 +22,10 @@ const EMPTY: PersonProfile = {
   meetings: [],
   trainings: [],
   lastMet: null,
-  nextMeeting: null,
-  openTodos: []
+  nextMeeting: null
 }
 
-/**
- * Everything a person's own page shows. Scans every meeting's body for open TODOs (not just the ones
- * this person attended: an owner need not have been an attendee), which is one `read` per meeting; fine
- * for the handful of meetings this app expects, and avoids trusting the search index's plain-text
- * excerpt, which cannot tell a ticked "Previous TODO" checkbox from an unticked one.
- */
+/** Everything a person's own page shows, from the lists the app already keeps. */
 export function usePersonProfile(name: string): {
   profile: PersonProfile
   loading: boolean
@@ -94,34 +72,10 @@ export function usePersonProfile(name: string): {
       const lastMet = past[0] ?? null // meetings is already newest first
       const nextMeeting = upcoming.length > 0 ? upcoming[upcoming.length - 1] : null
 
-      const bodies = await Promise.all(
-        meetingRows.map((row) =>
-          window.api.meetings.read({ workspace: row.workspace, id: row.id }).catch(() => null)
-        )
-      )
-      if (cancelled) return
-      const initials = person?.initials
-      const openTodos: OwnedTodo[] = initials
-        ? meetingRows.flatMap((row, i) => {
-            const file = bodies[i]
-            if (!file) return []
-            return parseTodos(file.body)
-              .filter((t) => !t.done && ownedBy(t, initials))
-              .map((t) => ({
-                ...t,
-                meetingWorkspace: row.workspace,
-                meetingId: row.id,
-                meetingHeading: `${row.series || 'Meeting'} · ${row.date || 'No date yet'}`,
-                meetingDate: row.date
-              }))
-          })
-        : []
-      openTodos.sort((a, b) => a.meetingDate.localeCompare(b.meetingDate))
-
       setFound({
         name,
         reload,
-        profile: { person, meetings, trainings, lastMet, nextMeeting, openTodos }
+        profile: { person, meetings, trainings, lastMet, nextMeeting }
       })
     })()
     return () => {

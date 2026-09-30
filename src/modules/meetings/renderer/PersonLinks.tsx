@@ -1,10 +1,8 @@
-import { Plus, X } from 'lucide-react'
+import { Link2, Plus, X } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { isSafeLinkUrl, type PersonLink } from '@shared/people'
 import styles from './PersonLinks.module.css'
-
-const PRESETS = ['Google Scholar', 'GitHub', 'Website', 'LinkedIn']
 
 /** A person's own links (Google Scholar, GitHub, a website…), shown and edited on their page. */
 export function PersonLinks({
@@ -33,34 +31,35 @@ export function PersonLinks({
   return (
     <div className={styles.section}>
       <p className={styles.label}>Links</p>
-      {links.length > 0 && (
-        <ul className={styles.list}>
-          {links.map((link, i) => (
-            <li key={`${link.label}-${link.url}`} className={styles.row}>
-              <a className={styles.link} href={link.url} target="_blank" rel="noreferrer">
-                {link.label}
-              </a>
-              <button
-                type="button"
-                className={styles.remove}
-                aria-label={`Remove ${link.label}`}
-                onClick={() => remove(i)}
-              >
-                <X size={13} strokeWidth={1.75} aria-hidden />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className={styles.pills}>
+        {links.map((link, i) => (
+          <span key={`${link.label}-${link.url}`} className={styles.pill}>
+            <a className={styles.link} href={link.url} target="_blank" rel="noreferrer">
+              <Link2 size={13} strokeWidth={1.75} aria-hidden />
+              {link.label}
+            </a>
+            <button
+              type="button"
+              className={styles.remove}
+              aria-label={`Remove ${link.label}`}
+              onClick={() => remove(i)}
+            >
+              <X size={13} strokeWidth={1.75} aria-hidden />
+            </button>
+          </span>
+        ))}
+        {!adding && (
+          <Button
+            size="small"
+            icon={<Plus size={13} strokeWidth={1.75} aria-hidden />}
+            onClick={() => setAdding(true)}
+          >
+            Add link
+          </Button>
+        )}
+      </div>
       {adding ? (
         <div className={styles.form}>
-          <div className={styles.presets}>
-            {PRESETS.map((preset) => (
-              <Button key={preset} size="small" onClick={() => setLabel(preset)}>
-                {preset}
-              </Button>
-            ))}
-          </div>
           <input
             className={styles.input}
             placeholder="Label"
@@ -93,16 +92,7 @@ export function PersonLinks({
             </Button>
           </div>
         </div>
-      ) : (
-        <Button
-          size="small"
-          className={styles.addButton}
-          icon={<Plus size={13} strokeWidth={1.75} aria-hidden />}
-          onClick={() => setAdding(true)}
-        >
-          Add link
-        </Button>
-      )}
+      ) : null}
     </div>
   )
 }

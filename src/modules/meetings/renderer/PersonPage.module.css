@@ -23,33 +23,3 @@
   margin: 0;
   font-size: var(--text-14);
 }
-.todoList {
-  display: grid;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.todoRow {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 8px 10px;
-  background: var(--surface);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-control);
-}
-.todoText {
-  flex: 1;
-  min-width: 0;
-  font-size: var(--text-14);
-}
-.todoMeeting {
-  flex: none;
-  color: var(--text-muted);
-  font-size: var(--text-12);
-  text-decoration: none;
-}
-.todoMeeting:hover {
-  color: var(--accent);
-}

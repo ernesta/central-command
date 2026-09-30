@@ -1,5 +1,5 @@
 import { MentionedIn } from '@renderer/entities/MentionedIn'
-import { Link, useParams } from 'react-router'
+import { useParams } from 'react-router'
 import { EmptyState } from '@renderer/components/EmptyState'
 import {
   LandingHeader,
@@ -10,7 +10,6 @@ import {
 } from '@renderer/components/Landing'
 import { formatDate } from '@shared/time'
 import { entryRoute } from '@modules/training/renderer/training-paths'
-import { meetingHeading } from '../shared/time'
 import { meetingRoute, peopleRoute } from './meetings-paths'
 import { PersonLinks } from './PersonLinks'
 import { usePersonProfile } from './usePersonProfile'
@@ -18,12 +17,12 @@ import styles from './PersonPage.module.css'
 
 /**
  * One person's own page: their meetings and trainings (newest first), when you last met and the next
- * meeting, the open TODOs they own across every meeting, and their links.
+ * meeting, and their links.
  */
 export function PersonPage(): React.JSX.Element {
   const { name = '' } = useParams()
   const { profile, loading, refresh } = usePersonProfile(decodeURIComponent(name))
-  const { person, meetings, trainings, lastMet, nextMeeting, openTodos } = profile
+  const { person, meetings, trainings, lastMet, nextMeeting } = profile
 
   if (!loading && !person) {
     return (
@@ -46,7 +45,7 @@ export function PersonPage(): React.JSX.Element {
     key: `${m.workspace}/${m.id}`,
     to: meetingRoute(m.workspace, m.id),
     date: m.date ? formatDate(m.date) : 'No date yet',
-    title: meetingHeading(m.series, ''),
+    title: m.series || 'Meeting',
     people: [],
     note: m.summary || `${m.topicCount} ${m.topicCount === 1 ? 'topic' : 'topics'}`
   }))
@@ -91,27 +90,6 @@ export function PersonPage(): React.JSX.Element {
         />
       )}
 
-      {openTodos.length > 0 && (
-        <LandingSection id="todos" label={`Open TODOs · ${openTodos.length}`}>
-          <ul className={styles.todoList}>
-            {openTodos.map((todo, i) => (
-              <li
-                key={`${todo.meetingWorkspace}/${todo.meetingId}-${i}`}
-                className={styles.todoRow}
-              >
-                <span className={styles.todoText}>{todo.text}</span>
-                <Link
-                  className={styles.todoMeeting}
-                  to={meetingRoute(todo.meetingWorkspace, todo.meetingId)}
-                >
-                  {todo.meetingHeading}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </LandingSection>
-      )}
-
       <LandingSection id="meetings" label={`Meetings · ${meetings.length}`}>
         {meetingRows.length === 0 ? (
           <p>No meetings together yet.</p>
@@ -122,13 +100,11 @@ export function PersonPage(): React.JSX.Element {
 
       {person && <MentionedIn kind="person" entityKey={person.name} />}
 
-      <LandingSection id="trainings" label={`Trainings · ${trainings.length}`}>
-        {trainingRows.length === 0 ? (
-          <p>No trainings together yet.</p>
-        ) : (
+      {trainingRows.length > 0 && (
+        <LandingSection id="trainings" label={`Trainings · ${trainings.length}`}>
           <RecentList rows={trainingRows} />
-        )}
-      </LandingSection>
+        </LandingSection>
+      )}
     </LandingPage>
   )
 }

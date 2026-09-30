@@ -10,21 +10,26 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-.list {
-  display: grid;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.row {
+.pills {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--panel);
+}
 .link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   color: var(--accent);
-  font-size: var(--text-14);
+  font-size: var(--text-13);
   text-decoration: none;
 }
 .link:hover {
@@ -40,9 +45,6 @@
 .remove:hover {
   color: var(--danger);
 }
-.addButton {
-  justify-self: start;
-}
 .form {
   display: grid;
   gap: 8px;
@@ -50,11 +52,6 @@
   background: var(--surface);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-card);
-}
-.presets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
 }
 .input {
   padding: 7px 10px;
