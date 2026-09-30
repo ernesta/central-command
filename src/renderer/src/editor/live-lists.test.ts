@@ -194,3 +194,36 @@ describe('Delete', () => {
     expect(after('a|\nb', 'Delete')).toBe('a|b')
   })
 })
+
+describe('in a note with Windows line ends', () => {
+  const crlf = (text: string): string => text.replace(/\n/g, '\r\n')
+  /** Put the cursor at the end of `text` (positions count a line end once, so bars cannot mark it). */
+  function atEnd(text: string): ReturnType<typeof openView>['view'] {
+    const { view } = openView(text)
+    view.dispatch({ selection: { anchor: view.state.doc.length } })
+    return view
+  }
+
+  it('Enter, Shift-Enter and the code block use the note’s own line end, never a bare one', () => {
+    const enterView = atEnd(crlf('- a\n- b'))
+    press(enterView, 'Enter')
+    expect(enterView.state.sliceDoc()).toBe(crlf('- a\n- b\n- '))
+    expect(enterView.state.selection.main.head).toBe(enterView.state.doc.length)
+
+    const breakView = atEnd(crlf('x\n- a'))
+    press(breakView, 'Shift-Enter')
+    expect(breakView.state.sliceDoc()).toBe(crlf('x\n- a\\\n  '))
+
+    const codeView = atEnd(crlf('x\ny'))
+    press(codeView, 'Mod-Alt-c')
+    expect(codeView.state.sliceDoc()).toBe(crlf('x\n```\ny\n```'))
+  })
+
+  it('Backspace’s blank line is a Windows line end too', () => {
+    const { view } = openView(crlf('text\n- b'))
+    view.dispatch({ selection: { anchor: view.state.doc.length } })
+    view.dispatch({ selection: { anchor: view.state.doc.line(2).from + 2 } })
+    press(view, 'Backspace')
+    expect(view.state.sliceDoc()).toBe(crlf('text\n\nb'))
+  })
+})

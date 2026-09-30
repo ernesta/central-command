@@ -97,3 +97,10 @@ export function listMarkAt(state: EditorState, lineFrom: number, parts: LinePart
   const node = treeTo(state, at + 1).resolveInner(at, 1)
   return node.name === 'ListMark' && node.from === at
 }
+
+/** `\n` in `text` as the note's own line break (`\r\n` in a Windows note; an insert with a bare `\n` there would keep it as a character). */
+export const withBreaks = (state: EditorState, text: string): string =>
+  text.replace(/\n/g, state.lineBreak)
+
+/** How many positions `text` takes up in the document: a line break counts once, whatever it is made of. */
+export const positions = (state: EditorState, text: string): number => state.toText(text).length

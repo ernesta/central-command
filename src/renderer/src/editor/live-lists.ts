@@ -9,7 +9,16 @@ import {
 } from '@codemirror/state'
 import type { SyntaxNode } from '@lezer/common'
 import { linesOf } from './live-format'
-import { enclosing, isListKind, listMarkAt, parseLine, treeTo, type LineParts } from './live-lines'
+import {
+  enclosing,
+  isListKind,
+  listMarkAt,
+  parseLine,
+  positions,
+  treeTo,
+  withBreaks,
+  type LineParts
+} from './live-lines'
 
 /*
  * Enter, Shift-Enter, Backspace, Delete, Tab and Shift-Tab in lists and quotes. The document is the Markdown text, so
@@ -174,7 +183,8 @@ export const backspaceInItem: StateCommand = ({ state, dispatch }) => {
     const at = prefixStart(line, parts)
     const changes: ChangeSpec[] = [{ from: at, to: contentStart(line, parts) }]
     // A blank line keeps the quote, if there is one, without its trailing space.
-    if (runsIntoAbove) changes.push({ from: line.from, insert: `${parts.quote.trimEnd()}\n` })
+    if (runsIntoAbove)
+      changes.push({ from: line.from, insert: withBreaks(state, `${parts.quote.trimEnd()}\n`) })
     const set = state.changes(changes)
     dispatch(
       state.update({
@@ -275,10 +285,13 @@ function enterAt(state: EditorState, range: SelectionRange): Edit {
   const line = state.doc.lineAt(range.from)
   const parts = parseLine(line.text)
   const start = contentStart(line, parts)
-  const newline = (insert: string, extra: ChangeSpec[] = []): Edit => ({
-    changes: [{ from: range.from, to: range.to, insert }, ...extra],
-    range: EditorSelection.cursor(range.from + insert.length)
-  })
+  const newline = (text: string, extra: ChangeSpec[] = []): Edit => {
+    const insert = withBreaks(state, text)
+    return {
+      changes: [{ from: range.from, to: range.to, insert }, ...extra],
+      range: EditorSelection.cursor(range.from + positions(state, insert))
+    }
+  }
   const keepIndent = (): Edit =>
     newline(`\n${/^[ \t]*/.exec(line.text.slice(0, range.from - line.from))?.[0] ?? ''}`)
   // In the marker itself, or in code, Enter is a plain new line.
@@ -341,10 +354,13 @@ export const hardBreak: StateCommand = ({ state, dispatch }) => {
     const insideMarker = range.from < contentStart(line, parts)
     // A heading, code or the marker itself takes no backslash: it is an ordinary new line.
     const plain = parts.kind === 'heading' || insideMarker || inCode(state, range.from)
-    const insert = plain ? '\n' : `\\\n${parts.quote}${continuationIndent(parts)}`
+    const insert = withBreaks(
+      state,
+      plain ? '\n' : `\\\n${parts.quote}${continuationIndent(parts)}`
+    )
     return {
       changes: { from: range.from, to: range.to, insert },
-      range: EditorSelection.cursor(range.from + insert.length)
+      range: EditorSelection.cursor(range.from + positions(state, insert))
     }
   })
   dispatch(state.update(result, { scrollIntoView: true, userEvent: 'input' }))

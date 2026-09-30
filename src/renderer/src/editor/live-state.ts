@@ -5,6 +5,7 @@ import { drawSelection, EditorView, keymap } from '@codemirror/view'
 import { liveLayer } from './live-decorations'
 import { liveKeymap } from './live-keymap'
 import { linkTargetAt } from './live-links'
+import { livePaste } from './live-paste'
 
 export interface LiveOptions {
   /** The note's Markdown, exactly as it is in the file. */
@@ -39,6 +40,7 @@ export function liveExtensions(options: LiveOptions): Extension[] {
     liveKeymap,
     keymap.of([...keys, ...historyKeymap]),
     liveLayer,
+    livePaste,
     EditorView.contentAttributes.of({ 'aria-label': options.label }),
     // Reports the text synchronously on every change: the session saves on its own (longer) timer, so nothing
     // typed just before leaving the page or quitting can be missed.

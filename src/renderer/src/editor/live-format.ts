@@ -7,7 +7,7 @@ import {
   type SelectionRange,
   type StateCommand
 } from '@codemirror/state'
-import { enclosing, isListKind, parseLine, treeTo, type LineParts } from './live-lines'
+import { enclosing, isListKind, parseLine, treeTo, withBreaks, type LineParts } from './live-lines'
 
 /*
  * The formatting keys (Bold, Italic, Strikethrough, Inline code; headings, plain paragraph, quote, lists, code block).
@@ -290,7 +290,7 @@ export const toggleCodeBlock: StateCommand = ({ state, dispatch }) => {
     const opening = fence.slice(quote.length)
     dispatch(
       state.update({
-        changes: { from: first.to, insert: `${opening}\n${quote}\n${fence}` },
+        changes: { from: first.to, insert: withBreaks(state, `${opening}\n${quote}\n${fence}`) },
         selection: { anchor: first.to + opening.length + 1 + quote.length },
         scrollIntoView: true,
         userEvent: 'format.block'
@@ -299,8 +299,8 @@ export const toggleCodeBlock: StateCommand = ({ state, dispatch }) => {
     return true
   }
   const set = state.changes([
-    { from: first.from, insert: `${fence}\n` },
-    { from: last.to, insert: `\n${fence}` }
+    { from: first.from, insert: withBreaks(state, `${fence}\n`) },
+    { from: last.to, insert: withBreaks(state, `\n${fence}`) }
   ])
   dispatch(
     state.update({
