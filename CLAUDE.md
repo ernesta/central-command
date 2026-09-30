@@ -16,6 +16,9 @@ ask the user.
   vault into Notes, all ungrouped (dry run by default; only ever creates files)
 - `npm run import:meetings -- --vault <path> --meeting-notes <path> [--apply] [--add-people]`: import meeting notes from
   Obsidian and the Word log and notes (dry run by default; macOS only)
+- `npm run import:work-meetings -- --vault <path to the Meetings folder> [--apply]`: import the Work meetings (dry run by default; applied)
+- `npm run import:reading-list -- --file <docx> [--title "…"] [--list-dir <folder>] [--apply]`: turn a Word reading list into a Reading list
+  (dry run by default; macOS only)
 - `npm run import:training -- --inkpath <xlsx> [--obsidian <notes>] [--trainings <folder>] [--apply] [--add-people]`: import the Inkpath
   training log (dry run by default)
 - `npm run reconcile:meetings -- --inkpath <xlsx> [--apply]`: copy skills and missing times from the Inkpath log into meeting files (dry run by
@@ -45,6 +48,20 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   `index.ts` manifest the shell reads. Readings and Meetings are the patterns to copy. Shared notes machinery
   (guarded file access, watcher, editor, session) lives in `src/main/notes/` and `src/renderer/src/notes/`; the
   remembered-UI-state hook is `useModuleState`.
+- `src/renderer/src/editor/`: the one editor, `LiveEditor` (CodeMirror 6; the Markdown text is the document and everything drawn is a decoration
+  over it, so opening never reformats and saving writes exactly what is in the editor; markers show only where the cursor is). Notes, Work notes,
+  Meetings, Training entries and plan, Reading lists and Readings notes all render it inside `EditorCard`. Decision: `docs/DECISIONS.md`, "Notes
+  editor: CodeMirror 6"; plan and stage write-ups: `docs/EDITOR_LIVE_MARKUP_PLAN.md`, "Live markup … stage 1" to "stage 8". Plain modules, one per concern:
+  - `live-state.ts`: the state (Markdown/GFM, history, the file's own line break), synchronous change reporting
+  - `live-reveal.ts`: pure rules for when a span's or block's markers show; `live-decorations.ts`: the `ViewPlugin` that draws everything
+  - `live-widgets.ts`: bullets, numbers and checkboxes as atomic units; `live-entities.ts`: mention chips, the `@` trigger, whole-chip Backspace
+  - `live-tables.ts`: grid away from the cursor, Tab between cells; `live-fences.ts`: fence lines shown only inside the block
+  - `live-keymap.ts`: every binding (Settings' Notes editor list is tested against it); `live-format.ts`: inline and block formatting keys
+  - `live-lists.ts`: Enter, Shift-Enter, Tab, Backspace, Delete in lists and quotes; `live-lines.ts`: line parsing shared by them; `live-motion.ts`: Home
+  - `live-links.ts`: Cmd-click and paste-a-URL-over-a-selection; `live-paste.ts`: plain-text paste; `live-history.ts`: each command its own undo step
+  - `live-find.ts`, `live-outline.ts`: Find and replace and the outline jump, through small bridge objects (`notes/find-types.ts`,
+    `entities/mention-target.ts`, and Meetings' `todo-live.ts`)
+  - tests: one `*.test.ts` per module, helpers `live-test-utils.ts`, `live-key-utils.ts`, `live-history.testing.ts`, and the real-library gate `live-library.test.ts`
 - Path aliases: `@shared`, `@modules`, `@renderer`.
 
 ## Conventions
@@ -105,7 +122,7 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   fixed order; `in:meetings` (or any source, singular or plural) restricts to it; a small command palette (New note/meeting/training,
   Settings, People, the data folder) shares the same window; "See all results" opens a full page. A module offers `search` in its
   manifest and the shell asks them all (`docs/DECISIONS.md`, "Global search", including how results are ranked). **Find within a note**
-  (Cmd-F) is separate and built into `NotesEditor` itself (`docs/DECISIONS.md`, "Find in the note"). The ideas list (People pages, Home,
+  (Cmd-F) is separate and built into the shared editor itself (`editor/live-find.ts`; `docs/DECISIONS.md`, "Find in the note" is the original, now historical, and stage 5 of the live markup work). The ideas list (People pages, Home,
   writing) is at the top of "Later" in `docs/ROADMAP.md`; none is started.
 - The app name lives in one place (`src/shared/app-info.ts`); it may be renamed again. A few Mac conventions were added (proper name
   in the Dock, an About panel, a Dock menu with quick actions; `docs/DECISIONS.md`, "Mac conventions sweep").
@@ -116,7 +133,7 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   person is built (their meetings, trainings, open TODOs, last-met/next-meeting, and links); and a Work meetings importer
   was built and dry-run against the real vault (since then Work got its own Meetings module, `createMeetingsModule('work')`,
   and the import was applied; `docs/DECISIONS.md`, "Work meetings import"). Two real bugs were found only by driving the built app, not by reading code
-  (a citekey marker that Milkdown's own serialiser would have silently corrupted; a person's links silently failing to
+  (a citekey marker that the old Milkdown editor's serialiser would have silently corrupted; a person's links silently failing to
   save because the IPC handler had never heard of the field) — both fixed. Full write-up in `docs/DECISIONS.md`; immediate
   TODOs for the user are at the top of `docs/ROADMAP.md`'s "For the user" list.
 
@@ -131,19 +148,9 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   `src/shared/entities.ts`; notes and meetings get a `uid` in their front matter when first linked; person renames rewrite mentions;
   "Mentioned in" panels read the note folders on request). Tasks, when built, add one provider and one kind.
 
-- **Live markup editor (30 Sep 2026; stages 1 to 8 done, stage 8 committed but not pushed, stage 9 write-up next after the user's review)**: the notes editor is
-  `src/renderer/src/editor/` (CodeMirror 6, the Markdown text is the document, markers drawn only where the cursor is). `LiveEditor` is the only
-  editor: Notes, Work notes, Meetings, Training entries and plan, Reading lists and Readings notes all render it, and Milkdown and its
-  dependencies were removed in stage 8. Plan: `docs/EDITOR_LIVE_MARKUP_PLAN.md`; write-ups in `docs/DECISIONS.md` ("Live markup … stage 1" to "stage 8").
-  Find, `@`, the outline and the Meetings TODO helper talk to it through small bridge objects (`notes/find-types.ts`, `entities/mention-target.ts`,
-  `modules/meetings/renderer/todo-live.ts`). A CSS rule that pads a `.cm-line` class must be spelled `.wrap .cm-editor .cm-line.live-x` or the editor's
-  own `.cm-line` reset wins (it hid nested-quote indents and heading spacing for six stages). Pitfalls: `markdown()` brings its own Enter/Backspace keymap and
-  paste-URL handler (both switched off); a keymap binding with `preventDefault: true` looks handled when it is not; a line break is one position but two
-  characters in a CRLF note (`withBreaks`, `positions` in `live-lines.ts`); after `prettier --write` re-check any scripted text replacement. The
-  real-library gate (`LIVE_EDITOR_LIBRARY=<copy of ~/CentralCommand/notes and backups> npx vitest run src/renderer/src/editor/live-library`) must pass
-  before each editor change is finished. Two more pitfalls: `syntaxTree(state)` keeps the first ~3,000 characters' tree until a transaction
-  follows the full parse (`stateFor` parses first, then sets the selection; a test that builds states any other way sees a long note's tail as plain text), and every hidden (replaced)
-  range is an empty element in its line that a CSS grid makes a cell of its own (see `LiveEditor.module.css`, table rows). Never write scratch files (logs, screenshots) outside the session scratchpad.
+- **Live markup editor (30 Sep 2026, all nine stages done; stages 1 to 8 pushed, the stage 9 write-up committed and not pushed)**: `LiveEditor` replaced
+  Milkdown everywhere and Milkdown is gone (architecture above). The user's open questions about it (live editor questions 1 to 14, the stage 7 and 8 review
+  items) are in `docs/ROADMAP.md`, "For the user"; do not act on them until they answer. Never write scratch files (logs, screenshots) outside the session scratchpad.
 
 ## Testing the app for real (unit tests are not enough)
 
@@ -170,9 +177,19 @@ npx electron-vite dev -- --remote-debugging-port=9333`, then `chromium.connectOv
 
 ## Pitfalls learned the hard way
 
-- Milkdown: its change listener is debounced (~200 ms) and loses the last keystrokes on quick
-  exit; use the synchronous `notesChangePlugin`. Its `ctx` is only valid during plugin setup, and
-  `serializerCtx` is a placeholder until the view is created.
+- The live editor (CodeMirror 6, `src/renderer/src/editor/`):
+  - `markdown()` brings its own Enter/Backspace keymap and paste-URL handler; both are switched off (`addKeymap`, `pasteURLAsLink`) because ours replace them.
+  - A keymap binding with `preventDefault: true` looks handled when it is not; press the key in a test (`runScopeHandlers`) rather than trusting the binding.
+  - A line break is one position in the document but two characters in a CRLF note: use `withBreaks` and `positions` in `live-lines.ts` and insert the note's own
+    break, never a bare `\n`.
+  - `syntaxTree(state)` keeps the tree of the first ~3,000 characters a state was built with until a transaction follows the full parse. Build test states with
+    `stateFor` (it parses first, then sets the selection); any other way makes a long note's tail look like plain text, and the gate was blind to it for stages 2 to 5.
+  - Every hidden (replaced) range is an empty element in its line, and a CSS grid makes it a cell of its own (see the table rows in `LiveEditor.module.css`).
+  - A CSS rule that pads a `.cm-line` class must be spelled `.wrap .cm-editor .cm-line.live-x`, or the editor's own `.cm-line { padding: 0 }` reset wins (it hid
+    nested-quote indents and heading spacing for six stages; unit tests read the DOM and passed).
+  - The real-library gate must pass before each editor change is finished: copy `~/CentralCommand/notes` and `backups` into the session scratchpad and run
+    `LIVE_EDITOR_LIBRARY=<that copy> npx vitest run src/renderer/src/editor/live-library`. It is opt-in, so a plain `npm test` skips it.
+  - Change reporting must stay synchronous (`EditorView.updateListener`, no debounce): a debounced reporter once lost the last keystrokes on quick exit.
 - React StrictMode runs effect, cleanup, effect back to back without awaiting: lifecycle methods
   (`NotesSession.start`/`dispose`) must change state synchronously.
 - Better BibLaTeX list fields (`publisher`, `location`, `institution`) parse as arrays, not strings.
@@ -196,7 +213,7 @@ npx electron-vite dev -- --remote-debugging-port=9333`, then `chromium.connectOv
   milliseconds of a click can act on the old selection (wait a moment), and a controlled checkbox updates after an IPC
   round trip (click and wait; `.check()` fails). Check dev mode and the production build both.
 - The React Compiler lint rules reject refs read during render and `setState` inside an effect. Keep behaviour that an
-  editor plugin or key handler needs in a small class held with `useState(() => new …)` (see `useTodoHelper`), and derive
+  editor extension or key handler needs in a small class held with `useState(() => new …)` (see `useTodoHelper`), and derive
   "draft" values instead of copying props into state.
 - A `main` scroll container needs `scroll-padding` or a focused control's ring is cut at the edge (People settings).
 
