@@ -3,6 +3,8 @@ import { Milkdown, MilkdownProvider, useEditor, useInstance } from '@milkdown/re
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { useNavigate } from 'react-router'
 import { parseEntityHref } from '@shared/entities'
+import { LiveEditor } from '../editor/LiveEditor'
+import { liveEditorEnabled } from '../editor/live-switch'
 import { entityHostCtx } from '../entities/entity-plugin'
 import { EntityHoverCard, type HoverTarget } from '../entities/EntityHoverCard'
 import { EntityPicker } from '../entities/EntityPicker'
@@ -197,6 +199,8 @@ function Inner({
 
 /** A live-render Markdown editor: typing `## `, `**x**` or `- ` formats in place, with no separate preview. */
 export function NotesEditor(props: NotesEditorProps): React.JSX.Element {
+  // The hidden switch to the CodeMirror editor while it is built (`docs/EDITOR_LIVE_MARKUP_PLAN.md`, stage 2).
+  if (liveEditorEnabled()) return <LiveEditor {...props} />
   return (
     <MilkdownProvider>
       <Inner {...props} />

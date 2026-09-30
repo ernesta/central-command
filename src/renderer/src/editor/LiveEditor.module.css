@@ -1,0 +1,165 @@
+.wrap {
+  position: relative;
+  min-height: 280px;
+  cursor: text;
+}
+/* The editor itself has no outline (the caret is not enough for keyboard users), so ring the whole area. */
+.wrap:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+  border-radius: var(--radius-control);
+}
+.placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--text-muted);
+  font-size: var(--text-16);
+  line-height: 1.8;
+  pointer-events: none;
+}
+
+/* CodeMirror's own chrome, made to disappear: the text sits on the card like the old editor's did. */
+.wrap :global(.cm-editor) {
+  min-height: 280px;
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--text-16);
+}
+.wrap :global(.cm-editor.cm-focused) {
+  outline: none;
+}
+.wrap :global(.cm-editor) :global(.cm-scroller) {
+  overflow: visible;
+  font-family: inherit;
+  line-height: 1.8;
+}
+.wrap :global(.cm-editor) :global(.cm-content) {
+  min-height: 280px;
+  padding: 0;
+  caret-color: var(--ink);
+  font-variant-ligatures: none;
+}
+.wrap :global(.cm-editor) :global(.cm-line) {
+  padding: 0;
+}
+.wrap :global(.cm-editor) :global(.cm-cursor) {
+  border-left-color: var(--ink);
+}
+.wrap :global(.cm-editor) :global(.cm-selectionBackground),
+.wrap
+  :global(.cm-editor.cm-focused)
+  :global(.cm-scroller)
+  > :global(.cm-selectionLayer)
+  :global(.cm-selectionBackground) {
+  background: var(--selected-bg);
+}
+
+/* Markers: the characters of the Markdown, shown only where the cursor is. */
+.wrap :global(.live-marker) {
+  color: var(--marker);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  font-style: normal;
+  font-weight: 400;
+  text-decoration: none;
+}
+
+/* Blank lines are the gap between paragraphs, so they are shorter than a line of text. */
+.wrap :global(.live-blank) {
+  line-height: 0.9;
+}
+
+/* Headings, as the old editor drew them. */
+.wrap :global(.live-h1),
+.wrap :global(.live-h2),
+.wrap :global(.live-h3),
+.wrap :global(.live-h4),
+.wrap :global(.live-h5),
+.wrap :global(.live-h6) {
+  padding-top: 0.5em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.3;
+}
+.wrap :global(.live-h1) {
+  font-size: var(--text-28);
+}
+.wrap :global(.live-h2) {
+  font-size: 23px;
+}
+.wrap :global(.live-h3) {
+  font-size: var(--text-20);
+}
+.wrap :global(.live-h4),
+.wrap :global(.live-h5),
+.wrap :global(.live-h6) {
+  font-size: var(--text-16);
+}
+/* The first line of the note needs no space above it. */
+.wrap :global(.cm-line:first-child) {
+  padding-top: 0;
+}
+
+/* Spans. */
+.wrap :global(.live-em) {
+  font-style: italic;
+}
+.wrap :global(.live-strong) {
+  font-weight: 700;
+}
+.wrap :global(.live-strike) {
+  text-decoration: line-through;
+}
+.wrap :global(.live-code) {
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+  background: var(--panel);
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+}
+.wrap :global(.live-link) {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.wrap[data-open-links] :global(.live-link) {
+  cursor: pointer;
+}
+.wrap :global(.live-url) {
+  color: var(--marker);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+.wrap :global(.live-listmark) {
+  color: var(--text-muted);
+}
+
+/* Quotes: one rule, and the text moves in one step per level (`> > text`). */
+.wrap :global(.live-quote) {
+  padding-left: calc(var(--quote-depth, 1) * 1em);
+  border-left: 2px solid var(--border-strong);
+  color: var(--text-secondary);
+}
+
+/* A rule is a line; `---` shows while the cursor is on it. */
+.wrap :global(.live-hr) {
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--border-soft);
+  line-height: 0.5;
+}
+.wrap :global(.live-hr-open) {
+  border-bottom: 1px solid var(--border-soft);
+}
+
+/* Code and tables are shown as their text until the later stages draw them. */
+.wrap :global(.live-codeblock),
+.wrap :global(.live-table) {
+  font-family: var(--font-mono);
+  font-size: var(--text-14);
+  line-height: 1.6;
+}
+.wrap :global(.live-codeblock) {
+  padding: 0 12px;
+  background: var(--panel);
+}
