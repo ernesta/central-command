@@ -34,7 +34,8 @@ export function liveExtensions(options: LiveOptions): Extension[] {
     history(),
     drawSelection(),
     EditorView.lineWrapping,
-    markdown({ base: markdownLanguage }),
+    // Its own Enter and Backspace rules (`addKeymap`) are replaced by `live-lists.ts`.
+    markdown({ base: markdownLanguage, addKeymap: false }),
     liveKeymap,
     keymap.of([...keys, ...historyKeymap]),
     liveLayer,

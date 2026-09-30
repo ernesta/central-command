@@ -63,16 +63,7 @@ describe('the source the check reads', () => {
 // not keys of the keymap (a click, a paste, the main process's Cmd-Shift-V) and the ones a later stage brings.
 describe('the notes editor shortcut list, against the live editor', () => {
   const NOT_KEYMAP = new Set(['Mod-Click', 'Mod-v', 'Mod-Shift-v'])
-  const LATER_STAGES = new Set([
-    'Shift-Enter',
-    'Tab',
-    'Shift-Tab',
-    '@',
-    'Mod-f',
-    'Mod-Alt-f',
-    'Mod-Enter',
-    'Mod-Shift-Enter'
-  ])
+  const LATER_STAGES = new Set(['@', 'Mod-f', 'Mod-Alt-f', 'Mod-Enter', 'Mod-Shift-Enter'])
   /** `Shift-Mod-z` and `Mod-Shift-z` are one chord: modifiers in any order, the key in lower case. */
   const canon = (chord: string): string => {
     const parts = chord.split('-')

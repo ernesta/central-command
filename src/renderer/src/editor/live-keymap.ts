@@ -10,6 +10,14 @@ import {
   toggleNumbers,
   toggleQuote
 } from './live-format'
+import {
+  backspaceInItem,
+  deleteBeforeItem,
+  enter,
+  hardBreak,
+  indentItem,
+  outdentItem
+} from './live-lists'
 
 /*
  * The keys of the live editor, in the order of Settings → Shortcuts → Notes editor. `notes-shortcuts.test.ts` checks
@@ -29,7 +37,16 @@ export const formatBindings: KeyBinding[] = [
   { key: 'Mod-Alt-c', run: toggleCodeBlock }
 ]
 
+export const listBindings: KeyBinding[] = [
+  { key: 'Enter', run: enter },
+  { key: 'Shift-Enter', run: hardBreak },
+  { key: 'Backspace', run: backspaceInItem },
+  { key: 'Delete', run: deleteBeforeItem },
+  { key: 'Tab', run: indentItem },
+  { key: 'Shift-Tab', run: outdentItem },
+  { key: 'Mod-]', run: indentItem },
+  { key: 'Mod-[', run: outdentItem }
+]
+
 /** Every binding of the live editor, before the default keymap so that ours win (`Mod-[` and `Mod-]` are theirs too). */
-export const liveKeymap: Extension = keymap.of(
-  [...formatBindings].map((b) => ({ ...b, preventDefault: true }))
-)
+export const liveKeymap: Extension = keymap.of([...formatBindings, ...listBindings])
