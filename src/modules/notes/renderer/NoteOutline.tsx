@@ -1,11 +1,21 @@
-import { markdownOutline, type OutlineItem } from '@shared/markdown-outline'
+import { headingStart, liveViewIn, scrollToPos } from '@renderer/editor/live-outline'
+import { locatedOutline, type LocatedOutlineItem } from '@shared/markdown-outline'
 import styles from './NoteOutline.module.css'
 
 /** Levels shown: a note's own top-level structure, not every sub-sub-heading. */
 const LEVELS = [1, 2, 3]
 
-/** The outline entry's heading in the editor: the first heading of that level with that text. */
-function scrollToHeading(root: HTMLElement | null, item: OutlineItem): void {
+/**
+ * Take the editor to the outline entry's heading. The live editor is sent to the heading's line; Milkdown's page is
+ * searched for the first heading of that level with that text.
+ */
+function scrollToHeading(root: HTMLElement | null, item: LocatedOutlineItem): void {
+  const live = liveViewIn(root)
+  if (live) {
+    const pos = headingStart(live.state, item.line)
+    if (pos !== null) scrollToPos(live, pos)
+    return
+  }
   const heading = Array.from(
     root?.querySelectorAll<HTMLElement>(`.ProseMirror h${item.level}`) ?? []
   ).find((h) => (h.textContent ?? '').replace(/\s+/g, ' ').trim() === item.text)
@@ -23,7 +33,7 @@ export function NoteOutline({
   text: string
   docRef: React.RefObject<HTMLElement | null>
 }): React.JSX.Element {
-  const outline = markdownOutline(text, LEVELS)
+  const outline = locatedOutline(text, LEVELS)
   return (
     <nav className={styles.panel} aria-label="Outline">
       <h2 className={styles.label}>Outline</h2>

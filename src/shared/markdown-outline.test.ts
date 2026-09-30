@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { markdownOutline } from './markdown-outline'
+import { locatedOutline, markdownOutline } from './markdown-outline'
 
 describe('markdownOutline', () => {
   it('keeps only the given levels, in order', () => {
@@ -27,5 +27,22 @@ describe('markdownOutline', () => {
   it('drops an empty heading and is empty for text with no headings', () => {
     expect(markdownOutline('## \n', [2])).toEqual([])
     expect(markdownOutline('Just a paragraph.', [1, 2, 3])).toEqual([])
+  })
+})
+
+describe('locatedOutline', () => {
+  it('gives the line of each heading, counting from 0, over fences, blank lines and both kinds of line break', () => {
+    const md = '# One\n\n```\n## no\n```\r\n## Two\n\n### Three'
+    expect(locatedOutline(md, [1, 2, 3])).toEqual([
+      { level: 1, text: 'One', line: 0 },
+      { level: 2, text: 'Two', line: 5 },
+      { level: 3, text: 'Three', line: 7 }
+    ])
+  })
+  it('agrees with markdownOutline apart from the line', () => {
+    const md = '## A\n\n### B\n\n## \n## C'
+    expect(locatedOutline(md, [2, 3]).map(({ level, text }) => ({ level, text }))).toEqual(
+      markdownOutline(md, [2, 3])
+    )
   })
 })

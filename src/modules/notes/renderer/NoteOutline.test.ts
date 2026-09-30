@@ -3,6 +3,7 @@ import { createElement, createRef } from 'react'
 import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { openView } from '@renderer/editor/live-key-utils'
 import { NoteOutline } from './NoteOutline'
 
 let host: HTMLElement
@@ -61,5 +62,43 @@ describe('NoteOutline', () => {
     const [, sub] = [...host.querySelectorAll('button')]
     flushSync(() => sub.click())
     expect(scrolled).toEqual([h3])
+  })
+})
+
+describe('NoteOutline with the live editor', () => {
+  it('sends the editor to the heading’s line when clicked, even one far from the screen', () => {
+    const text = '# Title\n\n' + 'text\n\n'.repeat(200) + '## Methods\n\n### Participants\n'
+    const { view } = openView(text)
+    const scrolled: number[] = []
+    const dispatch = view.dispatch.bind(view)
+    view.dispatch = ((...args: Parameters<typeof view.dispatch>) => {
+      const effect = (args[0] as { effects?: { value?: { range?: { from: number } } } }).effects
+      if (effect?.value?.range) scrolled.push(effect.value.range.from)
+      return dispatch(...args)
+    }) as typeof view.dispatch
+    const doc = view.dom.parentElement!.parentElement as HTMLElement
+    render(text, doc)
+    const methods = [...host.querySelectorAll('button')].find((b) => b.textContent === 'Methods')!
+    flushSync(() => methods.click())
+    expect(scrolled).toEqual([text.indexOf('## Methods')])
+    const participants = [...host.querySelectorAll('button')].find(
+      (b) => b.textContent === 'Participants'
+    )!
+    flushSync(() => participants.click())
+    expect(scrolled.at(-1)).toBe(text.indexOf('### Participants'))
+  })
+
+  it('does nothing when the text has moved on and that line is no longer a heading', () => {
+    const { view } = openView('# Title\n\n## Methods')
+    const doc = view.dom.parentElement!.parentElement as HTMLElement
+    render('# Title\n\n## Methods', doc)
+    view.dispatch({
+      changes: { from: 0, to: view.state.doc.length, insert: 'plain\n\nplain\n\nplain' }
+    })
+    const spy = vi.spyOn(view, 'dispatch')
+    flushSync(() =>
+      [...host.querySelectorAll('button')].find((b) => b.textContent === 'Methods')!.click()
+    )
+    expect(spy).not.toHaveBeenCalled()
   })
 })
