@@ -219,6 +219,11 @@ ready for `--apply`" and say so plainly when you report back.
 
 ### For the user (review and decisions)
 
+- [ ] **Review the Training data after the 30 Sep 2026 tidy** (series, titles, file names; originals in
+      `~/CentralCommand/backups/tidy-training-series-*`). Fix what you don't like: institutions that are really people or providers
+      ("Dr Robert De Vries", "Prof. Gaelle Vallee-Tourangeau", "DataCamp", "SEDarc DTP"), whether the Statistical Genetics Group Seminar
+      and other one-offs need a series, and PS5302 / PS2021 entries that have no session titles. Then try the Series and Institution
+      drop-downs on an entry page and the Type before Series column order in the Training and Meetings lists.
 - [ ] **Try the Training entry page's new side panel** (Files above Outline, matching Meetings; see `docs/DECISIONS.md`,
       "Training entry page: a side panel"). Say what to change, and whether Meetings should get a second, plain outline
       after all now that you've seen Training's (a deliberate no for now, see item 2 above).
