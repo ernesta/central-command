@@ -33,10 +33,17 @@
     "import:reading-list": "esbuild scripts/import-reading-list.mts --bundle --external:jsdom --alias:@shared=./src/shared --alias:@modules=./src/modules --platform=node --format=esm --log-level=warning --banner:js=\"import{createRequire as __cr}from'module';const require=__cr(import.meta.url);\" --outfile=out/scripts/import-reading-list.mjs && node out/scripts/import-reading-list.mjs"
   },
   "dependencies": {
+    "@codemirror/commands": "^6.11.1",
+    "@codemirror/lang-markdown": "^6.5.2",
+    "@codemirror/language": "^6.12.4",
+    "@codemirror/search": "^6.7.2",
+    "@codemirror/state": "^6.7.6",
+    "@codemirror/view": "^6.43.13",
     "@electron-toolkit/utils": "^4.0.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@fontsource/ibm-plex-sans": "^5.3.0",
     "@fontsource/newsreader": "^5.3.0",
+    "@lezer/common": "^1.5.2",
     "@milkdown/kit": "^7.22.2",
     "@milkdown/react": "^7.22.2",
     "@retorquere/bibtex-parser": "^11.0.0",
