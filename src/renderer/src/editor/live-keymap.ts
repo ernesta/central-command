@@ -11,7 +11,7 @@ import {
   toggleQuote
 } from './live-format'
 import { deleteChip } from './live-entities'
-import { openFind } from './live-find'
+import { openFind, replaceFromKey } from './live-find'
 import {
   backspaceInItem,
   deleteBeforeItem,
@@ -42,7 +42,9 @@ export const formatBindings: KeyBinding[] = [
 /** Find and replace: the bar is `useNotesFind`'s; Cmd-Enter and Cmd-Shift-Enter do nothing here unless the bar is open with its replace row. */
 export const findBindings: KeyBinding[] = [
   { key: 'Mod-f', run: openFind(false) },
-  { key: 'Mod-Alt-f', run: openFind(true) }
+  { key: 'Mod-Alt-f', run: openFind(true) },
+  { key: 'Mod-Enter', run: replaceFromKey(false) },
+  { key: 'Mod-Shift-Enter', run: replaceFromKey(true) }
 ]
 
 /** A mention is one thing to Backspace and Delete; before the list rules, which would treat the text after it as an item's. */

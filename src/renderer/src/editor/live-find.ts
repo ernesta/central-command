@@ -132,6 +132,12 @@ export const openFind =
     return bridge !== noFindBridge
   }
 
+/** Cmd-Enter, Cmd-Shift-Enter while the note has focus and the bar is open with its replace row: replace this match, or all. */
+export const replaceFromKey =
+  (all: boolean): Command =>
+  (view) =>
+    view.state.facet(findBridgeFacet).replaceFromEditor(all)
+
 /** Everything find needs beyond the keys (`live-keymap.ts`): the highlights, the bridge, and telling the bar when the editor goes. */
 export function findExtension(bridge: FindBridge | undefined): Extension[] {
   return [

@@ -34,10 +34,16 @@ export interface FindBridge {
   /** The editor was just destroyed (a reload from disk, or React StrictMode's throwaway mount): close without
       touching it again. */
   detach(): void
+  /**
+   * Cmd-Enter and Cmd-Shift-Enter pressed in the editor itself (the bar's fields handle them on their own): does
+   * the replacement and returns true when the bar is open with its replace row shown, else false.
+   */
+  replaceFromEditor(all: boolean): boolean
 }
 
 export const noFindBridge: FindBridge = {
   isOpen: () => false,
   open: () => undefined,
-  detach: () => undefined
+  detach: () => undefined,
+  replaceFromEditor: () => false
 }

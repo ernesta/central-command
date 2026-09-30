@@ -232,3 +232,36 @@ describe('replacing', () => {
     expect(reports).toEqual(['dog'])
   })
 })
+
+describe('Cmd-Enter and Cmd-Shift-Enter in the note', () => {
+  function ready(): ReturnType<typeof withBar> & { calls: boolean[] } {
+    const base = withBar('cat cat cat')
+    const calls: boolean[] = []
+    press(base.view, 'Mod-Alt-f')
+    base.bar.search('cat')
+    base.bar.replaceKey = (all) => {
+      calls.push(all)
+      if (all) base.bar.replaceAll('dog', 'cat')
+      else base.bar.replaceOne('dog', 'cat')
+    }
+    return { ...base, calls }
+  }
+  it('replace this match, or every match, when the bar shows its replace row', () => {
+    const { view, calls } = ready()
+    expect(press(view, 'Mod-Enter')).toBe(true)
+    expect(view.state.sliceDoc()).toBe('dog cat cat')
+    expect(press(view, 'Mod-Shift-Enter')).toBe(true)
+    expect(view.state.sliceDoc()).toBe('dog dog dog')
+    expect(calls).toEqual([false, true])
+  })
+  it('leave the note alone when the replace row is hidden', () => {
+    const { view, bar } = ready()
+    bar.replaceKey = null
+    expect(press(view, 'Mod-Shift-Enter')).toBe(false)
+    expect(view.state.sliceDoc()).toBe('cat cat cat')
+  })
+  it('are not ours when no bar is open (Cmd-Enter keeps its usual meaning)', () => {
+    const { view } = withBar('cat')
+    expect(press(view, 'Mod-Shift-Enter')).toBe(false)
+  })
+})

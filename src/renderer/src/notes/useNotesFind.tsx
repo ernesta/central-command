@@ -25,6 +25,9 @@ export class NotesFindController implements FindBridge {
   target: FindTarget | null = null
   matches: FindMatch[] = []
   active = 0
+  /** The bar's own replace-one and replace-all, for the keys pressed in the note; null while the replace row is hidden. */
+  replaceKey: ((all: boolean) => void) | null = null
+
   constructor(
     private readonly onOpen: (showReplace: boolean) => void,
     private readonly onClose: () => void
@@ -51,7 +54,18 @@ export class NotesFindController implements FindBridge {
     this.target = null
     this.matches = []
     this.active = 0
+    this.replaceKey = null
     this.onClose()
+  }
+
+  setReplaceKey = (run: ((all: boolean) => void) | null): void => {
+    this.replaceKey = run
+  }
+
+  replaceFromEditor = (all: boolean): boolean => {
+    if (!this.target || !this.replaceKey) return false
+    this.replaceKey(all)
+    return true
   }
 
   private show(): void {
@@ -192,6 +206,20 @@ export function useNotesFind(): {
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [open])
+
+  // Cmd-Enter and Cmd-Shift-Enter pressed in the note itself (the live editor binds them) do what the bar's Replace and
+  // Replace all do, once the replace row is shown. Read through a ref so the controller never holds a stale closure.
+  const replaceRef = useRef({ replaceOne, replaceAll })
+  useEffect(() => {
+    replaceRef.current = { replaceOne, replaceAll }
+  })
+  useEffect(() => {
+    controller.setReplaceKey(
+      open && showReplace
+        ? (all) => (all ? replaceRef.current.replaceAll() : replaceRef.current.replaceOne())
+        : null
+    )
+  }, [controller, open, showReplace])
 
   const setup = (editor: Editor): Editor =>
     editor
