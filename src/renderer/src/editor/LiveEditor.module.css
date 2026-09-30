@@ -254,3 +254,14 @@
 .wrap[data-open-links] :global(.live-chip) {
   cursor: pointer;
 }
+
+/* Find in the note (Cmd-F): every match shaded, the current one stronger (`live-find.ts`). */
+.wrap :global(.notes-find-match) {
+  background: var(--selected-bg);
+  border-radius: 2px;
+}
+.wrap :global(.notes-find-active) {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-radius: 2px;
+}
