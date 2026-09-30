@@ -20,6 +20,7 @@ import { initialsFor } from '@modules/meetings/shared/query'
 import { meetingHours } from '@modules/meetings/shared/hours'
 import {
   entriesInYear,
+  entriesInYearOrPlanned,
   isUpcoming,
   meetingsLine,
   recentAndUpcoming,
@@ -63,7 +64,7 @@ export function TrainingLanding(): React.JSX.Element {
   const aim = settings.trainingAimHours
   const hours = trainingHours(all, year, today, aim)
   const meetingMinutes = meetingHours(meetings, year, today).minutes
-  const { upcoming, recent } = recentAndUpcoming(all, today)
+  const { upcoming, recent } = recentAndUpcoming(entriesInYearOrPlanned(all, year, today), today)
   const summaries = seriesSummaries(entriesInYear(all, year), today)
 
   const noteParts = [
