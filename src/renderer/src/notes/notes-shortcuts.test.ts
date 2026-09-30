@@ -62,8 +62,9 @@ describe('the source the check reads', () => {
 // The live editor (src/renderer/src/editor/): every listed chord must be bound in its keymaps, except the ones that are
 // not keys of the keymap (a click, a paste, the main process's Cmd-Shift-V) and the ones a later stage brings.
 describe('the notes editor shortcut list, against the live editor', () => {
-  const NOT_KEYMAP = new Set(['Mod-Click', 'Mod-v', 'Mod-Shift-v'])
-  const LATER_STAGES = new Set(['@', 'Mod-f', 'Mod-Alt-f', 'Mod-Enter', 'Mod-Shift-Enter'])
+  // `@` is a typed character: `live-entities.test.ts` types it and checks the picker is told.
+  const NOT_KEYMAP = new Set(['Mod-Click', 'Mod-v', 'Mod-Shift-v', '@'])
+  const LATER_STAGES = new Set(['Mod-f', 'Mod-Alt-f', 'Mod-Enter', 'Mod-Shift-Enter'])
   /** `Shift-Mod-z` and `Mod-Shift-z` are one chord: modifiers in any order, the key in lower case. */
   const canon = (chord: string): string => {
     const parts = chord.split('-')

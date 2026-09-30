@@ -3,6 +3,7 @@ import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { EditorState, type Extension } from '@codemirror/state'
 import { drawSelection, EditorView, keymap } from '@codemirror/view'
 import { liveLayer } from './live-decorations'
+import { entityExtensions, type LiveEntities } from './live-entities'
 import { liveKeymap } from './live-keymap'
 import { motionKeymap } from './live-motion'
 import { linkTargetAt } from './live-links'
@@ -17,6 +18,8 @@ export interface LiveOptions {
   openLink: (href: string) => void
   /** Names the editing area for assistive technology. */
   label: string
+  /** The `@` picker and what mentions point at; without it mentions are still drawn, and nothing is offered on `@`. */
+  entities?: LiveEntities
 }
 
 /**
@@ -42,6 +45,7 @@ export function liveExtensions(options: LiveOptions): Extension[] {
     liveKeymap,
     keymap.of([...keys, ...historyKeymap]),
     liveLayer,
+    entityExtensions(options.entities),
     livePaste,
     EditorView.contentAttributes.of({ 'aria-label': options.label }),
     // Reports the text synchronously on every change: the session saves on its own (longer) timer, so nothing

@@ -8,6 +8,7 @@ import {
   type ViewUpdate
 } from '@codemirror/view'
 import type { SyntaxNodeRef } from '@lezer/common'
+import { chipOf, ChipWidget, entitiesFacet, refreshMentions } from './live-entities'
 import { isListKind, parseLine } from './live-lines'
 import { blockRevealed, computeReveal, spanRevealed, type Extent, type Reveal } from './live-reveal'
 import { BulletWidget, CheckboxWidget, NumberWidget } from './live-widgets'
@@ -94,6 +95,7 @@ export function buildDecorations(
 
   for (const range of visible) {
     const quoteDepth = new Map<number, number>()
+    let chipEnd = -1
     let depth = 0
 
     // Blank lines are shorter than text lines, so the gap between paragraphs is a paragraph gap.
@@ -107,6 +109,8 @@ export function buildDecorations(
       from: range.from,
       to: range.to,
       enter(node: SyntaxNodeRef) {
+        // Inside a chip nothing else is drawn.
+        if (node.from < chipEnd) return
         const name = node.name
         const heading = /^ATXHeading([1-6])$/.exec(name)
         if (heading) {
@@ -196,6 +200,20 @@ export function buildDecorations(
           case 'TaskMarker':
             return
           case 'Link': {
+            // A mention is drawn as a chip, whatever the cursor does (`live-entities.ts`); its own marks and label are not decorated.
+            const chip = chipOf(state, node.node)
+            if (chip) {
+              const { host, open } = state.facet(entitiesFacet)
+              const missing = host.resolve(chip.ref).state === 'missing'
+              add(
+                'chip',
+                chip.from,
+                chip.to,
+                Decoration.replace({ widget: new ChipWidget(chip, missing, open) })
+              )
+              chipEnd = chip.to
+              return
+            }
             const marks = node.node.getChildren('LinkMark')
             // Only the inline form, `[label](address)`; `[a][b]` and friends are shown as they are.
             if (marks.length < 4 || text(marks[2].from, marks[2].to) !== '(') return
@@ -247,6 +265,7 @@ export const liveDecorations = ViewPlugin.fromClass(
         update.selectionSet ||
         update.viewportChanged ||
         update.focusChanged ||
+        update.transactions.some((tr) => tr.effects.some((effect) => effect.is(refreshMentions))) ||
         syntaxTree(update.startState) !== syntaxTree(update.state)
       ) {
         this.decorations = this.build(update.view)

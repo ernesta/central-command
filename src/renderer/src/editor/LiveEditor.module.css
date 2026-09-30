@@ -219,3 +219,38 @@
   color: var(--text-muted);
   text-decoration: line-through;
 }
+
+/* A mention (a link to a person, reading, meeting or note) is a chip with the icon of its kind. The icons are CSS variables
+   LiveEditor sets from the providers (`--entity-icon-person` …); each chip says which one it is. */
+.wrap :global(.live-chip) {
+  padding: 1px 6px 1px 5px;
+  border-radius: 6px;
+  background: var(--selected-bg);
+  color: var(--selected-text);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  cursor: default;
+}
+.wrap :global(.live-chip):hover {
+  background: var(--panel);
+}
+.wrap :global(.live-chip)::before {
+  content: '';
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  margin-right: 4px;
+  vertical-align: -0.08em;
+  background: currentColor;
+  -webkit-mask: var(--entity-icon) center / contain no-repeat;
+  mask: var(--entity-icon) center / contain no-repeat;
+}
+/* What a mention points at is gone (a deleted reading, a note moved to the Trash). */
+.wrap :global(.live-chip[data-missing='true']) {
+  background: transparent;
+  color: var(--danger);
+  text-decoration: line-through;
+}
+.wrap[data-open-links] :global(.live-chip) {
+  cursor: pointer;
+}

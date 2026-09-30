@@ -1,8 +1,13 @@
 import { EditorView } from '@codemirror/view'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { useNavigate } from 'react-router'
-import { parseEntityHref } from '@shared/entities'
+import { entityHref, parseEntityHref } from '@shared/entities'
+import { EntityHoverCard } from '../entities/EntityHoverCard'
+import { EntityPicker } from '../entities/EntityPicker'
+import { entityIconVars } from '../entities/icons'
+import { EntityPickerController } from '../entities/picker-controller'
 import { providerFor, type EntitySelf } from '../entities/registry'
+import { useEntityHover } from '../entities/useEntityHover'
 import { createLiveState } from './live-state'
 import styles from './LiveEditor.module.css'
 
@@ -18,7 +23,7 @@ export interface LiveEditorProps {
   showPlaceholder: boolean
   /** Put the cursor in the note as soon as the editor is ready (a note started from quick capture). */
   autoFocus?: boolean
-  /** The note or meeting this text belongs to, so `@` never offers it as a link to itself. Not used until mentions arrive. */
+  /** The note or meeting this text belongs to, so `@` never offers it as a link to itself. */
   entitySelf?: EntitySelf
 }
 
@@ -32,13 +37,23 @@ export function LiveEditor({
   onBlur,
   placeholder,
   showPlaceholder,
-  autoFocus
+  autoFocus,
+  entitySelf
 }: LiveEditorProps): React.JSX.Element {
   const navigate = useNavigate()
   const hostRef = useRef<HTMLDivElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
   const [start] = useState(initial)
+
+  // The `@` picker and what mentions point at, for this editor (see `src/renderer/src/entities`).
+  const [controller] = useState(() => new EntityPickerController())
+  const [iconVars] = useState(entityIconVars)
+  const picker = useSyncExternalStore(controller.subscribe, controller.getSnapshot)
+  useEffect(() => {
+    controller.setSelf(entitySelf ?? null)
+  }, [controller, entitySelf])
+  const { hover, onMouseOver, onMouseOut, stop: stopHover } = useEntityHover('.live-chip')
 
   // The editor reads the latest callbacks without being rebuilt when they change.
   const onChangeRef = useRef(onChange)
@@ -51,6 +66,7 @@ export function LiveEditor({
         window.open(href, '_blank')
         return
       }
+      stopHover()
       void providerFor(ref.kind)
         ?.resolve(ref.key)
         .then((summary) => {
@@ -70,7 +86,8 @@ export function LiveEditor({
         doc: start,
         label: placeholder,
         onChange: (text) => onChangeRef.current(text),
-        openLink: (href) => openLinkRef.current(href)
+        openLink: (href) => openLinkRef.current(href),
+        entities: { host: controller, open: (ref) => openLinkRef.current(entityHref(ref)) }
       })
     })
     viewRef.current = view
@@ -79,7 +96,7 @@ export function LiveEditor({
       view.destroy()
       viewRef.current = null
     }
-  }, [start, placeholder, autoFocus])
+  }, [start, placeholder, autoFocus, controller])
 
   // Holding Cmd (Ctrl) turns a click on a link into "open it", so show the pointer for as long as it is held.
   useEffect(() => {
@@ -103,7 +120,13 @@ export function LiveEditor({
     <div
       ref={wrapRef}
       className={styles.wrap}
-      onBlur={onBlur}
+      style={iconVars}
+      onBlur={() => {
+        controller.dismiss()
+        onBlur()
+      }}
+      onMouseOver={onMouseOver}
+      onMouseOut={onMouseOut}
       // The space around the text still puts the cursor in the note.
       onClick={(event) => {
         if (event.target === event.currentTarget) viewRef.current?.focus()
@@ -115,6 +138,12 @@ export function LiveEditor({
         </div>
       )}
       <div ref={hostRef} />
+      <EntityPicker
+        snapshot={picker}
+        onHover={controller.setActive}
+        onChoose={(index) => void controller.choose(index)}
+      />
+      {hover && <EntityHoverCard controller={controller} target={hover} />}
     </div>
   )
 }

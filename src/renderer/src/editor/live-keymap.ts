@@ -10,6 +10,7 @@ import {
   toggleNumbers,
   toggleQuote
 } from './live-format'
+import { deleteChip } from './live-entities'
 import {
   backspaceInItem,
   deleteBeforeItem,
@@ -37,6 +38,12 @@ export const formatBindings: KeyBinding[] = [
   { key: 'Mod-Alt-c', run: toggleCodeBlock }
 ]
 
+/** A mention is one thing to Backspace and Delete; before the list rules, which would treat the text after it as an item's. */
+export const entityBindings: KeyBinding[] = [
+  { key: 'Backspace', run: deleteChip(false) },
+  { key: 'Delete', run: deleteChip(true) }
+]
+
 export const listBindings: KeyBinding[] = [
   { key: 'Enter', run: enter },
   { key: 'Shift-Enter', run: hardBreak },
@@ -49,4 +56,8 @@ export const listBindings: KeyBinding[] = [
 ]
 
 /** Every binding of the live editor, before the default keymap so that ours win (`Mod-[` and `Mod-]` are theirs too). */
-export const liveKeymap: Extension = keymap.of([...formatBindings, ...listBindings])
+export const liveKeymap: Extension = keymap.of([
+  ...formatBindings,
+  ...entityBindings,
+  ...listBindings
+])

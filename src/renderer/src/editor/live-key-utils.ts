@@ -1,6 +1,7 @@
 import { ensureSyntaxTree } from '@codemirror/language'
 import { EditorSelection } from '@codemirror/state'
 import { EditorView, runScopeHandlers } from '@codemirror/view'
+import type { LiveEntities } from './live-entities'
 import { createLiveState } from './live-state'
 
 /*
@@ -18,7 +19,7 @@ export interface Opened {
   reports: string[]
 }
 
-export function openView(marked: string): Opened {
+export function openView(marked: string, entities?: LiveEntities): Opened {
   const first = marked.indexOf('|')
   const second = first < 0 ? -1 : marked.indexOf('|', first + 1)
   const doc = marked.replace(/\|/g, '')
@@ -29,7 +30,8 @@ export function openView(marked: string): Opened {
       doc,
       label: 'test',
       onChange: (text) => reports.push(text),
-      openLink: () => undefined
+      openLink: () => undefined,
+      entities
     })
   })
   if (first >= 0)
