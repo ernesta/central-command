@@ -102,7 +102,7 @@ with real keystrokes, look at screenshots, quit right after typing)
    pasted as plain text (the user's call, 30 Sep 2026); converting HTML to Markdown is a possible later addition (adds a small dependency; ask first).
 4. **DONE (30 Sep 2026). Entities.** Chips, atomic behaviour, `@` picker, hover card, Cmd-click, "Mentioned in" unaffected (it reads files). Includes a
    mutation check on the "Backspace removes the whole chip" logic.
-5. **Find and replace, outline, word count, Meetings TODO helper.** Find matches source text, so a word inside `**bold**` is found; a
+5. **DONE (30 Sep 2026). Find and replace, outline, word count, Meetings TODO helper.** Find matches source text, so a word inside `**bold**` is found; a
    query of only marker characters matches markers (acceptable, recorded). Word count strips markers.
 6. **Tables and fenced code.** Tables: styled monospace pipes while the cursor is in the table, a rendered grid otherwise (three notes
    use them, so this can be the plainest thing that reads well). Fenced code: fence lines while the cursor is in.
@@ -143,6 +143,8 @@ with real keystrokes, look at screenshots, quit right after typing)
 - **Stage 4 done (30 Sep 2026), not pushed:** `live-entities.ts` (chips, `@` trigger and picker plumbing, whole-chip Backspace/Delete, punctuation rule), chips in
   `live-decorations.ts`, `entities/mention-target.ts` (the picker controller no longer knows Milkdown), `entities/useEntityHover.ts`. Details in `docs/DECISIONS.md`,
   "Live markup … stage 4". Stage 5 is next, after the user's review.
+- **Stage 5 done (30 Sep 2026), not pushed:** `editor/live-find.ts` (Find and replace on a `FindTarget`, `notes/find-types.ts`), `editor/live-outline.ts` (outline and Meetings' topics jump through the view), `wordCount` reads Markdown as typed,
+  `meetings/renderer/todo-live.ts` (the TODO helper), `LiveEditor` takes `extensions`. Details, findings and the choices made are in `docs/DECISIONS.md`, "Live markup … stage 5". Stage 6 (tables and fenced code) is next, after the user's review.
 - Checking recipe: scratch library under the session scratchpad with `CENTRAL_COMMAND_HOME`, `playwright-core` installed there,
   Cmd-Shift-N to make a note, real keystrokes, `app.close()` straight after typing; dev mode via `electron-vite dev` with
   `--remote-debugging-port=9333` and `connectOverCDP`.
