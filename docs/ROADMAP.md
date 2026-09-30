@@ -1,6 +1,6 @@
 # Roadmap
 
-**Next, requested 30 Sep 2026 (go-ahead given): live markup in the notes editor**: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. Ask the plan's open questions first. Stage 1 (Backspace no longer jumps) is done and committed.
+**Next, requested 30 Sep 2026: live markup in the notes editor, the Typora way**: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. Redesigned the same day: the editor moves from Milkdown to CodeMirror 6 so markers are real text. Stage 1 (Backspace no longer jumps) is done and committed; stage 2 (the spike behind a switch) waits for the user's go-ahead on replacing Milkdown.
 
 ## For Claude: six things requested 27 Sep 2026, go-ahead given — work through these without further check-in
 

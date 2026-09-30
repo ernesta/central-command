@@ -1,71 +1,122 @@
-# Notes editor: live markup (plan)
+# Notes editor: live markup, the Typora way (plan, revised 30 Sep 2026)
 
-Requested 30 Sep 2026. Mockup: `docs/design/editor-markup-mockup.html` (option 3, with option 1 as its first stage).
-Stage 1 is built (30 Sep 2026; `docs/DECISIONS.md`, "Live markup … stage 1"); the rest awaits the answers to the open questions below. Applies to every editor (Notes, Meetings, Training, Reading lists, Readings notes)
-because they all use the shared `NotesEditor` (`src/renderer/src/notes/`).
+Requested 30 Sep 2026. Mockup of the look: `docs/design/editor-markup-mockup.html` (option 3). Applies to every editor (Notes,
+Meetings, Training, Reading lists, Readings notes), because they all share `NotesEditor` (`src/renderer/src/notes/`).
+Stage 1 (Backspace no longer jumps) is built on the old editor (`docs/DECISIONS.md`, "Live markup … stage 1").
 
-## Why
+## The idea, in one rule
 
-- No way to see the markup, so editing headings, bold and links is guesswork.
-- Typing `###`, a space, then Backspace jumps the cursor up: Milkdown converts `### ` into an empty heading and the
-  `###` text is gone, so Backspace merges that empty block into the line above.
+**The note in the editor is its Markdown text, character for character.** Everything is drawn as formatted (headings big, bold bold,
+links as links) except the block or span the cursor is in, which shows its markers (`### `, `**`, `[` … `](url)`). Markers are real
+characters, so every action is ordinary text editing: select and copy a URL, delete `##` with Backspace, type a `#` to raise a
+heading, type `**` to start bold. There are no special cases to learn, which is the point (Typora, Obsidian's Live Preview and Bear
+all work this way). Decisions taken with the user:
 
-## What the user gets
+| Question                             | Answer                                                                                               |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| Selection across several blocks      | No markers shown anywhere (Copy still gives the Markdown source)                                     |
+| Fenced code                          | Fence lines and language shown while the cursor is in the block, hidden otherwise                    |
+| Nested quotes                        | One `>` per level, as typed (`> > text`)                                                             |
+| Typing `#` at the start of a heading | Raises the level (it is just a character)                                                            |
+| Deleting a marker                    | Just Backspace/Delete: it is text                                                                    |
+| Editing a link's address             | In place, as text, while the cursor is in the link; select and copy works                            |
+| Lists                                | Bullets and checkboxes stay as drawn (a bullet or checkbox is one unit for Backspace); no `- ` shown |
 
-Everything looks rendered except the block or word the cursor is in, which shows its markup, like Obsidian's Live
-Preview: `### ` before a heading, `> ` before a quote, `**`, `*`, `~~`, `` ` `` around marked text, `[` … `](url)` around a
-link. Move away and it becomes formatting again. No mode to switch.
+## Why the library changes
 
-## Approach (read before building)
+The editor today is Milkdown (ProseMirror): the document is a tree of rendered nodes, and Markdown is produced by serialising it.
+Markers are not text in that model. Two ways to get the Typora behaviour were weighed:
 
-- **Decorations, not document changes.** A ProseMirror plugin (`$prose`, like `notesChangePlugin`) adds _widget
-  decorations_ for the markers at the cursor's block and marks. The document, and so the saved Markdown, is untouched:
-  no new round-trip risk, and opening a note still never reformats it.
-- Widgets have no document positions, so arrow keys pass over them and the cursor never gets stuck in a marker.
-  Consequence: the markers are display, not text. Editing them needs explicit commands (stage 2).
-- Markers use one new colour token with both `light-dark()` values (`tokens.css`); no raw hex.
-- Do not show markers for `cc://` mention links (they are drawn as chips), the task checkbox, or bullets (already visible).
+- **Keep Milkdown and swap the block under the cursor into a raw-text node, parsing it back when the cursor leaves.** Rejected. Two
+  representations of one block; every entry and exit is a document change that undo history, the change reporter, Find, word count and
+  IME composition all have to treat specially; and a parse on leaving can change what you typed (Milkdown's known normalisations,
+  escapes such as `\*`, `<https://…>` autolinks). For notes that matter, "the editor may rewrite what you typed when you click away"
+  is the wrong foundation.
+- **Replace Milkdown with CodeMirror 6, with Markdown as the document.** Chosen. This is how Obsidian does it. The document _is_ the
+  file's text, so:
+  - Opening never reformats, saving writes exactly what is in the editor, and a note with `*` bullets or hand-written spacing stays
+    untouched (the normalisation list in `docs/DECISIONS.md`, "Notes editor: Milkdown", stops applying). Round trip is an identity, which
+    a test can assert over the whole real library.
+  - Undo is plain text undo; nothing swaps in and out.
+  - The formatting is a layer of decorations over the text (hide markers away from the cursor, style the rest). A bug there can make a
+    note look wrong, never change its content.
+  - CodeMirror packages (`@codemirror/view`, `state`, `commands`, `language`, `lang-markdown`, `search`) are already in `node_modules` as
+    dependencies of Milkdown; they become direct dependencies. `@lezer/markdown` parses GFM (tables, task lists, strikethrough,
+    autolinks). No other new dependency is expected (HTML paste conversion is the one possible addition; see stage 3).
 
-## Stages (commit each; unit tests plus the built app and dev mode on a scratch library, as CLAUDE.md says)
+**What the real library needs** (checked read-only, 30 Sep 2026): 406 Markdown files; 3 use tables; none use images, raw HTML, fenced
+code or footnotes. So tables are the only hard rendering case and are small; images and HTML are not needed at first (they show as
+their text).
 
-1. **DONE. Fix the jump (stands alone, also useful without the rest).** Backspace right after an input rule undoes it
-   (`undoInputRule` from `prose/inputrules`: `### ` + Backspace gives `###` back); keep it first in the keymap.
-   Backspace at the very start of a heading lowers its level, or makes a paragraph at level 1, and at the start of a
-   quote unwraps it, never merging upward (same shape as `liftListItemAtStart` in `notes-list-keymap.ts`). Tests for each,
-   plus a mutation check.
-2. **Block markers.** Heading (`#` × level), blockquote, fenced code (the fence lines) shown while the cursor is inside.
-   Typing `#` at the start of a heading raises its level; Backspace lowers it (stage 1), so the visible `###` behaves as
-   if it were text. Click on a marker puts the cursor at the block's start.
-3. **Inline markers.** Bold, italic, strike, inline code and link, shown when the selection is inside or touching the
-   mark. Backspace or Delete next to a marker removes that mark (a marker is one unit); typing the marker character
-   again toggles it. A link's `](url)` is display only in this stage; editing the address stays with the existing link
-   editing (see open questions).
-4. **Interactions.** Find bar and replace (Cmd-F) still match the visible text only; the outline and word count are
-   unchanged; IME composition and selection across several blocks (show markers for none, or for the block holding the
-   head of the selection: pick one and record why); undo/redo never records a decoration.
-5. **Polish and QA.** Dark mode; focus and caret visible against the marker colour; no layout jump when markers appear
-   (reserve nothing, but check the line does not reflow badly: markers appear inline, so text shifts right by their
-   width; if that is jarring, try fading them in without a size change and record what was chosen). Drive it with
-   Playwright: type, arrow across markers, delete, undo, quit right after typing, Meetings and Training editors too.
-   Write it up in `docs/DECISIONS.md` and update this file and `docs/ROADMAP.md`.
+## Architecture
 
-## Open questions for the user (ask, do not guess)
+- `src/renderer/src/editor/` (new): `LiveEditor.tsx` with the same props contract as `NotesEditor` (initial, onChange, onBlur,
+  placeholder, autoFocus, entitySelf), so consumers change one import. Plain modules that the tests can drive without React:
+  - `live-decorations.ts`: one `ViewPlugin` that walks the visible syntax tree and builds decorations; "reveal" is a pure function of
+    (node range, selection): a span's markers show when a selection range touches it, a block's markers show when the cursor is in the
+    block, nothing shows for a multi-block selection. Markers are hidden with `Decoration.replace`/`mark` classes, never deleted.
+  - `live-keymap.ts`: Enter continues a list, quote or task (`insertNewlineContinueMarkup` from `lang-markdown`), Tab/Shift-Tab indent
+    and outdent items, Backspace at the start of an item's content removes the bullet or checkbox unit (outdent first, then plain
+    paragraph), same shape as `liftListItemAtStart` today.
+  - `live-links.ts`: paste a web address over a selection makes `[sel](url)`; Cmd-click opens (same rule as today: web addresses in the
+    browser, `cc://` inside the app); a bare `https://…` is drawn as a link.
+  - Entities: `[label](cc://kind/key)` is drawn as a chip (an atomic replace widget, so the cursor jumps over it and Backspace removes it
+    whole); `@` opens the existing picker (`picker-controller.ts` is UI-agnostic apart from the editor view type, which is adapted); the
+    hover card and Cmd-click stay. The file format is unchanged.
+  - Find (`useNotesFind`, `NotesFindBar`), the outline (`NoteOutline`), word count and Meetings' TODO helper are ported. They already
+    work on text or on a small bridge object; each is re-pointed at the CodeMirror view.
+- **Data safety rules carried over:** the change reporter is synchronous (`EditorView.updateListener` on every doc change, no debounce;
+  the session does its own), `onBlur` unchanged, the main process's flush-on-quit unchanged, the file is never touched until the user
+  edits.
+- Colours for markers: one new token with both `light-dark()` values in `tokens.css`. No raw hex.
 
-- Editing a link's address: keep the current way, or make `](url)` editable in place? (In place means turning that
-  link into raw text while the cursor is inside it: riskier.)
-- Lists: keep bullets and checkboxes as they are (proposed), or show `- ` too?
-- A selection across several blocks: markers for none, or for the block the selection ends in?
+## Stages (one commit per stage or part; each: unit tests, lint, typecheck, then drive the built app and dev mode on a scratch library
+
+with real keystrokes, look at screenshots, quit right after typing)
+
+1. **DONE. Stop Backspace jumping in the old editor.** Superseded in behaviour by this plan, kept until the switch (stage 8).
+2. **Spike, behind a switch.** `LiveEditor` with the Markdown language, load/save as identity, synchronous change reporting, history,
+   theme, and the reveal rules for headings, emphasis, strong, strike, inline code, links, quotes, rules. A hidden switch chooses the old
+   or new editor per app (`localStorage`, not shown in Settings), so nothing changes for the user until parity. Gate: an identity test
+   over every file of a copy of the real library (open, no edit: zero changes reported; simulated edit elsewhere: the rest of the text
+   byte-identical). Screenshots to the user before continuing. If the look or feel is wrong, this is where we stop or adjust.
+3. **Lists, tasks, quotes and paste.** Bullets and numbers drawn as units, checkbox toggle (click writes `[x]`), continue/indent/outdent
+   keys and the Backspace rule, nested quotes, Cmd-Shift-V (the existing IPC), paste as plain text. Formatted paste (web, Word) as plain
+   text at first; converting HTML to Markdown is a possible later addition (adds a small dependency; ask first).
+4. **Entities.** Chips, atomic behaviour, `@` picker, hover card, Cmd-click, "Mentioned in" unaffected (it reads files). Includes a
+   mutation check on the "Backspace removes the whole chip" logic.
+5. **Find and replace, outline, word count, Meetings TODO helper.** Find matches source text, so a word inside `**bold**` is found; a
+   query of only marker characters matches markers (acceptable, recorded). Word count strips markers.
+6. **Tables and fenced code.** Tables: styled monospace pipes while the cursor is in the table, a rendered grid otherwise (three notes
+   use them, so this can be the plainest thing that reads well). Fenced code: fence lines while the cursor is in.
+7. **Interactions.** IME composition (no reveal changes mid-composition), selection across blocks, undo/redo never surprising, very long
+   note performance (a 20,000-word note types without lag), dark mode, caret and focus ring against the marker colour, no layout jump
+   when markers appear (markers fade in without changing size if the shift is jarring; record what was chosen).
+8. **Switch and remove Milkdown.** All consumers use `LiveEditor`; delete the old editor, its plugins and tests, the `@milkdown/*`
+   dependencies, `externalizeDeps` notes if any; port or retire each test with a note in `docs/DECISIONS.md`. Full Playwright pass on
+   Notes, Meetings, Training, Reading lists, Readings notes and Work, both built app and dev mode.
+9. **Write-up.** `docs/DECISIONS.md` (replace the "Milkdown" decision with the new one, keep the old text marked superseded),
+   `docs/ROADMAP.md`, `CLAUDE.md` (architecture and pitfalls: Milkdown lines removed, CodeMirror ones added).
+
+## Risks
+
+- Real work: this replaces about 3,000 lines of editor code (`src/renderer/src/notes/`, `entities/`, the Meetings TODO helper), stages 2
+  to 8, and behaviours that were fixed by using the app (link paste, plain paste, list spacing, focus, quit-right-after-typing) have to
+  be re-verified. The switch in stage 2 keeps the current editor usable throughout, and nothing is deleted before stage 8.
+- Decorations that hide text must never break caret movement or selection: hidden ranges use `Decoration.replace` with atomic ranges only
+  for units (bullet, chip); marker text is otherwise real and reachable. Covered in stage 7 with real keystrokes.
+- Pasting formatted content loses formatting until HTML conversion exists (stage 3 note).
 
 ## Progress (30 Sep 2026)
 
-- Stage 1 done, commit `bd26898`, not pushed. Files: `notes-block-keymap.ts` and its test. Milkdown already lowers headings on
-  Backspace, so only the input-rule undo and the quote unwrap were added. `###`, space, Backspace leaves `### ` (with the space).
-- Stage 2 not started; the three open questions are unanswered. Recommended defaults: keep the current link-address editing; keep
-  bullets and checkboxes as they are; show markers for no block when the selection spans several.
-- Checking recipe used: scratch library under the session scratchpad with `CENTRAL_COMMAND_HOME`, `playwright-core` installed there,
+- Stage 1 done, commit `bd26898`, not pushed.
+- Design revised to the CodeMirror model above after the user chose the Typora way. Nothing else started; stage 2 waits for the user's
+  go-ahead on replacing Milkdown.
+- Checking recipe: scratch library under the session scratchpad with `CENTRAL_COMMAND_HOME`, `playwright-core` installed there,
   Cmd-Shift-N to make a note, real keystrokes, `app.close()` straight after typing; dev mode via `electron-vite dev` with
   `--remote-debugging-port=9333` and `connectOverCDP`.
 
 ## Not in scope
 
-Source mode (option 2 in the mockup) is separate and can come later; nothing here prevents it.
+A whole-note source mode (option 2 in the mockup) is separate; with this design it is nearly free (turn the decorations off), so it can
+come later.
