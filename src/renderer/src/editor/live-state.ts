@@ -3,6 +3,7 @@ import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { EditorState, type Extension } from '@codemirror/state'
 import { drawSelection, EditorView, keymap } from '@codemirror/view'
 import { liveDecorations } from './live-decorations'
+import { liveKeymap } from './live-keymap'
 import { linkTargetAt } from './live-links'
 
 export interface LiveOptions {
@@ -24,7 +25,7 @@ export function lineSeparatorFor(text: string): string {
   return text.includes('\r\n') ? '\r\n' : '\n'
 }
 
-/** `Mod-i` is "select parent syntax" in the default keymap; it is italic in this editor (keys arrive with `live-keymap`). */
+/** `Mod-i` is "select parent syntax" in the default keymap; it is italic in this editor (`live-keymap.ts`). */
 const keys = defaultKeymap.filter((binding) => binding.key !== 'Mod-i')
 
 export function liveExtensions(options: LiveOptions): Extension[] {
@@ -34,6 +35,7 @@ export function liveExtensions(options: LiveOptions): Extension[] {
     drawSelection(),
     EditorView.lineWrapping,
     markdown({ base: markdownLanguage }),
+    liveKeymap,
     keymap.of([...keys, ...historyKeymap]),
     liveDecorations,
     EditorView.contentAttributes.of({ 'aria-label': options.label }),

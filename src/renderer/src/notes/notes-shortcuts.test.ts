@@ -1,7 +1,9 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { describe, expect, it } from 'vitest'
+import { keymap } from '@codemirror/view'
 import { RANGE_KEY } from '@shared/shortcuts'
+import { createLiveState } from '../editor/live-state'
 import { NOTES_EDITOR_SHORTCUTS } from './notes-shortcuts'
 
 /** The built source of a Milkdown package (tests run from the repository root). */
@@ -54,5 +56,55 @@ describe('the source the check reads', () => {
     const source = milkdownSource('preset-commonmark')
     expect(source).toContain('"Mod-Alt-8"')
     expect(source).not.toContain('"Mod-Alt-9"')
+  })
+})
+
+// The live editor (src/renderer/src/editor/): every listed chord must be bound in its keymaps, except the ones that are
+// not keys of the keymap (a click, a paste, the main process's Cmd-Shift-V) and the ones a later stage brings.
+describe('the notes editor shortcut list, against the live editor', () => {
+  const NOT_KEYMAP = new Set(['Mod-Click', 'Mod-v', 'Mod-Shift-v'])
+  const LATER_STAGES = new Set([
+    'Shift-Enter',
+    'Tab',
+    'Shift-Tab',
+    '@',
+    'Mod-f',
+    'Mod-Alt-f',
+    'Mod-Enter',
+    'Mod-Shift-Enter'
+  ])
+  /** `Shift-Mod-z` and `Mod-Shift-z` are one chord: modifiers in any order, the key in lower case. */
+  const canon = (chord: string): string => {
+    const parts = chord.split('-')
+    const key = parts.pop() as string
+    return [...parts.sort(), key.toLowerCase()].join('-')
+  }
+  const state = createLiveState({
+    doc: '',
+    label: 'test',
+    onChange: () => undefined,
+    openLink: () => undefined
+  })
+  const bound = new Set(
+    state
+      .facet(keymap)
+      .flat()
+      .flatMap((b) => [b.key, b.mac, b.win, b.linux])
+      .filter((chord): chord is string => Boolean(chord))
+      .map(canon)
+  )
+
+  it('binds every chord it lists', () => {
+    for (const shortcut of NOTES_EDITOR_SHORTCUTS.shortcuts) {
+      for (const chord of shortcut.keys.flatMap(chordsOf)) {
+        if (NOT_KEYMAP.has(chord) || LATER_STAGES.has(chord)) continue
+        expect(bound, `${shortcut.action}: ${chord}`).toContain(canon(chord))
+      }
+    }
+  })
+
+  it('notices a chord that is not bound', () => {
+    expect(bound).toContain(canon('Mod-Alt-8'))
+    expect(bound).not.toContain(canon('Mod-Alt-9'))
   })
 })
