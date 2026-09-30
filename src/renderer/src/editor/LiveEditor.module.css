@@ -152,7 +152,7 @@
   border-bottom: 1px solid var(--border-soft);
 }
 
-/* Code and tables are shown as their text until the later stages draw them. */
+/* Code, and a table the cursor is in, are shown as their text. */
 .wrap :global(.live-codeblock),
 .wrap :global(.live-table) {
   font-family: var(--font-mono);
@@ -162,6 +162,45 @@
 .wrap :global(.live-codeblock) {
   padding: 0 12px;
   background: var(--panel);
+}
+/* The pipes of a table being edited: the marker colour at the text's own size, so padded columns stay lined up. */
+.wrap :global(.live-tablemark) {
+  color: var(--marker);
+}
+
+/* A table away from the cursor: every line a row of a grid (`live-tables.ts`); the widths come with the line. */
+.wrap :global(.cm-editor) :global(.cm-line.live-table-row) {
+  display: grid;
+  column-gap: 16px;
+  padding: 4px 4px;
+  border-bottom: 1px solid var(--border-soft);
+  line-height: 1.5;
+}
+.wrap :global(.cm-editor) :global(.cm-line.live-table-head) {
+  border-bottom-color: var(--border-strong);
+  font-weight: 700;
+}
+.wrap :global(.live-cell) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.wrap :global(.live-cell-center) {
+  text-align: center;
+}
+.wrap :global(.live-cell-right) {
+  text-align: right;
+}
+/* The line of dashes is the rule under the header, which carries it as its own border. */
+.wrap :global(.cm-editor) :global(.cm-line.live-table-rule) {
+  height: 0;
+  overflow: hidden;
+  padding: 0;
+  font-size: 0;
+  line-height: 0;
+}
+/* CodeMirror's spacers beside a widget would each be a cell of the grid. */
+.wrap :global(.live-table-row) :global(.cm-widgetBuffer) {
+  display: none;
 }
 
 /* Lists: a bullet, number or checkbox stands for the marker; wrapped lines hang under the text, not under the marker. */

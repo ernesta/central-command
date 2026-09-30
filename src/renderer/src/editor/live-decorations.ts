@@ -11,6 +11,7 @@ import type { SyntaxNodeRef } from '@lezer/common'
 import { chipOf, ChipWidget, entitiesFacet, refreshMentions } from './live-entities'
 import { isListKind, parseLine } from './live-lines'
 import { blockRevealed, computeReveal, spanRevealed, type Extent, type Reveal } from './live-reveal'
+import { drawTable } from './live-tables'
 import { BulletWidget, CheckboxWidget, NumberWidget } from './live-widgets'
 
 /*
@@ -168,7 +169,8 @@ export function buildDecorations(
               add('marker', mark.from, mark.to, markerMark)
             return
           case 'Table':
-            lineClass(node.from, node.to, range, 'live-table')
+            // Drawn as a grid, or as text while the cursor is in it (`live-tables.ts`); the inline marks in its cells go on below.
+            drawTable(state, node.node, blockRevealed(reveal, node.from, node.to), range, add)
             return
           case 'ListMark': {
             const line = doc.lineAt(node.from)
