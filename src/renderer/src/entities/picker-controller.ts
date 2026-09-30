@@ -1,6 +1,5 @@
-import type { EditorView } from '@milkdown/kit/prose/view'
-import { entityHref, type EntityRef } from '@shared/entities'
-import { findSuggestion, refreshMentions, type EntityHost, type Suggestion } from './entity-plugin'
+import type { EntityRef } from '@shared/entities'
+import type { EntityHost, MentionTarget, Suggestion } from './mention-target'
 import { entityProviders, type EntityHit, type EntityProvider, type EntitySelf } from './registry'
 import { EntityResolver, type Resolved } from './resolver'
 
@@ -46,7 +45,7 @@ const DEBOUNCE_MS = 120
  * the current rows, however often React has rendered.
  */
 export class EntityPickerController implements EntityHost {
-  private view: EditorView | null = null
+  private target: MentionTarget | null = null
   private snapshot: PickerSnapshot = CLOSED
   private readonly listeners = new Set<() => void>()
   private suggestion: Suggestion | null = null
@@ -64,7 +63,7 @@ export class EntityPickerController implements EntityHost {
 
   constructor() {
     this.resolver.subscribe(() => {
-      if (this.view) refreshMentions(this.view)
+      this.target?.refresh()
     })
   }
 
@@ -94,8 +93,8 @@ export class EntityPickerController implements EntityHost {
   /** For the hover card: called when something a mention points at has been looked up. */
   subscribeResolved = (listener: () => void): (() => void) => this.resolver.subscribe(listener)
 
-  suggest = (view: EditorView, suggestion: Suggestion | null): void => {
-    this.view = view
+  suggest = (target: MentionTarget, suggestion: Suggestion | null): void => {
+    this.target = target
     if (!suggestion) {
       this.dismissedFrom = null
       this.suggestion = null
@@ -108,7 +107,7 @@ export class EntityPickerController implements EntityHost {
       this.suggestion.from !== suggestion.from ||
       this.suggestion.query !== suggestion.query
     this.suggestion = suggestion
-    const caret = view.coordsAtPos(suggestion.to)
+    const caret = target.coordsAt(suggestion.to)
     if (!changed && this.snapshot.open) {
       if (caret.left !== this.snapshot.left || caret.bottom + 6 !== this.snapshot.top) {
         this.set({ left: caret.left, top: caret.bottom + 6 })
@@ -157,7 +156,7 @@ export class EntityPickerController implements EntityHost {
   detach = (): void => {
     this.close()
     this.suggestion = null
-    this.view = null
+    this.target = null
   }
 
   // --- the picker itself -------------------------------------------------------------------------
@@ -203,8 +202,8 @@ export class EntityPickerController implements EntityHost {
   /** Writes the chosen entity into the note in place of the `@…`, as a link to it followed by a space. */
   choose = async (index: number): Promise<void> => {
     const row = this.rows()[index]
-    const view = this.view
-    if (!row || !view) return
+    const target = this.target
+    if (!row || !target) return
     let ref: EntityRef
     try {
       ref = await row.hit.prepare()
@@ -213,15 +212,8 @@ export class EntityPickerController implements EntityHost {
       return
     }
     // The note may have moved on while a uid was being written: only replace an `@…` that is still there.
-    const current = findSuggestion(view.state)
+    const current = target.current()
     if (!current) return
-    const link = view.state.schema.marks.link
-    if (!link) return
-    const mention = view.state.schema.text(row.hit.label, [link.create({ href: entityHref(ref) })])
-    const tr = view.state.tr
-      .replaceWith(current.from, current.to, [mention, view.state.schema.text(' ')])
-      .scrollIntoView()
-    view.dispatch(tr)
-    view.focus()
+    target.insert(current, row.hit.label, ref)
   }
 }

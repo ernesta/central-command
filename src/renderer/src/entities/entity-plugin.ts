@@ -4,30 +4,15 @@ import { Decoration, DecorationSet } from '@milkdown/kit/prose/view'
 import type { EditorView } from '@milkdown/kit/prose/view'
 import { linkSchema } from '@milkdown/kit/preset/commonmark'
 import { $ctx, $prose } from '@milkdown/kit/utils'
-import { parseEntityHref, type EntityRef } from '@shared/entities'
-import type { Resolved } from './resolver'
+import { entityHref, parseEntityHref } from '@shared/entities'
+import {
+  suggestionIn,
+  type EntityHost,
+  type MentionTarget,
+  type Suggestion
+} from './mention-target'
 
-/** The `@…` being typed: where it starts (the `@`), where the cursor is, and what follows the `@`. */
-export interface Suggestion {
-  from: number
-  to: number
-  query: string
-}
-
-/**
- * Everything the editor plugins need from the outside world: what a mention points at, and the picker that
- * opens on `@`. Set by `NotesEditor` when it makes the editor (a controller object, not React state, so the
- * plugins never see a stale closure: the same shape as the find bar's bridge).
- */
-export interface EntityHost {
-  resolve(ref: EntityRef): Resolved
-  /** The text before the cursor now ends in an `@…` (or no longer does: null). */
-  suggest(view: EditorView, suggestion: Suggestion | null): void
-  /** A key went down while the picker may be open; true when the picker took it. */
-  handleKey(event: KeyboardEvent): boolean
-  /** The view is gone (a reload from disk, or React StrictMode's throwaway first mount). */
-  detach(): void
-}
+export type { EntityHost, MentionTarget, Suggestion }
 
 const noHost: EntityHost = {
   resolve: () => ({ state: 'pending' }),
@@ -63,11 +48,6 @@ export function refreshMentions(view: EditorView): void {
   view.dispatch(view.state.tr.setMeta(ENTITY_REFRESH, true).setMeta('addToHistory', false))
 }
 
-const MAX_QUERY = 30
-// An `@` that starts a word (after a space, an opening bracket or the start of the block), then a query whose first
-// character is not a space, so "meet @ noon" is only a sentence.
-const TRIGGER = /(?:^|[\s([{"“‘])@([^\s@][^@\n]*)?$/
-
 /**
  * The `@…` the cursor is at the end of, or null. Not in code, not inside a link, and not once the query has run on
  * (more than a short phrase, or two spaces in a row) or the cursor is not a plain caret.
@@ -83,12 +63,9 @@ export function findSuggestion(state: EditorState): Suggestion | null {
   const inMark = marks.some((m) => m.type.name === 'inlineCode' || m.type.name === 'link')
   if (inMark) return null
   const before = parent.textBetween(0, $from.parentOffset, undefined, '￼')
-  const match = TRIGGER.exec(before)
-  if (!match) return null
-  const query = match[1] ?? ''
-  if (query.length > MAX_QUERY || /\s\s/.test(query)) return null
-  const at = before.length - query.length - 1
-  return { from: $from.start() + at, to: $from.pos, query }
+  const found = suggestionIn(before)
+  if (!found) return null
+  return { from: $from.start() + found.at, to: $from.pos, query: found.query }
 }
 
 /** Every mention in the text is drawn as a chip of its kind, and struck through when what it points at is gone. */
@@ -140,11 +117,31 @@ export const entitySuggestPlugin = $prose((ctx) => {
       }
     },
     view: (view) => {
-      host.suggest(view, findSuggestion(view.state))
+      host.suggest(proseTarget(view), findSuggestion(view.state))
       return {
-        update: (updated) => host.suggest(updated, findSuggestion(updated.state)),
+        update: (updated) => host.suggest(proseTarget(updated), findSuggestion(updated.state)),
         destroy: () => host.detach()
       }
     }
   })
 })
+
+/** The picker's view of a Milkdown editor (`EntityPickerController` talks to every editor through `MentionTarget`). */
+export function proseTarget(view: EditorView): MentionTarget {
+  return {
+    coordsAt: (pos) => view.coordsAtPos(pos),
+    refresh: () => refreshMentions(view),
+    current: () => findSuggestion(view.state),
+    insert: (suggestion, label, ref) => {
+      const link = view.state.schema.marks.link
+      if (!link) return
+      const mention = view.state.schema.text(label, [link.create({ href: entityHref(ref) })])
+      view.dispatch(
+        view.state.tr
+          .replaceWith(suggestion.from, suggestion.to, [mention, view.state.schema.text(' ')])
+          .scrollIntoView()
+      )
+      view.focus()
+    }
+  }
+}
