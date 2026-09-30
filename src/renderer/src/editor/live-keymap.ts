@@ -12,6 +12,7 @@ import {
 } from './live-format'
 import { deleteChip } from './live-entities'
 import { openFind, replaceFromKey } from './live-find'
+import { tableTab } from './live-tables'
 import {
   backspaceInItem,
   deleteBeforeItem,
@@ -53,6 +54,12 @@ export const entityBindings: KeyBinding[] = [
   { key: 'Delete', run: deleteChip(true) }
 ]
 
+/** Tab and Shift-Tab move between the cells of a table; outside a table they are not handled here, and the list keys below run. */
+export const tableBindings: KeyBinding[] = [
+  { key: 'Tab', run: tableTab(true) },
+  { key: 'Shift-Tab', run: tableTab(false) }
+]
+
 export const listBindings: KeyBinding[] = [
   { key: 'Enter', run: enter },
   { key: 'Shift-Enter', run: hardBreak },
@@ -69,5 +76,6 @@ export const liveKeymap: Extension = keymap.of([
   ...formatBindings,
   ...findBindings,
   ...entityBindings,
+  ...tableBindings,
   ...listBindings
 ])

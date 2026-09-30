@@ -23,11 +23,15 @@ export interface Opened {
 export function openView(
   marked: string,
   entities?: LiveEntities,
-  more: { find?: FindBridge; extensions?: readonly Extension[] } = {}
+  more: { find?: FindBridge; extensions?: readonly Extension[]; cursor?: string } = {}
 ): Opened {
-  const first = marked.indexOf('|')
-  const second = first < 0 ? -1 : marked.indexOf('|', first + 1)
-  const doc = marked.replace(/\|/g, '')
+  // A test of tables writes the cursor as something else: `|` is what they are made of.
+  const mark = more.cursor ?? '|'
+  const first = marked.indexOf(mark)
+  const second = first < 0 ? -1 : marked.indexOf(mark, first + 1)
+  const doc = marked.split(mark).join('')
+  const rest = { ...more }
+  delete rest.cursor
   const reports: string[] = []
   const view = new EditorView({
     parent: document.body.appendChild(document.createElement('div')),
@@ -37,7 +41,7 @@ export function openView(
       onChange: (text) => reports.push(text),
       openLink: () => undefined,
       entities,
-      ...more
+      ...rest
     })
   })
   if (first >= 0)
@@ -49,14 +53,14 @@ export function openView(
 }
 
 /** The document with the selection written in (`|` for a cursor, two round a selection). */
-export function show(view: EditorView): string {
+export function show(view: EditorView, mark = '|'): string {
   const { anchor, head } = view.state.selection.main
   const text = view.state.sliceDoc()
   const from = Math.min(anchor, head)
   const to = Math.max(anchor, head)
   return from === to
-    ? `${text.slice(0, from)}|${text.slice(from)}`
-    : `${text.slice(0, from)}|${text.slice(from, to)}|${text.slice(to)}`
+    ? `${text.slice(0, from)}${mark}${text.slice(from)}`
+    : `${text.slice(0, from)}${mark}${text.slice(from, to)}${mark}${text.slice(to)}`
 }
 
 const KEY_CODES: Record<string, number> = {
