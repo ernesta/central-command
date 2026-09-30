@@ -1,6 +1,5 @@
 import { syntaxTree } from '@codemirror/language'
 import type { EditorState } from '@codemirror/state'
-import { pastedLinkTarget } from '../notes/notes-links'
 
 /**
  * The address of the link at `pos`: the target of `[label](address)` when the position is anywhere in it (label or
@@ -29,4 +28,15 @@ export function linkTargetAt(state: EditorState, pos: number): string | null {
 function addressOf(raw: string): string {
   const value = raw.replace(/^<|>$/g, '')
   return pastedLinkTarget(value) ?? value
+}
+
+/**
+ * The address to link to when this pasted text is nothing but one web address (or email link), else null.
+ * "www.example.org" gets https:// in front, so the link opens rather than being taken for a relative one.
+ */
+export function pastedLinkTarget(text: string): string | null {
+  const value = text.trim()
+  if (/^(https?:\/\/|mailto:)\S+$/i.test(value)) return value
+  if (/^www\.\S+\.\S+$/i.test(value)) return `https://${value}`
+  return null
 }

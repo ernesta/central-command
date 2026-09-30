@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { linkTargetAt } from './live-links'
+import { linkTargetAt, pastedLinkTarget } from './live-links'
 import { stateFor } from './live-test-utils'
 
 describe('linkTargetAt', () => {
@@ -25,4 +25,22 @@ describe('linkTargetAt', () => {
   it('finds nothing in plain text', () => {
     expect(linkTargetAt(stateFor(doc), 1)).toBeNull()
   })
+})
+
+describe('pastedLinkTarget', () => {
+  it.each([
+    ['https://example.org/a?b=1', 'https://example.org/a?b=1'],
+    ['  http://example.org  ', 'http://example.org'],
+    ['www.example.org/x', 'https://www.example.org/x'],
+    ['mailto:a@b.org', 'mailto:a@b.org']
+  ])('takes %s as an address', (text, expected) => {
+    expect(pastedLinkTarget(text)).toBe(expected)
+  })
+
+  it.each(['', 'hello', 'see https://example.org', 'https://a.org https://b.org', 'ftp://x.org'])(
+    'does not take %j as an address',
+    (text) => {
+      expect(pastedLinkTarget(text)).toBeNull()
+    }
+  )
 })

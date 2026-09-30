@@ -1,7 +1,7 @@
 import { EditorSelection } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
-import { pastedLinkTarget } from '../notes/notes-links'
 import { positions } from './live-lines'
+import { pastedLinkTarget } from './live-links'
 
 /*
  * Paste is plain text, always (from a web page, from Word, from another note): the text flavour of the clipboard goes in as
