@@ -174,7 +174,49 @@ only caches `has_notes` and a plain-text excerpt (for search). Rules, enforced b
   folder: caches are refreshed, and an open, clean editor reloads in place. With unsaved
   edits the conflict notice appears instead.
 
-## Notes editor: Milkdown, configured for plain Markdown
+## Notes editor: CodeMirror 6, with the Markdown text as the document (30 Sep 2026; replaces the Milkdown decision below)
+
+Asked for on 30 Sep 2026 ("live markup, the Typora way"): every editor draws the note formatted, and shows the markers (`### `, `**`, `[` … `](url)`)
+only where the cursor is. Plan: `docs/EDITOR_LIVE_MARKUP_PLAN.md`; the stage-by-stage write-ups are "Live markup in the notes editor, stage 1" to "stage 8"
+below. `LiveEditor` (`src/renderer/src/editor/`) is the only editor: Notes, Work notes, Meetings, Training entries and plan, Reading lists and Readings
+notes all render it. Milkdown and its packages are gone.
+
+- **Why CodeMirror, and why the Markdown is the document.** Milkdown (ProseMirror) holds a tree of rendered nodes and produces Markdown by serialising it,
+  so markers are not text there. Getting the Typora behaviour out of it meant swapping the block under the cursor into a raw-text node and parsing it back
+  when the cursor left: two representations of one block, every swap a document change that undo, the change reporter, Find, the word count and IME
+  composition all have to treat specially, and a parse on leaving can change what you typed. For notes that matter, "the editor may rewrite what you typed
+  when you click away" was the wrong foundation. With CodeMirror the document _is_ the file's text and the formatting is a layer drawn over it (how Obsidian
+  does it).
+- **What it gives.**
+  - **Identity round trip.** Opening never reformats and saving writes exactly what is in the editor. A note with `*` bullets, a two-space hard break,
+    a bare `*` or hand-written spacing stays as written; the normalisation list in the Milkdown decision below no longer applies. A file's own line
+    break (`\r\n` or `\n`) is kept.
+  - **Plain-text undo.** Nothing swaps in and out. `live-history.ts` only makes each command (a formatting key, a list Backspace, Enter, a paste, a chosen
+    mention, a replace) its own undo step.
+  - **Decorations never change content.** Hiding a marker, drawing a bullet or checkbox, a chip, a table grid or a fence is a decoration over real text
+    (`Decoration.replace` and `mark`); a bug there can make a note look wrong, never change it. Markers are hidden only away from the cursor and a hidden range
+    never has the cursor inside it (touching it reveals it), so only units (bullet, checkbox, chip) are atomic.
+  - **The real-library gate.** `live-library.test.ts` runs over a copy of every note and backup (406 files): open with no edit reports nothing; an edit at the
+    start, middle or end leaves the rest byte-identical; every formatting, list, table, fence, mention, find, replace, TODO and paste command is pressed at a
+    spread of places and must change only what it should, and one undo must give the note back byte for byte. It is opt-in
+    (`LIVE_EDITOR_LIBRARY=<copy of ~/CentralCommand/notes and backups> npx vitest run src/renderer/src/editor/live-library`) and must pass before each
+    editor change is finished. It found real problems (setext underlines in stage 2; its own blind spot on long notes in stage 6).
+- **Kept from the Milkdown editor** (the rules, not the code): the change reporter is synchronous (`EditorView.updateListener`, no debounce; the session does its
+  own), `onBlur` is unchanged, the main process still holds the window open to flush pending saves on quit, and the file is not touched until the user edits.
+  The file format is unchanged; a mention is still `[label](cc://kind/key)`.
+- **Shortcuts are ours.** CodeMirror has no Markdown formatting keys, so `live-keymap.ts` binds every chord in Settings' Notes editor list and
+  `notes-shortcuts.test.ts` fails if a listed chord is not bound (it replaced the test that read Milkdown's built source).
+- **Chosen with the user**: formatted paste (web, Word) is pasted as plain text; selection across blocks shows no markers; nested quotes show one `>` per level
+  as typed; typing `#` at the start of a heading raises the level; a marker is deleted like any character.
+- **Cost.** About 3,000 lines of editor code were replaced, and 94 tests were retired (each recorded as ported or retired in "stage 8"). Bugs that only the
+  built app showed (CSS specificity against CodeMirror's own `.cm-line` reset, grid cells made by hidden ranges, the tail of a long note seen as plain text
+  in tests) are in the stage write-ups and in the pitfalls in `CLAUDE.md`.
+- **Packages.** `@codemirror/view`, `state`, `commands`, `language`, `lang-markdown` and `search` are direct dependencies (and `@lezer/common`); `@lezer/markdown`
+  (GFM) comes with `lang-markdown`. No ESM-only main-process dependency was involved.
+
+## Notes editor: Milkdown, configured for plain Markdown (superseded 30 Sep 2026 by the live markup editor, above; kept as history)
+
+> **Superseded.** Milkdown is no longer in the app. The text below describes the old editor, including the "known normalisations", which no longer happen.
 
 The spike passed: Milkdown round-trips headings, emphasis, lists, task lists, quotes,
 links, fenced code, tables, strikethrough, rules and unicode byte-for-byte when
@@ -186,6 +228,8 @@ markers so they stay separate lists. Tests pin these down.
 
 ## Editor changes are reported synchronously (a data-loss bug found by using the app)
 
+> **Historical (30 Sep 2026).** The rule still holds, now as `EditorView.updateListener` in `editor/live-state.ts`; the debounce and the ProseMirror plugin below were Milkdown's. See "Notes editor: CodeMirror 6, with the Markdown text as the document".
+
 Milkdown's change listener is debounced (~200 ms). Typing and then leaving the page, or
 closing the window, inside that window dropped the last words. The editor now reports
 every document change immediately through a small ProseMirror plugin, and the session does
@@ -194,6 +238,8 @@ window open (up to 3 s) after asking the renderer to flush pending saves, so clo
 window or quitting never loses edits.
 
 ## Task list checkboxes use CSS plus a tiny plugin, not Milkdown's Vue components
+
+> **Historical (30 Sep 2026).** Milkdown is gone. A checkbox is now a widget drawn over the `- [ ] ` text (`editor/live-widgets.ts`); a click writes `[x]` or `[ ]`.
 
 Milkdown's list-item component pulls in Vue and re-renders every list item. Task items
 already carry `data-checked`, so the checkbox is drawn with CSS and a ~20-line plugin
@@ -257,6 +303,8 @@ now synchronous. Production builds were unaffected, which is why earlier end-to-
 the built app) missed it; dev mode is now also checked through the debugging port.
 
 ## Backspace at the start of a list item leaves the list
+
+> **Historical (30 Sep 2026).** Written for Milkdown. The rule lives on in `editor/live-lists.ts` (`liftListItemAtStart` is gone); see "Notes editor: CodeMirror 6, with the Markdown text as the document".
 
 Milkdown's default did nothing visible on the first Backspace at the start of a bullet (a second
 press converted it), which made a bullet on a note's first line look impossible to remove.
@@ -356,7 +404,7 @@ Checked in dev mode and the production build against scratch libraries.
   use the file's version), as in Readings.
 - **Carry-over runs in the main process** (`syncPreviousTodos`) at create and at open, using the hash the
   page just read, so two page loads racing (React StrictMode) cannot add an item twice.
-- **The TODO helper is a Milkdown plugin plus a small menu controller.** `/todo` (at the start of a line or
+- **The TODO helper is a Milkdown plugin plus a small menu controller** (historical: since stage 5 of the live markup work it is `meetings/renderer/todo-live.ts`, on CodeMirror; the keys and what it writes are the same). `/todo` (at the start of a line or
   after a space) or Cmd/Ctrl+Shift+T opens the owner menu; the choice inserts a bold `TODO(XX)` then `: `,
   which is what the parser reads. The menu never takes focus. Owners: attendees first, then everyone else.
 - **Topics**: ticking one writes `discussed` in the front matter; "Add topic" appends `### title` to the end of
@@ -506,6 +554,8 @@ list. `convertPseudoHeadings` (`meetings/shared/pseudo-headings.ts`) turns such 
 
 ## Keyboard shortcuts list (Settings)
 
+> **Historical (30 Sep 2026).** The editor group is no longer checked against Milkdown's source: `notes-shortcuts.test.ts` checks the list against `live-keymap.ts`, and chords are still written as in the list (`Mod-Shift-t`). Bullet 3 below is Milkdown-era.
+
 - **One vocabulary.** `src/shared/shortcuts.ts` defines a chord as a string (`Mod-Shift-t`, as ProseMirror writes them), a
   matcher (`matchesShortcut`: exactly those modifiers, Cmd or Ctrl for `Mod`) and the display (⌘⇧⌥ on a Mac, Ctrl/Shift/Alt
   elsewhere). Back, Ask and the TODO helper match with the same chord string the list shows, so they cannot drift apart.
@@ -588,7 +638,7 @@ list. `convertPseudoHeadings` (`meetings/shared/pseudo-headings.ts`) turns such 
   page shell (`src/shared/report-page.ts`) are shared, so a layout change after the user's review is made once.
 - **The Training plan** is one Markdown file per academic year, `notes/training-plans/Training plan 2026-27.md`, edited on
   `/research/training/plan` (linked from the Training landing page). It sits in its own folder, not in `notes/training/research/`,
-  because that folder is watched and indexed as training entries. It reuses `NotesSession` and `NotesEditor` unchanged (the year
+  because that folder is watched and indexed as training entries. It reuses `NotesSession` and the shared editor (then `NotesEditor`, now `LiveEditor`) unchanged (the year
   travels as the note's key, as text), so it has the same autosave, conflict handling and outside-change reload as every note. The
   outline beside it is built from the `##` and `###` headings as you type (`shared/plan.ts`). The next academic year is always offered,
   so a plan can be written before its year starts. Hours per priority were considered and left out on purpose.
@@ -663,7 +713,7 @@ or found on the way:
   the cursor in the text; "New note" puts it in the title. It is listed in Settings through the manifest's `shortcuts`.
 - **A dev-only bug found by using the app.** The editor's first version focused itself once. React StrictMode throws the first editor
   away, so in `npm run dev` the cursor landed in nothing and text typed right after the shortcut was lost if you left at once. The
-  editor now focuses each time one becomes ready (`autoFocus` on `NotesEditor`). The production build was fine, which is why both
+  editor now focuses each time one becomes ready (`autoFocus` on the editor, then `NotesEditor`, now `LiveEditor`). The production build was fine, which is why both
   modes are checked.
 - **Reuse.** The note page and session copy the Training entry page (`NoteSession` extends `EntrySession`, which now also reports
   `updatedAt`, used for "Updated"). The table's keyboard handling is a new shared hook, `useRowNavigation`; Meetings' and Training's
@@ -775,7 +825,7 @@ or found on the way:
 - **Opening a link:** hold Cmd (Ctrl elsewhere) and click. A plain click puts the cursor in the link, as in any editor (a link inside
   editable text cannot be followed by clicking). The click calls `window.open`; the main process already opens only `http` and `https`
   addresses in the browser and refuses everything else (`isSafeExternalUrl`, now in `src/main/urls.ts`, tested). Listed in Settings
-  under the notes editor keys as "Mod-Click" (one of the two keys that are ours, not Milkdown's).
+  under the notes editor keys as "Mod-Click" (one of the two keys that were ours, not Milkdown's; every key is ours now).
 - **Right-click menu** (`src/main/context-menu.ts`, tested): Electron has none of its own, so there was no spelling help and no
   Copy or Paste from the mouse. It shows spelling suggestions (up to five, "No suggestions", "Add to dictionary") for a misspelt
   word in editable text, then Open link (web addresses only) and Copy link address on a link, then Cut, Copy, Paste and Select all in
@@ -850,6 +900,8 @@ kind of control across the app.
 
 ## Find in the note (Cmd-F, at the user's request, replacing the earlier find-on-page attempt)
 
+> **Historical (30 Sep 2026).** Describes the ProseMirror plugin (`notes-find.ts`), which was deleted with Milkdown. Find is now `editor/live-find.ts`, on the Markdown text (stage 5 below); the match-across-marks limitation no longer exists.
+
 - **Scoped to the note, not the page.** The earlier attempt (see "Find on the page", above) used Electron's
   `webContents.findInPage`, which searches the whole rendered page (the top bar, the outline, everything) and, being
   cross-process, lost keystrokes under fast typing. This one is a ProseMirror plugin (`notes-find.ts`) living entirely
@@ -876,6 +928,8 @@ kind of control across the app.
   it is not Notes-module-specific and does not conflict with that module's own shortcuts).
 
 ## Find in the note, redesigned as an inline bar with replace (at the user's request, 27 Sep 2026)
+
+> **Historical (30 Sep 2026).** The bar, its place in `EditorCard`'s footer and its keys still stand. The `findSetup` prop, `NotesEditor` and `notesFindPlugin` below are gone: the bar talks to the editor through a `FindTarget` (`notes/find-types.ts`) and the editor reaches the card through `FindContext` (stage 5 and stage 8 below).
 
 - **Moved from a floating, `position: fixed` portal into `EditorCard`'s own footer strip**, in place of its
   "Created · Edited · N words" line while find is open. `EditorCard`'s `children` is now a render-prop,
@@ -980,7 +1034,7 @@ for review, the same way every other module's decisions are.
   `NotesStore` with grouping and pinning removed: the same guarded-file functions (`readNoteFile`,
   `writeNoteFileGuarded`, `createNoteFileExclusive`, `renameNoteFileExclusive`), the same rebuild-from-the-folder
   index, the same watcher, the same rename-on-title-change. A list is edited in the same shared `EditorCard` /
-  `NotesEditor` every other kind of note uses (headings and bullets, typed normally), not a bespoke form: building
+  editor (`NotesEditor`, now `LiveEditor`) every other kind of note uses (headings and bullets, typed normally), not a bespoke form: building
   a form for a variable number of sections and entries would just be re-inventing what a Markdown editor already
   does well, and it keeps a list's file readable and editable outside the app too.
 - **A section is a `##` heading; an entry is a bullet under it, its citation the bullet's own leading bold run**
@@ -991,8 +1045,8 @@ for review, the same way every other module's decisions are.
   at all). The rest of the bullet's text is the annotation.
 - **`@citekey`, not `[[citekey]]`, and this one was only found by testing the real app, not by reading the code.**
   `[[citekey]]` was the first design (Obsidian's own convention, and visually close to what the brief's example
-  read like). Typing it live is escaped by Milkdown already (see "Notes editor" and the wiki-link stripping in
-  "Importing notes from Obsidian", above) — expected, and worked around by never expecting it to be typed by
+  read like). Typing it live is escaped by Milkdown already (historical: see the superseded Milkdown decision and the wiki-link stripping in
+  "Importing notes from Obsidian", above; the new editor does not rewrite text, so this problem no longer exists, and `@citekey` is still the format) — expected, and worked around by never expecting it to be typed by
   hand — but a second, worse problem only showed up driving the built app: even a citekey inserted programmatically
   by "Attach a reading" survived the _first_ render, but Milkdown's Markdown serialiser escapes a bare `[` on the
   way back out (`**\[\[citekey]]**`), so the very next edit anywhere in the document would have silently turned
@@ -1235,10 +1289,10 @@ Reference`. The Meetings folder is left to `import:work-meetings`. **The Admin &
 
 A note can mention a **person, reading, meeting or note** (tasks later): type `@` and a few letters, pick one, and it is written as a
 chip with the icon of its kind. The mechanism is the same everywhere an editor is used (notes, meetings, training entries, plans, reading
-lists, readings' notes), since they all share `NotesEditor`.
+lists, readings' notes), since they all share the one editor (`NotesEditor` when this was written, `LiveEditor` now).
 
 - **The file format is an ordinary Markdown link with the app's own scheme:** `[Kathy Rastle](cc://person/Kathy%20Rastle)`. It is valid
-  everywhere, survives Milkdown's serialiser (the reading lists' `[[citekey]]` lesson), and reads fine in any other tool or to Claude Code.
+  everywhere, survived Milkdown's serialiser (the reading lists' `[[citekey]]` lesson; the live editor never re-serialises), and reads fine in any other tool or to Claude Code.
   `@shared/entities` holds the format (`entityHref`, `parseEntityHref`, `findMentions`, `renamePersonMentions`), tested.
 - **What the address names, per kind.** `reading`: the citekey (stable while the reading is in Zotero; a reading gone from the export is
   still found and marked). `person`: the name (a rename or merge **rewrites the mentions** in every note folder, with the same backup and
@@ -1251,14 +1305,12 @@ lists, readings' notes), since they all share `NotesEditor`.
   `resolve` for what a mention points at now, an icon, a heading); `main.tsx` registers them all. The editor knows nothing about readings or
   meetings. A new kind is a new provider plus one entry in `ENTITY_KINDS`. Only the Research instance of Meetings and Notes carries its
   providers, and they cover both workspaces. The picker lists kinds in the order of `ENTITY_KINDS`: people, readings, meetings, notes.
-- **In the editor** (`src/renderer/src/entities/`): `EntityPickerController` is a plain object (as `useNotesFind` is) that the two Milkdown
-  plugins talk to and React reads. `@` opens the picker only at the start of a word (so `a@b.org` and `meet @ noon` are left alone), not in
+- **In the editor** (`src/renderer/src/entities/`): `EntityPickerController` is a plain object (as `useNotesFind` is) that the editor's extension (`editor/live-entities.ts`; two Milkdown plugins when this was written) talks to and React reads. `@` opens the picker only at the start of a word (so `a@b.org` and `meet @ noon` are left alone), not in
   code or inside a link, and not for a long or two-space query; Escape closes it until that `@` is gone. Enter or Tab links, arrows
   move, a click picks without taking the cursor out of the text. Typing punctuation straight after a mention takes back the space the
   mention was followed by. Mentions are drawn by decorations: a chip, its icon a CSS mask (the same Lucide icons, made into CSS variables by
   `entityIconVars`), struck through in red when what they point at is gone. Hovering shows a card (kind, current name, one line) and
-  Cmd-click opens it inside the app. The editor's link schema had to be extended (`entityLinkSchema`): Milkdown writes an empty `href` into
-  the page for any scheme but http, https, mailto, tel and ftp.
+  Cmd-click opens it inside the app. (Milkdown needed its link schema extended, `entityLinkSchema`, because it wrote an empty `href` for any scheme but http, https, mailto, tel and ftp; the live editor has no such schema. Chips are now widgets over the link text, see stage 4 below.)
 - **Where a thing is mentioned** (`MentionedIn`, on a person's page, a reading's page and the side column of a note and a meeting): the main
   process reads the note folders on request (`findBacklinks`, IPC `entities:backlinks`). No index: a few hundred small files are quick to read
   and the answer can never be out of date. Each place is listed once with the line the mention is on.
@@ -1286,6 +1338,8 @@ lists, readings' notes), since they all share `NotesEditor`.
 
 ## Live markup in the notes editor, stage 1: Backspace no longer jumps (30 Sep 2026)
 
+> **Historical (30 Sep 2026).** This stage changed the Milkdown editor (`notes-block-keymap.ts`), which was deleted in stage 8; the plain-text behaviour that replaced it is in `editor/live-lists.ts`.
+
 Plan: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. `notes-block-keymap.ts`, registered first:
 
 - **Backspace right after an input rule undoes it** (`undoInputRule`). `###`, space, Backspace now leaves a paragraph reading `### ` on
@@ -1311,6 +1365,8 @@ Reported as "last year's training list shows this year's training". Two separate
   `recentAndUpcoming` the selected year's meetings. Open TODOs on the Meetings landing still span all years (they are not a year view).
 
 ## Live markup in the notes editor, stage 2: LiveEditor on CodeMirror 6, behind a hidden switch (30 Sep 2026)
+
+> **Historical (30 Sep 2026).** Stages 2 to 7 were written as they were built, when `LiveEditor` was behind a hidden switch and Milkdown was unchanged. Neither is true now (stage 8 removed both); read "Notes editor: CodeMirror 6, with the Markdown text as the document" for the state of the app.
 
 Plan: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. New folder `src/renderer/src/editor/`; nothing changes for the user until they set the switch
 (`localStorage` key `central-command.liveEditor` = `1`, then reload; no Settings entry). `NotesEditor` delegates to `LiveEditor` when it is on, so
@@ -1509,4 +1565,4 @@ Plan: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. `LiveEditor` is the only editor. Nothin
 - **Real-library gate**: a fresh copy of `~/CentralCommand/notes` and `backups` (406 files) under the session scratchpad, `LIVE_EDITOR_LIBRARY=<copy> npx vitest run src/renderer/src/editor/live-library`: 10 of 10 pass.
 - **Driven for real** (scratch copy of the whole library under the session scratchpad with its settings paths pointed at the copy, `CENTRAL_COMMAND_HOME`, `--user-data-dir`; real keystrokes through Playwright; script and screenshots in the scratchpad, `pw/pass.mjs` and `shots/`): the production build and dev mode (StrictMode), light and dark (the colour scheme is forced on the page, because Playwright otherwise emulates light over the app's own theme: my first "dark" runs were light and were redone), for each of Notes, Work notes, Meetings (Research and Work), Training entry, Training plan, Reading list and Readings notes: the page opens; typing a heading, bold, italic, a link and a bullet; the word count moves; the outline (Notes, Training) lists the new heading and a click keeps the page alive; Cmd-F finds it ("1 of 2"); the `@` picker opens, Enter writes a chip; plain paste (the main process's `app:paste-plain` message in the built app, the same event in dev); `/todo` opens the owner menu and Enter writes `**TODO**:` (both Meetings); leaving the page straight after typing saved the last characters to the file every time; and quitting straight after typing (`app.close()`, or disconnecting in dev) saved them too. 70 checks per run, none failing; Cmd-click on a mention chip opened the linked reading and its "Mentioned in" panel listed the note; the hover card showed. Console errors: none in the built app; dev mode shows one React warning about a duplicate key on a reading's page (see below).
 - **Found, not caused by this stage, not changed** (both in `docs/ROADMAP.md`, "For the user"): (1) the TODO owner menu is taller than the window when the people list is long, so the top names are off screen (the old editor had the same placement code); (2) `ReadingDetailPage.tsx` gives `ReadingListMentions` and `NotesSection` the same `key` as siblings, which React warns about in development only. Not checked: Cmd-click on an ordinary web link (it would open the user's browser; covered by `live-links.test.ts` and the unchanged `window.open` path).
-- **Not done, on purpose**: the final write-up (stage 9: replace the Milkdown decision above, `CLAUDE.md` architecture and the Milkdown pitfalls, `docs/ROADMAP.md`); earlier stages' text in this file still says "Milkdown unchanged" and "behind the hidden switch", which was true then.
+- **Not done, on purpose**: the final write-up (stage 9: replace the Milkdown decision above, `CLAUDE.md` architecture and the Milkdown pitfalls, `docs/ROADMAP.md`); earlier stages' text in this file still says "Milkdown unchanged" and "behind the hidden switch", which was true then. **Stage 9 (30 Sep 2026) did that write-up:** the new decision above, the old one marked superseded, historical notes on the older sections that described Milkdown, and `CLAUDE.md`, `docs/ROADMAP.md` and the plan brought up to date. Documentation only.
