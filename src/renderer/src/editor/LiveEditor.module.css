@@ -205,8 +205,8 @@
   font-size: 0;
   line-height: 0;
 }
-/* CodeMirror's spacers beside a widget would each be a cell of the grid. */
-.wrap :global(.live-table-row) :global(.cm-widgetBuffer) {
+/* Each hidden range is an empty element in the line (with CodeMirror's spacers beside it), and each would be a cell of the grid. */
+.wrap :global(.cm-editor) :global(.cm-line.live-table-row) > :not(:global(.live-cell)) {
   display: none;
 }
 
