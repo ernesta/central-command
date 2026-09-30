@@ -100,7 +100,7 @@ with real keystrokes, look at screenshots, quit right after typing)
 3. **Shortcut keys, lists, tasks, quotes and paste.** (Starts with `live-keymap.ts`: the inline and block keys from "Shortcuts", with a test per key; agreed 30 Sep 2026.) Bullets and numbers drawn as units, checkbox toggle (click writes `[x]`), continue/indent/outdent
    keys and the Backspace rule, nested quotes, Cmd-Shift-V (the existing IPC), paste as plain text. Formatted paste (web, Word) is
    pasted as plain text (the user's call, 30 Sep 2026); converting HTML to Markdown is a possible later addition (adds a small dependency; ask first).
-4. **Entities.** Chips, atomic behaviour, `@` picker, hover card, Cmd-click, "Mentioned in" unaffected (it reads files). Includes a
+4. **DONE (30 Sep 2026). Entities.** Chips, atomic behaviour, `@` picker, hover card, Cmd-click, "Mentioned in" unaffected (it reads files). Includes a
    mutation check on the "Backspace removes the whole chip" logic.
 5. **Find and replace, outline, word count, Meetings TODO helper.** Find matches source text, so a word inside `**bold**` is found; a
    query of only marker characters matches markers (acceptable, recorded). Word count strips markers.
@@ -140,6 +140,9 @@ with real keystrokes, look at screenshots, quit right after typing)
   Delete, Tab, Shift-Tab, Mod-], Mod-[), `live-widgets.ts` (bullet, number, checkbox drawn as units), `live-motion.ts` (Home/Cmd-Left stay out
   of markers), `live-paste.ts`, `live-keymap.ts` (all bindings), `live-lines.ts` (line parsing shared by them). Details, findings and the
   choices made are in `docs/DECISIONS.md`, "Live markup … stage 3". Stage 4 (entities) is next, after the user's review.
+- **Stage 4 done (30 Sep 2026), not pushed:** `live-entities.ts` (chips, `@` trigger and picker plumbing, whole-chip Backspace/Delete, punctuation rule), chips in
+  `live-decorations.ts`, `entities/mention-target.ts` (the picker controller no longer knows Milkdown), `entities/useEntityHover.ts`. Details in `docs/DECISIONS.md`,
+  "Live markup … stage 4". Stage 5 is next, after the user's review.
 - Checking recipe: scratch library under the session scratchpad with `CENTRAL_COMMAND_HOME`, `playwright-core` installed there,
   Cmd-Shift-N to make a note, real keystrokes, `app.close()` straight after typing; dev mode via `electron-vite dev` with
   `--remote-debugging-port=9333` and `connectOverCDP`.

@@ -1,6 +1,6 @@
 # Roadmap
 
-**Next, requested 30 Sep 2026: live markup in the notes editor, the Typora way**: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. Redesigned the same day: the editor moves from Milkdown to CodeMirror 6 so markers are real text. Stages 1 and 2 are done and committed (stage 2: `LiveEditor` behind a hidden switch, see the plan's Progress). Stage 2 is reviewed and pushed. **Stage 3 (shortcut keys, lists and tasks, paste) is built and committed, not pushed, and awaits the user's review**; stage 4 (entities) is next, after that review.
+**Next, requested 30 Sep 2026: live markup in the notes editor, the Typora way**: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. Redesigned the same day: the editor moves from Milkdown to CodeMirror 6 so markers are real text. Stages 1 and 2 are done and committed (stage 2: `LiveEditor` behind a hidden switch, see the plan's Progress). Stage 2 is reviewed and pushed. **Stage 3 (shortcut keys, lists and tasks, paste) is built and committed, not pushed, and awaits the user's review**; **Stage 4 (entities: chips, `@` picker, hover card, Cmd-click) is built and committed, not pushed, and awaits the user's review**; stage 5 (Find, outline, word count, Meetings TODO helper) is next, after that review.
 
 ## For Claude: six things requested 27 Sep 2026, go-ahead given — work through these without further check-in
 
@@ -218,6 +218,11 @@ ready for `--apply`" and say so plainly when you report back.
 ## TODOs
 
 ### For the user (review and decisions)
+
+- [ ] **Try mentions in the new editor** (stage 4 of live markup; switch on as below): a mention is a chip the cursor jumps over; Backspace right after it (or Delete right before) removes it whole, Cmd-Z brings it back;
+      `@` opens the picker as before; Cmd-click opens it; resting the pointer shows the card. A note with a mention is in no way different in the file.
+- [ ] **Live editor question 4:** a chip cannot be edited in place (its label or address): you delete it and pick again. In the old editor you could type inside a mention's label. Is that fine, or should
+      Enter/Cmd-E on a chip show its source text?
 
 - [ ] **Try the new editor's keys and lists** (stage 3 of live markup; switch it on with `localStorage.setItem('central-command.liveEditor', '1')`
       in the developer tools, then reload). Use it for real: bullets, numbered lists, checkboxes (click one), Enter, Tab and Backspace in lists,

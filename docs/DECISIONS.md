@@ -1410,3 +1410,30 @@ Plan: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. Still behind the hidden switch. Every k
 - **Marker colour**: the user found stage 2's gold `--marker` ugly; it is now a slate, `light-dark(#7a8592, #8794a1)`, checked in light and dark. One token, easy to retune.
 - **Pitfalls worth remembering** (also in `CLAUDE.md`): after `prettier --write`, a scripted `str.replace` on the same file can silently miss (it did, twice, and the list keys were not bound
   until a test noticed); CodeMirror's `keymap` `preventDefault: true` makes an unhandled key look handled; `markdown()` brings its own Enter/Backspace keymap and paste handler.
+
+## Live markup in the notes editor, stage 4: entities (30 Sep 2026)
+
+Plan: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. Still behind the hidden switch. The file format is unchanged: a mention is `[label](cc://kind/key)`.
+
+- **Chips** (`live-entities.ts`, drawn from `live-decorations.ts`): a `Link` node that is a plain `[label](cc://…)` (non-empty label, an address of ours, no title, all on one line) is one atomic replace
+  widget with the icon of its kind, whatever the cursor does (never revealed; to change one, delete it and pick again). A link that does not fit (empty label, title, unknown kind, two lines: a replaced range may not
+  cross a line break) stays ordinary link text. Inside a chip nothing else is decorated. Struck through and red when the target is gone (`host.resolve`); when a lookup arrives the controller dispatches an
+  effect-only transaction (`refreshMentions`), which redraws and touches neither text nor history. The label is shown without its `\[`/`\]` escapes.
+- **Whole-chip Backspace/Delete** is two layers on purpose: an explicit command (`deleteChip`, bound before the list rules) and the atomic range, which the default Backspace also honours. Each is tested alone
+  (the command in a bare view with no default keymap and no atomic ranges; the atomic layer by arrow keys). Mutation checks (15, run by hand): every mutation of the command's range, direction, selection rule,
+  binding, or the chip test was killed; removing the atomic set was killed; two survivors were an equivalent mutant (setting the cursor after the delete, which the change mapping already does; removed) and a
+  missing test for a cursor inside a chip (added, then killed). Finding: unbinding the command alone is masked by the atomic layer in a full editor, hence the bare-view test.
+- **`@` picker**: `EntityPickerController` now talks to an editor through `MentionTarget` (`entities/mention-target.ts`: `coordsAt`, `refresh`, `current`, `insert`); Milkdown's adapter is `proseTarget`, the live one
+  `liveTarget`, so both editors work until stage 8. The trigger rule is the shared pure `suggestionIn`. Not offered in code, links, images, or with a selection, and only while the editor has focus. The cursor's
+  screen position is read in `requestMeasure` (reading layout inside an update is forbidden); the picker's own arrows/Enter/Tab/Escape come first (`Prec.highest` keydown handler). The controller learns of the editor
+  synchronously on creation, or a lookup finishing before the first frame would never redraw the chips.
+- **Punctuation** typed straight after a chip and its space takes the space back (`inputHandler`). **Cmd-click** is handled by the chip itself (a click between two chips could otherwise open the wrong one);
+  a plain click puts the cursor beside it. **Hover card** reuses `EntityHoverCard` through the new `useEntityHover(selector)`; `NotesEditor`'s own copy stays until stage 8.
+- **Real-library gate** (`live-library.test.ts`, fresh copy of notes and backups, 406 files): the library has no mentions yet, so one is written into every note at 25 places (word starts): it must be one chip over
+  exactly those characters or, in code or a link, plain text; no two units overlap or cross a line; Backspace takes exactly it and one undo gives the note back; an `@ka` typed there is offered only when the
+  suggestion text is exactly `@ka`, and choosing writes exactly the mention and a space. Any mention found by the plain-text scan (`findMentions`) must be a chip. Mutation: Backspace leaving a bracket fails it.
+  A first version failed on ordering only: `RangeSet.between` reports in no particular order, so the test sorts.
+- **Driven in the built app and in dev mode** (scratch library, `--user-data-dir`): five chips drawn from a saved note (one struck through), the picker for a person, reading and note (Tab and Enter and a click choose),
+  `, ` after a choice takes the space back, Escape closes, arrows step over a chip in one press, Backspace and Cmd-Z, hover card, Cmd-click opens the linked note, no console errors; quitting straight after typing
+  (built app: `app.close()`; dev: disconnect) saved every character. Screenshots in the session scratchpad `shots/`.
+- **Not done, on purpose**: editing a chip in place (see the roadmap question); mentions inside bold are chips inside the bold span; a label containing Markdown is shown as typed.
