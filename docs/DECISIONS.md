@@ -1296,3 +1296,16 @@ Plan: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. `notes-block-keymap.ts`, registered fir
   paragraph). The plan expected to write it; a mutation check showed the copy was redundant, so it was removed. The tests pin the behaviour.
 - Mutation checks: without `undoInputRule`, or without the quote command, two tests fail. Driven in the built app and dev mode on a scratch
   library with real keystrokes, including quitting right after typing (the last words were saved).
+
+## Training: the year selector and what it covers (30 Sep 2026)
+
+Reported as "last year's training list shows this year's training". Two separate causes, the second being the one seen:
+
+- **Landing "Recent and upcoming" ignored the academic year.** `recentAndUpcoming` was fed every entry, so 2025–26 showed the newest
+  entries of any year. It now gets `entriesInYearOrPlanned(all, year, today)`. The hours strip and series cards already respected the year.
+- **Undated (planned) entries showed in every year.** `entriesInYearOrPlanned` now takes `today` and includes them only in the current
+  academic year (tested in `rules.test.ts`). This was found first and was not what the user saw; it is still a real leak.
+- Not yet checked in the running app for the landing change, and it has no unit test (the fix is in the page, not a pure function).
+  The user confirmed it fixed what they saw.
+- **Open:** Meetings has the same two patterns (`meetingsInYearOrPlanned` in `meetings/shared/hours.ts` includes planned meetings in
+  every year; `MeetingsLanding` passes all meetings to its own `recentAndUpcoming`). Left alone because the user only reported Training.
