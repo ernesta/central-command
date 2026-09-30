@@ -320,6 +320,12 @@ both have been applied to the real library.
 
 ### Training follow-ups (not started; the user decides when)
 
+- **Series naming (agreed 30 Sep 2026, data not yet updated):** a series is the full programme or module name, code included
+  ("PS5210 Applied Neuroscience Methods", "SENSS Experimental Methods in the Social Sciences", "DataCamp"); the title is only the
+  session ("Introduction"). Next: a dry run listing every series and title change (the SENSS titles repeat the name today), for the
+  user to read before anything is applied.
+- **Institution as a drop-down** (asked 30 Sep 2026, not built): the field is free text today (`TrainingMetaFields`). It should offer
+  the institutions already used, and still accept a new one typed in. Reuse the shared field pattern that series uses.
 - **Imports and conversions are all applied** (checked on 26 Sep 2026: every dry run reports nothing left to write: training 129 already
   there, 35 meeting files agree with the log, 12 notes, 17 reading notes, topics converted, people added). What is left is for you to
   decide: 10 Obsidian training notes found no matching activity (Psychology/Peer Review, Starting Your PhD, Annual Reviews and Upgrade;
