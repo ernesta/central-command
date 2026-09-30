@@ -4,7 +4,9 @@ import type { EditorView } from '@codemirror/view'
 import { readdirSync, readFileSync, statSync } from 'fs'
 import { join } from 'path'
 import { describe, expect, it } from 'vitest'
+import { findMentions } from '@shared/entities'
 import { splitNote } from '@shared/front-matter'
+import { deleteChip, findSuggestion, liveTarget } from './live-entities'
 import { formatBindings, listBindings } from './live-keymap'
 import { parseLine } from './live-lines'
 import { pasteText } from './live-paste'
@@ -182,6 +184,85 @@ function checkPaste(file: string, text: string): void {
   }
 }
 
+const MENTION = '[Kathy Rastle](cc://person/Kathy%20Rastle)'
+
+/**
+ * Mentions among the real markup. The library has none yet, so a mention is written into each note at a spread of places
+ * (as the picker would write it) and the editor must: draw it as one chip over exactly those characters or, where a
+ * mention cannot be one (inside code or a link), leave it as text; take it away whole with Backspace, one undo giving the
+ * note back byte for byte; and, for an `@` typed at the same places, offer the picker only where it belongs and put the
+ * mention in exactly where the `@…` was. Mentions the library does have (found by the plain text scan, independent of the
+ * parser) must each be a chip too.
+ */
+function checkMentions(file: string, text: string): { chips: number } {
+  let chips = 0
+  const widgetsOf = (state: EditorState): { from: number; to: number }[] =>
+    decorationsOf(state).filter(
+      (seen) => seen.kind === 'widget' && state.sliceDoc(seen.from, seen.to).includes('](cc://')
+    )
+  {
+    const found = findMentions(text).map((m) => `${m.start}-${m.end}`)
+    const drawn = widgetsOf(stateFor(text)).map((w) => `${w.from}-${w.to}`)
+    // (A mention inside code is found by the scan of the text and rightly not drawn; the library has none.)
+    for (const range of drawn) expect(found, `${file} chip ${range}`).toContain(range)
+  }
+  const step = Math.max(1, Math.floor(text.length / 25))
+  for (let pos = 0; pos <= text.length; pos += step) {
+    const word = stateFor(text, pos).wordAt(pos)
+    const at = word ? word.from : pos
+    const withChip = `${text.slice(0, at)}${MENTION}${text.slice(at)}`
+    const state = stateFor(withChip, at + MENTION.length)
+    const own = widgetsOf(state).filter((w) => w.from === at)
+    for (const w of own) expect(w.to, `${file} @${at} chip end`).toBe(at + MENTION.length)
+    // No two drawn units overlap, and none crosses a line.
+    // (`between` reports in no particular order.)
+    const units = decorationsOf(state)
+      .filter((seen) => seen.kind === 'widget')
+      .sort((a, b) => a.from - b.from)
+    for (let i = 1; i < units.length; i++)
+      expect(units[i].from >= units[i - 1].to, `${file} @${at} overlap`).toBe(true)
+    for (const unit of units)
+      expect(state.doc.lineAt(unit.from).number, `${file} @${at} line`).toBe(
+        state.doc.lineAt(unit.to).number
+      )
+    if (own.length > 0) {
+      chips += 1
+      // Backspace right after the chip takes exactly the chip.
+      let after: Transaction | null = null
+      deleteChip(false)({
+        state,
+        dispatch: (spec: TransactionSpec) => (after = state.update(spec))
+      } as unknown as EditorView)
+      const removed = after as Transaction | null
+      expect(removed?.newDoc.sliceString(0), `${file} @${at} backspace`).toBe(text)
+      const undone = run(undo as never, (removed as Transaction).state)
+      expect(undone.tr?.newDoc.sliceString(0), `${file} @${at} undo`).toBe(withChip)
+    }
+    // An `@…` typed here: offered only where it belongs, and replaced by exactly the mention and a space.
+    const typed = `${text.slice(0, at)}@ka${text.slice(at)}`
+    const typing = stateFor(typed, at + 3)
+    const suggestion = findSuggestion(typing)
+    if (suggestion) {
+      expect(typing.sliceDoc(suggestion.from, suggestion.to), `${file} @${at} suggestion`).toBe(
+        '@ka'
+      )
+      let result: string | null = null
+      liveTarget({
+        state: typing,
+        dispatch: (spec: TransactionSpec) => (result = typing.update(spec).newDoc.sliceString(0)),
+        focus: () => undefined
+      } as unknown as EditorView).insert(suggestion, 'Kathy Rastle', {
+        kind: 'person',
+        key: 'Kathy Rastle'
+      })
+      expect(result, `${file} @${at} insert`).toBe(
+        `${typed.slice(0, suggestion.from)}${MENTION} ${typed.slice(suggestion.to)}`
+      )
+    }
+  }
+  return { chips }
+}
+
 describe.skipIf(!root)('every note of a real library', () => {
   const files = root ? markdownFiles(root) : []
 
@@ -210,6 +291,16 @@ describe.skipIf(!root)('every note of a real library', () => {
       checkList(file, splitNote(whole).body)
     }
   }, 600_000)
+
+  it('draws a mention as one chip over exactly its text, removes it whole with Backspace, and offers @ only where it belongs', () => {
+    let chips = 0
+    for (const file of files) {
+      const whole = readFileSync(file, 'utf8')
+      chips += checkMentions(file, splitNote(whole).body).chips
+    }
+    // A check that finds nothing to check proves nothing.
+    expect(chips).toBeGreaterThan(files.length)
+  }, 1_200_000)
 
   it('pastes a web address over a word as a link and changes nothing else', () => {
     for (const file of files) {
