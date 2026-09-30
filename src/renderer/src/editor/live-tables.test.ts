@@ -104,7 +104,12 @@ describe('a table with the cursor in it', () => {
       const touching = at >= inside('**two**') && at <= inside('**two**', 7)
       expect(hiddenText(state), `@${at}`).toEqual(touching ? [] : ['**', '**'])
       const seen = decorationsOf(state)
-      expect(seen.filter((s) => s.kind === 'live-table')).toHaveLength(3)
+      expect(seen.filter((s) => s.kind.startsWith('live-table '))).toHaveLength(1)
+      expect(seen.filter((s) => s.kind === 'live-table')).toHaveLength(2)
+      // The delimiter line (the second) is the one that takes half a row.
+      expect(seen.find((s) => s.kind === 'live-table live-table-delim')?.from).toBe(
+        state.doc.lineAt(inside('|---|')).from
+      )
       const pipes = seen
         .filter((s) => s.kind === 'live-tablemark')
         .map((s) => state.doc.sliceString(s.from, s.to))

@@ -5,8 +5,8 @@ import type { Extent } from './live-reveal'
 
 /*
  * Fenced code. The fence lines (the backticks or tildes, and the language after the opening one) are real text: they show
- * in the marker colour while the cursor is anywhere in the block, and are hidden (the line collapses to a little
- * padding) otherwise. Nothing is edited here. A fence that is never closed keeps its opening line showing, because
+ * in the marker colour while the cursor is anywhere in the block, and are hidden otherwise (the empty line keeps its
+ * height, so the block does not move when the cursor enters it). Nothing is edited here. A fence that is never closed keeps its opening line showing, because
  * everything below it is code and the note would look broken without the reason.
  */
 

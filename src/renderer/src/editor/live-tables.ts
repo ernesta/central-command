@@ -160,7 +160,12 @@ export function drawTable(
     const row = splitRow(line.text)
 
     if (!grid) {
-      add('tline', line.from, line.from, Decoration.line({ class: 'live-table' }))
+      add(
+        'tline',
+        line.from,
+        line.from,
+        Decoration.line({ class: index === 1 ? 'live-table live-table-delim' : 'live-table' })
+      )
       if (index === 1) {
         if (row.end > row.start) add('tpipe', line.from + row.start, line.from + row.end, pipeMark)
         continue
