@@ -1,6 +1,7 @@
 import { join } from 'path'
 import { app } from 'electron'
 import { DATA_DIR_NAME } from '@shared/app-info'
+import { assertAbsoluteHome } from './home-dir'
 
 export interface AppPaths {
   root: string
@@ -25,7 +26,7 @@ export interface AppPaths {
 
 /** Pure so it can be unit-tested; the home directory is always injected. */
 export function resolvePaths(home: string): AppPaths {
-  const root = join(home, DATA_DIR_NAME)
+  const root = join(assertAbsoluteHome(home), DATA_DIR_NAME)
   const data = join(root, 'data')
   const notes = join(root, 'notes')
   return {

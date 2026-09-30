@@ -10,6 +10,7 @@
  * was read is left alone). Options: --meetings <dir> (default: the research meetings folder).
  */
 import { existsSync, readFileSync, readdirSync } from 'fs'
+import { assertAbsoluteHome } from '../src/main/home-dir'
 import { homedir } from 'os'
 import { join, resolve } from 'path'
 import { readNoteFile, writeNoteFileGuarded } from '../src/main/notes/guarded-file'
@@ -34,7 +35,7 @@ const fail = (message: string): never => {
 const inkpathArg = arg('inkpath')
 if (!inkpathArg) fail('Usage: npm run reconcile:meetings -- --inkpath <the .xlsx> [--apply]')
 const apply = process.argv.includes('--apply')
-const home = process.env.CENTRAL_COMMAND_HOME || homedir()
+const home = assertAbsoluteHome(process.env.CENTRAL_COMMAND_HOME || homedir())
 const meetingsDir = arg('meetings')
   ? expand(arg('meetings') as string)
   : join(home, 'CentralCommand', 'notes', 'meetings', 'research')

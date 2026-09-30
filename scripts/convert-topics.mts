@@ -17,6 +17,7 @@
  */
 import { mkdir } from 'fs/promises'
 import { existsSync, readdirSync } from 'fs'
+import { assertAbsoluteHome } from '../src/main/home-dir'
 import { homedir } from 'os'
 import { join, resolve } from 'path'
 import { readNoteFile, writeNoteFileGuarded } from '../src/main/notes/guarded-file'
@@ -31,7 +32,7 @@ function arg(name: string): string | undefined {
 const expand = (p: string): string => resolve(p.replace(/^~(?=$|\/)/, homedir()))
 
 const apply = process.argv.includes('--apply')
-const home = process.env.CENTRAL_COMMAND_HOME || homedir()
+const home = assertAbsoluteHome(process.env.CENTRAL_COMMAND_HOME || homedir())
 const dataRoot = join(home, 'CentralCommand')
 const meetingsDir = arg('meetings')
   ? expand(arg('meetings') as string)

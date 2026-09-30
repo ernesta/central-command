@@ -20,6 +20,7 @@
  * folders to read), --notes <dir> (default: ~/CentralCommand/notes/notes/<workspace>).
  */
 import { existsSync, readFileSync, readdirSync } from 'fs'
+import { assertAbsoluteHome } from '../src/main/home-dir'
 import { homedir } from 'os'
 import { join, resolve } from 'path'
 import { createNoteFileExclusive } from '../src/main/notes/guarded-file'
@@ -46,7 +47,7 @@ if (!vaultArg) {
 }
 const vault = expand(vaultArg)
 const apply = process.argv.includes('--apply')
-const home = process.env.CENTRAL_COMMAND_HOME || homedir()
+const home = assertAbsoluteHome(process.env.CENTRAL_COMMAND_HOME || homedir())
 const dataRoot = join(home, 'CentralCommand')
 const workspace = arg('workspace') ?? 'research'
 if (workspace !== 'research' && workspace !== 'work') {

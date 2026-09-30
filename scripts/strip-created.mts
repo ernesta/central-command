@@ -14,6 +14,7 @@
  */
 import { mkdir } from 'fs/promises'
 import { existsSync, readdirSync } from 'fs'
+import { assertAbsoluteHome } from '../src/main/home-dir'
 import { homedir } from 'os'
 import { join } from 'path'
 import { readNoteFile, writeNoteFileGuarded } from '../src/main/notes/guarded-file'
@@ -25,7 +26,7 @@ function arg(name: string): string | undefined {
   return i >= 0 ? process.argv[i + 1] : undefined
 }
 const apply = process.argv.includes('--apply')
-const home = process.env.CENTRAL_COMMAND_HOME || homedir()
+const home = assertAbsoluteHome(process.env.CENTRAL_COMMAND_HOME || homedir())
 const dataRoot = join(home, 'CentralCommand')
 const workspaces = (arg('workspaces') ?? 'research,work').split(',').map((w) => w.trim())
 

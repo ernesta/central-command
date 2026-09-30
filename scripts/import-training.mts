@@ -14,6 +14,7 @@
  * entry; running it again after an import writes nothing.
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
+import { assertAbsoluteHome } from '../src/main/home-dir'
 import { homedir } from 'os'
 import { basename, join, relative, resolve } from 'path'
 import { createNoteFileExclusive } from '../src/main/notes/guarded-file'
@@ -52,7 +53,7 @@ const apply = process.argv.includes('--apply')
 const addPeople = process.argv.includes('--add-people')
 const inkpath = expand(inkpathArg as string)
 if (!existsSync(inkpath)) fail(`Workbook not found: ${inkpath}`)
-const home = process.env.CENTRAL_COMMAND_HOME || homedir()
+const home = assertAbsoluteHome(process.env.CENTRAL_COMMAND_HOME || homedir())
 const dataRoot = join(home, 'CentralCommand')
 const trainingDir = arg('training')
   ? expand(arg('training') as string)

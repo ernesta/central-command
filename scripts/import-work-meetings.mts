@@ -12,6 +12,7 @@
  * Never overwrites an existing meeting; running it again after an import writes nothing.
  */
 import { existsSync, readFileSync, readdirSync } from 'fs'
+import { assertAbsoluteHome } from '../src/main/home-dir'
 import { homedir } from 'os'
 import { join, resolve } from 'path'
 import { createNoteFileExclusive } from '../src/main/notes/guarded-file'
@@ -38,7 +39,7 @@ if (!vaultArg) {
 }
 const apply = process.argv.includes('--apply')
 const folder = expand(vaultArg as string)
-const home = process.env.CENTRAL_COMMAND_HOME || homedir()
+const home = assertAbsoluteHome(process.env.CENTRAL_COMMAND_HOME || homedir())
 const dataRoot = join(home, 'CentralCommand')
 const meetingsDir = arg('meetings')
   ? expand(arg('meetings') as string)

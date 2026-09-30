@@ -18,6 +18,7 @@
  * Options: --title "…" (default: the file name, with a leading date and the extension stripped),
  * --list-dir <folder> (default: ~/CentralCommand/notes/reading-lists/research).
  */
+import { assertAbsoluteHome } from '../src/main/home-dir'
 import { execFileSync } from 'child_process'
 import { existsSync, mkdirSync, readdirSync } from 'fs'
 import { homedir, platform } from 'os'
@@ -49,7 +50,7 @@ const file = expand(fileArg)
 if (!existsSync(file)) fail(`No such file: ${file}`)
 
 const apply = process.argv.includes('--apply')
-const home = process.env.CENTRAL_COMMAND_HOME || homedir()
+const home = assertAbsoluteHome(process.env.CENTRAL_COMMAND_HOME || homedir())
 const listDir = arg('list-dir')
   ? expand(arg('list-dir') as string)
   : join(home, 'CentralCommand', 'notes', 'reading-lists', 'research')

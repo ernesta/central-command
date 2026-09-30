@@ -14,6 +14,7 @@
  */
 import { mkdir } from 'fs/promises'
 import { existsSync, readdirSync } from 'fs'
+import { assertAbsoluteHome } from '../src/main/home-dir'
 import { homedir } from 'os'
 import { join } from 'path'
 import {
@@ -30,7 +31,7 @@ import {
 } from '../src/modules/training/shared/front-matter'
 
 const apply = process.argv.includes('--apply')
-const home = process.env.CENTRAL_COMMAND_HOME || homedir()
+const home = assertAbsoluteHome(process.env.CENTRAL_COMMAND_HOME || homedir())
 const dataRoot = join(home, 'CentralCommand')
 const dir = join(dataRoot, 'notes', 'training', 'research')
 

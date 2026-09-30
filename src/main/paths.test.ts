@@ -19,3 +19,9 @@ describe('resolvePaths', () => {
     expect(p.settings).toBe('/home/someone/CentralCommand/settings.json')
   })
 })
+
+describe('resolvePaths with a relative home', () => {
+  it('refuses it instead of creating a library in the working directory', () => {
+    expect(() => resolvePaths('undefined/home')).toThrow(/absolute/)
+  })
+})

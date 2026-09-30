@@ -10,6 +10,7 @@
  *
  * Options: --home <dir> (default: the home folder, or CENTRAL_COMMAND_HOME).
  */
+import { assertAbsoluteHome } from '../src/main/home-dir'
 import { existsSync, readFileSync, readdirSync } from 'fs'
 import { copyFile } from 'fs/promises'
 import { homedir } from 'os'
@@ -28,7 +29,7 @@ function arg(name: string): string | undefined {
 const apply = process.argv.includes('--apply')
 const home = arg('home')
   ? resolve(arg('home') as string)
-  : process.env.CENTRAL_COMMAND_HOME || homedir()
+  : assertAbsoluteHome(process.env.CENTRAL_COMMAND_HOME || homedir())
 const root = join(home, DATA_DIR_NAME)
 const peopleFile = join(root, 'data', 'people.json')
 

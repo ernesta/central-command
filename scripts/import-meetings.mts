@@ -12,6 +12,7 @@
  * written), --add-people (also add the attendees to your people list, with initials worked out from their names).
  * Never overwrites an existing meeting; running it again after an import writes nothing.
  */
+import { assertAbsoluteHome } from '../src/main/home-dir'
 import { execFileSync } from 'child_process'
 import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
 import { homedir } from 'os'
@@ -49,7 +50,7 @@ const apply = process.argv.includes('--apply')
 const addPeople = process.argv.includes('--add-people')
 const vault = expand(vaultArg as string)
 const meetingNotes = expand(notesArg as string)
-const home = process.env.CENTRAL_COMMAND_HOME || homedir()
+const home = assertAbsoluteHome(process.env.CENTRAL_COMMAND_HOME || homedir())
 const dataRoot = join(home, 'CentralCommand')
 const meetingsDir = arg('meetings')
   ? expand(arg('meetings') as string)

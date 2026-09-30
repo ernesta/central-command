@@ -8,6 +8,7 @@
  * Options: --folder <name> (default "Readings"), --export <file.bib>, --notes <dir>
  */
 import { existsSync, readFileSync, readdirSync } from 'fs'
+import { assertAbsoluteHome } from '../src/main/home-dir'
 import { homedir } from 'os'
 import { join, resolve } from 'path'
 import { writeFileAtomic } from '../src/main/atomic-write'
@@ -30,7 +31,7 @@ if (!vault) {
   process.exit(1)
 }
 const apply = process.argv.includes('--apply')
-const home = process.env.CENTRAL_COMMAND_HOME || homedir()
+const home = assertAbsoluteHome(process.env.CENTRAL_COMMAND_HOME || homedir())
 const dataRoot = join(home, 'CentralCommand')
 
 let exportPath = join(dataRoot, 'data', 'zotero-export.bib')
