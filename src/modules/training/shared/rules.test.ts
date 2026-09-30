@@ -9,6 +9,7 @@ import {
   normaliseTrainingQuery,
   queryTraining,
   reconcileTrainingQuery,
+  institutionOptions,
   seriesOptions,
   trainingFiltersActive,
   trainingHours
@@ -184,6 +185,16 @@ describe('option lists', () => {
     expect(seriesOptions(rows)).toEqual(['DataCamp', 'SENSS'])
     expect(seriesOptions([])).toEqual([])
     expect(leadNames(rows)).toEqual(['A A', 'B B'])
+  })
+
+  it('lists the institutions in use, sorted and without repeats', () => {
+    const rows = [
+      row('2025-10-01', { institution: 'Royal Holloway' }),
+      row('2025-10-02', { institution: 'Aston University' }),
+      row('2025-10-03', { institution: 'Royal Holloway' }),
+      row('2025-10-04', { institution: null })
+    ]
+    expect(institutionOptions(rows)).toEqual(['Aston University', 'Royal Holloway'])
   })
 
   it('words the meetings line', () => {

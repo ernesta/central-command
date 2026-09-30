@@ -47,7 +47,3 @@
   font-size: var(--text-14);
   font-variant-numeric: tabular-nums;
 }
-.input[list],
-#training-institution {
-  min-width: 220px;
-}

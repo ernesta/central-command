@@ -185,6 +185,12 @@ export function seriesOptions(rows: readonly TrainingIndexRow[]): string[] {
   return [...found].sort((a, b) => a.localeCompare(b))
 }
 
+/** Institutions used in the entries, sorted, for the drop-down (a new one can still be typed). */
+export function institutionOptions(rows: readonly TrainingIndexRow[]): string[] {
+  const found = new Set(rows.map((r) => r.institution).filter((s): s is string => !!s))
+  return [...found].sort((a, b) => a.localeCompare(b))
+}
+
 /** Everyone who appears as a lead in these entries, by name. */
 export function leadNames(rows: readonly TrainingIndexRow[]): string[] {
   return [...new Set(rows.flatMap((r) => r.leads))].sort((a, b) => a.localeCompare(b))

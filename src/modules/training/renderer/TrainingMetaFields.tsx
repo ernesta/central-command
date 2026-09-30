@@ -1,5 +1,6 @@
 import { Segmented } from '@renderer/components/Segmented'
 import { PeopleField } from '@renderer/components/PeopleField'
+import { ComboField } from '@renderer/components/ComboField'
 import { DescribedSelect } from '@renderer/components/DescribedSelect'
 import { SkillsField } from '@renderer/components/SkillsField'
 import type { Person } from '@shared/people'
@@ -17,8 +18,9 @@ import styles from './TrainingMetaFields.module.css'
 interface TrainingMetaFieldsProps {
   meta: TrainingMeta
   people: Person[]
-  /** Series already used, offered as suggestions. */
+  /** Series and institutions already used, offered in the drop-downs. */
   seriesSuggestions: string[]
+  institutionSuggestions: string[]
   onChange: (patch: TrainingPatch) => void
   onAddPerson: (name: string) => Promise<Person>
 }
@@ -33,6 +35,7 @@ export function TrainingMetaFields({
   meta,
   people,
   seriesSuggestions,
+  institutionSuggestions,
   onChange,
   onAddPerson
 }: TrainingMetaFieldsProps): React.JSX.Element {
@@ -111,21 +114,14 @@ export function TrainingMetaFields({
         <label className={styles.label} htmlFor="training-series">
           Series
         </label>
-        <input
+        <ComboField
           id="training-series"
-          className={styles.input}
-          list="training-series-options"
+          label="Series"
           placeholder="None"
+          options={seriesSuggestions}
           value={meta.series ?? ''}
-          onChange={(event) =>
-            onChange({ series: event.target.value.replace(/[\r\n]/g, '') || null })
-          }
+          onChange={(series) => onChange({ series: series || null })}
         />
-        <datalist id="training-series-options">
-          {seriesSuggestions.map((s) => (
-            <option key={s} value={s} />
-          ))}
-        </datalist>
       </div>
       <div className={styles.field}>
         <label className={styles.label} htmlFor="training-type">
@@ -153,14 +149,13 @@ export function TrainingMetaFields({
         <label className={styles.label} htmlFor="training-institution">
           Institution
         </label>
-        <input
+        <ComboField
           id="training-institution"
-          className={styles.input}
+          label="Institution"
           placeholder="For example Royal Holloway"
+          options={institutionSuggestions}
           value={meta.institution ?? ''}
-          onChange={(event) =>
-            onChange({ institution: event.target.value.replace(/[\r\n]/g, '') || null })
-          }
+          onChange={(institution) => onChange({ institution: institution || null })}
         />
       </div>
       <div className={styles.field}>

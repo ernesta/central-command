@@ -12,7 +12,7 @@ import { NotesEditor } from '@renderer/notes/NotesEditor'
 import { NoteOutline } from '@modules/notes/renderer/NoteOutline'
 import type { Person } from '@shared/people'
 import { formatDate } from '@shared/time'
-import { seriesOptions } from '../shared/rules'
+import { institutionOptions, seriesOptions } from '../shared/rules'
 import type { TrainingRef } from '../shared/types'
 import { FilesPanel } from './FilesPanel'
 import { entryRoute, trainingBase } from './training-paths'
@@ -55,6 +55,7 @@ function EntryView({
   const { session, snapshot } = useTrainingSession(entryRef, onRenamed)
   const [people, setPeople] = useState<Person[]>([])
   const [seriesUsed, setSeriesUsed] = useState<string[]>([])
+  const [institutionsUsed, setInstitutionsUsed] = useState<string[]>([])
   const [confirmDelete, setConfirmDelete] = useState(false)
   const titleRef = useRef<HTMLInputElement>(null)
   const docRef = useRef<HTMLDivElement>(null)
@@ -68,7 +69,9 @@ function EntryView({
       if (!cancelled) setPeople(list)
     })
     void window.api.training.list('research').then((rows) => {
-      if (!cancelled) setSeriesUsed(seriesOptions(rows))
+      if (cancelled) return
+      setSeriesUsed(seriesOptions(rows))
+      setInstitutionsUsed(institutionOptions(rows))
     })
     return () => {
       cancelled = true
@@ -207,6 +210,7 @@ function EntryView({
         meta={meta}
         people={people}
         seriesSuggestions={seriesUsed}
+        institutionSuggestions={institutionsUsed}
         onChange={(patch) => session.setMeta(patch)}
         onAddPerson={addPerson}
       />
