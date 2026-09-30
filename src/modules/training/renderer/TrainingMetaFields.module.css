@@ -58,3 +58,8 @@
 #training-institution {
   min-width: 220px;
 }
+/* Names the type it explains, since it no longer sits under the selector. */
+.hintType {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
