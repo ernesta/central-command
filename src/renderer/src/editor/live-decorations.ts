@@ -1,5 +1,5 @@
 import { syntaxTree } from '@codemirror/language'
-import type { EditorState, Range } from '@codemirror/state'
+import type { EditorState, Extension, Range } from '@codemirror/state'
 import {
   Decoration,
   type DecorationSet,
@@ -8,7 +8,9 @@ import {
   type ViewUpdate
 } from '@codemirror/view'
 import type { SyntaxNodeRef } from '@lezer/common'
+import { isListKind, parseLine } from './live-lines'
 import { blockRevealed, computeReveal, spanRevealed, type Extent, type Reveal } from './live-reveal'
+import { BulletWidget, CheckboxWidget, NumberWidget } from './live-widgets'
 
 /*
  * The formatting layer. The document is the Markdown text and is never touched here: everything below is a
@@ -32,8 +34,12 @@ const MARKS = {
   code: classMark('live-code'),
   link: classMark('live-link'),
   url: classMark('live-url'),
-  listMark: classMark('live-listmark')
+  listMark: classMark('live-listmark'),
+  done: classMark('live-done')
 }
+
+/** Width of a list item's indentation in columns, a tab counting as four. */
+const columns = (indent: string): number => indent.replace(/\t/g, '    ').length
 
 const lineDeco = (name: string, style?: string): Decoration =>
   Decoration.line({ class: name, ...(style ? { attributes: { style } } : {}) })
@@ -160,9 +166,34 @@ export function buildDecorations(
           case 'Table':
             lineClass(node.from, node.to, range, 'live-table')
             return
-          case 'ListMark':
+          case 'ListMark': {
+            const line = doc.lineAt(node.from)
+            const parts = parseLine(line.text)
+            const start = line.from + parts.quote.length + parts.indent.length
+            // Drawn as a unit once the space after the marker is typed (a lone `-` is still a dash being typed).
+            if (!isListKind(parts.kind) || start !== node.from || !parts.marker.endsWith(' ')) {
+              add('listmark', node.from, node.to, MARKS.listMark)
+              return
+            }
+            const contentFrom = start + parts.marker.length
+            const widget =
+              parts.kind === 'task'
+                ? new CheckboxWidget(parts.checked)
+                : parts.kind === 'ordered'
+                  ? new NumberWidget(parts.marker.trimEnd())
+                  : new BulletWidget()
+            add('list', line.from + parts.quote.length, contentFrom, Decoration.replace({ widget }))
+            add(
+              'li',
+              line.from,
+              line.from,
+              lineDeco('live-li', `--li-cols: ${columns(parts.indent)}`)
+            )
+            if (parts.kind === 'task' && parts.checked && contentFrom < line.to)
+              add('done', contentFrom, line.to, MARKS.done)
+            return
+          }
           case 'TaskMarker':
-            add('listmark', node.from, node.to, MARKS.listMark)
             return
           case 'Link': {
             const marks = node.node.getChildren('LinkMark')
@@ -204,8 +235,11 @@ export function buildDecorations(
 export const liveDecorations = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet
+    /** The drawn units (bullet, number, checkbox): the cursor moves over each in one step. */
+    atomic: DecorationSet
     constructor(view: EditorView) {
       this.decorations = this.build(view)
+      this.atomic = atomicOf(this.decorations)
     }
     update(update: ViewUpdate): void {
       if (
@@ -214,8 +248,10 @@ export const liveDecorations = ViewPlugin.fromClass(
         update.viewportChanged ||
         update.focusChanged ||
         syntaxTree(update.startState) !== syntaxTree(update.state)
-      )
+      ) {
         this.decorations = this.build(update.view)
+        this.atomic = atomicOf(this.decorations)
+      }
     }
     build(view: EditorView): DecorationSet {
       return buildDecorations(
@@ -227,3 +263,12 @@ export const liveDecorations = ViewPlugin.fromClass(
   },
   { decorations: (plugin) => plugin.decorations }
 )
+
+const atomicOf = (set: DecorationSet): DecorationSet =>
+  set.update({ filter: (_from, _to, value) => Boolean(value.spec.widget) })
+
+/** The formatting layer with the ranges the cursor must not enter. */
+export const liveLayer: Extension[] = [
+  liveDecorations,
+  EditorView.atomicRanges.of((view) => view.plugin(liveDecorations)?.atomic ?? Decoration.none)
+]

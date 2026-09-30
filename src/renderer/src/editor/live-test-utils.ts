@@ -21,7 +21,7 @@ export function stateFor(doc: string, anchor = 0, head = anchor): EditorState {
 export interface Seen {
   from: number
   to: number
-  /** The class, or `hidden` for a replaced (hidden) range. */
+  /** The class, `hidden` for a replaced (hidden) range, or `widget` for a range drawn as a bullet, number or checkbox. */
   kind: string
 }
 
@@ -33,7 +33,12 @@ export function decorationsOf(state: EditorState, focused = true): Seen[] {
   const seen: Seen[] = []
   set.between(0, state.doc.length, (from, to, value) => {
     const spec = value.spec as { class?: string }
-    seen.push({ from, to, kind: value.point && !spec.class ? 'hidden' : (spec.class ?? '') })
+    const kind = value.spec.widget
+      ? 'widget'
+      : value.point && !spec.class
+        ? 'hidden'
+        : (spec.class ?? '')
+    seen.push({ from, to, kind })
   })
   return seen
 }

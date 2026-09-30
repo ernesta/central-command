@@ -2,7 +2,7 @@ import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { EditorState, type Extension } from '@codemirror/state'
 import { drawSelection, EditorView, keymap } from '@codemirror/view'
-import { liveDecorations } from './live-decorations'
+import { liveLayer } from './live-decorations'
 import { liveKeymap } from './live-keymap'
 import { linkTargetAt } from './live-links'
 
@@ -37,7 +37,7 @@ export function liveExtensions(options: LiveOptions): Extension[] {
     markdown({ base: markdownLanguage }),
     liveKeymap,
     keymap.of([...keys, ...historyKeymap]),
-    liveDecorations,
+    liveLayer,
     EditorView.contentAttributes.of({ 'aria-label': options.label }),
     // Reports the text synchronously on every change: the session saves on its own (longer) timer, so nothing
     // typed just before leaving the page or quitting can be missed.

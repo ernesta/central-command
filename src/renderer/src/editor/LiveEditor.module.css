@@ -163,3 +163,57 @@
   padding: 0 12px;
   background: var(--panel);
 }
+
+/* Lists: a bullet, number or checkbox stands for the marker; wrapped lines hang under the text, not under the marker. */
+.wrap :global(.live-li) {
+  padding-left: calc(var(--li-cols, 0) * 0.5em + 1.6em);
+  text-indent: -1.6em;
+}
+.wrap :global(.live-bullet),
+.wrap :global(.live-number),
+.wrap :global(.live-checkbox) {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 1.6em;
+  text-indent: 0;
+  vertical-align: baseline;
+}
+.wrap :global(.live-bullet),
+.wrap :global(.live-number) {
+  color: var(--text-muted);
+}
+.wrap :global(.live-number) {
+  font-variant-numeric: tabular-nums;
+}
+.wrap :global(.live-checkbox) {
+  position: relative;
+  cursor: pointer;
+}
+.wrap :global(.live-checkbox)::before {
+  content: '';
+  position: absolute;
+  top: 0.45em;
+  left: 0.1em;
+  width: 1em;
+  height: 1em;
+  box-sizing: border-box;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--surface);
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
+}
+.wrap :global(.live-checkbox):hover::before {
+  border-color: var(--accent);
+}
+.wrap :global(.live-checkbox[data-checked='true'])::before {
+  border-color: var(--accent);
+  background: var(--accent)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3.5 8.5 3 3 6-7'/%3E%3C/svg%3E")
+    center / 75% no-repeat;
+}
+.wrap :global(.live-done) {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
