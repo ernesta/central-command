@@ -1,6 +1,6 @@
 # Roadmap
 
-**Next, requested 30 Sep 2026: live markup in the notes editor, the Typora way**: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. Redesigned the same day: the editor moves from Milkdown to CodeMirror 6 so markers are real text. Stages 1 and 2 are done and committed (stage 2: `LiveEditor` behind a hidden switch, see the plan's Progress). Stage 2 is reviewed and pushed. **Stage 3 (shortcut keys, lists and tasks, paste) is built and committed, not pushed, and awaits the user's review**; **Stage 4 (entities: chips, `@` picker, hover card, Cmd-click) is built and committed, not pushed, and awaits the user's review**; **Stage 5 (Find and replace, outline, word count, Meetings TODO helper) is built and committed, not pushed, and awaits the user's review**; **Stage 6 (tables and fenced code) is built and committed, not pushed, and awaits the user's review**; **Stage 7 (interactions) is built and pushed, and awaits the user's review**; **stage 8 (switch and remove Milkdown) is built and committed, not pushed, and awaits the user's review**: `LiveEditor` is the only editor now (no switch), Milkdown and its 209 packages are gone; stage 9 (final write-up) follows after that review.
+**Live markup in the notes editor, the Typora way (requested 30 Sep 2026): finished.** All nine stages are done (`docs/EDITOR_LIVE_MARKUP_PLAN.md`; decision in `docs/DECISIONS.md`, "Notes editor: CodeMirror 6, with the Markdown text as the document"). `LiveEditor` (CodeMirror 6, the Markdown text is the document) is the only editor in every module; Milkdown and its packages are gone. Stages 1 to 8 are pushed; the stage 9 write-up (documentation only) is committed and not pushed. What is left is your review of stages 7 and 8 and the open questions, all in "For the user" below.
 
 ## For Claude: six things requested 27 Sep 2026, go-ahead given — work through these without further check-in
 
@@ -45,6 +45,8 @@ added. Do **not** add a second, duplicate outline panel. If the user asks again 
 outline next to Meetings' checkbox-outline, that's a real request to reconsider, not before.
 
 ### 3. Find in the note: redesign as an inline, keyboard-first bar, with basic replace — done
+
+_Historical: the files named below (`notes-find.ts`, `NotesEditor`, the `findSetup` hand-over) were replaced when the editor moved to CodeMirror (30 Sep 2026); Find is now `editor/live-find.ts` and the bar reaches the card through `FindContext`._
 
 See `docs/DECISIONS.md`, "Find in the note, redesigned as an inline bar with replace".
 
@@ -452,7 +454,7 @@ Nothing here is started; each is a choice, not just work. Already in place: pack
 An earlier attempt (Cmd-F over the whole page, via Electron's `webContents.findInPage`) was tried and reverted the same day:
 typing fast lost keystrokes, and a debounce fix then left it never returning results, cause not found in time. The user then
 asked for it scoped to notes instead, which turned out to be the better design anyway: a ProseMirror plugin
-(`src/renderer/src/notes/notes-find.ts`) built into `NotesEditor` itself, so Notes, Meetings, Training entries, the plan and
+(`notes-find.ts`, since replaced by `src/renderer/src/editor/live-find.ts`) built into the shared editor itself, so Notes, Meetings, Training entries, the plan and
 Readings notes all have it, with no page-wide search and no Electron IPC involved at all. See `docs/DECISIONS.md`, "Find in
 the note".
 

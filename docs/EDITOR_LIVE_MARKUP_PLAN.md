@@ -1,5 +1,10 @@
 # Notes editor: live markup, the Typora way (plan, revised 30 Sep 2026)
 
+**Status: complete (30 Sep 2026). Stages 1 to 9 are done.** `LiveEditor` is the only editor and Milkdown is gone; the decision is written up in
+`docs/DECISIONS.md` ("Notes editor: CodeMirror 6, with the Markdown text as the document") and each stage in "Live markup in the notes editor, stage 1"
+to "stage 8". The text below is the plan as it was designed and is kept as history: it says "today" for Milkdown, and names things that no longer
+exist (`NotesEditor`, `live-switch`, the hidden switch). Progress at the end records what was built.
+
 Requested 30 Sep 2026. Mockups: `docs/design/editor-live-markup-mockup.html` (today against proposed, scenario by scenario) and, for the original options,
 `docs/design/editor-markup-mockup.html`. Applies to every editor (Notes,
 Meetings, Training, Reading lists, Readings notes), because they all share `NotesEditor` (`src/renderer/src/notes/`).
@@ -109,10 +114,10 @@ with real keystrokes, look at screenshots, quit right after typing)
 7. **DONE (30 Sep 2026). Interactions.** IME composition (no reveal changes mid-composition), selection across blocks, undo/redo never surprising, very long
    note performance (a 20,000-word note types without lag), dark mode, caret and focus ring against the marker colour, no layout jump
    when markers appear (markers fade in without changing size if the shift is jarring; record what was chosen).
-8. **Switch and remove Milkdown.** All consumers use `LiveEditor`; delete the old editor, its plugins and tests, the `@milkdown/*`
+8. **DONE (30 Sep 2026). Switch and remove Milkdown.** All consumers use `LiveEditor`; delete the old editor, its plugins and tests, the `@milkdown/*`
    dependencies, `externalizeDeps` notes if any; port or retire each test with a note in `docs/DECISIONS.md`. Full Playwright pass on
    Notes, Meetings, Training, Reading lists, Readings notes and Work, both built app and dev mode.
-9. **Write-up.** `docs/DECISIONS.md` (replace the "Milkdown" decision with the new one, keep the old text marked superseded),
+9. **DONE (30 Sep 2026). Write-up.** `docs/DECISIONS.md` (replace the "Milkdown" decision with the new one, keep the old text marked superseded),
    `docs/ROADMAP.md`, `CLAUDE.md` (architecture and pitfalls: Milkdown lines removed, CodeMirror ones added).
 
 ## Risks
@@ -147,7 +152,11 @@ with real keystrokes, look at screenshots, quit right after typing)
   `meetings/renderer/todo-live.ts` (the TODO helper), `LiveEditor` takes `extensions`. Details, findings and the choices made are in `docs/DECISIONS.md`, "Live markup … stage 5". Stage 6 (tables and fenced code) is next, after the user's review.
 - **Stage 6 done (30 Sep 2026), not pushed:** `editor/live-tables.ts` (grid away from the cursor, text in it, `tableTab`), `editor/live-fences.ts`, the gate extended for both (and its test states now carry the full syntax tree, which they had not: see `docs/DECISIONS.md`, "Live markup … stage 6"). Stage 7 (interactions) is next, after the user's review.
 - **Stage 7 done (30 Sep 2026), pushed:** `live-decorations.ts` (no redraw during composition; escapes; line-start marker), `live-history.ts` (every command its own undo step), CSS fixes in `LiveEditor.module.css`, `live-composition.test.ts`, `live-history.test.ts`. Measurements and choices are in `docs/DECISIONS.md`, "Live markup … stage 7". Stage 8 (switch and remove Milkdown) is next, after the user's review.
-- **Stage 8 done (30 Sep 2026), not pushed:** `LiveEditor` is the only editor; Milkdown, its plugins, adapters, tests and the `@milkdown/*` packages are deleted; every old test is recorded as ported or retired in `docs/DECISIONS.md`, "Live markup … stage 8". Driven in the built app and dev mode, light and dark, on every kind of page; the real-library gate passes. Two unrelated findings are in the ROADMAP. Stage 9 (write-up) is next, after the user's review.
+- **Stage 8 done (30 Sep 2026), pushed:** `LiveEditor` is the only editor; Milkdown, its plugins, adapters, tests and the `@milkdown/*` packages are deleted; every old test is recorded as ported or retired in `docs/DECISIONS.md`, "Live markup … stage 8". Driven in the built app and dev mode, light and dark, on every kind of page; the real-library gate passes. Two unrelated findings are in the ROADMAP.
+- **Stage 9 done (30 Sep 2026), not pushed:** the write-up, documentation only. `docs/DECISIONS.md` has the new editor decision and the Milkdown one marked
+  superseded (older sections that described Milkdown carry a historical note); `CLAUDE.md` describes `src/renderer/src/editor/` and its pitfalls;
+  `docs/ROADMAP.md`'s top paragraph is current; stale file names and commands were fixed. No code changed. The plan is complete; the open questions
+  (live editor 1 to 14, the stage 7 and 8 review items) are in `docs/ROADMAP.md`, "For the user".
 - Checking recipe: scratch library under the session scratchpad with `CENTRAL_COMMAND_HOME`, `playwright-core` installed there,
   Cmd-Shift-N to make a note, real keystrokes, `app.close()` straight after typing; dev mode via `electron-vite dev` with
   `--remote-debugging-port=9333` and `connectOverCDP`.
