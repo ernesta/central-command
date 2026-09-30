@@ -18,8 +18,10 @@ export function trainingBaseName(
   series: string | null | undefined,
   taken: Iterable<string>
 ): string {
-  const label =
-    series?.trim() && title.trim() ? `${series.trim()} - ${title.trim()}` : title || series || ''
+  const s = series?.trim() ?? ''
+  const t = title.trim()
+  // A module whose title is its own name (no session titles) is not written twice.
+  const label = s && t && s.toLowerCase() !== t.toLowerCase() ? `${s} - ${t}` : t || s
   return datedBaseName(date, label, taken, { fallback: 'Untitled', maxLength: MAX_NAME_LENGTH })
 }
 

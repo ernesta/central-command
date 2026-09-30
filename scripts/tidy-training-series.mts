@@ -7,7 +7,8 @@
  *   npm run tidy:series -- --apply      # rewrites the entries (after copying each to a backup folder)
  *
  * Only the `series` and `title` lines change; each result is checked (text and every other field identical) before it
- * is written. A file is then renamed to match its date and title, as the app does, and never replaces another file.
+ * is written. A file is then renamed to match its date, series and title (`YYYY-MM-DD Series - Title`), as the app
+ * does, and never replaces another file; a file whose only problem is its name is renamed too.
  * Applying copies every entry it changes to `~/CentralCommand/backups/tidy-training-series-<time>/` first and writes
  * with the app's content-hash guard. Close the app before applying.
  */
@@ -43,7 +44,8 @@ const PREFIXES: Record<string, string> = {
   'SENSS Specialist Training': 'SENSS Specialist Training',
   'LSE DTP Training': 'LSE DTP Training',
   'LSE DTP': 'LSE DTP Training',
-  'PS5210 Applied Neuroscience Methods': 'PS5210 Applied Neuroscience Methods'
+  'PS5210 Applied Neuroscience Methods': 'PS5210 Applied Neuroscience Methods',
+  DataCamp: 'DataCamp'
 }
 /** Whole title → series; the title stays. */
 const MODULES = new Set(['PS5302 Statistics for Research', 'PS2021 Cognitive Psychology'])
@@ -80,30 +82,36 @@ async function run(): Promise<void> {
     const { head, body } = splitNote(note.content)
     const { meta } = parseTrainingMeta(head)
     const change = plan(meta.title ?? '')
-    if (!change || (change.series === meta.series && change.title === meta.title)) continue
-    const next = splitNote(note.content)
-    const newHead = updateTrainingHead(head, { series: change.series, title: change.title })
-    const after = parseTrainingMeta(newHead).meta
-    const same =
-      JSON.stringify({ ...after, series: 0, title: 0 }) ===
-      JSON.stringify({ ...meta, series: 0, title: 0 })
-    const content = newHead + body
-    if (
-      !same ||
-      splitNote(content).body !== next.body ||
-      after.series !== change.series ||
-      after.title !== change.title
-    ) {
-      failed++
-      console.log(`LEFT ALONE ${file}: another field or the text would change`)
-      continue
+    const wanted = change ?? { series: meta.series ?? null, title: meta.title ?? '' }
+    const edits = wanted.series !== (meta.series ?? null) || wanted.title !== (meta.title ?? '')
+    let content = note.content
+    if (edits) {
+      const newHead = updateTrainingHead(head, { series: wanted.series, title: wanted.title })
+      const after = parseTrainingMeta(newHead).meta
+      const same =
+        JSON.stringify({ ...after, series: 0, title: 0 }) ===
+        JSON.stringify({ ...meta, series: 0, title: 0 })
+      content = newHead + body
+      if (
+        !same ||
+        splitNote(content).body !== body ||
+        after.series !== wanted.series ||
+        after.title !== wanted.title
+      ) {
+        failed++
+        console.log(`LEFT ALONE ${file}: another field or the text would change`)
+        continue
+      }
     }
     const id = file.replace(/\.md$/, '')
     taken.delete(id)
-    const newId = trainingBaseName(meta.date ?? '', change.title, taken)
+    const newId = meta.title
+      ? trainingBaseName(meta.date ?? '', wanted.title, wanted.series, taken)
+      : id
     taken.add(newId)
+    if (!edits && newId === id) continue
     console.log(
-      `${meta.date}  [${meta.series ?? 'none'} → ${change.series}]  "${meta.title}" → "${change.title}"${newId !== id ? `\n    file: ${id}.md → ${newId}.md` : ''}`
+      `${meta.date}  ${edits ? `[${meta.series ?? 'none'} → ${wanted.series}]  "${meta.title}" → "${wanted.title}"` : `"${meta.title}"`}${newId !== id ? `\n    file: ${id}.md → ${newId}.md` : ''}`
     )
     if (!apply) {
       changed++
@@ -111,13 +119,15 @@ async function run(): Promise<void> {
     }
     await mkdir(backupDir, { recursive: true })
     await writeFileAtomic(join(backupDir, file), note.content)
-    const { result, wrote } = await writeNoteFileGuarded(path, content, note.hash)
-    if (result.status === 'conflict') {
-      failed++
-      console.log('  SKIPPED: the file changed while this ran.')
-      continue
-    }
-    if (wrote) changed++
+    if (edits) {
+      const { result, wrote } = await writeNoteFileGuarded(path, content, note.hash)
+      if (result.status === 'conflict') {
+        failed++
+        console.log('  SKIPPED: the file changed while this ran.')
+        continue
+      }
+      if (wrote) changed++
+    } else changed++
     if (newId !== id && !(await renameNoteFileExclusive(path, join(dir, `${newId}.md`)))) {
       console.log('  Written, but not renamed (the new name is taken).')
     }
