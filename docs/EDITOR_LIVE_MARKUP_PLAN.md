@@ -106,7 +106,7 @@ with real keystrokes, look at screenshots, quit right after typing)
    query of only marker characters matches markers (acceptable, recorded). Word count strips markers.
 6. **DONE (30 Sep 2026). Tables and fenced code.** Tables: styled monospace pipes while the cursor is in the table, a rendered grid otherwise (three notes
    use them, so this can be the plainest thing that reads well). Fenced code: fence lines while the cursor is in.
-7. **Interactions.** IME composition (no reveal changes mid-composition), selection across blocks, undo/redo never surprising, very long
+7. **DONE (30 Sep 2026). Interactions.** IME composition (no reveal changes mid-composition), selection across blocks, undo/redo never surprising, very long
    note performance (a 20,000-word note types without lag), dark mode, caret and focus ring against the marker colour, no layout jump
    when markers appear (markers fade in without changing size if the shift is jarring; record what was chosen).
 8. **Switch and remove Milkdown.** All consumers use `LiveEditor`; delete the old editor, its plugins and tests, the `@milkdown/*`
@@ -146,6 +146,7 @@ with real keystrokes, look at screenshots, quit right after typing)
 - **Stage 5 done (30 Sep 2026), not pushed:** `editor/live-find.ts` (Find and replace on a `FindTarget`, `notes/find-types.ts`), `editor/live-outline.ts` (outline and Meetings' topics jump through the view), `wordCount` reads Markdown as typed,
   `meetings/renderer/todo-live.ts` (the TODO helper), `LiveEditor` takes `extensions`. Details, findings and the choices made are in `docs/DECISIONS.md`, "Live markup … stage 5". Stage 6 (tables and fenced code) is next, after the user's review.
 - **Stage 6 done (30 Sep 2026), not pushed:** `editor/live-tables.ts` (grid away from the cursor, text in it, `tableTab`), `editor/live-fences.ts`, the gate extended for both (and its test states now carry the full syntax tree, which they had not: see `docs/DECISIONS.md`, "Live markup … stage 6"). Stage 7 (interactions) is next, after the user's review.
+- **Stage 7 done (30 Sep 2026), not pushed:** `live-decorations.ts` (no redraw during composition; escapes; line-start marker), `live-history.ts` (every command its own undo step), CSS fixes in `LiveEditor.module.css`, `live-composition.test.ts`, `live-history.test.ts`. Measurements and choices are in `docs/DECISIONS.md`, "Live markup … stage 7". Stage 8 (switch and remove Milkdown) is next, after the user's review.
 - Checking recipe: scratch library under the session scratchpad with `CENTRAL_COMMAND_HOME`, `playwright-core` installed there,
   Cmd-Shift-N to make a note, real keystrokes, `app.close()` straight after typing; dev mode via `electron-vite dev` with
   `--remote-debugging-port=9333` and `connectOverCDP`.

@@ -1,6 +1,6 @@
 # Roadmap
 
-**Next, requested 30 Sep 2026: live markup in the notes editor, the Typora way**: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. Redesigned the same day: the editor moves from Milkdown to CodeMirror 6 so markers are real text. Stages 1 and 2 are done and committed (stage 2: `LiveEditor` behind a hidden switch, see the plan's Progress). Stage 2 is reviewed and pushed. **Stage 3 (shortcut keys, lists and tasks, paste) is built and committed, not pushed, and awaits the user's review**; **Stage 4 (entities: chips, `@` picker, hover card, Cmd-click) is built and committed, not pushed, and awaits the user's review**; **Stage 5 (Find and replace, outline, word count, Meetings TODO helper) is built and committed, not pushed, and awaits the user's review**; **Stage 6 (tables and fenced code) is built and committed, not pushed, and awaits the user's review**; stage 7 (interactions) is next, after that review.
+**Next, requested 30 Sep 2026: live markup in the notes editor, the Typora way**: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. Redesigned the same day: the editor moves from Milkdown to CodeMirror 6 so markers are real text. Stages 1 and 2 are done and committed (stage 2: `LiveEditor` behind a hidden switch, see the plan's Progress). Stage 2 is reviewed and pushed. **Stage 3 (shortcut keys, lists and tasks, paste) is built and committed, not pushed, and awaits the user's review**; **Stage 4 (entities: chips, `@` picker, hover card, Cmd-click) is built and committed, not pushed, and awaits the user's review**; **Stage 5 (Find and replace, outline, word count, Meetings TODO helper) is built and committed, not pushed, and awaits the user's review**; **Stage 6 (tables and fenced code) is built and committed, not pushed, and awaits the user's review**; **Stage 7 (interactions) is built and committed, not pushed, and awaits the user's review**; stage 8 (switch and remove Milkdown) is next, after that review.
 
 ## For Claude: six things requested 27 Sep 2026, go-ahead given — work through these without further check-in
 
@@ -219,6 +219,11 @@ ready for `--apply`" and say so plainly when you report back.
 
 ### For the user (review and decisions)
 
+- [ ] **Review stage 7 of the live editor** (interactions; switch on as below). Things to look at: nested quotes now indent (they never did); headings have space above and below; the `\*` backslash is hidden until the cursor touches it; a table turns into text with a 14 px shift (it used to jump by the table's size); code blocks keep their height when their fence lines hide; undo takes one key press per step.
+- [ ] **Live editor question 12:** the `#`, `**` and other markers are a pale slate. On white that is a contrast of 3.7 to 1 (light theme), and 3.0 to 1 on a code block's grey; in the dark theme it is 4.9 to 1. Darkening the light one to about `#667382` would give roughly 5 to 1. Keep the quiet colour, or darken it?
+- [ ] **Live editor question 13:** a heading followed by a blank line has that blank line plus a little padding (about 22 px) under it, where the old editor always had 8 px. Headings with no blank line under them get the 8 px. The editor shows the spacing the note actually has; should a blank line right after a heading be drawn smaller?
+- [ ] **Live editor question 14:** a link's address appearing when you click into a long line can make that paragraph wrap onto another line and push the text below down (28 px here); the same happens in any editor of this kind. Fine?
+
 - [ ] **Try tables and code blocks in the new editor** (stage 6 of live markup; switch on as below). A table away from the cursor is a grid (open the research note "Agent-Based Modelling Research Questions" or the Work meeting of 3 Jul 2026); click in it and it becomes text with grey pipes. Tab and Shift-Tab move between cells. Type `| a | b |`, Enter, `|---|---|`, Enter, `| 1 | 2 |`, then Tab for a new row. A code block (Cmd-Option-C, or type three backticks) shows its fence lines while you are in it and hides them otherwise.
 - [ ] **Live editor question 7:** Tab in the last cell of a table adds a new empty row (as in Word). Would you rather it did nothing, so a stray Tab cannot add a row?
 - [ ] **Live editor question 8:** Enter inside a table row is an ordinary new line (it breaks the row in two, like any text). Should Enter at the end of a row start the next row instead?
@@ -242,7 +247,7 @@ ready for `--apply`" and say so plainly when you report back.
       instead switch the heading off?
 - [ ] **Live editor question 2:** Cmd-B with the cursor inside a long bold sentence un-bolds the whole sentence, not only the word. Is that fine?
 - [ ] **Live editor question 3:** Tab in an ordinary paragraph moves the cursor out of the editor (it only indents inside lists). Should it insert spaces instead?
-- [ ] **Live editor glitch to tune in stage 7:** with the cursor at the very start of a heading line, the `#` is drawn over the text cursor.
+- [x] **Live editor glitch to tune in stage 7:** with the cursor at the very start of a heading line, the `#` is drawn over the text cursor. Fixed in stage 7: a marker at a line start stands 3 px off the caret.
 
 - [ ] **Review the Training data after the 30 Sep 2026 tidy** (series, titles, file names; originals in
       `~/CentralCommand/backups/tidy-training-series-*`). Fix what you don't like: institutions that are really people or providers
