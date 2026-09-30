@@ -163,6 +163,13 @@
   padding: 0 12px;
   background: var(--panel);
 }
+/* Fence lines away from the cursor: the line is only padding for the block (its text is hidden). */
+.wrap :global(.cm-editor) :global(.cm-line.live-fence-hidden) {
+  height: 8px;
+  overflow: hidden;
+  font-size: 0;
+  line-height: 0;
+}
 /* The pipes of a table being edited: the marker colour at the text's own size, so padded columns stay lined up. */
 .wrap :global(.live-tablemark) {
   color: var(--marker);

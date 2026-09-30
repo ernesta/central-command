@@ -11,6 +11,7 @@ import type { SyntaxNodeRef } from '@lezer/common'
 import { chipOf, ChipWidget, entitiesFacet, refreshMentions } from './live-entities'
 import { isListKind, parseLine } from './live-lines'
 import { blockRevealed, computeReveal, spanRevealed, type Extent, type Reveal } from './live-reveal'
+import { drawFence } from './live-fences'
 import { drawTable } from './live-tables'
 import { BulletWidget, CheckboxWidget, NumberWidget } from './live-widgets'
 
@@ -163,10 +164,11 @@ export function buildDecorations(
             return
           }
           case 'FencedCode':
+            // The fence lines show while the cursor is in the block, and are hidden otherwise (`live-fences.ts`).
+            drawFence(state, node.node, blockRevealed(reveal, node.from, node.to), range, add)
+            return
           case 'CodeBlock':
             lineClass(node.from, node.to, range, 'live-codeblock')
-            for (const mark of node.node.getChildren('CodeMark'))
-              add('marker', mark.from, mark.to, markerMark)
             return
           case 'Table':
             // Drawn as a grid, or as text while the cursor is in it (`live-tables.ts`); the inline marks in its cells go on below.
