@@ -19,7 +19,7 @@ const EXCERPT_LENGTH = 300
 export function markdownToExcerpt(markdown: string, maxLength = EXCERPT_LENGTH): string {
   const text = markdown
     .replace(/\r\n?/g, '\n')
-    .replace(/^```.*$/gm, ' ') // fence lines (keep the code itself)
+    .replace(/^[ \t]*(?:`{3,}|~{3,}).*$/gm, ' ') // fence lines, with their language (keep the code itself)
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1') // images -> alt text
     .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // links -> link text
     .replace(/<[^>\n]+>/g, ' ') // inline html

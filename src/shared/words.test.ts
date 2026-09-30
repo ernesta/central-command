@@ -64,6 +64,20 @@ describe('wordCount of Markdown as it is typed', () => {
   })
 })
 
+describe('wordCount across tables and fenced code', () => {
+  it('counts the words in the cells, not the pipes, the dashes or the alignment colons', () => {
+    expect(wordCount('| A | B |\n|:--|--:|\n| 1 | **x** \\| y |\n| | z |')).toBe(6)
+    expect(wordCount('a | b\n-|-\n1 | 2')).toBe(4)
+    expect(wordCount('| a | b |\r\n|---|---|\r\n| 1 | 2 |')).toBe(4)
+  })
+  it('counts the code in a fenced block, not its fence lines or language', () => {
+    expect(wordCount('```js\nlet a\n```')).toBe(2)
+    expect(wordCount('~~~\ncode here\n~~~')).toBe(2)
+    expect(wordCount('  ```py\n  x\n  ```')).toBe(1)
+    expect(wordCount('````md\n```\nx\n```\n````')).toBe(1)
+  })
+})
+
 describe('wordCountLabel', () => {
   it('says word or words', () => {
     expect(wordCountLabel(1)).toBe('1 word')
