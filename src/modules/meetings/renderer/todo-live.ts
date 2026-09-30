@@ -4,10 +4,33 @@ import type { SyntaxNode } from '@lezer/common'
 import { treeTo } from '@renderer/editor/live-lines'
 import { matchesShortcut } from '@shared/shortcuts'
 import { TODO_SHORTCUT } from '../shared/shortcuts'
-import { type MenuKey, type TodoMenuBridge } from './todo-helper'
+
+/**
+ * Where the menu should open, and the text the chosen TODO replaces (the typed `/todo`, or nothing). Made by the editor
+ * (`liveTodoHelper`), so the menu component does not know about CodeMirror.
+ */
+export interface TodoMenuRequest {
+  from: number
+  to: number
+  /** Where the menu goes: the bottom left of the text it is for, in viewport pixels. */
+  at: { left: number; bottom: number }
+  /** Write the TODO (for this owner's initials, or none) in place of `[from, to)` and put the cursor after it. */
+  insert(owner: string | null): void
+}
+
+export type MenuKey = 'up' | 'down' | 'enter' | 'escape'
+
+/** How the editor talks to the menu component. Set by `useTodoHelper` when the editor is created. */
+export interface TodoMenuBridge {
+  open(request: TodoMenuRequest): void
+  close(): void
+  isOpen(): boolean
+  /** Returns true when the menu used the key. */
+  key(key: MenuKey): boolean
+}
 
 /*
- * The TODO helper for the live editor (the Milkdown one is `todoHelperPlugin`, in `todo-helper.ts`): typing `/todo` (at the
+ * The TODO helper: typing `/todo` (at the
  * start of a line or after a space) or pressing Cmd/Ctrl+Shift+T opens the menu of owners, which is `useTodoHelper`'s and
  * knows nothing of the editor. While it is open it takes the arrow keys, Enter, Tab and Escape; typing, Backspace or
  * moving the cursor closes it. Choosing writes `**TODO(XX)**: ` as plain text.

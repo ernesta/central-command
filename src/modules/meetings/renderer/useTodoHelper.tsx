@@ -1,15 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Extension } from '@codemirror/state'
-import type { Editor } from '@milkdown/kit/core'
 import type { OwnerOption } from '../shared/people'
 import {
-  todoHelperPlugin,
-  todoMenuCtx,
+  liveTodoHelper,
   type MenuKey,
   type TodoMenuBridge,
   type TodoMenuRequest
-} from './todo-helper'
-import { liveTodoHelper } from './todo-live'
+} from './todo-live'
 import styles from './TodoMenu.module.css'
 
 interface Item {
@@ -25,13 +22,9 @@ interface Open {
 }
 
 /**
- * The TODO owner menu for the notes editor. `setup` goes to `NotesEditor`; render `menu` anywhere in
- * the page. The owners are read when the menu opens, so changing the attendees needs no new editor.
- */
-/**
  * The menu's behaviour, built once per editor. It keeps its own copy of what the editor's key handler
  * needs (is the menu open, which row is active, which rows exist) and tells React through two setters,
- * so the plugin never sees a stale closure.
+ * so the editor never sees a stale closure.
  */
 class TodoMenuController implements TodoMenuBridge {
   current: Open | null = null
@@ -84,12 +77,11 @@ class TodoMenuController implements TodoMenuBridge {
 }
 
 /**
- * The TODO owner menu for the notes editor. `setup` goes to `NotesEditor`; render `menu` anywhere in
+ * The TODO owner menu for the notes editor. `live` goes to `LiveEditor`'s `extensions`; render `menu` anywhere in
  * the page. The owners are read when the menu opens, so changing the attendees needs no new editor.
  */
 export function useTodoHelper(owners: readonly OwnerOption[]): {
-  setup: (editor: Editor) => Editor
-  /** The same helper for the live editor: `NotesEditor`'s `extensions`. */
+  /** The helper, as a CodeMirror extension for `LiveEditor`'s `extensions`. */
   live: Extension
   menu: React.ReactNode
 } {
@@ -105,17 +97,6 @@ export function useTodoHelper(owners: readonly OwnerOption[]): {
   useEffect(() => {
     controller.setItems(items)
   })
-
-  const [setup] = useState(
-    () =>
-      (editor: Editor): Editor =>
-        editor
-          .config((ctx) => {
-            ctx.set(todoMenuCtx.key, controller)
-          })
-          .use(todoMenuCtx)
-          .use(todoHelperPlugin)
-  )
 
   const [live] = useState(() => liveTodoHelper(controller))
 
@@ -161,5 +142,5 @@ export function useTodoHelper(owners: readonly OwnerOption[]): {
     </div>
   ) : null
 
-  return { setup, live, menu }
+  return { live, menu }
 }

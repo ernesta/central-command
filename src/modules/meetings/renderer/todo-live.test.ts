@@ -5,7 +5,7 @@ import type { EditorView } from '@codemirror/view'
 import { describe, expect, it } from 'vitest'
 import { openView, show } from '@renderer/editor/live-key-utils'
 import { parseTodos } from '../shared/todos'
-import type { MenuKey, TodoMenuBridge, TodoMenuRequest } from './todo-helper'
+import type { MenuKey, TodoMenuBridge, TodoMenuRequest } from './todo-live'
 import { insertTodoText, liveTodoHelper } from './todo-live'
 
 /** The editor measures on the next frame; that is when the menu is told where to open. */
