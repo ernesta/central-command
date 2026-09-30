@@ -1,5 +1,7 @@
 # Roadmap
 
+**Next, requested 30 Sep 2026 (go-ahead given): live markup in the notes editor**: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. Ask the plan's open questions first.
+
 ## For Claude: six things requested 27 Sep 2026, go-ahead given — work through these without further check-in
 
 **Status (27 Sep 2026, evening): all six done and pushed.** Items 1–5 are fully built, tested (unit tests, plus
