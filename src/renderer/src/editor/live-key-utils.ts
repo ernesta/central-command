@@ -1,7 +1,8 @@
 import { ensureSyntaxTree } from '@codemirror/language'
-import { EditorSelection } from '@codemirror/state'
+import { EditorSelection, type Extension } from '@codemirror/state'
 import { EditorView, runScopeHandlers } from '@codemirror/view'
 import type { LiveEntities } from './live-entities'
+import type { FindBridge } from '../notes/find-types'
 import { createLiveState } from './live-state'
 
 /*
@@ -19,7 +20,11 @@ export interface Opened {
   reports: string[]
 }
 
-export function openView(marked: string, entities?: LiveEntities): Opened {
+export function openView(
+  marked: string,
+  entities?: LiveEntities,
+  more: { find?: FindBridge; extensions?: readonly Extension[] } = {}
+): Opened {
   const first = marked.indexOf('|')
   const second = first < 0 ? -1 : marked.indexOf('|', first + 1)
   const doc = marked.replace(/\|/g, '')
@@ -31,7 +36,8 @@ export function openView(marked: string, entities?: LiveEntities): Opened {
       label: 'test',
       onChange: (text) => reports.push(text),
       openLink: () => undefined,
-      entities
+      entities,
+      ...more
     })
   })
   if (first >= 0)

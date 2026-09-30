@@ -4,6 +4,8 @@ import { EditorState, type Extension } from '@codemirror/state'
 import { drawSelection, EditorView, keymap } from '@codemirror/view'
 import { liveLayer } from './live-decorations'
 import { entityExtensions, type LiveEntities } from './live-entities'
+import { findExtension } from './live-find'
+import type { FindBridge } from '../notes/find-types'
 import { liveKeymap } from './live-keymap'
 import { motionKeymap } from './live-motion'
 import { linkTargetAt } from './live-links'
@@ -20,6 +22,10 @@ export interface LiveOptions {
   label: string
   /** The `@` picker and what mentions point at; without it mentions are still drawn, and nothing is offered on `@`. */
   entities?: LiveEntities
+  /** Where Cmd-F reaches the find bar; without it the keys do nothing. */
+  find?: FindBridge
+  /** More extensions for one kind of note (the Meetings TODO helper). */
+  extensions?: readonly Extension[]
 }
 
 /**
@@ -46,6 +52,8 @@ export function liveExtensions(options: LiveOptions): Extension[] {
     keymap.of([...keys, ...historyKeymap]),
     liveLayer,
     entityExtensions(options.entities),
+    findExtension(options.find),
+    ...(options.extensions ?? []),
     livePaste,
     EditorView.contentAttributes.of({ 'aria-label': options.label }),
     // Reports the text synchronously on every change: the session saves on its own (longer) timer, so nothing

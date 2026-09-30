@@ -1,5 +1,6 @@
 import { EditorView } from '@codemirror/view'
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import type { Extension } from '@codemirror/state'
+import { useContext, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { useNavigate } from 'react-router'
 import { entityHref, parseEntityHref } from '@shared/entities'
 import { EntityHoverCard } from '../entities/EntityHoverCard'
@@ -8,6 +9,7 @@ import { entityIconVars } from '../entities/icons'
 import { EntityPickerController } from '../entities/picker-controller'
 import { providerFor, type EntitySelf } from '../entities/registry'
 import { useEntityHover } from '../entities/useEntityHover'
+import { FindContext } from '../notes/FindContext'
 import { createLiveState } from './live-state'
 import styles from './LiveEditor.module.css'
 
@@ -25,6 +27,8 @@ export interface LiveEditorProps {
   autoFocus?: boolean
   /** The note or meeting this text belongs to, so `@` never offers it as a link to itself. */
   entitySelf?: EntitySelf
+  /** More CodeMirror extensions for one kind of note (the Meetings TODO helper). Applied once, when the editor is built. */
+  extensions?: readonly Extension[]
 }
 
 /**
@@ -38,13 +42,16 @@ export function LiveEditor({
   placeholder,
   showPlaceholder,
   autoFocus,
-  entitySelf
+  entitySelf,
+  extensions
 }: LiveEditorProps): React.JSX.Element {
   const navigate = useNavigate()
   const hostRef = useRef<HTMLDivElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
   const [start] = useState(initial)
+  const find = useContext(FindContext)
+  const [extra] = useState(extensions)
 
   // The `@` picker and what mentions point at, for this editor (see `src/renderer/src/entities`).
   const [controller] = useState(() => new EntityPickerController())
@@ -87,7 +94,9 @@ export function LiveEditor({
         label: placeholder,
         onChange: (text) => onChangeRef.current(text),
         openLink: (href) => openLinkRef.current(href),
-        entities: { host: controller, open: (ref) => openLinkRef.current(entityHref(ref)) }
+        entities: { host: controller, open: (ref) => openLinkRef.current(entityHref(ref)) },
+        find,
+        extensions: extra
       })
     })
     viewRef.current = view
@@ -96,7 +105,7 @@ export function LiveEditor({
       view.destroy()
       viewRef.current = null
     }
-  }, [start, placeholder, autoFocus, controller])
+  }, [start, placeholder, autoFocus, controller, find, extra])
 
   // Holding Cmd (Ctrl) turns a click on a link into "open it", so show the pointer for as long as it is held.
   useEffect(() => {
