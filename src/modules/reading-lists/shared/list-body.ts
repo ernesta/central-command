@@ -6,7 +6,7 @@ import { parseHeading, scanLines } from '@shared/sections'
  * attached to a real reading once the Zotero export has it (`placeholder`). A bullet with no leading
  * bold run has no citation yet (`missing`) so it is never silently dropped.
  *
- * `@citekey`, not `[[citekey]]`: Milkdown's Markdown serialiser escapes a literal `[` (`\[\[citekey]]`)
+ * `@citekey`, not `[[citekey]]`: Milkdown (the editor until 30 Sep 2026) had a Markdown serialiser that escaped a literal `[` (`\[\[citekey]]`)
  * wherever it appears, including inside a bold run, so the very next edit that touches the document
  * would rewrite the file and quietly turn every linked entry back into an unrecognised one. `@` has no
  * meaning in CommonMark and round-trips untouched (checked against a real Milkdown editor, not just

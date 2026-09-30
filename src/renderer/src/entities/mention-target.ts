@@ -10,7 +10,7 @@ export interface Suggestion {
 
 /**
  * What the `@` picker needs from an editor, so `EntityPickerController` does not know which library the editor is
- * made with (Milkdown's `proseTarget`, or `liveTarget` for the CodeMirror one).
+ * made with (`liveTarget`).
  */
 export interface MentionTarget {
   /** Where a position is on the screen (viewport pixels). */

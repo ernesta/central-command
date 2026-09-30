@@ -13,7 +13,7 @@ import { FindContext } from '../notes/FindContext'
 import { createLiveState } from './live-state'
 import styles from './LiveEditor.module.css'
 
-/** The same props `NotesEditor` takes, less what only Milkdown needs (`setup`, `findSetup`); see `EDITOR_LIVE_MARKUP_PLAN.md`. */
+/** What every page that edits Markdown passes to the editor; see `EDITOR_LIVE_MARKUP_PLAN.md`. */
 export interface LiveEditorProps {
   /** The Markdown to start from. To load different content, remount with a new `key`. */
   initial: string

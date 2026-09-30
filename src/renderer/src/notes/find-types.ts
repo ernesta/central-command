@@ -12,7 +12,7 @@ export interface FindMatch {
 
 /**
  * What the find bar needs from an editor, so `useNotesFind` does not know which library the editor is made with
- * (Milkdown's `proseFindTarget`, or `liveFindTarget` for the CodeMirror one; the same shape as `MentionTarget`).
+ * (`liveFindTarget`; the same shape as `MentionTarget`).
  */
 export interface FindTarget {
   /** Every match of `query`, in document order, none overlapping another. */

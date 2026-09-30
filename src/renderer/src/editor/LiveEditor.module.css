@@ -21,7 +21,7 @@
   pointer-events: none;
 }
 
-/* CodeMirror's own chrome, made to disappear: the text sits on the card like the old editor's did. */
+/* CodeMirror's own chrome, made to disappear: the text sits on the card. */
 .wrap :global(.cm-editor) {
   min-height: 280px;
   background: transparent;
@@ -83,7 +83,7 @@
   line-height: 0.9;
 }
 
-/* Headings, as the old editor drew them. */
+/* Headings. */
 .wrap :global(.live-h1),
 .wrap :global(.live-h2),
 .wrap :global(.live-h3),

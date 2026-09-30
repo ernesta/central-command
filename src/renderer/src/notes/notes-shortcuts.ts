@@ -7,10 +7,9 @@ import {
 } from './find-types'
 
 /**
- * The keys of the notes editor (Readings notes and meeting notes), for the Settings list. Most come from
- * Milkdown's CommonMark and GFM presets and its history plugin; `notes-shortcuts.test.ts` checks each one
- * against Milkdown's own source, so an upgrade that changes a key fails a test instead of leaving the list
- * wrong. The rest are ours (`notes-list-keymap.ts`).
+ * The keys of the notes editor (every note, meeting, training entry, reading list and Readings note), for the Settings
+ * list. `notes-shortcuts.test.ts` checks that the editor's keymap (`editor/live-keymap.ts`) binds every one, so a key
+ * that is listed but not bound fails a test instead of leaving the list wrong.
  */
 export const NOTES_EDITOR_SHORTCUTS: ShortcutGroup = {
   title: 'Notes editor',

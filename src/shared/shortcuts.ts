@@ -3,7 +3,7 @@
  * is shown to the person. The app's own handlers match with `matchesShortcut` using the same chord strings the
  * Settings list shows, so a shortcut cannot change without its listing changing.
  *
- * A chord is written like ProseMirror's: modifiers then the key, joined by `-` (`Mod-Shift-t`, `Mod-[`, `Tab`).
+ * A chord is written like CodeMirror's: modifiers then the key, joined by `-` (`Mod-Shift-t`, `Mod-[`, `Tab`).
  * `Mod` is Cmd on a Mac and Ctrl elsewhere. Chords with Shift or Alt should use a letter or a named key: the
  * browser reports `{` for Shift+`[` and a symbol for Alt+a digit.
  */

@@ -1,4 +1,3 @@
-import type { Editor } from '@milkdown/kit/core'
 import { ChevronDown, ChevronUp, Replace, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@renderer/components/Button'
@@ -12,14 +11,13 @@ import {
   type FindMatch,
   type FindTarget
 } from './find-types'
-import { findBridgeCtx, notesFindPlugin } from './notes-find'
 import styles from './NotesFindBar.module.css'
 
 /**
- * Find (and replace) within one note's text, as an editor's Cmd-F and Cmd-Option-F open it (`notesFindPlugin` for
- * Milkdown, `live-find.ts` for the live editor). Keeps its own copy of what the editors' key handlers need (a target
- * once the editor exists) and tells React through the callbacks it is built with, so an editor never sees a stale
- * closure (the same shape as `TodoMenuController`). It works on a `FindTarget`, so it does not know which editor it serves.
+ * Find (and replace) within one note's text, as the editor's Cmd-F and Cmd-Option-F open it (`editor/live-find.ts`).
+ * Keeps its own copy of what the editor's key handlers need (a target once the editor exists) and tells React through
+ * the callbacks it is built with, so the editor never sees a stale closure (the same shape as `TodoMenuController`).
+ * It works on a `FindTarget`, so it does not know which editor it serves.
  */
 export class NotesFindController implements FindBridge {
   target: FindTarget | null = null
@@ -114,13 +112,12 @@ export class NotesFindController implements FindBridge {
 }
 
 /**
- * Find and replace within the note (Cmd-F, Ctrl-F elsewhere; Cmd-Option-F opens straight to replace). `setup`
- * goes to `NotesEditor`; `bar` and `open` go to `EditorCard`, which shows the bar in place of its facts line
+ * Find and replace within the note (Cmd-F, Ctrl-F elsewhere; Cmd-Option-F opens straight to replace). `bridge`
+ * goes to the editor through `FindContext`; `bar` and `open` go to `EditorCard`, which shows the bar in place of its facts line
  * while find is open. Nothing here assumes where it is rendered, so a page never has to wire this up itself.
  */
 export function useNotesFind(): {
-  setup: (editor: Editor) => Editor
-  /** What the live editor's Cmd-F reaches (`FindContext`); `setup` is the same for Milkdown. */
+  /** What the editor's Cmd-F reaches (`FindContext`). */
   bridge: FindBridge
   open: boolean
   bar: React.ReactNode
@@ -193,7 +190,7 @@ export function useNotesFind(): {
   // A window-level listener, not just the two fields' own key handling: clicking "Replace all" (or a
   // "Replace" that empties the matches) disables that button, which blurs it to nothing focused at all, so
   // Escape must still close the bar from there. `closeRef` keeps this effect from needing to reattach every
-  // render, the same pattern `NotesEditor` uses for `onChange`.
+  // render, the same pattern `LiveEditor` uses for `onChange`.
   const closeRef = useRef(close)
   useEffect(() => {
     closeRef.current = close
@@ -220,12 +217,6 @@ export function useNotesFind(): {
         : null
     )
   }, [controller, open, showReplace])
-
-  const setup = (editor: Editor): Editor =>
-    editor
-      .config((ctx) => ctx.set(findBridgeCtx.key, controller))
-      .use(findBridgeCtx)
-      .use(notesFindPlugin)
 
   const bar = open ? (
     <div className={styles.bar}>
@@ -301,5 +292,5 @@ export function useNotesFind(): {
     </div>
   ) : null
 
-  return { setup, bridge: controller, open, bar }
+  return { bridge: controller, open, bar }
 }
