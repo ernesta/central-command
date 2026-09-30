@@ -1,7 +1,7 @@
 # Notes editor: live markup (plan)
 
 Requested 30 Sep 2026. Mockup: `docs/design/editor-markup-mockup.html` (option 3, with option 1 as its first stage).
-Awaiting build; nothing here is started. Applies to every editor (Notes, Meetings, Training, Reading lists, Readings notes)
+Stage 1 is built (30 Sep 2026; `docs/DECISIONS.md`, "Live markup … stage 1"); the rest awaits the answers to the open questions below. Applies to every editor (Notes, Meetings, Training, Reading lists, Readings notes)
 because they all use the shared `NotesEditor` (`src/renderer/src/notes/`).
 
 ## Why
@@ -28,7 +28,7 @@ link. Move away and it becomes formatting again. No mode to switch.
 
 ## Stages (commit each; unit tests plus the built app and dev mode on a scratch library, as CLAUDE.md says)
 
-1. **Fix the jump (stands alone, also useful without the rest).** Backspace right after an input rule undoes it
+1. **DONE. Fix the jump (stands alone, also useful without the rest).** Backspace right after an input rule undoes it
    (`undoInputRule` from `prose/inputrules`: `### ` + Backspace gives `###` back); keep it first in the keymap.
    Backspace at the very start of a heading lowers its level, or makes a paragraph at level 1, and at the start of a
    quote unwraps it, never merging upward (same shape as `liftListItemAtStart` in `notes-list-keymap.ts`). Tests for each,

@@ -1283,3 +1283,16 @@ lists, readings' notes), since they all share `NotesEditor`.
   native `<select>` cannot show a second line; chosen from mockup `docs/design/training-type-help-mockup.html`). Closed, it has a fixed
   minimum width, so nothing moves. At wide widths Files is the rightmost column.
 - Checked in the built app: the list opens with descriptions, arrow keys and Enter choose, and the button does not move.
+
+## Live markup in the notes editor, stage 1: Backspace no longer jumps (30 Sep 2026)
+
+Plan: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. `notes-block-keymap.ts`, registered first:
+
+- **Backspace right after an input rule undoes it** (`undoInputRule`). `###`, space, Backspace now leaves a paragraph reading `### ` on
+  the same line (what was typed, including the space) instead of merging an empty heading into the line above.
+- **Backspace at the start of a quote's first block takes it out of the quote** (`lift`), never merging upwards; a later block of the quote
+  still joins upwards.
+- **Heading Backspace needed no new code:** Milkdown's own `DowngradeHeading` already lowers a heading one level (level 1 becomes a
+  paragraph). The plan expected to write it; a mutation check showed the copy was redundant, so it was removed. The tests pin the behaviour.
+- Mutation checks: without `undoInputRule`, or without the quote command, two tests fail. Driven in the built app and dev mode on a scratch
+  library with real keystrokes, including quitting right after typing (the last words were saved).

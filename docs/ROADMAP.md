@@ -1,6 +1,6 @@
 # Roadmap
 
-**Next, requested 30 Sep 2026 (go-ahead given): live markup in the notes editor**: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. Ask the plan's open questions first.
+**Next, requested 30 Sep 2026 (go-ahead given): live markup in the notes editor**: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. Ask the plan's open questions first. Stage 1 (Backspace no longer jumps) is done and committed.
 
 ## For Claude: six things requested 27 Sep 2026, go-ahead given — work through these without further check-in
 

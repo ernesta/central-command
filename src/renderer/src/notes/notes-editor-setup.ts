@@ -8,6 +8,7 @@ import {
   entityMentionPlugin,
   entitySuggestPlugin
 } from '../entities/entity-plugin'
+import { blockBackspaceKeymap } from './notes-block-keymap'
 import { listBackspaceKeymap } from './notes-list-keymap'
 import { notesChangeCtx, notesChangePlugin } from './notes-change-plugin'
 import { markdownLinkRule, pasteOverSelectionLink, typedAddressRule } from './notes-links'
@@ -41,6 +42,7 @@ export function withNotesPlugins(editor: Editor): Editor {
         }))
       })
       // First, so it runs before Milkdown's default Backspace handling.
+      .use(blockBackspaceKeymap)
       .use(listBackspaceKeymap)
       .use(commonmark)
       .use(entityLinkSchema)
