@@ -14,3 +14,12 @@ export function useHoursWorkspace(): HoursWorkspace {
     ? (segment as HoursWorkspace)
     : 'research'
 }
+
+/** The Hours page opened on a week of a year (`?year=<start>&week=<Monday>`). */
+export function weekRoute(workspace: string, yearStart: string, week: string): string {
+  return `${hoursBase(workspace as HoursWorkspace)}?year=${yearStart}&week=${week}`
+}
+
+export function yearRoute(workspace: HoursWorkspace, yearStart: string): string {
+  return `${hoursBase(workspace)}/year?year=${yearStart}`
+}

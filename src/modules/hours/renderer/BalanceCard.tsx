@@ -1,10 +1,21 @@
+import { AllLink } from '@renderer/components/Landing'
 import { formatHours, formatSignedHours } from '@shared/tracking/format'
 import { yearTotals } from '@shared/tracking/plan'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
+import type { HoursWorkspace } from '../shared/workspaces'
+import { yearRoute } from './hours-paths'
 import styles from './BalanceCard.module.css'
 
 /** The year so far: the balance against the plan up to today, the average week, the hours and the whole year's plan. */
-export function BalanceCard({ data, now }: { data: TrackingYear; now: Moment }): React.JSX.Element {
+export function BalanceCard({
+  workspace,
+  data,
+  now
+}: {
+  workspace: HoursWorkspace
+  data: TrackingYear
+  now: Moment
+}): React.JSX.Element {
   const totals = yearTotals(data, now.date, now)
   const perDay =
     data.plan.workDays.length > 0 ? data.plan.hoursPerWeek / data.plan.workDays.length : 0
@@ -36,6 +47,7 @@ export function BalanceCard({ data, now }: { data: TrackingYear; now: Moment }):
           <dd className={styles.value}>{formatHours(totals.wholePlan)}</dd>
         </div>
       </dl>
+      <AllLink to={yearRoute(workspace, data.start)}>Charts and weeks</AllLink>
     </section>
   )
 }

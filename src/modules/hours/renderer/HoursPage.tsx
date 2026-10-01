@@ -43,7 +43,7 @@ export function HoursPage(): React.JSX.Element {
             />
           </div>
           <div className={styles.stack}>
-            <BalanceCard data={data} now={now} />
+            <BalanceCard workspace={workspace} data={data} now={now} />
           </div>
         </div>
       )}

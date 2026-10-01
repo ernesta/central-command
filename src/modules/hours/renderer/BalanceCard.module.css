@@ -36,3 +36,9 @@
   font-weight: 400;
   color: var(--text-muted);
 }
+/* The link to the charts sits under the numbers, at the left. */
+.card > a {
+  display: block;
+  width: fit-content;
+  margin-top: 16px;
+}
