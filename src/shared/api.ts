@@ -25,7 +25,7 @@ export type SettingsPatch = Partial<Omit<Settings, 'ui'>> & { ui?: Partial<Setti
  * Exposed as window.api by the preload script; every method maps to one
  * explicitly registered IPC handler. There is deliberately no generic invoke.
  */
-export type DockActionId = 'new-note' | 'new-meeting' | 'new-training'
+export type DockActionId = 'new-note' | 'new-meeting' | 'new-training' | 'stop-timer'
 
 export interface AppInfo {
   name: string

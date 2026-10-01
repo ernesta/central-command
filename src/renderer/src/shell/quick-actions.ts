@@ -59,6 +59,14 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
     }
   },
   {
+    id: 'stop-timer',
+    title: 'Stop timer',
+    detail: 'Ends the task that is running.',
+    go: async () => {
+      await window.api.tracking.stop()
+    }
+  },
+  {
     id: 'new-training',
     title: 'New training entry',
     // Training exists only in Research, so this starts there from anywhere.

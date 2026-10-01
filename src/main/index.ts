@@ -151,7 +151,7 @@ function createWindow(settings: SettingsStore): void {
 app.whenReady().then(async () => {
   electronApp.setAppUserModelId('app.centralcommand.desktop')
   app.setAboutPanelOptions({ applicationName: APP_NAME, applicationVersion: app.getVersion() })
-  installDockMenu()
+  const setDockTimer = installDockMenu()
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
@@ -171,13 +171,16 @@ app.whenReady().then(async () => {
   registerAppIpc(paths.root)
   registerBuildIpc(settings)
   registerEntitiesIpc(paths)
-  registerTrackingIpc(
-    new TrackingStore(paths.time, {
-      starts: () => settings.get().yearStarts,
-      now: nowMoment,
-      onChange: broadcastTrackingChange
-    })
-  )
+  const tracking: TrackingStore = new TrackingStore(paths.time, {
+    starts: () => settings.get().yearStarts,
+    now: nowMoment,
+    onChange: (event) => {
+      broadcastTrackingChange(event)
+      setDockTimer(tracking.running() !== null)
+    }
+  })
+  registerTrackingIpc(tracking)
+  setDockTimer(tracking.running() !== null)
 
   const db = openDatabase(paths.database)
   runMigrations(

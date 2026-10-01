@@ -7,22 +7,27 @@ const ACTIONS: { id: DockActionId; label: string }[] = [
   { id: 'new-training', label: 'New Training Entry' }
 ]
 
+const STOP_TIMER = { id: 'stop-timer', label: 'Stop Timer' } as const
+
+function send(id: DockActionId): void {
+  const window = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0]
+  window?.webContents.send(IPC.appDockAction, id)
+}
+
+function buildMenu(timerRunning: boolean): Menu {
+  const items = ACTIONS.map(({ id, label }) => ({ label, click: () => send(id) }))
+  if (timerRunning) items.push({ label: STOP_TIMER.label, click: () => send(STOP_TIMER.id) })
+  return Menu.buildFromTemplate(items)
+}
+
 /**
- * Right-click (or long-press) the Dock icon for the same three "start something now" actions the command
- * palette offers. macOS only: `app.dock` does not exist elsewhere. The window does the actual creating, the
- * same way it does for its own "New …" buttons; this only tells it which one was chosen.
+ * Right-click (or long-press) the Dock icon for the same "start something now" actions the command
+ * palette offers, plus Stop Timer while a timer runs. macOS only: `app.dock` does not exist elsewhere.
+ * The window does the actual work, the same way it does for its own buttons; this only tells it which
+ * one was chosen. Returns the function that tells the menu whether a timer runs.
  */
-export function installDockMenu(): void {
-  if (!app.dock) return
-  app.dock.setMenu(
-    Menu.buildFromTemplate(
-      ACTIONS.map(({ id, label }) => ({
-        label,
-        click: () => {
-          const window = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0]
-          window?.webContents.send(IPC.appDockAction, id)
-        }
-      }))
-    )
-  )
+export function installDockMenu(): (timerRunning: boolean) => void {
+  const set = (timerRunning: boolean): void => app.dock?.setMenu(buildMenu(timerRunning))
+  set(false)
+  return set
 }
