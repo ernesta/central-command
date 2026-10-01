@@ -1566,3 +1566,25 @@ Plan: `docs/EDITOR_LIVE_MARKUP_PLAN.md`. `LiveEditor` is the only editor. Nothin
 - **Driven for real** (scratch copy of the whole library under the session scratchpad with its settings paths pointed at the copy, `CENTRAL_COMMAND_HOME`, `--user-data-dir`; real keystrokes through Playwright; script and screenshots in the scratchpad, `pw/pass.mjs` and `shots/`): the production build and dev mode (StrictMode), light and dark (the colour scheme is forced on the page, because Playwright otherwise emulates light over the app's own theme: my first "dark" runs were light and were redone), for each of Notes, Work notes, Meetings (Research and Work), Training entry, Training plan, Reading list and Readings notes: the page opens; typing a heading, bold, italic, a link and a bullet; the word count moves; the outline (Notes, Training) lists the new heading and a click keeps the page alive; Cmd-F finds it ("1 of 2"); the `@` picker opens, Enter writes a chip; plain paste (the main process's `app:paste-plain` message in the built app, the same event in dev); `/todo` opens the owner menu and Enter writes `**TODO**:` (both Meetings); leaving the page straight after typing saved the last characters to the file every time; and quitting straight after typing (`app.close()`, or disconnecting in dev) saved them too. 70 checks per run, none failing; Cmd-click on a mention chip opened the linked reading and its "Mentioned in" panel listed the note; the hover card showed. Console errors: none in the built app; dev mode shows one React warning about a duplicate key on a reading's page (see below).
 - **Found, not caused by this stage, not changed** (both in `docs/ROADMAP.md`, "For the user"): (1) the TODO owner menu is taller than the window when the people list is long, so the top names are off screen (the old editor had the same placement code); (2) `ReadingDetailPage.tsx` gives `ReadingListMentions` and `NotesSection` the same `key` as siblings, which React warns about in development only. Not checked: Cmd-click on an ordinary web link (it would open the user's browser; covered by `live-links.test.ts` and the unchanged `window.open` path).
 - **Not done, on purpose**: the final write-up (stage 9: replace the Milkdown decision above, `CLAUDE.md` architecture and the Milkdown pitfalls, `docs/ROADMAP.md`); earlier stages' text in this file still says "Milkdown unchanged" and "behind the hidden switch", which was true then. **Stage 9 (30 Sep 2026) did that write-up:** the new decision above, the old one marked superseded, historical notes on the older sections that described Milkdown, and `CLAUDE.md`, `docs/ROADMAP.md` and the plan brought up to date. Documentation only.
+
+## Hours page, first usable cut (1 Oct 2026, stage 4 of `docs/TIME_PLAN.md`)
+
+Built in six commits (4a to 4f), each driven in the built app on a scratch library (light and dark), and dev mode once at the end. The real library was
+imported on 1 Oct 2026 at the user's word (`npm run import:hours`, both years, nothing needed attention).
+
+- **Module and year.** `src/modules/hours/` (`createHoursModule(workspace)`, only Research registered). `YearSelect` (`components/`) and `useTrackingYear` /
+  `useYearFile` (`state/`): the year is `?year=<start>` in the URL, and a year that is not offered is never asked for. The week is `?week=<monday>` (`useWeek`);
+  changing the year drops it.
+- **Today.** Rows from `dayRows`, running row from `provisionalMinutes` ticking through `useNow`. Start/switch/stop and edits go through `window.api.tracking`;
+  the page reloads on `tracking:changed`. A running row's time is not editable (it is provisional). Typed time must be a whole quarter hour or it is refused.
+  Earlier names (`earlierLabels`, `suggestLabels`) show only while typing. A session left from an earlier day shows `StaleTimer` (Today and the chip popover)
+  and blocks every start until it has an end time.
+- **The chip.** A module `globals` component draws into the top bar through `TopBarPortal` / `TopBarSlot` (`shell/top-bar-slot.tsx`); only the Research
+  instance carries it, so Work will not draw a second one. The clock is `elapsedMinutes`, the one exact time shown.
+- **The week.** Plan so far and balance come from `weekTotals`, never recomputed in the component. Bars scale to 1.4 x the aim with the tick at the aim;
+  one colour (the under/over colour is `--chart-under`, stage 6). An imported day (a typed total, no tasks) shows a read-only "Imported" row and its note.
+- **Balance card.** `yearTotals`; matches the sheets (2025-26: -126:30, 34:38, 1,523:30, 220 days, 1,650:00).
+- **Settings -> Hours.** Edits the current year's plan (`setPlan`); a new year copies it. The last worked day cannot be switched off. When Work is registered
+  its tab will need to say which workspace it is for (tabs are keyed by module id).
+- **Not done:** the landing card shows only today; no charts link; no day-note editing; no under-aim colour.
+

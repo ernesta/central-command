@@ -1,6 +1,6 @@
 # Hours and Time off: plan
 
-Status: **building (re-ordered 1 Oct 2026 so tracking can start soon).** Stages 1 to 3 are done and committed, not pushed. The mockup is `docs/design/hours-mockup.html` (open it in a browser: four
+Status: **building (re-ordered 1 Oct 2026 so tracking can start soon).** Stages 1 to 4 are done and committed, not pushed; the real library was imported on 1 Oct 2026. The mockup is `docs/design/hours-mockup.html` (open it in a browser: four
 screens, light and dark). Read it with `CLAUDE.md` and `docs/DECISIONS.md`. Meetings and Training are the patterns to copy
 (`docs/MEETINGS_PLAN.md`, `docs/TRAINING_PLAN.md`). Everything below is decided with the user unless it is under "Still open".
 
@@ -253,7 +253,7 @@ tracks there instead. Hours only: Tasks are a later module (see "Tasks, later"),
 2. **Store** (done): the year file in `src/main/tracking/`, IPC and `Api` methods, tests.
 3. **Importer** (built, dry-run on the real files 1 Oct 2026, all read and approved by the user): `npm run import:hours`. **`--apply` on the real
    library only when the user says so**; then Research's 2025–26 and 2026–27 files exist. Scratch rows and 2025–26 annual leave are not imported.
-4. **Hours page, first usable cut (next).** In order, each its own commit, each checked in the built app on a scratch library:
+4. **Hours page, first usable cut (done 1 Oct 2026; `docs/DECISIONS.md`, "Hours page, first usable cut").** In order, each its own commit, each checked in the built app on a scratch library:
    a. the shell year: `YearSelect` (lists the years with a file plus the current one, newest first), plus `createHoursModule('research')` registered
    with its landing card and route (`src/modules/index.ts`, Research only);
    b. **Today**: total against the aim, one row per task with ▶/■, **Start** with the "What are you working on?" field, quiet **Add**, click a time
