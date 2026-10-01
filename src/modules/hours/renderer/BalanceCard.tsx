@@ -29,7 +29,7 @@ export function BalanceCard({
           <dt className={styles.label}>Balance</dt>
           <dd className={styles.value}>
             {formatSignedHours(balance)}
-            <small> {balance > 0 ? 'ahead' : balance < 0 ? 'behind' : 'on plan'}</small>
+            {balance === 0 && <small> on plan</small>}
           </dd>
         </div>
         <div className={styles.stat}>

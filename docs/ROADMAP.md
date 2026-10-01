@@ -311,6 +311,7 @@ ready for `--apply`" and say so plainly when you report back.
       came across separately.
 - [ ] **Later, Notes**: a system-wide quick-capture shortcut (works when the app is in the background); Thesis extras (chapter progress,
       word counts per chapter).
+- [ ] **Later, Hours: a Mac widget** for starting a task and tracking time (start, stop, the running task and its clock, without opening the app). Not started; needs a plan first (a WidgetKit extension is a separate Swift target, so how it reads the timer from `~/CentralCommand/time` and starts one needs deciding).
 - [ ] **Try the People page** (Research → People) and say what to change.
 - [ ] Re-check the changed screens in dev mode (StrictMode) and the built app after any further change to lists, landings or entry pages
       (last done for the editor card on 26 Sep 2026).
