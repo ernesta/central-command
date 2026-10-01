@@ -3,6 +3,7 @@ import type { Workspace } from '@shared/settings'
 import type { SearchHit } from '@shared/search'
 import type { EntityProvider } from '@renderer/entities/registry'
 import type { ShortcutGroup } from '@shared/shortcuts'
+import { createHoursModule } from './hours'
 import { createMeetingsModule } from './meetings'
 import { createNotesModule } from './notes'
 import { plannedModules } from './planned'
@@ -18,6 +19,7 @@ export const modules: ModuleManifest[] = [
   trainingModule,
   createNotesModule('research'),
   readingListsModule,
+  createHoursModule('research'),
   createMeetingsModule('work'),
   createNotesModule('work'),
   ...plannedModules
