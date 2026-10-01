@@ -4,7 +4,8 @@ import {
   formatDate,
   formatDuration,
   formatShortDate,
-  meetingHeading
+  meetingHeading,
+  trackingMoment
 } from './time'
 
 describe('durationMinutes', () => {
@@ -47,5 +48,32 @@ describe('formatShortDate', () => {
     expect(formatShortDate('2026-09-24')).toBe('Sep 24')
     expect(formatShortDate('2026-01-05')).toBe('Jan 5')
     expect(formatShortDate('soon')).toBe('soon')
+  })
+})
+
+describe('trackingMoment', () => {
+  it('keeps the calendar day from 04:00 on', () => {
+    expect(trackingMoment(new Date(2026, 9, 1, 4, 0, 0))).toEqual({
+      date: '2026-10-01',
+      time: '04:00:00'
+    })
+    expect(trackingMoment(new Date(2026, 9, 1, 23, 59, 59))).toEqual({
+      date: '2026-10-01',
+      time: '23:59:59'
+    })
+  })
+  it('counts the small hours as the end of the day before, past 24:00', () => {
+    expect(trackingMoment(new Date(2026, 9, 1, 0, 5, 0))).toEqual({
+      date: '2026-09-30',
+      time: '24:05:00'
+    })
+    expect(trackingMoment(new Date(2026, 9, 1, 3, 59, 59))).toEqual({
+      date: '2026-09-30',
+      time: '27:59:59'
+    })
+    expect(trackingMoment(new Date(2026, 0, 1, 1, 0, 0))).toEqual({
+      date: '2025-12-31',
+      time: '25:00:00'
+    })
   })
 })

@@ -17,7 +17,7 @@ import { openDatabase } from './db/connection'
 import { runMigrations } from './db/migrate'
 import { mainModules } from '@modules/main-registry'
 import { defaultSettings } from '@shared/settings'
-import { nowMoment, todayIso } from '@shared/time'
+import { todayIso, trackingMoment } from '@shared/time'
 import { buildContextMenu } from './context-menu'
 import { installDockMenu } from './dock-menu'
 import { isPastePlainChord } from './paste-plain'
@@ -173,13 +173,16 @@ app.whenReady().then(async () => {
   registerEntitiesIpc(paths)
   const tracking: TrackingStore = new TrackingStore(paths.time, {
     starts: () => settings.get().yearStarts,
-    now: nowMoment,
+    now: trackingMoment,
     onChange: (event) => {
       broadcastTrackingChange(event)
       setDockTimer(tracking.running() !== null)
     }
   })
   registerTrackingIpc(tracking)
+  // A timer stops by itself at the day end (04:00), also when the app was closed or asleep across it.
+  tracking.closeFinishedDays()
+  setInterval(() => tracking.closeFinishedDays(), 15_000).unref()
   setDockTimer(tracking.running() !== null)
 
   const db = openDatabase(paths.database)

@@ -7,6 +7,7 @@ import {
   roundToQuarter
 } from './rounding'
 import {
+  endFinishedDay,
   endSessionAt,
   deleteSession,
   renameTask,
@@ -95,7 +96,7 @@ describe('starting and stopping', () => {
       reason: 'outside-year'
     })
     expect(startSession(year(), at('2027-09-20', '09:00:00'), 'A', 'x').ok).toBe(false)
-    expect(startSession(year(), at(D, '25:00:00'), 'A', 'x')).toEqual({
+    expect(startSession(year(), at(D, '28:00:00'), 'A', 'x')).toEqual({
       ok: false,
       reason: 'bad-time'
     })
@@ -201,16 +202,30 @@ describe('edits are truth: nothing already reported is ever re-derived', () => {
 })
 
 describe('the running row', () => {
-  it('shows its own length only; the carry is applied when it ends', () => {
-    // A 10-minute block reports 0:15 and leaves a carry of -5 min; the next block's 4 minutes then report 0:00.
+  it('shows the exact time it has run; the carry and rounding come when it ends', () => {
+    // A 10-minute block reports 0:15 and leaves a carry of -5 min.
     let y = ok(startSession(year(), at(D, '09:00:00'), 'A', 'a'))
     y = ok(stopSession(y, at(D, '09:10:00')))
     y = ok(startSession(y, at(D, '09:10:00'), 'B', 'b'))
     const b = runningSession(y)!
-    expect(provisionalMinutes(b, '09:14:00')).toBe(0)
-    expect(provisionalMinutes(b, '09:20:00')).toBe(15)
-    // A carry of +8 minutes would have shown 0:15 at once under the old rule; now it shows 0:00 until it ends.
-    const lent = { ...y, carryIn: 8 * 60 }
-    expect(provisionalMinutes(runningSession(lent)!, '09:10:30')).toBe(0)
+    expect(provisionalMinutes(b, '09:10:00')).toBe(0)
+    expect(provisionalMinutes(b, '09:14:30')).toBe(4.5)
+    // Stopped after 4 minutes: -5 + 4 rounds to 0:00, and the carry moves to -1.
+    const stopped = ok(stopSession(y, at(D, '09:14:00')))
+    expect(stopped.sessions[1].minutes).toBe(0)
+    expect(carrySeconds(stopped)).toBe(-5 * 60 + 4 * 60)
+  })
+
+  it('ends a timer at the day end once the day is over, and not before', () => {
+    const y = ok(startSession(year(), at(D, '23:00:00'), 'A', 'a'))
+    expect(endFinishedDay(y, at(D, '27:59:59'))).toEqual({ ok: true, year: y })
+    const ended = ok(endFinishedDay(y, at('2026-09-30', '04:00:00')))
+    expect(ended.sessions[0]).toMatchObject({ end: '27:59:59', minutes: 300 })
+  })
+
+  it('lets a timer run past midnight into the small hours of the same day', () => {
+    let y = ok(startSession(year(), at(D, '23:30:00'), 'A', 'a'))
+    y = ok(stopSession(y, at(D, '25:30:00')))
+    expect(y.sessions[0]).toMatchObject({ end: '25:30:00', minutes: 120 })
   })
 })

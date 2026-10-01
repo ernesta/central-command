@@ -8,6 +8,7 @@ import {
   endSessionAt,
   runningSession,
   startSession,
+  endFinishedDay,
   renameTask,
   stopSession,
   deleteSession
@@ -134,6 +135,15 @@ export class TrackingStore {
     const now = this.deps.now()
     const result = this.mutate(running.workspace, running.year, (y) => stopSession(y, now))
     return result.ok ? { ok: true, running: this.running() } : result
+  }
+
+  /** Stop a timer whose day has ended (04:00) at the day end. Called on a short interval and at launch. */
+  closeFinishedDays(): void {
+    const running = this.running()
+    if (!running) return
+    const now = this.deps.now()
+    if (running.session.date >= now.date) return
+    this.mutate(running.workspace, running.year, (y) => endFinishedDay(y, now))
   }
 
   endAt(workspace: Workspace, year: string, id: string, time: string): TimerResult {

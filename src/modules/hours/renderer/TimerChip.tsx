@@ -9,9 +9,9 @@ import { useNow } from '@renderer/state/use-now'
 import { useRunningTimer } from '@renderer/state/use-running-timer'
 import { useYearFile } from '@renderer/state/use-year-file'
 import { WORKSPACES } from '@shared/settings'
-import { todayIso } from '@shared/time'
+import { trackingMoment } from '@shared/time'
 import type { RunningTimer } from '@shared/tracking/api'
-import { formatDay, formatHours } from '@shared/tracking/format'
+import { clockTime, formatDay, formatHours } from '@shared/tracking/format'
 import { dayRows } from '@shared/tracking/totals'
 import type { Moment } from '@shared/tracking/types'
 import { sameLabel } from '@shared/tracking/timer'
@@ -49,7 +49,7 @@ function TimerPopover({
       ) : (
         <>
           <div className={styles.muted}>
-            Started {session.start.slice(0, 5)} · {formatHours(clock)} so far
+            Started {clockTime(session.start)} · {formatHours(clock)} so far
           </div>
           {others.length > 0 && (
             <div className={styles.switch}>
@@ -170,7 +170,7 @@ function Chip({ running, now }: { running: RunningTimer; now: Moment }): React.J
 /** What the idle popover offers: a task name to start, and the names of the last week as one-click starts. */
 function StartPopover({ onClose }: { onClose: () => void }): React.JSX.Element {
   const { settings } = useSettings()
-  const today = todayIso()
+  const today = trackingMoment().date
   const data = useYearFile('research', currentYear(today, settings.yearStarts))
   const [name, setName] = useState('')
   const labels = useMemo(() => (data ? earlierLabels(data) : []), [data])

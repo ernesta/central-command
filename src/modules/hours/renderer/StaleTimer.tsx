@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@renderer/components/Button'
-import { formatDay } from '@shared/tracking/format'
+import { clockTime, formatDay } from '@shared/tracking/format'
 import type { RunningTimer } from '@shared/tracking/api'
 import type { Moment } from '@shared/tracking/types'
 import { addDays } from '@shared/year'
@@ -25,7 +25,7 @@ export function StaleTimer({
   return (
     <div className={styles.stale}>
       <span>
-        Started {since} {session.start.slice(0, 5)}. Set an end time.
+        Started {since} {clockTime(session.start)}. Set an end time.
       </span>
       <input
         type="time"

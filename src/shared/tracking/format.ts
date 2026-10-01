@@ -27,6 +27,14 @@ export function parseHours(text: string): number | null {
   return null
 }
 
+/** "01:30" for a timer time such as "25:30:00" (hours past 24 are the small hours of the next morning). */
+export function clockTime(time: string): string {
+  const hour = Number(time.slice(0, 2))
+  return Number.isNaN(hour)
+    ? time.slice(0, 5)
+    : `${String(hour % 24).padStart(2, '0')}${time.slice(2, 5)}`
+}
+
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 

@@ -69,6 +69,19 @@ export function stopSession(year: TrackingYear, now: Moment): Change {
   return close(year, running, now.time)
 }
 
+/** When a day ends, as a timer time: the last second before 04:00 the next morning. Matches `DAY_END_HOUR` in `shared/time.ts`. */
+export const DAY_END_TIME = '27:59:59'
+
+/**
+ * End the running session at the end of its day when that day is over (`now` is on a later day), so nothing runs on
+ * past the day end. It keeps its start and gets `DAY_END_TIME`, reporting against the carry like any other stop.
+ */
+export function endFinishedDay(year: TrackingYear, now: Moment): Change {
+  const running = runningSession(year)
+  if (!running || running.date >= now.date) return { ok: true, year }
+  return close(year, running, DAY_END_TIME)
+}
+
 /** Give a running session (typically one left running overnight) an end time on its own day. */
 export function endSessionAt(year: TrackingYear, id: string, time: string): Change {
   const session = year.sessions.find((s) => s.id === id)

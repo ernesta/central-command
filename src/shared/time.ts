@@ -46,6 +46,21 @@ export function todayIso(now = new Date()): string {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
 }
 
+/** When a tracking day ends and the next begins, as an hour of the morning. A setting later; fixed at 4 for now. */
+export const DAY_END_HOUR = 4
+
+/**
+ * Now as the Hours timer sees it: the day runs from `DAY_END_HOUR` to the same hour the next morning, so at 01:30 it
+ * is still the day before, and the time reads 25:30:00 (hours past 24 belong to the late part of that day).
+ */
+export function trackingMoment(now = new Date()): { date: string; time: string } {
+  const { date, time } = nowMoment(now)
+  const hour = Number(time.slice(0, 2))
+  if (hour >= DAY_END_HOUR) return { date, time }
+  const previous = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
+  return { date: todayIso(previous), time: `${hour + 24}${time.slice(2)}` }
+}
+
 /** Now in local time, as the date and the time to the second the timer works with. */
 export function nowMoment(now = new Date()): { date: string; time: string } {
   const pad = (n: number): string => String(n).padStart(2, '0')

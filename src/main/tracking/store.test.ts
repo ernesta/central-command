@@ -161,6 +161,20 @@ describe('the timer', () => {
     expect(store.running()?.session.label).toBe('Reading')
   })
 
+  it('stops a timer by itself at the day end, and not before', () => {
+    const store = open()
+    at('2026-09-29', '23:00:00')
+    store.start('research', 'A')
+    at('2026-09-29', '26:30:00')
+    store.closeFinishedDays()
+    expect(store.running()).not.toBeNull()
+    at('2026-09-30', '04:00:00')
+    store.closeFinishedDays()
+    expect(store.running()).toBeNull()
+    const session = store.get('research', '2026-09-21').sessions[0]
+    expect(session).toMatchObject({ end: '27:59:59', minutes: 300 })
+  })
+
   it('leaves a session from an earlier day running until it is given an end time', () => {
     const store = open()
     store.start('research', 'A')

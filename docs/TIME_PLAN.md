@@ -166,7 +166,8 @@ only free text next to the hours, and a new workbook every year.
   the difference from the timer time (so the row shows exactly what was typed), and later timer time on that task that day adds on top. Setting it to
   0:00 removes the row. **Adjusts, Add and imported day totals do not touch the carry.** There is no start/end editor: the times stay in the file
   but are never shown or edited.
-- The running task's row shows its own length to the nearest quarter hour (provisional, nothing is stored until it ends). The carry is left out of it on purpose and applied once, when the session ends, so a task just started never shows time borrowed from or lent to the one before (changed 1 Oct 2026).
+- The running task's row shows the exact time it has run (the chip's clock, to the minute). The carry and the rounding to a quarter hour are applied once, when it ends, and the new carry is stored (changed 1 Oct 2026).
+- **The day ends at 04:00** (`DAY_END_HOUR` in `src/shared/time.ts`; a setting later). The timer's "now" is the tracking day (`trackingMoment`): at 01:30 it is still the day before and the time reads 25:30:00, so a session can run past midnight and times go to 27:59:59. A timer still running when the day ends is stopped by the main process at 27:59:59 (every 15 s, and at launch, so also after the app was closed or the laptop asleep); the stale "set an end time" prompt is only a fallback. Fix a wrongly long block by editing the task's time.
 - A task can be started without a name and named later (click its name); renaming a task renames that day's blocks and typed time and merges with a row of the same name. Today has one form, name and time: time 0:00 starts the timer, any time adds it. Time is typed as two parts, hours and minutes (`DurationField`).
 - **A day shows one row per task** (same label after trimming and ignoring case; the first spelling wins), in the order first used, so rows do
   not jump while switching. Task, day and week totals are all sums of reported quarter hours.
@@ -266,7 +267,7 @@ tracks there instead. Hours only: Tasks are a later module (see "Tasks, later"),
    f. **Settings → Hours** (hours a week, days worked, days off a year).
    After 4f the user can track in the app. Stop and tell the user; they say whether to carry on in this order.
 5. **Around the pages, the rest (done 1 Oct 2026; `docs/DECISIONS.md`, "Dock and palette timer items"):** Dock item "Stop timer", palette commands "Start timer" and "Stop timer", the shortcut entry if any.
-5b. **Start from the top bar** (done 1 Oct 2026; `docs/TOPBAR_START_PLAN.md`, `docs/DECISIONS.md`, "Start from the top bar"): an idle "Start" chip with a task field and recent names, so a timer starts from any page.
+   5b. **Start from the top bar** (done 1 Oct 2026; `docs/TOPBAR_START_PLAN.md`, `docs/DECISIONS.md`, "Start from the top bar"): an idle "Start" chip with a task field and recent names, so a timer starts from any page.
 6. **Charts and weeks:** the views above, one at a time, each looked at in light and dark.
    Order agreed 1 Oct 2026, one commit each: (1) **All weeks** table (done: `/hours/year`, linked from the balance card; weeks that have not begun are
    left out so the newest row is this week), (2) weeks against 37:30 (done: columns met/under in `--chart-under`, the week still running in `--chart-now`, the plan as a step line so a holiday week's lower plan shows; tooltip on hover and with the arrow keys), (3) running balance, (4) year heat map (reads time off from the year file), (5) typical
