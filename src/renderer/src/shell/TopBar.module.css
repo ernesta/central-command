@@ -40,3 +40,7 @@
   padding: 8px 16px;
   border-color: var(--border-strong);
 }
+/* Where a module's global draws into the bar; empty (and no gap of its own) when it draws nothing. */
+.slot {
+  display: contents;
+}

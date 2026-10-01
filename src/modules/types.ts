@@ -33,7 +33,7 @@ export interface LiveModuleManifest extends BaseManifest {
   landingCard?: ComponentType
   /** Rendered on the Settings page, so a module can own its own settings and status. */
   settingsSection?: ComponentType
-  /** Mounted once by the shell on every page, for what must work anywhere in the app (a keyboard shortcut). Renders nothing. */
+  /** Mounted once by the shell on every page, for what must work anywhere in the app (a keyboard shortcut). Renders nothing in place; it may draw into the top bar through `TopBarPortal` (the Hours timer chip). Give it to one instance of a module that exists per workspace. */
   globals?: ComponentType
   /** Finds this module's items for the global search: a few of the best matches for a query, most relevant first. */
   /** `limit` is how many of the best matches to return; the module's own default (usually 6) when left out. */

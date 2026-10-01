@@ -2,6 +2,7 @@ import { Search, Settings as SettingsIcon, Terminal } from 'lucide-react'
 import { SEARCH_SHORTCUT, SETTINGS_SHORTCUT } from '@shared/shortcuts'
 import { WORKSPACES, type Workspace } from '@shared/settings'
 import { WORKSPACE_LABELS } from './workspaces'
+import { TopBarSlot } from './top-bar-slot'
 import { useFullScreen } from './useFullScreen'
 import { Button } from '../components/Button'
 import { IconButton } from '../components/IconButton'
@@ -39,6 +40,7 @@ export function TopBar({
         ))}
       </nav>
       <div className={styles.actions}>
+        <TopBarSlot />
         <Button
           className={styles.build}
           icon={<Terminal size={14} strokeWidth={1.75} aria-hidden />}
