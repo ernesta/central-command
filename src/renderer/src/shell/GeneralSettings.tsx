@@ -2,9 +2,10 @@ import { useSettings } from '../state/settings-context'
 import { PathField } from './PathField'
 import { TerminalField } from './TerminalField'
 import { ThemeField } from './ThemeField'
+import { YearFields } from './YearFields'
 import styles from './GeneralSettings.module.css'
 
-/** Appearance and the Build button: theme, the repository Build opens, and which terminal it uses. */
+/** Appearance, the Build button (theme, repository, terminal) and the year. */
 export function GeneralSettings(): React.JSX.Element {
   const { settings, update } = useSettings()
   return (
@@ -22,6 +23,7 @@ export function GeneralSettings(): React.JSX.Element {
         onCommit={(repoPath) => void update({ repoPath })}
       />
       <TerminalField value={settings.terminal} onChange={(terminal) => void update({ terminal })} />
+      <YearFields />
     </section>
   )
 }
