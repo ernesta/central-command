@@ -1,6 +1,6 @@
 # Start a timer from the top bar (plan, 1 Oct 2026)
 
-Status: **planned, not started.** Stage 5b of `docs/TIME_PLAN.md`. Read "Hours page, first usable cut" and "Dock and palette timer items" in `docs/DECISIONS.md` first.
+Status: **done 1 Oct 2026.** Stage 5b of `docs/TIME_PLAN.md`. Read "Hours page, first usable cut" and "Dock and palette timer items" in `docs/DECISIONS.md` first.
 Assumed from the request: "star a timer" means **start** one. If the user meant something else (a favourite task), ask before building.
 
 ## Goal
