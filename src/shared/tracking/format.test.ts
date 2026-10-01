@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDay, formatHours, formatSignedHours, parseHours } from './format'
+import { formatDay, formatHours, formatRange, formatSignedHours, parseHours } from './format'
 
 describe('formatHours', () => {
   it('shows hours and minutes, never decimals', () => {
@@ -46,5 +46,15 @@ describe('formatDay', () => {
   it('leaves what is not a date alone', () => {
     expect(formatDay('soon')).toBe('soon')
     expect(formatDay('2026-02-30')).toBe('2026-02-30')
+  })
+})
+
+describe('formatRange', () => {
+  it('gives the first and last day without the weekday', () => {
+    expect(formatRange('2026-09-28', '2026-10-04')).toBe('28 Sep – 4 Oct')
+    expect(formatRange('2026-09-21', '2026-09-27')).toBe('21 Sep – 27 Sep')
+  })
+  it('leaves what is not a date alone', () => {
+    expect(formatRange('a', 'b')).toBe('a – b')
   })
 })

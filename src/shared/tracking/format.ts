@@ -36,3 +36,11 @@ export function formatDay(date: string): string {
   const [, month, day] = date.split('-').map(Number)
   return `${WEEKDAYS[weekdayOf(date) - 1]} ${day} ${MONTHS[month - 1]}`
 }
+
+/** "28 Sep – 4 Oct": the days of a week, from the first to the last. */
+export function formatRange(from: string, to: string): string {
+  const day = (date: string): string => formatDay(date).split(' ').slice(1).join(' ')
+  return dayNumber(from) === null || dayNumber(to) === null
+    ? `${from} – ${to}`
+    : `${day(from)} – ${day(to)}`
+}
