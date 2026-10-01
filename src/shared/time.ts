@@ -45,3 +45,12 @@ export function todayIso(now = new Date()): string {
   const pad = (n: number): string => String(n).padStart(2, '0')
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
 }
+
+/** Now in local time, as the date and the time to the second the timer works with. */
+export function nowMoment(now = new Date()): { date: string; time: string } {
+  const pad = (n: number): string => String(n).padStart(2, '0')
+  return {
+    date: todayIso(now),
+    time: `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
+  }
+}

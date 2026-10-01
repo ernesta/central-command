@@ -5,6 +5,7 @@ import type { ReadingListsApi } from '../modules/reading-lists/shared/api'
 import type { ReadingsApi } from '../modules/readings/shared/api'
 import type { TrainingApi } from '../modules/training/shared/api'
 import type { Settings } from './settings'
+import type { TrackingApi } from './tracking/api'
 
 export interface PickPathOptions {
   kind: 'file' | 'folder'
@@ -63,6 +64,7 @@ export interface Api {
   training: TrainingApi
   notes: NotesApi
   readingLists: ReadingListsApi
+  tracking: TrackingApi
   lifecycle: {
     /**
      * Register work to finish before the window closes (e.g. saving notes). The window waits for

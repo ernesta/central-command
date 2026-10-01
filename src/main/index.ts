@@ -7,6 +7,8 @@ import { attachCloseGuard } from './close-guard'
 import { getAppPaths } from './paths'
 import { SettingsStore } from './settings'
 import { registerSettingsIpc } from './ipc/settings'
+import { broadcastTrackingChange, registerTrackingIpc } from './ipc/tracking'
+import { TrackingStore } from './tracking/store'
 import { registerDialogIpc } from './ipc/dialog'
 import { registerAppIpc } from './ipc/app'
 import { registerBuildIpc } from './ipc/build'
@@ -15,7 +17,7 @@ import { openDatabase } from './db/connection'
 import { runMigrations } from './db/migrate'
 import { mainModules } from '@modules/main-registry'
 import { defaultSettings } from '@shared/settings'
-import { todayIso } from '@shared/time'
+import { nowMoment, todayIso } from '@shared/time'
 import { buildContextMenu } from './context-menu'
 import { installDockMenu } from './dock-menu'
 import { isPastePlainChord } from './paste-plain'
@@ -169,6 +171,13 @@ app.whenReady().then(async () => {
   registerAppIpc(paths.root)
   registerBuildIpc(settings)
   registerEntitiesIpc(paths)
+  registerTrackingIpc(
+    new TrackingStore(paths.time, {
+      starts: () => settings.get().yearStarts,
+      now: nowMoment,
+      onChange: broadcastTrackingChange
+    })
+  )
 
   const db = openDatabase(paths.database)
   runMigrations(

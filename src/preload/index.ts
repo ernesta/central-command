@@ -10,6 +10,7 @@ import { READINGS_IPC } from '@modules/readings/shared/api'
 import { TRAINING_IPC } from '@modules/training/shared/api'
 import type { TrainingChangedEvent } from '@modules/training/shared/api'
 import type { NoteChangedEvent } from '@shared/notes'
+import { TRACKING_IPC, type TrackingChangedEvent } from '@shared/tracking/api'
 import type { SyncStatus } from '@modules/readings/shared/types'
 
 const api: Api = {
@@ -159,6 +160,36 @@ const api: Api = {
         listener(change)
       ipcRenderer.on(READING_LISTS_IPC.changed, handler)
       return () => ipcRenderer.removeListener(READING_LISTS_IPC.changed, handler)
+    }
+  },
+  tracking: {
+    years: (workspace) => ipcRenderer.invoke(TRACKING_IPC.years, workspace),
+    get: (workspace, year) => ipcRenderer.invoke(TRACKING_IPC.get, workspace, year),
+    running: () => ipcRenderer.invoke(TRACKING_IPC.running),
+    start: (workspace, label, task) =>
+      ipcRenderer.invoke(TRACKING_IPC.start, workspace, label, task),
+    stop: () => ipcRenderer.invoke(TRACKING_IPC.stop),
+    endAt: (workspace, year, id, time) =>
+      ipcRenderer.invoke(TRACKING_IPC.endAt, workspace, year, id, time),
+    deleteSession: (workspace, year, id) =>
+      ipcRenderer.invoke(TRACKING_IPC.deleteSession, workspace, year, id),
+    setTaskMinutes: (workspace, year, date, label, minutes) =>
+      ipcRenderer.invoke(TRACKING_IPC.setTaskMinutes, workspace, year, date, label, minutes),
+    addTime: (workspace, year, date, label, minutes) =>
+      ipcRenderer.invoke(TRACKING_IPC.addTime, workspace, year, date, label, minutes),
+    setNote: (workspace, year, date, note) =>
+      ipcRenderer.invoke(TRACKING_IPC.setNote, workspace, year, date, note),
+    setPlan: (workspace, year, plan) =>
+      ipcRenderer.invoke(TRACKING_IPC.setPlan, workspace, year, plan),
+    addTimeOff: (workspace, year, from, to, type) =>
+      ipcRenderer.invoke(TRACKING_IPC.addTimeOff, workspace, year, from, to, type),
+    removeTimeOff: (workspace, year, date) =>
+      ipcRenderer.invoke(TRACKING_IPC.removeTimeOff, workspace, year, date),
+    onChanged: (listener) => {
+      const handler = (_event: Electron.IpcRendererEvent, change: TrackingChangedEvent): void =>
+        listener(change)
+      ipcRenderer.on(TRACKING_IPC.changed, handler)
+      return () => ipcRenderer.removeListener(TRACKING_IPC.changed, handler)
     }
   },
   lifecycle: {
