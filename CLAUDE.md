@@ -232,5 +232,5 @@ npx electron-vite dev -- --remote-debugging-port=9333`, then `chromium.connectOv
 
 - **Hours (1 Oct 2026, stages 1 to 4 of `docs/TIME_PLAN.md`, committed, not pushed)**: the rules (`src/shared/year.ts`, `src/shared/tracking/`), the store, the importer
   (applied to the real library on 1 Oct 2026) and the first usable Hours page for Research (Today, the top-bar timer chip, the week, the balance card, Settings -> Hours)
-  are built. Next in the plan, only on the user's go-ahead: stage 5 (Dock and palette items), 6 (charts), 7 (Time off), 8 (the year in Training and Meetings).
+  are built. The Mac app is packaged (`npm run build:mac`) and installed in `/Applications`; it reads `~/CentralCommand` (`docs/DECISIONS.md`, "Packaging and installing the Mac app"). Next in the plan, only on the user's go-ahead: stage 5 (Dock and palette items), 6 (charts), 7 (Time off), 8 (the year in Training and Meetings).
 

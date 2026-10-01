@@ -1588,3 +1588,9 @@ imported on 1 Oct 2026 at the user's word (`npm run import:hours`, both years, n
   its tab will need to say which workspace it is for (tabs are keyed by module id).
 - **Not done:** the landing card shows only today; no charts link; no day-note editing; no under-aim colour.
 
+
+## Packaging and installing the Mac app (1 Oct 2026)
+
+`npm run build:mac` works as is (no config change): it writes the `.app`, a zip and a DMG to `dist/` (git-ignored). `better-sqlite3` loads from `app.asar.unpacked` (N-API prebuilds, `npmRebuild: false`), so no Electron rebuild is needed. The build is unsigned (no Developer ID), so the signature is ad hoc; it runs on the Mac that built it, and another Mac's Gatekeeper would complain.
+
+Checked by launching the packaged binary against a scratch copy of the real library (`CENTRAL_COMMAND_HOME`): no page errors, the Work workspace and Research → Hours show the imported data. The installed copy at `/Applications/Central Command.app` reads `~/CentralCommand` because `getAppPaths` falls back to `app.getPath('home')` when the variable is not set; it was deliberately not launched against the real library from here. Do not run it and `npm run dev` on the real library at the same time (two processes, one database).
