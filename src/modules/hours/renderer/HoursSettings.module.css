@@ -1,0 +1,67 @@
+.section {
+  display: grid;
+  gap: 24px;
+  padding: 28px 32px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-panel);
+}
+.heading {
+  margin: 0;
+  font-size: var(--text-20);
+  font-weight: 600;
+}
+.field {
+  display: grid;
+  gap: 6px;
+}
+.label {
+  font-size: var(--text-14);
+  font-weight: 500;
+}
+.input {
+  max-width: 120px;
+  font-variant-numeric: tabular-nums;
+}
+.input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+.days {
+  display: inline-flex;
+  justify-self: start;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+}
+.day {
+  padding: 8px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-14);
+}
+.day + .day {
+  border-left: 1px solid var(--border-faint);
+}
+.day:hover:not(:disabled):not([aria-pressed='true']) {
+  background: var(--hover-tint);
+}
+.day[aria-pressed='true'] {
+  background: var(--selected-bg);
+  color: var(--selected-text);
+  font-weight: 600;
+}
+.day:disabled {
+  cursor: default;
+}
+/* No overflow: hidden on the group: it would clip the focus ring's square corners. The end buttons carry the group's
+   rounded corners themselves, and the ring is drawn inside (as in Segmented). */
+.day:first-child {
+  border-radius: calc(var(--radius-control) - 1px) 0 0 calc(var(--radius-control) - 1px);
+}
+.day:last-child {
+  border-radius: 0 calc(var(--radius-control) - 1px) calc(var(--radius-control) - 1px) 0;
+}
+.day:focus-visible {
+  outline-offset: -2px;
+}
