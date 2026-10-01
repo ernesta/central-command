@@ -17,6 +17,8 @@ ask the user.
 - `npm run import:meetings -- --vault <path> --meeting-notes <path> [--apply] [--add-people]`: import meeting notes from
   Obsidian and the Word log and notes (dry run by default; macOS only)
 - `npm run import:work-meetings -- --vault <path to the Meetings folder> [--apply]`: import the Work meetings (dry run by default; applied)
+- `npm run import:hours -- --old <xlsx> --new <xlsx> [--apply]`: import the two Google Sheets (Study Hour Tracker and Time Off Tracker, one workbook
+  per tracking year) into Hours and Time off year files (dry run by default; never overwrites a year that holds data)
 - `npm run import:reading-list -- --file <docx> [--title "…"] [--list-dir <folder>] [--apply]`: turn a Word reading list into a Reading list
   (dry run by default; macOS only)
 - `npm run import:training -- --inkpath <xlsx> [--obsidian <notes>] [--trainings <folder>] [--apply] [--add-people]`: import the Inkpath
