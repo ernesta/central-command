@@ -25,3 +25,14 @@ describe('writeFileAtomic', () => {
     expect(await readdir(dir)).toEqual(['file.md'])
   })
 })
+
+describe('writeFileAtomicSync', () => {
+  it('writes and replaces a file, leaving no temp files behind', async () => {
+    const { writeFileAtomicSync } = await import('./atomic-write')
+    const target = join(dir, 'x', 'file.json')
+    writeFileAtomicSync(target, 'one')
+    writeFileAtomicSync(target, 'two')
+    expect(await readFile(target, 'utf8')).toBe('two')
+    expect(await readdir(join(dir, 'x'))).toEqual(['file.json'])
+  })
+})

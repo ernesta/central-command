@@ -15,6 +15,7 @@ describe('resolvePaths', () => {
     expect(p.trainingNotes).toBe('/home/someone/CentralCommand/notes/training')
     expect(p.noteFiles).toBe('/home/someone/CentralCommand/notes/notes')
     expect(p.readingListFiles).toBe('/home/someone/CentralCommand/notes/reading-lists')
+    expect(p.time).toBe('/home/someone/CentralCommand/time')
     expect(p.people).toBe('/home/someone/CentralCommand/data/people.json')
     expect(p.settings).toBe('/home/someone/CentralCommand/settings.json')
   })

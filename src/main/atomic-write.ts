@@ -1,4 +1,5 @@
 import { mkdir, rename, writeFile, rm } from 'fs/promises'
+import { mkdirSync, renameSync, rmSync, writeFileSync } from 'fs'
 import { dirname, basename, join } from 'path'
 import { randomUUID } from 'crypto'
 
@@ -16,6 +17,20 @@ export async function writeFileAtomic(path: string, contents: string): Promise<v
     await rename(tmp, path)
   } catch (error) {
     await rm(tmp, { force: true })
+    throw error
+  }
+}
+
+/** The synchronous twin, for the few writes that must be on disk before the call returns (see the time store). */
+export function writeFileAtomicSync(path: string, contents: string): void {
+  const dir = dirname(path)
+  mkdirSync(dir, { recursive: true })
+  const tmp = join(dir, `.${basename(path)}.${randomUUID()}.tmp`)
+  try {
+    writeFileSync(tmp, contents, 'utf8')
+    renameSync(tmp, path)
+  } catch (error) {
+    rmSync(tmp, { force: true })
     throw error
   }
 }

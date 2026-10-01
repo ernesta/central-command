@@ -20,6 +20,8 @@ export interface AppPaths {
   readingListFiles: string
   /** The yearly training plans (one Markdown file per academic year), apart from the entry files. */
   trainingPlans: string
+  /** One sub-folder per workspace, e.g. time/research: one JSON file per tracking year. */
+  time: string
   people: string
   settings: string
 }
@@ -41,6 +43,7 @@ export function resolvePaths(home: string): AppPaths {
     noteFiles: join(notes, 'notes'),
     readingListFiles: join(notes, 'reading-lists'),
     trainingPlans: join(notes, 'training-plans'),
+    time: join(root, 'time'),
     people: join(data, 'people.json'),
     settings: join(root, 'settings.json')
   }
