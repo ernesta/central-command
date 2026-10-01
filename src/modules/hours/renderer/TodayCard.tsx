@@ -6,10 +6,10 @@ import { dailyAim } from '@shared/tracking/plan'
 import { dayMinutes, dayRows } from '@shared/tracking/totals'
 import type { RunningTimer } from '@shared/tracking/api'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
-import { addDays } from '@shared/year'
 import { earlierLabels } from '../shared/tasks'
 import type { HoursWorkspace } from '../shared/workspaces'
 import { AddTime } from './AddTime'
+import { StaleTimer } from './StaleTimer'
 import { TaskField } from './TaskField'
 import { TaskList } from './TaskList'
 import styles from './TodayCard.module.css'
@@ -20,35 +20,6 @@ interface TodayCardProps {
   /** The one running timer of the app, wherever it is. */
   running: RunningTimer | null
   now: Moment
-}
-
-/** A timer left running on an earlier day does not stop by itself: it needs an end time before anything else can start. */
-function StaleTimer({ running, now }: { running: RunningTimer; now: Moment }): React.JSX.Element {
-  const [time, setTime] = useState('')
-  const { session } = running
-  const since = session.date === addDays(now.date, -1) ? 'yesterday' : formatDay(session.date)
-  const ready = time !== '' && time > session.start.slice(0, 5)
-  const end = (): void => {
-    if (ready)
-      void window.api.tracking.endAt(running.workspace, running.year, session.id, `${time}:00`)
-  }
-  return (
-    <div className={styles.stale}>
-      <span>
-        Started {since} {session.start.slice(0, 5)}. Set an end time.
-      </span>
-      <input
-        type="time"
-        className={styles.clock}
-        aria-label="End time"
-        value={time}
-        onChange={(event) => setTime(event.target.value)}
-      />
-      <Button size="small" variant="primary" disabled={!ready} onClick={end}>
-        End
-      </Button>
-    </div>
-  )
 }
 
 /** Today: the total against the aim, one row per task, the field to start another and a quiet Add. */

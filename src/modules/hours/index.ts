@@ -2,6 +2,7 @@ import { createElement } from 'react'
 import type { LiveModuleManifest } from '../types'
 import { HoursCard } from './renderer/HoursCard'
 import { HoursPage } from './renderer/HoursPage'
+import { TimerChip } from './renderer/TimerChip'
 import type { HoursWorkspace } from './shared/workspaces'
 
 /**
@@ -15,6 +16,8 @@ export function createHoursModule(workspace: HoursWorkspace): LiveModuleManifest
     label: 'Hours',
     status: 'live',
     routes: [{ path: '', element: createElement(HoursPage) }],
-    landingCard: HoursCard
+    landingCard: HoursCard,
+    // One timer for the whole app: only one instance draws the chip, whichever workspace it is running in.
+    globals: workspace === 'research' ? TimerChip : undefined
   }
 }

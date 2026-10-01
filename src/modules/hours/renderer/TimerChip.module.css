@@ -1,0 +1,148 @@
+.root {
+  position: relative;
+  min-width: 0;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 3px 4px 3px 4px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  font-size: var(--text-14);
+  font-variant-numeric: tabular-nums;
+}
+.main {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 3px 8px 3px 10px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-secondary);
+}
+.main:hover {
+  background: var(--hover-tint);
+}
+.dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.workspace {
+  flex: none;
+  color: var(--text-muted);
+}
+/* About 26 characters, then an ellipsis; the full name is in the tooltip and the popover. */
+.name {
+  max-width: 26ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.clock {
+  flex: none;
+  color: var(--ink);
+  font-weight: 500;
+}
+.stop {
+  padding: 3px 10px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--selected-bg);
+  color: var(--selected-text);
+  font-size: var(--text-12);
+  font-weight: 600;
+}
+.stop:hover {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+.popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  display: grid;
+  gap: 12px;
+  width: min(380px, 90vw);
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-float);
+  font-size: var(--text-14);
+}
+.full {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.muted {
+  color: var(--text-muted);
+}
+.switch {
+  display: grid;
+  gap: 4px;
+}
+.label {
+  font-size: var(--text-11);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+/* Padding and scroll-padding so a focus ring is not cut at the edge. */
+.options {
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  scroll-padding: 4px;
+  display: grid;
+  gap: 2px;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+}
+.option svg {
+  margin-top: 4px;
+  flex: none;
+}
+.option span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.option:hover {
+  background: var(--hover-tint);
+}
+.stopButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: start;
+  padding: 8px 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 500;
+}
+.stopButton:hover {
+  background: var(--hover-tint);
+}

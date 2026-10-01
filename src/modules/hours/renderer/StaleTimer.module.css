@@ -1,0 +1,22 @@
+.stale {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-card);
+}
+.clock {
+  padding: 6px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+}
+.clock:focus-visible {
+  outline-offset: 0;
+  border-color: var(--accent);
+}
