@@ -21,6 +21,9 @@
   --accent: light-dark(#35577a, #86aad0);
   --accent-hover: light-dark(#2f4d6c, #9bbbdc);
   --accent-contrast: light-dark(#ffffff, #0f1620);
+  /* Hours charts: a week under its plan (amber against the accent blue, apart under colour-blind simulation) and a week not over yet. */
+  --chart-under: light-dark(#b8741a, #d9a05a);
+  --chart-now: light-dark(#9db3c9, #4a6784);
   --selected-bg: light-dark(#dce6ee, #2a3b4d);
   --selected-text: light-dark(#1f3a52, #d3e3f2);
   /* The Markdown characters an editor shows around the block or span the cursor is in (`###`, `**`, `](url)`). */
