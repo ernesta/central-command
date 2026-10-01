@@ -265,6 +265,7 @@ tracks there instead. Hours only: Tasks are a later module (see "Tasks, later"),
    f. **Settings → Hours** (hours a week, days worked, days off a year).
    After 4f the user can track in the app. Stop and tell the user; they say whether to carry on in this order.
 5. **Around the pages, the rest (done 1 Oct 2026; `docs/DECISIONS.md`, "Dock and palette timer items"):** Dock item "Stop timer", palette commands "Start timer" and "Stop timer", the shortcut entry if any.
+5b. **Start from the top bar** (planned: `docs/TOPBAR_START_PLAN.md`): an idle "Start" chip with a task field and recent names, so a timer starts from any page.
 6. **Charts and weeks:** the views above, one at a time, each looked at in light and dark.
 7. **Time off:** store methods are done; the page, the summary, the link to planned days, and the landing card.
 8. **Adopt the year in Training and Meetings** (its own commits; moved later on purpose): replace `academic-year.ts` (and its `AcademicYearSelect` and
