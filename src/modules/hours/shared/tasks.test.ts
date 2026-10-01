@@ -43,6 +43,11 @@ describe('recentLabels', () => {
     expect(recentLabels(build(), '2026-10-07')).not.toContain('Old')
     expect(recentLabels(build(), '2026-09-28')).toEqual(['Old'])
   })
+  it('reaches back seven days, today included', () => {
+    const y = ok(addTime(year(), '2026-10-05', 'Edge', 30, nextId()))
+    expect(recentLabels(y, '2026-10-11')).toEqual(['Edge'])
+    expect(recentLabels(y, '2026-10-12')).toEqual([])
+  })
   it('stops at the limit', () => {
     expect(recentLabels(build(), '2026-10-07', 1)).toEqual(['deck'])
   })
