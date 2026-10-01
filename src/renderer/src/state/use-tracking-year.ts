@@ -52,6 +52,7 @@ export function useTrackingYear(workspace: Workspace): {
       (prev) => {
         const p = new URLSearchParams(prev)
         p.set('year', next)
+        p.delete('week')
         return p
       },
       { replace: true }
