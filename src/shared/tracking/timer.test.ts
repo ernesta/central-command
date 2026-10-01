@@ -1,6 +1,19 @@
 import { describe, expect, it } from 'vitest'
-import { carrySeconds, exactSeconds, reportedMinutes, roundToQuarter } from './rounding'
-import { endSessionAt, deleteSession, runningSession, startSession, stopSession } from './timer'
+import {
+  carrySeconds,
+  exactSeconds,
+  provisionalMinutes,
+  reportedMinutes,
+  roundToQuarter
+} from './rounding'
+import {
+  endSessionAt,
+  deleteSession,
+  renameTask,
+  runningSession,
+  startSession,
+  stopSession
+} from './timer'
 import { at, nextId, ok, year } from './test-utils'
 import type { TrackingYear } from './types'
 
@@ -56,11 +69,27 @@ describe('starting and stopping', () => {
     expect(again).toBe(y)
   })
 
-  it('refuses an empty name, a date outside the year, and a bad time', () => {
-    expect(startSession(year(), at(D, '09:00:00'), '  ', 'x')).toEqual({
-      ok: false,
-      reason: 'empty-label'
-    })
+  it('starts without a name, and renaming gives it one', () => {
+    const started = ok(startSession(year(), at(D, '09:00:00'), '  ', 'x'))
+    expect(runningSession(started)?.label).toBe('')
+    expect(runningSession(ok(startSession(started, at(D, '09:05:00'), '', 'y')))?.id).toBe('x')
+    const named = ok(renameTask(started, D, '', ' Reading '))
+    expect(runningSession(named)?.label).toBe('Reading')
+  })
+
+  it('renames one day only, keeps frozen minutes, and refuses an empty name', () => {
+    let y = ok(startSession(year(), at(D, '09:00:00'), 'Mail', 'a'))
+    y = ok(stopSession(y, at(D, '09:20:00')))
+    y = ok(startSession(y, at('2026-09-30', '09:00:00'), 'mail', 'b'))
+    y = ok(stopSession(y, at('2026-09-30', '09:10:00')))
+    const before = y.sessions.find((s) => s.id === 'a')!.minutes
+    const renamed = ok(renameTask(y, D, 'MAIL', 'Email'))
+    expect(renamed.sessions.map((s) => s.label)).toEqual(['Email', 'mail'])
+    expect(renamed.sessions[0].minutes).toBe(before)
+    expect(renameTask(y, D, 'Mail', '  ')).toEqual({ ok: false, reason: 'empty-label' })
+  })
+
+  it('refuses a date outside the year, and a bad time', () => {
     expect(startSession(year(), at('2026-09-20', '09:00:00'), 'A', 'x')).toEqual({
       ok: false,
       reason: 'outside-year'
@@ -168,5 +197,20 @@ describe('edits are truth: nothing already reported is ever re-derived', () => {
     const before = y.sessions.map((s) => [s.id, s.minutes])
     const after = deleteSession(y, 'q2').sessions.map((s) => [s.id, s.minutes])
     expect(after).toEqual(before.filter(([id]) => id !== 'q2'))
+  })
+})
+
+describe('the running row', () => {
+  it('shows its own length only; the carry is applied when it ends', () => {
+    // A 10-minute block reports 0:15 and leaves a carry of -5 min; the next block's 4 minutes then report 0:00.
+    let y = ok(startSession(year(), at(D, '09:00:00'), 'A', 'a'))
+    y = ok(stopSession(y, at(D, '09:10:00')))
+    y = ok(startSession(y, at(D, '09:10:00'), 'B', 'b'))
+    const b = runningSession(y)!
+    expect(provisionalMinutes(b, '09:14:00')).toBe(0)
+    expect(provisionalMinutes(b, '09:20:00')).toBe(15)
+    // A carry of +8 minutes would have shown 0:15 at once under the old rule; now it shows 0:00 until it ends.
+    const lent = { ...y, carryIn: 8 * 60 }
+    expect(provisionalMinutes(runningSession(lent)!, '09:10:30')).toBe(0)
   })
 })

@@ -18,11 +18,3 @@
   gap: 10px;
   align-items: flex-start;
 }
-.time {
-  width: 8ch;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-.time[aria-invalid='true'] {
-  border-color: var(--danger);
-}

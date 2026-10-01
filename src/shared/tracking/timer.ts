@@ -26,7 +26,8 @@ function close(year: TrackingYear, session: Session, time: string): Change {
 }
 
 /**
- * Start a task. Starting while another task runs stops that one at the same instant (one change, so switching is
+ * Start a task. A task may be started without a name (the label is then empty) and named later with `renameTask`.
+ * Starting while another task runs stops that one at the same instant (one change, so switching is
  * one click). A session still running from an earlier day blocks a start until it is given an end time. Starting
  * the task that is already running changes nothing.
  */
@@ -38,7 +39,6 @@ export function startSession(
   task?: string
 ): Change {
   const name = label.trim()
-  if (!name) return { ok: false, reason: 'empty-label' }
   if (!inYear(now.date, year.start)) return { ok: false, reason: 'outside-year' }
   if (timeToSeconds(now.time) === null) return { ok: false, reason: 'bad-time' }
   let current = year
@@ -79,4 +79,24 @@ export function endSessionAt(year: TrackingYear, id: string, time: string): Chan
 /** Remove a session. Nothing else is recalculated: every other session keeps its frozen minutes. */
 export function deleteSession(year: TrackingYear, id: string): TrackingYear {
   return { ...year, sessions: year.sessions.filter((s) => s.id !== id) }
+}
+
+/**
+ * Rename a task for one day: every session and typed adjustment of that day whose label matches `from`. Renaming
+ * to the name of another task that day merges the two rows. Reported minutes are frozen and untouched, so nothing
+ * is recalculated and the carry does not move. The new name may not be empty.
+ */
+export function renameTask(year: TrackingYear, date: string, from: string, to: string): Change {
+  const name = to.trim()
+  if (!name) return { ok: false, reason: 'empty-label' }
+  if (!inYear(date, year.start)) return { ok: false, reason: 'outside-year' }
+  const hit = (d: string, label: string): boolean => d === date && sameLabel(label, from)
+  return {
+    ok: true,
+    year: {
+      ...year,
+      sessions: year.sessions.map((s) => (hit(s.date, s.label) ? { ...s, label: name } : s)),
+      adjusts: year.adjusts.map((a) => (hit(a.date, a.label) ? { ...a, label: name } : a))
+    }
+  }
 }

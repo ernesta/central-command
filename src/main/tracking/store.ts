@@ -8,6 +8,7 @@ import {
   endSessionAt,
   runningSession,
   startSession,
+  renameTask,
   stopSession,
   deleteSession
 } from '@shared/tracking/timer'
@@ -113,7 +114,6 @@ export class TrackingStore {
    * workspace it is a stop and then a start (never two timers at once, even if the app dies between them).
    */
   start(workspace: Workspace, label: string, task?: string): TimerResult {
-    if (!label.trim()) return { ok: false, reason: 'empty-label' }
     const now = this.deps.now()
     const year = yearStartOf(now.date, this.deps.starts())
     if (year === null) return { ok: false, reason: 'outside-year' }
@@ -157,6 +157,16 @@ export class TrackingStore {
     return this.mutate(workspace, year, (y) =>
       setTaskMinutes(y, date, label, minutes, this.newId())
     )
+  }
+
+  renameTask(
+    workspace: Workspace,
+    year: string,
+    date: string,
+    from: string,
+    to: string
+  ): YearResult {
+    return this.mutate(workspace, year, (y) => renameTask(y, date, from, to))
   }
 
   addTime(

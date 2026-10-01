@@ -151,11 +151,14 @@ describe('the timer', () => {
     expect(read('research', '2026-27.json').sessions[0].minutes).toBe(30)
   })
 
-  it('refuses an empty name without stopping what runs', () => {
+  it('starts without a name, which can be given later', () => {
     const store = open()
     store.start('research', 'A')
-    expect(store.start('work', '  ')).toEqual({ ok: false, reason: 'empty-label' })
-    expect(store.running()?.session.label).toBe('A')
+    at('2026-09-29', '10:00:00')
+    expect(store.start('research', '  ').ok).toBe(true)
+    expect(store.running()?.session.label).toBe('')
+    expect(store.renameTask('research', '2026-09-21', '2026-09-29', '', 'Reading').ok).toBe(true)
+    expect(store.running()?.session.label).toBe('Reading')
   })
 
   it('leaves a session from an earlier day running until it is given an end time', () => {

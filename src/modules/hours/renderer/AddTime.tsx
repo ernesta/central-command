@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
-import { Input } from '@renderer/components/Input'
-import { parseQuarterHours } from '../shared/tasks'
+import { QUARTER } from '@shared/tracking/rounding'
+import { DurationField } from './DurationField'
 import { TaskField } from './TaskField'
 import styles from './AddTime.module.css'
 
@@ -16,9 +16,8 @@ export function AddTime({
 }): React.JSX.Element {
   const [open, setOpen] = useState(false)
   const [label, setLabel] = useState('')
-  const [time, setTime] = useState('')
-  const minutes = parseQuarterHours(time)
-  const ready = label.trim() !== '' && minutes !== null && minutes > 0
+  const [minutes, setMinutes] = useState(0)
+  const ready = label.trim() !== '' && minutes > 0
 
   if (!open) {
     return (
@@ -32,11 +31,11 @@ export function AddTime({
   const close = (): void => {
     setOpen(false)
     setLabel('')
-    setTime('')
+    setMinutes(0)
   }
   const add = (): void => {
     if (!ready) return
-    onAdd(label.trim(), minutes)
+    onAdd(label.trim(), Math.max(QUARTER, Math.round(minutes / QUARTER) * QUARTER))
     close()
   }
 
@@ -56,21 +55,7 @@ export function AddTime({
         onSubmit={add}
         labels={labels}
       />
-      <Input
-        className={styles.time}
-        aria-label="Time"
-        placeholder="0:00"
-        inputMode="numeric"
-        aria-invalid={(time !== '' && minutes === null) || undefined}
-        value={time}
-        onChange={(event) => setTime(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter') {
-            event.preventDefault()
-            add()
-          }
-        }}
-      />
+      <DurationField label="Time" value={minutes} onChange={setMinutes} onEnter={add} />
       <Button variant="primary" disabled={!ready} onClick={add}>
         Add
       </Button>

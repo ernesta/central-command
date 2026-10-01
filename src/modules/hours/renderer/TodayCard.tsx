@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
-import { Play } from 'lucide-react'
+import { Play, Plus } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
 import { formatDay, formatHours } from '@shared/tracking/format'
 import { dailyAim } from '@shared/tracking/plan'
+import { QUARTER } from '@shared/tracking/rounding'
 import { dayMinutes, dayRows } from '@shared/tracking/totals'
 import type { RunningTimer } from '@shared/tracking/api'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
 import { earlierLabels } from '../shared/tasks'
 import type { HoursWorkspace } from '../shared/workspaces'
-import { AddTime } from './AddTime'
+import { DurationField } from './DurationField'
 import { StaleTimer } from './StaleTimer'
 import { TaskField } from './TaskField'
 import { TaskList } from './TaskList'
@@ -23,9 +24,13 @@ interface TodayCardProps {
   now: Moment
 }
 
-/** Today: the total against the aim, one row per task, the field to start another and a quiet Add. */
+/**
+ * Today: the total against the aim, one row per task, and one form to begin another: a name and a time. With the
+ * time at 0:00 it starts the timer (a name can wait); with a time it adds that much, as if it had been tracked.
+ */
 export function TodayCard({ workspace, data, running, now }: TodayCardProps): React.JSX.Element {
   const [name, setName] = useState('')
+  const [minutes, setMinutes] = useState(0)
   const rows = dayRows(data, now.date, now)
   const total = dayMinutes(data, now.date, now)
   const aim = dailyAim(data, now.date)
@@ -42,7 +47,18 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
   }, [wantsFocus, key])
 
   const start = (label: string): void => {
-    if (label.trim() && !stale) void tracking.start(workspace, label)
+    if (!stale) void tracking.start(workspace, label)
+  }
+  const adding = minutes > 0
+  const ready = adding ? name.trim() !== '' : !stale
+  const submit = (): void => {
+    if (!ready) return
+    if (adding) {
+      const quarter = Math.max(QUARTER, Math.round(minutes / QUARTER) * QUARTER)
+      void tracking.addTime(workspace, data.start, now.date, name, quarter)
+    } else start(name)
+    setName('')
+    setMinutes(0)
   }
 
   return (
@@ -62,8 +78,11 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
         canStart={!stale}
         onStart={start}
         onStop={() => void tracking.stop()}
-        onSetMinutes={(label, minutes) =>
-          void tracking.setTaskMinutes(workspace, data.start, now.date, label, minutes)
+        onSetMinutes={(label, m) =>
+          void tracking.setTaskMinutes(workspace, data.start, now.date, label, m)
+        }
+        onRename={(label, to) =>
+          void tracking.renameTask(workspace, data.start, now.date, label, to)
         }
       />
       <div className={styles.start} ref={startRef}>
@@ -72,30 +91,25 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
           placeholder="What are you working on?"
           value={name}
           onChange={setName}
-          onSubmit={() => {
-            start(name)
-            setName('')
-          }}
+          onSubmit={submit}
           labels={labels}
         />
+        <DurationField label="Time" value={minutes} onChange={setMinutes} onEnter={submit} />
         <Button
           variant="primary"
-          icon={<Play size={14} strokeWidth={1.75} fill="currentColor" aria-hidden />}
-          disabled={!name.trim() || stale !== null}
-          onClick={() => {
-            start(name)
-            setName('')
-          }}
+          icon={
+            adding ? (
+              <Plus size={14} strokeWidth={1.75} aria-hidden />
+            ) : (
+              <Play size={14} strokeWidth={1.75} fill="currentColor" aria-hidden />
+            )
+          }
+          disabled={!ready}
+          onClick={submit}
         >
-          Start
+          {adding ? 'Add' : 'Start'}
         </Button>
       </div>
-      <AddTime
-        labels={labels}
-        onAdd={(label, minutes) =>
-          void tracking.addTime(workspace, data.start, now.date, label, minutes)
-        }
-      />
     </section>
   )
 }

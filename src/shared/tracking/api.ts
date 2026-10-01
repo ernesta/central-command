@@ -41,6 +41,14 @@ export interface TrackingApi {
     label: string,
     minutes: number
   ): Promise<YearResult>
+  /** Rename a task for one day (every block and typed time of it); a name already used that day merges the two. */
+  renameTask(
+    workspace: Workspace,
+    year: string,
+    date: string,
+    from: string,
+    to: string
+  ): Promise<YearResult>
   addTime(
     workspace: Workspace,
     year: string,
@@ -71,6 +79,7 @@ export const TRACKING_IPC = {
   endAt: 'tracking:end-at',
   deleteSession: 'tracking:delete-session',
   setTaskMinutes: 'tracking:set-task-minutes',
+  renameTask: 'tracking:rename-task',
   addTime: 'tracking:add-time',
   setNote: 'tracking:set-note',
   setPlan: 'tracking:set-plan',

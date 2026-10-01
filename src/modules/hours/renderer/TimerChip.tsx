@@ -37,13 +37,13 @@ function TimerPopover({
   const { session } = running
   const data = useYearFile(running.workspace, running.year)
   const others = data
-    ? dayRows(data, now.date).filter((r) => !sameLabel(r.label, session.label))
+    ? dayRows(data, now.date).filter((r) => r.label !== '' && !sameLabel(r.label, session.label))
     : []
   const tracking = window.api.tracking
 
   return (
     <div className={styles.popover} role="dialog" aria-label="Timer">
-      <div className={styles.full}>{session.label}</div>
+      <div className={styles.full}>{session.label || 'No name yet'}</div>
       {clock === null ? (
         <StaleTimer running={running} now={now} />
       ) : (
@@ -136,7 +136,7 @@ function Chip({ running, now }: { running: RunningTimer; now: Moment }): React.J
           ref={mainRef}
           type="button"
           className={styles.main}
-          title={session.label}
+          title={session.label || undefined}
           aria-expanded={open}
           aria-haspopup="dialog"
           onClick={() => setOpen((o) => !o)}
@@ -145,7 +145,7 @@ function Chip({ running, now }: { running: RunningTimer; now: Moment }): React.J
           {running.workspace !== current && (
             <span className={styles.workspace}>{WORKSPACE_LABELS[running.workspace]}</span>
           )}
-          <span className={styles.name}>{session.label}</span>
+          <span className={styles.name}>{session.label || 'No name yet'}</span>
           <span className={styles.clock}>
             {clock === null ? formatDay(session.date) : formatHours(clock)}
           </span>
@@ -177,7 +177,6 @@ function StartPopover({ onClose }: { onClose: () => void }): React.JSX.Element {
   const recent = useMemo(() => (data ? recentLabels(data, today) : []), [data, today])
 
   const start = (label: string): void => {
-    if (!label.trim()) return
     void window.api.tracking.start('research', label)
     onClose()
   }
@@ -197,7 +196,6 @@ function StartPopover({ onClose }: { onClose: () => void }): React.JSX.Element {
         <Button
           variant="primary"
           icon={<Play size={14} strokeWidth={1.75} fill="currentColor" aria-hidden />}
-          disabled={!name.trim()}
           onClick={() => start(name)}
         >
           Start

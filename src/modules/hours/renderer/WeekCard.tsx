@@ -120,6 +120,9 @@ export function WeekCard({
                     )}
                     <TaskList
                       rows={rows}
+                      onRename={(label, to) =>
+                        void tracking.renameTask(workspace, data.start, date, label, to)
+                      }
                       onSetMinutes={(label, m) =>
                         void tracking.setTaskMinutes(workspace, data.start, date, label, m)
                       }
