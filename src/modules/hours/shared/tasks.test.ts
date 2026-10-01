@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { at, nextId, ok, year } from '@shared/tracking/test-utils'
 import { startSession, stopSession } from '@shared/tracking/timer'
 import { addTime } from '@shared/tracking/totals'
-import { earlierLabels, parseQuarterHours, suggestLabels } from './tasks'
+import { earlierLabels, parseQuarterHours, recentLabels, suggestLabels } from './tasks'
 
 describe('earlierLabels', () => {
   it('lists each task once, the most recently used first, ignoring case and spaces', () => {
@@ -21,6 +21,35 @@ describe('earlierLabels', () => {
   })
   it('is empty for a year with nothing in it', () => {
     expect(earlierLabels(year())).toEqual([])
+  })
+})
+
+describe('recentLabels', () => {
+  const build = (): ReturnType<typeof year> => {
+    let y = year()
+    y = ok(startSession(y, at('2026-09-22', '09:00:00'), 'Old', nextId()))
+    y = ok(stopSession(y, at('2026-09-22', '10:00:00')))
+    y = ok(startSession(y, at('2026-10-05', '09:00:00'), 'Deck', nextId()))
+    y = ok(stopSession(y, at('2026-10-05', '10:00:00')))
+    y = ok(startSession(y, at('2026-10-06', '09:00:00'), 'Review', nextId()))
+    y = ok(stopSession(y, at('2026-10-06', '09:30:00')))
+    y = ok(startSession(y, at('2026-10-07', '09:00:00'), ' deck ', nextId()))
+    return ok(stopSession(y, at('2026-10-07', '09:30:00')))
+  }
+  it('lists each name once, newest first, ignoring case and spaces', () => {
+    expect(recentLabels(build(), '2026-10-07')).toEqual(['deck', 'Review'])
+  })
+  it('leaves out names older than a week', () => {
+    expect(recentLabels(build(), '2026-10-07')).not.toContain('Old')
+    expect(recentLabels(build(), '2026-09-28')).toEqual(['Old'])
+  })
+  it('stops at the limit', () => {
+    expect(recentLabels(build(), '2026-10-07', 1)).toEqual(['deck'])
+  })
+  it('includes typed-in time and is empty for an empty year', () => {
+    const y = ok(addTime(year(), '2026-10-07', 'Reading', 30, nextId()))
+    expect(recentLabels(y, '2026-10-07')).toEqual(['Reading'])
+    expect(recentLabels(year(), '2026-10-07')).toEqual([])
   })
 })
 

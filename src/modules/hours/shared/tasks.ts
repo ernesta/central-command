@@ -1,6 +1,7 @@
 import { parseHours } from '@shared/tracking/format'
 import { QUARTER } from '@shared/tracking/rounding'
 import { sameLabel } from '@shared/tracking/timer'
+import { addDays } from '@shared/year'
 import type { TrackingYear } from '@shared/tracking/types'
 
 /**
@@ -18,6 +19,23 @@ export function earlierLabels(year: TrackingYear): string[] {
     if (name && !labels.some((l) => sameLabel(l, name))) labels.push(name)
   }
   return labels
+}
+
+/** How many days back (today included) the quick-start names reach. */
+export const RECENT_DAYS = 7
+
+/**
+ * The task names used in the last week up to `today`, the most recently used first, each once, at most `limit`.
+ * Offered as one-click starts in the top bar.
+ */
+export function recentLabels(year: TrackingYear, today: string, limit = 5): string[] {
+  const from = addDays(today, 1 - RECENT_DAYS)
+  const within = (date: string): boolean => date >= from && date <= today
+  return earlierLabels({
+    ...year,
+    sessions: year.sessions.filter((s) => within(s.date)),
+    adjusts: year.adjusts.filter((a) => within(a.date))
+  }).slice(0, limit)
 }
 
 /**
