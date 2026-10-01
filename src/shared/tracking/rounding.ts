@@ -48,11 +48,14 @@ export function reportFor(carry: number, exact: number): number {
   return roundToQuarter(carry + exact)
 }
 
-/** What a running session would report if it ended at `time`; provisional, nothing is stored. */
-export function provisionalMinutes(year: TrackingYear, session: Session, time: string): number {
+/**
+ * What a running session shows until it ends: its own length to the nearest quarter hour, provisional, nothing
+ * stored. The carry from earlier sessions is deliberately left out; it is applied once, when the session ends, so
+ * a task just started never shows time borrowed from or lent to the one before.
+ */
+export function provisionalMinutes(session: Session, time: string): number {
   if (session.end !== null) return reportedMinutes(session)
   const a = timeToSeconds(session.start)
   const b = timeToSeconds(time)
-  const exact = a === null || b === null || b <= a ? 0 : b - a
-  return reportFor(carrySeconds(year), exact)
+  return roundToQuarter(a === null || b === null || b <= a ? 0 : b - a)
 }

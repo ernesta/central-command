@@ -12,8 +12,8 @@ export interface TaskRow {
 }
 
 /** What the running session would report now: only counted when `now` is given and it is on that day. */
-function runningMinutes(year: TrackingYear, s: Session, now: Moment | undefined): number {
-  return now && s.date === now.date ? provisionalMinutes(year, s, now.time) : 0
+function runningMinutes(s: Session, now: Moment | undefined): number {
+  return now && s.date === now.date ? provisionalMinutes(s, now.time) : 0
 }
 
 /**
@@ -41,7 +41,7 @@ export function dayRows(year: TrackingYear, date: string, now?: Moment): TaskRow
     row.sessionIds.push(s.id)
     if (s.end === null) {
       row.running = true
-      row.minutes += runningMinutes(year, s, now)
+      row.minutes += runningMinutes(s, now)
     } else row.minutes += reportedMinutes(s)
   }
   for (const a of year.adjusts) if (a.date === date) find(a.label).minutes += a.minutes
@@ -55,7 +55,7 @@ export function minutesByDate(year: TrackingYear, now?: Moment): Map<string, num
     if (minutes !== 0 && inYear(date, year.start)) map.set(date, (map.get(date) ?? 0) + minutes)
   }
   for (const s of year.sessions)
-    add(s.date, s.end === null ? runningMinutes(year, s, now) : reportedMinutes(s))
+    add(s.date, s.end === null ? runningMinutes(s, now) : reportedMinutes(s))
   for (const a of year.adjusts) add(a.date, a.minutes)
   for (const [date, d] of Object.entries(year.days)) add(date, d.minutes ?? 0)
   return map
