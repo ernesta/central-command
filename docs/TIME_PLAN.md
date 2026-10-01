@@ -1,6 +1,6 @@
 # Hours and Time off: plan
 
-Status: **designed; mockup in review (round 2, 29 Sep 2026); not built.** The mockup is `docs/design/hours-mockup.html` (open it in a browser: four
+Status: **building (re-ordered 1 Oct 2026 so tracking can start soon).** Stages 1 to 3 are done and committed, not pushed. The mockup is `docs/design/hours-mockup.html` (open it in a browser: four
 screens, light and dark). Read it with `CLAUDE.md` and `docs/DECISIONS.md`. Meetings and Training are the patterns to copy
 (`docs/MEETINGS_PLAN.md`, `docs/TRAINING_PLAN.md`). Everything below is decided with the user unless it is under "Still open".
 
@@ -244,23 +244,35 @@ Dry run by default; reads .xlsx with Node built-ins (reuse the Training importer
 
 ## Stages (one small commit per stage, or per standalone part of one)
 
-1. **Rules:** `src/shared/year.ts` and `src/shared/tracking/`: year and weeks, planned days, the rounding (running total), day/week/year totals, balance and average, time-off
-   counts, `formatHours`. Tests include the sheet's numbers. **Mutation-check** the rules that protect the total: remove the carry (the year total
-   must then fail a test), re-derive a frozen `minutes` (an edit must not move another day), let a session cross midnight, allow two running sessions, accept a date outside the year.
-2. **Store:** the year file in `src/main/tracking/` (atomic, guarded, corrupt file set aside, unknown keys kept, new year created on demand, per
-   workspace), IPC and `Api` methods, tests. A running session persists across a simulated quit; switching is one write.
-3. **Importer:** built and tested, then **dry run on the real files; stop and show the user the output.**
-4. **Adopt the year in Training and Meetings** (its own commits, before the Hours page): replace `academic-year.ts` (and its `AcademicYearSelect` and
+**Order changed 1 Oct 2026: the user wants to start tracking in the app as soon as possible, so the importer and the tracking features come first and
+the year adoption in Training and Meetings waits.** The scratch area of the sheet is today's work tracker and is not imported; once stage 5 works the user
+tracks there instead. Hours only: Tasks are a later module (see "Tasks, later"), names stay free text.
+
+1. **Rules** (done): `src/shared/year.ts` and `src/shared/tracking/`: year and weeks, planned days, the rounding (running total), day/week/year totals,
+   balance and average, time-off counts, `formatHours`. Tests include the sheet's numbers and the mutation checks.
+2. **Store** (done): the year file in `src/main/tracking/`, IPC and `Api` methods, tests.
+3. **Importer** (built, dry-run on the real files 1 Oct 2026, all read and approved by the user): `npm run import:hours`. **`--apply` on the real
+   library only when the user says so**; then Research's 2025–26 and 2026–27 files exist. Scratch rows and 2025–26 annual leave are not imported.
+4. **Hours page, first usable cut (next).** In order, each its own commit, each checked in the built app on a scratch library:
+   a. the shell year: `YearSelect` (lists the years with a file plus the current one, newest first), plus `createHoursModule('research')` registered
+   with its landing card and route (`src/modules/index.ts`, Research only);
+   b. **Today**: total against the aim, one row per task with ▶/■, **Start** with the "What are you working on?" field, quiet **Add**, click a time
+   to edit it;
+   c. **the top-bar chip and popover** (from stage 8: the timer must be visible and stoppable from every page, or it gets forgotten), mounted
+   through the manifest's `globals`;
+   d. **the week**: seven days with arrows, bars against the aim, a day opens its tasks, editable in place, and Add; footer with plan so far and balance;
+   e. **the balance card** (balance, average week, hours so far, planned hours); no charts link until stage 6;
+   f. **Settings → Hours** (hours a week, days worked, days off a year).
+   After 4f the user can track in the app. Stop and tell the user; they say whether to carry on in this order.
+5. **Around the pages, the rest:** Dock item "Stop timer", palette commands "Start timer" and "Stop timer", the shortcut entry if any.
+6. **Charts and weeks:** the views above, one at a time, each looked at in light and dark.
+7. **Time off:** store methods are done; the page, the summary, the link to planned days, and the landing card.
+8. **Adopt the year in Training and Meetings** (its own commits; moved later on purpose): replace `academic-year.ts` (and its `AcademicYearSelect` and
    `use-academic-year`) with the shared year in the 17 files that use it (Meetings' hours, landing, page and report; Training's page, landing, card, plan,
    rules, report and search) and rename the select. Years before the first recorded start are derived backwards, 52 weeks each, until the user gives their
    real starts. The real library was checked read-only on 29 Sep 2026: no meeting or training is dated 1–21 Sep 2025 or 1–20 Sep 2026 (the earliest
    are 23 and 24 Sep 2025), so **no entry changes year**. Tests, then look at Training and Meetings in the app on a scratch library.
-5. **Hours page:** Today, the week list, the balance card, editing a task's time and Add, the Settings tab. Before this, in the shell: the app-level year
-   (settings, `year.ts`, `YearSelect`, Settings → General).
-6. **Charts and weeks:** the views above, one at a time, each looked at in light and dark.
-7. **Time off:** store methods, page, the link to planned days.
-8. **Around the pages:** landing cards, top-bar chip and popover, Dock item, palette commands, shortcut entry if any.
-9. **Polish, QA, docs:** `docs/DECISIONS.md` ("Hours and Time off"), `docs/ROADMAP.md`, `CLAUDE.md` (status, the new import command).
+9. **Polish, QA, docs:** `docs/DECISIONS.md` ("Hours and Time off"), `docs/ROADMAP.md`, `CLAUDE.md` (status, the shared year).
 10. **Later, with the user:** Work's Hours and Time off (after question 1), and Tasks.
 
 **Testing for real** (CLAUDE.md): a scratch library via `CENTRAL_COMMAND_HOME`, Playwright, the built app and dev mode. Type real keystrokes into the
