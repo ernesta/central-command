@@ -1,4 +1,5 @@
 import type { NavigateFunction } from 'react-router'
+import { hoursBase } from '@modules/hours/renderer/hours-paths'
 import { peopleRoute } from '@modules/meetings/renderer/meetings-paths'
 import { fold } from '@shared/text'
 import { searchTerms, type SearchHit } from '@shared/search'
@@ -11,12 +12,21 @@ interface Command {
   title: string
   detail: string
   go: (navigate: NavigateFunction, workspace: QuickActionWorkspace) => void | Promise<void>
+  /** Offered only while a timer runs (true) or while none does (false); always when absent. */
+  whileRunning?: boolean
 }
 
 /** Actions the search window offers alongside results, the way a command palette does. Each does what its own
  * button does elsewhere in the app; nothing here is a shortcut around a rule those buttons enforce. */
 const COMMANDS: Command[] = [
-  ...QUICK_ACTIONS,
+  ...QUICK_ACTIONS.map((a): Command => (a.id === 'stop-timer' ? { ...a, whileRunning: true } : a)),
+  {
+    id: 'start-timer',
+    title: 'Start timer',
+    detail: 'Opens Hours, ready for a task name.',
+    // Hours is Research's; the field takes focus on arrival (TodayCard).
+    go: (navigate) => navigate(hoursBase('research'), { state: { focus: 'start' } })
+  },
   {
     id: 'open-settings',
     title: 'Open Settings',
@@ -39,7 +49,12 @@ export async function searchCommands(
   workspace: QuickActionWorkspace = 'research'
 ): Promise<SearchHit[]> {
   const terms = searchTerms(query)
-  return COMMANDS.filter((c) => terms.every((t) => fold(c.title).includes(t)))
+  const matching = COMMANDS.filter((c) => terms.every((t) => fold(c.title).includes(t)))
+  const running = matching.some((c) => c.whileRunning !== undefined)
+    ? (await window.api.tracking.running()) !== null
+    : false
+  return matching
+    .filter((c) => c.whileRunning === undefined || c.whileRunning === running)
     .slice(0, limit)
     .map((c) => ({
       key: c.id,

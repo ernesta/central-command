@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation } from 'react-router'
 import { Play } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
 import { formatDay, formatHours } from '@shared/tracking/format'
@@ -31,6 +32,14 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
   const labels = useMemo(() => earlierLabels(data), [data])
   const stale = running && running.session.date !== now.date ? running : null
   const tracking = window.api.tracking
+  const startRef = useRef<HTMLDivElement>(null)
+  const { state, key } = useLocation() as { state: { focus?: string } | null; key: string }
+  const wantsFocus = state?.focus === 'start'
+
+  // "Start timer" in the palette arrives here asking for the field (a fresh location key each time).
+  useEffect(() => {
+    if (wantsFocus) startRef.current?.querySelector('input')?.focus()
+  }, [wantsFocus, key])
 
   const start = (label: string): void => {
     if (label.trim() && !stale) void tracking.start(workspace, label)
@@ -57,7 +66,7 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
           void tracking.setTaskMinutes(workspace, data.start, now.date, label, minutes)
         }
       />
-      <div className={styles.start}>
+      <div className={styles.start} ref={startRef}>
         <TaskField
           label="What are you working on?"
           placeholder="What are you working on?"
