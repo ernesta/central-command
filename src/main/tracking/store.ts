@@ -194,6 +194,25 @@ export class TrackingStore {
     return this.mutate(workspace, year, (y) => ({ ok: true, year: removeTimeOff(y, date) }))
   }
 
+  /**
+   * Write a whole imported year. It never overwrites: a year whose file already holds anything (a session, typed
+   * time, a day, a day off, a typed week) is refused. An empty year (the file the app creates on first read) is
+   * replaced, keeping the carry it was given.
+   */
+  importYear(workspace: Workspace, imported: TrackingYear): YearResult {
+    return this.mutate(workspace, imported.start, (current) => {
+      const used =
+        current.sessions.length +
+        current.adjusts.length +
+        current.timeOff.length +
+        Object.keys(current.days).length +
+        Object.keys(current.weekDays).length
+      return used > 0
+        ? { ok: false, reason: 'not-empty' }
+        : { ok: true, year: { ...imported, carryIn: current.carryIn } }
+    })
+  }
+
   // ---- files ----
 
   private path(workspace: Workspace, start: string): string {

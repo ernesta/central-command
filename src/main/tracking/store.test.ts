@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSyn
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import type { Moment } from '@shared/tracking/types'
+import { emptyYear, type Moment, type TrackingYear } from '@shared/tracking/types'
 import { TrackingStore, yearFileName, type TrackingDeps } from './store'
 
 const STARTS = ['2025-09-22', '2026-09-21']
@@ -323,5 +323,40 @@ describe('the file', () => {
     store.start('research', 'A')
     store.stop()
     expect(readdirSync(join(dir, 'research'))).toEqual(['2026-27.json'])
+  })
+})
+
+describe('importing a year', () => {
+  const imported = (): TrackingYear => ({
+    ...emptyYear('2025-09-22'),
+    days: { '2025-09-23': { minutes: 465 } },
+    timeOff: [{ date: '2025-12-24', type: 'public' }],
+    weekDays: { '2025-09-22': 4 }
+  })
+
+  it('writes a year that has no file, and the year reads back as imported', () => {
+    const store = open()
+    expect(store.importYear('research', imported()).ok).toBe(true)
+    expect(read('research', '2025-26.json').days['2025-09-23'].minutes).toBe(465)
+    expect(store.get('research', '2025-09-22').weekDays).toEqual({ '2025-09-22': 4 })
+  })
+
+  it('replaces the empty file the app makes for the current year, keeping its carry', () => {
+    const store = open()
+    store.get('research', '2026-09-21')
+    const next = { ...emptyYear('2026-09-21'), days: { '2026-09-22': { minutes: 450 } } }
+    expect(store.importYear('research', next).ok).toBe(true)
+    expect(read('research', '2026-27.json').days['2026-09-22'].minutes).toBe(450)
+  })
+
+  it('never overwrites a year that holds anything', () => {
+    const store = open()
+    store.importYear('research', imported())
+    const before = readFileSync(file('research', '2025-26.json'), 'utf8')
+    const again = { ...imported(), days: { '2025-09-24': { minutes: 15 } } }
+    expect(store.importYear('research', again)).toEqual({ ok: false, reason: 'not-empty' })
+    expect(readFileSync(file('research', '2025-26.json'), 'utf8')).toBe(before)
+    store.setNote('research', '2026-09-21', '2026-09-22', 'note')
+    expect(store.importYear('research', emptyYear('2026-09-21')).ok).toBe(false)
   })
 })
