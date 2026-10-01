@@ -1,6 +1,6 @@
 import { deflateRawSync } from 'zlib'
 import { describe, expect, it } from 'vitest'
-import { readXlsxRows, readZip } from './xlsx'
+import { readXlsxRows, readXlsxSheets, readZip } from './xlsx'
 
 /** A minimal zip writer for tests: entries are stored or deflated; checksums are not needed by the reader. */
 function zip(files: Record<string, string>, deflate = false): Buffer {
@@ -63,5 +63,37 @@ describe('readXlsxRows', () => {
 
   it('lists the files of an archive', () => {
     expect([...readZip(zip({ 'a.txt': 'A', 'b/c.txt': 'C' })).keys()]).toEqual(['a.txt', 'b/c.txt'])
+  })
+})
+
+describe('readXlsxSheets', () => {
+  const workbook = `<workbook><sheets><sheet name="Study &amp; Hours" sheetId="1" r:id="rId5"/><sheet name="Time Off" sheetId="2" r:id="rId6"/></sheets></workbook>`
+  const rels = `<Relationships><Relationship Id="rId6" Target="worksheets/sheet2.xml"/><Relationship Id="rId5" Target="/xl/worksheets/sheet1.xml"/></Relationships>`
+  const sheet = (text: string): string =>
+    `<worksheet><sheetData><row r="1"><c r="A1" t="inlineStr"><is><t>${text}</t></is></c></row></sheetData></worksheet>`
+
+  it('reads every sheet by its tab name, in tab order, following the relationships', () => {
+    const sheets = readXlsxSheets(
+      zip({
+        'xl/workbook.xml': workbook,
+        'xl/_rels/workbook.xml.rels': rels,
+        'xl/worksheets/sheet1.xml': sheet('one'),
+        'xl/worksheets/sheet2.xml': sheet('two')
+      })
+    )
+    expect(sheets.map((s) => s.name)).toEqual(['Study & Hours', 'Time Off'])
+    expect(sheets.map((s) => s.rows[0][0])).toEqual(['one', 'two'])
+  })
+
+  it('refuses a workbook whose sheet file is missing', () => {
+    expect(() =>
+      readXlsxSheets(
+        zip({
+          'xl/workbook.xml': workbook,
+          'xl/_rels/workbook.xml.rels': rels,
+          'xl/worksheets/sheet1.xml': sheet('one')
+        })
+      )
+    ).toThrow('Time Off')
   })
 })

@@ -73,17 +73,7 @@ function columnIndex(letters: string): number {
   return n - 1
 }
 
-/**
- * The rows of the first sheet of an .xlsx workbook as text, cell by cell (blank cells are ''). Numbers
- * keep the text Excel stored for them, so `2` stays `2` and a date stored as a number arrives as its
- * serial number; the caller decides what each column means.
- */
-export function readXlsxRows(buffer: Buffer): string[][] {
-  const files = readZip(buffer)
-  const sheetName =
-    [...files.keys()].find((k) => k === 'xl/worksheets/sheet1.xml') ??
-    [...files.keys()].filter((k) => /^xl\/worksheets\/[^/]+\.xml$/.test(k)).sort()[0]
-  if (!sheetName) throw new Error('The workbook has no sheet')
+function rowsOf(files: Map<string, Buffer>, sheetName: string): string[][] {
   const sheet = (files.get(sheetName) as Buffer).toString('utf8')
   const shared = files.has('xl/sharedStrings.xml')
     ? [
@@ -112,4 +102,45 @@ export function readXlsxRows(buffer: Buffer): string[][] {
     rows[rowIndex] = Array.from(cells, (c) => c ?? '')
   }
   return Array.from(rows, (r) => r ?? [])
+}
+
+/**
+ * The rows of the first sheet of an .xlsx workbook as text, cell by cell (blank cells are ''). Numbers
+ * keep the text Excel stored for them, so `2` stays `2` and a date stored as a number arrives as its
+ * serial number; the caller decides what each column means.
+ */
+export function readXlsxRows(buffer: Buffer): string[][] {
+  const files = readZip(buffer)
+  const sheetName =
+    [...files.keys()].find((k) => k === 'xl/worksheets/sheet1.xml') ??
+    [...files.keys()].filter((k) => /^xl\/worksheets\/[^/]+\.xml$/.test(k)).sort()[0]
+  if (!sheetName) throw new Error('The workbook has no sheet')
+  return rowsOf(files, sheetName)
+}
+
+/**
+ * Every sheet of a workbook by its tab name, in tab order. The names come from the workbook's own list and
+ * its relationships, so a reordered or renamed file is read correctly.
+ */
+export function readXlsxSheets(buffer: Buffer): { name: string; rows: string[][] }[] {
+  const files = readZip(buffer)
+  const workbook = files.get('xl/workbook.xml')?.toString('utf8')
+  const rels = files.get('xl/_rels/workbook.xml.rels')?.toString('utf8')
+  if (!workbook || !rels) throw new Error('The workbook has no sheet list')
+  const targets = new Map<string, string>()
+  for (const m of rels.matchAll(/<Relationship\b([^>]*?)\/?>/g)) {
+    const id = /\bId="([^"]*)"/.exec(m[1])?.[1]
+    const target = /\bTarget="([^"]*)"/.exec(m[1])?.[1]
+    if (id && target) targets.set(id, target.replace(/^\//, '').replace(/^(?!xl\/)/, 'xl/'))
+  }
+  const sheets: { name: string; rows: string[][] }[] = []
+  for (const m of workbook.matchAll(/<sheet\b([^>]*?)\/?>/g)) {
+    const name = decodeEntities(/\bname="([^"]*)"/.exec(m[1])?.[1] ?? '')
+    const rid = /\br:id="([^"]*)"/.exec(m[1])?.[1]
+    const file = rid ? targets.get(rid) : undefined
+    if (!file || !files.has(file)) throw new Error(`Sheet "${name}" is missing from the file`)
+    sheets.push({ name, rows: rowsOf(files, file) })
+  }
+  if (sheets.length === 0) throw new Error('The workbook has no sheet')
+  return sheets
 }
