@@ -166,7 +166,8 @@ only free text next to the hours, and a new workbook every year.
   the difference from the timer time (so the row shows exactly what was typed), and later timer time on that task that day adds on top. Setting it to
   0:00 removes the row. **Adjusts, Add and imported day totals do not touch the carry.** There is no start/end editor: the times stay in the file
   but are never shown or edited.
-- The running task's row shows what would be reported if it ended now (it changes in quarter-hour steps; it is provisional, nothing is stored until it ends).
+- The running task's row shows its own length to the nearest quarter hour (provisional, nothing is stored until it ends). The carry is left out of it on purpose and applied once, when the session ends, so a task just started never shows time borrowed from or lent to the one before (changed 1 Oct 2026).
+- A task can be started without a name and named later (click its name); renaming a task renames that day's blocks and typed time and merges with a row of the same name. Today has one form, name and time: time 0:00 starts the timer, any time adds it. Time is typed as two parts, hours and minutes (`DurationField`).
 - **A day shows one row per task** (same label after trimming and ignoring case; the first spelling wins), in the order first used, so rows do
   not jump while switching. Task, day and week totals are all sums of reported quarter hours.
 - The **clock** in the chip and in the popover is the timer itself: hours and minutes since this block started, ticking (the one place exact time is shown).
