@@ -1,3 +1,5 @@
+import { dayNumber, weekdayOf } from '../year'
+
 /** "7:45", "1,523:30", "−2:30": minutes as hours and minutes, never decimals. Fractions are rounded to the nearest minute. */
 export function formatHours(totalMinutes: number): string {
   const rounded = Math.round(Math.abs(totalMinutes))
@@ -23,4 +25,14 @@ export function parseHours(text: string): number | null {
   if (hm) return Number(hm[1]) * 60 + Number(hm[2])
   if (/^\d{1,3}(\.\d{1,2})?$/.test(t)) return Math.round(Number(t) * 60)
   return null
+}
+
+const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+/** "Thu 1 Oct": a day as the Hours pages name it. Anything that is not a date is returned as it is. */
+export function formatDay(date: string): string {
+  if (dayNumber(date) === null) return date
+  const [, month, day] = date.split('-').map(Number)
+  return `${WEEKDAYS[weekdayOf(date) - 1]} ${day} ${MONTHS[month - 1]}`
 }
