@@ -6,6 +6,7 @@ import { useRunningTimer } from '@renderer/state/use-running-timer'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { inYear } from '@shared/year'
 import { useHoursWorkspace } from './hours-paths'
+import { BalanceCard } from './BalanceCard'
 import { TodayCard } from './TodayCard'
 import { useWeek } from './useWeek'
 import { WeekCard } from './WeekCard'
@@ -40,6 +41,9 @@ export function HoursPage(): React.JSX.Element {
               onWeekChange={setWeek}
               now={now}
             />
+          </div>
+          <div className={styles.stack}>
+            <BalanceCard data={data} now={now} />
           </div>
         </div>
       )}
