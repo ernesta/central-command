@@ -1,8 +1,8 @@
 import { addDays, daysBetween, inYear, weekdayOf, weeksOf, yearEnd, yearLabel } from '@shared/year'
 import { parseYear } from '@shared/tracking/parse'
-import { plannedDays } from '@shared/tracking/plan'
+import { plannedDays, yearTotals, type YearTotals } from '@shared/tracking/plan'
 import { timeOffCounts } from '@shared/tracking/timeoff'
-import { weeklyMinutes, yearMinutes, yearTotals, type YearTotals } from '@shared/tracking/totals'
+import { weeklyMinutes, yearMinutes } from '@shared/tracking/totals'
 import {
   DEFAULT_PLAN,
   emptyYear,
@@ -252,13 +252,12 @@ export function planYear(input: PlanInput): YearPlan {
   const weeks = weeklyMinutes(saved)
   const counts = timeOffCounts(saved, today)
   const perDay = DEFAULT_PLAN.hoursPerWeek / DEFAULT_PLAN.workDays.length
-  const expectedDays = sum(
-    weeksOf(start).map((w) =>
-      typedDays && weekRows.get(w.number)?.days != null
-        ? (weekRows.get(w.number)?.days as number)
-        : listDays(w.from, off, DEFAULT_PLAN.workDays)
-    )
+  const expectedWeekDays = weeksOf(start).map((w) =>
+    typedDays && weekRows.get(w.number)?.days != null
+      ? (weekRows.get(w.number)?.days as number)
+      : listDays(w.from, off, DEFAULT_PLAN.workDays)
   )
+  const expectedDays = sum(expectedWeekDays)
   const expectedBalance = dailyTotal - perDay * expectedDays
   const wrong: string[] = []
   const expect = (what: string, got: unknown, want: unknown): void => {
@@ -269,10 +268,8 @@ export function planYear(input: PlanInput): YearPlan {
   expect('Total minutes by week', sum(weeks.map((w) => w.minutes)), dailyTotal)
   weeks.forEach((w, i) => expect(`Week ${w.number} minutes`, w.minutes, weekSums[i]))
   expect('Planned days', totals.plannedDays, expectedDays)
-  expect(
-    'Planned days by week',
-    sum(weeksOf(start).map((w) => plannedDays(saved, w.from))),
-    expectedDays
+  weeksOf(start).forEach((w, i) =>
+    expect(`Week ${w.number} planned days`, plannedDays(saved, w.from), expectedWeekDays[i])
   )
   expect('Balance (minutes)', Math.round(totals.balance * 100), Math.round(expectedBalance * 100))
   expect(
