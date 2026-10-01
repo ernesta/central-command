@@ -47,14 +47,14 @@ describe('a day shows one row per task', () => {
     y = ok(startSession(y, at(D, '10:00:00'), 'A', nextId()))
     const rows = dayRows(y, D, at(D, '10:20:00'))
     expect(rows.map((r) => r.label)).toEqual(['A', 'B'])
-    expect(rows[0]).toMatchObject({ running: true, minutes: 30 + 15 })
+    expect(rows[0]).toMatchObject({ running: true, minutes: 30 + 20 })
     expect(rows[1].running).toBe(false)
   })
 
-  it('shows what a running session would report now, without storing it', () => {
+  it('shows the exact time a running session has run, without storing it', () => {
     const y = ok(startSession(year(), at(D, '09:00:00'), 'A', nextId()))
-    expect(dayRows(y, D, at(D, '09:06:00'))[0].minutes).toBe(0)
-    expect(dayRows(y, D, at(D, '09:08:00'))[0].minutes).toBe(15)
+    expect(dayRows(y, D, at(D, '09:06:00'))[0].minutes).toBe(6)
+    expect(dayRows(y, D, at(D, '09:08:30'))[0].minutes).toBe(8.5)
     expect(dayMinutes(y, D)).toBe(0)
     expect(y.sessions[0].minutes).toBeUndefined()
   })

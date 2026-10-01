@@ -3,12 +3,12 @@ import type { Session, TrackingYear } from './types'
 /** Reported time is always a whole number of quarter hours. */
 export const QUARTER = 15
 
-/** HH:MM:SS (or HH:MM) as seconds since midnight; null when it is not a time of day. */
+/** HH:MM:SS (or HH:MM) as seconds since midnight; null when it is not a time of day. Hours run to 27: 25:30 is 01:30 the next morning, still part of the day before. */
 export function timeToSeconds(time: string): number | null {
   const m = /^(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(time)
   if (!m) return null
   const [h, min, s] = [Number(m[1]), Number(m[2]), Number(m[3] ?? 0)]
-  return h < 24 && min < 60 && s < 60 ? h * 3600 + min * 60 + s : null
+  return h < 28 && min < 60 && s < 60 ? h * 3600 + min * 60 + s : null
 }
 
 /** Seconds, to the nearest quarter hour in minutes, halves up, never negative. */
@@ -49,13 +49,12 @@ export function reportFor(carry: number, exact: number): number {
 }
 
 /**
- * What a running session shows until it ends: its own length to the nearest quarter hour, provisional, nothing
- * stored. The carry from earlier sessions is deliberately left out; it is applied once, when the session ends, so
- * a task just started never shows time borrowed from or lent to the one before.
+ * What a running session shows until it ends: the exact time it has run, in (fractional) minutes, nothing stored.
+ * The carry and the rounding to a quarter hour are applied once, when it ends (`close` in timer.ts).
  */
 export function provisionalMinutes(session: Session, time: string): number {
   if (session.end !== null) return reportedMinutes(session)
   const a = timeToSeconds(session.start)
   const b = timeToSeconds(time)
-  return roundToQuarter(a === null || b === null || b <= a ? 0 : b - a)
+  return a === null || b === null || b <= a ? 0 : (b - a) / 60
 }
