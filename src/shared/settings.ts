@@ -37,6 +37,11 @@ export interface Settings {
   trainingAimHours: number
   /** The folder holding training files (slides, readings); entries link to sub-folders of it. Empty until configured. */
   trainingsFolder: string
+  /**
+   * When each year starts (Mondays, oldest first; a year is 52 weeks), for Hours, Time off, Training and
+   * Meetings alike. See `year.ts`. The next one is added by the app when a year ends.
+   */
+  yearStarts: string[]
   /** Remembered UI state. */
   ui: {
     workspace: Workspace
@@ -52,6 +57,9 @@ export interface Settings {
 
 export const DEFAULT_TRAINING_AIM_HOURS = 200
 
+/** The start of the user's first tracked year (the sheets' 2025–26); later years follow 52 weeks apart. */
+export const DEFAULT_YEAR_STARTS = ['2025-09-22']
+
 export const WORKSPACES: readonly Workspace[] = ['life', 'research', 'work']
 
 export function defaultSettings(defaultZoteroExportPath: string): Settings {
@@ -62,6 +70,7 @@ export function defaultSettings(defaultZoteroExportPath: string): Settings {
     terminal: 'terminal',
     trainingAimHours: DEFAULT_TRAINING_AIM_HOURS,
     trainingsFolder: '',
+    yearStarts: [...DEFAULT_YEAR_STARTS],
     ui: { workspace: 'research', window: null, moduleState: {} }
   }
 }

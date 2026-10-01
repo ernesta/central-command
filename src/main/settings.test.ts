@@ -120,3 +120,35 @@ describe('SettingsStore', () => {
     ])
   })
 })
+
+describe('year starts', () => {
+  it('defaults to the first tracked year', () => {
+    expect(defaults.yearStarts).toEqual(['2025-09-22'])
+  })
+  it('keeps only valid, ordered Mondays and falls back to the default when none is left', async () => {
+    await writeFile(
+      file,
+      JSON.stringify({ yearStarts: ['2026-09-21', '2025-09-22', '2025-09-23', 'x'] })
+    )
+    expect((await new SettingsStore(file, defaults).load()).yearStarts).toEqual([
+      '2025-09-22',
+      '2026-09-21'
+    ])
+    await writeFile(file, JSON.stringify({ yearStarts: ['nope', 7] }))
+    expect((await new SettingsStore(file, defaults).load()).yearStarts).toEqual(['2025-09-22'])
+  })
+  it('adds the next year when one has begun, once, and saves it', async () => {
+    const store = new SettingsStore(file, defaults)
+    await store.load()
+    expect((await store.rollOverYears('2026-09-20')).yearStarts).toEqual(['2025-09-22'])
+    expect((await store.rollOverYears('2026-10-01')).yearStarts).toEqual([
+      '2025-09-22',
+      '2026-09-21'
+    ])
+    await store.rollOverYears('2026-10-02')
+    expect((await new SettingsStore(file, defaults).load()).yearStarts).toEqual([
+      '2025-09-22',
+      '2026-09-21'
+    ])
+  })
+})

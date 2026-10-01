@@ -1,5 +1,6 @@
 import { readFile, rename } from 'fs/promises'
 import { TERMINALS, THEMES, WORKSPACES, type Settings } from '@shared/settings'
+import { normaliseYearStarts, rolloverStarts } from '@shared/year'
 import { writeFileAtomic } from './atomic-write'
 
 /**
@@ -28,6 +29,7 @@ export function normaliseSettings(raw: unknown, defaults: Settings): Settings {
           height: w.height as number
         }
       : defaults.ui.window
+  const yearStarts = normaliseYearStarts(obj.yearStarts)
   return {
     theme: THEMES.find((t) => t.id === obj.theme)?.id ?? defaults.theme,
     zoteroExportPath:
@@ -45,6 +47,7 @@ export function normaliseSettings(raw: unknown, defaults: Settings): Settings {
         : defaults.trainingAimHours,
     trainingsFolder:
       typeof obj.trainingsFolder === 'string' ? obj.trainingsFolder : defaults.trainingsFolder,
+    yearStarts: yearStarts.length > 0 ? yearStarts : defaults.yearStarts,
     ui: { workspace, window, moduleState }
   }
 }
@@ -86,6 +89,14 @@ export class SettingsStore {
       this.current = this.defaults
     }
     return this.current
+  }
+
+  /** Add the starts of years that have begun since the last one (the first time the app opens in a new year). */
+  async rollOverYears(today: string): Promise<Settings> {
+    const next = rolloverStarts(this.current.yearStarts, today)
+    return next.length === this.current.yearStarts.length
+      ? this.current
+      : this.update({ yearStarts: next })
   }
 
   async update(

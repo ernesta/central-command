@@ -15,6 +15,7 @@ import { openDatabase } from './db/connection'
 import { runMigrations } from './db/migrate'
 import { mainModules } from '@modules/main-registry'
 import { defaultSettings } from '@shared/settings'
+import { todayIso } from '@shared/time'
 import { buildContextMenu } from './context-menu'
 import { installDockMenu } from './dock-menu'
 import { isPastePlainChord } from './paste-plain'
@@ -157,6 +158,7 @@ app.whenReady().then(async () => {
   const paths = getAppPaths()
   const settings = new SettingsStore(paths.settings, defaultSettings(paths.defaultBibExport))
   await settings.load()
+  await settings.rollOverYears(todayIso())
   // The chosen theme decides light or dark for the whole window: the page's `prefers-color-scheme`, scrollbars and form controls follow it.
   nativeTheme.themeSource = settings.get().theme
   settings.onChange((next, previous) => {
