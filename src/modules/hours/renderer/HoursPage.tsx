@@ -1,13 +1,20 @@
 import { YearSelect } from '@renderer/components/YearSelect'
 import { LandingHeader, LandingPage } from '@renderer/components/Landing'
 import { WORKSPACE_LABELS } from '@renderer/shell/workspaces'
+import { useNow } from '@renderer/state/use-now'
+import { useRunningTimer } from '@renderer/state/use-running-timer'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
+import { inYear } from '@shared/year'
 import { useHoursWorkspace } from './hours-paths'
+import { TodayCard } from './TodayCard'
+import styles from './HoursPage.module.css'
 
 /** The Hours page: the year selector in the header, then Today, the week and the balance. */
 export function HoursPage(): React.JSX.Element {
   const workspace = useHoursWorkspace()
-  const { year, years, setYear } = useTrackingYear(workspace)
+  const { year, years, setYear, data } = useTrackingYear(workspace)
+  const { running } = useRunningTimer()
+  const now = useNow(running !== null)
 
   return (
     <LandingPage>
@@ -17,6 +24,15 @@ export function HoursPage(): React.JSX.Element {
         title="Hours"
         actions={<YearSelect year={year} years={years} onChange={setYear} />}
       />
+      {data && (
+        <div className={styles.cols}>
+          <div className={styles.stack}>
+            {inYear(now.date, data.start) && (
+              <TodayCard workspace={workspace} data={data} running={running} now={now} />
+            )}
+          </div>
+        </div>
+      )}
     </LandingPage>
   )
 }

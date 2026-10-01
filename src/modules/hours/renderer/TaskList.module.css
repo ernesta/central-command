@@ -1,0 +1,86 @@
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: var(--radius-card);
+}
+/* With a round button the first column is the button's. */
+.row:has(.round) {
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+}
+.row[data-live='true'] {
+  background: var(--selected-bg);
+  color: var(--selected-text);
+}
+.name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.round {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-secondary);
+  transition: background var(--transition-fast);
+}
+.round:hover:not(:disabled) {
+  background: var(--hover-tint);
+}
+.round:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.row[data-live='true'] .round {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+}
+.time,
+.timeButton,
+.edit {
+  font-size: var(--text-16);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.timeButton {
+  padding: 2px 8px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: inherit;
+}
+.timeButton:hover {
+  background: var(--hover-tint);
+}
+.time {
+  padding: 2px 8px;
+}
+.edit {
+  width: 6.5ch;
+  padding: 2px 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: right;
+}
+.edit:focus-visible {
+  outline-offset: 0;
+  border-color: var(--accent);
+}
+.edit[aria-invalid='true'] {
+  border-color: var(--danger);
+}

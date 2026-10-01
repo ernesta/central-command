@@ -1,13 +1,22 @@
 import { Link } from 'react-router'
-import { yearLabel } from '@shared/year'
+import { useNow } from '@renderer/state/use-now'
+import { useRunningTimer } from '@renderer/state/use-running-timer'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
+import { formatHours } from '@shared/tracking/format'
+import { dailyAim } from '@shared/tracking/plan'
+import { dayMinutes } from '@shared/tracking/totals'
+import { inYear } from '@shared/year'
 import { hoursBase, useHoursWorkspace } from './hours-paths'
 import styles from './HoursCard.module.css'
 
-/** The Hours entry on a workspace's landing page. The title is a real link whose hit area covers the whole card. */
+/** The Hours entry on a workspace's landing page: today's time against the aim. The title is a real link whose hit area covers the whole card. */
 export function HoursCard(): React.JSX.Element {
   const workspace = useHoursWorkspace()
-  const { year } = useTrackingYear(workspace)
+  const { data } = useTrackingYear(workspace)
+  const { running } = useRunningTimer()
+  const now = useNow(running !== null)
+  const today = data && inYear(now.date, data.start) ? data : null
+  const aim = today ? dailyAim(today, now.date) : null
 
   return (
     <div className={styles.card}>
@@ -16,7 +25,12 @@ export function HoursCard(): React.JSX.Element {
           Hours
         </Link>
       </h2>
-      <p className={styles.line}>{yearLabel(year)}</p>
+      {today && (
+        <p className={styles.line}>
+          Today {formatHours(dayMinutes(today, now.date, now))}
+          {aim !== null && ` of ${formatHours(aim)}`}
+        </p>
+      )}
     </div>
   )
 }

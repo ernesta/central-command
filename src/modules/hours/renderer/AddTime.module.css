@@ -1,0 +1,28 @@
+.quiet {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--text-14);
+}
+.quiet:hover {
+  background: var(--hover-tint);
+  color: var(--ink);
+}
+.form {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.time {
+  width: 8ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.time[aria-invalid='true'] {
+  border-color: var(--danger);
+}
