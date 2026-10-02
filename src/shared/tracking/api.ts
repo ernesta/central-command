@@ -65,6 +65,7 @@ export interface TrackingApi {
     to: string,
     type: TimeOffType
   ): Promise<YearResult>
+  moveTimeOff(workspace: Workspace, year: string, from: string, to: string): Promise<YearResult>
   setTimeOffType(
     workspace: Workspace,
     year: string,
@@ -90,6 +91,7 @@ export const TRACKING_IPC = {
   setNote: 'tracking:set-note',
   setPlan: 'tracking:set-plan',
   addTimeOff: 'tracking:add-time-off',
+  moveTimeOff: 'tracking:move-time-off',
   setTimeOffType: 'tracking:set-time-off-type',
   removeTimeOff: 'tracking:remove-time-off',
   changed: 'tracking:changed'

@@ -14,7 +14,7 @@ import {
   deleteSession
 } from '@shared/tracking/timer'
 import { addTime, setDayNote, setTaskMinutes } from '@shared/tracking/totals'
-import { addTimeOff, removeTimeOff, setTimeOffType } from '@shared/tracking/timeoff'
+import { addTimeOff, moveTimeOff, removeTimeOff, setTimeOffType } from '@shared/tracking/timeoff'
 import type {
   RunningTimer,
   TimerResult,
@@ -208,6 +208,10 @@ export class TrackingStore {
     type: TimeOffType
   ): YearResult {
     return this.mutate(workspace, year, (y) => addTimeOff(y, from, to, type))
+  }
+
+  moveTimeOff(workspace: Workspace, year: string, from: string, to: string): YearResult {
+    return this.mutate(workspace, year, (y) => moveTimeOff(y, from, to))
   }
 
   setTimeOffType(workspace: Workspace, year: string, date: string, type: TimeOffType): YearResult {

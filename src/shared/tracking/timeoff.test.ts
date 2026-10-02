@@ -3,6 +3,7 @@ import {
   addTimeOff,
   nextDayOff,
   removeTimeOff,
+  moveTimeOff,
   setTimeOffType,
   timeOffCounts,
   timeOffRows
@@ -71,6 +72,20 @@ describe('adding days off', () => {
       { date: '2026-12-25', type: 'public' }
     ])
     expect(setTimeOffType(y, '2026-12-28', 'leave')).toEqual(y)
+  })
+  it('moves a day keeping its type, and refuses a bad target', () => {
+    const y = ok(addTimeOff(year(), '2026-12-24', '2026-12-25', 'public'))
+    expect(ok(moveTimeOff(y, '2026-12-24', '2026-12-23')).timeOff).toEqual([
+      { date: '2026-12-23', type: 'public' },
+      { date: '2026-12-25', type: 'public' }
+    ])
+    expect(moveTimeOff(y, '2026-12-24', '2026-12-25')).toEqual({ ok: false, reason: 'listed' })
+    expect(moveTimeOff(y, '2026-12-24', '2026-12-26')).toEqual({ ok: false, reason: 'weekend' })
+    expect(moveTimeOff(y, '2026-12-24', '2028-01-04')).toEqual({
+      ok: false,
+      reason: 'outside-year'
+    })
+    expect(moveTimeOff(y, '2026-12-28', '2026-12-29')).toEqual({ ok: false, reason: 'missing' })
   })
   it('removes a day', () => {
     const y = ok(addTimeOff(year(), '2026-12-24', '2026-12-25', 'public'))

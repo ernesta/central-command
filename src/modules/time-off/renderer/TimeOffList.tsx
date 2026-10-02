@@ -1,10 +1,19 @@
 import { X } from 'lucide-react'
+import { useState } from 'react'
+import { Input } from '@renderer/components/Input'
+import { Notice } from '@renderer/components/Notice'
 import { Select } from '@renderer/components/Select'
 import { formatDay } from '@shared/tracking/format'
 import { timeOffRows } from '@shared/tracking/timeoff'
 import { TIME_OFF_TYPES, type TrackingYear } from '@shared/tracking/types'
 import type { HoursWorkspace } from '../../hours/shared/workspaces'
 import styles from './TimeOffList.module.css'
+
+const REFUSED: Record<string, string> = {
+  'outside-year': 'That date is outside this year.',
+  weekend: 'That is a weekend.',
+  listed: 'That day is already listed.'
+}
 
 const TYPE_OPTIONS = TIME_OFF_TYPES.map((t) => ({ value: t.id, label: t.label }))
 
@@ -19,10 +28,18 @@ export function TimeOffList({
   today: string
 }): React.JSX.Element | null {
   const rows = timeOffRows(data, today)
+  const [error, setError] = useState<string | null>(null)
   if (rows.length === 0) return null
+
+  const move = async (from: string, to: string): Promise<void> => {
+    if (to === '') return
+    const result = await window.api.tracking.moveTimeOff(workspace, data.start, from, to)
+    setError(result.ok ? null : (REFUSED[result.reason] ?? 'Could not move that day.'))
+  }
 
   return (
     <section className={styles.card} aria-label="Days off">
+      {error && <Notice tone="error">{error}</Notice>}
       <div className={styles.wrap}>
         <table className={styles.table}>
           <thead>
@@ -38,7 +55,14 @@ export function TimeOffList({
           <tbody>
             {rows.map((row) => (
               <tr key={row.date}>
-                <td>{formatDay(row.date)}</td>
+                <td>
+                  <Input
+                    type="date"
+                    aria-label={`Date of ${formatDay(row.date)}`}
+                    value={row.date}
+                    onChange={(event) => void move(row.date, event.target.value)}
+                  />
+                </td>
                 <td>
                   <Select
                     label={`Type of ${formatDay(row.date)}`}

@@ -88,6 +88,23 @@ export function setTimeOffType(year: TrackingYear, date: string, type: TimeOffTy
   return { ...year, timeOff: year.timeOff.map((e) => (e.date === date ? { ...e, type } : e)) }
 }
 
+/**
+ * Move a listed day off to another date, keeping its type. The new date must be inside the year, a weekday and not
+ * listed already (nothing is overwritten); an unlisted `from` is refused.
+ */
+export function moveTimeOff(year: TrackingYear, from: string, to: string): Change {
+  const entry = year.timeOff.find((e) => e.date === from)
+  if (!entry) return { ok: false, reason: 'missing' }
+  if (from === to) return { ok: true, year }
+  if (!inYear(to, year.start)) return { ok: false, reason: 'outside-year' }
+  if (weekdayOf(to) > 5) return { ok: false, reason: 'weekend' }
+  if (year.timeOff.some((e) => e.date === to)) return { ok: false, reason: 'listed' }
+  const timeOff = [...year.timeOff.filter((e) => e.date !== from), { ...entry, date: to }].sort(
+    (a, b) => a.date.localeCompare(b.date)
+  )
+  return { ok: true, year: { ...year, timeOff } }
+}
+
 export function removeTimeOff(year: TrackingYear, date: string): TrackingYear {
   return { ...year, timeOff: year.timeOff.filter((e) => e.date !== date) }
 }
