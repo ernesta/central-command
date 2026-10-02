@@ -223,6 +223,7 @@ ready for `--apply`" and say so plainly when you report back.
 
 ### For the user (review and decisions)
 
+- **Hours (2 Oct 2026):** allowance days not listed as time off now come off the plan on the year's last day (`docs/DECISIONS.md`, "Unlisted allowance days"). Delete the 450-minute entry on 20 Sep 2026 in 2025–26 (the balance stays the same), and check the week of 20 Apr 2026: the old sheet typed 3 worked days but only 1 day off is listed, so it may be 7:30 too low.
 - [ ] **Review the Hours work of 2 Oct 2026** (built and committed, not pushed): **Time off** (Research → Time off: summary and bar, the list, Add with From/To/Type, remove; the landing card), **Charts and weeks** (new: running balance, year heat map, typical week, Years table; click a heat-map day or press Enter to open its week), and **Training and Meetings now use the shared year** (52 weeks from a Monday, set in Settings → General) instead of 1 Sep to 31 Aug: the year select, the Training plan and the PDF exports all follow it. Nothing in your library changed year (2025–26 still has 129 training entries). Things to say: should removing a day off ask first? Should the Time off bar have a legend? Should the Years table sit nearer the top of the charts page?
 - [ ] **How does Work differ for Hours and Time off?** Hours a day, allowance, whether it has time off at all, its own tasks (`docs/TIME_PLAN.md`, "Still open"). Nothing for Work is built until you answer.
 

@@ -241,4 +241,4 @@ npx electron-vite dev -- --remote-debugging-port=9333`, then `chromium.connectOv
   (`docs/DECISIONS.md`, "Hours feedback round"); a running task counts whole minutes everywhere (2 Oct). **Meetings, Training, the Training plan and the search use the shared
   year** (52 weeks from a Monday, a start date such as `2026-09-21`, `useYear`); the old academic year is gone ("Training and Meetings use the shared year"). The Mac app is
   packaged (`npm run build:mac`) and installed in `/Applications`; it reads `~/CentralCommand` (`docs/DECISIONS.md`, "Packaging and installing the Mac app"); quit it before
-  replacing it. Left: stage 10 (Work's Hours and Time off, Tasks), after the user answers "How does Work differ?". The user's review items are at the top of `docs/ROADMAP.md`.
+  replacing it. Allowance days not listed as time off come off the plan on the year's last day (`docs/DECISIONS.md`, "Unlisted allowance days"). Left: stage 10 (Work's Hours and Time off, Tasks), after the user answers "How does Work differ?". The user's review items are at the top of `docs/ROADMAP.md`.
