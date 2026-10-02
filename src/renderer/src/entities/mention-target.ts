@@ -15,12 +15,12 @@ export interface Suggestion {
  */
 export interface MentionTarget {
   /** Where a position is on the screen (viewport pixels). */
-  coordsAt(pos: number): { left: number; bottom: number }
+  coordsAt(pos: number): { left: number; top: number; bottom: number }
   /** Draw the mentions again: something they point at has been looked up. */
   refresh(): void
   /** The `@…` the cursor is at the end of now, or null. */
   current(): Suggestion | null
-  /** Replace the `@…` with a mention of `ref` labelled `label`, followed by a space, and put the cursor after it. */
+  /** Replace the `@…` with a mention of `ref` labelled `label` and put the cursor after it. */
   insert(suggestion: Suggestion, label: string, ref: EntityRef): void
 }
 

@@ -1307,8 +1307,8 @@ lists, readings' notes), since they all share the one editor (`NotesEditor` when
   providers, and they cover both workspaces. The picker lists kinds in the order of `ENTITY_KINDS`: people, readings, meetings, notes.
 - **In the editor** (`src/renderer/src/entities/`): `EntityPickerController` is a plain object (as `useNotesFind` is) that the editor's extension (`editor/live-entities.ts`; two Milkdown plugins when this was written) talks to and React reads. `@` opens the picker only at the start of a word (so `a@b.org` and `meet @ noon` are left alone), not in
   code or inside a link, and not for a long or two-space query; Escape closes it until that `@` is gone. Enter or Tab links, arrows
-  move, a click picks without taking the cursor out of the text. Typing punctuation straight after a mention takes back the space the
-  mention was followed by. Mentions are drawn by decorations: a chip, its icon a CSS mask (the same Lucide icons, made into CSS variables by
+  move, a click picks without taking the cursor out of the text. A mention is no longer followed by a space (2 Oct 2026; the
+  punctuation rule that took it back is gone). The list is anchored at the `@` and opens on the side with room, fixed for the whole query; only a real pointer move selects a row. Mentions are drawn by decorations: a chip, its icon a CSS mask (the same Lucide icons, made into CSS variables by
   `entityIconVars`), struck through in red when what they point at is gone. Hovering shows a card (kind, current name, one line) and
   Cmd-click opens it inside the app. (Milkdown needed its link schema extended, `entityLinkSchema`, because it wrote an empty `href` for any scheme but http, https, mailto, tel and ftp; the live editor has no such schema. Chips are now widgets over the link text, see stage 4 below.)
 - **Where a thing is mentioned** (`MentionedIn`, on a person's page, a reading's page and the side column of a note and a meeting): the main
@@ -1726,3 +1726,8 @@ Supersedes the "Reading lists" decisions about `@citekey`, "Attach a reading…"
 
 - **The year's plan is the weekdays less the whole allowance (40), whether or not the days are listed.** Days listed as time off still come off the plan in their own week. The rest (`unlistedAllowance`: allowance minus listed weekdays, never below zero) comes off the running plan on the year's last day (`unlistedCredit` in `src/shared/tracking/plan.ts`), so the balance is not ahead all year. A day never taken is therefore credited (7:30) on top of the hours worked, with no manual entry. It is not taken out of any week's own plan (that would go negative), only out of `yearTotals` (plan, balance, whole plan) and the last week's running `yearBalance`.
 - Weeks with days typed in the old sheet still ignore the list; the remainder counts listed dates only. 2025–26 lists 39 days, so one day (7:30) comes off at the end, which replaces the 7:30 the user had added by hand on 20 Sep 2026 (that 450-minute entry can be removed; the balance is unchanged). The importer's check adds the same credit to the sheet's balance.
+
+## Find bar and picker feedback (2 Oct 2026)
+
+- Find: a click in the note or Escape in it closes the bar; Cmd-F while it is open puts the cursor back in the find field (selected). `FindBridge` gained `close` and `focus`; the bar's own state is cleared by the controller's `onClose`.
+- `@` picker: it used to follow the caret and flip above or below as results changed height, and a list that scrolled under a still pointer moved the highlight. Now anchored at the `@`, side chosen from the fixed 360px maximum, hover ignores events without pointer movement. Checked in the built app: the list's position is identical before and after typing more.

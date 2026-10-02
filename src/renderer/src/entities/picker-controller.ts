@@ -19,9 +19,11 @@ export interface PickerGroup {
 /** What the picker looks like right now; a new object whenever anything in it changes. */
 export interface PickerSnapshot {
   open: boolean
-  /** Where the cursor is on screen (viewport pixels): the picker sits just under it. */
+  /** Where the `@` is on screen (viewport pixels): the picker sits just under it and stays there while the query is typed. */
   left: number
   top: number
+  /** The top of the line the `@` is on, for a list that opens above it. */
+  lineTop: number
   query: string
   groups: PickerGroup[]
   /** Index into the rows of all groups, top to bottom. */
@@ -36,6 +38,7 @@ const CLOSED: PickerSnapshot = {
   open: false,
   left: 0,
   top: 0,
+  lineTop: 0,
   query: '',
   groups: [],
   active: 0,
@@ -122,10 +125,10 @@ export class EntityPickerController implements EntityHost {
       this.suggestion.from !== suggestion.from ||
       this.suggestion.query !== suggestion.query
     this.suggestion = suggestion
-    const caret = target.coordsAt(suggestion.to)
+    const caret = target.coordsAt(suggestion.from)
     if (!changed && this.snapshot.open) {
       if (caret.left !== this.snapshot.left || caret.bottom + 6 !== this.snapshot.top) {
-        this.set({ left: caret.left, top: caret.bottom + 6 })
+        this.set({ left: caret.left, top: caret.bottom + 6, lineTop: caret.top })
       }
       return
     }
@@ -133,6 +136,7 @@ export class EntityPickerController implements EntityHost {
       open: true,
       left: caret.left,
       top: caret.bottom + 6,
+      lineTop: caret.top,
       query: suggestion.query,
       active: 0,
       error: null,
@@ -214,7 +218,7 @@ export class EntityPickerController implements EntityHost {
     }, DEBOUNCE_MS)
   }
 
-  /** Writes the chosen entity into the note in place of the `@…`, as a link to it followed by a space. */
+  /** Writes the chosen entity into the note in place of the `@…`, as a link to it. */
   choose = async (index: number): Promise<void> => {
     const row = this.rows()[index]
     const target = this.target

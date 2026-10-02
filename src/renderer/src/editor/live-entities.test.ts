@@ -276,12 +276,12 @@ describe('the @ picker', () => {
     expect(suggested.at(-1)).toBeNull()
   })
 
-  it('writes the chosen mention in place of the @…, with a space after, in one undo step', () => {
+  it('writes the chosen mention in place of the @…, with nothing after it, in one undo step', () => {
     const { entities } = fakeHost()
     const { view } = openView('Met @ka| there', entities)
     const s = findSuggestion(view.state)!
     liveTarget(view).insert(s, 'Kathy Rastle', { kind: 'person', key: 'Kathy Rastle' })
-    expect(show(view)).toBe(`Met ${KATHY} | there`)
+    expect(show(view)).toBe(`Met ${KATHY}| there`)
     undo(view)
     expect(view.state.sliceDoc()).toBe('Met @ka there')
   })
@@ -292,7 +292,7 @@ describe('the @ picker', () => {
       kind: 'note',
       key: 'k3f9a2x1'
     })
-    expect(view.state.sliceDoc()).toBe('[A \\[b\\] c](cc://note/k3f9a2x1) ')
+    expect(view.state.sliceDoc()).toBe('[A \\[b\\] c](cc://note/k3f9a2x1)')
   })
 
   it('gives the picker the keys first while it is open, and the note gets none of them', () => {
@@ -309,31 +309,5 @@ describe('the @ picker', () => {
     expect(view.state.sliceDoc()).toBe('- a')
     send('ArrowDown')
     expect(keys).toEqual(['Enter', 'ArrowDown'])
-  })
-})
-
-describe('punctuation right after a mention', () => {
-  const type = (view: EditorView, text: string): boolean => {
-    const { from, to } = view.state.selection.main
-    return view.state
-      .facet(EditorView.inputHandler)
-      .some((handler) => handler(view, from, to, text, () => view.state.update({})))
-  }
-
-  it('takes back the space the mention was followed by', () => {
-    const { view } = openView(`A ${KATHY} |and`)
-    expect(type(view, ',')).toBe(true)
-    expect(show(view)).toBe(`A ${KATHY},|and`)
-    undo(view)
-    expect(view.state.sliceDoc()).toBe(`A ${KATHY} and`)
-  })
-
-  it('leaves a space after ordinary text and after a web link alone, and other characters', () => {
-    for (const marked of ['A word |and', 'A [web](https://x.org) |and']) {
-      const { view } = openView(marked)
-      expect(type(view, ','), marked).toBe(false)
-    }
-    const { view } = openView(`A ${KATHY} |and`)
-    expect(type(view, 'x')).toBe(false)
   })
 })

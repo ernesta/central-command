@@ -194,14 +194,14 @@ export function findSuggestion(state: EditorState): Suggestion | null {
 /** The picker's view of a live editor. `caret` is where the cursor is on screen, read while the editor measures. */
 export function liveTarget(
   view: EditorView,
-  caret?: { left: number; bottom: number }
+  caret?: { left: number; top: number; bottom: number }
 ): MentionTarget {
   return {
-    coordsAt: (pos) => caret ?? view.coordsAtPos(pos) ?? { left: 0, bottom: 0 },
+    coordsAt: (pos) => caret ?? view.coordsAtPos(pos) ?? { left: 0, top: 0, bottom: 0 },
     refresh: () => view.dispatch({ effects: refreshMentions.of(null) }),
     current: () => findSuggestion(view.state),
     insert: (suggestion, label, ref) => {
-      const text = `[${escapeLabel(label)}](${entityHref(ref)}) `
+      const text = `[${escapeLabel(label)}](${entityHref(ref)})`
       view.dispatch({
         changes: { from: suggestion.from, to: suggestion.to, insert: text },
         selection: EditorSelection.cursor(suggestion.from + text.length),
@@ -225,12 +225,12 @@ const suggestPlugin = ViewPlugin.fromClass(
     }
     update(update: ViewUpdate): void {
       if (!update.docChanged && !update.selectionSet && !update.focusChanged) return
-      // The screen position of the cursor is read once the editor has laid itself out, not in the middle of an update.
+      // The screen position of the `@` (where the list stays) is read once the editor has laid itself out, not in the middle of an update.
       update.view.requestMeasure({
         key: this,
         read: (view) => {
           const found = view.hasFocus ? findSuggestion(view.state) : null
-          return { found, caret: found ? view.coordsAtPos(found.to) : null }
+          return { found, caret: found ? view.coordsAtPos(found.from) : null }
         },
         write: ({ found, caret }, view) =>
           this.host().suggest(liveTarget(view, caret ?? undefined), caret ? found : null)
@@ -242,25 +242,11 @@ const suggestPlugin = ViewPlugin.fromClass(
   }
 )
 
-/** Typing punctuation straight after a mention takes back the space the picker added: `[Kathy](…), and`, not `Kathy , and`. */
-const punctuation = EditorView.inputHandler.of((view, from, to, text) => {
-  if (from !== to || from < 2 || !/^[,.;:!?)]$/.test(text)) return false
-  if (view.state.sliceDoc(from - 1, from) !== ' ' || !chipEndingAt(view.state, from - 1))
-    return false
-  view.dispatch({
-    changes: { from: from - 1, to, insert: text },
-    selection: EditorSelection.cursor(from),
-    userEvent: 'input.type'
-  })
-  return true
-})
-
 /** Everything mentions need beyond the drawing (`live-decorations.ts`): the `@` picker's keys, its trigger, the punctuation rule. */
 export function entityExtensions(entities: LiveEntities = NO_ENTITIES): Extension[] {
   return [
     entitiesFacet.of(entities),
     suggestPlugin,
-    punctuation,
     // The picker gets the arrows, Enter, Tab and Escape before any other binding while it is open.
     Prec.highest(
       EditorView.domEventHandlers({

@@ -10,6 +10,8 @@ interface EntityPickerProps {
 }
 
 const EDGE = 12
+const WIDTH = 360
+const MAX_HEIGHT = 360
 
 /**
  * The list that opens under the cursor when `@` is typed: people, readings, meetings and notes matching what follows
@@ -21,29 +23,32 @@ export function EntityPicker({
   onChoose,
   onHover
 }: EntityPickerProps): React.JSX.Element | null {
-  const menuRef = useRef<HTMLDivElement>(null)
   const activeRef = useRef<HTMLDivElement>(null)
+  const pointer = useRef({ x: -1, y: -1 })
 
-  // Keep the row the arrows are on in view, and the whole list on the screen (above the cursor when there is no room below).
+  // Keep the row the arrows are on in view.
   useLayoutEffect(() => {
     activeRef.current?.scrollIntoView({ block: 'nearest' })
-    const menu = menuRef.current
-    if (!menu || !snapshot.open) return
-    const rect = menu.getBoundingClientRect()
-    if (rect.bottom > window.innerHeight - EDGE && snapshot.top - rect.height - 28 > EDGE) {
-      menu.style.top = `${snapshot.top - rect.height - 28}px`
-    } else menu.style.top = `${snapshot.top}px`
-    const left = Math.min(snapshot.left, window.innerWidth - rect.width - EDGE)
-    menu.style.left = `${Math.max(EDGE, left)}px`
   })
 
   if (!snapshot.open) return null
+  // The list opens on the side with room and stays there: where it sits depends only on where the `@` is, never on how many rows came back.
+  const below = window.innerHeight - snapshot.top - EDGE
+  const above = snapshot.lineTop - 6 - EDGE
+  const opensAbove = below < MAX_HEIGHT && above > below
+  const left = Math.max(EDGE, Math.min(snapshot.left, window.innerWidth - WIDTH - EDGE))
+  const place: React.CSSProperties = opensAbove
+    ? {
+        left,
+        bottom: window.innerHeight - snapshot.lineTop + 6,
+        maxHeight: Math.min(MAX_HEIGHT, above)
+      }
+    : { left, top: snapshot.top, maxHeight: Math.min(MAX_HEIGHT, below) }
   let index = -1
   return createPortal(
     <div
-      ref={menuRef}
       className={styles.menu}
-      style={{ left: snapshot.left, top: snapshot.top }}
+      style={place}
       role="listbox"
       aria-label="Link to"
       // Clicking must not take the cursor out of the note.
@@ -70,7 +75,13 @@ export function EntityPicker({
                     role="option"
                     aria-selected={active}
                     className={[styles.item, active && styles.active].filter(Boolean).join(' ')}
-                    onMouseMove={() => onHover(at)}
+                    onMouseMove={(event) => {
+                      // Only a real pointer move selects: a list that scrolls or refills under a still pointer must not move the highlight.
+                      const last = pointer.current
+                      if (event.clientX === last.x && event.clientY === last.y) return
+                      pointer.current = { x: event.clientX, y: event.clientY }
+                      onHover(at)
+                    }}
                     onClick={() => onChoose(at)}
                   >
                     <Icon className={styles.icon} size={15} strokeWidth={1.75} aria-hidden />
