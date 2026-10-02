@@ -38,6 +38,12 @@ describe('sentenceCaseHeading', () => {
 })
 
 describe('sentenceCaseHeadings', () => {
+  it('lowercases March as a word but not as a month before a number', () => {
+    expect(h('Is the March Towards L1 Instruction Justified?')).toBe(
+      'Is the march towards L1 instruction justified?'
+    )
+    expect(h('Deadline March 2027')).toBe('Deadline March 2027')
+  })
   it('removes a doubled marker and all-bold headings', () => {
     expect(sentenceCaseHeadings('## ## ECLS-K:2011 Kindergarten — Fifth Grade', proper)).toBe(
       '## ECLS-K:2011 kindergarten — fifth grade'

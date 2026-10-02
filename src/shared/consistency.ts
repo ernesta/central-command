@@ -12,9 +12,7 @@
 export const EXTRA_PROPER = [
   'January',
   'February',
-  'March',
   'April',
-  'May',
   'June',
   'July',
   'August',
@@ -54,7 +52,7 @@ export const PROTECTED_PHRASES = [
 
 /** A word before a number or a single capital letter ("Study 1", "Category A") is a label and keeps its capital. */
 const LABEL =
-  /^(Study|Category|Priority|Phase|Table|Figure|Chapter|Section|Aim|Part|Stage|Wave|Model|Experiment)$/
+  /^(Study|Category|Priority|Phase|Table|Figure|Chapter|Section|Aim|Part|Stage|Wave|Model|Experiment|January|February|March|April|May|June|July|August|September|October|November|December)$/
 
 const SKIP_ALWAYS = new Set(['I'])
 
@@ -83,6 +81,9 @@ export function learnProperNouns(
   const found = new Set<string>(EXTRA_PROPER)
   for (const w of capitalised)
     if (!lower.has(w.toLowerCase()) && !isCommonWord(w.toLowerCase())) found.add(w)
+  // Also ordinary words ('the march towards', 'may'): a month keeps its capital only before a number (see LABEL).
+  found.delete('March')
+  found.delete('May')
   return found
 }
 
