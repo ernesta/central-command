@@ -85,6 +85,7 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   using the same chord string the list shows; a module adds its shortcuts to `shortcuts` in its manifest. Add or change the
   entry whenever you add or change a shortcut.
 - Commits are small: one per feature and per standalone part of a feature.
+- **Stop at the end of every stage of a plan and ask the user for next steps; never start the next stage in the same turn**, even when the order was agreed. The user clears context between stages.
 
 ## Where things stand and where to look
 
