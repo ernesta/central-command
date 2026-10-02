@@ -1,0 +1,102 @@
+.card {
+  padding: 16px 24px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-20);
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-secondary);
+  font-size: var(--text-12);
+}
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+.aimKey {
+  width: 14px;
+  height: 0;
+  border-top: 1.5px solid var(--text-secondary);
+}
+.plot {
+  position: relative;
+  margin: 8px -4px 0;
+  padding: 0 4px;
+  border-radius: var(--radius-control);
+}
+.plot svg {
+  display: block;
+  overflow: visible;
+}
+.bar {
+  fill: var(--accent);
+}
+.value {
+  fill: var(--text-secondary);
+  font-size: var(--text-12);
+  font-variant-numeric: tabular-nums;
+}
+.lift {
+  filter: brightness(1.12);
+}
+.grid {
+  stroke: var(--border-faint);
+  stroke-width: 1;
+}
+.axis {
+  fill: var(--text-muted);
+  font-size: var(--text-11);
+  font-variant-numeric: tabular-nums;
+}
+.aim {
+  stroke: var(--text-secondary);
+  stroke-width: 1.5;
+}
+.hit {
+  fill: transparent;
+}
+.tip {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  background: var(--tooltip-bg);
+  color: var(--tooltip-text);
+  font-size: var(--text-12);
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+}
+.tipValue {
+  font-size: var(--text-16);
+  font-variant-numeric: tabular-nums;
+}
+.tipLine {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}

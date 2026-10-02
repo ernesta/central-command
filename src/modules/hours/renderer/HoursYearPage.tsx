@@ -4,6 +4,7 @@ import { useNow } from '@renderer/state/use-now'
 import { useRunningTimer } from '@renderer/state/use-running-timer'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { BalanceChart } from './BalanceChart'
+import { TypicalWeek } from './TypicalWeek'
 import { WeeksChart } from './WeeksChart'
 import { YearHeatMap } from './YearHeatMap'
 import { AllWeeks } from './AllWeeks'
@@ -30,6 +31,7 @@ export function HoursYearPage(): React.JSX.Element {
           <WeeksChart data={data} now={now} />
           <BalanceChart data={data} now={now} />
           <YearHeatMap workspace={workspace} data={data} now={now} />
+          <TypicalWeek data={data} now={now} />
           <AllWeeks workspace={workspace} data={data} now={now} />
         </div>
       )}
