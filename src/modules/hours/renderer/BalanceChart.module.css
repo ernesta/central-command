@@ -1,0 +1,84 @@
+.card {
+  padding: 16px 24px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-20);
+}
+.note {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--text-12);
+}
+.plot {
+  position: relative;
+  margin: 8px -4px 0;
+  padding: 0 4px;
+  border-radius: var(--radius-control);
+}
+.plot svg {
+  display: block;
+  overflow: visible;
+}
+.grid {
+  stroke: var(--border-faint);
+  stroke-width: 1;
+}
+/* Zero is the plan: a firmer line than the grid. */
+.zero {
+  stroke: var(--text-secondary);
+  stroke-width: 1.5;
+}
+.axis {
+  fill: var(--text-muted);
+  font-size: var(--text-11);
+  font-variant-numeric: tabular-nums;
+}
+.line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.dot {
+  fill: var(--accent);
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+.hit {
+  fill: transparent;
+}
+.tip {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  background: var(--tooltip-bg);
+  color: var(--tooltip-text);
+  font-size: var(--text-12);
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+}
+.tipValue {
+  font-size: var(--text-16);
+  font-variant-numeric: tabular-nums;
+}
+.tipLine {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}

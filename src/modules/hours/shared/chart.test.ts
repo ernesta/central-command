@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { columnPath, niceAxis, slotAt } from './chart'
+import { columnPath, linePath, niceAxis, niceRange, slotAt } from './chart'
 
 describe('niceAxis', () => {
   it('rounds the top up to a whole step and lists the ticks', () => {
@@ -31,5 +31,34 @@ describe('slotAt', () => {
     expect(slotAt(50, 40, 10, 5)).toBe(1)
     expect(slotAt(39, 40, 10, 5)).toBeNull()
     expect(slotAt(90, 40, 10, 5)).toBeNull()
+  })
+})
+
+describe('niceRange', () => {
+  const steps = [60, 120, 300, 600]
+  it('holds the values and always has zero as a tick', () => {
+    const r = niceRange(-150, 200, steps)
+    expect(r.bottom).toBeLessThanOrEqual(-150)
+    expect(r.top).toBeGreaterThanOrEqual(200)
+    expect(r.ticks).toContain(0)
+  })
+  it('picks the smallest step that keeps the ticks few', () => {
+    expect(niceRange(0, 300, steps).step).toBe(60)
+    expect(niceRange(-1200, 900, steps).step).toBe(600)
+  })
+  it('keeps some height when everything is zero', () => {
+    expect(niceRange(0, 0, steps)).toMatchObject({ bottom: 0, top: 60, ticks: [0, 60] })
+  })
+})
+
+describe('linePath', () => {
+  it('joins points and is empty for none', () => {
+    expect(linePath([])).toBe('')
+    expect(
+      linePath([
+        { x: 1, y: 2 },
+        { x: 3, y: 4 }
+      ])
+    ).toBe('M1 2L3 4')
   })
 })
