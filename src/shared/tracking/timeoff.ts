@@ -59,7 +59,7 @@ const RANK: Record<TimeOffType, number> = { public: 0, university: 1, leave: 2 }
 /**
  * Add days off from `from` to `to` inclusive. Weekends are skipped; a date outside the year refuses the whole
  * request; a date already listed keeps whichever type ranks higher (public holiday, then university holiday, then
- * leave), whatever order they were added in.
+ * leave), whatever order they were added in. Refused as `listed` when that leaves the list unchanged.
  */
 export function addTimeOff(
   year: TrackingYear,
@@ -80,6 +80,12 @@ export function addTimeOff(
     if (!listed || RANK[e.type] < RANK[listed.type]) byDate.set(e.date, e)
   }
   const timeOff = [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date))
+  // Nothing new (every day listed already, with the same or a stronger type): say so rather than pretend.
+  if (
+    timeOff.length === year.timeOff.length &&
+    timeOff.every((e, i) => e.type === year.timeOff[i].type)
+  )
+    return { ok: false, reason: 'listed' }
   return { ok: true, year: { ...year, timeOff } }
 }
 

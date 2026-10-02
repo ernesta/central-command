@@ -47,11 +47,21 @@ describe('adding days off', () => {
     const types = ['public', 'university', 'leave'] as const
     for (const first of types)
       for (const second of types) {
-        let y = ok(addTimeOff(year(), '2026-12-24', '2026-12-24', first))
-        y = ok(addTimeOff(y, '2026-12-24', '2026-12-24', second))
+        const y = ok(addTimeOff(year(), '2026-12-24', '2026-12-24', first))
         const winner = types.find((t) => t === first || t === second)
-        expect(y.timeOff).toEqual([{ date: '2026-12-24', type: winner }])
+        const again = addTimeOff(y, '2026-12-24', '2026-12-24', second)
+        // A weaker or equal type changes nothing, which is refused rather than silently accepted.
+        if (winner === first) expect(again).toEqual({ ok: false, reason: 'listed' })
+        else expect(ok(again).timeOff).toEqual([{ date: '2026-12-24', type: winner }])
       }
+  })
+  it('refuses days that are all listed already, but adds a range with some new days', () => {
+    const y = ok(addTimeOff(year(), '2026-12-23', '2026-12-24', 'leave'))
+    expect(addTimeOff(y, '2026-12-23', '2026-12-24', 'leave')).toEqual({
+      ok: false,
+      reason: 'listed'
+    })
+    expect(ok(addTimeOff(y, '2026-12-24', '2026-12-28', 'leave')).timeOff).toHaveLength(4)
   })
   it('leave over a holiday week keeps the holidays and only fills the other days', () => {
     let y = ok(addTimeOff(year(), '2026-12-25', '2026-12-25', 'public'))
