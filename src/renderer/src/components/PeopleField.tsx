@@ -1,7 +1,7 @@
 import { Plus, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
-import { activePeople, findByName, type Person } from '@shared/people'
+import { activePeople, findByName, matchPeople, sortPeople, type Person } from '@shared/people'
 import styles from './PeopleField.module.css'
 
 interface PeopleFieldProps {
@@ -28,6 +28,7 @@ export function PeopleField({
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [active, setActive] = useState(0)
   const wrapRef = useRef<HTMLDivElement>(null)
   const addRef = useRef<HTMLButtonElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -35,6 +36,7 @@ export function PeopleField({
   const close = (): void => {
     setOpen(false)
     setName('')
+    setActive(0)
     setError(null)
     addRef.current?.focus()
   }
@@ -53,7 +55,17 @@ export function PeopleField({
   }, [open])
 
   const attending = new Set(names.map((a) => a.toLowerCase()))
-  const available = activePeople(people).filter((p) => !attending.has(p.name.toLowerCase()))
+  const available = sortPeople(
+    activePeople(people).filter((p) => !attending.has(p.name.toLowerCase()))
+  )
+  const trimmed = name.trim()
+  const matches = matchPeople(available, trimmed)
+  const exists =
+    trimmed !== '' && people.some((p) => p.name.toLowerCase() === trimmed.toLowerCase())
+  // Typing a name nobody has yet offers to add them, in the same list.
+  const offerNew = trimmed !== '' && !exists
+  const rows = matches.length + (offerNew ? 1 : 0)
+  const current = Math.min(active, Math.max(rows - 1, 0))
 
   const add = (personName: string): void => {
     onChange([...names, personName])
@@ -61,7 +73,6 @@ export function PeopleField({
   }
 
   const addNew = async (): Promise<void> => {
-    const trimmed = name.trim()
     if (!trimmed) return
     try {
       const person = await onAddPerson(trimmed)
@@ -69,6 +80,11 @@ export function PeopleField({
     } catch (e) {
       setError(ipcErrorMessage(e))
     }
+  }
+
+  const choose = (index: number): void => {
+    if (index < matches.length) add(matches[index].name)
+    else if (offerNew) void addNew()
   }
 
   return (
@@ -124,50 +140,70 @@ export function PeopleField({
             }
           }}
         >
-          {available.length > 0 && (
+          <input
+            id="person-search"
+            ref={inputRef}
+            className={styles.input}
+            value={name}
+            placeholder="Search or add"
+            aria-label={`Search or add ${noun === 'attendee' ? 'an' : 'a'} ${noun}`}
+            autoComplete="off"
+            onChange={(event) => {
+              setName(event.target.value)
+              setActive(0)
+              setError(null)
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault()
+                if (rows > 0)
+                  setActive((current + (event.key === 'ArrowDown' ? 1 : rows - 1)) % rows)
+              } else if (event.key === 'Enter') {
+                event.preventDefault()
+                choose(current)
+              }
+            }}
+          />
+          {rows > 0 && (
             <ul className={styles.people}>
-              {available.map((p) => (
+              {matches.map((p, index) => (
                 <li key={p.name}>
-                  <button type="button" className={styles.person} onClick={() => add(p.name)}>
+                  <button
+                    type="button"
+                    className={[styles.person, index === current && styles.current]
+                      .filter(Boolean)
+                      .join(' ')}
+                    ref={(el) => {
+                      if (el && index === current) el.scrollIntoView({ block: 'nearest' })
+                    }}
+                    onClick={() => add(p.name)}
+                  >
                     <span className={styles.initials}>{p.initials}</span>
                     {p.name}
                   </button>
                 </li>
               ))}
+              {offerNew && (
+                <li>
+                  <button
+                    type="button"
+                    className={[styles.person, current === matches.length && styles.current]
+                      .filter(Boolean)
+                      .join(' ')}
+                    onClick={() => void addNew()}
+                  >
+                    <Plus size={12} strokeWidth={2} aria-hidden />
+                    Add “{trimmed}”
+                  </button>
+                </li>
+              )}
             </ul>
           )}
-          <form
-            className={styles.newPerson}
-            onSubmit={(event) => {
-              event.preventDefault()
-              void addNew()
-            }}
-          >
-            <label className={styles.newLabel} htmlFor="new-person">
-              {available.length > 0 ? 'Someone new' : 'Add someone'}
-            </label>
-            <div className={styles.newRow}>
-              <input
-                id="new-person"
-                ref={inputRef}
-                className={styles.input}
-                value={name}
-                placeholder="Full name"
-                onChange={(event) => {
-                  setName(event.target.value)
-                  setError(null)
-                }}
-              />
-              <button type="submit" className={styles.submit} disabled={name.trim() === ''}>
-                Add
-              </button>
-            </div>
-            {error && (
-              <p className={styles.error} role="alert">
-                {error}
-              </p>
-            )}
-          </form>
+          {error && (
+            <p className={styles.error} role="alert">
+              {error}
+            </p>
+          )}
         </div>
       )}
     </div>

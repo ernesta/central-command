@@ -94,7 +94,8 @@
   font-size: var(--text-14);
   text-align: left;
 }
-.person:hover {
+.person:hover,
+.current {
   background: var(--hover-tint);
 }
 .initials {

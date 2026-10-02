@@ -1,3 +1,5 @@
+import { fold } from './text'
+
 /** A named link on a person's own page (Google Scholar, GitHub, a website…), or their own label. */
 export interface PersonLink {
   label: string
@@ -298,7 +300,19 @@ export interface OwnerOption {
   attendee: boolean
 }
 
-/** Who a TODO can be assigned to: the meeting's attendees first, then everyone else in the list. */
+/** The people whose name or initials contain every word of `query` (accents and case ignored), in the order given. */
+export function matchPeople<T extends { name: string; initials: string }>(
+  people: readonly T[],
+  query: string
+): T[] {
+  const terms = fold(query).split(/\s+/).filter(Boolean)
+  return people.filter((p) => {
+    const haystack = fold(`${p.name} ${p.initials}`)
+    return terms.every((t) => haystack.includes(t))
+  })
+}
+
+/** Who a TODO can be assigned to: the meeting's attendees first, then everyone else; each group alphabetical, me first. */
 export function ownerOptions(
   attendeeNames: readonly string[],
   people: readonly Person[]
@@ -312,7 +326,7 @@ export function ownerOptions(
   )
   const others = activePeople(people).filter((p) => !seen.has(p.initials.toUpperCase()))
   return [
-    ...unique.map((p) => ({ initials: p.initials, name: p.name, attendee: true })),
-    ...others.map((p) => ({ initials: p.initials, name: p.name, attendee: false }))
+    ...sortPeople(unique).map((p) => ({ initials: p.initials, name: p.name, attendee: true })),
+    ...sortPeople(others).map((p) => ({ initials: p.initials, name: p.name, attendee: false }))
   ]
 }

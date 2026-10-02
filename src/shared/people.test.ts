@@ -12,6 +12,7 @@ import {
   suggestInitials,
   mergePerson,
   normalisePeople,
+  matchPeople,
   ownerOptions,
   removePerson,
   restorePerson,
@@ -228,20 +229,23 @@ describe('ownerOptions', () => {
     p('Ernesta Orlovaitė', 'EO', true),
     p('Matthew Jukes', 'MJ')
   ]
-  it('lists attendees first, in meeting order, then everyone else', () => {
+  it('lists attendees first, then everyone else, each alphabetical with me first', () => {
     expect(
-      ownerOptions(['Ernesta Orlovaitė', 'Kathy Rastle'], all).map((o) => [o.initials, o.attendee])
+      ownerOptions(['Kathy Rastle', 'Matthew Jukes', 'Ernesta Orlovaitė'], all).map((o) => [
+        o.initials,
+        o.attendee
+      ])
     ).toEqual([
       ['EO', true],
       ['KR', true],
-      ['AC', false],
-      ['MJ', false]
+      ['MJ', true],
+      ['AC', false]
     ])
   })
   it('skips attendees who are not in the people list and lists nobody twice', () => {
     expect(
       ownerOptions(['Stranger', 'Kathy Rastle', 'kathy rastle'], all).map((o) => o.initials)
-    ).toEqual(['KR', 'AC', 'EO', 'MJ'])
+    ).toEqual(['KR', 'EO', 'AC', 'MJ'])
   })
   it('is empty when nobody is known', () => expect(ownerOptions(['A B'], [])).toEqual([]))
 })
@@ -354,5 +358,19 @@ describe('sortPeople', () => {
       'Zoe Adams'
     ])
     expect(list[0].name).toBe('Zoe Adams')
+  })
+})
+
+describe('sortPeople and matchPeople', () => {
+  const all = [p('Zed Last', 'ZL'), p('Ernesta Orlovaitė', 'EO', true), p('Ann Alpha', 'AA')]
+  it('puts me first, then alphabetical, without changing the input', () => {
+    expect(sortPeople(all).map((x) => x.initials)).toEqual(['EO', 'AA', 'ZL'])
+    expect(all[0].initials).toBe('ZL')
+  })
+  it('matches every word in the name or initials, ignoring accents and case', () => {
+    expect(matchPeople(all, 'orlov').map((x) => x.initials)).toEqual(['EO'])
+    expect(matchPeople(all, 'ernesta orlovaite').map((x) => x.initials)).toEqual(['EO'])
+    expect(matchPeople(all, 'zl').map((x) => x.initials)).toEqual(['ZL'])
+    expect(matchPeople(all, '')).toHaveLength(3)
   })
 })
