@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { Dialog } from '@renderer/components/Dialog'
+import { FieldError } from '@renderer/components/FieldError'
 import { PeopleError, updatePerson } from '@shared/people'
 import type { PersonPatch } from '../shared/people'
 import { personRoute } from './meetings-paths'
@@ -25,14 +26,6 @@ function submitOrCancel(submit: () => void, cancel: () => void) {
 
 /** Which input a refusal is about: the initials, or otherwise the name. */
 const isInitialsProblem = (message: string): boolean => /initials/i.test(message)
-
-function FieldError({ message }: { message: string }): React.JSX.Element {
-  return (
-    <p className={styles.error} role="alert">
-      {message}
-    </p>
-  )
-}
 
 function changeTitle(nameChanged: boolean, initialsChanged: boolean): string {
   if (nameChanged && initialsChanged) return 'Change name and initials?'

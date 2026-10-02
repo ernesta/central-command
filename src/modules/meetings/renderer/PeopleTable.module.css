@@ -98,12 +98,6 @@
   font-family: var(--font-mono);
   text-transform: uppercase;
 }
-.error {
-  margin: 6px 0 0;
-  color: var(--danger);
-  font-size: var(--text-12);
-  white-space: normal;
-}
 /* A toggle, like Pin on a note: only one person can ever be pressed at once (unrelated rows are never open together). */
 .meButton[aria-pressed='true'] {
   border-color: var(--accent);
