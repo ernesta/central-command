@@ -34,6 +34,12 @@ export function timeOffCounts(year: TrackingYear, today: string): TimeOffCounts 
   return { allowance, taken, booked, left: allowance - taken - booked, byType }
 }
 
+/** Allowance days not listed as days off (never below zero). */
+export function unlistedAllowance(year: TrackingYear): number {
+  const listed = new Set(year.timeOff.filter((e) => counts(e, year)).map((e) => e.date))
+  return Math.max(0, year.plan.allowanceDays - listed.size)
+}
+
 export interface TimeOffRow extends TimeOffEntry {
   /** Before today. A day off today or later is still booked. */
   taken: boolean

@@ -158,7 +158,8 @@ describe('2025–26: the known facts', () => {
     const plan = must(planOld())
     expect(formatHours(plan.check.minutes)).toBe('1,523:30')
     expect(plan.check.plannedDays).toBe(220)
-    expect(formatHours(plan.check.balance)).toBe('−126:30')
+    // The sheet's −126:30, plus the 25 allowance days not listed as dates (15 holidays are), 7:30 each.
+    expect(formatHours(plan.check.balance)).toBe('61:00')
     expect(formatHours(plan.check.averageWeek as number)).toBe('34:38')
     expect(plan.check.weeks).toBe(52)
     expect(plan.check.publicHolidays).toBe(8)

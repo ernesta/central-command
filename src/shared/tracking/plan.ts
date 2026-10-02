@@ -1,5 +1,6 @@
 import { addDays, daysBetween, inYear, weekdayOf, weeksOf } from '../year'
 import { minutesByDate, weeklyMinutes } from './totals'
+import { unlistedAllowance } from './timeoff'
 import type { Moment, TrackingYear } from './types'
 
 function offDates(year: TrackingYear): Set<string> {
@@ -58,6 +59,20 @@ function weekThrough(
   return { days, plan: workDays === 0 ? 0 : (year.plan.hoursPerWeek * days) / workDays }
 }
 
+/**
+ * The plan's share for allowance days not listed as days off, in minutes. It comes off the plan on the year's last day
+ * (so the running balance is not ahead all year), and a day never taken is then credited on top of the hours worked.
+ */
+export function unlistedCredit(year: TrackingYear): number {
+  const days = year.plan.workDays.length
+  return days === 0 ? 0 : (unlistedAllowance(year) * year.plan.hoursPerWeek) / days
+}
+
+/** The year's last day: the Sunday of its 52nd week. */
+function lastDay(year: TrackingYear): string {
+  return addDays(year.start, 52 * 7 - 1)
+}
+
 export interface YearTotals {
   /** Minutes worked up to and including today. */
   minutes: number
@@ -76,8 +91,9 @@ export interface YearTotals {
 /** The year so far: today counts in full, future days and weeks are not in the plan. */
 export function yearTotals(year: TrackingYear, today: string, now?: Moment): YearTotals {
   let days = 0
-  let plan = 0
-  let wholePlan = 0
+  const credit = unlistedCredit(year)
+  let plan = today >= lastDay(year) ? -credit : 0
+  let wholePlan = -credit
   for (const w of weeksOf(year.start)) {
     const t = weekThrough(year, w.from, today)
     days += t.days
@@ -113,6 +129,8 @@ export interface WeekTotals {
 
 /** Every week with its hours, plan so far and running balance, for the weeks table and the balance chart. */
 export function weekTotals(year: TrackingYear, today: string, now?: Moment): WeekTotals[] {
+  const credit = unlistedCredit(year)
+  const last = lastDay(year)
   let running = 0
   const days = minutesByDate(year, now)
   return weeklyMinutes(year, now).map((w) => {
@@ -123,6 +141,7 @@ export function weekTotals(year: TrackingYear, today: string, now?: Moment): Wee
       if (d <= today) minutes += days.get(d) ?? 0
     }
     running += minutes - t.plan
+    if (today >= last && w.to === last) running += credit
     return {
       number: w.number,
       from: w.from,

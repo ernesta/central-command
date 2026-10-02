@@ -1,6 +1,6 @@
 import { addDays, daysBetween, inYear, weekdayOf, weeksOf, yearEnd, yearLabel } from '@shared/year'
 import { parseYear } from '@shared/tracking/parse'
-import { plannedDays, yearTotals, type YearTotals } from '@shared/tracking/plan'
+import { plannedDays, unlistedCredit, yearTotals, type YearTotals } from '@shared/tracking/plan'
 import { timeOffCounts } from '@shared/tracking/timeoff'
 import { weeklyMinutes, yearMinutes } from '@shared/tracking/totals'
 import {
@@ -258,7 +258,8 @@ export function planYear(input: PlanInput): YearPlan {
       : listDays(w.from, off, DEFAULT_PLAN.workDays)
   )
   const expectedDays = sum(expectedWeekDays)
-  const expectedBalance = dailyTotal - perDay * expectedDays
+  // The sheet's balance, plus the allowance days not listed, which the rules take off the plan on the year's last day.
+  const expectedBalance = dailyTotal - perDay * expectedDays + unlistedCredit(saved)
   const wrong: string[] = []
   const expect = (what: string, got: unknown, want: unknown): void => {
     if (got !== want)

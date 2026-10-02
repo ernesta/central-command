@@ -83,9 +83,9 @@ describe('the balance counts the plan up to and including today', () => {
   })
   it('has no plan before the year, and the whole year’s plan is separate', () => {
     expect(yearTotals(y, '2026-09-20').plan).toBe(0)
-    expect(yearTotals(y, '2026-09-23').wholePlan).toBe(52 * 2250)
+    expect(yearTotals(y, '2026-09-23').wholePlan).toBe(52 * 2250 - 40 * 450)
     expect(yearTotals(year({ timeOff: withOff('2026-12-24') }), '2026-09-23').wholePlan).toBe(
-      52 * 2250 - 450
+      52 * 2250 - 40 * 450
     )
   })
   it('includes the running task’s provisional time when asked', () => {
@@ -110,7 +110,12 @@ describe('the real 2025–26 numbers', () => {
     if (i >= 44) return
     for (let d = 0; d < 5; d++) days[addDays(w.from, d)] = { minutes: (n++ < 154 ? 28 : 27) * 15 }
   })
-  const y = year({ start, days, weekDays })
+  const y = year({
+    start,
+    days,
+    weekDays,
+    plan: { hoursPerWeek: 2250, workDays: [1, 2, 3, 4, 5], allowanceDays: 0 }
+  })
 
   it('gives 1,523:30 over 220 planned days, balance −126:30 and an average week of 34:38', () => {
     const t = yearTotals(y, '2026-09-20')
@@ -138,5 +143,43 @@ describe('the real 2025–26 numbers', () => {
       weeks.filter((w) => w.to > '2026-01-14').length
     )
     expect(weeks.find((w) => w.from <= '2026-01-14' && w.to >= '2026-01-14')!.inProgress).toBe(true)
+  })
+})
+
+describe('allowance days not listed as days off', () => {
+  const start = '2026-09-21'
+  const lastDay = addDays(start, 52 * 7 - 1)
+  const listed = (n: number): TimeOffEntry[] =>
+    withOff(...Array.from({ length: n }, (_, i) => addDays(start, 7 * i + 3)))
+
+  it('come off the plan on the last day, not before, and not out of any week’s own plan', () => {
+    const y = year({ timeOff: listed(39) })
+    const before = yearTotals(y, addDays(lastDay, -1))
+    const after = yearTotals(y, lastDay)
+    expect(after.plan - before.plan).toBe(-450)
+    expect(weekPlan(y, addDays(start, 51 * 7))).toBe(2250)
+  })
+  it('credit a day never taken on top of the hours worked', () => {
+    const taken40 = yearTotals(year({ timeOff: listed(40) }), lastDay)
+    const taken39 = yearTotals(year({ timeOff: listed(39) }), lastDay)
+    // Taking the 40th day removes its plan from its own week; not taking it removes the same at the year's end.
+    expect(taken40.plan).toBe(taken39.plan)
+  })
+  it('make the whole year’s plan the weekdays less the allowance, whatever is listed', () => {
+    for (const n of [0, 14, 39, 40])
+      expect(yearTotals(year({ timeOff: listed(n) }), start).wholePlan).toBe((260 - 40) * 450)
+  })
+  it('add nothing when more is listed than the allowance', () => {
+    const y = year({ timeOff: listed(41) })
+    expect(yearTotals(y, lastDay).plan).toBe(yearTotals(y, addDays(lastDay, -1)).plan)
+  })
+  it('end the running balance with the credit once, in the last week only', () => {
+    const y = year({ timeOff: listed(39) })
+    const weeks = weekTotals(y, lastDay)
+    expect(weeks[51].yearBalance).toBe(yearTotals(y, lastDay).balance)
+    expect(weeks[51].yearBalance - weeks[50].yearBalance).toBe(weeks[51].balance + 450)
+    expect(weekTotals(y, addDays(lastDay, -1))[51].yearBalance).toBe(
+      yearTotals(y, addDays(lastDay, -1)).balance
+    )
   })
 })
