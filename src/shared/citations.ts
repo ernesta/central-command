@@ -152,11 +152,37 @@ export function resolveCitation(
   }
 }
 
+/** Works referred to by their title rather than by authors and year; each is linked when its reading exists. */
+export const NAMED_WORKS: ReadonlyArray<{ pattern: RegExp; citekey: string }> = [
+  { pattern: /loud and clear/gi, citekey: 'worldbankLoudClearEffective2021' }
+]
+
+function namedMentions(text: string, readings: CitableReading[]): Proposal[] {
+  const skip = protectedRanges(text)
+  const found: Proposal[] = []
+  for (const { pattern, citekey } of NAMED_WORKS) {
+    if (!readings.some((r) => r.citekey === citekey)) continue
+    for (const m of text.matchAll(pattern)) {
+      const start = m.index
+      const end = start + m[0].length
+      if (skip.some(([a, b]) => start < b && end > a)) continue
+      found.push({
+        citation: { start, end, text: m[0], names: [], etAl: false, year: 0, suffix: '' },
+        resolution: { kind: 'linked', citekey }
+      })
+    }
+  }
+  return found
+}
+
 export function proposeCitations(text: string, readings: CitableReading[]): Proposal[] {
-  return findCitations(text).map((c) => {
+  const cited = findCitations(text).map((c) => {
     const { resolution, citation } = resolveCitation(c, readings)
     return { citation, resolution }
   })
+  return [...cited, ...namedMentions(text, readings)].sort(
+    (a, b) => a.citation.start - b.citation.start
+  )
 }
 
 /** The text with every linked proposal wrapped as `[label](cc://reading/citekey)`. */

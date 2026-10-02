@@ -9,6 +9,7 @@ const readings: CitableReading[] = [
   { citekey: 'kimB2020', authors: ['Kim', 'Park', 'Roe'], year: 2020 },
   { citekey: 'kim2018', authors: ['Kim'], year: 2018 },
   { citekey: 'taylor2016', authors: ['Taylor', 'von Fintel'], year: 2016 },
+  { citekey: 'worldbankLoudClearEffective2021', authors: ['World Bank'], year: 2021 },
   { citekey: 'koda2008', authors: ['Koda', 'Reddy'], year: 2008 }
 ]
 
@@ -50,5 +51,11 @@ describe('citations', () => {
   it('reports citations with no reading and ignores dates', () => {
     expect(proposeCitations('Nobody (2001)', readings)[0].resolution.kind).toBe('none')
     expect(proposeCitations('Liberia 2024-25, in 2026', readings)).toEqual([])
+  })
+  it('links works named by title', () => {
+    expect(link('the _Loud and Clear_ paper, and loud and clear')).toBe(
+      'the _[Loud and Clear](cc://reading/worldbankLoudClearEffective2021)_ paper, and [loud and clear](cc://reading/worldbankLoudClearEffective2021)'
+    )
+    expect(link('### Loud and Clear')).toBe('### Loud and Clear')
   })
 })
