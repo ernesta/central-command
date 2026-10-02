@@ -1321,6 +1321,13 @@ lists, readings' notes), since they all share the one editor (`NotesEditor` when
   exist yet); a "convert this plain name into a mention" action; renaming a note or meeting does not change the label of existing mentions
   of it (a label is the writer's text; the hover card and opening always show what it is called now).
 
+- **Picker fixes (2 Oct 2026).** Two bugs found by the user. (1) A note called AMPL could not be picked: the picker offers five hits per kind, the
+  notes' search also reads excerpts, and "ampl" is inside "sample", so recent notes about sampling filled the five places. `nameFirst`
+  (`src/shared/search.ts`) now puts hits whose name has every word first, names that start with the first word before the others; used by the
+  notes and readings providers. (2) A freshly linked note or meeting showed red, "no longer available": `ensureUid` writes the `uid`, but `resolve` read
+  the provider's 2-second cached list, which predated it, and the resolver keeps a `missing` answer for the life of the editor. `resolve` now
+  re-reads the list once before answering null. The unlinked AMPL and Reading First Impact Study lines in Data Sources Summary were linked by hand.
+
 ## People and Person page feedback (30 Sep 2026)
 
 - **Initials**: a hyphenated last name gives a letter per part (Roger Giner-Sorolla, RGS). When the usual initials are taken,
