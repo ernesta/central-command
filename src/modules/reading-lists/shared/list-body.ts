@@ -1,16 +1,13 @@
+import { parseEntityHref } from '@shared/entities'
 import { parseHeading, scanLines } from '@shared/sections'
 
 /**
- * One paper in a list. A bullet's leading bold run is its citation: `**@citekey**` names an existing
- * reading (`linked`); any other bold text is a citation typed by hand, kept as plain text until it is
- * attached to a real reading once the Zotero export has it (`placeholder`). A bullet with no leading
- * bold run has no citation yet (`missing`) so it is never silently dropped.
- *
- * `@citekey`, not `[[citekey]]`: Milkdown (the editor until 30 Sep 2026) had a Markdown serialiser that escaped a literal `[` (`\[\[citekey]]`)
- * wherever it appears, including inside a bold run, so the very next edit that touches the document
- * would rewrite the file and quietly turn every linked entry back into an unrecognised one. `@` has no
- * meaning in CommonMark and round-trips untouched (checked against a real Milkdown editor, not just
- * this parser, since only that showed the escaping).
+ * One paper in a list. A bullet's leading bold run is its citation. When it starts with a reading entity
+ * (`**[Kim et al. (2020)](cc://reading/<citekey>)**`) the entry is `linked` to that reading. The old
+ * `**@citekey**` form is still read as linked until `npm run tidy:reading-lists` rewrites it. Any other bold
+ * text is a citation typed by hand for a paper that is not in Zotero yet (`placeholder`); it becomes a link
+ * when the reading exists and the tidy script is re-run. A bullet with no leading bold run has no citation yet
+ * (`missing`) so it is never silently dropped.
  */
 export type ListEntry =
   | { kind: 'linked'; citekey: string; annotation: string; offset: number }
@@ -23,17 +20,26 @@ export interface ListSection {
   entries: ListEntry[]
 }
 
-const BULLET = /^ {0,3}[-*+][ \t]+(.*)$/
-const BOLD_LEAD = /^\*\*(.+?)\*\*[ \t]*(.*)$/
+export const BULLET = /^ {0,3}[-*+][ \t]+(.*)$/
+export const BOLD_LEAD = /^\*\*(.+?)\*\*[ \t]*(.*)$/
 const LINKED_CITEKEY = /^@(\S+)$/
+const LINKED_ENTITY = /^\[(?:\\.|[^\]\\\n])*\]\((cc:\/\/reading\/[^\s()]+)\)/
+
+/** The citekey a bold run names: a leading reading entity, or the old `@citekey`; null for a typed citation. */
+function citekeyOf(bold: string): string | null {
+  const entity = LINKED_ENTITY.exec(bold)
+  const ref = entity ? parseEntityHref(entity[1]) : null
+  if (ref) return ref.key
+  return LINKED_CITEKEY.exec(bold)?.[1] ?? null
+}
 
 function parseEntryText(text: string, offset: number): ListEntry {
   const bold = BOLD_LEAD.exec(text.trim())
   if (!bold) return { kind: 'missing', annotation: text.trim(), offset }
-  const linked = LINKED_CITEKEY.exec(bold[1].trim())
+  const citekey = citekeyOf(bold[1].trim())
   const annotation = bold[2].trim()
-  return linked
-    ? { kind: 'linked', citekey: linked[1].trim(), annotation, offset }
+  return citekey
+    ? { kind: 'linked', citekey, annotation, offset }
     : { kind: 'placeholder', citation: bold[1].trim(), annotation, offset }
 }
 
@@ -60,22 +66,4 @@ export function parseListBody(body: string): ListSection[] {
     if (bullet && current) current.entries.push(parseEntryText(bullet[1], l.start))
   }
   return sections
-}
-
-/**
- * Rewrites the bullet starting at `lineStart` (an entry's `offset`) so its citation is `**@citekey**`,
- * keeping the rest of the line (the annotation) exactly as it was. Used to attach a placeholder, or one
- * with no citation yet, to a reading once it is found; does nothing if `lineStart` is not really a
- * bullet line (the body changed under the caller).
- */
-export function attachReading(body: string, lineStart: number, citekey: string): string {
-  const nl = body.indexOf('\n', lineStart)
-  const lineEnd = nl === -1 ? body.length : nl
-  const line = body.slice(lineStart, lineEnd)
-  const bullet = BULLET.exec(line)
-  if (!bullet) return body
-  const prefix = line.slice(0, line.length - bullet[1].length)
-  const { annotation } = parseEntryText(bullet[1], lineStart)
-  const newLine = `${prefix}**@${citekey}**${annotation ? ` ${annotation}` : ''}`
-  return body.slice(0, lineStart) + newLine + body.slice(lineEnd)
 }

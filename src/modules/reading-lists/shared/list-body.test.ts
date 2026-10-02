@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { attachReading, parseListBody } from './list-body'
+import { parseListBody } from './list-body'
 
 describe('parseListBody', () => {
   it('reads sections and their entries, linked and placeholder', () => {
@@ -86,36 +86,26 @@ describe('parseListBody', () => {
   })
 })
 
-describe('attachReading', () => {
-  it('turns a placeholder into a linked entry, keeping the annotation', () => {
-    const body = '## S\n\n- **Smith (2020). Title.** A short annotation.\n'
-    const entry = parseListBody(body)[0].entries[0]
-    const next = attachReading(body, entry.offset, 'smith2020')
-    expect(next).toBe('## S\n\n- **@smith2020** A short annotation.\n')
-    expect(parseListBody(next)[0].entries[0]).toEqual({
+describe('parseListBody, entity entries', () => {
+  it('reads a leading reading entity as linked, with or without the old long reference text', () => {
+    const body = [
+      '## S',
+      '',
+      '- **[Kim et al. (2020)](cc://reading/kim2020)** Short form.',
+      '- **[Kim et al. (2020)](cc://reading/kim2020). Title. Journal, 1(2).** Old form.',
+      '- **[Kim](https://example.org)** a web link is still a typed citation'
+    ].join('\n')
+    const entries = parseListBody(body)[0].entries
+    expect(entries[0]).toMatchObject({
       kind: 'linked',
-      citekey: 'smith2020',
-      annotation: 'A short annotation.',
-      offset: entry.offset
+      citekey: 'kim2020',
+      annotation: 'Short form.'
     })
-  })
-
-  it('attaches a reading to an entry with no citation yet, and keeps the rest of the line', () => {
-    const body = '## S\n\n- an annotation with no citation\n'
-    const entry = parseListBody(body)[0].entries[0]
-    const next = attachReading(body, entry.offset, 'x2020')
-    expect(next).toBe('## S\n\n- **@x2020** an annotation with no citation\n')
-  })
-
-  it('leaves the body unchanged when the offset is no longer a bullet line', () => {
-    const body = '## S\n\nJust a paragraph, not a bullet.\n'
-    expect(attachReading(body, body.indexOf('Just'), 'x')).toBe(body)
-  })
-
-  it('never touches anything outside the one bullet line (a mutation check: an off-by-one on lineEnd would leak into the next line)', () => {
-    const body = '## S\n\n- **Old citation.** note one\n- **@other** note two\n'
-    const entry = parseListBody(body)[0].entries[0]
-    const next = attachReading(body, entry.offset, 'new2020')
-    expect(next).toBe('## S\n\n- **@new2020** note one\n- **@other** note two\n')
+    expect(entries[1]).toMatchObject({
+      kind: 'linked',
+      citekey: 'kim2020',
+      annotation: 'Old form.'
+    })
+    expect(entries[2].kind).toBe('placeholder')
   })
 })
