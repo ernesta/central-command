@@ -185,10 +185,8 @@ const api: Api = {
       ipcRenderer.invoke(TRACKING_IPC.setPlan, workspace, year, plan),
     addTimeOff: (workspace, year, from, to, type) =>
       ipcRenderer.invoke(TRACKING_IPC.addTimeOff, workspace, year, from, to, type),
-    moveTimeOff: (workspace, year, from, to) =>
-      ipcRenderer.invoke(TRACKING_IPC.moveTimeOff, workspace, year, from, to),
-    setTimeOffType: (workspace, year, date, type) =>
-      ipcRenderer.invoke(TRACKING_IPC.setTimeOffType, workspace, year, date, type),
+    editTimeOff: (workspace, year, from, to, type) =>
+      ipcRenderer.invoke(TRACKING_IPC.editTimeOff, workspace, year, from, to, type),
     removeTimeOff: (workspace, year, date) =>
       ipcRenderer.invoke(TRACKING_IPC.removeTimeOff, workspace, year, date),
     onChanged: (listener) => {

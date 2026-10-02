@@ -39,9 +39,6 @@
 .muted {
   color: var(--text-muted);
 }
-.right {
-  text-align: right !important;
-}
 .hidden {
   position: absolute;
   width: 1px;
@@ -49,17 +46,9 @@
   overflow: hidden;
   clip-path: inset(50%);
 }
-.remove {
-  display: inline-grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border: 0;
-  border-radius: var(--radius-control);
-  background: transparent;
-  color: var(--text-muted);
+.table td.actions {
+  text-align: right;
 }
-.remove:hover {
-  background: var(--hover-tint);
-  color: var(--ink);
+.actions > * + * {
+  margin-left: 8px;
 }

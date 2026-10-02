@@ -3,8 +3,7 @@ import {
   addTimeOff,
   nextDayOff,
   removeTimeOff,
-  moveTimeOff,
-  setTimeOffType,
+  editTimeOff,
   timeOffCounts,
   timeOffRows
 } from './timeoff'
@@ -65,27 +64,35 @@ describe('adding days off', () => {
       { date: '2026-12-28', type: 'leave' }
     ])
   })
-  it('changes the type of a listed day, even a holiday to leave, and ignores an unlisted one', () => {
+  it('edits a day: date, type or both, a holiday may become leave', () => {
     const y = ok(addTimeOff(year(), '2026-12-24', '2026-12-25', 'public'))
-    expect(setTimeOffType(y, '2026-12-24', 'leave').timeOff).toEqual([
+    expect(ok(editTimeOff(y, '2026-12-24', '2026-12-24', 'leave')).timeOff).toEqual([
       { date: '2026-12-24', type: 'leave' },
       { date: '2026-12-25', type: 'public' }
     ])
-    expect(setTimeOffType(y, '2026-12-28', 'leave')).toEqual(y)
-  })
-  it('moves a day keeping its type, and refuses a bad target', () => {
-    const y = ok(addTimeOff(year(), '2026-12-24', '2026-12-25', 'public'))
-    expect(ok(moveTimeOff(y, '2026-12-24', '2026-12-23')).timeOff).toEqual([
-      { date: '2026-12-23', type: 'public' },
+    expect(ok(editTimeOff(y, '2026-12-24', '2026-12-23', 'university')).timeOff).toEqual([
+      { date: '2026-12-23', type: 'university' },
       { date: '2026-12-25', type: 'public' }
     ])
-    expect(moveTimeOff(y, '2026-12-24', '2026-12-25')).toEqual({ ok: false, reason: 'listed' })
-    expect(moveTimeOff(y, '2026-12-24', '2026-12-26')).toEqual({ ok: false, reason: 'weekend' })
-    expect(moveTimeOff(y, '2026-12-24', '2028-01-04')).toEqual({
+  })
+  it('refuses to edit a day onto a bad date or one that is not listed', () => {
+    const y = ok(addTimeOff(year(), '2026-12-24', '2026-12-25', 'public'))
+    expect(editTimeOff(y, '2026-12-24', '2026-12-25', 'leave')).toEqual({
+      ok: false,
+      reason: 'listed'
+    })
+    expect(editTimeOff(y, '2026-12-24', '2026-12-26', 'leave')).toEqual({
+      ok: false,
+      reason: 'weekend'
+    })
+    expect(editTimeOff(y, '2026-12-24', '2028-01-04', 'leave')).toEqual({
       ok: false,
       reason: 'outside-year'
     })
-    expect(moveTimeOff(y, '2026-12-28', '2026-12-29')).toEqual({ ok: false, reason: 'missing' })
+    expect(editTimeOff(y, '2026-12-28', '2026-12-29', 'leave')).toEqual({
+      ok: false,
+      reason: 'missing'
+    })
   })
   it('removes a day', () => {
     const y = ok(addTimeOff(year(), '2026-12-24', '2026-12-25', 'public'))

@@ -66,11 +66,8 @@ export function registerTrackingIpc(store: TrackingStore): void {
   h(TRACKING_IPC.addTimeOff, (_e, ws, year, from, to, type) =>
     store.addTimeOff(workspace(ws), text(year), text(from), text(to), timeOffType(type))
   )
-  h(TRACKING_IPC.moveTimeOff, (_e, ws, year, from, to) =>
-    store.moveTimeOff(workspace(ws), text(year), text(from), text(to))
-  )
-  h(TRACKING_IPC.setTimeOffType, (_e, ws, year, date, type) =>
-    store.setTimeOffType(workspace(ws), text(year), text(date), timeOffType(type))
+  h(TRACKING_IPC.editTimeOff, (_e, ws, year, from, to, type) =>
+    store.editTimeOff(workspace(ws), text(year), text(from), text(to), timeOffType(type))
   )
   h(TRACKING_IPC.removeTimeOff, (_e, ws, year, date) =>
     store.removeTimeOff(workspace(ws), text(year), text(date))
