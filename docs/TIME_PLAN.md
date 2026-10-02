@@ -272,7 +272,7 @@ tracks there instead. Hours only: Tasks are a later module (see "Tasks, later"),
    Order agreed 1 Oct 2026, one commit each: (1) **All weeks** table (done: `/hours/year`, linked from the balance card; weeks that have not begun are
    left out so the newest row is this week), (2) weeks against 37:30 (done: columns met/under in `--chart-under`, the week still running in `--chart-now`, the plan as a step line so a holiday week's lower plan shows; tooltip on hover and with the arrow keys), (3) running balance, (4) year heat map (reads time off from the year file), (5) typical
    week (a bar per weekday, weekends kept), (6) Years table (two rows for now).
-7. **Time off:** store methods are done; the page, the summary, the link to planned days, and the landing card.
+7. **Time off (done 2 Oct 2026; `docs/DECISIONS.md`, "Time off page"):** `src/modules/time-off/`: the page (summary, bar, list, inline Add, remove), the landing card. The planned-days link already came with stage 1.
 8. **Adopt the year in Training and Meetings** (its own commits; moved later on purpose): replace `academic-year.ts` (and its `AcademicYearSelect` and
    `use-academic-year`) with the shared year in the 17 files that use it (Meetings' hours, landing, page and report; Training's page, landing, card, plan,
    rules, report and search) and rename the select. Years before the first recorded start are derived backwards, 52 weeks each, until the user gives their

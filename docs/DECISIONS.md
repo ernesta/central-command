@@ -1588,7 +1588,6 @@ imported on 1 Oct 2026 at the user's word (`npm run import:hours`, both years, n
   its tab will need to say which workspace it is for (tabs are keyed by module id).
 - **Not done:** the landing card shows only today; no charts link; no day-note editing; no under-aim colour.
 
-
 ## Packaging and installing the Mac app (1 Oct 2026)
 
 `npm run build:mac` works as is (no config change): it writes the `.app`, a zip and a DMG to `dist/` (git-ignored). `better-sqlite3` loads from `app.asar.unpacked` (N-API prebuilds, `npmRebuild: false`), so no Electron rebuild is needed. The build is unsigned (no Developer ID), so the signature is ad hoc; it runs on the Mac that built it, and another Mac's Gatekeeper would complain.
@@ -1601,14 +1600,12 @@ Checked by launching the packaged binary against a scratch copy of the real libr
 - **Palette: Stop timer** (same action, offered only while a timer runs; `whileRunning` on a command) and **Start timer**, which opens Research's Hours with `state.focus = 'start'`; `TodayCard` focuses the task field on arrival (a fresh location key each time, so it works when already on the page). A name is not asked for in the palette: one place to type task names.
 - No new shortcut, so Settings is unchanged. Checked in the built app on a scratch library (Dock labels before, during, after, and after a relaunch with a timer running; palette in light and dark with a long task name). Dev mode was not driven.
 
-
 ## Start from the top bar (1 Oct 2026, stage 5b of `docs/TIME_PLAN.md`)
 
 - **Idle chip.** `TimerChip` draws a quiet "Start" (Play icon) in the running chip's slot whenever no timer runs, nothing until the first read says whether one does (no flash). A click opens a popover with the task field (`TaskField`, earlier names while typing; Enter or the primary Start) and **Recent**. Starting closes it. Research only, like the chip.
 - **Recent** is `recentLabels(year, today, 5)`: names used in the last seven days (`RECENT_DAYS`, today included), once each, newest first. The window was my reading of "the last few days"; change the constant if another is wanted. After a week away the list is empty and typing still suggests earlier names.
 - **Shared popover behaviour** (`usePopover`: click outside and Escape close it; Escape returns focus to the button) now serves both chips. A stale session still shows the running chip, so starts stay blocked as before.
 - No new shortcut. Checked in the built app and dev mode on a scratch library copy (light and dark; Playwright pins the colour scheme to light, so dark needs `page.emulateMedia({ colorScheme: 'dark' })`): focus, Escape, typing with arrow-key pick, Enter, a Recent click, a long name, Settings, Work and Hours pages, start then quit at once and relaunch (still running). The scratch copy of the real library already held a running timer, so stop it before looking for the idle chip.
-
 
 ## Charts and weeks, views 1 and 2 (1 Oct 2026, stage 6 of `docs/TIME_PLAN.md`)
 
@@ -1632,3 +1629,13 @@ The user's notes on the first Hours page, answered and built. Rules are in `docs
 - **Start without a name.** `startSession` accepts an empty label (`store.start` too); rows show "No name yet" and clicking a name renames. **Rename** (`renameTask`, `tracking.renameTask`) renames one day's blocks and typed time, merges into a row of the same name, never touches frozen minutes or the carry, and refuses an empty new name. A running task can be renamed; its time cannot be edited.
 - **Balance card** shows only the signed figure (no "ahead" or "behind"); "on plan" stays at exactly zero. **Roadmap:** a Mac widget for the timer is a later item.
 - Checked in the built app on a scratch library (start unnamed, rename, add 1:30 by keyboard, edit minutes by click, a two-minute run). Not driven: dev mode, dark mode, the 04:00 stop in the real app (unit and store tests only).
+
+## Time off page (2 Oct 2026, stage 7 of `docs/TIME_PLAN.md`)
+
+A module of its own, `src/modules/time-off/` (`createTimeOffModule(workspace)`, route `/<workspace>/time-off`, registered after Hours for Research only), reading the same year files as Hours through `useTrackingYear`. The rules are `timeOffCounts`, plus the new `timeOffRows` (counted days only, each date once, oldest first, `taken` = before today) and `nextDayOff` in `src/shared/tracking/timeoff.ts`, so the list and the counts cannot disagree (a test checks it).
+
+- **Page:** year select and **Add** in the header; the summary (days a year, taken, booked, left to book), one bar (taken in `--accent`, booked in `--chart-now`, the rest is the track; it grows past the allowance if more is booked), the count of each kind; then the list (date, type, status, a remove button). No legend and no how-it-works text.
+- **Add** opens one inline row (From, To, Type, Add); To follows From until typed. Enter adds, Escape closes. A refusal from the rules is shown as a notice in the row ("Those dates are outside this year.", "To is before From.", "That is a weekend."), nothing changes then. Adding a date already listed changes its type (the existing rule), so adding leave over a holiday week turns those days into leave rather than counting them twice.
+- **Remove** is a plain icon button with a native tooltip, not `IconButton`: its hover label was cut off by the list's scroll box. It does not ask for confirmation (one day, one click to add again).
+- **Landing card:** "N left to book of 40 days" and "X taken · Y booked · next Thu 24 Dec".
+- Checked in the built app on a scratch copy of the real library: add (refused and accepted), remove, counts, focus ring, landing card. Light mode only; dark uses existing tokens.
