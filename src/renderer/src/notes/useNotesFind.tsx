@@ -4,6 +4,7 @@ import { Button } from '@renderer/components/Button'
 import { IconButton } from '@renderer/components/IconButton'
 import { matchesShortcut } from '@shared/shortcuts'
 import {
+  FIND_SHORTCUT,
   REPLACE_ALL_SHORTCUT,
   REPLACE_ONE_SHORTCUT,
   REPLACE_TOGGLE_SHORTCUT,
@@ -28,7 +29,8 @@ export class NotesFindController implements FindBridge {
 
   constructor(
     private readonly onOpen: (showReplace: boolean) => void,
-    private readonly onClose: () => void
+    private readonly onClose: () => void,
+    private readonly onFocus: () => void = () => undefined
   ) {}
 
   isOpen = (): boolean => this.target !== null
@@ -39,9 +41,12 @@ export class NotesFindController implements FindBridge {
   }
 
   close = (): void => {
-    this.target?.highlight([], 0)
+    if (!this.target) return
+    this.target.highlight([], 0)
     this.reset()
   }
+
+  focus = (): void => this.onFocus()
 
   /** The editor is gone: leave it alone (nothing to un-highlight) and close. */
   detach = (): void => {
@@ -124,6 +129,14 @@ export function useNotesFind(): {
 } {
   const [open, setOpen] = useState(false)
   const [showReplace, setShowReplace] = useState(false)
+  const [query, setQuery] = useState('')
+  const [replacement, setReplacement] = useState('')
+  // A new object every time, even when the count or the active index happens to repeat, so a re-render
+  // always follows (React would otherwise skip it, comparing the old and new state as equal).
+  const [result, setResult] = useState({ count: 0, active: 0 })
+  const findRef = useRef<HTMLInputElement>(null)
+  // Cmd-F in the note while the bar is open asks for the find field again; counting the asks lets an effect do the focusing.
+  const [focusRequests, setFocusRequests] = useState(0)
   const [controller] = useState(
     () =>
       new NotesFindController(
@@ -134,15 +147,13 @@ export function useNotesFind(): {
         () => {
           setOpen(false)
           setShowReplace(false)
-        }
+          setQuery('')
+          setReplacement('')
+          setResult({ count: 0, active: 0 })
+        },
+        () => setFocusRequests((n) => n + 1)
       )
   )
-  const [query, setQuery] = useState('')
-  const [replacement, setReplacement] = useState('')
-  // A new object every time, even when the count or the active index happens to repeat, so a re-render
-  // always follows (React would otherwise skip it, comparing the old and new state as equal).
-  const [result, setResult] = useState({ count: 0, active: 0 })
-  const findRef = useRef<HTMLInputElement>(null)
 
   const search = (value: string): void => {
     setQuery(value)
@@ -153,12 +164,7 @@ export function useNotesFind(): {
     controller.move(step)
     setResult({ count: controller.matches.length, active: controller.active })
   }
-  const close = (): void => {
-    controller.close()
-    setQuery('')
-    setReplacement('')
-    setResult({ count: 0, active: 0 })
-  }
+  const close = (): void => controller.close()
   const replaceOne = (): void => {
     if (query === '' || result.count === 0) return
     controller.replaceOne(replacement, query)
@@ -172,7 +178,10 @@ export function useNotesFind(): {
   const toggleReplace = (): void => setShowReplace((v) => !v)
 
   const handleInputKey = (event: React.KeyboardEvent<HTMLInputElement>): void => {
-    if (matchesShortcut(event, REPLACE_ALL_SHORTCUT)) {
+    if (matchesShortcut(event, FIND_SHORTCUT)) {
+      event.preventDefault()
+      findRef.current?.select()
+    } else if (matchesShortcut(event, REPLACE_ALL_SHORTCUT)) {
       event.preventDefault()
       replaceAll()
     } else if (matchesShortcut(event, REPLACE_ONE_SHORTCUT)) {
@@ -191,6 +200,12 @@ export function useNotesFind(): {
   // "Replace" that empties the matches) disables that button, which blurs it to nothing focused at all, so
   // Escape must still close the bar from there. `closeRef` keeps this effect from needing to reattach every
   // render, the same pattern `LiveEditor` uses for `onChange`.
+  useEffect(() => {
+    if (focusRequests === 0) return
+    findRef.current?.focus()
+    findRef.current?.select()
+  }, [focusRequests])
+
   const closeRef = useRef(close)
   useEffect(() => {
     closeRef.current = close

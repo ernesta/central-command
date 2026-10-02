@@ -14,15 +14,18 @@ function withBar(marked: string): {
   reports: string[]
   opened: boolean[]
   closed: number[]
+  focused: number[]
 } {
   const opened: boolean[] = []
   const closed: number[] = []
+  const focused: number[] = []
   const bar = new NotesFindController(
     (replace) => opened.push(replace),
-    () => closed.push(1)
+    () => closed.push(1),
+    () => focused.push(1)
   )
   const { view, reports } = openView(marked, undefined, { find: bar })
-  return { view, bar, reports, opened, closed }
+  return { view, bar, reports, opened, closed, focused }
 }
 
 const words = (text: string): { from: number; to: number }[] =>
@@ -90,11 +93,22 @@ describe('Cmd-F and Cmd-Option-F', () => {
     expect(press(two.view, 'Mod-Alt-f')).toBe(true)
     expect(two.opened).toEqual([true])
   })
-  it('do nothing while the bar is open (as with the old editor)', () => {
-    const { view, opened } = withBar('hello')
+  it('Cmd-F while the bar is open takes the cursor back to its find field instead of opening again', () => {
+    const { view, opened, bar, focused } = withBar('hello')
     press(view, 'Mod-f')
-    expect(press(view, 'Mod-f')).toBe(false)
+    expect(press(view, 'Mod-f')).toBe(true)
     expect(opened).toEqual([false])
+    expect(focused).toEqual([1])
+    expect(bar.isOpen()).toBe(true)
+  })
+  it('Escape in the note and a click in it close the bar', () => {
+    const { view, bar } = withBar('hello')
+    press(view, 'Mod-f')
+    view.contentDOM.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    expect(bar.isOpen()).toBe(false)
+    press(view, 'Mod-f')
+    view.contentDOM.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
+    expect(bar.isOpen()).toBe(false)
   })
   it('are not handled by an editor with no bar', () => {
     const { view } = openView('hello')

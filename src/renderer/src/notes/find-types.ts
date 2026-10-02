@@ -31,6 +31,10 @@ export interface FindTarget {
 export interface FindBridge {
   isOpen(): boolean
   open(target: FindTarget, showReplace: boolean): void
+  /** Close the bar (a click in the note, Escape in it). */
+  close(): void
+  /** Move the cursor back to the bar's find field (Cmd-F while the bar is already open). */
+  focus(): void
   /** The editor was just destroyed (a reload from disk, or React StrictMode's throwaway mount): close without
       touching it again. */
   detach(): void
@@ -44,6 +48,8 @@ export interface FindBridge {
 export const noFindBridge: FindBridge = {
   isOpen: () => false,
   open: () => undefined,
+  close: () => undefined,
+  focus: () => undefined,
   detach: () => undefined,
   replaceFromEditor: () => false
 }

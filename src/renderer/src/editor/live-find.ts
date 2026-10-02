@@ -122,12 +122,15 @@ export function liveFindTarget(view: EditorView): FindTarget {
   }
 }
 
-/** Cmd-F, or Cmd-Option-F with the replace row shown. Does nothing while the bar is already open, as before. */
+/** Cmd-F, or Cmd-Option-F with the replace row shown. While the bar is already open, it takes the cursor back to its find field. */
 export const openFind =
   (showReplace: boolean): Command =>
   (view) => {
     const bridge = view.state.facet(findBridgeFacet)
-    if (bridge.isOpen()) return false
+    if (bridge.isOpen()) {
+      bridge.focus()
+      return true
+    }
     bridge.open(liveFindTarget(view), showReplace)
     return bridge !== noFindBridge
   }
@@ -143,6 +146,18 @@ export function findExtension(bridge: FindBridge | undefined): Extension[] {
   return [
     highlightField,
     findBridgeFacet.of(bridge ?? noFindBridge),
+    // A click in the note, or Escape in it, closes the bar (clicking the bar itself is outside the editor).
+    EditorView.domEventHandlers({
+      mousedown: (_event, view) => {
+        view.state.facet(findBridgeFacet).close()
+      },
+      keydown: (event, view) => {
+        const bridge = view.state.facet(findBridgeFacet)
+        if (event.key !== 'Escape' || !bridge.isOpen()) return false
+        bridge.close()
+        return true
+      }
+    }),
     // The bar (and the React state behind it) can outlive this one view: a reload from disk, or React StrictMode's
     // throwaway first mount, destroys the view without going through the bar's own Close.
     ViewPlugin.fromClass(
