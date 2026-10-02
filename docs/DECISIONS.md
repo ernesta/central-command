@@ -1731,3 +1731,12 @@ Supersedes the "Reading lists" decisions about `@citekey`, "Attach a reading…"
 
 - Find: a click in the note or Escape in it closes the bar; Cmd-F while it is open puts the cursor back in the find field (selected). `FindBridge` gained `close` and `focus`; the bar's own state is cleared by the controller's `onClose`.
 - `@` picker: it used to follow the caret and flip above or below as results changed height, and a list that scrolled under a still pointer moved the highlight. Now anchored at the `@`, side chosen from the fixed 360px maximum, hover ignores events without pointer movement. Checked in the built app: the list's position is identical before and after typing more.
+
+## People pickers and time fields (2 Oct 2026)
+
+From the user's Meetings notes, 2 Oct 2026.
+
+- **`PeopleField`** (Meetings attendees, Training leads): one search box, "Search or add". The list under it is the people not yet added, in the People page's order (`sortPeople`: you first, then alphabetical) and filtered as you type (`matchPeople`: every word, accents and case ignored, name or initials). When what is typed is not an existing person, an `Add "name"` row ends the list, so search and add-new are one step. Arrows and Enter work from the box; the old "Someone new" form is gone.
+- **TODO owner menu**: opens with the meeting's attendees (alphabetical, you first) and "No owner". Typing no longer closes it: while it is open the editor sends printable keys to the menu (`TodoMenuBridge.type`/`backspace`), so they never reach the note, and the menu searches everyone (8 results at most, "not at this meeting" on the others). Backspace on an empty search closes it and acts on the note as before. `ownerOptions` now sorts each group.
+- **`TimeInput`** replaces `<input type="time">` in Meetings, Training and the stale-timer end time: a text field, typed as `9:30`, `930` or `15:45`, no clock icon or picker. Up/Down steps the part the cursor is in: hours by 1, minutes by 15, each wrapping without carrying (`stepTime`); an empty time starts at 09:00. Only a complete time is reported; half-typed text stays on screen until blur. Pure helpers are in `time-input.ts` (the lint rule wants component files to export only components).
+- Checked in the built app on a scratch library (keys typed for real, screenshots looked at); dev mode was not driven. The date field still has the native calendar icon.
