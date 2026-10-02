@@ -118,6 +118,15 @@
   padding-top: 1.1em;
   padding-bottom: 0.5em;
 }
+/* A heading right after a heading: the one above already pads below, so the two gaps must not add up. */
+.wrap
+  :global(.cm-editor)
+  :global(
+    .cm-line:is(.live-h1, .live-h2, .live-h3, .live-h4, .live-h5, .live-h6)
+      + .cm-line:is(.live-h1, .live-h2, .live-h3, .live-h4, .live-h5, .live-h6)
+  ) {
+  padding-top: 0.2em;
+}
 /* The first line of the note needs no space above it. */
 .wrap :global(.cm-editor) :global(.cm-line:first-child) {
   padding-top: 0;
