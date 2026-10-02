@@ -74,7 +74,7 @@ describe('create', () => {
     })
     expect(entry.ref).toEqual(ref('2025-12-10 SEDarc - Data Management and Security'))
     expect(disk(entry.ref.id)).toBe(
-      "---\ndate: 2025-12-10\nstart: '10:00'\nend: '11:30'\ntitle: Data Management and Security\nseries: SEDarc\ntype: Research methods\nmode: online\nskills: [Data management and analysis (GS)]\nleads: [Robert Darby]\n---\n\n## Summary\n\n## Notes\n"
+      "---\ndate: 2025-12-10\nstart: '10:00'\nend: '11:30'\ntitle: Data Management and Security\nseries: SEDarc\ntype: Research methods\nmode: online\nskills: [Data management and analysis (GS)]\nleads: [Robert Darby]\n---\n\n## Summary\n## Notes\n"
     )
     expect(getTrainingRow(db, 'research', entry.ref.id)).toMatchObject({
       title: 'Data Management and Security',

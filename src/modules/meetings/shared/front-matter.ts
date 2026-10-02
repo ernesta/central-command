@@ -134,4 +134,4 @@ export function applyChanges(text: string, changes: MeetingChanges): string {
 }
 
 /** The body a new meeting starts with. */
-export const NEW_MEETING_BODY = '## Summary\n\n## Previous TODOs\n\n## Notes\n'
+export const NEW_MEETING_BODY = '## Summary\n## Previous TODOs\n## Notes\n'

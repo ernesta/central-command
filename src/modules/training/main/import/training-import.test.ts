@@ -54,7 +54,7 @@ describe('planTrainingImport: the row becomes an entry', () => {
       institution: 'Royal Holloway',
       organisation: 'SEDarc DTP'
     })
-    expect(body).toBe('## Summary\n\nRefine understanding of mixed methods.\n\n## Notes\n')
+    expect(body).toBe('## Summary\nRefine understanding of mixed methods.\n## Notes\n')
     expect(p.totals).toMatchObject({
       sourceEntries: 1,
       plannedEntries: 1,
@@ -148,7 +148,7 @@ describe('Obsidian notes', () => {
     expect(entry.leads).toEqual(['Ryan McKay'])
     expect(entry.patch.leads).toEqual(['Ryan McKay'])
     expect(splitNote(entry.content).body).toContain(
-      '## Notes\n\n### Overview\n\nSee the site.\n\n### Notes\n\n* One\n  * Two\n'
+      '## Notes\n### Overview\n\nSee the site.\n\n### Notes\n\n* One\n  * Two\n'
     )
     expect(p.reports.unmatchedNotes).toEqual([])
   })

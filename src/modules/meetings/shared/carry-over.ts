@@ -91,25 +91,22 @@ export function insertPreviousTodos(
     for (let i = start + 1; i < stop; i++) if (lines[i].text.trim() !== '') last = i
     if (last !== -1)
       return spliceLines(body, lineEnd(last), block, eol, lineEnd(last) === body.length)
-    // Empty section: the items go after a blank line under the heading.
+    // Empty section: the items go straight under the heading, with no blank line of their own.
     const pos = lineEnd(start)
-    const following = lines[start + 1]
     const lead = pos === body.length && !body.endsWith('\n') ? eol : ''
-    const trail = following !== undefined && following.text.trim() !== '' ? eol : ''
-    return body.slice(0, pos) + lead + eol + block + eol + trail + body.slice(pos)
+    return body.slice(0, pos) + lead + block + eol + body.slice(pos)
   }
 
   const notes = headings.find(
     (h) => h.level === 2 && h.text.toLowerCase() === 'notes' && h.i < limit
   )
-  const section = `## Previous TODOs${eol}${eol}${block}${eol}${eol}`
+  const section = `## Previous TODOs${eol}${block}${eol}`
   if (notes) return body.slice(0, lines[notes.i].start) + section + body.slice(lines[notes.i].start)
   if (unclosedFenceAt !== null) {
     const pos = lines[unclosedFenceAt].start
     return body.slice(0, pos) + section + body.slice(pos)
   }
-  const endsBlank = /\n[ \t]*\r?\n$/.test(body)
-  const sep = body === '' || endsBlank ? '' : body.endsWith('\n') ? eol : eol + eol
+  const sep = body === '' || body.endsWith('\n') ? '' : eol
   return body + sep + section.trimEnd() + eol
 }
 

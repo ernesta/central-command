@@ -84,20 +84,26 @@ describe('insertPreviousTodos', () => {
   })
 
   it('fills an empty section (the new-meeting template)', () => {
-    expect(insertPreviousTodos('## Summary\n\n## Previous TODOs\n\n## Notes\n', items)).toBe(
-      '## Summary\n\n## Previous TODOs\n\n- [ ] **TODO(EO)**: One\n- [ ] **TODO(KR & AC)**: Two\n\n## Notes\n'
+    expect(insertPreviousTodos('## Summary\n## Previous TODOs\n## Notes\n', items)).toBe(
+      '## Summary\n## Previous TODOs\n- [ ] **TODO(EO)**: One\n- [ ] **TODO(KR & AC)**: Two\n## Notes\n'
     )
   })
 
-  it('fills an empty section with no blank line, at the end of the note, or without a final newline', () => {
+  it('fills an empty section of an older note that has blank lines, adding none of its own', () => {
+    expect(insertPreviousTodos('## Summary\n\n## Previous TODOs\n\n## Notes\n', items)).toBe(
+      '## Summary\n\n## Previous TODOs\n- [ ] **TODO(EO)**: One\n- [ ] **TODO(KR & AC)**: Two\n\n## Notes\n'
+    )
+  })
+
+  it('fills an empty section at the end of the note, or without a final newline', () => {
     expect(insertPreviousTodos('## Previous TODOs\n## Notes\n', items.slice(0, 1))).toBe(
-      '## Previous TODOs\n\n- [ ] **TODO(EO)**: One\n\n## Notes\n'
+      '## Previous TODOs\n- [ ] **TODO(EO)**: One\n## Notes\n'
     )
     expect(insertPreviousTodos('## Previous TODOs\n', items.slice(0, 1))).toBe(
-      '## Previous TODOs\n\n- [ ] **TODO(EO)**: One\n'
+      '## Previous TODOs\n- [ ] **TODO(EO)**: One\n'
     )
     expect(insertPreviousTodos('## Previous TODOs', items.slice(0, 1))).toBe(
-      '## Previous TODOs\n\n- [ ] **TODO(EO)**: One\n'
+      '## Previous TODOs\n- [ ] **TODO(EO)**: One\n'
     )
   })
 
@@ -109,19 +115,19 @@ describe('insertPreviousTodos', () => {
 
   it('creates the section before Notes when it is missing', () => {
     expect(insertPreviousTodos('## Summary\n\nHi\n\n## Notes\n\ntext\n', items.slice(0, 1))).toBe(
-      '## Summary\n\nHi\n\n## Previous TODOs\n\n- [ ] **TODO(EO)**: One\n\n## Notes\n\ntext\n'
+      '## Summary\n\nHi\n\n## Previous TODOs\n- [ ] **TODO(EO)**: One\n## Notes\n\ntext\n'
     )
   })
 
   it('creates the section at the end when there is no Notes heading either', () => {
     expect(insertPreviousTodos('Just text\n', items.slice(0, 1))).toBe(
-      'Just text\n\n## Previous TODOs\n\n- [ ] **TODO(EO)**: One\n'
+      'Just text\n## Previous TODOs\n- [ ] **TODO(EO)**: One\n'
     )
     expect(insertPreviousTodos('Just text', items.slice(0, 1))).toBe(
-      'Just text\n\n## Previous TODOs\n\n- [ ] **TODO(EO)**: One\n'
+      'Just text\n## Previous TODOs\n- [ ] **TODO(EO)**: One\n'
     )
     expect(insertPreviousTodos('', items.slice(0, 1))).toBe(
-      '## Previous TODOs\n\n- [ ] **TODO(EO)**: One\n'
+      '## Previous TODOs\n- [ ] **TODO(EO)**: One\n'
     )
   })
 
@@ -129,7 +135,7 @@ describe('insertPreviousTodos', () => {
     const body = '```\n## Previous TODOs\n```\n## Notes\n'
     const out = insertPreviousTodos(body, items.slice(0, 1))
     expect(out).toBe(
-      '```\n## Previous TODOs\n```\n## Previous TODOs\n\n- [ ] **TODO(EO)**: One\n\n## Notes\n'
+      '```\n## Previous TODOs\n```\n## Previous TODOs\n- [ ] **TODO(EO)**: One\n## Notes\n'
     )
   })
 
@@ -137,7 +143,7 @@ describe('insertPreviousTodos', () => {
     const body = 'text\n```\n## Previous TODOs\ncode'
     const out = insertPreviousTodos(body, items.slice(0, 1))
     expect(out).toBe(
-      'text\n## Previous TODOs\n\n- [ ] **TODO(EO)**: One\n\n```\n## Previous TODOs\ncode'
+      'text\n## Previous TODOs\n- [ ] **TODO(EO)**: One\n```\n## Previous TODOs\ncode'
     )
     expect(parseTodos(out).map((t) => t.kind)).toEqual(['previous'])
     // A section whose end is swallowed by an unclosed fence gets its items before the fence.
@@ -161,13 +167,13 @@ describe('insertPreviousTodos', () => {
 })
 
 describe('carryOver', () => {
-  const CURRENT = '## Summary\n\n## Previous TODOs\n\n## Notes\n\n### New topic\n'
+  const CURRENT = '## Summary\n## Previous TODOs\n## Notes\n### New topic\n'
 
   it('fills a new meeting from the previous one', () => {
     const { body, added } = carryOver(P, CURRENT)
     expect(added).toHaveLength(3)
     expect(body).toBe(
-      '## Summary\n\n## Previous TODOs\n\n- [ ] **TODO(KR)**: Send the contact details\n- [ ] **TODO**: Plain unticked\n- [ ] **TODO(EO)**: Re-run the models\n\n## Notes\n\n### New topic\n'
+      '## Summary\n## Previous TODOs\n- [ ] **TODO(KR)**: Send the contact details\n- [ ] **TODO**: Plain unticked\n- [ ] **TODO(EO)**: Re-run the models\n## Notes\n### New topic\n'
     )
   })
 

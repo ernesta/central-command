@@ -134,4 +134,4 @@ export function applyTrainingChanges(text: string, changes: TrainingChanges): st
 }
 
 /** The body a new entry starts with. */
-export const NEW_TRAINING_BODY = '## Summary\n\n## Notes\n'
+export const NEW_TRAINING_BODY = '## Summary\n## Notes\n'

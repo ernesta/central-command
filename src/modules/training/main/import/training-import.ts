@@ -308,8 +308,7 @@ export function planTrainingImport(input: ImportInput): ImportPlan {
     const head = updateTrainingHead('', patch)
     const summary = row.description
     const body =
-      `## Summary\n\n${summary ? `${summary}\n\n` : ''}## Notes\n` +
-      (noteBody ? `\n${noteBody}` : '')
+      `## Summary\n${summary ? `${summary}\n` : ''}## Notes\n` + (noteBody ? noteBody : '')
     const content = head + body
 
     const target = `${trainingBaseName(row.startDate, title, series, taken)}.md`

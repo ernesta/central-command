@@ -358,6 +358,10 @@ the meeting page, the list, the landing page, People settings and remembered lis
 - **Imported notes with bold pseudo-headings** (`**Topic**`): converted (`npm run convert:topics`, applied 25 Sep 2026; a dry run now finds nothing).
 - **Imported previous items with a status word** (`(Cancelled) **TODO(EO)**: …`) are ownerless Previous TODOs and carry
   over while unticked; the user may want to tick or delete them in the newest notes.
+- **Deleted Previous TODOs come back (raised 2 Oct 2026).** Opening a meeting re-adds any TODO from the previous meeting in the
+  series that is still unticked and not listed under this meeting's Previous TODOs (`carry-over.ts`), so deleting a line from
+  the current meeting does not stick; the user has to tick it, or delete it in the previous meeting too. To consider: remember
+  what was dropped (for example a per-meeting list in front matter) so a deleted TODO is not carried again. Not started.
 - **Backspace at the start of a first-line bullet**: checked by hand in the built app on 26 Sep 2026 (typed `- first item`, Cmd+Left,
   Backspace): the bullet lifts to a paragraph at once. Resolved.
 
