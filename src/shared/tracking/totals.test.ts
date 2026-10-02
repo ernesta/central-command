@@ -54,7 +54,7 @@ describe('a day shows one row per task', () => {
   it('shows the exact time a running session has run, without storing it', () => {
     const y = ok(startSession(year(), at(D, '09:00:00'), 'A', nextId()))
     expect(dayRows(y, D, at(D, '09:06:00'))[0].minutes).toBe(6)
-    expect(dayRows(y, D, at(D, '09:08:30'))[0].minutes).toBe(8.5)
+    expect(dayRows(y, D, at(D, '09:08:30'))[0].minutes).toBe(8)
     expect(dayMinutes(y, D)).toBe(0)
     expect(y.sessions[0].minutes).toBeUndefined()
   })

@@ -49,12 +49,12 @@ export function reportFor(carry: number, exact: number): number {
 }
 
 /**
- * What a running session shows until it ends: the exact time it has run, in (fractional) minutes, nothing stored.
+ * What a running session shows until it ends: the exact time it has run, in whole minutes (a clock: 9 min 40 s is 9), nothing stored.
  * The carry and the rounding to a quarter hour are applied once, when it ends (`close` in timer.ts).
  */
 export function provisionalMinutes(session: Session, time: string): number {
   if (session.end !== null) return reportedMinutes(session)
   const a = timeToSeconds(session.start)
   const b = timeToSeconds(time)
-  return a === null || b === null || b <= a ? 0 : (b - a) / 60
+  return a === null || b === null || b <= a ? 0 : Math.floor((b - a) / 60)
 }

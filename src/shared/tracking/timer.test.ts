@@ -209,7 +209,7 @@ describe('the running row', () => {
     y = ok(startSession(y, at(D, '09:10:00'), 'B', 'b'))
     const b = runningSession(y)!
     expect(provisionalMinutes(b, '09:10:00')).toBe(0)
-    expect(provisionalMinutes(b, '09:14:30')).toBe(4.5)
+    expect(provisionalMinutes(b, '09:14:30')).toBe(4)
     // Stopped after 4 minutes: -5 + 4 rounds to 0:00, and the carry moves to -1.
     const stopped = ok(stopSession(y, at(D, '09:14:00')))
     expect(stopped.sessions[1].minutes).toBe(0)
