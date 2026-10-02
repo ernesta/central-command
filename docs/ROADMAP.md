@@ -1,6 +1,6 @@
 # Roadmap
 
-**Live markup in the notes editor, the Typora way (requested 30 Sep 2026): finished.** All nine stages are done (`docs/EDITOR_LIVE_MARKUP_PLAN.md`; decision in `docs/DECISIONS.md`, "Notes editor: CodeMirror 6, with the Markdown text as the document"). `LiveEditor` (CodeMirror 6, the Markdown text is the document) is the only editor in every module; Milkdown and its packages are gone. Stages 1 to 8 are pushed; the stage 9 write-up (documentation only) is committed and not pushed. What is left is your review of stages 7 and 8 and the open questions, all in "For the user" below.
+**Live markup in the notes editor, the Typora way (requested 30 Sep 2026): finished.** All nine stages are done (`docs/EDITOR_LIVE_MARKUP_PLAN.md`; decision in `docs/DECISIONS.md`, "Notes editor: CodeMirror 6, with the Markdown text as the document"). `LiveEditor` (CodeMirror 6, the Markdown text is the document) is the only editor in every module; Milkdown and its packages are gone. Everything is pushed. What is left is your review of stages 7 and 8 and the open questions, all in "For the user" below.
 
 ## For Claude: six things requested 27 Sep 2026, go-ahead given — work through these without further check-in
 
@@ -220,6 +220,9 @@ ready for `--apply`" and say so plainly when you report back.
 ## TODOs
 
 ### For the user (review and decisions)
+
+- [ ] **Review the Hours work of 2 Oct 2026** (built and committed, not pushed): **Time off** (Research → Time off: summary and bar, the list, Add with From/To/Type, remove; the landing card), **Charts and weeks** (new: running balance, year heat map, typical week, Years table; click a heat-map day or press Enter to open its week), and **Training and Meetings now use the shared year** (52 weeks from a Monday, set in Settings → General) instead of 1 Sep to 31 Aug: the year select, the Training plan and the PDF exports all follow it. Nothing in your library changed year (2025–26 still has 129 training entries). Things to say: should removing a day off ask first? Should the Time off bar have a legend? Should the Years table sit nearer the top of the charts page?
+- [ ] **How does Work differ for Hours and Time off?** Hours a day, allowance, whether it has time off at all, its own tasks (`docs/TIME_PLAN.md`, "Still open"). Nothing for Work is built until you answer.
 
 - [ ] **Top-bar Start (stage 5b), two things to think about.** (1) **How far back should Recent reach?** It lists names from the last seven days (`RECENT_DAYS` in `src/modules/hours/shared/tasks.ts`); after a week away it is empty, though typing still suggests earlier names. Options: a longer window, or "the last five names whatever their date". (2) **Do you want a shortcut to start a timer** (for example Mod-Shift-T)? None was added; it would go in the Hours manifest `shortcuts`, Settings and `matchesShortcut`.
 - [ ] **Review stage 8 of the live editor** (Milkdown is gone; every editor is the new one, no switch). Open each kind of page once: a note, a Work note, a meeting (Research and Work), a training entry, the Training plan, a reading list, a reading's notes. The old editor is not available any more, so anything that feels worse than before is for me to fix, not to switch back. `docs/DECISIONS.md`, "Live markup … stage 8", lists every old test and whether it was ported or retired.
@@ -495,8 +498,8 @@ the note".
   never send user data over the network, so this needs the user's explicit decision, e.g. a confirmation per action), and reading PDF
   slides (no PDF text tool in the app yet).
 - Shared task engine (tasks, dates, time tracking, lists, subtasks, table/board/calendar views) and a one-time ClickUp import
-- **Hours and Time off** (replace the user's two Google Sheets; sessions later feed Tasks): designed 29 Sep 2026, not built; plan in
-  `docs/TIME_PLAN.md` (eight stages, open questions at the end).
+- **Hours and Time off** (replace the user's two Google Sheets; sessions later feed Tasks): built for Research (stages 1 to 9 of
+  `docs/TIME_PLAN.md`, 2 Oct 2026). Left: Work's own Hours and Time off, which waits for the user's answer to "How does Work differ?", and Tasks.
 - **Training** (the formal training log, a notes page per entry, linked files, PDF export): the plan and mockup are drafted in
   `docs/TRAINING_PLAN.md` and `docs/design/training-mockup.html`; built; see the Training section above.
 - **Notes** (one module for free notes with a group per note, pinned notes, quick capture; replaces Thesis, Data Sources and Inbox): plan

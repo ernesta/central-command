@@ -1,6 +1,6 @@
 # Hours and Time off: plan
 
-Status: **building (re-ordered 1 Oct 2026 so tracking can start soon).** Stages 1 to 4 are done and committed, not pushed; the real library was imported on 1 Oct 2026. The mockup is `docs/design/hours-mockup.html` (open it in a browser: four
+Status: **built (2 Oct 2026); stages 1 to 9 are done.** Only stage 10 (Work's Hours and Time off, and Tasks) is left, and it waits for the user's answer to "How does Work differ?". The real library was imported on 1 Oct 2026. The mockup is `docs/design/hours-mockup.html` (open it in a browser: four
 screens, light and dark). Read it with `CLAUDE.md` and `docs/DECISIONS.md`. Meetings and Training are the patterns to copy
 (`docs/MEETINGS_PLAN.md`, `docs/TRAINING_PLAN.md`). Everything below is decided with the user unless it is under "Still open".
 
@@ -268,13 +268,13 @@ tracks there instead. Hours only: Tasks are a later module (see "Tasks, later"),
    After 4f the user can track in the app. Stop and tell the user; they say whether to carry on in this order.
 5. **Around the pages, the rest (done 1 Oct 2026; `docs/DECISIONS.md`, "Dock and palette timer items"):** Dock item "Stop timer", palette commands "Start timer" and "Stop timer", the shortcut entry if any.
    5b. **Start from the top bar** (done 1 Oct 2026; `docs/TOPBAR_START_PLAN.md`, `docs/DECISIONS.md`, "Start from the top bar"): an idle "Start" chip with a task field and recent names, so a timer starts from any page.
-6. **Charts and weeks:** the views above, one at a time, each looked at in light and dark.
+6. **Charts and weeks (done 2 Oct 2026; `docs/DECISIONS.md`, "Charts and weeks, views 1 and 2" and "views 3 to 6"):** the views above, one at a time, each looked at in light and dark.
    Order agreed 1 Oct 2026, one commit each: (1) **All weeks** table (done: `/hours/year`, linked from the balance card; weeks that have not begun are
    left out so the newest row is this week), (2) weeks against 37:30 (done: columns met/under in `--chart-under`, the week still running in `--chart-now`, the plan as a step line so a holiday week's lower plan shows; tooltip on hover and with the arrow keys), (3) running balance, (4) year heat map (reads time off from the year file), (5) typical
    week (a bar per weekday, weekends kept), (6) Years table (two rows for now).
 7. **Time off (done 2 Oct 2026; `docs/DECISIONS.md`, "Time off page"):** `src/modules/time-off/`: the page (summary, bar, list, inline Add, remove), the landing card. The planned-days link already came with stage 1.
 8. **Adopt the year in Training and Meetings (done 2 Oct 2026; `docs/DECISIONS.md`, "Training and Meetings use the shared year").**
-9. **Polish, QA, docs:** `docs/DECISIONS.md` ("Hours and Time off"), `docs/ROADMAP.md`, `CLAUDE.md` (status, the shared year).
+9. **Polish, QA, docs (done 2 Oct 2026):** `docs/DECISIONS.md` ("Hours and Time off"), `docs/ROADMAP.md`, `CLAUDE.md` (status, the shared year).
 10. **Later, with the user:** Work's Hours and Time off (after question 1), and Tasks.
 
 **Testing for real** (CLAUDE.md): a scratch library via `CENTRAL_COMMAND_HOME`, Playwright, the built app and dev mode. Type real keystrokes into the

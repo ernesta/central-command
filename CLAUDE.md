@@ -150,7 +150,7 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   `src/shared/entities.ts`; notes and meetings get a `uid` in their front matter when first linked; person renames rewrite mentions;
   "Mentioned in" panels read the note folders on request). Tasks, when built, add one provider and one kind.
 
-- **Live markup editor (30 Sep 2026, all nine stages done; stages 1 to 8 pushed, the stage 9 write-up committed and not pushed)**: `LiveEditor` replaced
+- **Live markup editor (30 Sep 2026, all nine stages done; all pushed)**: `LiveEditor` replaced
   Milkdown everywhere and Milkdown is gone (architecture above). The user's open questions about it (live editor questions 1 to 14, the stage 7 and 8 review
   items) are in `docs/ROADMAP.md`, "For the user"; do not act on them until they answer. Never write scratch files (logs, screenshots) outside the session scratchpad.
 
@@ -230,7 +230,11 @@ npx electron-vite dev -- --remote-debugging-port=9333`, then `chromium.connectOv
 - Never send user data over the network.
 - Never commit secrets or user data; user data lives in `~/CentralCommand/`.
 
-- **Hours (1 Oct 2026, stages 1 to 4 of `docs/TIME_PLAN.md`, committed, not pushed)**: the rules (`src/shared/year.ts`, `src/shared/tracking/`), the store, the importer
-  (applied to the real library on 1 Oct 2026) and the first usable Hours page for Research (Today, the top-bar timer chip, the week, the balance card, Settings -> Hours)
-  are built. The Mac app is packaged (`npm run build:mac`) and installed in `/Applications`; it reads `~/CentralCommand` (`docs/DECISIONS.md`, "Packaging and installing the Mac app"). Stages 5 (Dock and palette items) and 5b (an idle Start chip in the top bar) are built too. Stage 6 (Charts and weeks, `/hours/year`) is under way: the All weeks table and weeks-against-the-plan chart are built; running balance, year heat map, typical week and Years are next (`docs/TIME_PLAN.md`, stage 6; `docs/DECISIONS.md`, "Charts and weeks, views 1 and 2"). The 1 Oct 2026 feedback round is built (exact running time, unnamed starts and rename, one Start/Add form, `DurationField`, the day ends at 04:00; `docs/DECISIONS.md`, "Hours feedback round"). After it, only on the user's go-ahead: 7 (Time off), 8 (the year in Training and Meetings).
-
+- **Hours and Time off (1 to 2 Oct 2026, stages 1 to 9 of `docs/TIME_PLAN.md`, all built)**: the rules (`src/shared/year.ts`, `src/shared/tracking/`), the store, the importer
+  (applied to the real library on 1 Oct 2026), the Hours page for Research (Today, the top-bar timer chip, the week, the balance card, Settings -> Hours), Dock and palette
+  items, an idle Start chip in the top bar, Charts and weeks (`/hours/year`: weeks, running balance, year heat map, typical week, All weeks, Years;
+  `docs/DECISIONS.md`, "Charts and weeks"), and **Time off** (`src/modules/time-off/`, its own module; "Time off page"). The 1 Oct feedback round is built
+  (`docs/DECISIONS.md`, "Hours feedback round"); a running task counts whole minutes everywhere (2 Oct). **Meetings, Training, the Training plan and the search use the shared
+  year** (52 weeks from a Monday, a start date such as `2026-09-21`, `useYear`); the old academic year is gone ("Training and Meetings use the shared year"). The Mac app is
+  packaged (`npm run build:mac`) and installed in `/Applications`; it reads `~/CentralCommand` (`docs/DECISIONS.md`, "Packaging and installing the Mac app"); quit it before
+  replacing it. Left: stage 10 (Work's Hours and Time off, Tasks), after the user answers "How does Work differ?". The user's review items are at the top of `docs/ROADMAP.md`.
