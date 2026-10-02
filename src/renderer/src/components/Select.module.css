@@ -13,3 +13,11 @@
 .select:hover {
   background-color: var(--hover-tint);
 }
+
+.small {
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 28px 0 12px;
+  background-position: right 10px center;
+  font-size: var(--text-13);
+}

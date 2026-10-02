@@ -17,6 +17,7 @@ interface SelectProps<T extends string> extends Omit<
   onChange: (value: T) => void
   /** Required: selects usually have no visible label of their own. */
   label: string
+  compact?: boolean
 }
 
 export function Select<T extends string>({
@@ -25,12 +26,13 @@ export function Select<T extends string>({
   onChange,
   label,
   className,
+  compact,
   ...rest
 }: SelectProps<T>): React.JSX.Element {
   return (
     <select
       aria-label={label}
-      className={[styles.select, className].filter(Boolean).join(' ')}
+      className={[styles.select, compact && styles.small, className].filter(Boolean).join(' ')}
       value={value}
       onChange={(event) => onChange(event.target.value as T)}
       {...rest}

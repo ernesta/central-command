@@ -14,11 +14,13 @@ const OPTIONS = [
 export function WorkspaceSelect({
   value,
   onChange,
-  disabled
+  disabled,
+  compact
 }: {
   value: MovableWorkspace
   onChange: (workspace: MovableWorkspace) => void
   disabled?: boolean
+  compact?: boolean
 }): React.JSX.Element {
   return (
     <Select<MovableWorkspace>
@@ -26,6 +28,7 @@ export function WorkspaceSelect({
       value={value}
       options={OPTIONS}
       disabled={disabled}
+      compact={compact}
       onChange={onChange}
     />
   )

@@ -200,6 +200,7 @@ function MeetingView({
         <h1 className={styles.title}>{heading}</h1>
         <div className={styles.actions}>
           <WorkspaceSelect
+            compact
             value={meetingRef.workspace}
             disabled={moving}
             onChange={(target) => void moveTo(target)}

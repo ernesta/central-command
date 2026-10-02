@@ -164,6 +164,7 @@ function NoteView({
         />
         <div className={styles.actions}>
           <WorkspaceSelect
+            compact
             value={noteRef.workspace}
             disabled={moving}
             onChange={(target) => void moveTo(target)}
