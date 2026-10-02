@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseSearchQuery, searchTerms, snippet } from './search'
+import { nameFirst, parseSearchQuery, searchTerms, snippet } from './search'
 
 describe('searchTerms', () => {
   it('splits on spaces and ignores case and accents', () => {
@@ -96,5 +96,16 @@ describe('parseSearchQuery', () => {
 
   it('is fine with a modifier and nothing else (search everything in that source)', () => {
     expect(parseSearchQuery('in:meetings')).toEqual({ sources: ['meetings'], text: '' })
+  })
+})
+
+describe('nameFirst', () => {
+  const names = (s: string): string => s
+  it('puts names that start with the word first, then names with it, then the rest', () => {
+    const items = ['Intro', 'Sampling', 'AMPL', 'Data on ampl']
+    expect(nameFirst(items, names, 'ampl')).toEqual(['AMPL', 'Sampling', 'Data on ampl', 'Intro'])
+  })
+  it('keeps the order when nothing is typed', () => {
+    expect(nameFirst(['b', 'a'], names, '')).toEqual(['b', 'a'])
   })
 })

@@ -1,4 +1,5 @@
 import { StickyNote } from 'lucide-react'
+import { nameFirst } from '@shared/search'
 import type { EntityProvider } from '@renderer/entities/registry'
 import { groupLabel } from '../shared/groups'
 import { DEFAULT_NOTES_QUERY, displayTitle, queryNotes } from '../shared/query'
@@ -9,8 +10,8 @@ const WORKSPACE_LABEL = { research: 'Research', work: 'Work' } as const
 
 /** Every note of every workspace, from the index; reused for a couple of seconds (see the meetings' `allMeetings`). */
 let cached: { at: number; rows: Promise<NoteIndexRow[]> } | null = null
-function allNotes(): Promise<NoteIndexRow[]> {
-  if (!cached || Date.now() - cached.at > 2000) {
+function allNotes(fresh = false): Promise<NoteIndexRow[]> {
+  if (fresh || !cached || Date.now() - cached.at > 2000) {
     cached = {
       at: Date.now(),
       rows: Promise.all(NOTE_WORKSPACES.map((w) => window.api.notes.list(w))).then((lists) =>
@@ -32,7 +33,11 @@ export const noteEntities: EntityProvider = {
   icon: StickyNote,
   async search(query, limit, self) {
     const rows = await allNotes()
-    return queryNotes(rows, { ...DEFAULT_NOTES_QUERY, search: query })
+    return nameFirst(
+      queryNotes(rows, { ...DEFAULT_NOTES_QUERY, search: query }),
+      displayTitle,
+      query
+    )
       .filter(
         (row) => !(self?.kind === 'note' && self.workspace === row.workspace && self.id === row.id)
       )
@@ -49,7 +54,10 @@ export const noteEntities: EntityProvider = {
       }))
   },
   async resolve(key) {
-    const row = (await allNotes()).find((r) => r.uid === key)
+    // A note linked a moment ago got its uid after the cached list was read, so look again before calling it gone.
+    const row =
+      (await allNotes()).find((r) => r.uid === key) ??
+      (await allNotes(true)).find((r) => r.uid === key)
     if (!row) return null
     return {
       title: displayTitle(row),

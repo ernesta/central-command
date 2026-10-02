@@ -19,6 +19,25 @@ export function searchTerms(query: string): string[] {
 }
 
 /**
+ * Items whose name has every search word, those starting with the first word before the rest; the order given is kept
+ * within each group. The picker needs this: a word such as "ampl" is in the text of many notes ("sample"), and the note
+ * called AMPL must not be pushed out of the few places offered.
+ */
+export function nameFirst<T>(items: readonly T[], names: (item: T) => string, query: string): T[] {
+  const terms = searchTerms(query)
+  if (terms.length === 0) return [...items]
+  const rank = (item: T): number => {
+    const name = fold(names(item))
+    if (!terms.every((t) => name.includes(t))) return 2
+    return name.startsWith(terms[0]) ? 0 : 1
+  }
+  return items
+    .map((item, index) => ({ item, index, rank: rank(item) }))
+    .sort((a, b) => a.rank - b.rank || a.index - b.index)
+    .map((x) => x.item)
+}
+
+/**
  * The stretch of `text` around the first search word found in it, cut at word edges with … where text was left
  * out; null when no word is in the text. `text` is plain text (no Markdown marks).
  */

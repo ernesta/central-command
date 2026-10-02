@@ -15,8 +15,8 @@ const WORKSPACE_LABEL = { research: 'Research', work: 'Work' } as const
  * each other, so the answer is reused for a couple of seconds rather than fetched once per mention.
  */
 let cached: { at: number; rows: Promise<MeetingIndexRow[]> } | null = null
-function allMeetings(): Promise<MeetingIndexRow[]> {
-  if (!cached || Date.now() - cached.at > 2000) {
+function allMeetings(fresh = false): Promise<MeetingIndexRow[]> {
+  if (fresh || !cached || Date.now() - cached.at > 2000) {
     cached = {
       at: Date.now(),
       rows: Promise.all(MEETING_WORKSPACES.map((w) => window.api.meetings.list(w))).then((lists) =>
@@ -92,7 +92,10 @@ export const meetingEntities: EntityProvider = {
       })
   },
   async resolve(key) {
-    const row = (await allMeetings()).find((r) => r.uid === key)
+    // A meeting linked a moment ago got its uid after the cached list was read, so look again before calling it gone.
+    const row =
+      (await allMeetings()).find((r) => r.uid === key) ??
+      (await allMeetings(true)).find((r) => r.uid === key)
     if (!row) return null
     return {
       title: meetingHeading(row.series, row.date),

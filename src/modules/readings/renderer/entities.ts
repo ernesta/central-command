@@ -1,5 +1,6 @@
 import { BookOpen } from 'lucide-react'
 import { modulePath } from '@modules/types'
+import { nameFirst } from '@shared/search'
 import type { EntityProvider } from '@renderer/entities/registry'
 import { formatApa } from '../shared/apa'
 import { DEFAULT_READINGS_QUERY } from '../shared/query'
@@ -14,13 +15,15 @@ export const readingEntities: EntityProvider = {
   icon: BookOpen,
   async search(query, limit) {
     const readings = await window.api.readings.list({ ...DEFAULT_READINGS_QUERY, search: query })
-    return readings.slice(0, limit).map((reading) => ({
-      id: reading.citekey,
-      title: reading.fullTitle,
-      detail: reading.shortCitation,
-      label: reading.shortCitation,
-      prepare: async () => ({ kind: 'reading' as const, key: reading.citekey })
-    }))
+    return nameFirst(readings, (r) => `${r.shortCitation} ${r.fullTitle}`, query)
+      .slice(0, limit)
+      .map((reading) => ({
+        id: reading.citekey,
+        title: reading.fullTitle,
+        detail: reading.shortCitation,
+        label: reading.shortCitation,
+        prepare: async () => ({ kind: 'reading' as const, key: reading.citekey })
+      }))
   },
   async copy(key, label) {
     const reading = await window.api.readings.get(key)
