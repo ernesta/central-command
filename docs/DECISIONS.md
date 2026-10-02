@@ -1639,3 +1639,14 @@ A module of its own, `src/modules/time-off/` (`createTimeOffModule(workspace)`, 
 - **Remove** is a plain icon button with a native tooltip, not `IconButton`: its hover label was cut off by the list's scroll box. It does not ask for confirmation (one day, one click to add again).
 - **Landing card:** "N left to book of 40 days" and "X taken · Y booked · next Thu 24 Dec".
 - Checked in the built app on a scratch copy of the real library: add (refused and accepted), remove, counts, focus ring, landing card. Light mode only; dark uses existing tokens.
+
+## Training and Meetings use the shared year (2 Oct 2026, stage 8 of `docs/TIME_PLAN.md`)
+
+The academic year (1 Sep to 31 Aug, a number such as 2025) is gone: `academic-year.ts`, `use-academic-year.ts` and `AcademicYearSelect` are deleted. Meetings, Training, the Training plan and the search use the app's one year (52 weeks from a Monday, the starts in Settings), named by its start **date** (`2026-09-21`) like Hours.
+
+- **Rules:** `year` is a start date everywhere (`meetingsInYear`, `entriesInYear`, `meetingHours`, `trainingHours`, the PDF reports and their file names, the export IPC, which now checks for a real date). A year shows planned items with no date only while today is inside it (`inYear(today, year)`), which replaces "is the current academic year".
+- **Renderer:** `useYear(dates, today)` (`src/renderer/src/state/use-year.ts`) reads `settings.yearStarts`, keeps `?year=<start>` in the address and falls back to the current year; the select is the shared `YearSelect`. Old links with `?year=2025` fall back to the current year. Series cards pass the start date.
+- **Training plan files keep their names.** A plan is stored under the calendar year the year starts in (`planKey`: 2026 for the year starting 21 Sep 2026), so "Training plan 2026-27.md" is still found and the plan IPC and the notes session still take that number as text. The plan page and the search offer the years with entries, this one and the next (`nextYearStart`: the next listed start, else 52 weeks on).
+- **No entry changed year** (checked on a scratch copy of the real library): 2025–26 still shows 129 training entries, 356.5 h, and 40 meetings. The year boundaries moved from 1 Sep to 22 Sep 2025 and 21 Sep 2026, and nothing in the library is dated between those days.
+- Tests moved to start dates, with the boundary rows at the new edges (the day before a start is the previous year). Mutation check: forcing planned items to show in every year fails a test in both Meetings and Training.
+- Checked in the built app (scratch library): Training landing and page with the year select, the plan page (the real plan opens, the next year is offered), Meetings, and a search hit opening the plan. The PDF export needs a native save dialog, so only its unit tests ran.

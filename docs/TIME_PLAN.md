@@ -273,11 +273,7 @@ tracks there instead. Hours only: Tasks are a later module (see "Tasks, later"),
    left out so the newest row is this week), (2) weeks against 37:30 (done: columns met/under in `--chart-under`, the week still running in `--chart-now`, the plan as a step line so a holiday week's lower plan shows; tooltip on hover and with the arrow keys), (3) running balance, (4) year heat map (reads time off from the year file), (5) typical
    week (a bar per weekday, weekends kept), (6) Years table (two rows for now).
 7. **Time off (done 2 Oct 2026; `docs/DECISIONS.md`, "Time off page"):** `src/modules/time-off/`: the page (summary, bar, list, inline Add, remove), the landing card. The planned-days link already came with stage 1.
-8. **Adopt the year in Training and Meetings** (its own commits; moved later on purpose): replace `academic-year.ts` (and its `AcademicYearSelect` and
-   `use-academic-year`) with the shared year in the 17 files that use it (Meetings' hours, landing, page and report; Training's page, landing, card, plan,
-   rules, report and search) and rename the select. Years before the first recorded start are derived backwards, 52 weeks each, until the user gives their
-   real starts. The real library was checked read-only on 29 Sep 2026: no meeting or training is dated 1–21 Sep 2025 or 1–20 Sep 2026 (the earliest
-   are 23 and 24 Sep 2025), so **no entry changes year**. Tests, then look at Training and Meetings in the app on a scratch library.
+8. **Adopt the year in Training and Meetings (done 2 Oct 2026; `docs/DECISIONS.md`, "Training and Meetings use the shared year").**
 9. **Polish, QA, docs:** `docs/DECISIONS.md` ("Hours and Time off"), `docs/ROADMAP.md`, `CLAUDE.md` (status, the shared year).
 10. **Later, with the user:** Work's Hours and Time off (after question 1), and Tasks.
 
