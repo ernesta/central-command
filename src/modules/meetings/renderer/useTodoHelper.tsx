@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Extension } from '@codemirror/state'
-import type { OwnerOption } from '../shared/people'
+import { matchPeople, type OwnerOption } from '../shared/people'
 import {
   liveTodoHelper,
   type MenuKey,
@@ -8,6 +8,8 @@ import {
   type TodoMenuRequest
 } from './todo-live'
 import styles from './TodoMenu.module.css'
+
+const MAX_RESULTS = 8
 
 interface Item {
   initials: string | null
@@ -33,13 +35,18 @@ class TodoMenuController implements TodoMenuBridge {
 
   constructor(
     private readonly setOpen: (open: Open | null) => void,
-    private readonly setActive: (index: number) => void
+    private readonly setActive: (index: number) => void,
+    private readonly setQuery: (query: string) => void
   ) {}
+
+  query = ''
 
   open = (request: TodoMenuRequest): void => {
     this.current = { request, x: request.at.left, y: request.at.bottom }
     this.activeIndex = 0
     this.setActive(0)
+    this.query = ''
+    this.setQuery('')
     this.setOpen(this.current)
   }
 
@@ -49,6 +56,20 @@ class TodoMenuController implements TodoMenuBridge {
   }
 
   isOpen = (): boolean => this.current !== null
+
+  type = (text: string): void => {
+    this.query += text
+    this.setQuery(this.query)
+    this.highlight(0)
+  }
+
+  backspace = (): boolean => {
+    if (this.query === '') return false
+    this.query = this.query.slice(0, -1)
+    this.setQuery(this.query)
+    this.highlight(0)
+    return true
+  }
 
   setItems = (items: Item[]): void => {
     this.items = items
@@ -71,14 +92,16 @@ class TodoMenuController implements TodoMenuBridge {
     const count = this.items.length
     if (key === 'escape') this.close()
     else if (key === 'enter') this.pick(this.activeIndex)
-    else this.highlight((this.activeIndex + (key === 'down' ? 1 : count - 1)) % count)
+    else if (count > 0)
+      this.highlight((this.activeIndex + (key === 'down' ? 1 : count - 1)) % count)
     return true
   }
 }
 
 /**
  * The TODO owner menu for the notes editor. `live` goes to `LiveEditor`'s `extensions`; render `menu` anywhere in
- * the page. The owners are read when the menu opens, so changing the attendees needs no new editor.
+ * the page. The owners are read when the menu opens, so changing the attendees needs no new editor. The menu offers the
+ * meeting's attendees; typing searches everyone.
  */
 export function useTodoHelper(owners: readonly OwnerOption[]): {
   /** The helper, as a CodeMirror extension for `LiveEditor`'s `extensions`. */
@@ -88,12 +111,20 @@ export function useTodoHelper(owners: readonly OwnerOption[]): {
   const [open, setOpen] = useState<Open | null>(null)
   const [active, setActive] = useState(0)
   const menuRef = useRef<HTMLDivElement>(null)
-  const [controller] = useState(() => new TodoMenuController(setOpen, setActive))
+  const [query, setQuery] = useState('')
+  const [controller] = useState(() => new TodoMenuController(setOpen, setActive, setQuery))
 
-  const items: Item[] = [
-    ...owners.map((o) => ({ initials: o.initials, name: o.name, attendee: o.attendee })),
-    { initials: null, name: 'No owner', attendee: false }
-  ]
+  const searching = query.trim() !== ''
+  const items: Item[] = searching
+    ? matchPeople(owners, query)
+        .slice(0, MAX_RESULTS)
+        .map((o) => ({ initials: o.initials, name: o.name, attendee: o.attendee }))
+    : [
+        ...owners
+          .filter((o) => o.attendee)
+          .map((o) => ({ initials: o.initials, name: o.name, attendee: true })),
+        { initials: null, name: 'No owner', attendee: false }
+      ]
   useEffect(() => {
     controller.setItems(items)
   })
@@ -118,9 +149,11 @@ export function useTodoHelper(owners: readonly OwnerOption[]): {
       aria-label="Who is this TODO for?"
       style={{
         left: Math.min(open.x, window.innerWidth - 260),
-        top: Math.min(open.y + 6, window.innerHeight - 40 - items.length * 36)
+        top: Math.min(open.y + 6, window.innerHeight - 76 - items.length * 36)
       }}
     >
+      <div className={styles.search}>{searching ? query : 'Type to search'}</div>
+      {searching && items.length === 0 && <div className={styles.search}>No one found</div>}
       {items.map((item, index) => (
         <div
           key={item.initials ?? 'none'}

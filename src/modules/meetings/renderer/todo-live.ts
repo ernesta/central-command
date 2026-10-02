@@ -27,13 +27,17 @@ export interface TodoMenuBridge {
   isOpen(): boolean
   /** Returns true when the menu used the key. */
   key(key: MenuKey): boolean
+  /** Text typed while the menu is open: it searches the people, and never reaches the note. */
+  type(text: string): void
+  /** Backspace while the menu is open: returns true when it removed a typed letter (false: the menu has none, so it closes). */
+  backspace(): boolean
 }
 
 /*
  * The TODO helper: typing `/todo` (at the
  * start of a line or after a space) or pressing Cmd/Ctrl+Shift+T opens the menu of owners, which is `useTodoHelper`'s and
- * knows nothing of the editor. While it is open it takes the arrow keys, Enter, Tab and Escape; typing, Backspace or
- * moving the cursor closes it. Choosing writes `**TODO(XX)**: ` as plain text.
+ * knows nothing of the editor. While it is open it takes the arrow keys, Enter, Tab and Escape, and what is typed
+ * searches the people (the note does not change); Backspace on an empty search or moving the cursor closes it. Choosing writes `**TODO(XX)**: ` as plain text.
  */
 
 const TRIGGER = '/todo'
@@ -150,9 +154,18 @@ export function liveTodoHelper(bridge: TodoMenuBridge): Extension {
               event.preventDefault()
               return true
             }
-            if (!event.metaKey && !event.ctrlKey && !event.altKey && event.key.length === 1)
+            if (!event.metaKey && !event.ctrlKey && !event.altKey && event.key.length === 1) {
+              event.preventDefault()
+              bridge.type(event.key)
+              return true
+            }
+            if (event.key === 'Backspace') {
+              if (bridge.backspace()) {
+                event.preventDefault()
+                return true
+              }
               bridge.close()
-            if (event.key === 'Backspace') bridge.close()
+            }
             return false
           }
           if (!matchesShortcut(event, TODO_SHORTCUT)) return false

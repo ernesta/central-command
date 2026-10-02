@@ -17,6 +17,8 @@ interface Harness {
   reports: string[]
   opened: TodoMenuRequest[]
   keys: MenuKey[]
+  /** Text the menu was sent while open, and the search it holds. */
+  searched: () => string
   closed: () => number
   isOpen: () => boolean
   setOpen: (open: boolean) => void
@@ -31,6 +33,7 @@ function harness(marked: string): Harness {
   const keys: MenuKey[] = []
   let closed = 0
   let open = false
+  let search = ''
   const bridge: TodoMenuBridge = {
     open: (request) => {
       opened.push(request)
@@ -44,6 +47,14 @@ function harness(marked: string): Harness {
     key: (key) => {
       keys.push(key)
       return true
+    },
+    type: (text) => {
+      search += text
+    },
+    backspace: () => {
+      if (search === '') return false
+      search = search.slice(0, -1)
+      return true
     }
   }
   const { view, reports } = openView(marked, undefined, { extensions: [liveTodoHelper(bridge)] })
@@ -54,6 +65,7 @@ function harness(marked: string): Harness {
     reports,
     opened,
     keys,
+    searched: () => search,
     closed: () => closed,
     isOpen: () => open,
     setOpen: (value) => (open = value),
@@ -208,19 +220,27 @@ describe('keys', () => {
       expect(h.press(key), key).toEqual({ prevented: true })
     expect(h.keys).toEqual(['down', 'up', 'enter', 'enter', 'escape'])
   })
-  it('while open, a character or Backspace closes the menu and is left to the note', () => {
+  it('while open, a character goes to the menu search and not to the note', () => {
     const h = harness('text|')
     h.setOpen(true)
-    expect(h.press('a').prevented).toBe(false)
-    expect(h.isOpen()).toBe(false)
-    h.setOpen(true)
+    expect(h.press('a').prevented).toBe(true)
+    expect(h.press('b').prevented).toBe(true)
+    expect(h.searched()).toBe('ab')
+    expect(h.isOpen()).toBe(true)
+    // Backspace takes back a typed letter...
+    expect(h.press('Backspace').prevented).toBe(true)
+    expect(h.searched()).toBe('a')
+    h.press('Backspace')
+    // ...and on an empty search it closes the menu and is left to the note.
     h.press('Backspace')
     expect(h.isOpen()).toBe(false)
-    // At the very start of the note Backspace changes nothing, and still closes the menu.
-    const start = harness('|text')
-    start.setOpen(true)
-    start.press('Backspace')
-    expect(start.isOpen()).toBe(false)
+    expect(h.reports.at(-1)).toBe('tex')
+  })
+  it('a shortcut chord is not searched', () => {
+    const h = harness('text|')
+    h.setOpen(true)
+    h.press('a', { metaKey: true })
+    expect(h.searched()).toBe('')
   })
   it('while closed, Enter, Tab and the arrows never reach the menu', () => {
     const h = harness('text|')

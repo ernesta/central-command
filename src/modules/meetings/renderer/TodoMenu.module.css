@@ -43,3 +43,8 @@
 .active .hint {
   color: var(--selected-text);
 }
+.search {
+  padding: 4px 10px 6px;
+  color: var(--text-muted);
+  font-size: var(--text-12);
+}
