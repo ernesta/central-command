@@ -9,13 +9,11 @@ import { useNow } from '@renderer/state/use-now'
 import { useRunningTimer } from '@renderer/state/use-running-timer'
 import { useYearFile } from '@renderer/state/use-year-file'
 import { WORKSPACES } from '@shared/settings'
-import { trackingMoment } from '@shared/time'
 import type { RunningTimer } from '@shared/tracking/api'
 import { clockTime, formatDay, formatHours } from '@shared/tracking/format'
 import { dayRows } from '@shared/tracking/totals'
 import type { Moment } from '@shared/tracking/types'
 import { sameLabel } from '@shared/tracking/timer'
-import { currentYear } from '@shared/year'
 import { earlierLabels, recentLabels } from '../shared/tasks'
 import { elapsedMinutes } from '../shared/timer'
 import { StaleTimer } from './StaleTimer'
@@ -40,10 +38,56 @@ function TimerPopover({
     ? dayRows(data, now.date).filter((r) => r.label !== '' && !sameLabel(r.label, session.label))
     : []
   const tracking = window.api.tracking
+  const [name, setName] = useState('')
+  const labels = useMemo(() => (data ? earlierLabels(data) : []), [data])
+  const recent = useMemo(
+    () => (data ? recentLabels(data, now.date).filter((l) => !sameLabel(l, session.label)) : []),
+    [data, now.date, session.label]
+  )
+  const unnamed = session.label.trim() === ''
+  // Naming the running task renames this day's unnamed blocks; a name already used today merges into it.
+  const rename = (to: string): void => {
+    if (!to.trim()) return
+    void tracking.renameTask(running.workspace, running.year, session.date, session.label, to)
+    onClose()
+  }
 
   return (
     <div className={styles.popover} role="dialog" aria-label="Timer">
-      <div className={styles.full}>{session.label || 'No name yet'}</div>
+      {unnamed && clock !== null ? (
+        <>
+          <div className={styles.startRow}>
+            <TaskField
+              label="What are you working on?"
+              placeholder="What are you working on?"
+              value={name}
+              onChange={setName}
+              onSubmit={() => rename(name)}
+              labels={labels}
+              autoFocus
+            />
+            <Button variant="primary" onClick={() => rename(name)}>
+              Name
+            </Button>
+          </div>
+          {recent.length > 0 && (
+            <div className={styles.switch}>
+              <span className={styles.label}>Recent</span>
+              <ul className={styles.options}>
+                {recent.map((label) => (
+                  <li key={label.toLowerCase()}>
+                    <button type="button" className={styles.option} onClick={() => rename(label)}>
+                      <span>{label}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className={styles.full}>{session.label || 'No name yet'}</div>
+      )}
       {clock === null ? (
         <StaleTimer running={running} now={now} />
       ) : (
@@ -51,7 +95,7 @@ function TimerPopover({
           <div className={styles.muted}>
             Started {clockTime(session.start)} · {formatHours(clock)} so far
           </div>
-          {others.length > 0 && (
+          {!unnamed && others.length > 0 && (
             <div className={styles.switch}>
               <span className={styles.label}>Switch to</span>
               <ul className={styles.options}>
@@ -121,10 +165,18 @@ function usePopover(): {
   return { open, setOpen, rootRef, mainRef, onKeyDown }
 }
 
+/** Set by the idle Start so the chip that replaces it opens its popover, ready for a name. */
+let openAfterStart = false
+
 function Chip({ running, now }: { running: RunningTimer; now: Moment }): React.JSX.Element {
   const { settings } = useSettings()
   const { pathname } = useLocation()
   const { open, setOpen, rootRef, mainRef, onKeyDown } = usePopover()
+  useEffect(() => {
+    if (!openAfterStart) return
+    openAfterStart = false
+    setOpen(true)
+  }, [setOpen])
   const { session } = running
   const clock = elapsedMinutes(session, now)
   const current = WORKSPACES.find((w) => w === pathname.split('/')[1]) ?? settings.ui.workspace
@@ -167,85 +219,30 @@ function Chip({ running, now }: { running: RunningTimer; now: Moment }): React.J
   )
 }
 
-/** What the idle popover offers: a task name to start, and the names of the last week as one-click starts. */
-function StartPopover({ onClose }: { onClose: () => void }): React.JSX.Element {
-  const { settings } = useSettings()
-  const today = trackingMoment().date
-  const data = useYearFile('research', currentYear(today, settings.yearStarts))
-  const [name, setName] = useState('')
-  const labels = useMemo(() => (data ? earlierLabels(data) : []), [data])
-  const recent = useMemo(() => (data ? recentLabels(data, today) : []), [data, today])
-
-  const start = (label: string): void => {
-    void window.api.tracking.start('research', label)
-    onClose()
-  }
-
-  return (
-    <div className={styles.popover} role="dialog" aria-label="Start timer">
-      <div className={styles.startRow}>
-        <TaskField
-          label="What are you working on?"
-          placeholder="What are you working on?"
-          value={name}
-          onChange={setName}
-          onSubmit={() => start(name)}
-          labels={labels}
-          autoFocus
-        />
-        <Button
-          variant="primary"
-          icon={<Play size={14} strokeWidth={1.75} fill="currentColor" aria-hidden />}
-          onClick={() => start(name)}
-        >
-          Start
-        </Button>
-      </div>
-      {recent.length > 0 && (
-        <div className={styles.switch}>
-          <span className={styles.label}>Recent</span>
-          <ul className={styles.options}>
-            {recent.map((label) => (
-              <li key={label.toLowerCase()}>
-                <button type="button" className={styles.option} onClick={() => start(label)}>
-                  <Play size={14} strokeWidth={1.75} fill="currentColor" aria-hidden />
-                  <span>{label}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  )
-}
-
-/** No timer runs: a quiet Start in the running chip's place, opening the field and the recent names. */
+/** No timer runs: a quiet Start in the running chip's place. It starts at once, unnamed; the chip then asks for a name. */
 function IdleChip(): React.JSX.Element {
-  const { open, setOpen, rootRef, mainRef, onKeyDown } = usePopover()
   return (
-    <div className={styles.root} ref={rootRef} onKeyDown={onKeyDown}>
+    <div className={styles.root}>
       <div className={styles.chip}>
         <button
-          ref={mainRef}
           type="button"
           className={styles.main}
-          aria-expanded={open}
-          aria-haspopup="dialog"
-          onClick={() => setOpen((o) => !o)}
+          onClick={() => {
+            openAfterStart = true
+            void window.api.tracking.start('research', '')
+          }}
         >
           <Play size={12} strokeWidth={1.75} fill="currentColor" aria-hidden />
           Start
         </button>
       </div>
-      {open && <StartPopover onClose={() => setOpen(false)} />}
     </div>
   )
 }
 
 /**
  * The timer in the top bar on every page. Running: the task, the block's clock and Stop; a click opens the popover.
- * Otherwise a Start that opens the task field and the recent names.
+ * Otherwise a Start that begins an unnamed timer at once; its popover then takes a name or an existing task.
  */
 export function TimerChip(): React.JSX.Element | null {
   const { running, loaded } = useRunningTimer()
