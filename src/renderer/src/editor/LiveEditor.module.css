@@ -108,15 +108,15 @@
 .wrap :global(.live-h6) {
   font-size: var(--text-16);
 }
-/* Space above a heading (spelled out to outrank the `.cm-line` padding reset above, which every line class that pads has to do). */
+/* Space above and below a heading: notes keep no blank lines around headings, so this is the whole gap (spelled out to outrank the `.cm-line` padding reset above, which every line class that pads has to do). */
 .wrap :global(.cm-editor) :global(.cm-line.live-h1),
 .wrap :global(.cm-editor) :global(.cm-line.live-h2),
 .wrap :global(.cm-editor) :global(.cm-line.live-h3),
 .wrap :global(.cm-editor) :global(.cm-line.live-h4),
 .wrap :global(.cm-editor) :global(.cm-line.live-h5),
 .wrap :global(.cm-editor) :global(.cm-line.live-h6) {
-  padding-top: 0.5em;
-  padding-bottom: 0.4em;
+  padding-top: 1.1em;
+  padding-bottom: 0.5em;
 }
 /* The first line of the note needs no space above it. */
 .wrap :global(.cm-editor) :global(.cm-line:first-child) {
