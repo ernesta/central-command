@@ -34,6 +34,25 @@ export function timeOffCounts(year: TrackingYear, today: string): TimeOffCounts 
   return { allowance, taken, booked, left: allowance - taken - booked, byType }
 }
 
+export interface TimeOffRow extends TimeOffEntry {
+  /** Before today. A day off today or later is still booked. */
+  taken: boolean
+}
+
+/** The days off the counts include (inside the year, a weekday, each date once), oldest first. */
+export function timeOffRows(year: TrackingYear, today: string): TimeOffRow[] {
+  const seen = new Set<string>()
+  return year.timeOff
+    .filter((e) => counts(e, year) && !seen.has(e.date) && seen.add(e.date))
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map((e) => ({ ...e, taken: e.date < today }))
+}
+
+/** The first day off today or later, or null. */
+export function nextDayOff(year: TrackingYear, today: string): string | null {
+  return timeOffRows(year, today).find((r) => !r.taken)?.date ?? null
+}
+
 /**
  * Add days off from `from` to `to` inclusive. Weekends are skipped; a date outside the year refuses the whole
  * request; a date already listed takes the new type.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addTimeOff, removeTimeOff, timeOffCounts } from './timeoff'
+import { addTimeOff, nextDayOff, removeTimeOff, timeOffCounts, timeOffRows } from './timeoff'
 import { ok, year } from './test-utils'
 
 describe('adding days off', () => {
@@ -96,5 +96,35 @@ describe('counts: taken, booked, left to book', () => {
       )
     )
     expect(timeOffCounts(many, '2026-09-22').left).toBe(-3)
+  })
+})
+
+describe('the days off as a list', () => {
+  const y = year({
+    timeOff: [
+      { date: '2026-12-24', type: 'university' },
+      { date: '2026-10-05', type: 'leave' },
+      { date: '2026-10-10', type: 'leave' }, // a Saturday: never counts
+      { date: '2026-10-05', type: 'public' }, // a repeat of a date
+      { date: '2025-12-24', type: 'public' } // outside the year
+    ]
+  })
+  it('lists each counted day once, oldest first, as taken before today and booked from today', () => {
+    expect(timeOffRows(y, '2026-10-05')).toEqual([
+      { date: '2026-10-05', type: 'leave', taken: false },
+      { date: '2026-12-24', type: 'university', taken: false }
+    ])
+    expect(timeOffRows(y, '2026-10-06')[0].taken).toBe(true)
+  })
+  it('agrees with the counts', () => {
+    const c = timeOffCounts(y, '2026-10-06')
+    const rows = timeOffRows(y, '2026-10-06')
+    expect(rows.filter((r) => r.taken)).toHaveLength(c.taken)
+    expect(rows.filter((r) => !r.taken)).toHaveLength(c.booked)
+  })
+  it('finds the next day off, today included', () => {
+    expect(nextDayOff(y, '2026-10-05')).toBe('2026-10-05')
+    expect(nextDayOff(y, '2026-10-06')).toBe('2026-12-24')
+    expect(nextDayOff(y, '2026-12-25')).toBeNull()
   })
 })
