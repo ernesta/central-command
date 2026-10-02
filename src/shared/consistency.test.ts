@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { learnProperNouns, normaliseValues, sentenceCaseHeading } from './consistency'
+import {
+  learnProperNouns,
+  normaliseValues,
+  sentenceCaseHeading,
+  sentenceCaseHeadings
+} from './consistency'
 
 const proper = learnProperNouns(['We met the Gates team and Sarah, Kathy Rastle said so.'])
 const h = (t: string): string => sentenceCaseHeading(t, proper)
@@ -29,6 +34,21 @@ describe('sentenceCaseHeading', () => {
   it('leaves link headings alone', () => {
     const t = '[World Development](https://x.org)'
     expect(h(t)).toBe(t)
+  })
+})
+
+describe('sentenceCaseHeadings', () => {
+  it('removes a doubled marker and all-bold headings', () => {
+    expect(sentenceCaseHeadings('## ## ECLS-K:2011 Kindergarten — Fifth Grade', proper)).toBe(
+      '## ECLS-K:2011 kindergarten — fifth grade'
+    )
+    expect(sentenceCaseHeadings('### **1. The Consensus: The "Ideal" Model**', proper)).toBe(
+      '### 1. The consensus: The "ideal" model'
+    )
+  })
+  it('keeps protected titles', () => {
+    expect(sentenceCaseHeadings('### Loud and Clear', proper)).toBe('### Loud and Clear')
+    expect(sentenceCaseHeadings('### Bilingual Boost', proper)).toBe('### Bilingual Boost')
   })
 })
 

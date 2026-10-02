@@ -47,7 +47,9 @@ export const PROTECTED_PHRASES = [
   'Experimental Psychology Society',
   'Gates Foundation',
   'Data Sharing Agreement',
-  'Studentship Agreement'
+  'Studentship Agreement',
+  'Loud and Clear',
+  'Bilingual Boost'
 ]
 
 /** A word before a number or a single capital letter ("Study 1", "Category A") is a label and keeps its capital. */
@@ -124,8 +126,8 @@ export function sentenceCaseHeading(text: string, proper: Set<string>): string {
           .join('')
         out = lowered + tail
       }
-      // the next word is a sentence start after a number prefix, a colon, a dash or a closing question
-      capitalNext = numbered || /[:?!]$/.test(bare) || bare === '–' || bare === '—' || bare === '-'
+      // the next word is a sentence start after a number prefix, a colon or a closing question
+      capitalNext = numbered || /[:?!]$/.test(bare)
       return lead + out
     })
     .join('')
@@ -138,8 +140,9 @@ export function sentenceCaseHeadings(text: string, proper: Set<string>): string 
     .map((line) => {
       if (/^\s*(```|~~~)/.test(line)) fenced = !fenced
       if (fenced) return line
-      const m = /^(#{1,6} )(.*)$/.exec(line)
-      return m ? m[1] + sentenceCaseHeading(m[2], proper) : line
+      // a doubled marker (`## ## Title`) and a heading that is all bold (`### **Title**`) are tidied first
+      const m = /^(#{1,6} )(?:#{1,6} )?(?:\*\*(.+)\*\*|(.*))$/.exec(line)
+      return m ? m[1] + sentenceCaseHeading(m[2] ?? m[3], proper) : line
     })
     .join('\n')
 }

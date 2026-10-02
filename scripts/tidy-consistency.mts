@@ -52,7 +52,7 @@ function show(before: string, after: string): void {
   if (a.length === b.length) {
     a.forEach((line, i) => {
       if (line !== b[i])
-        console.log(`    - ${line.trim().slice(0, 200)}\n    + ${b[i].trim().slice(0, 200)}`)
+        console.log(`    - ${line.trim().slice(0, 600)}\n    + ${b[i].trim().slice(0, 600)}`)
     })
   } else
     console.log(
