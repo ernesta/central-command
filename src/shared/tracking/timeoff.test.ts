@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { addTimeOff, nextDayOff, removeTimeOff, timeOffCounts, timeOffRows } from './timeoff'
+import {
+  addTimeOff,
+  nextDayOff,
+  removeTimeOff,
+  setTimeOffType,
+  timeOffCounts,
+  timeOffRows
+} from './timeoff'
 import { ok, year } from './test-utils'
 
 describe('adding days off', () => {
@@ -56,6 +63,14 @@ describe('adding days off', () => {
       { date: '2026-12-25', type: 'public' },
       { date: '2026-12-28', type: 'leave' }
     ])
+  })
+  it('changes the type of a listed day, even a holiday to leave, and ignores an unlisted one', () => {
+    const y = ok(addTimeOff(year(), '2026-12-24', '2026-12-25', 'public'))
+    expect(setTimeOffType(y, '2026-12-24', 'leave').timeOff).toEqual([
+      { date: '2026-12-24', type: 'leave' },
+      { date: '2026-12-25', type: 'public' }
+    ])
+    expect(setTimeOffType(y, '2026-12-28', 'leave')).toEqual(y)
   })
   it('removes a day', () => {
     const y = ok(addTimeOff(year(), '2026-12-24', '2026-12-25', 'public'))

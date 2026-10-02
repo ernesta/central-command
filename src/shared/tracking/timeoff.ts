@@ -83,6 +83,11 @@ export function addTimeOff(
   return { ok: true, year: { ...year, timeOff } }
 }
 
+/** Change the type of a day already listed (the one way to turn a holiday into leave); an unlisted date is left alone. */
+export function setTimeOffType(year: TrackingYear, date: string, type: TimeOffType): TrackingYear {
+  return { ...year, timeOff: year.timeOff.map((e) => (e.date === date ? { ...e, type } : e)) }
+}
+
 export function removeTimeOff(year: TrackingYear, date: string): TrackingYear {
   return { ...year, timeOff: year.timeOff.filter((e) => e.date !== date) }
 }

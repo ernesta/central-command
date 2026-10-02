@@ -65,6 +65,12 @@ export interface TrackingApi {
     to: string,
     type: TimeOffType
   ): Promise<YearResult>
+  setTimeOffType(
+    workspace: Workspace,
+    year: string,
+    date: string,
+    type: TimeOffType
+  ): Promise<YearResult>
   removeTimeOff(workspace: Workspace, year: string, date: string): Promise<YearResult>
   /** A year's file changed (any workspace). Returns an unsubscribe function. */
   onChanged(listener: (event: TrackingChangedEvent) => void): () => void
@@ -84,6 +90,7 @@ export const TRACKING_IPC = {
   setNote: 'tracking:set-note',
   setPlan: 'tracking:set-plan',
   addTimeOff: 'tracking:add-time-off',
+  setTimeOffType: 'tracking:set-time-off-type',
   removeTimeOff: 'tracking:remove-time-off',
   changed: 'tracking:changed'
 } as const
