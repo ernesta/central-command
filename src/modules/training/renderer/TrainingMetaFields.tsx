@@ -1,3 +1,4 @@
+import { TimeInput } from '@renderer/components/TimeInput'
 import { Segmented } from '@renderer/components/Segmented'
 import { PeopleField } from '@renderer/components/PeopleField'
 import { ComboField } from '@renderer/components/ComboField'
@@ -5,7 +6,7 @@ import { DescribedSelect } from '@renderer/components/DescribedSelect'
 import { SkillsField } from '@renderer/components/SkillsField'
 import type { Person } from '@shared/people'
 import { durationMinutes, formatDuration } from '@shared/time'
-import { isValidDate, normaliseTime, type TrainingPatch } from '../shared/front-matter'
+import { isValidDate, type TrainingPatch } from '../shared/front-matter'
 import {
   TRAINING_MODE_LABELS,
   TRAINING_MODES,
@@ -54,21 +55,9 @@ export function TrainingMetaFields({
 
   const time = (
     key: 'start' | 'end'
-  ): {
-    type: 'time'
-    value: string
-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
-  } => ({
-    type: 'time' as const,
+  ): { value: string; onChange: (time: string | null) => void } => ({
     value: meta[key] ?? '',
-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
-      const raw = event.target.value
-      if (raw === '') onChange({ [key]: null })
-      else {
-        const t = normaliseTime(raw)
-        if (t) onChange({ [key]: t })
-      }
-    }
+    onChange: (time) => onChange({ [key]: time })
   })
 
   return (
@@ -94,13 +83,13 @@ export function TrainingMetaFields({
         <label className={styles.label} htmlFor="training-start">
           Start
         </label>
-        <input id="training-start" className={styles.input} {...time('start')} />
+        <TimeInput id="training-start" className={styles.input} {...time('start')} />
       </div>
       <div className={styles.field}>
         <label className={styles.label} htmlFor="training-end">
           End
         </label>
-        <input id="training-end" className={styles.input} {...time('end')} />
+        <TimeInput id="training-end" className={styles.input} {...time('end')} />
       </div>
       <div className={styles.field}>
         <span className={styles.label} id="training-duration-label">

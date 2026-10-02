@@ -1,5 +1,6 @@
+import { TimeInput } from '@renderer/components/TimeInput'
 import { SERIES, type MeetingMeta, type MeetingMode, type Person } from '../shared/types'
-import { isValidDate, normaliseTime, type MetaPatch } from '../shared/front-matter'
+import { isValidDate, type MetaPatch } from '../shared/front-matter'
 import { durationMinutes, formatDuration } from '../shared/time'
 import { Segmented } from '@renderer/components/Segmented'
 import { Select } from '@renderer/components/Select'
@@ -35,21 +36,9 @@ export function MetaFields({
 
   const time = (
     key: 'start' | 'end'
-  ): {
-    type: 'time'
-    value: string
-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
-  } => ({
-    type: 'time' as const,
+  ): { value: string; onChange: (time: string | null) => void } => ({
     value: meta[key] ?? '',
-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
-      const raw = event.target.value
-      if (raw === '') onChange({ [key]: null })
-      else {
-        const t = normaliseTime(raw)
-        if (t) onChange({ [key]: t })
-      }
-    }
+    onChange: (time) => onChange({ [key]: time })
   })
 
   return (
@@ -87,13 +76,13 @@ export function MetaFields({
         <label className={styles.label} htmlFor="meeting-start">
           Start
         </label>
-        <input id="meeting-start" className={styles.input} {...time('start')} />
+        <TimeInput id="meeting-start" className={styles.input} {...time('start')} />
       </div>
       <div className={styles.field}>
         <label className={styles.label} htmlFor="meeting-end">
           End
         </label>
-        <input id="meeting-end" className={styles.input} {...time('end')} />
+        <TimeInput id="meeting-end" className={styles.input} {...time('end')} />
       </div>
       <div className={styles.field}>
         <span className={styles.label} id="meeting-duration-label">

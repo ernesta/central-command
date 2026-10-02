@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@renderer/components/Button'
+import { TimeInput } from '@renderer/components/TimeInput'
 import { clockTime, formatDay } from '@shared/tracking/format'
 import type { RunningTimer } from '@shared/tracking/api'
 import type { Moment } from '@shared/tracking/types'
@@ -27,12 +28,11 @@ export function StaleTimer({
       <span>
         Started {since} {clockTime(session.start)}. Set an end time.
       </span>
-      <input
-        type="time"
+      <TimeInput
         className={styles.clock}
         aria-label="End time"
         value={time}
-        onChange={(event) => setTime(event.target.value)}
+        onChange={(value) => setTime(value ?? '')}
       />
       <Button size="small" variant="primary" disabled={!ready} onClick={end}>
         End
