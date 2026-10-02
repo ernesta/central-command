@@ -31,6 +31,8 @@ ask the user.
   29 Sep 2026, so a dry run now finds nothing)
 - `npm run tidy:series [-- --apply]`: one-off tidy of training series and titles (series = full programme name, title = the session; applied
   on 30 Sep 2026, so a dry run now finds nothing)
+- `npm run link:citations [-- --apply]`: turn plain-text citations ("Kim et al. (2020)") into reading entities; only an exact single match is linked, the rest are listed (dry run by
+  default; not yet applied)
 - `npm run convert:topics [-- --apply]`: turn bold pseudo-headings (`**Topic**`) in meeting notes into `###` topics (dry run by
   default; `--apply` backs each note up first)
 

@@ -1676,7 +1676,7 @@ The user's feedback list for notes, reading notes, training notes and reading li
 
 ### Still to do from the same feedback list (stages 3 to 5), then one reminder
 
-3. **Plain-text citations to reading entities** ("Castles et al., 2018", "Evans and Acosta (2020)", about 30 forms) in all notes; list the ones with no reading yet so the user can create them, then link those. Entities are `[label](cc://reading/<citekey>)` (`src/shared/entities.ts`). Dry run first, never guess an ambiguous match.
+3. **(Dry run built 2 Oct 2026, `npm run link:citations`, `src/shared/citations.ts`; not applied, awaiting the user's review.)** **Plain-text citations to reading entities** ("Castles et al., 2018", "Evans and Acosta (2020)", about 30 forms) in all notes; list the ones with no reading yet so the user can create them, then link those. Entities are `[label](cc://reading/<citekey>)` (`src/shared/entities.ts`). Dry run first, never guess an ambiguous match.
 4. **Reading lists:** references become entities; remove "Attach a reading…" and the readings sidebar (a paper is an entity or it is not).
 5. **Copying text with entities gives readable text:** people as their names; readings as APA in-text citations plus a reference list at the end of what was copied; check the other kinds (meeting, note).
 - **Remind the user at the end** to come back to: a sidebar (or hovers, or other ideas) listing all entities in a note.
