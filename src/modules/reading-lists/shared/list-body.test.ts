@@ -108,4 +108,16 @@ describe('parseListBody, entity entries', () => {
     })
     expect(entries[2].kind).toBe('placeholder')
   })
+
+  it('reads a reading mention typed with @ (no bold) as linked', () => {
+    const body =
+      '## S\n\n- [Kim et al. (2020)](cc://reading/kim2020) Typed with @.\n- [Ann](cc://person/Ann) not a reading\n'
+    const entries = parseListBody(body)[0].entries
+    expect(entries[0]).toMatchObject({
+      kind: 'linked',
+      citekey: 'kim2020',
+      annotation: 'Typed with @.'
+    })
+    expect(entries[1].kind).toBe('missing')
+  })
 })

@@ -35,7 +35,19 @@ function citekeyOf(bold: string): string | null {
 
 function parseEntryText(text: string, offset: number): ListEntry {
   const bold = BOLD_LEAD.exec(text.trim())
-  if (!bold) return { kind: 'missing', annotation: text.trim(), offset }
+  if (!bold) {
+    // A reading mention typed with `@` has no bold around it; it is the citation all the same.
+    const mention = LINKED_ENTITY.exec(text.trim())
+    const ref = mention ? parseEntityHref(mention[1]) : null
+    return ref
+      ? {
+          kind: 'linked',
+          citekey: ref.key,
+          annotation: text.trim().slice(mention![0].length).trim(),
+          offset
+        }
+      : { kind: 'missing', annotation: text.trim(), offset }
+  }
   const citekey = citekeyOf(bold[1].trim())
   const annotation = bold[2].trim()
   return citekey

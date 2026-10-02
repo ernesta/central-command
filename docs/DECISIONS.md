@@ -1685,6 +1685,17 @@ The user's feedback list for notes, reading notes, training notes and reading li
 ### Still to do from the same feedback list (stages 4 and 5), then one reminder
 
 3. **(Done 2 Oct 2026, `npm run link:citations`, `src/shared/citations.ts`; applied: 40 links in 14 files, backup `backups/link-citations-…`. 29 citations have no reading yet; the user adds them to Zotero and asks for another pass, which is just a re-run. Works known by title, such as _Loud and Clear_, are in `NAMED_WORKS`; add one per such work. Headings are never linked.)** **Plain-text citations to reading entities** ("Castles et al., 2018", "Evans and Acosta (2020)", about 30 forms) in all notes; list the ones with no reading yet so the user can create them, then link those. Entities are `[label](cc://reading/<citekey>)` (`src/shared/entities.ts`). Dry run first, never guess an ambiguous match.
-4. **Reading lists:** references become entities; remove "Attach a reading…" and the readings sidebar (a paper is an entity or it is not).
+4. **(Done 2 Oct 2026, see "Stage 4 write-up" below.)** **Reading lists:** references become entities; remove "Attach a reading…" and the readings sidebar (a paper is an entity or it is not).
 5. **Copying text with entities gives readable text:** people as their names; readings as APA in-text citations plus a reference list at the end of what was copied; check the other kinds (meeting, note).
 - **Remind the user at the end** to come back to: a sidebar (or hovers, or other ideas) listing all entities in a note.
+
+
+### Stage 4 write-up: Reading lists use entities (2 Oct 2026)
+
+Supersedes the "Reading lists" decisions about `@citekey`, "Attach a reading…" and the side panel (kept above as history).
+
+- **Format.** A linked entry is `- **[Kim et al. (2020)](cc://reading/<citekey>)** annotation`. The reading holds the title and journal, so the list does not repeat them. A reading mention typed with `@` (a plain link, no bold) counts too. `**@citekey**` and the long form (`**[label](…). Title. Journal.**`) are still read as linked, so nothing breaks before migration. A typed citation with no reading stays a placeholder with its full reference text (it is all the line says about that paper); a bullet with neither is `missing`.
+- **Removed:** "Attach a reading…", `attachReading`, and the entries sidebar (`EntriesPanel`); the list page is one editor card. A paper is added by typing `@`. `reading_list_mentions` stays (a reading's page still shows the lists that mention it) and is filled from the same parser.
+- **Migration, `npm run tidy:reading-lists`** (`list-tidy.ts` in `src/modules/reading-lists/shared/`, dry run by default, backup per file, content-hash guard, annotations and line count must be unchanged): shortens linked entries to their link, turns `**@key**` into an entity, and links a placeholder only when exactly one reading in the Zotero export fits (reusing the stage 3 matcher), dropping its reference text then. It is idempotent and is the re-run to use after adding readings to Zotero.
+- **Real list, dry run (not applied):** 12 entries would be shortened; 10 placeholders still wait for a reading.
+- **Checked:** unit tests (a mutation check on the "exactly one reading" rule failed a test), and the built app on a scratch copy of the real list: chips render, no side panel, `@` inserts a reading link that saves.

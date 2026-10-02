@@ -31,6 +31,7 @@ ask the user.
   29 Sep 2026, so a dry run now finds nothing)
 - `npm run tidy:series [-- --apply]`: one-off tidy of training series and titles (series = full programme name, title = the session; applied
   on 30 Sep 2026, so a dry run now finds nothing)
+- `npm run tidy:reading-lists [-- --apply]`: bring reading list entries to reading entities (shorten linked ones, link typed citations that match exactly one reading); dry run by default, not yet applied to the real library; re-run after adding readings to Zotero
 - `npm run link:citations [-- --apply]`: turn plain-text citations ("Kim et al. (2020)") into reading entities; only an exact single match is linked, the rest are listed (dry run by
   default; applied 2 Oct 2026, re-run when new readings exist)
 - `npm run convert:topics [-- --apply]`: turn bold pseudo-headings (`**Topic**`) in meeting notes into `###` topics (dry run by
@@ -134,7 +135,7 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
 - **27 Sep 2026, six things worked through while the user was away, all now pushed**: Training's entry page gained a side
   panel like Meetings' (Files above Outline); Find in the note was redesigned as an inline bar in `EditorCard`'s own footer
   with Cmd-Option-F replace (Cmd-Return / Cmd-Shift-Return); **Reading lists** is a new module (a list is sections of
-  entries, each linked to a reading or held as a placeholder citation, with an "Attach a reading…" picker); a page per
+  entries, each linked to a reading or held as a placeholder citation, since reshaped to reading entities; see the Stage 4 write-up in `docs/DECISIONS.md`); a page per
   person is built (their meetings, trainings, open TODOs, last-met/next-meeting, and links); and a Work meetings importer
   was built and dry-run against the real vault (since then Work got its own Meetings module, `createMeetingsModule('work')`,
   and the import was applied; `docs/DECISIONS.md`, "Work meetings import"). Two real bugs were found only by driving the built app, not by reading code
