@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { Input } from '@renderer/components/Input'
-import { Notice } from '@renderer/components/Notice'
+import { FieldError } from '@renderer/components/FieldError'
 import { Select } from '@renderer/components/Select'
 import { inYear } from '@shared/year'
 import { TIME_OFF_TYPES, type TimeOffType, type TrackingYear } from '@shared/tracking/types'
@@ -11,10 +11,11 @@ import styles from './AddTimeOff.module.css'
 const REFUSED: Record<string, string> = {
   'outside-year': 'Those dates are outside this year.',
   backwards: 'To is before From.',
-  weekend: 'That is a weekend.'
+  weekend: 'That is a weekend.',
+  listed: 'Those days are already listed.'
 }
 
-/** One inline row: from, to and the kind of day off. Weekends are skipped; Escape closes it. */
+/** One inline row: from, to and the kind of day off. Weekends are skipped; Cancel or Escape closes it. */
 export function AddTimeOff({
   workspace,
   data,
@@ -86,8 +87,9 @@ export function AddTimeOff({
         <Button variant="primary" disabled={!ready} onClick={() => void add()}>
           Add
         </Button>
+        <Button onClick={onDone}>Cancel</Button>
       </div>
-      {error && <Notice tone="error">{error}</Notice>}
+      {error && <FieldError message={error} />}
     </div>
   )
 }

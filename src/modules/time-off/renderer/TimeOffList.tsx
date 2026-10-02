@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { Input } from '@renderer/components/Input'
-import { Notice } from '@renderer/components/Notice'
+import { FieldError } from '@renderer/components/FieldError'
 import { Select } from '@renderer/components/Select'
 import { formatDay } from '@shared/tracking/format'
 import { timeOffRows, type TimeOffRow } from '@shared/tracking/timeoff'
@@ -89,7 +89,7 @@ function DayRow({
             setProblem(null)
           }}
         />
-        {problem && <Notice tone="error">{problem}</Notice>}
+        {problem && <FieldError message={problem} />}
       </td>
       <td>
         <Select

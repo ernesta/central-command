@@ -31,8 +31,8 @@ export function TimeOffPage(): React.JSX.Element {
             <Button
               variant="primary"
               icon={<Plus size={16} strokeWidth={1.75} aria-hidden />}
-              aria-expanded={adding}
-              onClick={() => setAdding((a) => !a)}
+              disabled={adding}
+              onClick={() => setAdding(true)}
             >
               Add
             </Button>

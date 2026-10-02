@@ -12,6 +12,9 @@
 }
 .table {
   width: 100%;
+  min-width: 640px;
+  /* Fixed columns and rows: opening a row for editing changes neither widths nor heights. */
+  table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
   font-variant-numeric: tabular-nums;
@@ -30,7 +33,15 @@
   text-align: left;
   text-transform: uppercase;
 }
+.table th:nth-child(1),
+.table th:nth-child(2) {
+  width: 30%;
+}
+.table th:nth-child(3) {
+  width: 14%;
+}
 .table td {
+  height: 56px;
   padding: 6px 16px;
   border-bottom: 1px solid var(--border-faint);
   font-size: var(--text-14);
