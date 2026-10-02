@@ -29,6 +29,7 @@ const NO_ENTITIES: LiveEntities = {
     resolve: () => ({ state: 'pending' }),
     suggest: () => undefined,
     handleKey: () => false,
+    copyPart: async () => null,
     detach: () => undefined
   },
   open: () => undefined

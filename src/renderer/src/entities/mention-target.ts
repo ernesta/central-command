@@ -1,4 +1,5 @@
 import type { EntityRef } from '@shared/entities'
+import type { CopyPart } from '@shared/entity-copy'
 import type { Resolved } from './resolver'
 
 /** The `@…` being typed: where it starts (the `@`), where the cursor is, and what follows the `@`. */
@@ -33,6 +34,8 @@ export interface EntityHost {
   suggest(target: MentionTarget, suggestion: Suggestion | null): void
   /** A key went down while the picker may be open; true when the picker took it. */
   handleKey(event: KeyboardEvent): boolean
+  /** What a mention reads as outside the app; null when it is just its label (or the kind has nothing to add). */
+  copyPart(ref: EntityRef, label: string): Promise<CopyPart | null>
   /** The editor is gone (a reload from disk, or React StrictMode's throwaway first mount). */
   detach(): void
 }

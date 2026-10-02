@@ -94,3 +94,48 @@ describe('the paste event', () => {
     expect(event.defaultPrevented).toBe(true)
   })
 })
+
+describe('copy and paste of mentions', () => {
+  const KIM = '[Kim et al. (2020)](cc://reading/kim2020)'
+
+  function copyEvent(type: 'copy' | 'cut'): { event: Event; data: Record<string, string> } {
+    const data: Record<string, string> = {}
+    const event = new Event(type, { bubbles: true, cancelable: true })
+    Object.defineProperty(event, 'clipboardData', {
+      value: { setData: (t: string, v: string) => void (data[t] = v) }
+    })
+    return { event, data }
+  }
+
+  it('copies a selection with a mention as readable text and keeps the Markdown for pasting back', () => {
+    const { view } = openView(`see |${KIM}| now`)
+    const { event, data } = copyEvent('copy')
+    view.contentDOM.dispatchEvent(event)
+    expect(event.defaultPrevented).toBe(true)
+    expect(data['text/plain']).toBe('Kim et al. (2020)')
+    const target = openView('|')
+    target.view.contentDOM.dispatchEvent(
+      pasteEvent({ 'text/html': data['text/html'], 'text/plain': data['text/plain'] })
+    )
+    expect(target.view.state.sliceDoc()).toBe(KIM)
+  })
+
+  it('cut removes the selection as well', () => {
+    const { view } = openView(`a |${KIM}| b`)
+    view.contentDOM.dispatchEvent(copyEvent('cut').event)
+    expect(view.state.sliceDoc()).toBe('a  b')
+  })
+
+  it('leaves a copy with no mention to the editor', () => {
+    const { view } = openView('a |plain| b')
+    const { event, data } = copyEvent('copy')
+    view.contentDOM.dispatchEvent(event)
+    expect(data).toEqual({})
+  })
+
+  it('pastes plain text when the clipboard has only text (Cmd-Shift-V)', () => {
+    const { view } = openView('|')
+    view.contentDOM.dispatchEvent(pasteEvent({ 'text/plain': 'Kim et al. (2020)' }))
+    expect(view.state.sliceDoc()).toBe('Kim et al. (2020)')
+  })
+})

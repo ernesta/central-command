@@ -1,6 +1,13 @@
 import type { EntityRef } from '@shared/entities'
 import type { EntityHost, MentionTarget, Suggestion } from './mention-target'
-import { entityProviders, type EntityHit, type EntityProvider, type EntitySelf } from './registry'
+import type { CopyPart } from '@shared/entity-copy'
+import {
+  entityProviders,
+  providerFor,
+  type EntityHit,
+  type EntityProvider,
+  type EntitySelf
+} from './registry'
 import { EntityResolver, type Resolved } from './resolver'
 
 /** The picker's rows for one kind of entity. */
@@ -89,6 +96,14 @@ export class EntityPickerController implements EntityHost {
   // --- for the editor plugins --------------------------------------------------------------------
 
   resolve = (ref: EntityRef): Resolved => this.resolver.get(ref)
+
+  copyPart = async (ref: EntityRef, label: string): Promise<CopyPart | null> => {
+    try {
+      return (await providerFor(ref.kind)?.copy?.(ref.key, label)) ?? null
+    } catch {
+      return null
+    }
+  }
 
   /** For the hover card: called when something a mention points at has been looked up. */
   subscribeResolved = (listener: () => void): (() => void) => this.resolver.subscribe(listener)

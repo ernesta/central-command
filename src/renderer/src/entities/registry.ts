@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import { ENTITY_KINDS, type EntityKind, type EntityRef } from '@shared/entities'
+import type { CopyPart } from '@shared/entity-copy'
 
 /** One thing the picker offers: what to show, what to write into the note, and how to get its address. */
 export interface EntityHit {
@@ -48,6 +49,11 @@ export interface EntityProvider {
   search: (query: string, limit: number, self: EntitySelf | null) => Promise<EntityHit[]>
   /** What the key names now, or null when it no longer exists. */
   resolve: (key: string) => Promise<EntitySummary | null>
+  /**
+   * What a mention reads as when copied out of the app (a person's name, a reading's in-text citation and reference).
+   * Left out, the mention's own label is copied, which is right for meetings and notes (their title or date).
+   */
+  copy?: (key: string, label: string) => Promise<CopyPart | null>
 }
 
 let providers: readonly EntityProvider[] = []

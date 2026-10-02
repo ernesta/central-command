@@ -1,5 +1,6 @@
 import { EditorSelection } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
+import { markdownFromCopy } from '@shared/entity-copy'
 import { positions } from './live-lines'
 import { pastedLinkTarget } from './live-links'
 
@@ -53,7 +54,10 @@ export function pasteText(view: EditorView, clipboardText: string, trusted: bool
 export const livePaste = EditorView.domEventHandlers({
   paste(event, view) {
     if (!event.clipboardData) return false
-    pasteText(view, event.clipboardData.getData('text/plain'), event.isTrusted)
+    // A copy from this app carries its Markdown (`live-copy.ts`): chips come back as chips. Cmd-Shift-V has no HTML, so stays plain.
+    const own = markdownFromCopy(event.clipboardData.getData('text/html'))
+    if (own !== null) pasteText(view, own, false)
+    else pasteText(view, event.clipboardData.getData('text/plain'), event.isTrusted)
     // Handled even when there is no text (a picture, say): the browser's own paste would insert formatted content.
     return true
   }

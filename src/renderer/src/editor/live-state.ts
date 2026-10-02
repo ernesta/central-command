@@ -10,6 +10,7 @@ import { liveHistory } from './live-history'
 import { liveKeymap } from './live-keymap'
 import { motionKeymap } from './live-motion'
 import { linkTargetAt } from './live-links'
+import { liveCopy } from './live-copy'
 import { livePaste } from './live-paste'
 
 export interface LiveOptions {
@@ -56,6 +57,7 @@ export function liveExtensions(options: LiveOptions): Extension[] {
     entityExtensions(options.entities),
     findExtension(options.find),
     ...(options.extensions ?? []),
+    liveCopy,
     livePaste,
     EditorView.contentAttributes.of({ 'aria-label': options.label }),
     // Reports the text synchronously on every change: the session saves on its own (longer) timer, so nothing

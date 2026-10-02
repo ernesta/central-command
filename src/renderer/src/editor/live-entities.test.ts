@@ -32,6 +32,7 @@ function fakeHost(over: Partial<EntityHost> = {}): {
       suggested.push(suggestion)
     },
     handleKey: () => false,
+    copyPart: async () => null,
     detach: () => undefined,
     ...over
   }

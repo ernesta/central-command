@@ -1,6 +1,7 @@
 import { BookOpen } from 'lucide-react'
 import { modulePath } from '@modules/types'
 import type { EntityProvider } from '@renderer/entities/registry'
+import { formatApa } from '../shared/apa'
 import { DEFAULT_READINGS_QUERY } from '../shared/query'
 
 const readingsBase = modulePath({ workspace: 'research', id: 'readings' })
@@ -20,6 +21,14 @@ export const readingEntities: EntityProvider = {
       label: reading.shortCitation,
       prepare: async () => ({ kind: 'reading' as const, key: reading.citekey })
     }))
+  },
+  async copy(key, label) {
+    const reading = await window.api.readings.get(key)
+    if (!reading) return null
+    // A label the writer changed stays as written; the usual one is the short citation, which reads "A & B (2020)" in
+    // the text of a sentence but "A and B (2020)" when APA says it as part of one.
+    const text = label === reading.shortCitation ? label.replace(' & ', ' and ') : label
+    return { text, reference: formatApa(reading) }
   },
   async resolve(key) {
     const reading = await window.api.readings.get(key)

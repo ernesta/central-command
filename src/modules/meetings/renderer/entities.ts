@@ -49,6 +49,9 @@ export const personEntities: EntityProvider = {
         prepare: async () => ({ kind: 'person' as const, key: person.name })
       }))
   },
+  async copy(key) {
+    return { text: key }
+  },
   async resolve(key) {
     const person = findByName(await window.api.meetings.people.list(), key)
     if (!person) return null
