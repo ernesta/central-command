@@ -67,12 +67,6 @@
   display: flex;
   gap: 8px;
 }
-.split {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 40px;
-  align-items: start;
-}
 .doc {
   max-width: 780px;
   min-width: 0;
@@ -80,8 +74,5 @@
 @media (max-width: 900px) {
   .page {
     padding-inline: 24px;
-  }
-  .split {
-    grid-template-columns: minmax(0, 1fr);
   }
 }

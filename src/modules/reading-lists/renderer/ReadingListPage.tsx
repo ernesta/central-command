@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { DeleteDialog } from '@renderer/components/DeleteDialog'
@@ -9,14 +9,12 @@ import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { LiveEditor } from '@renderer/editor/LiveEditor'
-import { attachReading, parseListBody } from '@modules/reading-lists/shared/list-body'
 import type { ReadingListRef } from '@modules/reading-lists/shared/types'
-import { EntriesPanel } from './EntriesPanel'
 import { readingListRoute, readingListsBase } from './reading-lists-paths'
 import { useListSession } from './useListSession'
 import styles from './ReadingListPage.module.css'
 
-/** One reading list: its title, its sections and entries (a Markdown note), and the entries panel. */
+/** One reading list: its title, and its sections and entries as a Markdown note; a paper is a reading mention. */
 export function ReadingListPage(): React.JSX.Element {
   const { id = '' } = useParams()
   const navigate = useNavigate()
@@ -57,7 +55,6 @@ function ListView({
 
   const { meta, body, save, error, conflict, reloadedFromDisk, updatedAt } = snapshot
   useDocumentTitle(meta.title || 'Untitled list')
-  const sections = useMemo(() => parseListBody(body), [body])
 
   // A brand-new list opens with its title selected, so typing replaces "Untitled list".
   const ready = snapshot.status === 'ready'
@@ -70,11 +67,6 @@ function ListView({
 
   const goBack = (): void =>
     void (location.key !== 'default' ? navigate(-1) : navigate(readingListsBase))
-
-  const attach = (offset: number, citekey: string): void => {
-    const next = attachReading(body, offset, citekey)
-    if (next !== body) session.replaceBody(next)
-  }
 
   const confirmAndDelete = async (): Promise<void> => {
     setDeleting(true)
@@ -173,20 +165,17 @@ function ListView({
         </div>
       )}
 
-      <div className={styles.split}>
-        <div className={styles.doc}>
-          <EditorCard text={body} edited={updatedAt} save={save} reloaded={reloadedFromDisk}>
-            <LiveEditor
-              key={snapshot.editorKey}
-              initial={snapshot.initialBody}
-              placeholder="Write a section as a heading, then each paper as a bullet: **Citation.** An annotation."
-              showPlaceholder={body.trim() === ''}
-              onChange={session.editBody.bind(session)}
-              onBlur={() => void session.flush()}
-            />
-          </EditorCard>
-        </div>
-        <EntriesPanel sections={sections} onAttach={attach} />
+      <div className={styles.doc}>
+        <EditorCard text={body} edited={updatedAt} save={save} reloaded={reloadedFromDisk}>
+          <LiveEditor
+            key={snapshot.editorKey}
+            initial={snapshot.initialBody}
+            placeholder="Write a section as a heading, then each paper as a bullet: type @ to mention a reading, then an annotation."
+            showPlaceholder={body.trim() === ''}
+            onChange={session.editBody.bind(session)}
+            onBlur={() => void session.flush()}
+          />
+        </EditorCard>
       </div>
 
       <DeleteDialog
