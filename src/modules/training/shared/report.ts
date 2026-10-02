@@ -1,4 +1,4 @@
-import { academicYearLabel } from '@shared/academic-year'
+import { yearLabel } from '@shared/year'
 import { escapeHtml, reportPageHtml } from '@shared/report-page'
 import { formatHours, sortSkills } from '@shared/skills'
 import { durationMinutes, formatDate } from '@shared/time'
@@ -7,7 +7,8 @@ import { typeLabel, type TrainingIndexRow } from './types'
 
 export interface TrainingReportInput {
   rows: readonly TrainingIndexRow[]
-  year: number
+  /** The year's start date. */
+  year: string
   today: string
   aimHours: number
   /** Minutes of meetings in the same year, mentioned in one quiet line; 0 to leave it out. */
@@ -15,12 +16,12 @@ export interface TrainingReportInput {
 }
 
 /** The file name suggested for the export, for example "Training log 2025-26.pdf". */
-export function reportFileName(year: number): string {
-  return `Training log ${academicYearLabel(year).replace('–', '-')}.pdf`
+export function reportFileName(year: string): string {
+  return `Training log ${yearLabel(year).replace('–', '-')}.pdf`
 }
 
 /**
- * The training log of one academic year as a printable page: the totals, then one row per entry,
+ * The training log of one year as a printable page: the totals, then one row per entry,
  * oldest first. Entries that have not happened yet are left out. Plain system fonts and no scripts or
  * network resources, so it prints the same anywhere. Pure: the same input gives the same HTML.
  */
@@ -30,7 +31,7 @@ export function trainingReportHtml(input: TrainingReportInput): string {
     .filter((r) => !isUpcoming(r, today))
     .sort((a, b) => -compareNewestFirst(a, b))
   const hours = trainingHours(input.rows, year, today, aimHours)
-  const label = academicYearLabel(year)
+  const label = yearLabel(year)
 
   const body = rows
     .map((r) => {

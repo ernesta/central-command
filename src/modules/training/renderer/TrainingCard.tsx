@@ -3,18 +3,18 @@ import { modulePath } from '@modules/types'
 import { formatDate } from '@shared/time'
 import { useSettings } from '@renderer/state/settings-context'
 import { formatHours } from '@shared/skills'
-import { currentAcademicYear, academicYearLabel } from '@shared/academic-year'
+import { currentYear, yearLabel } from '@shared/year'
 import { compareNewestFirst, isUpcoming, trainingHours } from '../shared/rules'
 import { todayIso } from './training-paths'
 import { useTrainingList } from './useTrainingList'
 import styles from './TrainingCard.module.css'
 
-/** The Training entry on the Research landing page: hours this academic year and the latest entry. */
+/** The Training entry on the Research landing page: hours this year and the latest entry. */
 export function TrainingCard(): React.JSX.Element {
   const { rows } = useTrainingList()
   const { settings } = useSettings()
   const today = todayIso()
-  const year = currentAcademicYear(today)
+  const year = currentYear(today, settings.yearStarts)
   const hours = rows ? trainingHours(rows, year, today, settings.trainingAimHours) : null
   const latest = rows
     ?.filter((r) => !isUpcoming(r, today))
@@ -33,8 +33,7 @@ export function TrainingCard(): React.JSX.Element {
       ) : (
         <>
           <p className={styles.line}>
-            {formatHours(hours.minutes)} of {settings.trainingAimHours} h ·{' '}
-            {academicYearLabel(year)}
+            {formatHours(hours.minutes)} of {settings.trainingAimHours} h · {yearLabel(year)}
           </p>
           {latest && (
             <p className={styles.line}>

@@ -1,5 +1,5 @@
 import { ArrowRight } from 'lucide-react'
-import { AcademicYearSelect } from '@renderer/components/AcademicYearSelect'
+import { YearSelect } from '@renderer/components/YearSelect'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { HoursStrip } from '@renderer/components/HoursStrip'
 import {
@@ -12,7 +12,7 @@ import {
   SeriesCards,
   type RecentRow
 } from '@renderer/components/Landing'
-import { useAcademicYear } from '@renderer/state/use-academic-year'
+import { useYear } from '@renderer/state/use-year'
 import { useSettings } from '@renderer/state/settings-context'
 import { formatHours } from '@shared/skills'
 import { durationMinutes, formatDate, formatDuration } from '@shared/time'
@@ -57,7 +57,7 @@ export function TrainingLanding(): React.JSX.Element {
   const { settings } = useSettings()
   const today = todayIso()
   const all = rows ?? []
-  const { year, years, setYear } = useAcademicYear(
+  const { year, years, setYear } = useYear(
     [...all.map((r) => r.date), ...meetings.map((m) => m.date)],
     today
   )
@@ -101,7 +101,7 @@ export function TrainingLanding(): React.JSX.Element {
           <LandingSection
             id="year"
             label="Year"
-            aside={<AcademicYearSelect year={year} years={years} onChange={setYear} />}
+            aside={<YearSelect year={year} years={years} onChange={setYear} />}
           >
             <HoursStrip
               title={yearHoursTitle(year)}

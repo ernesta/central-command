@@ -24,7 +24,7 @@ const row = (date: string, over: Partial<MeetingIndexRow> = {}): MeetingIndexRow
 
 const input = (rows: MeetingIndexRow[]): Parameters<typeof meetingsReportHtml>[0] => ({
   rows,
-  year: 2025,
+  year: '2025-09-22',
   today: '2026-03-01',
   seriesFilter: 'Supervision'
 })
@@ -71,8 +71,8 @@ describe('meetingsReportHtml', () => {
     expect(html).toContain('Communication: 1 h')
   })
 
-  it('names the file after the academic year', () => {
-    expect(reportFileName(2025, 'Supervision')).toBe('Supervision log 2025-26.pdf')
-    expect(reportFileName(2025)).toBe('Meetings log 2025-26.pdf')
+  it('names the file after the year', () => {
+    expect(reportFileName('2025-09-22', 'Supervision')).toBe('Supervision log 2025-26.pdf')
+    expect(reportFileName('2025-09-22')).toBe('Meetings log 2025-26.pdf')
   })
 })

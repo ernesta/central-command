@@ -55,10 +55,10 @@ describe('trainingHits', () => {
 describe('planHits', () => {
   const plans = [
     {
-      year: 2026,
+      year: '2026-09-21',
       markdown: '# Priorities\n\n## Bayesian modelling\n\nLearn to fit multilevel models.'
     },
-    { year: 2025, markdown: '' }
+    { year: '2025-09-22', markdown: '' }
   ]
 
   it('finds a plan by its text and shows the part that matched', () => {
@@ -66,7 +66,7 @@ describe('planHits', () => {
     expect(hit).toMatchObject({
       key: 'plan-2026',
       title: 'Training plan 2026–27',
-      route: '/research/training/plan?year=2026'
+      route: '/research/training/plan?year=2026-09-21'
     })
     expect(hit.detail.toLowerCase()).toContain('bayesian')
   })
@@ -82,6 +82,10 @@ describe('planHits', () => {
 
 describe('planYears', () => {
   it('has the years of the entries, this year and the next, newest first', () => {
-    expect(planYears(['2025-10-02'], '2026-09-26')).toEqual([2027, 2026, 2025])
+    expect(planYears(['2025-10-02'], '2026-09-26', ['2025-09-22', '2026-09-21'])).toEqual([
+      '2027-09-20',
+      '2026-09-21',
+      '2025-09-22'
+    ])
   })
 })

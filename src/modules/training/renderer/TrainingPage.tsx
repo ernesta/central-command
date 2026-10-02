@@ -1,7 +1,7 @@
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
-import { AcademicYearSelect } from '@renderer/components/AcademicYearSelect'
+import { YearSelect } from '@renderer/components/YearSelect'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { ExportButton } from '@renderer/components/ExportButton'
@@ -11,9 +11,9 @@ import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { SearchInput } from '@renderer/components/SearchInput'
 import { Select } from '@renderer/components/Select'
-import { useAcademicYear } from '@renderer/state/use-academic-year'
+import { useYear } from '@renderer/state/use-year'
 import { useSettings } from '@renderer/state/settings-context'
-import { academicYearLabel } from '@shared/academic-year'
+import { yearLabel } from '@shared/year'
 import { skillFilterOptions, skillsIn } from '@shared/skills'
 import { initialsFor } from '@modules/meetings/shared/query'
 import { meetingHours } from '@modules/meetings/shared/hours'
@@ -53,7 +53,7 @@ export function TrainingPage(): React.JSX.Element {
   )
   const today = todayIso()
   const everything = rows ?? []
-  const { year, years, setYear } = useAcademicYear(
+  const { year, years, setYear } = useYear(
     [...everything.map((r) => r.date), ...meetings.map((m) => m.date)],
     today
   )
@@ -82,7 +82,7 @@ export function TrainingPage(): React.JSX.Element {
       if (result.status === 'saved') {
         setExportNotice({
           tone: 'info',
-          text: `Saved ${academicYearLabel(year)} to ${result.path}`
+          text: `Saved ${yearLabel(year)} to ${result.path}`
         })
       }
     } catch (e) {
@@ -100,7 +100,7 @@ export function TrainingPage(): React.JSX.Element {
         <EmptyState heading="No training yet" message="Create an entry to start your log." />
       ) : (
         <EmptyState
-          heading={`No training in ${academicYearLabel(year)}`}
+          heading={`No training in ${yearLabel(year)}`}
           message="Create an entry, or choose another year."
         />
       )
@@ -131,7 +131,7 @@ export function TrainingPage(): React.JSX.Element {
           <ExportButton
             busy={exporting}
             disabled={rows === null}
-            title={`Exports ${academicYearLabel(year)} as a PDF, oldest first, without upcoming entries`}
+            title={`Exports ${yearLabel(year)} as a PDF, oldest first, without upcoming entries`}
             onClick={() => void exportPdf()}
           />
           <NewTrainingButton />
@@ -150,7 +150,7 @@ export function TrainingPage(): React.JSX.Element {
       )}
 
       <FilterRow>
-        <AcademicYearSelect year={year} years={years} onChange={setYear} />
+        <YearSelect year={year} years={years} onChange={setYear} />
         <SearchInput
           label="Search training"
           value={query.search}

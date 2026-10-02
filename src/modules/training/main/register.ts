@@ -6,6 +6,7 @@ import { readNoteFile } from '../../../main/notes/guarded-file'
 import { listMeetingRows } from '../../meetings/main/repository'
 import { meetingHours } from '../../meetings/shared/hours'
 import { todayIso } from '@shared/time'
+import { dayNumber } from '@shared/year'
 import { NotesWatcher } from '../../../main/notes/watcher'
 import type { MainContext, MainModule } from '../../main-registry'
 import {
@@ -68,8 +69,8 @@ function register({ db, paths, settings }: MainContext): () => void {
   ipcMain.handle(
     TRAINING_IPC.exportPdf,
     async (event, year: unknown): Promise<TrainingExportResult> => {
-      if (typeof year !== 'number' || !Number.isInteger(year) || year < 1900 || year > 3000) {
-        throw new Error('Invalid academic year')
+      if (typeof year !== 'string' || dayNumber(year) === null) {
+        throw new Error('Invalid year')
       }
       const today = todayIso()
       const html = trainingReportHtml({
@@ -87,13 +88,12 @@ function register({ db, paths, settings }: MainContext): () => void {
     }
   )
 
-  // The yearly plan: one Markdown file per academic year, in its own folder. The renderer's notes
+  // The yearly plan: one Markdown file per year, in its own folder. The renderer's notes
   // session names a note by a string, so the year travels as text.
   const plans = new PlanStore(paths.trainingPlans)
   const asYear = (value: unknown): number => {
     const year = typeof value === 'string' ? Number(value) : NaN
-    if (!Number.isInteger(year) || year < 1900 || year > 3000)
-      throw new Error('Invalid academic year')
+    if (!Number.isInteger(year) || year < 1900 || year > 3000) throw new Error('Invalid plan year')
     return year
   }
   ipcMain.handle(TRAINING_IPC.planRead, (_event, year: unknown) => plans.read(asYear(year)))

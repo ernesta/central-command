@@ -70,10 +70,20 @@ export function yearEnd(start: string): string {
   return addDays(start, YEAR_DAYS - 1)
 }
 
+/** 2026 as "2026–27" (an en dash): a year named by the calendar year it starts in. */
+export function startYearLabel(startYear: number): string {
+  return `${startYear}–${String((startYear + 1) % 100).padStart(2, '0')}`
+}
+
 /** 2026-09-21 as "2026–27" (an en dash). */
 export function yearLabel(start: string): string {
-  const y = Number(start.slice(0, 4))
-  return `${y}–${String((y + 1) % 100).padStart(2, '0')}`
+  return startYearLabel(Number(start.slice(0, 4)))
+}
+
+/** The start of the year after the current one: the next listed start, else 52 weeks on. */
+export function nextYearStart(today: string, starts: readonly string[]): string {
+  const current = currentYear(today, starts)
+  return starts.find((s) => s > current) ?? addDays(current, YEAR_DAYS)
 }
 
 /**

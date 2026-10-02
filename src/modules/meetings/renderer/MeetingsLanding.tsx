@@ -1,6 +1,6 @@
 import { ArrowRight } from 'lucide-react'
 import { useState } from 'react'
-import { AcademicYearSelect } from '@renderer/components/AcademicYearSelect'
+import { YearSelect } from '@renderer/components/YearSelect'
 import { EmptyState } from '@renderer/components/EmptyState'
 import {
   LandingHeader,
@@ -15,7 +15,7 @@ import {
   type RecentRow
 } from '@renderer/components/Landing'
 import { Segmented } from '@renderer/components/Segmented'
-import { useAcademicYear } from '@renderer/state/use-academic-year'
+import { useYear } from '@renderer/state/use-year'
 import { recentAndUpcoming, seriesLine, seriesSummaries } from '../shared/landing'
 import { meetingsInYear, meetingsInYearOrPlanned } from '../shared/hours'
 import { mine, openTodos } from '../shared/open-todos'
@@ -62,7 +62,7 @@ export function MeetingsLanding(): React.JSX.Element {
   const all = rows ?? []
   const open = openTodos(all)
   const shown = whose === 'mine' && me ? mine(open, me.initials) : open
-  const { year, years, setYear } = useAcademicYear(
+  const { year, years, setYear } = useYear(
     all.map((r) => r.date),
     today
   )
@@ -131,7 +131,7 @@ export function MeetingsLanding(): React.JSX.Element {
           <LandingSection
             id="year"
             label="Year"
-            aside={<AcademicYearSelect year={year} years={years} onChange={setYear} />}
+            aside={<YearSelect year={year} years={years} onChange={setYear} />}
           >
             <MeetingsHours rows={all} year={year} today={today} />
             <SeriesCards

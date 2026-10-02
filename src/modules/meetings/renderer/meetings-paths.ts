@@ -23,7 +23,7 @@ export function personRoute(name: string): string {
 }
 
 /** The list filtered to one series, as opened from a series card on the landing page. */
-export function seriesRoute(workspace: MeetingWorkspace, series: string, year?: number): string {
+export function seriesRoute(workspace: MeetingWorkspace, series: string, year?: string): string {
   const yearPart = year === undefined ? '' : `&year=${year}`
   return `${meetingsListRoute(workspace)}?series=${encodeURIComponent(series)}${yearPart}`
 }

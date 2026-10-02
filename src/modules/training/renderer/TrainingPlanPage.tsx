@@ -1,7 +1,7 @@
 import { ArrowLeft, FolderOpen } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Link } from 'react-router'
-import { AcademicYearSelect } from '@renderer/components/AcademicYearSelect'
+import { YearSelect } from '@renderer/components/YearSelect'
 import { Button } from '@renderer/components/Button'
 import { IconButton } from '@renderer/components/IconButton'
 import { Notice } from '@renderer/components/Notice'
@@ -10,19 +10,22 @@ import { EditorCard } from '@renderer/notes/EditorCard'
 import { LiveEditor } from '@renderer/editor/LiveEditor'
 import { useNotesSession } from '@renderer/notes/useNotesSession'
 import { NoteOutline } from '@modules/notes/renderer/NoteOutline'
-import { useAcademicYear } from '@renderer/state/use-academic-year'
-import { academicYearLabel, academicYearRange, currentAcademicYear } from '@shared/academic-year'
+import { useYear } from '@renderer/state/use-year'
+import { nextYearStart, yearLabel } from '@shared/year'
+import { useSettings } from '@renderer/state/settings-context'
+import { planKey } from '../shared/plan'
 import { todayIso, trainingBase } from './training-paths'
 import { useTrainingList } from './useTrainingList'
 import styles from './TrainingPlanPage.module.css'
 
-/** The training plan of one academic year: a Markdown document with an outline of its headings. */
+/** The training plan of one year: a Markdown document with an outline of its headings. */
 export function TrainingPlanPage(): React.JSX.Element {
   const { rows } = useTrainingList()
   const today = todayIso()
-  // The next academic year is always offered, so a plan can be written before its year starts.
-  const { year, years, setYear } = useAcademicYear(
-    [...(rows ?? []).map((r) => r.date), academicYearRange(currentAcademicYear(today) + 1).from],
+  const { settings } = useSettings()
+  // The next year is always offered, so a plan can be written before its year starts.
+  const { year, years, setYear } = useYear(
+    [...(rows ?? []).map((r) => r.date), nextYearStart(today, settings.yearStarts)],
     today
   )
   const [folderError, setFolderError] = useState<string | null>(null)
@@ -45,7 +48,7 @@ export function TrainingPlanPage(): React.JSX.Element {
       <header className={styles.header}>
         <h1 className={styles.heading}>Training plan</h1>
         <div className={styles.actions}>
-          <AcademicYearSelect year={year} years={years} onChange={setYear} />
+          <YearSelect year={year} years={years} onChange={setYear} />
           <IconButton label="Show in Finder" onClick={() => void openFolder()}>
             <FolderOpen size={15} strokeWidth={1.75} aria-hidden />
           </IconButton>
@@ -61,8 +64,8 @@ export function TrainingPlanPage(): React.JSX.Element {
   )
 }
 
-function PlanView({ year }: { year: number }): React.JSX.Element {
-  const { session, snapshot } = useNotesSession(String(year), window.api.training.plan)
+function PlanView({ year }: { year: string }): React.JSX.Element {
+  const { session, snapshot } = useNotesSession(String(planKey(year)), window.api.training.plan)
   const { save, error, conflict, hasContent, reloadedFromDisk, updatedAt } = snapshot
   // The outline follows what is typed. The text is tagged with the editor it came from, so a reload
   // from disk (a new editor) starts from the file's text again.
@@ -72,11 +75,7 @@ function PlanView({ year }: { year: number }): React.JSX.Element {
 
   return (
     <div className={styles.layout}>
-      <section
-        className={styles.doc}
-        ref={docRef}
-        aria-label={`Training plan ${academicYearLabel(year)}`}
-      >
+      <section className={styles.doc} ref={docRef} aria-label={`Training plan ${yearLabel(year)}`}>
         {(conflict || error) && (
           <div className={styles.notices}>
             {conflict && (
@@ -121,7 +120,7 @@ function PlanView({ year }: { year: number }): React.JSX.Element {
             <LiveEditor
               key={snapshot.editorKey}
               initial={snapshot.initial}
-              placeholder={`Write your training plan for ${academicYearLabel(year)}: priorities as headings, with what, why and how under each.`}
+              placeholder={`Write your training plan for ${yearLabel(year)}: priorities as headings, with what, why and how under each.`}
               showPlaceholder={!hasContent}
               onChange={(markdown) => {
                 session.edit(markdown)

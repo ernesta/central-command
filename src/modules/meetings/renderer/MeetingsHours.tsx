@@ -1,16 +1,16 @@
-import { academicYearLabel } from '@shared/academic-year'
+import { yearLabel } from '@shared/year'
 import { HoursStrip } from '@renderer/components/HoursStrip'
 import { meetingHours } from '../shared/hours'
 import type { MeetingIndexRow } from '../shared/types'
 
-/** Hours of meetings in one academic year, and hours per skill. */
+/** Hours of meetings in one year, and hours per skill. */
 export function MeetingsHours({
   rows,
   year,
   today
 }: {
   rows: readonly MeetingIndexRow[]
-  year: number
+  year: string
   today: string
 }): React.JSX.Element {
   const hours = meetingHours(rows, year, today)
@@ -22,7 +22,7 @@ export function MeetingsHours({
     .join(' · ')
   return (
     <HoursStrip
-      title={`Hours of meetings, ${academicYearLabel(year)}`}
+      title={`Hours of meetings, ${yearLabel(year)}`}
       minutes={hours.minutes}
       note={note}
       perSkill={hours.perSkill}

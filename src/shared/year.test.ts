@@ -6,6 +6,8 @@ import {
   defaultNextStart,
   inYear,
   isMonday,
+  nextYearStart,
+  startYearLabel,
   normaliseYearStarts,
   rolloverStarts,
   weekNumberOf,
@@ -130,5 +132,16 @@ describe('the list of starts', () => {
       '2026-09-21',
       '2024-09-23'
     ])
+  })
+})
+
+describe('nextYearStart and startYearLabel', () => {
+  it('is the next listed start, else 52 weeks on from the current year', () => {
+    expect(nextYearStart('2026-09-26', ['2025-09-22', '2026-09-21'])).toBe('2027-09-20')
+    expect(nextYearStart('2026-03-01', ['2025-09-22', '2026-09-21'])).toBe('2026-09-21')
+  })
+  it('names a year by the calendar year it starts in', () => {
+    expect(startYearLabel(2026)).toBe('2026–27')
+    expect(startYearLabel(2099)).toBe('2099–00')
   })
 })

@@ -101,10 +101,10 @@ export interface MeetingsApi {
    */
   syncPreviousTodos(ref: MeetingRef, baseHash: string): Promise<SyncPreviousResult>
   /**
-   * Ask where to save, then write the workspace's meetings log of an academic year (its start year) as
+   * Ask where to save, then write the workspace's meetings log of a year (its start date) as
    * a PDF. Research's is filtered to the Supervision series; Work's covers every meeting.
    */
-  exportPdf(workspace: MeetingWorkspace, year: number): Promise<MeetingsExportResult>
+  exportPdf(workspace: MeetingWorkspace, year: string): Promise<MeetingsExportResult>
   people: {
     list(): Promise<Person[]>
     /** Add a person (initials are worked out from the name and made unique unless given). Resolves with the new list. */

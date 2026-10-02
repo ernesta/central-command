@@ -7,12 +7,12 @@ import { ExportButton } from '@renderer/components/ExportButton'
 import { FilterRow } from '@renderer/components/FilterRow'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
-import { academicYearLabel } from '@shared/academic-year'
+import { yearLabel } from '@shared/year'
 import { skillFilterOptions, skillsIn } from '@shared/skills'
-import { AcademicYearSelect } from '@renderer/components/AcademicYearSelect'
+import { YearSelect } from '@renderer/components/YearSelect'
 import { SearchInput } from '@renderer/components/SearchInput'
 import { Select } from '@renderer/components/Select'
-import { useAcademicYear } from '@renderer/state/use-academic-year'
+import { useYear } from '@renderer/state/use-year'
 import {
   DEFAULT_MEETINGS_QUERY,
   MODE_LABELS,
@@ -54,7 +54,7 @@ export function MeetingsPage(): React.JSX.Element {
 
   const today = todayIso()
   const everything = rows ?? []
-  const { year, years, setYear } = useAcademicYear(
+  const { year, years, setYear } = useYear(
     everything.map((r) => r.date),
     today
   )
@@ -85,7 +85,7 @@ export function MeetingsPage(): React.JSX.Element {
       if (result.status === 'saved') {
         setExportNotice({
           tone: 'info',
-          text: `Saved the ${workspace === 'research' ? 'supervision' : 'meetings'} log for ${academicYearLabel(year)} to ${result.path}`
+          text: `Saved the ${workspace === 'research' ? 'supervision' : 'meetings'} log for ${yearLabel(year)} to ${result.path}`
         })
       }
     } catch (e) {
@@ -103,7 +103,7 @@ export function MeetingsPage(): React.JSX.Element {
         <EmptyState heading="No meetings yet" message="Create a meeting to start keeping notes." />
       ) : (
         <EmptyState
-          heading={`No meetings in ${academicYearLabel(year)}`}
+          heading={`No meetings in ${yearLabel(year)}`}
           message="Create a meeting, or choose another year."
         />
       )
@@ -129,7 +129,7 @@ export function MeetingsPage(): React.JSX.Element {
           <ExportButton
             busy={exporting}
             disabled={rows === null}
-            title={`Exports the ${workspace === 'research' ? 'Supervision' : 'meetings'} log for ${academicYearLabel(year)} as a PDF, oldest first, without upcoming meetings`}
+            title={`Exports the ${workspace === 'research' ? 'Supervision' : 'meetings'} log for ${yearLabel(year)} as a PDF, oldest first, without upcoming meetings`}
             onClick={() => void exportPdf()}
           />
           <NewMeetingButton />
@@ -139,7 +139,7 @@ export function MeetingsPage(): React.JSX.Element {
       {rows !== null && <MeetingsHours rows={everything} year={year} today={today} />}
 
       <FilterRow>
-        <AcademicYearSelect year={year} years={years} onChange={setYear} />
+        <YearSelect year={year} years={years} onChange={setYear} />
         <SearchInput
           label="Search meetings"
           value={query.search}

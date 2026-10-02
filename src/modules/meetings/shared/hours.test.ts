@@ -25,19 +25,19 @@ const row = (date: string, over: Partial<MeetingIndexRow> = {}): MeetingIndexRow
 const TODAY = '2026-03-01'
 
 describe('meetingHours', () => {
-  it('adds up the minutes from the times, within the academic year only', () => {
+  it('adds up the minutes from the times, within the year only', () => {
     const rows = [
-      row('2025-09-01'),
+      row('2025-09-22'),
       row('2026-02-10', { start: '09:00', end: '09:45' }),
-      row('2025-08-31'),
-      row('2026-09-01')
+      row('2025-09-21'),
+      row('2026-09-21')
     ]
-    expect(meetingHours(rows, 2025, TODAY).minutes).toBe(105)
-    expect(meetingsInYear(rows, 2025)).toHaveLength(2)
+    expect(meetingHours(rows, '2025-09-22', TODAY).minutes).toBe(105)
+    expect(meetingsInYear(rows, '2025-09-22')).toHaveLength(2)
   })
 
   it('leaves out upcoming meetings', () => {
-    const hours = meetingHours([row('2026-03-02'), row('2026-03-01')], 2025, TODAY)
+    const hours = meetingHours([row('2026-03-02'), row('2026-03-01')], '2025-09-22', TODAY)
     expect(hours.meetings).toBe(1)
     expect(hours.minutes).toBe(60)
   })
@@ -45,7 +45,7 @@ describe('meetingHours', () => {
   it('counts a meeting without times as zero and says how many there are', () => {
     const hours = meetingHours(
       [row('2026-01-01', { start: null, end: null }), row('2026-01-02', { end: '09:00' })],
-      2025,
+      '2025-09-22',
       TODAY
     )
     expect(hours.minutes).toBe(0)
@@ -59,7 +59,7 @@ describe('meetingHours', () => {
         row('2026-01-01', { skills: ['Networking (RP)', 'Leadership (RP)'] }),
         row('2026-01-02', { skills: ['Networking (RP)'] })
       ],
-      2025,
+      '2025-09-22',
       TODAY
     )
     expect(hours.perSkill).toEqual([
@@ -73,8 +73,10 @@ describe('meetingsInYearOrPlanned', () => {
   const rows = [row('2025-10-01'), row('2026-10-01'), row('')]
   const today = '2026-09-30' // in 2026–27
 
-  it('shows planned meetings in the current academic year only', () => {
-    expect(meetingsInYearOrPlanned(rows, 2026, today)).toHaveLength(2)
-    expect(meetingsInYearOrPlanned(rows, 2025, today).map((r) => r.date)).toEqual(['2025-10-01'])
+  it('shows planned meetings in the current year only', () => {
+    expect(meetingsInYearOrPlanned(rows, '2026-09-21', today)).toHaveLength(2)
+    expect(meetingsInYearOrPlanned(rows, '2025-09-22', today).map((r) => r.date)).toEqual([
+      '2025-10-01'
+    ])
   })
 })

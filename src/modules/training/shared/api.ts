@@ -84,9 +84,9 @@ export interface TrainingChangedEvent {
 /** The result of exporting a year as a PDF. */
 export type TrainingExportResult = { status: 'saved'; path: string } | { status: 'cancelled' }
 
-/** The slice of the Training API for the yearly plan; its `citekey` is the academic year's start year as text. */
+/** The slice of the Training API for the yearly plan; its `citekey` is the plan's key: the calendar year the year starts in, as text (a plan stays "Training plan 2026-27.md"). */
 export interface TrainingPlanApi {
-  /** The plan of an academic year (its start year). A missing file reads as an empty one. */
+  /** The plan of a year (its plan key). A missing file reads as an empty one. */
   read(year: string): Promise<NoteContent>
   write(year: string, content: string, baseHash: string): Promise<NoteWriteResult>
   /** Open the folder that holds the plans in Finder. */
@@ -112,8 +112,8 @@ export interface TrainingApi {
   delete(ref: TrainingRef): Promise<void>
   files: TrainingFilesApi
   plan: TrainingPlanApi
-  /** Ask where to save, then write the academic year (start year) as a PDF, oldest entry first. Upcoming entries are left out. */
-  exportPdf(year: number): Promise<TrainingExportResult>
+  /** Ask where to save, then write the year (its start date) as a PDF, oldest entry first. Upcoming entries are left out. */
+  exportPdf(year: string): Promise<TrainingExportResult>
   /** Subscribe to entry files changing on disk. Returns an unsubscribe function. */
   onChanged(listener: (event: TrainingChangedEvent) => void): () => void
 }

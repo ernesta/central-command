@@ -43,19 +43,19 @@ const TODAY = '2026-03-01'
 const people: Person[] = [{ name: 'Robert Darby', initials: 'RD', me: false }]
 
 describe('trainingHours', () => {
-  it('adds up minutes from the times within the academic year only', () => {
+  it('adds up minutes from the times within the year only', () => {
     const rows = [
-      row('2025-09-01'),
+      row('2025-09-22'),
       row('2026-02-10', { start: '09:00', end: '09:45' }),
-      row('2025-08-31'),
-      row('2026-09-01')
+      row('2025-09-21'),
+      row('2026-09-21')
     ]
-    expect(trainingHours(rows, 2025, TODAY, 200).minutes).toBe(105)
-    expect(entriesInYear(rows, 2025)).toHaveLength(2)
+    expect(trainingHours(rows, '2025-09-22', TODAY, 200).minutes).toBe(105)
+    expect(entriesInYear(rows, '2025-09-22')).toHaveLength(2)
   })
 
   it('leaves out upcoming entries', () => {
-    const hours = trainingHours([row('2026-03-02'), row('2026-03-01')], 2025, TODAY, 200)
+    const hours = trainingHours([row('2026-03-02'), row('2026-03-01')], '2025-09-22', TODAY, 200)
     expect(hours.entries).toBe(1)
     expect(hours.minutes).toBe(60)
   })
@@ -63,7 +63,7 @@ describe('trainingHours', () => {
   it('counts an entry without times as zero and says so; the times decide, not any typed hours', () => {
     const hours = trainingHours(
       [row('2026-01-01', { start: null, end: null }), row('2026-01-02', { end: '09:00' })],
-      2025,
+      '2025-09-22',
       TODAY,
       200
     )
@@ -77,7 +77,7 @@ describe('trainingHours', () => {
         row('2026-01-01', { skills: ['Networking (RP)', 'Leadership (RP)'] }),
         row('2026-01-02', { skills: ['Networking (RP)'] })
       ],
-      2025,
+      '2025-09-22',
       TODAY,
       200
     )
@@ -90,9 +90,9 @@ describe('trainingHours', () => {
 
   it('reports progress towards the aim, passing 1 when it is reached', () => {
     const rows = [row('2026-01-01', { start: '09:00', end: '19:00' })] // 10 h
-    expect(trainingHours(rows, 2025, TODAY, 20).progress).toBeCloseTo(0.5)
-    expect(trainingHours(rows, 2025, TODAY, 5).progress).toBeCloseTo(2)
-    expect(trainingHours(rows, 2025, TODAY, 0).progress).toBe(0)
+    expect(trainingHours(rows, '2025-09-22', TODAY, 20).progress).toBeCloseTo(0.5)
+    expect(trainingHours(rows, '2025-09-22', TODAY, 5).progress).toBeCloseTo(2)
+    expect(trainingHours(rows, '2025-09-22', TODAY, 0).progress).toBe(0)
   })
 })
 
@@ -149,7 +149,7 @@ describe('queryTraining', () => {
     expect(list.at(0)?.title).toBe('Undated')
     expect(isUpcoming({ date: '' }, TODAY)).toBe(true)
     // A planned entry adds nothing to the hours until it has a date and has happened.
-    expect(trainingHours([row('', { title: 'Undated' })], 2025, TODAY, 200).minutes).toBe(0)
+    expect(trainingHours([row('', { title: 'Undated' })], '2025-09-22', TODAY, 200).minutes).toBe(0)
   })
 })
 
@@ -207,11 +207,11 @@ describe('entriesInYearOrPlanned', () => {
   const rows = [row('2025-10-01'), row('2026-10-01'), row('', { title: 'Planned' })]
   const today = '2026-09-30' // in 2026–27
 
-  it('shows planned entries in the current academic year only', () => {
-    expect(entriesInYearOrPlanned(rows, 2026, today).map((r) => r.title)).toEqual([
+  it('shows planned entries in the current year only', () => {
+    expect(entriesInYearOrPlanned(rows, '2026-09-21', today).map((r) => r.title)).toEqual([
       'Talk',
       'Planned'
     ])
-    expect(entriesInYearOrPlanned(rows, 2025, today).map((r) => r.title)).toEqual(['Talk'])
+    expect(entriesInYearOrPlanned(rows, '2025-09-22', today).map((r) => r.title)).toEqual(['Talk'])
   })
 })

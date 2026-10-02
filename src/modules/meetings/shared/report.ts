@@ -1,4 +1,4 @@
-import { academicYearLabel } from '@shared/academic-year'
+import { yearLabel } from '@shared/year'
 import { escapeHtml, reportPageHtml } from '@shared/report-page'
 import { formatHours, sortSkills } from '@shared/skills'
 import { meetingHours, meetingsInYear } from './hours'
@@ -13,20 +13,21 @@ const MODE_LABELS = { 'in-person': 'In person', online: 'Online' } as const
 
 export interface MeetingsReportInput {
   rows: readonly MeetingIndexRow[]
-  year: number
+  /** The year's start date. */
+  year: string
   today: string
   /** Only meetings of this series, titled "<seriesFilter> log"; omitted, every meeting, titled "Meetings log". */
   seriesFilter?: string
 }
 
 /** The file name suggested for the export, for example "Supervision log 2025-26.pdf". */
-export function reportFileName(year: number, seriesFilter?: string): string {
+export function reportFileName(year: string, seriesFilter?: string): string {
   const title = seriesFilter ?? 'Meetings'
-  return `${title} log ${academicYearLabel(year).replace('–', '-')}.pdf`
+  return `${title} log ${yearLabel(year).replace('–', '-')}.pdf`
 }
 
 /**
- * One academic year's meetings as a printable page: the totals, then one row per meeting, oldest first.
+ * One year's meetings as a printable page: the totals, then one row per meeting, oldest first.
  * Meetings that have not happened yet are left out. Pure: the same input gives the same HTML.
  */
 export function meetingsReportHtml(input: MeetingsReportInput): string {
@@ -36,7 +37,7 @@ export function meetingsReportHtml(input: MeetingsReportInput): string {
     .filter((r) => !isUpcoming(r, today))
     .sort((a, b) => -compareNewestFirst(a, b))
   const hours = meetingHours(included, year, today)
-  const label = academicYearLabel(year)
+  const label = yearLabel(year)
   const title = seriesFilter ?? 'Meetings'
 
   const body = rows

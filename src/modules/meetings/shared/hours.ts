@@ -1,4 +1,4 @@
-import { currentAcademicYear, inAcademicYear } from '@shared/academic-year'
+import { inYear } from '@shared/year'
 import { minutesPerSkill } from '@shared/skills'
 import { isUpcoming } from './query'
 import { durationMinutes } from './time'
@@ -13,31 +13,31 @@ export interface MeetingHours {
   perSkill: { skill: string; minutes: number }[]
 }
 
-/** The meetings dated within an academic year (start year), upcoming ones included. */
-export function meetingsInYear(rows: readonly MeetingIndexRow[], year: number): MeetingIndexRow[] {
-  return rows.filter((r) => inAcademicYear(r.date, year))
+/** The meetings dated within a year (its start date), upcoming ones included. */
+export function meetingsInYear(rows: readonly MeetingIndexRow[], year: string): MeetingIndexRow[] {
+  return rows.filter((r) => inYear(r.date, year))
 }
 
 /**
- * What the list shows for an academic year: its meetings, plus, in the current year only, every
+ * What the list shows for a year: its meetings, plus, in the current year only, every
  * planned meeting with no date yet (an earlier year must not show this year's plans).
  */
 export function meetingsInYearOrPlanned(
   rows: readonly MeetingIndexRow[],
-  year: number,
+  year: string,
   today: string
 ): MeetingIndexRow[] {
-  const showPlanned = year === currentAcademicYear(today)
-  return rows.filter((r) => (r.date === '' ? showPlanned : inAcademicYear(r.date, year)))
+  const showPlanned = inYear(today, year)
+  return rows.filter((r) => (r.date === '' ? showPlanned : inYear(r.date, year)))
 }
 
 /**
- * Hours for one academic year, from the start and end times. Upcoming meetings are left out (they have
+ * Hours for one year, from the start and end times. Upcoming meetings are left out (they have
  * not happened), and a meeting without both times counts as zero and is reported.
  */
 export function meetingHours(
   rows: readonly MeetingIndexRow[],
-  year: number,
+  year: string,
   today: string
 ): MeetingHours {
   const counted = meetingsInYear(rows, year).filter((r) => !isUpcoming(r, today))

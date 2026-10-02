@@ -3,6 +3,7 @@ import { join } from 'path'
 import { BrowserWindow, ipcMain, shell } from 'electron'
 import { exportHtmlAsPdf } from '../../../main/export-pdf'
 import { todayIso } from '@shared/time'
+import { dayNumber } from '@shared/year'
 import { readNoteFile } from '../../../main/notes/guarded-file'
 import { NotesWatcher } from '../../../main/notes/watcher'
 import type { MainContext, MainModule } from '../../main-registry'
@@ -106,8 +107,8 @@ function register({ db, paths }: MainContext): () => void {
       ) {
         throw new Error('Invalid workspace')
       }
-      if (typeof year !== 'number' || !Number.isInteger(year) || year < 1900 || year > 3000) {
-        throw new Error('Invalid academic year')
+      if (typeof year !== 'string' || dayNumber(year) === null) {
+        throw new Error('Invalid year')
       }
       const seriesFilter = workspace === 'research' ? REPORT_SERIES : undefined
       return exportHtmlAsPdf(event.sender, {

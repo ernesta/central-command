@@ -26,7 +26,7 @@ const row = (date: string, over: Partial<TrainingIndexRow> = {}): TrainingIndexR
 
 const input = (rows: TrainingIndexRow[]): Parameters<typeof trainingReportHtml>[0] => ({
   rows,
-  year: 2025,
+  year: '2025-09-22',
   today: '2026-03-01',
   aimHours: 200,
   meetingMinutes: 0
@@ -71,7 +71,7 @@ describe('trainingReportHtml', () => {
     expect(trainingReportHtml(input([row('2025-10-01')]))).not.toContain('of meetings')
   })
 
-  it('names the file after the academic year', () => {
-    expect(reportFileName(2025)).toBe('Training log 2025-26.pdf')
+  it('names the file after the year', () => {
+    expect(reportFileName('2025-09-22')).toBe('Training log 2025-26.pdf')
   })
 })

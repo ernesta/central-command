@@ -1,4 +1,4 @@
-import { academicYearLabel, currentAcademicYear, inAcademicYear } from '@shared/academic-year'
+import { inYear, yearLabel } from '@shared/year'
 import { fold } from '@shared/text'
 import { formatDate, durationMinutes } from '@shared/time'
 import { formatHours, minutesPerSkill } from '@shared/skills'
@@ -12,21 +12,21 @@ export function isUpcoming(row: Pick<TrainingIndexRow, 'date'>, today: string): 
 }
 
 /**
- * What the list shows for an academic year: its entries, plus, in the current year only, every
+ * What the list shows for a year: its entries, plus, in the current year only, every
  * planned entry with no date yet (an earlier year must not show this year's plans).
  */
 export function entriesInYearOrPlanned(
   rows: readonly TrainingIndexRow[],
-  year: number,
+  year: string,
   today: string
 ): TrainingIndexRow[] {
-  const showPlanned = year === currentAcademicYear(today)
-  return rows.filter((r) => (r.date === '' ? showPlanned : inAcademicYear(r.date, year)))
+  const showPlanned = inYear(today, year)
+  return rows.filter((r) => (r.date === '' ? showPlanned : inYear(r.date, year)))
 }
 
-/** The entries dated within an academic year (start year), upcoming ones included. */
-export function entriesInYear(rows: readonly TrainingIndexRow[], year: number): TrainingIndexRow[] {
-  return rows.filter((r) => inAcademicYear(r.date, year))
+/** The entries dated within a year (its start date), upcoming ones included. */
+export function entriesInYear(rows: readonly TrainingIndexRow[], year: string): TrainingIndexRow[] {
+  return rows.filter((r) => inYear(r.date, year))
 }
 
 export interface TrainingHours {
@@ -41,12 +41,12 @@ export interface TrainingHours {
 }
 
 /**
- * Hours for one academic year, from the start and end times. Upcoming entries are left out (they have
+ * Hours for one year, from the start and end times. Upcoming entries are left out (they have
  * not happened), and an entry without both times counts as zero and is reported.
  */
 export function trainingHours(
   rows: readonly TrainingIndexRow[],
-  year: number,
+  year: string,
   today: string,
   aimHours: number
 ): TrainingHours {
@@ -201,8 +201,8 @@ export function leadNames(rows: readonly TrainingIndexRow[]): string[] {
   return [...new Set(rows.flatMap((r) => r.leads))].sort((a, b) => a.localeCompare(b))
 }
 
-export function yearHoursTitle(year: number): string {
-  return `Hours of training, ${academicYearLabel(year)}`
+export function yearHoursTitle(year: string): string {
+  return `Hours of training, ${yearLabel(year)}`
 }
 
 /** "plus 36.5 h of meetings, which Inkpath also counts" for the line under the Training total. */
