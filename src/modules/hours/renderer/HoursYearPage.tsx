@@ -6,6 +6,7 @@ import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { BalanceChart } from './BalanceChart'
 import { TypicalWeek } from './TypicalWeek'
 import { WeeksChart } from './WeeksChart'
+import { YearsTable } from './YearsTable'
 import { YearHeatMap } from './YearHeatMap'
 import { AllWeeks } from './AllWeeks'
 import { hoursBase, useHoursWorkspace } from './hours-paths'
@@ -33,6 +34,13 @@ export function HoursYearPage(): React.JSX.Element {
           <YearHeatMap workspace={workspace} data={data} now={now} />
           <TypicalWeek data={data} now={now} />
           <AllWeeks workspace={workspace} data={data} now={now} />
+          <YearsTable
+            workspace={workspace}
+            years={years}
+            selected={year}
+            onSelect={setYear}
+            now={now}
+          />
         </div>
       )}
     </LandingPage>
