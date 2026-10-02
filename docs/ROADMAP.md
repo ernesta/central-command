@@ -2,6 +2,8 @@
 
 **Live markup in the notes editor, the Typora way (requested 30 Sep 2026): finished.** All nine stages are done (`docs/EDITOR_LIVE_MARKUP_PLAN.md`; decision in `docs/DECISIONS.md`, "Notes editor: CodeMirror 6, with the Markdown text as the document"). `LiveEditor` (CodeMirror 6, the Markdown text is the document) is the only editor in every module; Milkdown and its packages are gone. Everything is pushed. What is left is your review of stages 7 and 8 and the open questions, all in "For the user" below.
 
+**Notes feedback round (2 Oct 2026): stages 1 and 2 done and applied to the real library; stages 3 to 5 next, one stage per session.** See `docs/DECISIONS.md`, "Notes feedback round, stages 1 and 2". Left: (3) plain-text citations to reading entities, listing readings that do not exist yet; (4) Reading lists use entities, drop "Attach a reading…" and the sidebar; (5) readable copy of entities (names; APA in-text citations plus a reference list). Afterwards remind the user about the entity sidebar/hover question.
+
 ## For Claude: six things requested 27 Sep 2026, go-ahead given — work through these without further check-in
 
 **Status (27 Sep 2026, evening): all six done and pushed.** Items 1–5 are fully built, tested (unit tests, plus
