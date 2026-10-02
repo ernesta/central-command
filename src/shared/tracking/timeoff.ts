@@ -53,9 +53,13 @@ export function nextDayOff(year: TrackingYear, today: string): string | null {
   return timeOffRows(year, today).find((r) => !r.taken)?.date ?? null
 }
 
+/** Which type wins when a date is listed twice: lower is stronger. */
+const RANK: Record<TimeOffType, number> = { public: 0, university: 1, leave: 2 }
+
 /**
  * Add days off from `from` to `to` inclusive. Weekends are skipped; a date outside the year refuses the whole
- * request; a date already listed takes the new type.
+ * request; a date already listed keeps whichever type ranks higher (public holiday, then university holiday, then
+ * leave), whatever order they were added in.
  */
 export function addTimeOff(
   year: TrackingYear,
@@ -70,10 +74,12 @@ export function addTimeOff(
   for (let d = from; d <= to; d = addDays(d, 1))
     if (weekdayOf(d) <= 5) added.push({ date: d, type })
   if (added.length === 0) return { ok: false, reason: 'weekend' }
-  const dates = new Set(added.map((e) => e.date))
-  const timeOff = [...year.timeOff.filter((e) => !dates.has(e.date)), ...added].sort((a, b) =>
-    a.date.localeCompare(b.date)
-  )
+  const byDate = new Map(year.timeOff.map((e) => [e.date, e]))
+  for (const e of added) {
+    const listed = byDate.get(e.date)
+    if (!listed || RANK[e.type] < RANK[listed.type]) byDate.set(e.date, e)
+  }
+  const timeOff = [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date))
   return { ok: true, year: { ...year, timeOff } }
 }
 

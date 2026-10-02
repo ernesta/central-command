@@ -36,10 +36,26 @@ describe('adding days off', () => {
     expect(addTimeOff(year(), '2026-09-21', '2026-09-21', 'leave').ok).toBe(true)
     expect(addTimeOff(year(), '2027-09-17', '2027-09-17', 'leave').ok).toBe(true)
   })
-  it('lists a date once: adding it again changes its type', () => {
-    let y = ok(addTimeOff(year(), '2026-12-24', '2026-12-24', 'university'))
-    y = ok(addTimeOff(y, '2026-12-24', '2026-12-24', 'leave'))
-    expect(y.timeOff).toEqual([{ date: '2026-12-24', type: 'leave' }])
+  it('lists a date once, and the stronger type wins whatever the order', () => {
+    const types = ['public', 'university', 'leave'] as const
+    for (const first of types)
+      for (const second of types) {
+        let y = ok(addTimeOff(year(), '2026-12-24', '2026-12-24', first))
+        y = ok(addTimeOff(y, '2026-12-24', '2026-12-24', second))
+        const winner = types.find((t) => t === first || t === second)
+        expect(y.timeOff).toEqual([{ date: '2026-12-24', type: winner }])
+      }
+  })
+  it('leave over a holiday week keeps the holidays and only fills the other days', () => {
+    let y = ok(addTimeOff(year(), '2026-12-25', '2026-12-25', 'public'))
+    y = ok(addTimeOff(y, '2026-12-24', '2026-12-24', 'university'))
+    y = ok(addTimeOff(y, '2026-12-23', '2026-12-28', 'leave'))
+    expect(y.timeOff).toEqual([
+      { date: '2026-12-23', type: 'leave' },
+      { date: '2026-12-24', type: 'university' },
+      { date: '2026-12-25', type: 'public' },
+      { date: '2026-12-28', type: 'leave' }
+    ])
   })
   it('removes a day', () => {
     const y = ok(addTimeOff(year(), '2026-12-24', '2026-12-25', 'public'))
