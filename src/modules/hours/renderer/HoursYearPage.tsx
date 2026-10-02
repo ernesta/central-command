@@ -5,6 +5,7 @@ import { useRunningTimer } from '@renderer/state/use-running-timer'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { BalanceChart } from './BalanceChart'
 import { WeeksChart } from './WeeksChart'
+import { YearHeatMap } from './YearHeatMap'
 import { AllWeeks } from './AllWeeks'
 import { hoursBase, useHoursWorkspace } from './hours-paths'
 import styles from './HoursYearPage.module.css'
@@ -28,6 +29,7 @@ export function HoursYearPage(): React.JSX.Element {
         <div className={styles.stack}>
           <WeeksChart data={data} now={now} />
           <BalanceChart data={data} now={now} />
+          <YearHeatMap workspace={workspace} data={data} now={now} />
           <AllWeeks workspace={workspace} data={data} now={now} />
         </div>
       )}
