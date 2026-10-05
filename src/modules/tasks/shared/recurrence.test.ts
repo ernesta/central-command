@@ -4,6 +4,7 @@ import {
   addMonths,
   describeRecurrence,
   isValidRecurrence,
+  recurrenceKey,
   nextOccurrence
 } from './recurrence'
 import { task } from './test-utils'
@@ -102,5 +103,14 @@ describe('nextOccurrence', () => {
   it('is nothing for a task that does not repeat, or for a subtask', () => {
     expect(nextOccurrence(task({ recurrence: null }), [], '2026-10-05')).toBeNull()
     expect(nextOccurrence({ ...weekly, parentUid: 'z' }, [], '2026-10-05')).toBeNull()
+  })
+})
+
+describe('recurrenceKey', () => {
+  it('names the offered rules and calls the rest custom', () => {
+    expect(recurrenceKey(null)).toBe('never')
+    expect(recurrenceKey({ every: 2, unit: 'week' })).toBe('fortnight')
+    expect(recurrenceKey({ every: 1, unit: 'month' })).toBe('month')
+    expect(recurrenceKey({ every: 3, unit: 'day' })).toBe('custom')
   })
 })

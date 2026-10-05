@@ -27,6 +27,7 @@ import { setTaskStatus, STATUS_LABELS } from './task-actions'
 import { PRIORITY_LABELS } from './task-labels'
 import { showTaskToast } from './task-toast'
 import { StatusIcon } from './TaskIcons'
+import { RecurrenceField } from './RecurrenceField'
 import { TagsField } from './TagsField'
 import { taskRoute, tasksBase, todayIso, useTasksWorkspace } from './tasks-paths'
 import { useTaskTime } from './useTaskTime'
@@ -244,6 +245,15 @@ function TaskView({
                 <span className={styles.label}>Due</span>
                 <DueField value={task.due} today={today} onChange={(due) => update({ due })} />
               </div>
+              {!isSub && (
+                <div className={styles.field}>
+                  <span className={styles.label}>Repeats</span>
+                  <RecurrenceField
+                    value={task.recurrence}
+                    onChange={(recurrence) => update({ recurrence })}
+                  />
+                </div>
+              )}
               {!isSub && (
                 <div className={[styles.field, styles.grow].join(' ')}>
                   <span className={styles.label}>List</span>

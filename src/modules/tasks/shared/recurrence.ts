@@ -87,3 +87,20 @@ export function nextOccurrence(
       }))
   }
 }
+
+/** The rules offered by name; anything else is "Custom". */
+export const RECURRENCE_PRESETS: { key: string; label: string; rule: Recurrence }[] = [
+  { key: 'day', label: 'Every day', rule: { every: 1, unit: 'day' } },
+  { key: 'week', label: 'Every week', rule: { every: 1, unit: 'week' } },
+  { key: 'fortnight', label: 'Every 2 weeks', rule: { every: 2, unit: 'week' } },
+  { key: 'month', label: 'Every month', rule: { every: 1, unit: 'month' } }
+]
+
+/** `never`, a preset's key, or `custom` for a rule that is none of them. */
+export function recurrenceKey(rule: Recurrence | null): string {
+  if (!rule) return 'never'
+  const preset = RECURRENCE_PRESETS.find(
+    (p) => p.rule.every === rule.every && p.rule.unit === rule.unit
+  )
+  return preset ? preset.key : 'custom'
+}
