@@ -39,7 +39,7 @@ export function startSession(
   task?: string
 ): Change {
   const name = label.trim()
-  if (!inYear(now.date, year.start)) return { ok: false, reason: 'outside-year' }
+  if (!inYear(now.date, year.start, year.weeks)) return { ok: false, reason: 'outside-year' }
   if (timeToSeconds(now.time) === null) return { ok: false, reason: 'bad-time' }
   let current = year
   const running = runningSession(year)
@@ -102,7 +102,7 @@ export function deleteSession(year: TrackingYear, id: string): TrackingYear {
 export function renameTask(year: TrackingYear, date: string, from: string, to: string): Change {
   const name = to.trim()
   if (!name) return { ok: false, reason: 'empty-label' }
-  if (!inYear(date, year.start)) return { ok: false, reason: 'outside-year' }
+  if (!inYear(date, year.start, year.weeks)) return { ok: false, reason: 'outside-year' }
   const hit = (d: string, label: string): boolean => d === date && sameLabel(label, from)
   return {
     ok: true,

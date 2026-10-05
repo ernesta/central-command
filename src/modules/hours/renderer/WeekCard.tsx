@@ -48,8 +48,8 @@ export function WeekCard({
   const begun = week <= now.date
   const over = addDays(week, 6) < now.date
   const first = week <= data.start
-  const last = addDays(week, 7) > yearEnd(data.start)
-  const number = weekNumberOf(week, data.start)
+  const last = addDays(week, 7) > yearEnd(data.start, data.weeks)
+  const number = weekNumberOf(week, data.start, data.weeks)
 
   return (
     <section className={styles.card} aria-label="Week">

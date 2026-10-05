@@ -15,7 +15,7 @@ export function HoursCard(): React.JSX.Element {
   const { data } = useTrackingYear(workspace)
   const { running } = useRunningTimer()
   const now = useNow(running !== null)
-  const today = data && inYear(now.date, data.start) ? data : null
+  const today = data && inYear(now.date, data.start, data.weeks) ? data : null
   const aim = today ? dailyAim(today, now.date) : null
 
   return (

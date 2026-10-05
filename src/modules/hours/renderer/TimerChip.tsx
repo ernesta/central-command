@@ -231,7 +231,9 @@ function IdleChip(): React.JSX.Element {
           className={styles.main}
           onClick={() => {
             openAfterStart = true
-            void window.api.tracking.start(workspace, '')
+            void window.api.tracking.start(workspace, '').then((result) => {
+              if (!result.ok) openAfterStart = false
+            })
           }}
         >
           <Play size={12} strokeWidth={1.75} fill="currentColor" aria-hidden />

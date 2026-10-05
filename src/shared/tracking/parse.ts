@@ -57,6 +57,8 @@ export function parseYear(raw: unknown): TrackingYear | null {
   if (!isDate(raw.start)) return null
   const plan = raw.plan === undefined ? { ...DEFAULT_PLAN } : parsePlan(raw.plan)
   if (!plan) return null
+  if (raw.weeks !== undefined && (!isInt(raw.weeks) || raw.weeks < 1 || raw.weeks > 156))
+    return null
   const carryIn = raw.carryIn === undefined ? 0 : raw.carryIn
   if (typeof carryIn !== 'number' || !Number.isFinite(carryIn)) return null
   const sessions = list(

@@ -22,7 +22,7 @@ function runningMinutes(s: Session, now: Moment | undefined): number {
  * row at 0:00 that is not running is left out.
  */
 export function dayRows(year: TrackingYear, date: string, now?: Moment): TaskRow[] {
-  if (!inYear(date, year.start)) return []
+  if (!inYear(date, year.start, year.weeks)) return []
   const rows: TaskRow[] = []
   const find = (label: string): TaskRow => {
     let row = rows.find((r) => sameLabel(r.label, label))
@@ -52,7 +52,8 @@ export function dayRows(year: TrackingYear, date: string, now?: Moment): TaskRow
 export function minutesByDate(year: TrackingYear, now?: Moment): Map<string, number> {
   const map = new Map<string, number>()
   const add = (date: string, minutes: number): void => {
-    if (minutes !== 0 && inYear(date, year.start)) map.set(date, (map.get(date) ?? 0) + minutes)
+    if (minutes !== 0 && inYear(date, year.start, year.weeks))
+      map.set(date, (map.get(date) ?? 0) + minutes)
   }
   for (const s of year.sessions)
     add(s.date, s.end === null ? runningMinutes(s, now) : reportedMinutes(s))
@@ -88,7 +89,7 @@ export function weeklyMinutes(
   now?: Moment
 ): { number: number; from: string; to: string; minutes: number }[] {
   const map = minutesByDate(year, now)
-  return weeksOf(year.start).map((w) => {
+  return weeksOf(year.start, year.weeks).map((w) => {
     let minutes = 0
     for (let i = 0; i < 7; i++) minutes += map.get(addDays(w.from, i)) ?? 0
     return { ...w, minutes }
@@ -121,7 +122,7 @@ export function setTaskMinutes(
 ): Change {
   const name = label.trim()
   if (!name) return { ok: false, reason: 'empty-label' }
-  if (!inYear(date, year.start)) return { ok: false, reason: 'outside-year' }
+  if (!inYear(date, year.start, year.weeks)) return { ok: false, reason: 'outside-year' }
   if (minutes < 0 || !validQuarter(minutes)) return { ok: false, reason: 'not-a-quarter' }
   let timer = 0
   for (const s of year.sessions)
@@ -143,7 +144,7 @@ export function addTime(
 ): Change {
   const name = label.trim()
   if (!name) return { ok: false, reason: 'empty-label' }
-  if (!inYear(date, year.start)) return { ok: false, reason: 'outside-year' }
+  if (!inYear(date, year.start, year.weeks)) return { ok: false, reason: 'outside-year' }
   if (minutes <= 0 || !validQuarter(minutes)) return { ok: false, reason: 'not-a-quarter' }
   return {
     ok: true,
@@ -153,7 +154,7 @@ export function addTime(
 
 /** A day's short note. An empty one removes it; a day left with nothing is dropped. */
 export function setDayNote(year: TrackingYear, date: string, note: string): Change {
-  if (!inYear(date, year.start)) return { ok: false, reason: 'outside-year' }
+  if (!inYear(date, year.start, year.weeks)) return { ok: false, reason: 'outside-year' }
   const days = { ...year.days }
   const text = note.trim()
   const entry = { ...days[date] }

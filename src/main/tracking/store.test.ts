@@ -72,19 +72,89 @@ describe('the current year', () => {
   })
 })
 
-describe('Work', () => {
-  it('starts with eight hours a week over every day, aimed at by the week, and no days off', () => {
-    expect(open().get('work', '2026-09-21').plan).toEqual({
+describe('Work contracts', () => {
+  const START = '2026-05-01'
+  const END = '2026-10-29'
+  const contract = (store = open()): TrackingStore => {
+    expect(store.createContract('work', START, END).ok).toBe(true)
+    return store
+  }
+
+  it('has no year until a contract is made, and the timer will not start without one', () => {
+    const store = open()
+    expect(store.years('work')).toEqual([])
+    expect(store.start('work', 'A')).toEqual({ ok: false, reason: 'outside-year' })
+    expect(() => store.get('work', START)).toThrow('unknown-year')
+  })
+
+  it('makes a contract of whole weeks: eight hours a week over every day, aimed at by the week, no days off', () => {
+    const store = contract()
+    const year = store.get('work', START)
+    expect(year.weeks).toBe(26)
+    expect(year.plan).toEqual({
       hoursPerWeek: 480,
       workDays: [1, 2, 3, 4, 5, 6, 7],
       allowanceDays: 0,
       weekAim: true
     })
+    expect(read('work', `${START}.json`).weeks).toBe(26)
+    expect(store.years('work')).toEqual([START])
+  })
+
+  it('refuses a start that is not a Friday, an end that is not a Thursday, and an overlap', () => {
+    const store = contract()
+    expect(store.createContract('work', '2026-11-03', '2027-04-29')).toEqual({
+      ok: false,
+      reason: 'bad-start'
+    })
+    expect(store.createContract('work', '2026-10-30', '2027-04-30')).toEqual({
+      ok: false,
+      reason: 'bad-end'
+    })
+    expect(store.createContract('work', '2026-10-23', '2026-11-26')).toEqual({
+      ok: false,
+      reason: 'overlap'
+    })
+    expect(store.createContract('research', '2026-10-30', '2027-04-29')).toEqual({
+      ok: false,
+      reason: 'no-contracts'
+    })
+  })
+
+  it('tracks inside the contract, and not after its last day', () => {
+    const store = contract()
+    at('2026-10-29', '10:00:00')
+    expect(store.start('work', 'A').ok).toBe(true)
+    at('2026-10-30', '10:00:00')
+    store.stop()
+    expect(store.start('work', 'B')).toEqual({ ok: false, reason: 'outside-year' })
+  })
+
+  it('moves the last day, but never past time that was tracked after it', () => {
+    const store = contract()
+    expect(store.setContractEnd('work', START, '2026-11-05').ok).toBe(true)
+    expect(store.get('work', START).weeks).toBe(27)
+    at('2026-11-03', '10:00:00')
+    store.start('work', 'A')
+    at('2026-11-03', '10:30:00')
+    store.stop()
+    expect(store.setContractEnd('work', START, '2026-10-29')).toEqual({
+      ok: false,
+      reason: 'has-time-after'
+    })
+  })
+
+  it('starts the next contract with the previous plan and carry', () => {
+    const store = contract()
+    store.setPlan('work', START, { hoursPerWeek: 600 })
+    expect(store.createContract('work', '2026-10-30', '2027-04-29').ok).toBe(true)
+    expect(store.get('work', '2026-10-30').plan.hoursPerWeek).toBe(600)
+    expect(store.years('work')).toEqual(['2026-10-30', START])
   })
 })
 
 describe('a new year', () => {
-  it('takes the previous plan and its final carry, per workspace', () => {
+  it('takes the previous plan and its final carry', () => {
     const store = open()
     store.setPlan('research', '2025-09-22', { hoursPerWeek: 1800, workDays: [1, 2, 3, 4] })
     // 20 minutes exact reports 0:15, leaving 5 minutes (300 s) in the carry
@@ -97,8 +167,6 @@ describe('a new year', () => {
     expect(next.plan.hoursPerWeek).toBe(1800)
     expect(next.plan.workDays).toEqual([1, 2, 3, 4])
     expect(next.carryIn).toBe(300)
-    expect(store.get('work', '2026-09-21').plan.hoursPerWeek).toBe(480)
-    expect(store.get('work', '2026-09-21').carryIn).toBe(0)
   })
 })
 
@@ -145,12 +213,13 @@ describe('the timer', () => {
 
   it('keeps one timer for the whole app: starting in another workspace stops the first', () => {
     const store = open()
+    store.createContract('work', '2026-09-25', '2027-03-25')
     store.start('research', 'A')
     at('2026-09-29', '10:30:00')
     const result = store.start('work', 'B')
     expect(result.ok && result.running?.workspace).toBe('work')
     expect(read('research', '2026-27.json').sessions[0].end).toBe('10:30:00')
-    expect(read('work', '2026-27.json').sessions[0].end).toBeNull()
+    expect(read('work', '2026-09-25.json').sessions[0].end).toBeNull()
   })
 
   it('stops the running task and reports none afterwards', () => {

@@ -1,13 +1,27 @@
 import { describe, expect, it } from 'vitest'
-import { trackingStarts, weekStartDay } from './workspace-weeks'
+import { contractWeeks, weekStartDay } from './workspace-weeks'
 import { dailyAim, weekTotals, yearTotals } from './plan'
 import { emptyYear, WORK_PLAN } from './types'
 
-describe('workspace weeks', () => {
-  it('moves the shared Monday starts to Friday for Work only', () => {
+describe('contractWeeks', () => {
+  it('is whole weeks from a Friday to a Thursday', () => {
     expect(weekStartDay('work')).toBe(5)
-    expect(trackingStarts('work', ['2026-09-21'])).toEqual(['2026-09-25'])
-    expect(trackingStarts('research', ['2026-09-21'])).toEqual(['2026-09-21'])
+    expect(contractWeeks('work', '2026-05-01', '2026-10-29')).toEqual({ ok: true, weeks: 26 })
+    expect(contractWeeks('work', '2026-05-01', '2026-05-07')).toEqual({ ok: true, weeks: 1 })
+  })
+  it('refuses a start that is not a Friday and an end that is not a Thursday', () => {
+    expect(contractWeeks('work', '2026-05-04', '2026-10-29')).toEqual({
+      ok: false,
+      reason: 'bad-start'
+    })
+    expect(contractWeeks('work', '2026-05-01', '2026-10-31')).toEqual({
+      ok: false,
+      reason: 'bad-end'
+    })
+    expect(contractWeeks('work', '2026-05-01', '2026-04-30')).toEqual({
+      ok: false,
+      reason: 'bad-end'
+    })
   })
 })
 
@@ -34,5 +48,11 @@ describe('a week aimed at as a whole', () => {
     expect(weeks[0]).toMatchObject({ from: '2026-09-25', to: '2026-10-01', plan: 480 })
     expect(weeks[1]).toMatchObject({ from: '2026-10-02', plan: 480 })
     expect(weeks[2].plan).toBe(0)
+  })
+
+  it("stops at the contract's last week", () => {
+    const contract = { ...emptyYear('2026-05-01', WORK_PLAN), weeks: 26 }
+    expect(weekTotals(contract, '2026-12-01')).toHaveLength(26)
+    expect(yearTotals(contract, '2026-12-01').balance).toBe(-26 * 480)
   })
 })

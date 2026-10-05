@@ -25,7 +25,7 @@ export function typicalWeek(year: TrackingYear, now: Moment): TypicalDay[] {
   const perDay =
     year.plan.workDays.length > 0 ? year.plan.hoursPerWeek / year.plan.workDays.length : 0
   const through = daysBetween(year.start, now.date) // days before today
-  for (let i = 0; i < through && i < 364; i++) {
+  for (let i = 0; i < through && i < (year.weeks ?? 52) * 7; i++) {
     const date = addDays(year.start, i)
     if (off.has(date)) continue
     const s = sums[weekdayOf(date) - 1]

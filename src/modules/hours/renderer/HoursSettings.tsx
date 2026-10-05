@@ -1,15 +1,13 @@
 import { useState } from 'react'
 import { Input } from '@renderer/components/Input'
-import { useSettings } from '@renderer/state/settings-context'
-import { useYearFile } from '@renderer/state/use-year-file'
-import { todayIso } from '@shared/time'
 import { formatHours } from '@shared/tracking/format'
 import type { Plan } from '@shared/tracking/types'
-import { trackingStarts } from '@shared/tracking/workspace-weeks'
-import { currentYear } from '@shared/year'
 import { parseAllowance, parseWeekHours, toggleWorkDay, WEEKDAYS } from '../shared/plan-settings'
+import { useTrackingYear } from '@renderer/state/use-tracking-year'
+import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { WORKSPACE_LABELS } from '@renderer/shell/workspaces'
 import { HOURS_WORKSPACES, TIME_OFF_WORKSPACES, type HoursWorkspace } from '../shared/workspaces'
+import { ContractFields } from './ContractFields'
 import styles from './HoursSettings.module.css'
 
 /** A field that shows what is saved until it is edited, saves a valid value on Enter or leaving it, and drops anything else. */
@@ -60,11 +58,10 @@ function PlanField({
 
 /** One workspace's plan: the hours a week, the days worked and, where the workspace has time off, the days off a year. */
 function PlanBlock({ workspace }: { workspace: HoursWorkspace }): React.JSX.Element {
-  const { settings } = useSettings()
-  const year = currentYear(todayIso(), trackingStarts(workspace, settings.yearStarts))
-  const data = useYearFile(workspace, year)
-  const save = (patch: Partial<Plan>): void =>
-    void window.api.tracking.setPlan(workspace, year, patch)
+  const { data } = useTrackingYear(workspace)
+  const save = (patch: Partial<Plan>): void => {
+    if (data) void window.api.tracking.setPlan(workspace, data.start, patch)
+  }
   const id = `hours-${workspace}`
 
   return (
@@ -72,6 +69,7 @@ function PlanBlock({ workspace }: { workspace: HoursWorkspace }): React.JSX.Elem
       <h3 id={`${id}-heading`} className={styles.subheading}>
         {WORKSPACE_LABELS[workspace]}
       </h3>
+      {hasContracts(workspace) && <ContractFields workspace={workspace} />}
       {data && (
         <>
           <PlanField
@@ -82,29 +80,31 @@ function PlanBlock({ workspace }: { workspace: HoursWorkspace }): React.JSX.Elem
             parse={parseWeekHours}
             onCommit={(hoursPerWeek) => save({ hoursPerWeek })}
           />
-          <div className={styles.field}>
-            <span className={styles.label} id={`${id}-days-label`}>
-              Days worked
-            </span>
-            <div role="group" aria-labelledby={`${id}-days-label`} className={styles.days}>
-              {WEEKDAYS.map(({ day, label }) => {
-                const on = data.plan.workDays.includes(day)
-                const next = toggleWorkDay(data.plan.workDays, day)
-                return (
-                  <button
-                    key={day}
-                    type="button"
-                    className={styles.day}
-                    aria-pressed={on}
-                    disabled={next === null}
-                    onClick={() => next && save({ workDays: next })}
-                  >
-                    {label}
-                  </button>
-                )
-              })}
+          {!data.plan.weekAim && (
+            <div className={styles.field}>
+              <span className={styles.label} id={`${id}-days-label`}>
+                Days worked
+              </span>
+              <div role="group" aria-labelledby={`${id}-days-label`} className={styles.days}>
+                {WEEKDAYS.map(({ day, label }) => {
+                  const on = data.plan.workDays.includes(day)
+                  const next = toggleWorkDay(data.plan.workDays, day)
+                  return (
+                    <button
+                      key={day}
+                      type="button"
+                      className={styles.day}
+                      aria-pressed={on}
+                      disabled={next === null}
+                      onClick={() => next && save({ workDays: next })}
+                    >
+                      {label}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-          </div>
+          )}
           {TIME_OFF_WORKSPACES.includes(workspace) && (
             <PlanField
               id={`${id}-days-off`}

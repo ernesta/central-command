@@ -33,7 +33,10 @@ export function YearHeatMap({
   const days = heatDays(data, now)
   const months = monthColumns(data)
 
-  const step = Math.min(MAX_STEP, Math.max((width - PAD.left - PAD.right) / YEAR_WEEKS, 4))
+  const step = Math.min(
+    MAX_STEP,
+    Math.max((width - PAD.left - PAD.right) / (data.weeks ?? YEAR_WEEKS), 4)
+  )
   const cell = step - GAP
   const height = PAD.top + 7 * step + PAD.bottom
   const cx = (i: number): number => PAD.left + Math.floor(i / 7) * step

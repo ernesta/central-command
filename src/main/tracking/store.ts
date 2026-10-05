@@ -30,12 +30,13 @@ import {
   type TimeOffType,
   type TrackingYear
 } from '@shared/tracking/types'
-import { yearLabel, yearStartOf, yearsPresent } from '@shared/year'
+import { dayNumber, inYear, yearEnd, yearLabel, yearStartOf, yearsPresent } from '@shared/year'
+import { contractWeeks, hasContracts } from '@shared/tracking/workspace-weeks'
 import { writeFileAtomicSync } from '../atomic-write'
 
 export interface TrackingDeps {
-  /** A workspace's year starts, oldest first (Settings' starts moved to the day its weeks begin). */
-  starts: (workspace: Workspace) => readonly string[]
+  /** The year starts from Settings, oldest first. */
+  starts: () => readonly string[]
   /** The local date and time of now. */
   now: () => Moment
   newId?: () => string
@@ -53,11 +54,12 @@ interface Loaded {
 const sha = (text: string): string => createHash('sha1').update(text, 'utf8').digest('hex')
 
 /** `2026-09-21` is kept in `2026-27.json`. */
-export function yearFileName(start: string): string {
-  return `${yearLabel(start).replace('–', '-')}.json`
+export function yearFileName(start: string, workspace = 'research'): string {
+  // A contract starts on any date, so its file is named by it; a year by its two calendar years.
+  return hasContracts(workspace) ? `${start}.json` : `${yearLabel(start).replace('–', '-')}.json`
 }
 
-const FILE = /^\d{4}-\d{2}\.json$/
+const FILE = /^\d{4}-\d{2}(-\d{2})?\.json$/
 
 /**
  * The year files: `<root>/<workspace>/2026-27.json`, one per workspace and year, human-readable. Everything here is
@@ -79,8 +81,9 @@ export class TrackingStore {
 
   /** The years to offer: every one with a file, plus the current one, newest first. */
   years(workspace: Workspace): string[] {
-    const starts = this.deps.starts(workspace)
     const files = this.fileStarts(workspace)
+    if (hasContracts(workspace)) return files
+    const starts = this.deps.starts()
     return yearsPresent(files, this.deps.now().date, starts).filter(
       (y) => yearStartOf(y, starts) === y
     )
@@ -90,7 +93,7 @@ export class TrackingStore {
   get(workspace: Workspace, year: string): TrackingYear {
     this.checkYear(workspace, year)
     const loaded = this.load(workspace, year)
-    if (loaded.text === null && year === this.currentStart(workspace)) {
+    if (loaded.text === null && !hasContracts(workspace) && year === this.currentStart(workspace)) {
       this.commit(workspace, loaded, loaded.year)
     }
     return loaded.year
@@ -116,7 +119,7 @@ export class TrackingStore {
    */
   start(workspace: Workspace, label: string, task?: string): TimerResult {
     const now = this.deps.now()
-    const year = yearStartOf(now.date, this.deps.starts(workspace))
+    const year = this.currentStart(workspace)
     if (year === null) return { ok: false, reason: 'outside-year' }
     const running = this.running()
     if (running && !(running.workspace === workspace && running.year === year)) {
@@ -225,6 +228,54 @@ export class TrackingStore {
   }
 
   /**
+   * Start a contract (a Work year): its first and last day are the user's, whole weeks, and it may not overlap another.
+   * It takes the previous contract's plan and its final rounding carry.
+   */
+  createContract(workspace: Workspace, start: string, end: string): YearResult {
+    if (!hasContracts(workspace)) return { ok: false, reason: 'no-contracts' }
+    if (dayNumber(start) === null || dayNumber(end) === null)
+      return { ok: false, reason: 'bad-start' }
+    const weeks = contractWeeks(workspace, start, end)
+    if (!weeks.ok) return weeks
+    if (this.overlaps(workspace, start, weeks.weeks, null)) return { ok: false, reason: 'overlap' }
+    const year = { ...this.fresh(workspace, start), weeks: weeks.weeks }
+    if (!this.commit(workspace, { year, text: null }, year)) {
+      return { ok: false, reason: 'changed-on-disk' }
+    }
+    return { ok: true, year }
+  }
+
+  /** Move a contract's last day (whole weeks). Never past a day that holds time, and never into another contract. */
+  setContractEnd(workspace: Workspace, start: string, end: string): YearResult {
+    if (!hasContracts(workspace)) return { ok: false, reason: 'no-contracts' }
+    const weeks = contractWeeks(workspace, start, end)
+    if (!weeks.ok) return weeks
+    if (this.overlaps(workspace, start, weeks.weeks, start)) return { ok: false, reason: 'overlap' }
+    return this.mutate(workspace, start, (y) => {
+      const last = yearEnd(start, weeks.weeks)
+      const used = [...y.sessions, ...y.adjusts].some((s) => s.date > last)
+      return used
+        ? { ok: false, reason: 'has-time-after' }
+        : { ok: true, year: { ...y, weeks: weeks.weeks } }
+    })
+  }
+
+  /** Whether a contract of `weeks` weeks from `start` shares a day with another one (`except` is left out). */
+  private overlaps(
+    workspace: Workspace,
+    start: string,
+    weeks: number,
+    except: string | null
+  ): boolean {
+    const end = yearEnd(start, weeks)
+    return this.fileStarts(workspace).some((s) => {
+      if (s === except) return false
+      const other = this.peek(workspace, s)
+      return other !== null && s <= end && yearEnd(s, other.weeks) >= start
+    })
+  }
+
+  /**
    * Write a whole imported year. It never overwrites: a year whose file already holds anything (a session, typed
    * time, a day, a day off, a typed week) is refused. An empty year (the file the app creates on first read) is
    * replaced, keeping the carry it was given.
@@ -246,16 +297,27 @@ export class TrackingStore {
   // ---- files ----
 
   private path(workspace: Workspace, start: string): string {
-    return join(this.root, workspace, yearFileName(start))
+    return join(this.root, workspace, yearFileName(start, workspace))
   }
 
   private currentStart(workspace: Workspace): string | null {
-    return yearStartOf(this.deps.now().date, this.deps.starts(workspace))
+    const today = this.deps.now().date
+    if (hasContracts(workspace)) {
+      return (
+        this.fileStarts(workspace).find((s) => inYear(today, s, this.peek(workspace, s)?.weeks)) ??
+        null
+      )
+    }
+    return yearStartOf(today, this.deps.starts())
   }
 
   /** Only a year the shared list knows (every start, and the 52-week steps back from the first). */
   private checkYear(workspace: Workspace, start: string): void {
-    if (yearStartOf(start, this.deps.starts(workspace)) !== start) throw new Error('unknown-year')
+    if (hasContracts(workspace)) {
+      if (!this.fileStarts(workspace).includes(start)) throw new Error('unknown-year')
+      return
+    }
+    if (yearStartOf(start, this.deps.starts()) !== start) throw new Error('unknown-year')
   }
 
   /** The starts of the files in a workspace's folder, newest first. Reads only the names. */
@@ -305,12 +367,15 @@ export class TrackingStore {
       }
       const year = parseYear(json)
       if (year) {
-        if (year.start !== start) throw new Error(`${yearFileName(start)} belongs to another year`)
+        if (year.start !== start)
+          throw new Error(`${yearFileName(start, workspace)} belongs to another year`)
         return { year, text }
       }
       const version = (json as { version?: unknown } | null)?.version
       if (typeof version === 'number' && version > 1) {
-        throw new Error(`${yearFileName(start)} was written by a newer version of the app`)
+        throw new Error(
+          `${yearFileName(start, workspace)} was written by a newer version of the app`
+        )
       }
       renameSync(path, `${path}.corrupt-${Date.now()}`)
     }

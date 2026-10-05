@@ -1,7 +1,7 @@
 import { dailyAim } from '@shared/tracking/plan'
 import { minutesByDate } from '@shared/tracking/totals'
 import type { Moment, TimeOffType, TrackingYear } from '@shared/tracking/types'
-import { addDays, YEAR_DAYS } from '@shared/year'
+import { addDays, YEAR_WEEKS } from '@shared/year'
 
 export interface HeatDay {
   date: string
@@ -24,13 +24,13 @@ export function heatLevel(minutes: number, reference: number): 0 | 1 | 2 | 3 {
   return share < 0.5 ? 1 : share < 1 ? 2 : 3
 }
 
-/** Every day of the year, oldest first (364 of them), with its time, its aim and whether it is a day off. */
+/** Every day of the year, oldest first (364 of them, or a contract's), with its time, its aim and whether it is a day off. */
 export function heatDays(year: TrackingYear, now: Moment): HeatDay[] {
   const minutes = minutesByDate(year, now)
   const off = new Map(year.timeOff.map((t) => [t.date, t.type]))
   const average =
     year.plan.workDays.length > 0 ? year.plan.hoursPerWeek / year.plan.workDays.length : 0
-  return Array.from({ length: YEAR_DAYS }, (_, i) => {
+  return Array.from({ length: (year.weeks ?? YEAR_WEEKS) * 7 }, (_, i) => {
     const date = addDays(year.start, i)
     const m = minutes.get(date) ?? 0
     const aim = dailyAim(year, date)
@@ -48,7 +48,7 @@ export function heatDays(year: TrackingYear, now: Moment): HeatDay[] {
 /** The first column (week) each month starts in, for the labels above the grid: `[{ column: 0, month: 8 }, …]`. */
 export function monthColumns(year: TrackingYear): { column: number; month: number }[] {
   const out: { column: number; month: number }[] = []
-  for (let week = 0; week < YEAR_DAYS / 7; week++) {
+  for (let week = 0; week < (year.weeks ?? YEAR_WEEKS); week++) {
     // A week belongs to the month its Thursday is in, so a label never sits on a week that is mostly the month before.
     const month = Number(addDays(year.start, week * 7 + 3).slice(5, 7)) - 1
     if (out.length === 0 || out[out.length - 1].month !== month) out.push({ column: week, month })

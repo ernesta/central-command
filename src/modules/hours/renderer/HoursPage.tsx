@@ -9,16 +9,18 @@ import { useHoursWorkspace } from './hours-paths'
 import { BalanceCard } from './BalanceCard'
 import { TodayCard } from './TodayCard'
 import { useWeek } from './useWeek'
+import { ContractFields } from './ContractFields'
+import { MonthCard } from './MonthCard'
 import { WeekCard } from './WeekCard'
 import styles from './HoursPage.module.css'
 
 /** The Hours page: the year selector in the header, then Today, the week and the balance. */
 export function HoursPage(): React.JSX.Element {
   const workspace = useHoursWorkspace()
-  const { year, years, setYear, data } = useTrackingYear(workspace)
+  const { year, years, loaded, setYear, data } = useTrackingYear(workspace)
   const { running } = useRunningTimer()
   const now = useNow(running !== null)
-  const { week, setWeek } = useWeek(data?.start ?? year, now.date)
+  const { week, setWeek } = useWeek(data?.start ?? year, now.date, data?.weeks)
 
   return (
     <LandingPage>
@@ -26,12 +28,17 @@ export function HoursPage(): React.JSX.Element {
         backTo={`/${workspace}`}
         backLabel={WORKSPACE_LABELS[workspace]}
         title="Hours"
-        actions={<YearSelect year={year} years={years} onChange={setYear} />}
+        actions={<YearSelect year={year} years={years} onChange={setYear} workspace={workspace} />}
       />
+      {loaded && years.length === 0 && (
+        <div className={styles.contract}>
+          <ContractFields workspace={workspace} />
+        </div>
+      )}
       {data && (
         <div className={styles.cols}>
           <div className={styles.stack}>
-            {inYear(now.date, data.start) && (
+            {inYear(now.date, data.start, data.weeks) && (
               <TodayCard workspace={workspace} data={data} running={running} now={now} />
             )}
             <WeekCard
@@ -41,6 +48,9 @@ export function HoursPage(): React.JSX.Element {
               onWeekChange={setWeek}
               now={now}
             />
+            {data.plan.weekAim && (
+              <MonthCard data={data} week={week} onWeekChange={setWeek} now={now} />
+            )}
           </div>
           <div className={styles.stack}>
             <BalanceCard workspace={workspace} data={data} now={now} />

@@ -24,7 +24,7 @@ export function yearRows(years: readonly TrackingYear[], now: Moment): YearRow[]
       const totals = yearTotals(data, now.date, now)
       return {
         start: data.start,
-        end: yearEnd(data.start),
+        end: yearEnd(data.start, data.weeks),
         minutes: totals.minutes,
         plan: totals.plan,
         balance: totals.balance,

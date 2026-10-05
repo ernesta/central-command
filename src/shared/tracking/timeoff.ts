@@ -14,7 +14,7 @@ export interface TimeOffCounts {
 
 /** A weekend date is never a day off that counts. */
 function counts(entry: TimeOffEntry, year: TrackingYear): boolean {
-  return inYear(entry.date, year.start) && weekdayOf(entry.date) <= 5
+  return inYear(entry.date, year.start, year.weeks) && weekdayOf(entry.date) <= 5
 }
 
 /** Counted from the rows inside the year, never typed in. */
@@ -73,7 +73,7 @@ export function addTimeOff(
   to: string,
   type: TimeOffType
 ): Change {
-  if (!inYear(from, year.start) || !inYear(to, year.start))
+  if (!inYear(from, year.start, year.weeks) || !inYear(to, year.start, year.weeks))
     return { ok: false, reason: 'outside-year' }
   if (daysBetween(from, to) < 0) return { ok: false, reason: 'backwards' }
   const added: TimeOffEntry[] = []
@@ -108,7 +108,7 @@ export function editTimeOff(
 ): Change {
   if (!year.timeOff.some((e) => e.date === from)) return { ok: false, reason: 'missing' }
   if (to !== from) {
-    if (!inYear(to, year.start)) return { ok: false, reason: 'outside-year' }
+    if (!inYear(to, year.start, year.weeks)) return { ok: false, reason: 'outside-year' }
     if (weekdayOf(to) > 5) return { ok: false, reason: 'weekend' }
     if (year.timeOff.some((e) => e.date === to)) return { ok: false, reason: 'listed' }
   }

@@ -1,0 +1,20 @@
+.field {
+  display: grid;
+  gap: 6px;
+}
+.label {
+  font-size: var(--text-14);
+  font-weight: 500;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.date {
+  width: 168px;
+  font-variant-numeric: tabular-nums;
+}
+.date[aria-invalid='true'] {
+  border-color: var(--danger);
+}

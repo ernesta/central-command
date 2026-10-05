@@ -2,6 +2,8 @@ import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import { formatHours, formatSignedHours } from '@shared/tracking/format'
 import type { Workspace } from '@shared/settings'
 import type { Moment } from '@shared/tracking/types'
+import { formatDate } from '@shared/time'
+import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { yearLabel } from '@shared/year'
 import { yearRows } from '../shared/years'
 import { useYearFiles } from './useYearFiles'
@@ -25,6 +27,7 @@ export function YearsTable({
   const rows = files ? yearRows(files, now) : []
   const { tableProps, rowProps } = useRowNavigation(rows.length, (i) => onSelect(rows[i].start))
   if (!files) return null
+  const contracts = hasContracts(workspace)
 
   return (
     <section className={styles.card} aria-label="Years">
@@ -32,7 +35,7 @@ export function YearsTable({
         <table className={styles.table} {...tableProps}>
           <thead>
             <tr>
-              <th scope="col">Year</th>
+              <th scope="col">{contracts ? 'Contract' : 'Year'}</th>
               <th scope="col" className={styles.right}>
                 Hours
               </th>
@@ -45,9 +48,11 @@ export function YearsTable({
               <th scope="col" className={styles.right}>
                 Average week
               </th>
-              <th scope="col" className={styles.right}>
-                Days off
-              </th>
+              {!contracts && (
+                <th scope="col" className={styles.right}>
+                  Days off
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -60,14 +65,14 @@ export function YearsTable({
                 {...rowProps(index)}
                 onClick={() => onSelect(r.start)}
               >
-                <td>{yearLabel(r.start)}</td>
+                <td>{contracts ? formatDate(r.start) : yearLabel(r.start)}</td>
                 <td className={styles.right}>{formatHours(r.minutes)}</td>
                 <td className={styles.right}>{formatHours(r.plan)}</td>
                 <td className={styles.right}>{formatSignedHours(Math.round(r.balance))}</td>
                 <td className={styles.right}>
                   {r.averageWeek === null ? '–' : formatHours(r.averageWeek)}
                 </td>
-                <td className={styles.right}>{r.daysOff}</td>
+                {!contracts && <td className={styles.right}>{r.daysOff}</td>}
               </tr>
             ))}
           </tbody>

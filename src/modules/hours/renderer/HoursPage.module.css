@@ -13,3 +13,12 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+.contract {
+  display: grid;
+  gap: 16px;
+  max-width: 480px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+}

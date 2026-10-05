@@ -63,6 +63,12 @@ export function registerTrackingIpc(store: TrackingStore): void {
       ...(Array.isArray(p.workDays) ? { workDays: p.workDays.map(whole) } : {})
     })
   })
+  h(TRACKING_IPC.createContract, (_e, ws, start, end) =>
+    store.createContract(workspace(ws), text(start), text(end))
+  )
+  h(TRACKING_IPC.setContractEnd, (_e, ws, year, end) =>
+    store.setContractEnd(workspace(ws), text(year), text(end))
+  )
   h(TRACKING_IPC.addTimeOff, (_e, ws, year, from, to, type) =>
     store.addTimeOff(workspace(ws), text(year), text(from), text(to), timeOffType(type))
   )

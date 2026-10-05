@@ -1,4 +1,4 @@
-import { addDays, daysBetween, inYear, weekdayOf, weeksOf } from '../year'
+import { addDays, daysBetween, inYear, weekdayOf, weeksOf, yearEnd } from '../year'
 import { minutesByDate, weeklyMinutes } from './totals'
 import { unlistedAllowance } from './timeoff'
 import type { Moment, TrackingYear } from './types'
@@ -31,7 +31,7 @@ function plannedDaysComputed(year: TrackingYear, weekStart: string): number {
 /** Minutes aimed at on a planned day: the week's hours over the days worked. Null on any other day. */
 export function dailyAim(year: TrackingYear, date: string): number | null {
   const days = year.plan.workDays.length
-  if (year.plan.weekAim || days === 0 || !inYear(date, year.start)) return null
+  if (year.plan.weekAim || days === 0 || !inYear(date, year.start, year.weeks)) return null
   return isPlannedDay(year, offDates(year), date) ? year.plan.hoursPerWeek / days : null
 }
 
@@ -68,9 +68,9 @@ export function unlistedCredit(year: TrackingYear): number {
   return days === 0 ? 0 : (unlistedAllowance(year) * year.plan.hoursPerWeek) / days
 }
 
-/** The year's last day: the Sunday of its 52nd week. */
+/** The year's last day: the last day of its last week. */
 function lastDay(year: TrackingYear): string {
-  return addDays(year.start, 52 * 7 - 1)
+  return yearEnd(year.start, year.weeks)
 }
 
 export interface YearTotals {
@@ -94,7 +94,7 @@ export function yearTotals(year: TrackingYear, today: string, now?: Moment): Yea
   const credit = unlistedCredit(year)
   let plan = today >= lastDay(year) ? -credit : 0
   let wholePlan = -credit
-  for (const w of weeksOf(year.start)) {
+  for (const w of weeksOf(year.start, year.weeks)) {
     const t = weekThrough(year, w.from, today)
     days += t.days
     plan += t.plan

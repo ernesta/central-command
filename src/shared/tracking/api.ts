@@ -73,6 +73,10 @@ export interface TrackingApi {
     type: TimeOffType
   ): Promise<YearResult>
   removeTimeOff(workspace: Workspace, year: string, date: string): Promise<YearResult>
+  /** Start a Work contract from its first to its last day (whole weeks, Friday to Thursday). */
+  createContract(workspace: Workspace, start: string, end: string): Promise<YearResult>
+  /** Move a contract's last day. */
+  setContractEnd(workspace: Workspace, year: string, end: string): Promise<YearResult>
   /** A year's file changed (any workspace). Returns an unsubscribe function. */
   onChanged(listener: (event: TrackingChangedEvent) => void): () => void
 }
@@ -93,5 +97,7 @@ export const TRACKING_IPC = {
   addTimeOff: 'tracking:add-time-off',
   editTimeOff: 'tracking:edit-time-off',
   removeTimeOff: 'tracking:remove-time-off',
+  createContract: 'tracking:create-contract',
+  setContractEnd: 'tracking:set-contract-end',
   changed: 'tracking:changed'
 } as const

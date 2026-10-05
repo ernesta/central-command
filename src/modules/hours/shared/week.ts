@@ -1,18 +1,27 @@
 import { addDays, daysBetween, inYear, yearEnd } from '@shared/year'
 
 /** The week a year's page opens on: this week, or the nearest one when today is outside the year (its first or last). */
-export function defaultWeek(yearStart: string, today: string): string {
+export function defaultWeek(yearStart: string, today: string, weeks?: number): string {
   if (today < yearStart) return yearStart
-  const last = yearEnd(yearStart)
+  const last = yearEnd(yearStart, weeks)
   const day = today > last ? last : today
   return addDays(yearStart, Math.floor(daysBetween(yearStart, day) / 7) * 7)
 }
 
 /** The week asked for (the first day of one of the year's weeks), else the default one. */
-export function resolveWeek(asked: string | null, yearStart: string, today: string): string {
-  return asked !== null && inYear(asked, yearStart) && daysBetween(yearStart, asked) % 7 === 0
+export function resolveWeek(
+  asked: string | null,
+  yearStart: string,
+  today: string,
+  weeks?: number
+): string {
+  // No year yet (a workspace with contracts before the first is made): no week either.
+  if (yearStart === '') return ''
+  return asked !== null &&
+    inYear(asked, yearStart, weeks) &&
+    daysBetween(yearStart, asked) % 7 === 0
     ? asked
-    : defaultWeek(yearStart, today)
+    : defaultWeek(yearStart, today, weeks)
 }
 
 /** A day's bar is drawn up to this many times the aim; the aim's tick sits at 1 ÷ this. */

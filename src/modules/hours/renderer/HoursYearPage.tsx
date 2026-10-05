@@ -25,7 +25,7 @@ export function HoursYearPage(): React.JSX.Element {
         backTo={hoursBase(workspace)}
         backLabel="Hours"
         title="Charts and weeks"
-        actions={<YearSelect year={year} years={years} onChange={setYear} />}
+        actions={<YearSelect year={year} years={years} onChange={setYear} workspace={workspace} />}
       />
       {data && (
         <div className={styles.stack}>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import type { Workspace } from '@shared/settings'
 import type { TrackingYear } from '@shared/tracking/types'
-import { trackingStarts } from '@shared/tracking/workspace-weeks'
+import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { currentYear } from '@shared/year'
 import { todayIso } from '@shared/time'
 import { useSettings } from './settings-context'
@@ -16,6 +16,8 @@ import { useYearFile } from './use-year-file'
 export function useTrackingYear(workspace: Workspace): {
   year: string
   years: string[]
+  /** Whether the list of years has been read. */
+  loaded: boolean
   setYear: (year: string) => void
   data: TrackingYear | null
 } {
@@ -23,8 +25,12 @@ export function useTrackingYear(workspace: Workspace): {
   const [params, setParams] = useSearchParams()
   const [offered, setOffered] = useState<{ workspace: Workspace; years: string[] } | null>(null)
 
-  const current = currentYear(todayIso(), trackingStarts(workspace, settings.yearStarts))
   const years = offered?.workspace === workspace ? offered.years : null
+  // A workspace with contracts has no year but the ones made: the one holding today, else the newest (none yet: '').
+  const today = todayIso()
+  const current = hasContracts(workspace)
+    ? (years?.find((y) => y <= today) ?? years?.[0] ?? '')
+    : currentYear(today, settings.yearStarts)
   const asked = params.get('year')
   const year = asked && years?.includes(asked) ? asked : current
 
@@ -46,7 +52,7 @@ export function useTrackingYear(workspace: Workspace): {
   }, [workspace])
 
   // Wait for the list: a year in the address that is not offered must never be asked for.
-  const data = useYearFile(workspace, years === null ? null : year)
+  const data = useYearFile(workspace, years === null || year === '' ? null : year)
 
   const setYear = (next: string): void =>
     setParams(
@@ -59,5 +65,11 @@ export function useTrackingYear(workspace: Workspace): {
       { replace: true }
     )
 
-  return { year, years: years ?? [current], setYear, data }
+  return {
+    year,
+    years: years ?? (current === '' ? [] : [current]),
+    loaded: years !== null,
+    setYear,
+    data
+  }
 }

@@ -66,8 +66,8 @@ export function weekStartOf(date: string): string {
 }
 
 /** A year's last day: 52 weeks less a day after its start. */
-export function yearEnd(start: string): string {
-  return addDays(start, YEAR_DAYS - 1)
+export function yearEnd(start: string, weeks = YEAR_WEEKS): string {
+  return addDays(start, weeks * 7 - 1)
 }
 
 /** 2026 as "2026–27" (an en dash): a year named by the calendar year it starts in. */
@@ -125,10 +125,10 @@ export function yearStartOf(date: string, starts: readonly string[]): string | n
 }
 
 /** Whether a date is inside the year that starts on `start`. */
-export function inYear(date: string, start: string): boolean {
+export function inYear(date: string, start: string, weeks = YEAR_WEEKS): boolean {
   const n = dayNumber(date)
   const s = dayNumber(start)
-  return n !== null && s !== null && n >= s && n - s < YEAR_DAYS
+  return n !== null && s !== null && n >= s && n - s < weeks * 7
 }
 
 /** The year containing `today`. Falls back to the newest listed start (or today's own week) so there is always one. */
@@ -184,8 +184,8 @@ export interface YearWeek {
 }
 
 /** The 52 weeks of the year starting on `start`, Monday to Sunday. */
-export function weeksOf(start: string): YearWeek[] {
-  return Array.from({ length: YEAR_WEEKS }, (_, i) => ({
+export function weeksOf(start: string, weeks = YEAR_WEEKS): YearWeek[] {
+  return Array.from({ length: weeks }, (_, i) => ({
     number: i + 1,
     from: addDays(start, i * 7),
     to: addDays(start, i * 7 + 6)
@@ -193,8 +193,8 @@ export function weeksOf(start: string): YearWeek[] {
 }
 
 /** The week number (1 to 52) of a date within the year starting on `start`; null when outside it. */
-export function weekNumberOf(date: string, start: string): number | null {
-  return inYear(date, start) ? Math.floor(daysBetween(start, date) / 7) + 1 : null
+export function weekNumberOf(date: string, start: string, weeks = YEAR_WEEKS): number | null {
+  return inYear(date, start, weeks) ? Math.floor(daysBetween(start, date) / 7) + 1 : null
 }
 
 /**
