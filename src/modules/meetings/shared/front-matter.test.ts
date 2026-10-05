@@ -288,3 +288,16 @@ describe('skills in the front matter', () => {
     expect(updateHead(added, { skills: [] })).toBe(HEAD)
   })
 })
+
+describe('discussed topics with quotes in them', () => {
+  it('keeps every ticked topic when one has an apostrophe or a double quote', () => {
+    const topics = ["Reviewer's comments", 'Study 1: intro', 'The "gap" in the data', "It's done"]
+    const head = updateHead(HEAD, { discussed: topics })
+    expect(parseMeta(head).meta.discussed).toEqual(topics)
+  })
+
+  it('reads an apostrophe inside a plain item as text, not as the start of a quoted item', () => {
+    const head = HEAD.replace('[Study 1 model results]', "[Reviewer's comments, Next steps]")
+    expect(parseMeta(head).meta.discussed).toEqual(["Reviewer's comments", 'Next steps'])
+  })
+})

@@ -114,8 +114,9 @@ function stripComment(raw: string): string {
     const c = raw[i]
     if (quote) {
       if (c === '\\' && quote === '"') i++
+      else if (c === "'" && quote === "'" && raw[i + 1] === "'") i++
       else if (c === quote) quote = null
-    } else if (c === "'" || c === '"') quote = c
+    } else if ((c === "'" || c === '"') && (i === 0 || /[\s,[]/.test(raw[i - 1]))) quote = c
     else if (c === '#' && (i === 0 || /\s/.test(raw[i - 1]))) return raw.slice(0, i)
   }
   return raw
@@ -130,8 +131,10 @@ function splitInline(inner: string): string[] {
     if (quote) {
       current += c
       if (c === '\\' && quote === '"') current += inner[++i] ?? ''
+      else if (c === "'" && quote === "'" && inner[i + 1] === "'") current += inner[++i]
       else if (c === quote) quote = null
-    } else if (c === "'" || c === '"') {
+    } else if ((c === "'" || c === '"') && current.trim() === '') {
+      // A quote opens a quoted item only at the item's start; inside a plain item (It's) it is text.
       quote = c
       current += c
     } else if (c === ',') {
