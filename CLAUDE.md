@@ -97,6 +97,8 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
 
 ## Where things stand and where to look
 
+- **Tasks is planned and designed, not built** (5 Oct 2026): `docs/TASKS_PLAN.md` (stages 1 to 9, stage 0 done), approved mockup `docs/design/tasks-mockup.html`, decisions in `docs/DECISIONS.md`, "Tasks: plan and mockup". It replaces ClickUp (their export: `~/CentralCommand/imports/clickup/`, a CSV that lists most tasks twice; de-duplicate by Task ID). Do not start a stage without the user's go-ahead, and never apply the import to the real library unless asked.
+
 - Phase 1 stages 1 to 6 are done (foundations, shell, Readings sync, Readings UI, detail page with
   notes editor and APA copy, polish pass). What is left is the user's review and the push.
   `docs/ROADMAP.md` is the checklist; `docs/DECISIONS.md` records what the polish pass changed.
