@@ -18,6 +18,10 @@ interface GroupFieldProps {
   /** The groups the notes use now. */
   groups: GroupSummary[]
   onChange: (value: { group: string; subgroup: string }) => void
+  /** What the field is called ("group" for notes, "list" for tasks); lower case, used in labels. */
+  noun?: string
+  /** Whether "No group" can be chosen (a task always has a list). */
+  allowNone?: boolean
 }
 
 /**
@@ -29,13 +33,16 @@ export function GroupField({
   group,
   subgroup,
   groups,
-  onChange
+  onChange,
+  noun = 'group',
+  allowNone = true
 }: GroupFieldProps): React.JSX.Element {
   const [open, setOpen] = useState(false)
   const [filter, setFilter] = useState('')
   const [name, setName] = useState('')
   const [inside, setInside] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const Noun = noun.charAt(0).toUpperCase() + noun.slice(1)
   const wrapRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const filterRef = useRef<HTMLInputElement>(null)
@@ -96,21 +103,21 @@ export function GroupField({
         className={[styles.trigger, !current && styles.none].filter(Boolean).join(' ')}
         aria-haspopup="dialog"
         aria-expanded={open}
-        aria-label={`Group: ${current || 'none'}`}
+        aria-label={`${Noun}: ${current || 'none'}`}
         onClick={() => {
           if (open) return close()
           setOpen(true)
           setTimeout(() => filterRef.current?.focus(), 0)
         }}
       >
-        {current || 'No group'}
+        {current || `No ${noun}`}
         <ChevronDown size={12} strokeWidth={2} aria-hidden />
       </button>
       {open && (
         <div
           className={styles.popover}
           role="dialog"
-          aria-label="Choose a group"
+          aria-label={`Choose a ${noun}`}
           onKeyDown={(event) => {
             if (event.key === 'Escape') {
               event.stopPropagation()
@@ -121,8 +128,8 @@ export function GroupField({
           <input
             ref={filterRef}
             className={styles.input}
-            aria-label="Find a group"
-            placeholder="Type to find a group"
+            aria-label={`Find a ${noun}`}
+            placeholder={`Type to find a ${noun}`}
             value={filter}
             onChange={(event) => setFilter(event.target.value)}
             onKeyDown={(event) => {
@@ -133,15 +140,15 @@ export function GroupField({
               }
             }}
           />
-          <ul className={styles.list} aria-label="Groups">
-            {terms.length === 0 && (
+          <ul className={styles.list} aria-label={`${Noun}s`}>
+            {allowNone && terms.length === 0 && (
               <li>
                 <button
                   type="button"
                   className={styles.item}
                   onClick={() => choose({ group: '', subgroup: '' })}
                 >
-                  No group
+                  No {noun}
                   {!group && <Check size={14} strokeWidth={2} aria-hidden />}
                 </button>
               </li>
@@ -163,7 +170,7 @@ export function GroupField({
               </li>
             ))}
             {terms.length > 0 && options.length === 0 && (
-              <li className={styles.empty}>No group matches.</li>
+              <li className={styles.empty}>No {noun} matches.</li>
             )}
           </ul>
           <form
@@ -174,7 +181,7 @@ export function GroupField({
             }}
           >
             <label className={styles.newLabel} htmlFor="new-group">
-              New group
+              New {noun}
             </label>
             <div className={styles.newRow}>
               <input

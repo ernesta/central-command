@@ -1903,3 +1903,14 @@ Built `src/modules/tasks/`: `shared/` (types, `recurrence.ts`, `views.ts`), `mai
 - **Applied to a scratch library only** (`CENTRAL_COMMAND_HOME=<scratch>`): 1,211 tasks written and read back; a second `--apply` refused. The real library was not touched (a dry run only opens the real database read-only to say whether it already holds tasks).
 - **Mutation checks**, all caught: differing duplicates accepted, subtask date not dropped, no sub-subtask title, the time check and the source's time, the orphan check, the apply guard, the read-back verify.
 - The script bundles with esbuild like the others but keeps `better-sqlite3` external and reads the migration SQL from its folder (Vite's `?raw` does not exist there); a test proves those files equal the migrations the app runs.
+
+## Tasks: stage 3 write-up, landing, All tasks and the table (5 Oct 2026)
+
+Built (renderer in `src/modules/tasks/renderer/`, IPC `TASKS_IPC` in `shared/api.ts`, handlers in `main/register.ts`, which re-broadcast `tasks:changed` so every page refreshes): the landing (Due today, In progress, Overdue, Upcoming, list cards, Backlog link), All tasks and a list's page (filter row, Open/Backlog/Done with counts, column sorting, "Showing N of M"), the one table (`TasksTable`), the add bar, the New task dialog and Mod-Shift-A (`TaskGlobals`, research instance only), the right-click and priority menus (`TaskMenu`), and the workspace card. The list field reuses Notes' `GroupField` (now with `noun` and `allowNone`).
+
+- **Checked against the real data in a scratch library**: the landing shows In progress 17 and Overdue 8 as the mockup counted for Research; subtasks open under a thread; the context menu, dialog, add bar, Space, the status icon and adding subtasks (Enter keeps the field open) were driven with real keystrokes, in the production build and in dev mode (no console errors).
+- **Quit test**: typing a title and pressing Enter, then quitting at once, left the task in the database (the IPC call is awaited by main before the app closes the window).
+- **Bug found by driving the app**: the context menu opened and closed at once, because a `contextmenu` listener added on document by the menu's effect received the same event that opened it. Only a `mousedown` outside closes it now (a second right-click's mousedown comes first).
+- **Bug found by looking**: the Due column was too narrow for "Feb 24, 2027"; widened to 124 px.
+- Playwright's Electron ignores the system colour scheme, so dark was checked with `page.emulateMedia({ colorScheme: 'dark' })`.
+- Row buttons (status icon, priority badge, pill) are `tabIndex -1`: the table is one tab stop, and the keyboard has Space, arrows and Shift-F10 for what the buttons do.

@@ -7,6 +7,7 @@ import type { NoteChangedEvent as NotesChangedEvent } from '@modules/notes/share
 import { READING_LISTS_IPC } from '@modules/reading-lists/shared/api'
 import type { ReadingListChangedEvent } from '@modules/reading-lists/shared/api'
 import { READINGS_IPC } from '@modules/readings/shared/api'
+import { TASKS_IPC, type TasksChangedEvent } from '@modules/tasks/shared/api'
 import { TRAINING_IPC } from '@modules/training/shared/api'
 import type { TrainingChangedEvent } from '@modules/training/shared/api'
 import type { NoteChangedEvent } from '@shared/notes'
@@ -130,6 +131,22 @@ const api: Api = {
         listener(change)
       ipcRenderer.on(TRAINING_IPC.changed, handler)
       return () => ipcRenderer.removeListener(TRAINING_IPC.changed, handler)
+    }
+  },
+  tasks: {
+    list: (workspace) => ipcRenderer.invoke(TASKS_IPC.list, workspace),
+    get: (uid) => ipcRenderer.invoke(TASKS_IPC.get, uid),
+    create: (input) => ipcRenderer.invoke(TASKS_IPC.create, input),
+    update: (uid, changes) => ipcRenderer.invoke(TASKS_IPC.update, uid, changes),
+    setStatus: (uid, status) => ipcRenderer.invoke(TASKS_IPC.setStatus, uid, status),
+    setDue: (uids, due) => ipcRenderer.invoke(TASKS_IPC.setDue, uids, due),
+    delete: (uid) => ipcRenderer.invoke(TASKS_IPC.delete, uid),
+    discardIfEmpty: (uid) => ipcRenderer.invoke(TASKS_IPC.discardIfEmpty, uid),
+    onChanged: (listener) => {
+      const handler = (_event: Electron.IpcRendererEvent, event: TasksChangedEvent): void =>
+        listener(event)
+      ipcRenderer.on(TASKS_IPC.changed, handler)
+      return () => ipcRenderer.removeListener(TASKS_IPC.changed, handler)
     }
   },
   notes: {

@@ -6,6 +6,7 @@ import type { ShortcutGroup } from '@shared/shortcuts'
 import { createHoursModule } from './hours'
 import { createMeetingsModule } from './meetings'
 import { createNotesModule } from './notes'
+import { createTasksModule } from './tasks'
 import { createTimeOffModule } from './time-off'
 import { plannedModules } from './planned'
 import { readingListsModule } from './reading-lists'
@@ -21,10 +22,12 @@ export const modules: ModuleManifest[] = [
   createNotesModule('research'),
   readingListsModule,
   createHoursModule('research'),
+  createTasksModule('research'),
   createTimeOffModule('research'),
   createMeetingsModule('work'),
   createNotesModule('work'),
   createHoursModule('work'),
+  createTasksModule('work'),
   ...plannedModules
 ]
 

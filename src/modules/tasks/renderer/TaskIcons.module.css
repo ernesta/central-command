@@ -1,0 +1,33 @@
+.status_todo {
+  color: var(--text-muted);
+}
+.status_doing,
+.status_done {
+  color: var(--accent);
+}
+.tick {
+  stroke: var(--accent-contrast);
+  stroke-width: 2.25;
+}
+.badge {
+  display: inline-block;
+  min-width: 30px;
+  padding: 1px 7px;
+  border-radius: 6px;
+  font-size: var(--text-12);
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
+}
+.priority_high {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+.priority_normal {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  color: var(--selected-text);
+}
+.priority_low {
+  background: color-mix(in srgb, var(--text-muted) 14%, transparent);
+  color: var(--text-muted);
+}

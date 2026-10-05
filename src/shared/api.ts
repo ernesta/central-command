@@ -1,6 +1,7 @@
 import type { Backlink, EntityRef } from './entities'
 import type { MeetingsApi } from '../modules/meetings/shared/api'
 import type { NotesApi } from '../modules/notes/shared/api'
+import type { TasksApi } from '../modules/tasks/shared/api'
 import type { ReadingListsApi } from '../modules/reading-lists/shared/api'
 import type { ReadingsApi } from '../modules/readings/shared/api'
 import type { TrainingApi } from '../modules/training/shared/api'
@@ -64,6 +65,7 @@ export interface Api {
   training: TrainingApi
   notes: NotesApi
   readingLists: ReadingListsApi
+  tasks: TasksApi
   tracking: TrackingApi
   lifecycle: {
     /**
