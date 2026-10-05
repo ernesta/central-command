@@ -73,11 +73,12 @@ describe('the current year', () => {
 })
 
 describe('Work', () => {
-  it('starts with eight hours a week and no days off', () => {
+  it('starts with eight hours a week over every day, aimed at by the week, and no days off', () => {
     expect(open().get('work', '2026-09-21').plan).toEqual({
       hoursPerWeek: 480,
-      workDays: [1, 2, 3, 4, 5],
-      allowanceDays: 0
+      workDays: [1, 2, 3, 4, 5, 6, 7],
+      allowanceDays: 0,
+      weekAim: true
     })
   })
 })

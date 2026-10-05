@@ -31,7 +31,7 @@ function plannedDaysComputed(year: TrackingYear, weekStart: string): number {
 /** Minutes aimed at on a planned day: the week's hours over the days worked. Null on any other day. */
 export function dailyAim(year: TrackingYear, date: string): number | null {
   const days = year.plan.workDays.length
-  if (days === 0 || !inYear(date, year.start)) return null
+  if (year.plan.weekAim || days === 0 || !inYear(date, year.start)) return null
   return isPlannedDay(year, offDates(year), date) ? year.plan.hoursPerWeek / days : null
 }
 
@@ -49,7 +49,7 @@ function weekThrough(
 ): { days: number; plan: number } {
   const weekEnd = addDays(weekStart, 6)
   if (weekStart > through) return { days: 0, plan: 0 }
-  if (weekEnd <= through)
+  if (weekEnd <= through || year.plan.weekAim)
     return { days: plannedDays(year, weekStart), plan: weekPlan(year, weekStart) }
   const off = offDates(year)
   let days = 0

@@ -1,15 +1,16 @@
-import { addDays, inYear, isMonday, weekStartOf, yearEnd } from '@shared/year'
+import { addDays, daysBetween, inYear, yearEnd } from '@shared/year'
 
 /** The week a year's page opens on: this week, or the nearest one when today is outside the year (its first or last). */
 export function defaultWeek(yearStart: string, today: string): string {
   if (today < yearStart) return yearStart
   const last = yearEnd(yearStart)
-  return weekStartOf(today > last ? last : today)
+  const day = today > last ? last : today
+  return addDays(yearStart, Math.floor(daysBetween(yearStart, day) / 7) * 7)
 }
 
-/** The week asked for (a Monday inside the year), else the default one. */
+/** The week asked for (the first day of one of the year's weeks), else the default one. */
 export function resolveWeek(asked: string | null, yearStart: string, today: string): string {
-  return asked !== null && isMonday(asked) && inYear(asked, yearStart)
+  return asked !== null && inYear(asked, yearStart) && daysBetween(yearStart, asked) % 7 === 0
     ? asked
     : defaultWeek(yearStart, today)
 }

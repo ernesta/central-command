@@ -9,7 +9,7 @@ export interface TypicalDay {
   average: number
   /** The days it is the average of. */
   days: number
-  /** Minutes aimed at on a work day; null on the other days. */
+  /** Minutes aimed at on a work day; null on the other days and where the aim is the whole week's. */
   aim: number | null
 }
 
@@ -32,10 +32,16 @@ export function typicalWeek(year: TrackingYear, now: Moment): TypicalDay[] {
     s.total += minutes.get(date) ?? 0
     s.days++
   }
-  return sums.map((s, i) => ({
-    weekday: i + 1,
-    average: s.days === 0 ? 0 : s.total / s.days,
-    days: s.days,
-    aim: year.plan.workDays.includes(i + 1) ? perDay : null
-  }))
+  // In the order of the year's own weeks: from the weekday it starts on.
+  const first = weekdayOf(year.start) - 1
+  return Array.from({ length: 7 }, (_, k) => {
+    const i = (first + k) % 7
+    const s = sums[i]
+    return {
+      weekday: i + 1,
+      average: s.days === 0 ? 0 : s.total / s.days,
+      days: s.days,
+      aim: !year.plan.weekAim && year.plan.workDays.includes(i + 1) ? perDay : null
+    }
+  })
 }

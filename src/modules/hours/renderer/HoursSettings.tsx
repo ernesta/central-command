@@ -5,6 +5,7 @@ import { useYearFile } from '@renderer/state/use-year-file'
 import { todayIso } from '@shared/time'
 import { formatHours } from '@shared/tracking/format'
 import type { Plan } from '@shared/tracking/types'
+import { trackingStarts } from '@shared/tracking/workspace-weeks'
 import { currentYear } from '@shared/year'
 import { parseAllowance, parseWeekHours, toggleWorkDay, WEEKDAYS } from '../shared/plan-settings'
 import { WORKSPACE_LABELS } from '@renderer/shell/workspaces'
@@ -60,7 +61,7 @@ function PlanField({
 /** One workspace's plan: the hours a week, the days worked and, where the workspace has time off, the days off a year. */
 function PlanBlock({ workspace }: { workspace: HoursWorkspace }): React.JSX.Element {
   const { settings } = useSettings()
-  const year = currentYear(todayIso(), settings.yearStarts)
+  const year = currentYear(todayIso(), trackingStarts(workspace, settings.yearStarts))
   const data = useYearFile(workspace, year)
   const save = (patch: Partial<Plan>): void =>
     void window.api.tracking.setPlan(workspace, year, patch)

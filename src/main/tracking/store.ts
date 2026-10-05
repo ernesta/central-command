@@ -34,8 +34,8 @@ import { yearLabel, yearStartOf, yearsPresent } from '@shared/year'
 import { writeFileAtomicSync } from '../atomic-write'
 
 export interface TrackingDeps {
-  /** The year starts from Settings, oldest first. */
-  starts: () => readonly string[]
+  /** A workspace's year starts, oldest first (Settings' starts moved to the day its weeks begin). */
+  starts: (workspace: Workspace) => readonly string[]
   /** The local date and time of now. */
   now: () => Moment
   newId?: () => string
@@ -79,7 +79,7 @@ export class TrackingStore {
 
   /** The years to offer: every one with a file, plus the current one, newest first. */
   years(workspace: Workspace): string[] {
-    const starts = this.deps.starts()
+    const starts = this.deps.starts(workspace)
     const files = this.fileStarts(workspace)
     return yearsPresent(files, this.deps.now().date, starts).filter(
       (y) => yearStartOf(y, starts) === y
@@ -88,9 +88,9 @@ export class TrackingStore {
 
   /** One year. The current year's file is created if it is missing (previous plan, carry passed on). */
   get(workspace: Workspace, year: string): TrackingYear {
-    this.checkYear(year)
+    this.checkYear(workspace, year)
     const loaded = this.load(workspace, year)
-    if (loaded.text === null && year === this.currentStart()) {
+    if (loaded.text === null && year === this.currentStart(workspace)) {
       this.commit(workspace, loaded, loaded.year)
     }
     return loaded.year
@@ -116,7 +116,7 @@ export class TrackingStore {
    */
   start(workspace: Workspace, label: string, task?: string): TimerResult {
     const now = this.deps.now()
-    const year = yearStartOf(now.date, this.deps.starts())
+    const year = yearStartOf(now.date, this.deps.starts(workspace))
     if (year === null) return { ok: false, reason: 'outside-year' }
     const running = this.running()
     if (running && !(running.workspace === workspace && running.year === year)) {
@@ -249,13 +249,13 @@ export class TrackingStore {
     return join(this.root, workspace, yearFileName(start))
   }
 
-  private currentStart(): string | null {
-    return yearStartOf(this.deps.now().date, this.deps.starts())
+  private currentStart(workspace: Workspace): string | null {
+    return yearStartOf(this.deps.now().date, this.deps.starts(workspace))
   }
 
   /** Only a year the shared list knows (every start, and the 52-week steps back from the first). */
-  private checkYear(start: string): void {
-    if (yearStartOf(start, this.deps.starts()) !== start) throw new Error('unknown-year')
+  private checkYear(workspace: Workspace, start: string): void {
+    if (yearStartOf(start, this.deps.starts(workspace)) !== start) throw new Error('unknown-year')
   }
 
   /** The starts of the files in a workspace's folder, newest first. Reads only the names. */
@@ -346,7 +346,7 @@ export class TrackingStore {
     change: (year: TrackingYear) => Change
   ): YearResult {
     try {
-      this.checkYear(start)
+      this.checkYear(workspace, start)
     } catch {
       return { ok: false, reason: 'unknown-year' }
     }

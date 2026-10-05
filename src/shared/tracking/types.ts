@@ -48,6 +48,8 @@ export interface Plan {
   /** Days worked, Monday = 1 to Sunday = 7. */
   workDays: number[]
   allowanceDays: number
+  /** The whole week's hours are aimed at from its first day (a balance of minus the week's hours), not a share a day. */
+  weekAim?: boolean
 }
 
 /** The contents of one year's file for one workspace. */
@@ -79,11 +81,12 @@ export const DEFAULT_PLAN: Plan = {
   allowanceDays: 40
 }
 
-/** Work: eight hours a week and no time off (it has no allowance to track). */
+/** Work: eight hours a week worked in bursts on any day, aimed at over the week, and no time off. */
 export const WORK_PLAN: Plan = {
   hoursPerWeek: 480,
-  workDays: [1, 2, 3, 4, 5],
-  allowanceDays: 0
+  workDays: [1, 2, 3, 4, 5, 6, 7],
+  allowanceDays: 0,
+  weekAim: true
 }
 
 /** The plan a workspace's first year starts from. */

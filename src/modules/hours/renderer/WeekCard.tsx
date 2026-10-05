@@ -35,8 +35,12 @@ export function WeekCard({
   const tracking = window.api.tracking
 
   const days = weekDaysMinutes(data, week, now)
-  const perDay =
-    data.plan.workDays.length > 0 ? data.plan.hoursPerWeek / data.plan.workDays.length : 0
+  // Where the aim is the whole week's there is none per day: a day's bar is its share of the week's hours.
+  const perDay = data.plan.weekAim
+    ? data.plan.hoursPerWeek
+    : data.plan.workDays.length > 0
+      ? data.plan.hoursPerWeek / data.plan.workDays.length
+      : 0
   // The plan up to today and the balance come from the rules, so this agrees with the balance and the year.
   const totals = weekTotals(data, now.date, now).find((w) => w.from === week)
   const plan = totals?.plan ?? 0
@@ -87,7 +91,9 @@ export function WeekCard({
             <th scope="col" className={styles.right}>
               Hours
             </th>
-            <th scope="col">Aim {perDay > 0 ? formatHours(perDay) : ''}</th>
+            <th scope="col">
+              {data.plan.weekAim ? '' : `Aim ${perDay > 0 ? formatHours(perDay) : ''}`}
+            </th>
           </tr>
         </thead>
         <tbody>

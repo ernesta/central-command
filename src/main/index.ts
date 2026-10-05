@@ -1,3 +1,4 @@
+import { trackingStarts } from '@shared/tracking/workspace-weeks'
 import { app, shell, BrowserWindow, Menu, clipboard, nativeTheme, screen } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -172,7 +173,7 @@ app.whenReady().then(async () => {
   registerBuildIpc(settings)
   registerEntitiesIpc(paths)
   const tracking: TrackingStore = new TrackingStore(paths.time, {
-    starts: () => settings.get().yearStarts,
+    starts: (workspace) => trackingStarts(workspace, settings.get().yearStarts),
     now: trackingMoment,
     onChange: (event) => {
       broadcastTrackingChange(event)

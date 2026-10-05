@@ -52,3 +52,15 @@ describe('weekDates', () => {
     expect(days[6]).toBe('2026-10-04')
   })
 })
+
+describe('a year that starts on a Friday', () => {
+  const FRIDAY = '2026-09-25'
+  it('opens on the Friday-to-Thursday week of today', () => {
+    expect(defaultWeek(FRIDAY, '2026-10-01')).toBe(FRIDAY)
+    expect(defaultWeek(FRIDAY, '2026-10-02')).toBe('2026-10-02')
+  })
+  it('takes only a Friday inside the year', () => {
+    expect(resolveWeek('2026-10-09', FRIDAY, '2026-10-01')).toBe('2026-10-09')
+    expect(resolveWeek('2026-10-05', FRIDAY, '2026-10-01')).toBe(FRIDAY)
+  })
+})

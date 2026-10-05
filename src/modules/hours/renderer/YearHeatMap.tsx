@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router'
 import { useElementWidth } from '@renderer/state/use-element-width'
 import { formatDay, formatHours } from '@shared/tracking/format'
 import { TIME_OFF_TYPES, type Moment, type TrackingYear } from '@shared/tracking/types'
-import { addDays, YEAR_WEEKS } from '@shared/year'
+import { addDays, weekdayOf, YEAR_WEEKS } from '@shared/year'
 import { heatDays, monthColumns } from '../shared/heat'
 import { weekRoute } from './hours-paths'
 import styles from './YearHeatMap.module.css'
@@ -12,7 +12,9 @@ const PAD = { top: 20, left: 32, right: 4, bottom: 4 }
 const MAX_STEP = 22
 const GAP = 3
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const ROW_LABELS: Record<number, string> = { 0: 'Mon', 2: 'Wed', 4: 'Fri' }
+const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+/** Rows run from the weekday the year starts on: the first, third and fifth are named. */
+const LABELLED_ROWS = [0, 2, 4]
 const OFF_LABELS = Object.fromEntries(TIME_OFF_TYPES.map((t) => [t.id, t.label]))
 
 /** The year as a grid: a column a week, a row a weekday, shaded by how much of the day's aim was done; days off are outlined. A day opens its week. */
@@ -95,15 +97,15 @@ export function YearHeatMap({
                 {MONTHS[m.month]}
               </text>
             ))}
-            {Object.entries(ROW_LABELS).map(([row, label]) => (
+            {LABELLED_ROWS.map((row) => (
               <text
-                key={label}
+                key={row}
                 className={styles.axis}
                 x={PAD.left - 8}
                 y={PAD.top + Number(row) * step + cell / 2 + 4}
                 textAnchor="end"
               >
-                {label}
+                {DAY_NAMES[(weekdayOf(data.start) - 1 + row) % 7]}
               </text>
             ))}
             {days.map((d, i) => (

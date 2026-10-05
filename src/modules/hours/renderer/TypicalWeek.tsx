@@ -108,7 +108,7 @@ export function TypicalWeek({ data, now }: { data: TrackingYear; now: Moment }):
                   {d.days > 0 ? formatHours(d.average) : ''}
                 </text>
                 <text className={styles.axis} x={centre(i)} y={HEIGHT - 6} textAnchor="middle">
-                  {DAYS[i]}
+                  {DAYS[d.weekday - 1]}
                 </text>
                 <rect
                   className={styles.hit}
@@ -139,7 +139,7 @@ export function TypicalWeek({ data, now }: { data: TrackingYear; now: Moment }):
           >
             <strong className={styles.tipValue}>{formatHours(tip.average)}</strong>
             <span className={styles.tipLine}>
-              {DAYS[active]} · average of {tip.days} {tip.days === 1 ? 'day' : 'days'}
+              {DAYS[tip.weekday - 1]} · average of {tip.days} {tip.days === 1 ? 'day' : 'days'}
             </span>
             {tip.aim !== null && <span className={styles.tipLine}>Aim {formatHours(tip.aim)}</span>}
           </div>

@@ -10,14 +10,21 @@ describe('parseYear', () => {
     expect(parseYear({ version: 1, start: '2026-09-21' })).toEqual(emptyYear('2026-09-21'))
   })
 
-  it('refuses another version, a start that is not a Monday, and a wrong-shaped part', () => {
+  it('refuses another version, a bad start and a wrong-shaped part', () => {
     expect(parseYear({ ...good(), version: 2 })).toBeNull()
-    expect(parseYear({ ...good(), start: '2026-09-22' })).toBeNull()
+    expect(parseYear({ ...good(), start: '2026-02-30' })).toBeNull()
     expect(parseYear({ ...good(), sessions: {} })).toBeNull()
     expect(parseYear({ ...good(), timeOff: [{ date: '2026-12-24', type: 'sick' }] })).toBeNull()
     expect(parseYear({ ...good(), days: { soon: { minutes: 1 } } })).toBeNull()
     expect(parseYear({ ...good(), carryIn: 'x' })).toBeNull()
     expect(parseYear(null)).toBeNull()
+  })
+
+  it('takes a year that starts on a Friday (Work) and a weekAim that is a boolean only', () => {
+    expect(parseYear({ ...good(), start: '2026-09-25' })?.start).toBe('2026-09-25')
+    const plan = { hoursPerWeek: 480, workDays: [1, 2, 3, 4, 5, 6, 7], allowanceDays: 0 }
+    expect(parseYear({ ...good(), plan: { ...plan, weekAim: true } })?.plan.weekAim).toBe(true)
+    expect(parseYear({ ...good(), plan: { ...plan, weekAim: 'yes' } })).toBeNull()
   })
 
   it('keeps unknown keys, at the top and in entries', () => {

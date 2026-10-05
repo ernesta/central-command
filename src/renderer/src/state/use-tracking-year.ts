@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import type { Workspace } from '@shared/settings'
 import type { TrackingYear } from '@shared/tracking/types'
+import { trackingStarts } from '@shared/tracking/workspace-weeks'
 import { currentYear } from '@shared/year'
 import { todayIso } from '@shared/time'
 import { useSettings } from './settings-context'
@@ -22,7 +23,7 @@ export function useTrackingYear(workspace: Workspace): {
   const [params, setParams] = useSearchParams()
   const [offered, setOffered] = useState<{ workspace: Workspace; years: string[] } | null>(null)
 
-  const current = currentYear(todayIso(), settings.yearStarts)
+  const current = currentYear(todayIso(), trackingStarts(workspace, settings.yearStarts))
   const years = offered?.workspace === workspace ? offered.years : null
   const asked = params.get('year')
   const year = asked && years?.includes(asked) ? asked : current

@@ -1,4 +1,4 @@
-import { dayNumber, isMonday } from '../year'
+import { dayNumber } from '../year'
 import { timeToSeconds } from './rounding'
 import { DEFAULT_PLAN, TIME_OFF_TYPES, emptyYear, type Plan, type TrackingYear } from './types'
 
@@ -21,6 +21,7 @@ export function parsePlan(raw: unknown): Plan | null {
   if (!Array.isArray(workDays) || workDays.length === 0) return null
   if (!workDays.every((d) => isInt(d) && d >= 1 && d <= 7)) return null
   if (!isInt(allowanceDays) || allowanceDays < 0 || allowanceDays > 366) return null
+  if (raw.weekAim !== undefined && typeof raw.weekAim !== 'boolean') return null
   return {
     ...raw,
     hoursPerWeek,
@@ -53,7 +54,7 @@ function record(
  */
 export function parseYear(raw: unknown): TrackingYear | null {
   if (!isObj(raw) || raw.version !== 1) return null
-  if (!isDate(raw.start) || !isMonday(raw.start)) return null
+  if (!isDate(raw.start)) return null
   const plan = raw.plan === undefined ? { ...DEFAULT_PLAN } : parsePlan(raw.plan)
   if (!plan) return null
   const carryIn = raw.carryIn === undefined ? 0 : raw.carryIn
