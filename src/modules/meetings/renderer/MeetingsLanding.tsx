@@ -4,7 +4,6 @@ import { YearSelect } from '@renderer/components/YearSelect'
 import { EmptyState } from '@renderer/components/EmptyState'
 import {
   LandingHeader,
-  LandingHint,
   LandingPage,
   LandingSection,
   RecentList,
@@ -118,10 +117,6 @@ export function MeetingsLanding(): React.JSX.Element {
                 </LandingNone>
               )}
             </LandingBox>
-            <LandingHint>
-              Picked up from the TODOs you write in your notes. Tick one to mark it done in its
-              meeting.
-            </LandingHint>
           </LandingSection>
 
           <LandingSection
