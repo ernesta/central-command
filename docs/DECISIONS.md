@@ -1934,3 +1934,11 @@ The rule logic was built and mutation-checked in stage 1; stage 5 added the **Re
 - Hours' Start field offers open task titles after the earlier names and links the time when the typed name is exactly one open task.
 - Driven in the built app: Start on a task (the session carries `cc://task/<uid>`), the stripe on the landing row, Stop, Add time 1:15 (the task showed 1:30 = 0:15 ClickUp + 1:15), the typed time stored with the task key.
 - Found while driving: the page has two "Start" buttons (the top bar's idle chip and the card's); tests must scope to the Time region.
+
+## Tasks: stage 7 write-up, everywhere (5 Oct 2026)
+
+- **Entity kind `task`** (`cc://task/<uid>`; the uid always exists, so nothing is written into a file first) with a provider (`taskEntities`, Research instance carries it for both workspaces), a Lucide `ListTodo` icon, and a hover card by the existing machinery. One existing test used `cc://task/1` as its example of an unknown kind; it now uses `gadget`.
+- **Mentioned in**: `findTaskBacklinks` reads the descriptions in the database (so a task that mentions a note, a person or another task is listed, with the line); `registerEntitiesIpc` now takes the database and merges both lists. The task page has the panel.
+- **Mod-K**: `searchTasks` (title, tags, list, description; open and soonest due first, done last; the matching text of the description when the title did not match). **Palette and Dock**: "New task" opens the dialog in the workspace being looked at. **Shortcuts**: the Tasks group in the manifest (Mod-Shift-A, Space, arrows, Shift-F10) shows in Settings.
+- **People**: a person's page gains "Open tasks" (tasks not done whose description mentions the person) next to their meetings.
+- Driven in the built app: `@` in a task description offers tasks (and people); the stored text was `[…](cc://task/<uid>)` and `[…](cc://person/…)`; the target task's page showed "Mentioned in" with the line; Mod-K found a task by words of its title; the palette's New task opened the dialog.

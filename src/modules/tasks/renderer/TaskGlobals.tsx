@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useLocation } from 'react-router'
 import { matchesShortcut } from '@shared/shortcuts'
 import { NEW_TASK_SHORTCUT } from '../shared/shortcuts'
+import type { TaskWorkspace } from '../shared/types'
 import { closeNewTask, openNewTask, useNewTaskRequest } from './new-task-store'
 import { NewTaskDialog } from './NewTaskDialog'
 import { clearTaskToast, useTaskToast } from './task-toast'
@@ -32,7 +33,7 @@ export function TaskGlobals(): React.JSX.Element {
 
   return (
     <>
-      {request && <NewTaskHost list={request.list ?? ''} />}
+      {request && <NewTaskHost list={request.list ?? ''} workspace={request.workspace} />}
       {toast && (
         <div className={styles.toast} role="status">
           {toast.text}
@@ -55,8 +56,15 @@ export function TaskGlobals(): React.JSX.Element {
 }
 
 /** Loads the workspace's tasks (for the lists to choose from) only while the dialog is open. */
-function NewTaskHost({ list }: { list: string }): React.JSX.Element | null {
-  const workspace = useTasksWorkspace()
+function NewTaskHost({
+  list,
+  workspace: asked
+}: {
+  list: string
+  workspace?: TaskWorkspace
+}): React.JSX.Element | null {
+  const here = useTasksWorkspace()
+  const workspace = asked ?? here
   const { rows } = useTasksList(workspace)
   if (rows === null) return null
   return (

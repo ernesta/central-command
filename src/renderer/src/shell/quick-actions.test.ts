@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest'
+import { openNewTask } from '@modules/tasks/renderer/new-task-store'
 import { quickActionWorkspace, runQuickAction } from './quick-actions'
+
+vi.mock('@modules/tasks/renderer/new-task-store', () => ({ openNewTask: vi.fn() }))
 
 describe('runQuickAction', () => {
   it('creates a note and goes to it', async () => {
@@ -30,6 +33,11 @@ describe('runQuickAction', () => {
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({ workspace: 'work', series: 'Other' })
     )
+  })
+
+  it('opens the New task dialog for the workspace it is given', async () => {
+    await runQuickAction('new-task', vi.fn(), 'work')
+    expect(openNewTask).toHaveBeenCalledWith({ workspace: 'work' })
   })
 
   it('does nothing for an id it does not know', async () => {

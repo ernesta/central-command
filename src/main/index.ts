@@ -170,7 +170,6 @@ app.whenReady().then(async () => {
   registerDialogIpc()
   registerAppIpc(paths.root)
   registerBuildIpc(settings)
-  registerEntitiesIpc(paths)
   const tracking: TrackingStore = new TrackingStore(paths.time, {
     starts: () => settings.get().yearStarts,
     now: trackingMoment,
@@ -190,6 +189,7 @@ app.whenReady().then(async () => {
     db,
     mainModules.flatMap((m) => m.migrations)
   )
+  registerEntitiesIpc(paths, db)
   const disposers = mainModules
     .map((m) => m.register({ db, paths, settings }))
     .filter((d): d is () => void => typeof d === 'function')

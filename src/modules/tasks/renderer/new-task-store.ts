@@ -1,7 +1,10 @@
 import { useSyncExternalStore } from 'react'
+import type { TaskWorkspace } from '../shared/types'
 
 /** Whether the "New task" dialog is open, and what it was opened with. One dialog for the whole app (see `TaskGlobals`). */
 export interface NewTaskRequest {
+  /** The workspace to add to, when it is not the one being looked at (the palette and the Dock menu). */
+  workspace?: TaskWorkspace
   /** The list being looked at, as a list value (see `listValue`), if any. */
   list?: string
 }

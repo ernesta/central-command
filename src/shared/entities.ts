@@ -9,10 +9,11 @@ import { parseHead, updateHeadKeys } from './front-matter'
  * - `reading`: the citekey.
  * - `meeting`, `note`: a `uid` kept in the item's front matter, added the first time something links to it, so the link
  *   survives renames and moves between workspaces.
+ * - `task`: the task's `uid` (always there; tasks live in the database).
  *
- * A future kind (tasks) is one more entry here and one more provider in the renderer (`renderer/src/entities`).
+ * A kind is one entry here and one provider in the renderer (`renderer/src/entities`).
  */
-export const ENTITY_KINDS = ['person', 'reading', 'meeting', 'note'] as const
+export const ENTITY_KINDS = ['person', 'reading', 'meeting', 'note', 'task'] as const
 export type EntityKind = (typeof ENTITY_KINDS)[number]
 
 export interface EntityRef {
@@ -140,7 +141,7 @@ export function addUid(head: string, uid: string): string {
 
 /** Where a mention is written: what kind of file, in which workspace, and its id (file name without the extension). */
 export interface BacklinkSource {
-  kind: 'note' | 'meeting' | 'training' | 'reading-list' | 'reading-notes' | 'plan'
+  kind: 'note' | 'meeting' | 'training' | 'reading-list' | 'reading-notes' | 'plan' | 'task'
   workspace: string
   id: string
 }

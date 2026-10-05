@@ -1,8 +1,10 @@
 import { ipcMain } from 'electron'
+import type { Database } from 'better-sqlite3'
 import { join } from 'path'
 import { ENTITY_KINDS, type EntityRef } from '@shared/entities'
 import { IPC } from '@shared/api'
 import { findBacklinks, type BacklinkFolder } from '../entities/backlinks'
+import { findTaskBacklinks } from '../entities/task-backlinks'
 import type { AppPaths } from '../paths'
 
 /** Every folder of notes a mention can be written in. */
@@ -33,9 +35,14 @@ function asRef(value: unknown): EntityRef {
   return { kind: o.kind as EntityRef['kind'], key: o.key }
 }
 
-/** Where an entity is mentioned: read from the note files on demand. */
-export function registerEntitiesIpc(paths: AppPaths): void {
-  ipcMain.handle(IPC.entitiesBacklinks, (_event, ref: unknown) =>
-    findBacklinks(asRef(ref), backlinkFolders(paths))
-  )
+/** Where an entity is mentioned: read from the note files on demand, and from the descriptions of tasks. */
+export function registerEntitiesIpc(paths: AppPaths, db: Database): void {
+  ipcMain.handle(IPC.entitiesBacklinks, async (_event, ref: unknown) => {
+    const target = asRef(ref)
+    const [files, tasks] = [
+      await findBacklinks(target, backlinkFolders(paths)),
+      findTaskBacklinks(db, target)
+    ]
+    return [...files, ...tasks].sort((a, b) => a.title.localeCompare(b.title))
+  })
 }

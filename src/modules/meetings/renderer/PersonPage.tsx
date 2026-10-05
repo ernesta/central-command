@@ -9,6 +9,7 @@ import {
   type RecentRow
 } from '@renderer/components/Landing'
 import { formatDate } from '@shared/time'
+import { PersonTasks } from '@modules/tasks/renderer/PersonTasks'
 import { entryRoute } from '@modules/training/renderer/training-paths'
 import { meetingRoute, peopleRoute } from './meetings-paths'
 import { PersonLinks } from './PersonLinks'
@@ -97,6 +98,8 @@ export function PersonPage(): React.JSX.Element {
           <RecentList rows={meetingRows} />
         )}
       </LandingSection>
+
+      {person && <PersonTasks name={person.name} />}
 
       {person && <MentionedIn kind="person" entityKey={person.name} />}
 

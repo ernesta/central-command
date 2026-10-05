@@ -7,6 +7,7 @@ import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { Segmented } from '@renderer/components/Segmented'
 import { LiveEditor } from '@renderer/editor/LiveEditor'
+import { MentionedIn } from '@renderer/entities/MentionedIn'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { registerFlushable } from '@renderer/lib/flush-registry'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
@@ -290,6 +291,7 @@ function TaskView({
               initial={startBody}
               placeholder="Add notes…"
               showPlaceholder={bodyText.trim() === ''}
+              entitySelf={{ kind: 'task', workspace, id: task.uid }}
               onChange={(text) => {
                 setBodyText(text)
                 description.change(text)
@@ -308,6 +310,11 @@ function TaskView({
             isRunning={running.has(task.uid)}
             today={today}
             yearFor={yearFor}
+          />
+          <MentionedIn
+            kind="task"
+            entityKey={task.uid}
+            exclude={{ kind: 'task', workspace, id: task.uid }}
           />
         </aside>
       </div>

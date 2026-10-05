@@ -1,0 +1,22 @@
+.list {
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  color: var(--ink);
+  text-decoration: none;
+}
+.row:hover {
+  background: var(--hover-tint);
+}
+.meta {
+  color: var(--text-muted);
+  font-size: var(--text-13);
+  white-space: nowrap;
+}

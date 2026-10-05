@@ -81,7 +81,7 @@ describe('a mention is drawn as a chip', () => {
     ['a web link', 'See [web](https://x.org) now'],
     ['an empty label', 'See [](cc://person/Kathy) now'],
     ['a title', 'See [Kathy](cc://person/Kathy "title") now'],
-    ['an unknown kind', 'See [Kathy](cc://task/1) now'],
+    ['an unknown kind', 'See [Kathy](cc://gadget/1) now'],
     ['inline code', 'See `[Kathy](cc://person/Kathy)` now'],
     ['two lines', 'See [Kathy\nRastle](cc://person/Kathy) now']
   ])('is not made of %s', (_name, text) => {

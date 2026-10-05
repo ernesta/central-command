@@ -2,6 +2,8 @@ import { createElement } from 'react'
 import type { LiveModuleManifest } from '../types'
 import { TASKS_SHORTCUTS } from './shared/shortcuts'
 import type { TaskWorkspace } from './shared/types'
+import { taskEntities } from './renderer/entities'
+import { searchTasks } from './renderer/search'
 import { TaskGlobals } from './renderer/TaskGlobals'
 import { TaskPage } from './renderer/TaskPage'
 import { TasksCard } from './renderer/TasksCard'
@@ -25,6 +27,9 @@ export function createTasksModule(workspace: TaskWorkspace): LiveModuleManifest 
       { path: 't/:uid', element: createElement(TaskPage) }
     ],
     landingCard: TasksCard,
-    ...(workspace === 'research' ? { globals: TaskGlobals, shortcuts: TASKS_SHORTCUTS } : {})
+    search: searchTasks(workspace),
+    ...(workspace === 'research'
+      ? { globals: TaskGlobals, shortcuts: TASKS_SHORTCUTS, entities: [taskEntities] }
+      : {})
   }
 }
