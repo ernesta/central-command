@@ -225,6 +225,20 @@ npx electron-vite dev -- --remote-debugging-port=9333`, then `chromium.connectOv
   "draft" values instead of copying props into state.
 - A `main` scroll container needs `scroll-padding` or a focused control's ring is cut at the edge (People settings).
 
+## Writing meeting and training summaries
+
+When asked for a summary of a meeting or training, write only the text for its `## Summary` section and give it in chat; the user pastes it
+themselves (never edit their note). Read the existing summaries first (`~/CentralCommand/notes/meetings/research/*Supervision.md`, `notes/training/`)
+and match them. Summarise `## Notes` only, never `## Previous TODOs`.
+
+- **Meetings**: one to two lines, no bullets, no names, decisions or details: `Key topics: <topic>, <topic>. Next steps: <the main work
+  to do next, short>. Next meeting <Mon D, YYYY>.` Example: "Key topics: Study 1 paper introduction feedback. Next steps: Study 1 introduction
+  and discussion draft. Next meeting Jul 29, 2026." Topics are short noun phrases (the `discussed` list is a good source); leave out
+  "Next meeting" when the notes give no date.
+- **Training**: one or two plain sentences on what the session covered, e.g. "Introduction to plotly, styling and customising plotly
+  graphics, advanced charts." Do not paste the course blurb or schedule.
+- If a draft runs past about two lines, it is too detailed: cut it.
+
 ## Never
 
 - Never write to the Zotero `.bib` file or to Zotero.
