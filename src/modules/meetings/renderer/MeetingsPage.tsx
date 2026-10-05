@@ -25,6 +25,7 @@ import {
 } from '../shared/query'
 import { meetingsInYearOrPlanned } from '../shared/hours'
 import { MeetingsHours } from './MeetingsHours'
+import { fixedSeries, tracksSkills } from '../shared/types'
 import { MeetingsTable } from './MeetingsTable'
 import { NewMeetingButton } from './NewMeetingButton'
 import { meetingsBase, todayIso, useMeetingsWorkspace } from './meetings-paths'
@@ -65,9 +66,9 @@ export function MeetingsPage(): React.JSX.Element {
       ? saved
       : reconcileQuery(
           saved,
-          seriesOptions(everything),
+          seriesOptions(everything, fixedSeries(workspace)),
           attendeeNames(everything),
-          skillsIn(everything)
+          tracksSkills(workspace) ? skillsIn(everything) : []
         )
   const visible = queryMeetings(all, query, people)
   const filtersActive =
@@ -115,7 +116,15 @@ export function MeetingsPage(): React.JSX.Element {
         )}
       </EmptyState>
     )
-  } else content = <MeetingsTable rows={visible} people={people} today={today} />
+  } else
+    content = (
+      <MeetingsTable
+        rows={visible}
+        people={people}
+        today={today}
+        showSkills={tracksSkills(workspace)}
+      />
+    )
 
   return (
     <div className={styles.page}>
@@ -136,7 +145,14 @@ export function MeetingsPage(): React.JSX.Element {
         </div>
       </header>
 
-      {rows !== null && <MeetingsHours rows={everything} year={year} today={today} />}
+      {rows !== null && (
+        <MeetingsHours
+          rows={everything}
+          year={year}
+          today={today}
+          showSkills={tracksSkills(workspace)}
+        />
+      )}
 
       <FilterRow>
         <YearSelect year={year} years={years} onChange={setYear} />
@@ -150,7 +166,7 @@ export function MeetingsPage(): React.JSX.Element {
           value={query.series}
           options={[
             { value: 'all', label: 'All series' },
-            ...seriesOptions(all).map((s) => ({ value: s, label: s }))
+            ...seriesOptions(all, fixedSeries(workspace)).map((s) => ({ value: s, label: s }))
           ]}
           onChange={(series) => set({ series })}
         />
@@ -164,15 +180,17 @@ export function MeetingsPage(): React.JSX.Element {
           ]}
           onChange={(mode) => set({ mode })}
         />
-        <Select
-          label="Filter by skill"
-          value={query.skill}
-          options={[
-            { value: 'all', label: 'Any skill' },
-            ...skillFilterOptions(skillsIn(everything))
-          ]}
-          onChange={(skill) => set({ skill })}
-        />
+        {tracksSkills(workspace) && (
+          <Select
+            label="Filter by skill"
+            value={query.skill}
+            options={[
+              { value: 'all', label: 'Any skill' },
+              ...skillFilterOptions(skillsIn(everything))
+            ]}
+            onChange={(skill) => set({ skill })}
+          />
+        )}
         <Select
           label="Filter by people"
           value={query.attendee}

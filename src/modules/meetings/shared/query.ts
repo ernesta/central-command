@@ -127,14 +127,13 @@ export function upcomingMeetings(
   return rows.filter((r) => isUpcoming(r, today)).sort((a, b) => -compareNewestFirst(a, b))
 }
 
-/** Series to offer in the filter: the fixed list, then any other series found in the files. */
-export function seriesOptions(rows: readonly MeetingIndexRow[]): string[] {
-  const extra = [
-    ...new Set(
-      rows.map((r) => r.series).filter((s) => s && !(SERIES as readonly string[]).includes(s))
-    )
-  ]
-  return [...SERIES, ...extra.sort()]
+/** Series to offer in the filter and the Series field: the fixed list, then any other series found in the files. */
+export function seriesOptions(
+  rows: readonly MeetingIndexRow[],
+  fixed: readonly string[] = SERIES
+): string[] {
+  const extra = [...new Set(rows.map((r) => r.series).filter((s) => s && !fixed.includes(s)))]
+  return [...fixed, ...extra.sort()]
 }
 
 /** Everyone who appears as an attendee in these meetings, by name. */

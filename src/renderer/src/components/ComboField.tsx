@@ -11,6 +11,8 @@ interface ComboFieldProps {
   label: string
   id?: string
   placeholder?: string
+  /** The field lost focus. */
+  onBlur?: () => void
 }
 
 /**
@@ -23,7 +25,8 @@ export function ComboField({
   onChange,
   label,
   id,
-  placeholder
+  placeholder,
+  onBlur
 }: ComboFieldProps): React.JSX.Element {
   const listId = useId()
   const [open, setOpen] = useState(false)
@@ -89,6 +92,7 @@ export function ComboField({
         value={value}
         onChange={(event) => onChange(event.target.value.replace(/[\r\n]/g, ''))}
         onKeyDown={keys}
+        onBlur={onBlur}
       />
       {options.length > 0 && (
         <button

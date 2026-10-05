@@ -185,6 +185,11 @@ describe('helpers', () => {
       seriesOptions([row('a', { series: 'Book Club' }), row('b', { series: 'Other' })])
     ).toEqual(['Supervision', 'Rastle Lab', 'Luminos', 'Other', 'Book Club'])
   })
+  it('seriesOptions with no fixed list is only the series found, so Work shows none of Research’s', () => {
+    expect(
+      seriesOptions([row('a', { series: 'Impact' }), row('b', { series: 'Impact' })], [])
+    ).toEqual(['Impact'])
+  })
   it('attendeeNames is everyone once, alphabetically', () => {
     expect(
       attendeeNames([row('a', { attendees: ['B B', 'A A'] }), row('b', { attendees: ['A A'] })])

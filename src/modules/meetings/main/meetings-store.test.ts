@@ -223,7 +223,7 @@ describe('create', () => {
 
   it('refuses invalid input without writing anything', async () => {
     const base = { workspace: 'research', series: 'Supervision', date: '2026-09-24' } as const
-    await expect(store.create({ ...base, series: 'Book Club' })).rejects.toThrow(MeetingError)
+    await expect(store.create({ ...base, series: '' })).rejects.toThrow(MeetingError)
     await expect(store.create({ ...base, date: '2026-13-01' })).rejects.toThrow('Invalid date')
     await expect(store.create({ ...base, start: '9:00' })).rejects.toThrow('Invalid start')
     await expect(store.create({ ...base, mode: 'hybrid' as never })).rejects.toThrow('Unknown mode')
@@ -314,10 +314,16 @@ describe('save', () => {
     await expect(store.save(ref('m'), { meta: { date: 'soon' } }, hash())).rejects.toThrow(
       'Invalid date'
     )
-    await expect(store.save(ref('m'), { meta: { series: 'Nope' } }, hash())).rejects.toThrow(
-      'Unknown series'
+    await expect(store.save(ref('m'), { meta: { series: '  ' } }, hash())).rejects.toThrow(
+      'Invalid series'
     )
     expect(disk('m')).toBe(original)
+  })
+
+  it('accepts a series that is not on any list', async () => {
+    const result = await store.save(ref('m'), { meta: { series: 'Book Club' } }, hash())
+    expect(result.status).toBe('saved')
+    expect(readdirSync(dir).join()).toContain('Book Club')
   })
 
   it('clearing the body leaves the file with its front matter, not deleted', async () => {

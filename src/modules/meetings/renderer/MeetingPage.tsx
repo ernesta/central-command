@@ -12,9 +12,10 @@ import { liveViewIn, placeCursorOnLine } from '@renderer/editor/live-outline'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { LiveEditor } from '@renderer/editor/LiveEditor'
 import { ownerOptions } from '../shared/people'
+import { seriesOptions } from '../shared/query'
 import { meetingHeading } from '../shared/time'
 import { appendTopic, parseTopics, topicOffset, type Topic } from '../shared/topics'
-import type { MeetingRef, MeetingWorkspace, Person } from '../shared/types'
+import { fixedSeries, type MeetingRef, type MeetingWorkspace, type Person } from '../shared/types'
 import { meetingRoute, meetingsBase, useMeetingsWorkspace } from './meetings-paths'
 import { MetaFields } from './MetaFields'
 import { MentionedIn } from '@renderer/entities/MentionedIn'
@@ -261,6 +262,8 @@ function MeetingView({
       )}
 
       <MetaFields
+        workspace={meetingRef.workspace}
+        seriesSuggestions={seriesOptions(meetingRows ?? [], fixedSeries(meetingRef.workspace))}
         meta={meta}
         people={people}
         onChange={(patch) => session.setMeta(patch)}

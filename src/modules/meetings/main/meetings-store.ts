@@ -31,7 +31,6 @@ import { carryOver, findPreviousMeeting } from '../shared/carry-over'
 import {
   MEETING_MODES,
   MEETING_WORKSPACES,
-  SERIES,
   type MeetingRef,
   type MeetingWorkspace
 } from '../shared/types'
@@ -59,8 +58,9 @@ function checkWorkspace(workspace: string): MeetingWorkspace {
 
 /** Refuse metadata that could not be read back: the file is only ever given values the app understands. */
 function checkPatch(patch: MetaPatch): void {
-  if (patch.series !== undefined && !(SERIES as readonly string[]).includes(patch.series)) {
-    throw new MeetingError(`Unknown series: ${patch.series}`)
+  // Any name is a series (it is typed in, as for Training); it only has to be one line of text.
+  if (patch.series !== undefined && (patch.series.trim() === '' || /[\r\n]/.test(patch.series))) {
+    throw new MeetingError(`Invalid series: ${patch.series}`)
   }
   if (patch.date !== undefined && patch.date !== '' && !isValidDate(patch.date)) {
     throw new MeetingError(`Invalid date: ${patch.date}`)

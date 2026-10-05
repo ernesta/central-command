@@ -13,6 +13,16 @@ export function defaultSeries(workspace: MeetingWorkspace): Series {
   return workspace === 'research' ? SERIES[0] : 'Other'
 }
 
+/** The series offered before any meeting has them: Research's fixed list; Work starts with none and grows its own. */
+export function fixedSeries(workspace: MeetingWorkspace): readonly string[] {
+  return workspace === 'research' ? SERIES : []
+}
+
+/** Whether a workspace tracks skills on its meetings (Research does; Work does not). */
+export function tracksSkills(workspace: MeetingWorkspace): boolean {
+  return workspace === 'research'
+}
+
 export const MEETING_MODES = ['in-person', 'online'] as const
 export type MeetingMode = (typeof MEETING_MODES)[number]
 

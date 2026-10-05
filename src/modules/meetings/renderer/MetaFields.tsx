@@ -1,14 +1,24 @@
+import { useState } from 'react'
 import { TimeInput } from '@renderer/components/TimeInput'
-import { SERIES, type MeetingMeta, type MeetingMode, type Person } from '../shared/types'
+import {
+  tracksSkills,
+  type MeetingMeta,
+  type MeetingMode,
+  type MeetingWorkspace,
+  type Person
+} from '../shared/types'
 import { isValidDate, type MetaPatch } from '../shared/front-matter'
 import { durationMinutes, formatDuration } from '../shared/time'
 import { Segmented } from '@renderer/components/Segmented'
-import { Select } from '@renderer/components/Select'
+import { ComboField } from '@renderer/components/ComboField'
 import { SkillsField } from '@renderer/components/SkillsField'
 import { PeopleField } from '@renderer/components/PeopleField'
 import styles from './MetaFields.module.css'
 
 interface MetaFieldsProps {
+  workspace: MeetingWorkspace
+  /** Series to pick from; any other can be typed. */
+  seriesSuggestions: string[]
   meta: MeetingMeta
   people: Person[]
   onChange: (patch: MetaPatch) => void
@@ -22,16 +32,21 @@ const MODE_OPTIONS = [
 
 /** The meeting's own details above the note: series, date, times, type and attendees. */
 export function MetaFields({
+  workspace,
+  seriesSuggestions,
   meta,
   people,
   onChange,
   onAddPerson
 }: MetaFieldsProps): React.JSX.Element {
-  const known = (SERIES as readonly string[]).includes(meta.series)
-  const seriesOptions = [
-    ...SERIES.map((s) => ({ value: s as string, label: s })),
-    ...(known || !meta.series ? [] : [{ value: meta.series, label: meta.series }])
-  ]
+  // Typing a new series would rename the file at every keystroke, so the text is kept here and the meeting
+  // gets it when a listed series is chosen or typed in full, or when the field is left.
+  const [draft, setDraft] = useState<string | null>(null)
+  const commitSeries = (text: string): void => {
+    const series = text.trim()
+    setDraft(null)
+    if (series && series !== meta.series) onChange({ series })
+  }
   const duration = durationMinutes(meta.start, meta.end)
 
   const time = (
@@ -47,12 +62,17 @@ export function MetaFields({
         <label className={styles.label} htmlFor="meeting-series">
           Series
         </label>
-        <Select
+        <ComboField
           id="meeting-series"
           label="Series"
-          value={meta.series}
-          options={seriesOptions}
-          onChange={(series) => onChange({ series })}
+          placeholder="For example Supervision"
+          options={seriesSuggestions}
+          value={draft ?? meta.series}
+          onChange={(text) => {
+            if (seriesSuggestions.includes(text)) commitSeries(text)
+            else setDraft(text)
+          }}
+          onBlur={() => commitSeries(draft ?? meta.series)}
         />
       </div>
       <div className={styles.field}>
@@ -115,10 +135,12 @@ export function MetaFields({
           onAddPerson={onAddPerson}
         />
       </div>
-      <div className={styles.field}>
-        <span className={styles.label}>Skills</span>
-        <SkillsField skills={meta.skills} onChange={(skills) => onChange({ skills })} />
-      </div>
+      {tracksSkills(workspace) && (
+        <div className={styles.field}>
+          <span className={styles.label}>Skills</span>
+          <SkillsField skills={meta.skills} onChange={(skills) => onChange({ skills })} />
+        </div>
+      )}
     </div>
   )
 }
