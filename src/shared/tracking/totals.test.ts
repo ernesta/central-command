@@ -173,3 +173,20 @@ describe('day notes', () => {
     expect(setDayNote(y, '2020-01-01', 'x').ok).toBe(false)
   })
 })
+
+describe('time for a task of Tasks', () => {
+  it('addTime records the task it was added for, and none when not given', () => {
+    const y = ok(addTime(year(), D, 'Write', 30, nextId(), undefined, 'cc://task/abc'))
+    expect(y.adjusts[0].task).toBe('cc://task/abc')
+    expect(ok(addTime(year(), D, 'Write', 30, nextId())).adjusts[0]).not.toHaveProperty('task')
+  })
+  it('retyping a row’s time keeps the link of the time it replaces, or of the row’s session', () => {
+    let y = year()
+    y = ok(startSession(y, at(D, '09:00:00'), 'Write', nextId(), 'cc://task/abc'))
+    y = ok(stopSession(y, at(D, '10:00:00')))
+    y = ok(setTaskMinutes(y, D, 'Write', 90, nextId()))
+    expect(y.adjusts[0]).toMatchObject({ minutes: 30, task: 'cc://task/abc' })
+    y = ok(setTaskMinutes(y, D, 'Write', 120, nextId()))
+    expect(y.adjusts[0]).toMatchObject({ minutes: 60, task: 'cc://task/abc' })
+  })
+})

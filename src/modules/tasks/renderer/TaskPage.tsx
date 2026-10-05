@@ -29,6 +29,7 @@ import { showTaskToast } from './task-toast'
 import { StatusIcon } from './TaskIcons'
 import { RecurrenceField } from './RecurrenceField'
 import { TagsField } from './TagsField'
+import { TaskTimeCard } from './TaskTimeCard'
 import { taskRoute, tasksBase, todayIso, useTasksWorkspace } from './tasks-paths'
 import { useTaskTime } from './useTaskTime'
 import { useTasksList } from './useTasksList'
@@ -98,7 +99,7 @@ function TaskView({
 }): React.JSX.Element {
   const navigate = useNavigate()
   const today = todayIso()
-  const { tracked } = useTaskTime(workspace)
+  const { tracked, running, yearFor } = useTaskTime(workspace)
   const isSub = parent !== undefined
   const [error, setError] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -299,20 +300,15 @@ function TaskView({
         </div>
 
         <aside className={styles.stack} aria-label="Side">
-          <section className={styles.box}>
-            <div className={styles.timeRow}>
-              <span className={styles.label}>Time on this task</span>
-              <b className={styles.total}>{formatTaskTime(time.total) || '0:00'}</b>
-            </div>
-            <div className={styles.timeLine}>
-              <span>Earlier, from ClickUp</span>
-              <span>{formatTaskTime(own.earlier) || '0:00'}</span>
-            </div>
-            <div className={styles.timeLine}>
-              <span>In Hours</span>
-              <span>{formatTaskTime(own.tracked) || '0:00'}</span>
-            </div>
-          </section>
+          <TaskTimeCard
+            task={task}
+            workspace={workspace}
+            time={time}
+            own={own}
+            isRunning={running.has(task.uid)}
+            today={today}
+            yearFor={yearFor}
+          />
         </aside>
       </div>
 

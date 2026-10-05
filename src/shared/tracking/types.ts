@@ -32,6 +32,8 @@ export interface Adjust {
   label: string
   minutes: number
   client?: string
+  /** The task the time is for (`cc://task/<uid>`), when it was added from a task's page. */
+  task?: string
 }
 
 /** Imported history: a typed total for a day, and a loose note. */

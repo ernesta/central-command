@@ -174,12 +174,17 @@ export function setTaskMinutes(
   // The new adjustment takes the place of the first it replaces, so a row does not move when its time is retyped.
   const first = year.adjusts.findIndex(match)
   const others = year.adjusts.filter((a) => !match(a))
+  // Time retyped for a task that Tasks knows stays that task's: the link of what it replaces, or of the row's timer time.
+  const task =
+    year.adjusts.find((a) => match(a) && a.task)?.task ??
+    year.sessions.find((s) => s.date === date && sameTask(s, name, client) && s.task)?.task
   const entry: Adjust = {
     id,
     date,
     label: name,
     minutes: minutes - timer,
-    ...(client !== undefined ? { client } : {})
+    ...(client !== undefined ? { client } : {}),
+    ...(task ? { task } : {})
   }
   const adjusts: Adjust[] =
     minutes === timer
@@ -197,7 +202,8 @@ export function addTime(
   label: string,
   minutes: number,
   id: string,
-  client?: string
+  client?: string,
+  task?: string
 ): Change {
   const name = label.trim()
   if (!name) return { ok: false, reason: 'empty-label' }
@@ -210,7 +216,8 @@ export function addTime(
     date,
     label: name,
     minutes,
-    ...(chosen.client !== undefined ? { client: chosen.client } : {})
+    ...(chosen.client !== undefined ? { client: chosen.client } : {}),
+    ...(task ? { task } : {})
   }
   return { ok: true, year: { ...year, adjusts: [...year.adjusts, adjust] } }
 }

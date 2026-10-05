@@ -66,7 +66,9 @@ export interface TrackingApi {
     date: string,
     label: string,
     minutes: number,
-    client?: string
+    client?: string,
+    /** The task (`cc://task/<uid>`) the time is for. */
+    task?: string
   ): Promise<YearResult>
   setNote(workspace: Workspace, year: string, date: string, note: string): Promise<YearResult>
   setPlan(workspace: Workspace, year: string, plan: Partial<Plan>): Promise<YearResult>

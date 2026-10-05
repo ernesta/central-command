@@ -5,7 +5,7 @@ import { Button } from '@renderer/components/Button'
 import { Select } from '@renderer/components/Select'
 import { formatDay, formatHours } from '@shared/tracking/format'
 import { dailyAim } from '@shared/tracking/plan'
-import { defaultClient } from '@shared/tracking/timer'
+import { defaultClient, sameLabel } from '@shared/tracking/timer'
 import { QUARTER } from '@shared/tracking/rounding'
 import { dayMinutes, dayRows } from '@shared/tracking/totals'
 import type { RunningTimer } from '@shared/tracking/api'
@@ -14,6 +14,8 @@ import { earlierLabels } from '../shared/tasks'
 import type { HoursWorkspace } from '../shared/workspaces'
 import { DurationField } from './DurationField'
 import { StaleTimer } from './StaleTimer'
+import { taskKeyForLabel } from '../../tasks/shared/tracked'
+import { useOpenTasks } from '../../tasks/renderer/useOpenTasks'
 import { TaskField } from './TaskField'
 import { TaskList } from './TaskList'
 import styles from './TodayCard.module.css'
@@ -39,7 +41,15 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
   const rows = dayRows(data, now.date, now)
   const total = dayMinutes(data, now.date, now)
   const aim = dailyAim(data, now.date)
-  const labels = useMemo(() => earlierLabels(data), [data])
+  // Open tasks are offered by name too; a name that is exactly one of them links the time to it.
+  const openTasks = useOpenTasks(workspace)
+  const labels = useMemo(() => {
+    const earlier = earlierLabels(data)
+    const titles = openTasks
+      .map((t) => t.title.trim())
+      .filter((t) => t && !earlier.some((l) => sameLabel(l, t)))
+    return [...earlier, ...new Set(titles)]
+  }, [data, openTasks])
   const stale = running && running.session.date !== now.date ? running : null
   const tracking = window.api.tracking
   const startRef = useRef<HTMLDivElement>(null)
@@ -52,7 +62,7 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
   }, [wantsFocus, key])
 
   const start = (label: string, forClient = client): void => {
-    if (!stale) void tracking.start(workspace, label, undefined, forClient)
+    if (!stale) void tracking.start(workspace, label, taskKeyForLabel(openTasks, label), forClient)
   }
   const adding = minutes > 0
   const ready = adding ? name.trim() !== '' : !stale
@@ -60,7 +70,15 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
     if (!ready) return
     if (adding) {
       const quarter = Math.max(QUARTER, Math.round(minutes / QUARTER) * QUARTER)
-      void tracking.addTime(workspace, data.start, now.date, name, quarter, client)
+      void tracking.addTime(
+        workspace,
+        data.start,
+        now.date,
+        name,
+        quarter,
+        client,
+        taskKeyForLabel(openTasks, name)
+      )
     } else start(name)
     setName('')
     setMinutes(0)

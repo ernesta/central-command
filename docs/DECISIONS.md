@@ -1925,3 +1925,12 @@ Built (renderer in `src/modules/tasks/renderer/`, IPC `TASKS_IPC` in `shared/api
 ## Tasks: stage 5 write-up, recurrence (5 Oct 2026)
 
 The rule logic was built and mutation-checked in stage 1; stage 5 added the **Repeats** field on the task page (`RecurrenceField`: Never, every day, week, 2 weeks, month, or Custom with a number and a unit) and the toast ("Done. The next one is due …") when completing a recurring task. Driven in the built app: set "Every week" on a task with a subtask, completed it from the page; the next instance appeared due 12 Oct (7 days from the completion date, 5 Oct) with the subtask copied as to do; re-opening and completing the finished one again made no second open instance. The ClickUp series are not given rules by the importer; the user sets them one by one from the importer's list.
+
+## Tasks: stage 6 write-up, time (5 Oct 2026)
+
+- Hours stays the only place time is stored. A session already had an optional `task`; typed time (`Adjust`) gained one (parsed, written by `addTime`, kept by `setTaskMinutes` and by rename and client changes). Existing years read as before; Hours' tests stayed green and gained two (the link is recorded, and retyping keeps it).
+- A task's total = its `earlierMinutes` (ClickUp, never written) + the reported minutes of every session and typed time that names it, across all year files of the workspace, subtasks rolled up into the parent (`taskTime`, `trackedByTask`); a running timer adds its whole minutes. ClickUp's history is not in Hours' days or balance.
+- The task page's Time card: total, earlier, in Hours, **Start** (or **Stop** while it runs), **Add time** (day and hours:minutes in quarter hours; refused with a message when no year of Hours covers the day). Rows with a running timer carry the accent stripe (looked at in the app, light).
+- Hours' Start field offers open task titles after the earlier names and links the time when the typed name is exactly one open task.
+- Driven in the built app: Start on a task (the session carries `cc://task/<uid>`), the stripe on the landing row, Stop, Add time 1:15 (the task showed 1:30 = 0:15 ClickUp + 1:15), the typed time stored with the task key.
+- Found while driving: the page has two "Start" buttons (the top bar's idle chip and the card's); tests must scope to the Time region.
