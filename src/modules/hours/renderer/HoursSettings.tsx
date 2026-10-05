@@ -7,6 +7,7 @@ import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { WORKSPACE_LABELS } from '@renderer/shell/workspaces'
 import { HOURS_WORKSPACES, TIME_OFF_WORKSPACES, type HoursWorkspace } from '../shared/workspaces'
+import { ClientFields } from './ClientFields'
 import { ContractFields } from './ContractFields'
 import styles from './HoursSettings.module.css'
 
@@ -105,6 +106,7 @@ function PlanBlock({ workspace }: { workspace: HoursWorkspace }): React.JSX.Elem
               </div>
             </div>
           )}
+          {hasContracts(workspace) && <ClientFields workspace={workspace} />}
           {TIME_OFF_WORKSPACES.includes(workspace) && (
             <PlanField
               id={`${id}-days-off`}

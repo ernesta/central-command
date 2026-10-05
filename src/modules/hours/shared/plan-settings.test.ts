@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { parseAllowance, parseWeekHours, toggleWorkDay } from './plan-settings'
+import {
+  addClient,
+  MAX_CLIENT_LENGTH,
+  parseAllowance,
+  parseWeekHours,
+  removeClient,
+  toggleWorkDay
+} from './plan-settings'
 
 describe('toggleWorkDay', () => {
   it('adds a day and keeps the week in order', () => {
@@ -45,5 +52,27 @@ describe('parseAllowance', () => {
     expect(parseAllowance('-1')).toBeNull()
     expect(parseAllowance('2.5')).toBeNull()
     expect(parseAllowance('')).toBeNull()
+  })
+})
+
+describe('addClient', () => {
+  it('adds a trimmed name at the end', () => {
+    expect(addClient(['Impact'], '  Other   Co ')).toEqual(['Impact', 'Other Co'])
+  })
+  it('refuses an empty name, a long one and one already there in any case', () => {
+    expect(addClient(['Impact'], '  ')).toBeNull()
+    expect(addClient(['Impact'], 'x'.repeat(MAX_CLIENT_LENGTH + 1))).toBeNull()
+    expect(addClient(['Impact'], 'impact')).toBeNull()
+    expect(addClient([], 'x'.repeat(MAX_CLIENT_LENGTH))).toHaveLength(1)
+  })
+})
+
+describe('removeClient', () => {
+  it('removes a name', () => {
+    expect(removeClient(['A', 'B'], 'A')).toEqual(['B'])
+  })
+  it('never leaves none, and ignores a name that is not there', () => {
+    expect(removeClient(['A'], 'A')).toBeNull()
+    expect(removeClient(['A', 'B'], 'C')).toBeNull()
   })
 })

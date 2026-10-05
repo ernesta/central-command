@@ -1,0 +1,54 @@
+.field {
+  display: grid;
+  gap: 6px;
+}
+.label {
+  font-size: var(--text-14);
+  font-weight: 500;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  /* Room for the buttons' focus rings. */
+  padding: 4px;
+  list-style: none;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 4px 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--panel);
+  color: var(--text-secondary);
+  font-size: var(--text-13);
+  white-space: nowrap;
+}
+.remove {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-muted);
+}
+.remove:hover:not(:disabled) {
+  background: var(--border-soft);
+  color: var(--ink);
+}
+.remove:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.add {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  max-width: 320px;
+  padding: 4px;
+}

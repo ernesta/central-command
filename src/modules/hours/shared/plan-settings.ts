@@ -30,3 +30,20 @@ export function parseAllowance(text: string): number | null {
   const days = Number(t)
   return days <= 366 ? days : null
 }
+
+/** The longest a client's name may be. */
+export const MAX_CLIENT_LENGTH = 40
+
+/** The client list with a name added: trimmed, not empty, not there already (ignoring case). Null when it cannot be added. */
+export function addClient(clients: readonly string[], text: string): string[] | null {
+  const name = text.trim().replace(/\s+/g, ' ')
+  if (!name || name.length > MAX_CLIENT_LENGTH) return null
+  if (clients.some((c) => c.toLowerCase() === name.toLowerCase())) return null
+  return [...clients, name]
+}
+
+/** The client list without a name. Null when that would leave none (Work always has a client). */
+export function removeClient(clients: readonly string[], name: string): string[] | null {
+  const next = clients.filter((c) => c !== name)
+  return next.length === 0 || next.length === clients.length ? null : next
+}
