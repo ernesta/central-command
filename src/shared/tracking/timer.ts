@@ -7,6 +7,50 @@ export function sameLabel(a: string, b: string): boolean {
   return a.trim().toLowerCase() === b.trim().toLowerCase()
 }
 
+/** Two entries are for the same client when both name it alike or both name none (exact: the plan's list spells it). */
+export function sameClient(a: string | undefined, b: string | undefined): boolean {
+  return (a ?? '') === (b ?? '')
+}
+
+/** A task is a label and a client: the same label for another client is another task. */
+export function sameTask(
+  a: { label: string; client?: string },
+  label: string,
+  client: string | undefined
+): boolean {
+  return sameLabel(a.label, label) && sameClient(a.client, client)
+}
+
+/**
+ * The client a new entry gets when none is chosen: the one of the latest entry (so work carries on for the same client),
+ * else the plan's first. Undefined where the plan has no clients.
+ */
+export function defaultClient(year: TrackingYear): string | undefined {
+  const clients = year.plan.clients ?? []
+  if (clients.length === 0) return undefined
+  const used = [
+    ...year.sessions.map((s) => ({ client: s.client, at: `${s.date} ${s.start}` })),
+    ...year.adjusts.map((a) => ({ client: a.client, at: `${a.date} 99:99:99` }))
+  ]
+    .filter((e) => e.client !== undefined && clients.includes(e.client))
+    .sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0))
+  return used[0]?.client ?? clients[0]
+}
+
+/**
+ * The client to record: none where the plan has none (whatever was asked), the default when none is asked for, and
+ * a refusal for a name not on the plan's list.
+ */
+export function resolveClient(
+  year: TrackingYear,
+  client: string | undefined
+): { ok: true; client: string | undefined } | { ok: false; reason: string } {
+  const clients = year.plan.clients ?? []
+  if (clients.length === 0) return { ok: true, client: undefined }
+  if (client === undefined) return { ok: true, client: defaultClient(year) }
+  return clients.includes(client) ? { ok: true, client } : { ok: false, reason: 'bad-client' }
+}
+
 /** The running session, if any. At most one runs. */
 export function runningSession(year: TrackingYear): Session | null {
   return year.sessions.find((s) => s.end === null) ?? null
@@ -36,16 +80,19 @@ export function startSession(
   now: Moment,
   label: string,
   id: string,
-  task?: string
+  task?: string,
+  client?: string
 ): Change {
   const name = label.trim()
+  const chosen = resolveClient(year, client)
+  if (!chosen.ok) return chosen
   if (!inYear(now.date, year.start, year.weeks)) return { ok: false, reason: 'outside-year' }
   if (timeToSeconds(now.time) === null) return { ok: false, reason: 'bad-time' }
   let current = year
   const running = runningSession(year)
   if (running) {
     if (running.date !== now.date) return { ok: false, reason: 'stale' }
-    if (sameLabel(running.label, name)) return { ok: true, year }
+    if (sameTask(running, name, chosen.client)) return { ok: true, year }
     const stopped = close(year, running, now.time)
     if (!stopped.ok) return stopped
     current = stopped.year
@@ -56,7 +103,8 @@ export function startSession(
     start: now.time,
     end: null,
     label: name,
-    ...(task ? { task } : {})
+    ...(task ? { task } : {}),
+    ...(chosen.client !== undefined ? { client: chosen.client } : {})
   }
   return { ok: true, year: { ...current, sessions: [...current.sessions, session] } }
 }
@@ -99,17 +147,49 @@ export function deleteSession(year: TrackingYear, id: string): TrackingYear {
  * to the name of another task that day merges the two rows. Reported minutes are frozen and untouched, so nothing
  * is recalculated and the carry does not move. The new name may not be empty.
  */
-export function renameTask(year: TrackingYear, date: string, from: string, to: string): Change {
+export function renameTask(
+  year: TrackingYear,
+  date: string,
+  from: string,
+  to: string,
+  client?: string
+): Change {
   const name = to.trim()
   if (!name) return { ok: false, reason: 'empty-label' }
   if (!inYear(date, year.start, year.weeks)) return { ok: false, reason: 'outside-year' }
-  const hit = (d: string, label: string): boolean => d === date && sameLabel(label, from)
+  const hit = (e: { date: string; label: string; client?: string }): boolean =>
+    e.date === date && sameTask(e, from, client)
   return {
     ok: true,
     year: {
       ...year,
-      sessions: year.sessions.map((s) => (hit(s.date, s.label) ? { ...s, label: name } : s)),
-      adjusts: year.adjusts.map((a) => (hit(a.date, a.label) ? { ...a, label: name } : a))
+      sessions: year.sessions.map((s) => (hit(s) ? { ...s, label: name } : s)),
+      adjusts: year.adjusts.map((a) => (hit(a) ? { ...a, label: name } : a))
+    }
+  }
+}
+
+/**
+ * Change the client of a task for one day: every session and typed adjustment of that day with that label and client
+ * (`from`). Reported minutes are frozen and untouched. The new client must be on the plan's list.
+ */
+export function setClient(
+  year: TrackingYear,
+  date: string,
+  label: string,
+  from: string | undefined,
+  to: string
+): Change {
+  if (!inYear(date, year.start, year.weeks)) return { ok: false, reason: 'outside-year' }
+  if (!(year.plan.clients ?? []).includes(to)) return { ok: false, reason: 'bad-client' }
+  const hit = (e: { date: string; label: string; client?: string }): boolean =>
+    e.date === date && sameTask(e, label, from)
+  return {
+    ok: true,
+    year: {
+      ...year,
+      sessions: year.sessions.map((s) => (hit(s) ? { ...s, client: to } : s)),
+      adjusts: year.adjusts.map((a) => (hit(a) ? { ...a, client: to } : a))
     }
   }
 }

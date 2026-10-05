@@ -10,6 +10,7 @@ import {
   startSession,
   endFinishedDay,
   renameTask,
+  setClient,
   stopSession,
   deleteSession
 } from '@shared/tracking/timer'
@@ -117,7 +118,7 @@ export class TrackingStore {
    * Start a task now. Whatever runs stops at the same instant: in the same file that is one write, in another
    * workspace it is a stop and then a start (never two timers at once, even if the app dies between them).
    */
-  start(workspace: Workspace, label: string, task?: string): TimerResult {
+  start(workspace: Workspace, label: string, task?: string, client?: string): TimerResult {
     const now = this.deps.now()
     const year = this.currentStart(workspace)
     if (year === null) return { ok: false, reason: 'outside-year' }
@@ -127,7 +128,7 @@ export class TrackingStore {
       if (!stopped.ok) return stopped
     }
     const result = this.mutate(workspace, year, (y) =>
-      startSession(y, now, label, this.newId(), task)
+      startSession(y, now, label, this.newId(), task, client)
     )
     return result.ok ? { ok: true, running: this.running() } : result
   }
@@ -165,10 +166,11 @@ export class TrackingStore {
     year: string,
     date: string,
     label: string,
-    minutes: number
+    minutes: number,
+    client?: string
   ): YearResult {
     return this.mutate(workspace, year, (y) =>
-      setTaskMinutes(y, date, label, minutes, this.newId())
+      setTaskMinutes(y, date, label, minutes, this.newId(), client)
     )
   }
 
@@ -177,9 +179,21 @@ export class TrackingStore {
     year: string,
     date: string,
     from: string,
+    to: string,
+    client?: string
+  ): YearResult {
+    return this.mutate(workspace, year, (y) => renameTask(y, date, from, to, client))
+  }
+
+  setClient(
+    workspace: Workspace,
+    year: string,
+    date: string,
+    label: string,
+    from: string | undefined,
     to: string
   ): YearResult {
-    return this.mutate(workspace, year, (y) => renameTask(y, date, from, to))
+    return this.mutate(workspace, year, (y) => setClient(y, date, label, from, to))
   }
 
   addTime(
@@ -187,9 +201,12 @@ export class TrackingStore {
     year: string,
     date: string,
     label: string,
-    minutes: number
+    minutes: number,
+    client?: string
   ): YearResult {
-    return this.mutate(workspace, year, (y) => addTime(y, date, label, minutes, this.newId()))
+    return this.mutate(workspace, year, (y) =>
+      addTime(y, date, label, minutes, this.newId(), client)
+    )
   }
 
   setNote(workspace: Workspace, year: string, date: string, note: string): YearResult {

@@ -21,6 +21,8 @@ export interface Session {
   label: string
   /** An entity key (`cc://task/<uid>`) once Tasks exist. */
   task?: string
+  /** Who the time is for: one of the plan's clients (Work only; Research has none). */
+  client?: string
 }
 
 /** Typed time for a task on a day, signed, in multiples of 15 minutes. */
@@ -29,6 +31,7 @@ export interface Adjust {
   date: string
   label: string
   minutes: number
+  client?: string
 }
 
 /** Imported history: a typed total for a day, and a loose note. */
@@ -50,6 +53,11 @@ export interface Plan {
   allowanceDays: number
   /** The whole week's hours are aimed at from its first day (a balance of minus the week's hours), not a share a day. */
   weekAim?: boolean
+  /**
+   * The clients time can be for, in the order shown (Work: Impact, Teaching & Learning). Where there are none (Research),
+   * entries carry no client and nothing about clients is shown.
+   */
+  clients?: string[]
 }
 
 /** The contents of one year's file for one workspace. */
@@ -88,7 +96,8 @@ export const WORK_PLAN: Plan = {
   hoursPerWeek: 480,
   workDays: [1, 2, 3, 4, 5, 6, 7],
   allowanceDays: 0,
-  weekAim: true
+  weekAim: true,
+  clients: ['Impact', 'Teaching & Learning']
 }
 
 /** The plan a workspace's first year starts from. */
@@ -100,7 +109,11 @@ export function emptyYear(start: string, plan: Plan = DEFAULT_PLAN, carryIn = 0)
   return {
     version: 1,
     start,
-    plan: { ...plan, workDays: [...plan.workDays] },
+    plan: {
+      ...plan,
+      workDays: [...plan.workDays],
+      ...(plan.clients ? { clients: [...plan.clients] } : {})
+    },
     carryIn,
     sessions: [],
     adjusts: [],

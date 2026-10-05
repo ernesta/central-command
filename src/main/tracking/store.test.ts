@@ -95,7 +95,8 @@ describe('Work contracts', () => {
       hoursPerWeek: 480,
       workDays: [1, 2, 3, 4, 5, 6, 7],
       allowanceDays: 0,
-      weekAim: true
+      weekAim: true,
+      clients: ['Impact', 'Teaching & Learning']
     })
     expect(read('work', `${START}.json`).weeks).toBe(26)
     expect(store.years('work')).toEqual([START])
@@ -161,6 +162,57 @@ describe('Work contracts', () => {
     expect(store.createContract('work', '2026-10-30', '2027-04-29').ok).toBe(true)
     expect(store.get('work', '2026-10-30').plan.hoursPerWeek).toBe(600)
     expect(store.years('work')).toEqual(['2026-10-30', START])
+  })
+})
+
+describe('clients on Work entries', () => {
+  const START = '2026-09-25'
+  const contract = (): TrackingStore => {
+    const store = open()
+    expect(store.createContract('work', START, '2026-10-22').ok).toBe(true)
+    return store
+  }
+
+  it('saves the client of a timer, of typed time and of a change, and refuses one not on the list', () => {
+    const store = contract()
+    store.start('work', 'Calls', undefined, 'Teaching & Learning')
+    at('2026-09-29', '11:00:00')
+    store.stop()
+    expect(read('work', `${START}.json`).sessions[0].client).toBe('Teaching & Learning')
+    expect(store.addTime('work', START, '2026-09-29', 'Emails', 30, 'Impact').ok).toBe(true)
+    expect(store.addTime('work', START, '2026-09-29', 'Emails', 30, 'Luminos')).toEqual({
+      ok: false,
+      reason: 'bad-client'
+    })
+    expect(
+      store.setClient('work', START, '2026-09-29', 'Calls', 'Teaching & Learning', 'Impact').ok
+    ).toBe(true)
+    const doc = read('work', `${START}.json`)
+    expect(doc.sessions[0].client).toBe('Impact')
+    expect(doc.adjusts.map((a: Doc) => a.client)).toEqual(['Impact'])
+  })
+
+  it('gives a timer started without a client the default one', () => {
+    const store = contract()
+    store.start('work', 'Calls')
+    expect(store.running()?.session.client).toBe('Impact')
+  })
+
+  it('changes the client list through the plan and refuses a bad one', () => {
+    const store = contract()
+    expect(store.setPlan('work', START, { clients: ['Impact', 'Other'] }).ok).toBe(true)
+    expect(read('work', `${START}.json`).plan.clients).toEqual(['Impact', 'Other'])
+    expect(store.setPlan('work', START, { clients: ['Impact', 'impact'] })).toEqual({
+      ok: false,
+      reason: 'bad-plan'
+    })
+  })
+
+  it('leaves Research without clients, whatever is asked', () => {
+    const store = open()
+    store.start('research', 'Reading', undefined, 'Impact')
+    expect(store.running()?.session.client).toBeUndefined()
+    expect(read('research', '2026-27.json').plan.clients).toBeUndefined()
   })
 })
 

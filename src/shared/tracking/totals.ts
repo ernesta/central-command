@@ -1,11 +1,13 @@
 import { addDays, inYear, weeksOf } from '../year'
 import { provisionalMinutes, QUARTER, reportedMinutes, timeToSeconds } from './rounding'
-import { sameLabel } from './timer'
+import { resolveClient, sameTask } from './timer'
 import type { Adjust, Change, Moment, Session, TrackingYear } from './types'
 
 export interface TaskRow {
   /** The first spelling used that day. */
   label: string
+  /** The client the row is for (Work); a task is a label and a client. */
+  client?: string
   minutes: number
   running: boolean
   sessionIds: string[]
@@ -24,10 +26,16 @@ function runningMinutes(s: Session, now: Moment | undefined): number {
 export function dayRows(year: TrackingYear, date: string, now?: Moment): TaskRow[] {
   if (!inYear(date, year.start, year.weeks)) return []
   const rows: TaskRow[] = []
-  const find = (label: string): TaskRow => {
-    let row = rows.find((r) => sameLabel(r.label, label))
+  const find = (label: string, client: string | undefined): TaskRow => {
+    let row = rows.find((r) => sameTask(r, label, client))
     if (!row) {
-      row = { label: label.trim(), minutes: 0, running: false, sessionIds: [] }
+      row = {
+        label: label.trim(),
+        ...(client !== undefined ? { client } : {}),
+        minutes: 0,
+        running: false,
+        sessionIds: []
+      }
       rows.push(row)
     }
     return row
@@ -37,14 +45,14 @@ export function dayRows(year: TrackingYear, date: string, now?: Moment): TaskRow
     .map((s, i) => ({ s, i }))
     .sort((a, b) => (timeToSeconds(a.s.start) ?? 0) - (timeToSeconds(b.s.start) ?? 0) || a.i - b.i)
   for (const { s } of sessions) {
-    const row = find(s.label)
+    const row = find(s.label, s.client)
     row.sessionIds.push(s.id)
     if (s.end === null) {
       row.running = true
       row.minutes += runningMinutes(s, now)
     } else row.minutes += reportedMinutes(s)
   }
-  for (const a of year.adjusts) if (a.date === date) find(a.label).minutes += a.minutes
+  for (const a of year.adjusts) if (a.date === date) find(a.label, a.client).minutes += a.minutes
   return rows.filter((r) => r.minutes !== 0 || r.running)
 }
 
@@ -60,6 +68,39 @@ export function minutesByDate(year: TrackingYear, now?: Moment): Map<string, num
   for (const a of year.adjusts) add(a.date, a.minutes)
   for (const [date, d] of Object.entries(year.days)) add(date, d.minutes ?? 0)
   return map
+}
+
+/**
+ * Reported minutes per client between two days (inclusive), in the plan's order, then any other name an entry carries,
+ * then time with no client (older entries, and an imported day's typed total) last. Only clients with time are listed.
+ */
+export function minutesByClient(
+  year: TrackingYear,
+  from: string,
+  to: string,
+  now?: Moment
+): { client: string | null; minutes: number }[] {
+  const sums = new Map<string | null, number>()
+  const add = (date: string, client: string | undefined, minutes: number): void => {
+    if (minutes === 0 || date < from || date > to || !inYear(date, year.start, year.weeks)) return
+    sums.set(client ?? null, (sums.get(client ?? null) ?? 0) + minutes)
+  }
+  for (const s of year.sessions)
+    add(s.date, s.client, s.end === null ? runningMinutes(s, now) : reportedMinutes(s))
+  for (const a of year.adjusts) add(a.date, a.client, a.minutes)
+  for (const [date, d] of Object.entries(year.days)) add(date, undefined, d.minutes ?? 0)
+  const order = year.plan.clients ?? []
+  const rank = (client: string | null): number =>
+    client === null
+      ? order.length + 1
+      : order.includes(client)
+        ? order.indexOf(client)
+        : order.length
+  return [...sums]
+    .map(([client, minutes]) => ({ client, minutes }))
+    .sort(
+      (a, b) => rank(a.client) - rank(b.client) || (a.client ?? '').localeCompare(b.client ?? '')
+    )
 }
 
 export function dayMinutes(year: TrackingYear, date: string, now?: Moment): number {
@@ -111,14 +152,16 @@ function validQuarter(minutes: number): boolean {
 /**
  * Set a task's time for a day to exactly what was typed. It is saved as one adjustment equal to the difference
  * from the timer's time, so the row shows what was typed and later timer time adds on top. Nothing else moves:
- * no other session, task or day is recalculated, and the rounding carry is not touched.
+ * no other session, task or day is recalculated, and the rounding carry is not touched. `client` is the row's own, as
+ * shown: a row with none (older time) stays without.
  */
 export function setTaskMinutes(
   year: TrackingYear,
   date: string,
   label: string,
   minutes: number,
-  id: string
+  id: string,
+  client?: string
 ): Change {
   const name = label.trim()
   if (!name) return { ok: false, reason: 'empty-label' }
@@ -126,11 +169,24 @@ export function setTaskMinutes(
   if (minutes < 0 || !validQuarter(minutes)) return { ok: false, reason: 'not-a-quarter' }
   let timer = 0
   for (const s of year.sessions)
-    if (s.date === date && s.end !== null && sameLabel(s.label, name)) timer += reportedMinutes(s)
-  const others = year.adjusts.filter((a) => !(a.date === date && sameLabel(a.label, name)))
-  const diff = minutes - timer
+    if (s.date === date && s.end !== null && sameTask(s, name, client)) timer += reportedMinutes(s)
+  const match = (a: Adjust): boolean => a.date === date && sameTask(a, name, client)
+  // The new adjustment takes the place of the first it replaces, so a row does not move when its time is retyped.
+  const first = year.adjusts.findIndex(match)
+  const others = year.adjusts.filter((a) => !match(a))
+  const entry: Adjust = {
+    id,
+    date,
+    label: name,
+    minutes: minutes - timer,
+    ...(client !== undefined ? { client } : {})
+  }
   const adjusts: Adjust[] =
-    diff === 0 ? others : [...others, { id, date, label: name, minutes: diff }]
+    minutes === timer
+      ? others
+      : first < 0
+        ? [...others, entry]
+        : [...others.slice(0, first), entry, ...others.slice(first)]
   return { ok: true, year: { ...year, adjusts } }
 }
 
@@ -140,16 +196,23 @@ export function addTime(
   date: string,
   label: string,
   minutes: number,
-  id: string
+  id: string,
+  client?: string
 ): Change {
   const name = label.trim()
   if (!name) return { ok: false, reason: 'empty-label' }
   if (!inYear(date, year.start, year.weeks)) return { ok: false, reason: 'outside-year' }
   if (minutes <= 0 || !validQuarter(minutes)) return { ok: false, reason: 'not-a-quarter' }
-  return {
-    ok: true,
-    year: { ...year, adjusts: [...year.adjusts, { id, date, label: name, minutes }] }
+  const chosen = resolveClient(year, client)
+  if (!chosen.ok) return chosen
+  const adjust: Adjust = {
+    id,
+    date,
+    label: name,
+    minutes,
+    ...(chosen.client !== undefined ? { client: chosen.client } : {})
   }
+  return { ok: true, year: { ...year, adjusts: [...year.adjusts, adjust] } }
 }
 
 /** A day's short note. An empty one removes it; a day left with nothing is dropped. */

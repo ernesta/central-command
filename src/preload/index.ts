@@ -167,19 +167,29 @@ const api: Api = {
     years: (workspace) => ipcRenderer.invoke(TRACKING_IPC.years, workspace),
     get: (workspace, year) => ipcRenderer.invoke(TRACKING_IPC.get, workspace, year),
     running: () => ipcRenderer.invoke(TRACKING_IPC.running),
-    start: (workspace, label, task) =>
-      ipcRenderer.invoke(TRACKING_IPC.start, workspace, label, task),
+    start: (workspace, label, task, client) =>
+      ipcRenderer.invoke(TRACKING_IPC.start, workspace, label, task, client),
     stop: () => ipcRenderer.invoke(TRACKING_IPC.stop),
     endAt: (workspace, year, id, time) =>
       ipcRenderer.invoke(TRACKING_IPC.endAt, workspace, year, id, time),
     deleteSession: (workspace, year, id) =>
       ipcRenderer.invoke(TRACKING_IPC.deleteSession, workspace, year, id),
-    setTaskMinutes: (workspace, year, date, label, minutes) =>
-      ipcRenderer.invoke(TRACKING_IPC.setTaskMinutes, workspace, year, date, label, minutes),
-    renameTask: (workspace, year, date, from, to) =>
-      ipcRenderer.invoke(TRACKING_IPC.renameTask, workspace, year, date, from, to),
-    addTime: (workspace, year, date, label, minutes) =>
-      ipcRenderer.invoke(TRACKING_IPC.addTime, workspace, year, date, label, minutes),
+    setTaskMinutes: (workspace, year, date, label, minutes, client) =>
+      ipcRenderer.invoke(
+        TRACKING_IPC.setTaskMinutes,
+        workspace,
+        year,
+        date,
+        label,
+        minutes,
+        client
+      ),
+    renameTask: (workspace, year, date, from, to, client) =>
+      ipcRenderer.invoke(TRACKING_IPC.renameTask, workspace, year, date, from, to, client),
+    setClient: (workspace, year, date, label, from, to) =>
+      ipcRenderer.invoke(TRACKING_IPC.setClient, workspace, year, date, label, from, to),
+    addTime: (workspace, year, date, label, minutes, client) =>
+      ipcRenderer.invoke(TRACKING_IPC.addTime, workspace, year, date, label, minutes, client),
     setNote: (workspace, year, date, note) =>
       ipcRenderer.invoke(TRACKING_IPC.setNote, workspace, year, date, note),
     createContract: (workspace, start, end) =>

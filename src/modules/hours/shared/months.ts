@@ -1,5 +1,5 @@
 import { weekPlan } from '@shared/tracking/plan'
-import { weeklyMinutes } from '@shared/tracking/totals'
+import { minutesByClient, weeklyMinutes } from '@shared/tracking/totals'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
 
 const MONTH_NAMES = [
@@ -43,6 +43,8 @@ export interface ContractMonth {
   minutes: number
   /** The month's whole plan: its weeks' plans, in minutes. */
   plan: number
+  /** Minutes per client (Work), only those with time; none where the plan has no clients. */
+  clients: { client: string | null; minutes: number }[]
 }
 
 /** The months of a contract with their weeks, hours and plan, oldest first. */
@@ -65,10 +67,14 @@ export function monthsOf(year: TrackingYear, now?: Moment): ContractMonth[] {
         to: w.to,
         weeks: [week],
         minutes: week.minutes,
-        plan: week.plan
+        plan: week.plan,
+        clients: []
       })
     }
   }
+  // Clients are counted over the month's own days, so they add up to the month's minutes.
+  if ((year.plan.clients ?? []).length > 0)
+    for (const m of months) m.clients = minutesByClient(year, m.from, m.to, now)
   return months
 }
 

@@ -29,7 +29,7 @@ export interface TrackingApi {
   /** The running timer, wherever it is. */
   running(): Promise<RunningTimer | null>
   /** Start a task now; a running one stops at the same instant, even in another workspace. */
-  start(workspace: Workspace, label: string, task?: string): Promise<TimerResult>
+  start(workspace: Workspace, label: string, task?: string, client?: string): Promise<TimerResult>
   stop(): Promise<TimerResult>
   /** Give a session left running on an earlier day its end time. */
   endAt(workspace: Workspace, year: string, id: string, time: string): Promise<TimerResult>
@@ -39,7 +39,8 @@ export interface TrackingApi {
     year: string,
     date: string,
     label: string,
-    minutes: number
+    minutes: number,
+    client?: string
   ): Promise<YearResult>
   /** Rename a task for one day (every block and typed time of it); a name already used that day merges the two. */
   renameTask(
@@ -47,6 +48,16 @@ export interface TrackingApi {
     year: string,
     date: string,
     from: string,
+    to: string,
+    client?: string
+  ): Promise<YearResult>
+  /** Change the client of a task for one day (`from` is its client now, none for older time); the new one is on the plan's list. */
+  setClient(
+    workspace: Workspace,
+    year: string,
+    date: string,
+    label: string,
+    from: string | undefined,
     to: string
   ): Promise<YearResult>
   addTime(
@@ -54,7 +65,8 @@ export interface TrackingApi {
     year: string,
     date: string,
     label: string,
-    minutes: number
+    minutes: number,
+    client?: string
   ): Promise<YearResult>
   setNote(workspace: Workspace, year: string, date: string, note: string): Promise<YearResult>
   setPlan(workspace: Workspace, year: string, plan: Partial<Plan>): Promise<YearResult>
@@ -91,6 +103,7 @@ export const TRACKING_IPC = {
   deleteSession: 'tracking:delete-session',
   setTaskMinutes: 'tracking:set-task-minutes',
   renameTask: 'tracking:rename-task',
+  setClient: 'tracking:set-client',
   addTime: 'tracking:add-time',
   setNote: 'tracking:set-note',
   setPlan: 'tracking:set-plan',

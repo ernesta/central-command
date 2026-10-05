@@ -15,6 +15,10 @@ function text(value: unknown): string {
   return value
 }
 
+function optionalText(value: unknown): string | undefined {
+  return value === undefined || value === null ? undefined : text(value)
+}
+
 function whole(value: unknown): number {
   if (typeof value !== 'number' || !Number.isInteger(value))
     throw new Error('Expected a whole number')
@@ -33,8 +37,8 @@ export function registerTrackingIpc(store: TrackingStore): void {
   h(TRACKING_IPC.years, (_e, ws) => store.years(workspace(ws)))
   h(TRACKING_IPC.get, (_e, ws, year) => store.get(workspace(ws), text(year)))
   h(TRACKING_IPC.running, () => store.running())
-  h(TRACKING_IPC.start, (_e, ws, label, task) =>
-    store.start(workspace(ws), text(label), task === undefined ? undefined : text(task))
+  h(TRACKING_IPC.start, (_e, ws, label, task, client) =>
+    store.start(workspace(ws), text(label), optionalText(task), optionalText(client))
   )
   h(TRACKING_IPC.stop, () => store.stop())
   h(TRACKING_IPC.endAt, (_e, ws, year, id, time) =>
@@ -43,14 +47,45 @@ export function registerTrackingIpc(store: TrackingStore): void {
   h(TRACKING_IPC.deleteSession, (_e, ws, year, id) =>
     store.deleteSession(workspace(ws), text(year), text(id))
   )
-  h(TRACKING_IPC.setTaskMinutes, (_e, ws, year, date, label, minutes) =>
-    store.setTaskMinutes(workspace(ws), text(year), text(date), text(label), whole(minutes))
+  h(TRACKING_IPC.setTaskMinutes, (_e, ws, year, date, label, minutes, client) =>
+    store.setTaskMinutes(
+      workspace(ws),
+      text(year),
+      text(date),
+      text(label),
+      whole(minutes),
+      optionalText(client)
+    )
   )
-  h(TRACKING_IPC.renameTask, (_e, ws, year, date, from, to) =>
-    store.renameTask(workspace(ws), text(year), text(date), text(from), text(to))
+  h(TRACKING_IPC.renameTask, (_e, ws, year, date, from, to, client) =>
+    store.renameTask(
+      workspace(ws),
+      text(year),
+      text(date),
+      text(from),
+      text(to),
+      optionalText(client)
+    )
   )
-  h(TRACKING_IPC.addTime, (_e, ws, year, date, label, minutes) =>
-    store.addTime(workspace(ws), text(year), text(date), text(label), whole(minutes))
+  h(TRACKING_IPC.setClient, (_e, ws, year, date, label, from, to) =>
+    store.setClient(
+      workspace(ws),
+      text(year),
+      text(date),
+      text(label),
+      optionalText(from),
+      text(to)
+    )
+  )
+  h(TRACKING_IPC.addTime, (_e, ws, year, date, label, minutes, client) =>
+    store.addTime(
+      workspace(ws),
+      text(year),
+      text(date),
+      text(label),
+      whole(minutes),
+      optionalText(client)
+    )
   )
   h(TRACKING_IPC.setNote, (_e, ws, year, date, note) =>
     store.setNote(workspace(ws), text(year), text(date), text(note))
@@ -60,7 +95,8 @@ export function registerTrackingIpc(store: TrackingStore): void {
     return store.setPlan(workspace(ws), text(year), {
       ...(p.hoursPerWeek !== undefined ? { hoursPerWeek: whole(p.hoursPerWeek) } : {}),
       ...(p.allowanceDays !== undefined ? { allowanceDays: whole(p.allowanceDays) } : {}),
-      ...(Array.isArray(p.workDays) ? { workDays: p.workDays.map(whole) } : {})
+      ...(Array.isArray(p.workDays) ? { workDays: p.workDays.map(whole) } : {}),
+      ...(Array.isArray(p.clients) ? { clients: p.clients.map(text) } : {})
     })
   })
   h(TRACKING_IPC.createContract, (_e, ws, start, end) =>

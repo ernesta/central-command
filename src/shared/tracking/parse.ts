@@ -22,6 +22,13 @@ export function parsePlan(raw: unknown): Plan | null {
   if (!workDays.every((d) => isInt(d) && d >= 1 && d <= 7)) return null
   if (!isInt(allowanceDays) || allowanceDays < 0 || allowanceDays > 366) return null
   if (raw.weekAim !== undefined && typeof raw.weekAim !== 'boolean') return null
+  if (raw.clients !== undefined) {
+    const { clients } = raw
+    if (!Array.isArray(clients) || clients.length > 20) return null
+    if (!clients.every((c) => isString(c) && c.trim() !== '' && c === c.trim())) return null
+    const lower = clients.map((c: string) => c.toLowerCase())
+    if (new Set(lower).size !== lower.length) return null
+  }
   return {
     ...raw,
     hoursPerWeek,
@@ -71,11 +78,17 @@ export function parseYear(raw: unknown): TrackingYear | null {
       (s.end === null || isTime(s.end)) &&
       (s.minutes === undefined || (isInt(s.minutes) && s.minutes >= 0)) &&
       isString(s.label) &&
-      (s.task === undefined || isString(s.task))
+      (s.task === undefined || isString(s.task)) &&
+      (s.client === undefined || isString(s.client))
   )
   const adjusts = list(
     raw.adjusts,
-    (a) => isString(a.id) && isDate(a.date) && isString(a.label) && isInt(a.minutes)
+    (a) =>
+      isString(a.id) &&
+      isDate(a.date) &&
+      isString(a.label) &&
+      isInt(a.minutes) &&
+      (a.client === undefined || isString(a.client))
   )
   const days = record(
     raw.days,

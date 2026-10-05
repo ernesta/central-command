@@ -79,3 +79,29 @@ describe('monthsOf for a contract that runs Wednesday to Tuesday', () => {
     expect(months.map((m) => m.plan)).toEqual([2400, 1920, 2400, 1920, 1920, 1920])
   })
 })
+
+describe('clients in a month', () => {
+  const y = {
+    ...contract,
+    adjusts: [
+      { id: 'a', date: '2026-10-02', label: 'x', minutes: 300, client: 'Impact' },
+      { id: 'b', date: '2026-10-29', label: 'y', minutes: 60, client: 'Teaching & Learning' },
+      { id: 'c', date: '2026-09-30', label: 'z', minutes: 90, client: 'Impact' }
+    ]
+  }
+
+  it('totals each client over the month, adding up to the month', () => {
+    const months = monthsOf(y)
+    const oct = months.find((m) => m.name === 'October')!
+    expect(oct.clients).toEqual([
+      { client: 'Impact', minutes: 300 },
+      { client: 'Teaching & Learning', minutes: 60 }
+    ])
+    for (const m of months) expect(m.clients.reduce((n, c) => n + c.minutes, 0)).toBe(m.minutes)
+  })
+
+  it('has none where the plan has no clients', () => {
+    const research = { ...y, plan: { ...y.plan, clients: undefined } }
+    expect(monthsOf(research).every((m) => m.clients.length === 0)).toBe(true)
+  })
+})
