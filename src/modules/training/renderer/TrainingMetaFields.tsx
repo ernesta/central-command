@@ -1,4 +1,5 @@
 import { TimeInput } from '@renderer/components/TimeInput'
+import { endFollowingStart } from '@renderer/components/time-input'
 import { Segmented } from '@renderer/components/Segmented'
 import { PeopleField } from '@renderer/components/PeopleField'
 import { ComboField } from '@renderer/components/ComboField'
@@ -57,7 +58,12 @@ export function TrainingMetaFields({
     key: 'start' | 'end'
   ): { value: string; onChange: (time: string | null) => void } => ({
     value: meta[key] ?? '',
-    onChange: (time) => onChange({ [key]: time })
+    onChange: (time) =>
+      onChange(
+        key === 'start'
+          ? { start: time, end: endFollowingStart(meta.start, time, meta.end) }
+          : { end: time }
+      )
   })
 
   return (

@@ -17,3 +17,23 @@ export function stepTime(value: string, part: 'hours' | 'minutes', direction: 1 
   const minutes = part === 'minutes' ? (m + direction * 15 + 60) % 60 : m
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
 }
+
+const addHour = (time: string): string => {
+  const [h, m] = time.split(':').map(Number)
+  return h >= 23 ? '23:59' : `${String(h + 1).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+}
+
+/**
+ * The end after the start changes: an empty end, or one still sitting an hour after the old start (so it was filled in
+ * by this rule and the start is still being typed), follows the new start by an hour, since most meetings and trainings
+ * take one. An end the user set differently is left alone.
+ */
+export function endFollowingStart(
+  oldStart: string | null,
+  newStart: string | null,
+  end: string | null
+): string | null {
+  if (!newStart) return end
+  const untouched = !end || (oldStart !== null && end === addHour(oldStart))
+  return untouched ? addHour(newStart) : end
+}

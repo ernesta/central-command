@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseTime, stepTime } from './time-input'
+import { endFollowingStart, parseTime, stepTime } from './time-input'
 
 describe('parseTime', () => {
   it('reads typed times in the usual shapes', () => {
@@ -28,5 +28,21 @@ describe('stepTime', () => {
   it('starts an empty time at 09:00', () => {
     expect(stepTime('', 'hours', 1)).toBe('10:00')
     expect(stepTime('', 'minutes', 1)).toBe('09:15')
+  })
+})
+
+describe('endFollowingStart', () => {
+  it('fills an empty end an hour after the start', () => {
+    expect(endFollowingStart(null, '13:00', null)).toBe('14:00')
+  })
+  it('keeps following the start while it is still being typed', () => {
+    expect(endFollowingStart('01:00', '13:00', '02:00')).toBe('14:00')
+  })
+  it('leaves an end the user set alone', () => {
+    expect(endFollowingStart('13:00', '13:30', '16:00')).toBe('16:00')
+  })
+  it('leaves the end when the start is cleared and caps at the end of the day', () => {
+    expect(endFollowingStart('13:00', null, '14:00')).toBe('14:00')
+    expect(endFollowingStart(null, '23:30', null)).toBe('23:59')
   })
 })

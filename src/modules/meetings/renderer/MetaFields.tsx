@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { TimeInput } from '@renderer/components/TimeInput'
+import { endFollowingStart } from '@renderer/components/time-input'
 import {
   tracksSkills,
   type MeetingMeta,
@@ -54,7 +55,12 @@ export function MetaFields({
     key: 'start' | 'end'
   ): { value: string; onChange: (time: string | null) => void } => ({
     value: meta[key] ?? '',
-    onChange: (time) => onChange({ [key]: time })
+    onChange: (time) =>
+      onChange(
+        key === 'start'
+          ? { start: time, end: endFollowingStart(meta.start, time, meta.end) }
+          : { end: time }
+      )
   })
 
   return (
