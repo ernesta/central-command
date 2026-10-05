@@ -14,6 +14,9 @@ ask the user.
 - `npm run import:work-hours -- --sheet <xlsx> --logs <Activity Logs folder> [--detail YYYY-MM] [--apply]`: import the Work sheet "Time Tracking" into two contracts (one entry
   per row with its client), checked against the monthly Word activity logs (dry run by default; macOS only; never overwrites a contract that holds data; `--apply` only when the
   user says so, app closed; applied on 5 Oct 2026 (both contracts, 128 + 84 entries), so a dry run now reports both as already holding data and writes nothing)
+- `npm run import:clickup -- --file <csv> [--apply]`: import the ClickUp export into Tasks (SQLite; dry run by default; de-duplicates by Task ID and stops if two rows with one id
+  differ; never adds to a store that holds tasks; `--apply` only when the user says so, app closed; the report must show 2,193 -> 1,211 rows, 1,082/98/31 by status,
+  663/548 top-level/subtasks and 1,612.8 h across 628 tasks)
 - `npm run import:notes -- --vault <path> [--workspace work] [--apply]`: import the free notes (Data Sources, Ideas, Thesis, Placement; with
   `--workspace work`, the loose notes plus Admin & Compliance) from an Obsidian
   vault into Notes, all ungrouped (dry run by default; only ever creates files)
@@ -237,7 +240,7 @@ themselves (never edit their note). Read the existing summaries first (`~/Centra
 and match them. Summarise `## Notes` only, never `## Previous TODOs`.
 
 - **Meetings**: one to two lines, no bullets, no names, decisions or details: `Key topics: <topic>, <topic>. Next steps: <the main work
-  to do next, short>. Next meeting <Mon D, YYYY>.` Example: "Key topics: Study 1 paper introduction feedback. Next steps: Study 1 introduction
+to do next, short>. Next meeting <Mon D, YYYY>.` Example: "Key topics: Study 1 paper introduction feedback. Next steps: Study 1 introduction
   and discussion draft. Next meeting Jul 29, 2026." Topics are short noun phrases (the `discussed` list is a good source); leave out
   "Next meeting" when the notes give no date.
 - **Training**: one or two plain sentences on what the session covered, e.g. "Introduction to plotly, styling and customising plotly

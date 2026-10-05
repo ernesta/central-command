@@ -110,7 +110,8 @@ export class TasksStore {
       status,
       priority,
       due: checkDue(input.due),
-      completedAt: status === 'done' ? (input.completedAt ?? now) : null,
+      completedAt:
+        status === 'done' ? (input.completedAt !== undefined ? input.completedAt : now) : null,
       list,
       sublist,
       parentUid,

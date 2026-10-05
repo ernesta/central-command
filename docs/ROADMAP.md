@@ -1,6 +1,6 @@
 # Roadmap
 
-**Tasks (5 Oct 2026): being built in an unattended run (stages 1 to 7 and the buildable part of 9; stage 8 waits for the user).** Status: stage 1 (store and rules) done 5 Oct 2026. The plan is `docs/TASKS_PLAN.md`, the approved mockup `docs/design/tasks-mockup.html`; decisions are in `docs/DECISIONS.md`, "Tasks: plan and mockup" and its stage write-ups.
+**Tasks (5 Oct 2026): being built in an unattended run (stages 1 to 7 and the buildable part of 9; stage 8 waits for the user).** Status: stages 1 (store and rules) and 2 (importer, `npm run import:clickup`, dry-run on the real CSV and applied to a scratch library only) done 5 Oct 2026. The plan is `docs/TASKS_PLAN.md`, the approved mockup `docs/design/tasks-mockup.html`; decisions are in `docs/DECISIONS.md`, "Tasks: plan and mockup" and its stage write-ups.
 
 **Live markup in the notes editor, the Typora way (requested 30 Sep 2026): finished.** All nine stages are done (`docs/EDITOR_LIVE_MARKUP_PLAN.md`; decision in `docs/DECISIONS.md`, "Notes editor: CodeMirror 6, with the Markdown text as the document"). `LiveEditor` (CodeMirror 6, the Markdown text is the document) is the only editor in every module; Milkdown and its packages are gone. Everything is pushed. What is left is your review of stages 7 and 8 and the open questions, all in "For the user" below.
 
@@ -233,6 +233,8 @@ Choices the plan left open, made conservatively; change any of them by telling C
 - A series is tracked by `series_uid` (an addition to the plan's data model); completing a task never starts a second open instance of its series.
 - A subtask stores no list (`''`) and shows its parent's; a dated subtask copied into the next occurrence keeps its distance from the parent's due date, an undated parent gives it none.
 - Completing a parent does not complete its subtasks.
+- Importer: the export's `Subtasks IDs` is empty for most parents, so it is only checked where filled (6 disagree: a subtask added later). ClickUp's literal `\n` in task text becomes a line break. The 2 attachments become links at the end of the description. Done tasks get no completed date (the export has none). A subtask's list is dropped (it shows its parent's).
+- Importer counts differ slightly from the plan: 270 subtask dates repeat the parent's (the plan said 295) and 2 parents take a subtask's date (the plan said 4); the rest of the plan's numbers match exactly.
 
 ## TODOs
 
