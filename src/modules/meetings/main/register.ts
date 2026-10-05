@@ -150,6 +150,14 @@ function register({ db, paths }: MainContext): () => void {
     if (typeof baseHash !== 'string') throw new Error('Invalid sync request')
     return store.syncPreviousTodos(asRef(ref), baseHash)
   })
+  ipcMain.handle(MEETINGS_IPC.tickTodo, (_event, ref: unknown, todo: unknown) => {
+    const o = asObject(todo, 'todo')
+    if (typeof o.text !== 'string' || !Array.isArray(o.owners)) throw new Error('Invalid TODO')
+    return store.tickTodo(asRef(ref), {
+      owners: o.owners.filter((x): x is string => typeof x === 'string'),
+      text: o.text
+    })
+  })
   ipcMain.handle(MEETINGS_IPC.peopleList, () => people.list())
   ipcMain.handle(MEETINGS_IPC.peopleAdd, (_event, input: unknown) => {
     const o = asObject(input, 'person')

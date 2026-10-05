@@ -4,41 +4,47 @@
   padding: 0;
   list-style: none;
 }
-.row {
+.item {
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: baseline;
-  gap: 8px 12px;
-  padding: 11px 20px;
+  gap: 0 12px;
+  padding-left: 20px;
   border-bottom: 1px solid var(--border-faint);
-  color: inherit;
-  font-size: var(--text-14);
-  text-decoration: none;
   transition: background var(--transition-fast);
 }
-li:last-child .row {
+.item:hover {
+  background: var(--hover-tint);
+}
+.item:last-child {
   border-bottom: 0;
   border-radius: 0 0 calc(var(--radius-card) - 1px) calc(var(--radius-card) - 1px);
 }
-li:first-child .row {
+.item:first-child {
   border-radius: calc(var(--radius-card) - 1px) calc(var(--radius-card) - 1px) 0 0;
 }
-li:only-child .row {
+.item:only-child {
   border-radius: calc(var(--radius-card) - 1px);
 }
-.row:hover {
-  background: var(--hover-tint);
+.box {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+  transform: translateY(2px);
+}
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 8px 12px;
+  padding: 11px 20px 11px 0;
+  color: inherit;
+  font-size: var(--text-14);
+  text-decoration: none;
 }
 .row:focus-visible {
   outline-offset: -2px;
-}
-/* Read-only: a plain ring, not a checkbox. Ticking happens in the next meeting's Previous TODOs. */
-.ring {
-  width: 15px;
-  height: 15px;
-  border: 1.5px solid var(--border-strong);
-  border-radius: 4px;
-  transform: translateY(2px);
 }
 .text {
   min-width: 0;

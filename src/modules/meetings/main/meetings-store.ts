@@ -28,6 +28,7 @@ import type {
   SyncPreviousResult
 } from '../shared/api'
 import { carryOver, findPreviousMeeting } from '../shared/carry-over'
+import { tickTodo } from '../shared/todo-boxes'
 import {
   MEETING_MODES,
   MEETING_WORKSPACES,
@@ -242,6 +243,15 @@ export class MeetingsStore {
     return result.status === 'saved'
       ? { status: 'saved', hash: result.hash, added: added.length }
       : result
+  }
+
+  /** See `MeetingsApi.tickTodo`. */
+  async tickTodo(ref: MeetingRef, todo: { owners: string[]; text: string }): Promise<void> {
+    const file = await this.read(ref)
+    const body = tickTodo(file.body, todo)
+    if (body === null) throw new MeetingError('That TODO is no longer in the meeting')
+    const result = await this.save(ref, { body }, file.note.hash)
+    if (result.status === 'conflict') throw new MeetingError('The meeting changed; try again')
   }
 
   /**

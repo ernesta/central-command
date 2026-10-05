@@ -619,3 +619,33 @@ describe('renaming when the date or series changes', () => {
     await expect(store.read(m.ref)).rejects.toThrow('not found')
   })
 })
+
+describe('tickTodo', () => {
+  it('ticks the TODO in the file, reindexes it, and changes nothing else', async () => {
+    const m = await store.create({
+      workspace: 'research',
+      series: 'Supervision',
+      date: '2026-09-24',
+      body: 'Intro\n**TODO(EO)**: write it\n- [ ] **TODO(KR)**: read it\nOutro\n'
+    })
+    await store.tickTodo(m.ref, { owners: ['EO'], text: 'write it' })
+    expect(splitNote(disk('2026-09-24 Supervision')).body).toBe(
+      'Intro\n- [x] **TODO(EO)**: write it\n- [ ] **TODO(KR)**: read it\nOutro\n'
+    )
+    const row = getMeetingRow(db, 'research', '2026-09-24 Supervision')
+    expect(row?.todos.filter((t) => !t.done).map((t) => t.text)).toEqual(['read it'])
+  })
+  it('refuses a TODO that is no longer there, and leaves the file alone', async () => {
+    const m = await store.create({
+      workspace: 'research',
+      series: 'Supervision',
+      date: '2026-09-24',
+      body: '- [x] **TODO**: a\n'
+    })
+    const before = disk('2026-09-24 Supervision')
+    await expect(store.tickTodo(m.ref, { owners: [], text: 'a' })).rejects.toBeInstanceOf(
+      MeetingError
+    )
+    expect(disk('2026-09-24 Supervision')).toBe(before)
+  })
+})

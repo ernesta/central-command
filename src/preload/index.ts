@@ -82,6 +82,7 @@ const api: Api = {
     ensureUid: (ref) => ipcRenderer.invoke(MEETINGS_IPC.ensureUid, ref),
     syncPreviousTodos: (ref, baseHash) =>
       ipcRenderer.invoke(MEETINGS_IPC.syncPrevious, ref, baseHash),
+    tickTodo: (ref, todo) => ipcRenderer.invoke(MEETINGS_IPC.tickTodo, ref, todo),
     exportPdf: (workspace, year) => ipcRenderer.invoke(MEETINGS_IPC.exportPdf, workspace, year),
     people: {
       list: () => ipcRenderer.invoke(MEETINGS_IPC.peopleList),

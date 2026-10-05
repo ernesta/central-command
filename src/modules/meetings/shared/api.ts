@@ -101,6 +101,11 @@ export interface MeetingsApi {
    */
   syncPreviousTodos(ref: MeetingRef, baseHash: string): Promise<SyncPreviousResult>
   /**
+   * Tick a TODO in the meeting where it is listed (a plain-text TODO becomes a checkbox first). Reads the file afresh and
+   * changes only the lines of that TODO; rejects when the TODO is no longer there or the file changed while it ran.
+   */
+  tickTodo(ref: MeetingRef, todo: { owners: string[]; text: string }): Promise<void>
+  /**
    * Ask where to save, then write the workspace's meetings log of a year (its start date) as
    * a PDF. Research's is filtered to the Supervision series; Work's covers every meeting.
    */
@@ -137,6 +142,7 @@ export const MEETINGS_IPC = {
   move: 'meetings:move',
   ensureUid: 'meetings:ensure-uid',
   syncPrevious: 'meetings:sync-previous',
+  tickTodo: 'meetings:tick-todo',
   exportPdf: 'meetings:export-pdf',
   peopleList: 'meetings:people-list',
   peopleAdd: 'meetings:people-add',

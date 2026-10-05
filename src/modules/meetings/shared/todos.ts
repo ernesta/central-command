@@ -41,7 +41,7 @@ function codeSpans(line: string): [number, number][] {
   return spans
 }
 
-interface Marker {
+export interface Marker {
   index: number
   end: number
   owners: string[]
@@ -49,7 +49,7 @@ interface Marker {
   ownersAt: [number, number] | null
 }
 
-function findMarkers(line: string): Marker[] {
+export function findMarkers(line: string): Marker[] {
   const spans = codeSpans(line)
   const found: Marker[] = []
   for (const m of line.matchAll(MARKER)) {

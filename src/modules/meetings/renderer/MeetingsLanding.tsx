@@ -119,8 +119,8 @@ export function MeetingsLanding(): React.JSX.Element {
               )}
             </LandingBox>
             <LandingHint>
-              Picked up from the TODOs you write in your notes. To tick one off, open the next
-              meeting of that series: it lists them under “Previous TODOs”.
+              Picked up from the TODOs you write in your notes. Tick one to mark it done in its
+              meeting.
             </LandingHint>
           </LandingSection>
 
