@@ -1,6 +1,6 @@
 # Roadmap
 
-**Tasks (5 Oct 2026): planned and designed, not started.** The user is leaving ClickUp (renewal within days; their export is `~/CentralCommand/imports/clickup/*.csv`). The plan is `docs/TASKS_PLAN.md` (stages 1 to 9) and the approved mockup is `docs/design/tasks-mockup.html`; decisions are in `docs/DECISIONS.md`, "Tasks: plan and mockup". Stage 8 (Work hours to tasks) waits for the user's answer.
+**Tasks (5 Oct 2026): being built in an unattended run (stages 1 to 7 and the buildable part of 9; stage 8 waits for the user).** Status: stage 1 (store and rules) done 5 Oct 2026. The plan is `docs/TASKS_PLAN.md`, the approved mockup `docs/design/tasks-mockup.html`; decisions are in `docs/DECISIONS.md`, "Tasks: plan and mockup" and its stage write-ups.
 
 **Live markup in the notes editor, the Typora way (requested 30 Sep 2026): finished.** All nine stages are done (`docs/EDITOR_LIVE_MARKUP_PLAN.md`; decision in `docs/DECISIONS.md`, "Notes editor: CodeMirror 6, with the Markdown text as the document"). `LiveEditor` (CodeMirror 6, the Markdown text is the document) is the only editor in every module; Milkdown and its packages are gone. Everything is pushed. What is left is your review of stages 7 and 8 and the open questions, all in "For the user" below.
 
@@ -224,6 +224,15 @@ output — this instruction to "go ahead and work" while they are away is not th
 specifically, because applying an import is exactly the kind of hard-to-reverse, real-data action CLAUDE.md asks to
 confirm first. Get everything else in this list built and working; leave the Work import at "dry run reviewed and
 ready for `--apply`" and say so plainly when you report back.
+
+## Tasks: decisions to review (unattended run, 5 Oct 2026)
+
+Choices the plan left open, made conservatively; change any of them by telling Claude.
+
+- The trash is the `deleted_at` column (a deleted task and its subtasks keep their rows and can be restored); only a task never written in is removed for real.
+- A series is tracked by `series_uid` (an addition to the plan's data model); completing a task never starts a second open instance of its series.
+- A subtask stores no list (`''`) and shows its parent's; a dated subtask copied into the next occurrence keeps its distance from the parent's due date, an undated parent gives it none.
+- Completing a parent does not complete its subtasks.
 
 ## TODOs
 

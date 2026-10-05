@@ -6,6 +6,7 @@ import { meetingsMainModule } from './meetings/main/register'
 import { notesMainModule } from './notes/main/register'
 import { readingListsMainModule } from './reading-lists/main/register'
 import { readingsMainModule } from './readings/main/register'
+import { tasksMainModule } from './tasks/main/register'
 import { trainingMainModule } from './training/main/register'
 
 /** What a module's main-process code may depend on. */
@@ -28,5 +29,6 @@ export const mainModules: MainModule[] = [
   meetingsMainModule,
   trainingMainModule,
   notesMainModule,
-  readingListsMainModule
+  readingListsMainModule,
+  tasksMainModule
 ]
