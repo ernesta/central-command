@@ -107,6 +107,27 @@ export function LiveEditor({
     }
   }, [start, placeholder, autoFocus, controller, find, extra])
 
+  // Chrome puts the cursor in the nearest editable text when blank space beside the editor (the card's padding, the page)
+  // is clicked. Only the text itself should start editing, so a press on such a container just leaves the editor.
+  useEffect(() => {
+    const press = (event: MouseEvent): void => {
+      const target = event.target
+      if (!(target instanceof HTMLElement) || wrapRef.current?.contains(target)) return
+      if (
+        target.closest('input, textarea, select, button, a, label, [contenteditable], [tabindex]')
+      )
+        return
+      const hasText = Array.from(target.childNodes).some(
+        (node) => node.nodeType === Node.TEXT_NODE && (node.textContent ?? '').trim() !== ''
+      )
+      if (hasText) return
+      event.preventDefault()
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
+    }
+    document.addEventListener('mousedown', press)
+    return () => document.removeEventListener('mousedown', press)
+  }, [])
+
   // Holding Cmd (Ctrl) turns a click on a link into "open it", so show the pointer for as long as it is held.
   useEffect(() => {
     const show = (event: KeyboardEvent | MouseEvent): void => {
