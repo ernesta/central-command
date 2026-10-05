@@ -1914,3 +1914,10 @@ Built (renderer in `src/modules/tasks/renderer/`, IPC `TASKS_IPC` in `shared/api
 - **Bug found by looking**: the Due column was too narrow for "Feb 24, 2027"; widened to 124 px.
 - Playwright's Electron ignores the system colour scheme, so dark was checked with `page.emulateMedia({ colorScheme: 'dark' })`.
 - Row buttons (status icon, priority badge, pill) are `tabIndex -1`: the table is one tab stop, and the keyboard has Space, arrows and Shift-F10 for what the buttons do.
+
+## Tasks: stage 4 write-up, the task page and the description adapter (5 Oct 2026)
+
+- **The adapter was proved first** (`renderer/debounced-saver.ts`, 6 tests): `change(text)` is synchronous (the text and the `dirty` state are set before it returns, nothing is debounced on the way in), the write follows after 400 ms, on blur, when the page is left and when the window closes (`registerFlushable`, awaited by the close guard). A text typed while a write is in flight is written next, and a failed write keeps the text and shows "Try again". Mutation checks (async `change`, no loop for in-flight edits, no reuse of the running write, never marking saved) all fail a test.
+- **Driven in the built app** with real keystrokes: typing in the description and quitting at once left the text in the database; renaming a task and leaving the page at once saved the title; tag, priority, delete and Undo work. A real-app mutation (removing the flush on leave and on close) did **not** fail that check, because the 400 ms timer fires while the close guard waits; the layers overlap, and the unit tests are the discriminating ones.
+- Page (`TaskPage`): title (a saver), tags, Status and Priority as Segmented (the shared `Segmented` gained an optional icon), Due, List, Subtasks (progress bar, add, open one, rotate status), the description in `EditorCard` + `LiveEditor`, and a Time card. A subtask's page has no priority, list or subtasks and links back to its parent. Delete asks (Cancel first) and an untouched new task goes without asking; deleting shows an Undo message (`tasks.restore`).
+- Repeats is stage 5; Start/Add time stage 6; Mentioned in stage 7.

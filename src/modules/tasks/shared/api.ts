@@ -46,6 +46,8 @@ export interface TasksApi {
   setDue(uids: string[], due: string | null): Promise<void>
   /** Move a task and its subtasks to the trash. The caller asks the user first, unless the task is untouched. */
   delete(uid: string): Promise<void>
+  /** Bring a deleted task back, with the subtasks deleted with it. */
+  restore(uid: string): Promise<Task>
   /** Remove a task nobody wrote in, for real. Resolves with whether it was removed. */
   discardIfEmpty(uid: string): Promise<boolean>
   /** Subscribe to changes. Returns an unsubscribe function. */
@@ -60,6 +62,7 @@ export const TASKS_IPC = {
   setStatus: 'tasks:set-status',
   setDue: 'tasks:set-due',
   delete: 'tasks:delete',
+  restore: 'tasks:restore',
   discardIfEmpty: 'tasks:discard-if-empty',
   changed: 'tasks:changed'
 } as const

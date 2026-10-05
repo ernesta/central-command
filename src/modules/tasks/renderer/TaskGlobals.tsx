@@ -4,7 +4,7 @@ import { matchesShortcut } from '@shared/shortcuts'
 import { NEW_TASK_SHORTCUT } from '../shared/shortcuts'
 import { closeNewTask, openNewTask, useNewTaskRequest } from './new-task-store'
 import { NewTaskDialog } from './NewTaskDialog'
-import { useTaskToast } from './task-toast'
+import { clearTaskToast, useTaskToast } from './task-toast'
 import { todayIso, useTasksWorkspace } from './tasks-paths'
 import { useTasksList } from './useTasksList'
 import styles from './TaskGlobals.module.css'
@@ -35,7 +35,19 @@ export function TaskGlobals(): React.JSX.Element {
       {request && <NewTaskHost list={request.list ?? ''} />}
       {toast && (
         <div className={styles.toast} role="status">
-          {toast}
+          {toast.text}
+          {toast.action && (
+            <button
+              type="button"
+              className={styles.toastAction}
+              onClick={() => {
+                toast.action?.run()
+                clearTaskToast()
+              }}
+            >
+              {toast.action.label}
+            </button>
+          )}
         </div>
       )}
     </>

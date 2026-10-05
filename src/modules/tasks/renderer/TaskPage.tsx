@@ -1,20 +1,444 @@
-import { ArrowLeft } from 'lucide-react'
-import { Link, useParams } from 'react-router'
-import { tasksBase, useTasksWorkspace } from './tasks-paths'
+import { ArrowLeft, Plus } from 'lucide-react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
+import { Link, useNavigate, useParams } from 'react-router'
+import { Button } from '@renderer/components/Button'
+import { Dialog } from '@renderer/components/Dialog'
+import { EmptyState } from '@renderer/components/EmptyState'
+import { Notice } from '@renderer/components/Notice'
+import { Segmented } from '@renderer/components/Segmented'
+import { LiveEditor } from '@renderer/editor/LiveEditor'
+import { ipcErrorMessage } from '@renderer/lib/ipc-error'
+import { registerFlushable } from '@renderer/lib/flush-registry'
+import { useDocumentTitle } from '@renderer/lib/use-document-title'
+import { EditorCard } from '@renderer/notes/EditorCard'
+import { formatTaskTime } from '../shared/query'
+import {
+  TASK_PRIORITIES,
+  TASK_STATUSES,
+  type Task,
+  type TaskChanges,
+  type TaskWorkspace
+} from '../shared/types'
+import { subtaskProgress, taskTime, type TaskRow } from '../shared/views'
+import { DebouncedSaver } from './debounced-saver'
+import { DueField } from './DueField'
+import { ListField } from './ListField'
+import { setTaskStatus, STATUS_LABELS } from './task-actions'
+import { PRIORITY_LABELS } from './task-labels'
+import { showTaskToast } from './task-toast'
+import { StatusIcon } from './TaskIcons'
+import { TagsField } from './TagsField'
+import { taskRoute, tasksBase, todayIso, useTasksWorkspace } from './tasks-paths'
+import { useTaskTime } from './useTaskTime'
 import { useTasksList } from './useTasksList'
+import styles from './TaskPage.module.css'
 
-/** One task's page. Stage 4 builds it; until then it names the task. */
+/** One task's page: its title, status, priority, due date and list, its subtasks, its description, and its time. */
 export function TaskPage(): React.JSX.Element {
   const workspace = useTasksWorkspace()
   const { uid = '' } = useParams()
-  const { tasks } = useTasksList(workspace)
-  const task = tasks?.find((t) => t.uid === uid)
+  const { tasks, rows } = useTasksList(workspace)
+  if (tasks === null || rows === null) return <div className={styles.page} />
+  const task = tasks.find((t) => t.uid === uid)
+  if (!task) {
+    return (
+      <div className={styles.page}>
+        <Link className={styles.back} to={tasksBase(workspace)}>
+          <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
+          Tasks
+        </Link>
+        <EmptyState heading="Task not found" message="It may have been deleted." />
+      </div>
+    )
+  }
+  const parent = task.parentUid ? tasks.find((t) => t.uid === task.parentUid) : undefined
+  const row = rows.find((r) => r.task.uid === (parent ? parent.uid : task.uid))
   return (
-    <div style={{ padding: '36px 48px', display: 'grid', gap: 16 }}>
-      <Link to={tasksBase(workspace)}>
-        <ArrowLeft size={14} aria-hidden /> Tasks
-      </Link>
-      <h1>{task?.title ?? ''}</h1>
+    <TaskView
+      key={task.uid}
+      task={task}
+      parent={parent}
+      row={row ?? { task, kids: [] }}
+      rows={rows}
+      workspace={workspace}
+    />
+  )
+}
+
+function useSaver(
+  initial: string,
+  save: (text: string) => Promise<void>
+): { saver: DebouncedSaver; state: ReturnType<DebouncedSaver['getSnapshot']> } {
+  const [saver] = useState(() => new DebouncedSaver(initial, save))
+  const state = useSyncExternalStore(saver.subscribe, saver.getSnapshot)
+  useEffect(() => {
+    const unregister = registerFlushable(() => saver.flush())
+    return () => {
+      unregister()
+      // Leaving the page writes what is still pending.
+      void saver.flush()
+    }
+  }, [saver])
+  return { saver, state }
+}
+
+function TaskView({
+  task,
+  parent,
+  row,
+  rows,
+  workspace
+}: {
+  task: Task
+  parent: Task | undefined
+  row: TaskRow
+  rows: readonly TaskRow[]
+  workspace: TaskWorkspace
+}): React.JSX.Element {
+  const navigate = useNavigate()
+  const today = todayIso()
+  const { tracked } = useTaskTime(workspace)
+  const isSub = parent !== undefined
+  const [error, setError] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [busy, setBusy] = useState(false)
+
+  const update = (changes: TaskChanges): void => {
+    setError(null)
+    window.api.tasks.update(task.uid, changes).catch((e: unknown) => setError(ipcErrorMessage(e)))
+  }
+
+  const { saver: title, state: titleState } = useSaver(task.title, async (text) => {
+    await window.api.tasks.update(task.uid, { title: text })
+  })
+  const { saver: description, state: descriptionState } = useSaver(
+    task.description,
+    async (text) => {
+      await window.api.tasks.update(task.uid, { description: text })
+    }
+  )
+  const [titleText, setTitleText] = useState(task.title)
+  const [bodyText, setBodyText] = useState(task.description)
+  const [startBody] = useState(task.description)
+  useDocumentTitle(titleText)
+
+  const time = taskTime(row, tracked)
+  const own = taskTime({ task, kids: [] }, tracked)
+  const progress = subtaskProgress(row.kids)
+  const backTo = parent ? taskRoute(workspace, parent.uid) : tasksBase(workspace)
+
+  const remove = async (): Promise<void> => {
+    setBusy(true)
+    try {
+      await Promise.all([title.flush(), description.flush()])
+      const untouched =
+        title.current === '' && description.current.trim() === '' && row.kids.length === 0
+      if (untouched && (await window.api.tasks.discardIfEmpty(task.uid))) {
+        void navigate(backTo, { replace: true })
+        return
+      }
+      await window.api.tasks.delete(task.uid)
+      void navigate(backTo, { replace: true })
+      showTaskToast(`Deleted “${title.current || 'Untitled'}”.`, {
+        label: 'Undo',
+        run: () =>
+          void window.api.tasks
+            .restore(task.uid)
+            .catch((e: unknown) => showTaskToast(`Couldn’t bring it back: ${ipcErrorMessage(e)}`))
+      })
+    } catch (e) {
+      setError(ipcErrorMessage(e))
+      setBusy(false)
+      setConfirmDelete(false)
+    }
+  }
+
+  const untouchedNow = titleText === '' && bodyText.trim() === '' && row.kids.length === 0 && !isSub
+
+  return (
+    <div className={styles.page}>
+      <div className={styles.top}>
+        <Link className={styles.back} to={backTo}>
+          <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
+          {parent ? parent.title || 'Task' : 'Tasks'}
+        </Link>
+        <Button
+          size="small"
+          className={styles.delete}
+          disabled={busy}
+          onClick={() => (untouchedNow ? void remove() : setConfirmDelete(true))}
+        >
+          Delete task
+        </Button>
+      </div>
+
+      {error && (
+        <Notice tone="error" onDismiss={() => setError(null)}>
+          {error}
+        </Notice>
+      )}
+      {(titleState.state === 'error' || descriptionState.state === 'error') && (
+        <Notice
+          tone="error"
+          action={
+            <Button
+              size="small"
+              onClick={() => {
+                void title.flush()
+                void description.flush()
+              }}
+            >
+              Try again
+            </Button>
+          }
+        >
+          Couldn’t save this task: {titleState.error ?? descriptionState.error}
+        </Notice>
+      )}
+
+      <div className={styles.cols}>
+        <div className={styles.stack}>
+          <section className={styles.box} aria-label="Details">
+            <input
+              className={styles.title}
+              aria-label="Title"
+              placeholder="Untitled"
+              value={titleText}
+              onChange={(event) => {
+                const text = event.target.value.replace(/[\r\n]/g, ' ')
+                setTitleText(text)
+                title.change(text)
+              }}
+              onBlur={() => void title.flush()}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault()
+                  void title.flush()
+                  event.currentTarget.blur()
+                }
+              }}
+            />
+            <TagsField tags={task.tags} onChange={(tags) => update({ tags })} />
+            <div className={styles.metaRow}>
+              <Segmented
+                label="Status"
+                value={task.status}
+                options={TASK_STATUSES.map((s) => ({
+                  value: s,
+                  label: STATUS_LABELS[s],
+                  icon: <StatusIcon status={s} size={16} />
+                }))}
+                onChange={(status) => void setTaskStatus(task, status)}
+              />
+              {!isSub && (
+                <Segmented
+                  label="Priority"
+                  value={task.priority}
+                  options={TASK_PRIORITIES.map((p) => ({ value: p, label: PRIORITY_LABELS[p] }))}
+                  onChange={(priority) => update({ priority })}
+                />
+              )}
+            </div>
+            <div className={styles.metaRow}>
+              <div className={styles.field}>
+                <span className={styles.label}>Due</span>
+                <DueField value={task.due} today={today} onChange={(due) => update({ due })} />
+              </div>
+              {!isSub && (
+                <div className={[styles.field, styles.grow].join(' ')}>
+                  <span className={styles.label}>List</span>
+                  <ListField
+                    list={task.list}
+                    sublist={task.sublist}
+                    rows={rows}
+                    onChange={({ list, sublist }) => update({ list, sublist })}
+                  />
+                </div>
+              )}
+            </div>
+          </section>
+
+          {!isSub && (
+            <Subtasks
+              task={task}
+              kids={row.kids}
+              workspace={workspace}
+              done={progress.done}
+              total={progress.total}
+              tracked={tracked}
+            />
+          )}
+
+          <EditorCard
+            text={bodyText}
+            edited={Date.parse(task.updatedAt)}
+            save={descriptionState.state}
+            hasContent={bodyText.trim() !== ''}
+          >
+            <LiveEditor
+              initial={startBody}
+              placeholder="Add notes…"
+              showPlaceholder={bodyText.trim() === ''}
+              onChange={(text) => {
+                setBodyText(text)
+                description.change(text)
+              }}
+              onBlur={() => void description.flush()}
+            />
+          </EditorCard>
+        </div>
+
+        <aside className={styles.stack} aria-label="Side">
+          <section className={styles.box}>
+            <div className={styles.timeRow}>
+              <span className={styles.label}>Time on this task</span>
+              <b className={styles.total}>{formatTaskTime(time.total) || '0:00'}</b>
+            </div>
+            <div className={styles.timeLine}>
+              <span>Earlier, from ClickUp</span>
+              <span>{formatTaskTime(own.earlier) || '0:00'}</span>
+            </div>
+            <div className={styles.timeLine}>
+              <span>In Hours</span>
+              <span>{formatTaskTime(own.tracked) || '0:00'}</span>
+            </div>
+          </section>
+        </aside>
+      </div>
+
+      {confirmDelete && (
+        <Dialog
+          title="Delete this task?"
+          busy={busy}
+          onCancel={() => setConfirmDelete(false)}
+          actions={
+            <>
+              <Button
+                size="small"
+                autoFocus
+                disabled={busy}
+                onClick={() => setConfirmDelete(false)}
+              >
+                Cancel
+              </Button>
+              <Button size="small" variant="danger" disabled={busy} onClick={() => void remove()}>
+                Delete task
+              </Button>
+            </>
+          }
+        >
+          {isSub || row.kids.length === 0
+            ? 'It goes to the trash; you can undo right after.'
+            : `It and its ${row.kids.length} ${row.kids.length === 1 ? 'subtask' : 'subtasks'} go to the trash; you can undo right after.`}
+        </Dialog>
+      )}
     </div>
+  )
+}
+
+function Subtasks({
+  task,
+  kids,
+  workspace,
+  done,
+  total,
+  tracked
+}: {
+  task: Task
+  kids: readonly Task[]
+  workspace: TaskWorkspace
+  done: number
+  total: number
+  tracked: ReadonlyMap<string, number>
+}): React.JSX.Element {
+  const [adding, setAdding] = useState(false)
+  const [text, setText] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  const add = async (): Promise<void> => {
+    const title = text.trim()
+    if (!title) return
+    try {
+      await window.api.tasks.create({ workspace, title, parentUid: task.uid })
+      setText('')
+      setError(null)
+    } catch (e) {
+      setError(ipcErrorMessage(e))
+    }
+  }
+
+  return (
+    <section className={styles.box} aria-label="Subtasks">
+      <div className={styles.subHead}>
+        <span className={styles.label}>
+          Subtasks · {done} of {total} done
+          {total > 0 && (
+            <span className={styles.bar} aria-hidden>
+              <i style={{ width: `${(done / total) * 100}%` }} />
+            </span>
+          )}
+        </span>
+        <button type="button" className={styles.quiet} onClick={() => setAdding(true)}>
+          <Plus size={14} strokeWidth={1.75} aria-hidden />
+          Add subtask
+        </button>
+      </div>
+      {kids.map((kid) => (
+        <div key={kid.uid} className={styles.subRow}>
+          <button
+            type="button"
+            className={styles.iconButton}
+            aria-label={`Status: ${STATUS_LABELS[kid.status]}`}
+            title={`${STATUS_LABELS[kid.status]}`}
+            onClick={() =>
+              void setTaskStatus(
+                kid,
+                kid.status === 'done' ? 'todo' : kid.status === 'todo' ? 'doing' : 'done'
+              )
+            }
+          >
+            <StatusIcon status={kid.status} size={20} />
+          </button>
+          <Link className={styles.subTitle} to={taskRoute(workspace, kid.uid)}>
+            {kid.title || 'Untitled'}
+          </Link>
+          <span className={styles.subTime}>
+            {formatTaskTime(kid.earlierMinutes + (tracked.get(kid.uid) ?? 0))}
+          </span>
+        </div>
+      ))}
+      {adding && (
+        <div className={styles.subRow}>
+          <span />
+          <input
+            autoFocus
+            className={styles.subInput}
+            aria-label={`New subtask of ${task.title}`}
+            placeholder="Subtask title"
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault()
+                void add()
+              } else if (event.key === 'Escape') {
+                event.preventDefault()
+                setText('')
+                setAdding(false)
+              }
+            }}
+            onBlur={() => {
+              if (text.trim() === '') setAdding(false)
+            }}
+          />
+          <span />
+        </div>
+      )}
+      {error && (
+        <p role="alert" className={styles.error}>
+          {error}
+        </p>
+      )}
+    </section>
   )
 }

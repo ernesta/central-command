@@ -12,3 +12,13 @@
   box-shadow: var(--shadow-float);
   font-size: var(--text-14);
 }
+
+.toastAction {
+  margin-left: 12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}

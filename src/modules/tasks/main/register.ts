@@ -148,6 +148,11 @@ function register(context: MainContext): () => void {
   ipcMain.handle(TASKS_IPC.delete, (_event, uid: unknown) =>
     changing(asUid(uid), () => store.delete(asUid(uid)))
   )
+  ipcMain.handle(TASKS_IPC.restore, (_event, uid: unknown) => {
+    const task = store.restore(asUid(uid))
+    broadcast(task.workspace)
+    return task
+  })
   ipcMain.handle(TASKS_IPC.discardIfEmpty, (_event, uid: unknown) =>
     changing(asUid(uid), () => store.discardIfEmpty(asUid(uid)))
   )
