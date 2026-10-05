@@ -8,6 +8,7 @@ import { meetingRoute } from './meetings-paths'
 import styles from './MeetingsTable.module.css'
 
 const VISIBLE_ATTENDEES = 3
+const COLUMNS = ['Date', 'Time', 'Duration', 'Type', 'Series', 'Summary', 'Skills', 'Attendees']
 
 /**
  * Date, Time, Duration, Type, Series, Summary, Skills, Attendees. Clicking anywhere on a row opens the meeting.
@@ -17,11 +18,13 @@ const VISIBLE_ATTENDEES = 3
 export function MeetingsTable({
   rows,
   people,
-  today
+  today,
+  showSkills
 }: {
   rows: MeetingIndexRow[]
   people: Person[]
   today: string
+  showSkills: boolean
 }): React.JSX.Element {
   const navigate = useNavigate()
   const { tableProps, rowProps } = useRowNavigation(
@@ -34,13 +37,11 @@ export function MeetingsTable({
       <table className={styles.table} aria-label="Meetings" {...tableProps}>
         <thead>
           <tr>
-            {['Date', 'Time', 'Duration', 'Type', 'Series', 'Summary', 'Skills', 'Attendees'].map(
-              (label) => (
-                <th key={label} className={styles.th} scope="col">
-                  {label}
-                </th>
-              )
-            )}
+            {COLUMNS.filter((label) => showSkills || label !== 'Skills').map((label) => (
+              <th key={label} className={styles.th} scope="col">
+                {label}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
@@ -78,9 +79,11 @@ export function MeetingsTable({
                 <td className={styles.summary}>
                   {row.summary || <span className={styles.missing}>No summary yet.</span>}
                 </td>
-                <td className={styles.skills}>
-                  <SkillChips skills={row.skills} stacked />
-                </td>
+                {showSkills && (
+                  <td className={styles.skills}>
+                    <SkillChips skills={row.skills} stacked />
+                  </td>
+                )}
                 <td className={styles.attendees}>
                   <span className={styles.chips}>
                     {shown.map((name) => (

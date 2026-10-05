@@ -7,11 +7,13 @@ import type { MeetingIndexRow } from '../shared/types'
 export function MeetingsHours({
   rows,
   year,
-  today
+  today,
+  showSkills
 }: {
   rows: readonly MeetingIndexRow[]
   year: string
   today: string
+  showSkills: boolean
 }): React.JSX.Element {
   const hours = meetingHours(rows, year, today)
   const note = [
@@ -25,7 +27,7 @@ export function MeetingsHours({
       title={`Hours of meetings, ${yearLabel(year)}`}
       minutes={hours.minutes}
       note={note}
-      perSkill={hours.perSkill}
+      perSkill={showSkills ? hours.perSkill : []}
     />
   )
 }
