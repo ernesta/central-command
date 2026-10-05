@@ -1,0 +1,1921 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tasks Mockup</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@600;700&display=swap"
+    />
+    <style>
+      :root {
+        --bg: light-dark(#edeff2, #14181d);
+        --panel: light-dark(#e1e5ea, #1b2128);
+        --surface: light-dark(#ffffff, #1f262e);
+        --ink: light-dark(#1b222b, #e6eaee);
+        --text-secondary: light-dark(#3a4652, #c2cad2);
+        --text-muted: light-dark(#5c6672, #98a3af);
+        --border-soft: light-dark(#d3d8de, #2f3843);
+        --border-strong: light-dark(#c3cad2, #3d4855);
+        --border-faint: light-dark(#e6e9ed, #262e37);
+        --hover-tint: light-dark(#f4f6f8, #262e37);
+        --accent: light-dark(#35577a, #86aad0);
+        --accent-contrast: light-dark(#ffffff, #0f1620);
+        --selected-bg: light-dark(#dce6ee, #2a3b4d);
+        --selected-text: light-dark(#1f3a52, #d3e3f2);
+        --danger: light-dark(#a8433f, #dc7c77);
+        --scrim: light-dark(rgba(27, 34, 43, 0.35), rgba(0, 0, 0, 0.6));
+        --shadow-color: light-dark(rgba(27, 34, 43, 0.18), rgba(0, 0, 0, 0.55));
+        --font-display: 'Newsreader', Georgia, serif;
+        --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+        --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+        color-scheme: light;
+      }
+      :root[data-theme='dark'] {
+        color-scheme: dark;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-body);
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 0;
+        padding-inline: 16px;
+        padding-block: 20px 48px;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: var(--font-display);
+        margin: 0;
+        text-wrap: balance;
+      }
+      p {
+        margin: 0;
+      }
+      button,
+      input {
+        font: inherit;
+        color: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      svg.i {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.75;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex: none;
+      }
+      .muted {
+        color: var(--text-muted);
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        display: grid;
+        gap: 20px;
+      }
+      .intro {
+        display: grid;
+        gap: 6px;
+        max-width: 80ch;
+      }
+      .intro h1 {
+        font-size: 28px;
+      }
+      .intro p {
+        color: var(--text-secondary);
+      }
+      .controls {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .tabs,
+      .seg {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .tab,
+      .seg button {
+        padding: 8px 16px;
+        border: 1px solid var(--border-strong);
+        border-radius: 999px;
+        background: var(--surface);
+        color: var(--text-secondary);
+      }
+      .seg button {
+        padding: 5px 12px;
+        font-size: 13px;
+      }
+      .tab[aria-pressed='true'],
+      .seg button[aria-pressed='true'] {
+        background: var(--selected-bg);
+        color: var(--selected-text);
+        border-color: var(--selected-bg);
+        font-weight: 600;
+      }
+      .frame {
+        background: var(--bg);
+        border: 1px solid var(--border-strong);
+        border-radius: 14px;
+        overflow: hidden;
+        position: relative;
+        min-height: 520px;
+      }
+      .topbar {
+        height: 56px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border-soft);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-inline: 24px;
+        gap: 12px;
+      }
+      .pills {
+        display: flex;
+        gap: 4px;
+      }
+      .pill {
+        padding: 6px 16px;
+        border-radius: 999px;
+        color: var(--text-secondary);
+      }
+      .pill.on {
+        background: var(--selected-bg);
+        color: var(--selected-text);
+        font-weight: 600;
+      }
+      .build {
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-weight: 500;
+        background: var(--surface);
+      }
+      .page {
+        padding: 32px 40px 48px;
+        display: grid;
+        gap: 22px;
+      }
+      .back {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        color: var(--text-muted);
+        text-decoration: none;
+        width: fit-content;
+      }
+      .head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .head h2 {
+        font-size: 28px;
+        font-weight: 700;
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .label {
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      .btn {
+        border: 1px solid var(--border-strong);
+        background: var(--surface);
+        border-radius: 8px;
+        padding: 7px 14px;
+        font-weight: 500;
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .btn.primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-contrast);
+      }
+      .btn.small {
+        padding: 4px 10px;
+        font-size: 13px;
+      }
+      .quiet {
+        border: 0;
+        background: transparent;
+        color: var(--text-muted);
+        padding: 4px 8px;
+        border-radius: 8px;
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .quiet:hover {
+        background: var(--hover-tint);
+      }
+      .sec {
+        display: grid;
+        gap: 10px;
+      }
+      .sechead {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+      .sechead.over .label {
+        color: var(--danger);
+      }
+      .link {
+        color: var(--accent);
+        background: none;
+        border: 0;
+        padding: 0;
+        display: inline-flex;
+        gap: 4px;
+        align-items: center;
+      }
+
+      /* Add bar: the same on every screen with a list of tasks */
+      .add {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: 12px;
+        padding: 9px 14px;
+      }
+      .add .ph {
+        flex: 1;
+        color: var(--text-muted);
+      }
+      .add .hint {
+        color: var(--text-muted);
+        font-size: 13px;
+      }
+      kbd {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text-muted);
+        border: 1px solid var(--border-soft);
+        border-radius: 6px;
+        padding: 0 6px;
+      }
+
+      /* The one table every list of tasks uses (same pattern as Meetings and Training) */
+      .twrap {
+        overflow-x: auto;
+        padding: 4px;
+      }
+      .table {
+        width: 100%;
+        min-width: 900px;
+        table-layout: fixed;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+        border-radius: 12px;
+      }
+      .table th {
+        padding: 11px 12px;
+        border-bottom: 1px solid var(--border-soft);
+        color: var(--text-muted);
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-align: left;
+        text-transform: uppercase;
+      }
+      .table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border-faint);
+        vertical-align: middle;
+        font-size: 14px;
+        transition: background 120ms ease;
+      }
+      .table tr.stripe-high td:first-child {
+        box-shadow: inset 4px 0 0 var(--amber);
+      }
+      .table tr.stripe-low td:first-child {
+        box-shadow: inset 4px 0 0 var(--border-strong);
+      }
+      .table tr:last-child td {
+        border-bottom: 0;
+      }
+      .table tbody tr {
+        cursor: pointer;
+      }
+      .table tbody tr:hover td {
+        background: var(--hover-tint);
+      }
+      .table td.nowrap {
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+      .table .none {
+        color: var(--text-muted);
+      }
+      .table .title {
+        margin-right: 8px;
+      }
+      .table .titledone {
+        color: var(--text-muted);
+        text-decoration: line-through;
+      }
+      .table .emptyrow td {
+        color: var(--text-muted);
+        cursor: default;
+      }
+      .tag {
+        font-size: 12px;
+        padding: 0 8px;
+        margin-right: 4px;
+        border-radius: 999px;
+        border: 1px solid var(--border-soft);
+        color: var(--text-secondary);
+        background: var(--surface);
+        white-space: nowrap;
+        display: inline-block;
+        line-height: 1.5;
+      }
+      svg.ico {
+        width: 22px;
+        height: 22px;
+      }
+      .seg svg.ico {
+        width: 16px;
+        height: 16px;
+      }
+      .s-todo {
+        color: var(--text-muted);
+      }
+      .s-doing,
+      .s-done {
+        color: var(--accent);
+      }
+      .iconbtn {
+        border: 0;
+        background: transparent;
+        padding: 3px;
+        margin: -3px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .iconbtn:hover {
+        background: var(--selected-bg);
+      }
+      .pr-high {
+        color: var(--accent);
+      }
+      .pr-high svg {
+        stroke-width: 2.5;
+      }
+      .pr-normal {
+        color: var(--text-muted);
+      }
+      .pr-low {
+        color: var(--text-muted);
+        opacity: 0.75;
+      }
+      .inds {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        margin-left: 4px;
+        color: var(--text-muted);
+        font-size: 12px;
+        white-space: nowrap;
+        vertical-align: middle;
+      }
+      .inds span {
+        display: inline-flex;
+        gap: 4px;
+        align-items: center;
+      }
+      .ring {
+        width: 16px;
+        height: 16px;
+      }
+      .table tr.nested td {
+        background: var(--hover-tint);
+        font-size: 13px;
+      }
+      .table tr.nested td:nth-child(2) {
+        padding-left: 36px;
+      }
+      .table tr.nested .conn {
+        color: var(--text-muted);
+        margin-right: 8px;
+      }
+      .cellbtn {
+        border: 0;
+        background: transparent;
+        padding: 3px 6px;
+        margin: -3px -6px;
+        border-radius: 8px;
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        white-space: nowrap;
+      }
+      .cellbtn:hover {
+        background: var(--selected-bg);
+      }
+      .st-doing {
+        color: var(--accent);
+        font-weight: 500;
+      }
+      .st-done {
+        color: var(--text-muted);
+      }
+      .bars {
+        display: inline-flex;
+        gap: 2px;
+        align-items: flex-end;
+        height: 13px;
+      }
+      .bars i {
+        display: block;
+        width: 4px;
+        border-radius: 1px;
+        background: var(--border-soft);
+      }
+      .bars i:nth-child(1) {
+        height: 5px;
+      }
+      .bars i:nth-child(2) {
+        height: 9px;
+      }
+      .bars i:nth-child(3) {
+        height: 13px;
+      }
+      .p-high .bars i {
+        background: var(--accent);
+      }
+      .p-normal .bars i:nth-child(-n + 2) {
+        background: var(--text-muted);
+      }
+      .p-low .bars i:nth-child(1) {
+        background: var(--text-muted);
+      }
+      .p-high {
+        font-weight: 600;
+        color: var(--ink);
+      }
+      .p-normal {
+        color: var(--text-secondary);
+      }
+      .p-low {
+        color: var(--text-muted);
+      }
+      .due-over {
+        color: var(--danger);
+        font-weight: 500;
+      }
+      .due-today {
+        color: var(--accent);
+        font-weight: 600;
+      }
+      .menuwrap {
+        position: relative;
+        display: inline-block;
+      }
+      .menu {
+        position: absolute;
+        z-index: 5;
+        top: calc(100% + 4px);
+        left: -6px;
+        min-width: 160px;
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: 10px;
+        box-shadow: 0 8px 24px var(--shadow-color);
+        padding: 4px;
+      }
+      .menu button {
+        display: flex;
+        width: 100%;
+        gap: 10px;
+        align-items: center;
+        text-align: left;
+        border: 0;
+        background: transparent;
+        padding: 6px 10px;
+        border-radius: 7px;
+      }
+      .menu button:hover,
+      .menu button[aria-current='true'] {
+        background: var(--selected-bg);
+      }
+
+      /* Filters, selects, cards */
+      .filters {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .sel,
+      .field {
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        padding: 5px 10px;
+        background: var(--surface);
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        color: var(--text-secondary);
+        font-size: 13px;
+      }
+      .field {
+        font-size: 14px;
+        color: var(--ink);
+      }
+      .sel.mini {
+        padding: 2px 8px;
+        font-size: 13px;
+      }
+      .field.compact {
+        height: 32px;
+        padding: 0 10px;
+        font-size: 14px;
+        max-width: 100%;
+      }
+      .field.compact .cut {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .metarow {
+        display: flex;
+        gap: 10px 20px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .metarow > div {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        min-width: 0;
+      }
+      .seg.tight button {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .search {
+        flex: 1;
+        min-width: 180px;
+        max-width: 280px;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 12px;
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+        border-radius: 12px;
+        padding: 14px 16px;
+        display: grid;
+        gap: 2px;
+        cursor: pointer;
+      }
+      .card:hover {
+        background: var(--hover-tint);
+      }
+      .card h3 {
+        font-size: 17px;
+      }
+      .small {
+        font-size: 13px;
+      }
+
+      /* Task page */
+      .box {
+        background: var(--surface);
+        border: 1px solid var(--border-soft);
+        border-radius: 12px;
+      }
+      .pad {
+        padding: 18px 20px;
+      }
+      .taskcols {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        gap: 24px;
+        align-items: start;
+      }
+      .stack {
+        display: grid;
+        gap: 16px;
+      }
+      .tasktitle {
+        font-family: var(--font-display);
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+      .metagrid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px 20px;
+      }
+      .metagrid > div {
+        display: grid;
+        gap: 4px;
+        align-content: start;
+      }
+      .editor {
+        padding: 18px 22px;
+        line-height: 1.65;
+      }
+      .editor ul {
+        margin: 6px 0;
+        padding-left: 20px;
+      }
+      .facts {
+        padding: 8px 22px;
+        border-top: 1px solid var(--border-faint);
+        color: var(--text-muted);
+        font-size: 12px;
+      }
+      .srow {
+        display: grid;
+        grid-template-columns: 24px minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: center;
+        padding: 8px 16px;
+        border-bottom: 1px solid var(--border-faint);
+      }
+      .srow:hover {
+        background: var(--hover-tint);
+      }
+      .sub .sechead {
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--border-faint);
+      }
+      .timerow {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px solid var(--border-faint);
+        font-variant-numeric: tabular-nums;
+      }
+      .scrim {
+        position: absolute;
+        inset: 0;
+        background: var(--scrim);
+        display: grid;
+        place-items: start center;
+        padding-top: 90px;
+        z-index: 10;
+      }
+      .dialog {
+        width: min(520px, calc(100% - 32px));
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: 14px;
+        box-shadow: 0 8px 24px var(--shadow-color);
+        padding: 22px;
+        display: grid;
+        gap: 16px;
+      }
+      .dialog input.big {
+        width: 100%;
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        padding: 9px 12px;
+        background: var(--surface);
+      }
+      .dialog .row {
+        display: grid;
+        gap: 4px;
+      }
+      .toast {
+        position: absolute;
+        bottom: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--ink);
+        color: var(--bg);
+        border-radius: 10px;
+        padding: 8px 16px;
+        box-shadow: 0 8px 24px var(--shadow-color);
+        z-index: 20;
+      }
+      .qs {
+        display: grid;
+        gap: 14px;
+      }
+      .qs ol,
+      .qs ul {
+        margin: 0;
+        padding-left: 22px;
+        display: grid;
+        gap: 8px;
+      }
+      code {
+        font-family: var(--font-mono);
+        font-size: 13px;
+      }
+      @media (max-width: 900px) {
+        .taskcols {
+          grid-template-columns: 1fr;
+        }
+        .metagrid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .page {
+          padding: 20px 16px;
+        }
+      }
+
+      :root {
+        --amber: light-dark(#b8741a, #d9a05a);
+      }
+      .chevslot {
+        display: inline-flex;
+        width: 18px;
+        height: 22px;
+        align-items: center;
+        justify-content: center;
+        margin-right: 2px;
+        vertical-align: middle;
+      }
+      .chev {
+        border: 0;
+        background: transparent;
+        padding: 0;
+        width: 18px;
+        height: 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        border-radius: 6px;
+      }
+      .chev:hover {
+        background: var(--selected-bg);
+      }
+      .statuscell {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        white-space: nowrap;
+      }
+      .table td.titlecell {
+        position: relative;
+        padding-right: 40px;
+      }
+      .addsub {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: 1px solid var(--border-soft);
+        background: var(--surface);
+        color: var(--text-muted);
+        border-radius: 8px;
+        padding: 1px 5px;
+        display: none;
+      }
+      .table tbody tr:hover .addsub {
+        display: inline-flex;
+      }
+      .addsub:hover {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+      .table tr.addrow td {
+        cursor: default;
+        color: var(--text-muted);
+        font-size: 13px;
+      }
+      .table tr.addrow .inp {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        border: 1px solid var(--accent);
+        background: var(--surface);
+        color: var(--ink);
+        border-radius: 8px;
+        padding: 3px 10px;
+        min-width: 340px;
+      }
+      .pc-high {
+        color: var(--amber);
+      }
+      .pc-normal {
+        color: var(--accent);
+      }
+      .pc-low {
+        color: var(--text-muted);
+      }
+      .marks {
+        font-weight: 700;
+        letter-spacing: -1px;
+        font-size: 15px;
+        font-variant-numeric: tabular-nums;
+      }
+      .chip,
+      .badge {
+        font-size: 12px;
+        border-radius: 999px;
+        padding: 0 9px;
+        line-height: 1.6;
+        font-weight: 500;
+        display: inline-block;
+      }
+      .chip.c-high,
+      .badge.c-high {
+        background: color-mix(in srgb, var(--amber) 18%, transparent);
+        color: var(--amber);
+        font-weight: 600;
+      }
+      .chip.c-normal,
+      .badge.c-normal {
+        background: color-mix(in srgb, var(--accent) 14%, transparent);
+        color: var(--accent);
+      }
+      .chip.c-low,
+      .badge.c-low {
+        background: transparent;
+        color: var(--text-muted);
+        border: 1px solid var(--border-soft);
+      }
+      .badge {
+        border-radius: 6px;
+        padding: 0 6px;
+        font-weight: 700;
+      }
+      .w-high {
+        font-weight: 700;
+        color: var(--amber);
+      }
+      .w-normal {
+        color: var(--text-secondary);
+      }
+      .w-low {
+        color: var(--text-muted);
+      }
+      .swatch {
+        width: 10px;
+        height: 16px;
+        border-radius: 3px;
+        background: currentColor;
+        display: inline-block;
+      }
+      .ctxmenu {
+        position: absolute;
+        z-index: 30;
+        min-width: 190px;
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: 10px;
+        box-shadow: 0 8px 24px var(--shadow-color);
+        padding: 4px;
+      }
+      .ctxmenu .grp {
+        padding: 6px 10px 2px;
+      }
+      .ctxmenu button {
+        display: flex;
+        width: 100%;
+        gap: 10px;
+        align-items: center;
+        text-align: left;
+        border: 0;
+        background: transparent;
+        padding: 5px 10px;
+        border-radius: 7px;
+      }
+      .ctxmenu button:hover {
+        background: var(--selected-bg);
+      }
+
+      /* Round 5 */
+      .badge {
+        min-width: 30px;
+        text-align: center;
+        border-radius: 6px;
+        padding: 1px 7px;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.5;
+        display: inline-block;
+      }
+      .badge.c-high {
+        background: var(--accent);
+        color: var(--accent-contrast);
+        border: 0;
+      }
+      .badge.c-normal {
+        background: color-mix(in srgb, var(--accent) 20%, transparent);
+        color: var(--selected-text);
+        border: 0;
+      }
+      .badge.c-low {
+        background: color-mix(in srgb, var(--text-muted) 14%, transparent);
+        color: var(--text-muted);
+        border: 0;
+      }
+      svg.sm {
+        width: 12px;
+        height: 12px;
+      }
+      .subchip {
+        position: relative;
+        overflow: hidden;
+        display: inline-flex;
+        gap: 4px;
+        align-items: center;
+        border: 1px solid var(--border-soft);
+        background: var(--surface);
+        color: var(--text-secondary);
+        border-radius: 999px;
+        padding: 0 7px 0 9px;
+        margin-left: 6px;
+        font-size: 12px;
+        line-height: 1.55;
+        vertical-align: middle;
+        font-variant-numeric: tabular-nums;
+      }
+      .subchip .fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        background: color-mix(in srgb, var(--accent) 22%, transparent);
+      }
+      .subchip .txt,
+      .subchip svg {
+        position: relative;
+      }
+      .subchip:hover,
+      .subchip.open {
+        border-color: var(--accent);
+      }
+      .subchip.ghost {
+        visibility: hidden;
+        border-style: dashed;
+        color: var(--text-muted);
+        padding: 0 9px;
+      }
+      .table tbody tr:hover .subchip.ghost {
+        visibility: visible;
+      }
+      .subchip.ghost:hover {
+        color: var(--accent);
+      }
+      .table tr.kid td {
+        padding-top: 6px;
+        padding-bottom: 6px;
+        font-size: 13.5px;
+        border-bottom: 0;
+        background: transparent;
+      }
+      .table tr.kid td:first-child {
+        position: relative;
+        padding-left: 40px;
+      }
+      .table tr.kid svg.ico {
+        width: 18px;
+        height: 18px;
+      }
+      /* The thread: a rail from the parent's status icon down the subtasks, with an elbow into each */
+      .table tr.kid td:first-child::before {
+        content: '';
+        position: absolute;
+        left: 22px;
+        top: 0;
+        bottom: 0;
+        border-left: 2px solid var(--border-strong);
+      }
+      .table tr.kid td:first-child::after {
+        content: '';
+        position: absolute;
+        left: 22px;
+        top: 50%;
+        width: 12px;
+        border-top: 2px solid var(--border-strong);
+      }
+      .table tr.kid.end td:first-child::before {
+        bottom: 50%;
+        width: 14px;
+        border-bottom: 2px solid var(--border-strong);
+        border-bottom-left-radius: 8px;
+      }
+      .table tr.kid.end td:first-child::after {
+        display: none;
+      }
+      .table tr.kid.end:last-child td,
+      .table tr.kid.end td {
+        border-bottom: 0;
+      }
+      .table tr.kid:hover td {
+        background: var(--hover-tint);
+      }
+      .table tr.addrow td {
+        font-size: 13px;
+      }
+      .table tr.running td:first-child {
+        box-shadow: inset 4px 0 0 var(--accent);
+      }
+      .timerchip {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        border: 1px solid var(--border-strong);
+        border-radius: 999px;
+        padding: 4px 6px 4px 12px;
+        background: var(--surface);
+        font-variant-numeric: tabular-nums;
+      }
+      .timerchip .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+      .timerchip .name {
+        max-width: 22ch;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--text-secondary);
+      }
+      .timerchip button {
+        border: 0;
+        border-radius: 999px;
+        padding: 3px 10px;
+        background: var(--selected-bg);
+        color: var(--selected-text);
+        font-weight: 600;
+        font-size: 12px;
+      }
+      .pbar {
+        display: inline-block;
+        width: 72px;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--border-soft);
+        overflow: hidden;
+        vertical-align: middle;
+      }
+      .pbar i {
+        display: block;
+        height: 100%;
+        background: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="intro">
+        <h1>Tasks mockup (round 5)</h1>
+        <p>
+          Five screens, light and dark, clickable: click a status icon to rotate it, right-click a
+          row, open a task's subtasks with its pill, New task opens from every screen. Task names,
+          lists, tags, priorities, dates and times are your real open tasks, de-duplicated. Marked
+          as made up: the task due today in Research (nothing is, in your data), its added subtask,
+          the running timer, and the completed dates. "Today" is Mon 5 Oct 2026.
+        </p>
+      </div>
+      <div class="controls">
+        <div class="tabs" role="group" aria-label="Screen">
+          <button class="tab" aria-pressed="true" data-tab="today">1. Tasks (landing)</button>
+          <button class="tab" aria-pressed="false" data-tab="all">2. All tasks</button>
+          <button class="tab" aria-pressed="false" data-tab="list">3. A list</button>
+          <button class="tab" aria-pressed="false" data-tab="task">4. A task</button>
+          <button class="tab" aria-pressed="false" data-tab="work">5. Work</button>
+        </div>
+        <div class="seg" role="group" aria-label="Theme">
+          <button aria-pressed="true" data-theme-set="light">Light</button>
+          <button aria-pressed="false" data-theme-set="dark">Dark</button>
+        </div>
+      </div>
+
+      <div class="frame" id="frame">
+        <div class="topbar">
+          <div class="pills">
+            <span class="pill">Life</span><span class="pill on" id="pillR">Research</span
+            ><span class="pill" id="pillW">Work</span>
+          </div>
+          <span class="timerchip" id="chip"
+            ><span class="dot"></span
+            ><span class="name">Share a reading list with Kathy on language of instruction</span
+            ><span>0:21</span><button>Stop</button></span
+          ><span class="build">Build</span>
+        </div>
+        <div class="page" id="screen"></div>
+      </div>
+
+      <div class="box pad qs">
+        <h3>Changes in round 5</h3>
+        <ul>
+          <li>
+            <b>Priority is P1 / P2 / P3</b>, one family: solid accent for P1, a tint of the same
+            colour for P2, a quiet grey for P3. It stays a column, so it can be sorted and filtered.
+            Subtasks carry none.
+          </li>
+          <li>
+            <b>The row stripe</b> is kept for two other jobs, both visible here: a stripe on the
+            task your timer is running on (the first row, matching the timer in the top bar), and a
+            thread that runs from a task down its subtasks.
+          </li>
+          <li>
+            <b>Subtasks have one control</b>: a pill after the title that shows the count and fills
+            as they are done (0/6). Click it to open or close them. A task with none shows a faint
+            "+ Subtask" in the same place when you hover it. No chevron, no ring, no plus at the far
+            end. Open subtasks hang off a thread, with a plain "+ Add a subtask" line at the end. A
+            subtask cannot have subtasks.
+          </li>
+        </ul>
+        <h3>Questions for you</h3>
+        <ol>
+          <li>
+            <b>Anything else to put in the stripe?</b> I considered: the list's colour (too many
+            colours for ten lists), overdue (the date is already red), billable in Work (already a
+            tag), and a mark for tasks that sit in more than one place. I would stop at the two
+            above.
+          </li>
+          <li>
+            <b>Depth.</b> 17 of your finished subtasks have subtasks of their own, all under one
+            course task. The import moves them up to the course task, with their former parent's
+            name in front of the title ("Complete work for the Welcome Week lecture › Read the
+            RStudio Cheat Sheet"). OK?
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <script>
+      const svg = (inner, cls = 'i') => `<svg class="${cls}" viewBox="0 0 24 24">${inner}</svg>`
+      const I = {
+        repeat: svg(
+          '<path d="m17 2 4 4-4 4M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v1a4 4 0 0 1-4 4H3" />'
+        ),
+        down: svg('<path d="m6 9 6 6 6-6" />'),
+        plus: svg('<path d="M5 12h14M12 5v14" />'),
+        play: svg('<path d="M7 4l13 8-13 8z" />'),
+        back: svg('<path d="M19 12H5m6-6-6 6 6 6" />'),
+        arrow: svg('<path d="M5 12h14m-6-6 6 6-6 6" />'),
+        search: svg('<circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" />'),
+        todo: svg('<circle cx="12" cy="12" r="8.5" />', 'i ico'),
+        doing: svg(
+          '<circle cx="12" cy="12" r="8.5" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" />',
+          'i ico'
+        ),
+        done: svg(
+          '<circle cx="12" cy="12" r="9.5" fill="currentColor" stroke="none" /><path d="m7.8 12.3 3 3 5.6-6" style="stroke:var(--accent-contrast);stroke-width:2.25" />',
+          'i ico'
+        ),
+        flag: svg(
+          '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7" />',
+          'i ico'
+        ),
+        flagfill: svg(
+          '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" fill="currentColor" /><path d="M4 22v-7" />',
+          'i ico'
+        ),
+        high: svg('<path d="m17 11-5-5-5 5M17 18l-5-5-5 5" />', 'i ico'),
+        normal: svg('<path d="M6 9h12M6 15h12" />', 'i ico'),
+        low: svg('<path d="m6 9 6 6 6-6" />', 'i ico')
+      }
+      const ST = {
+        todo: ['To do', 'todo'],
+        doing: ['In progress', 'doing'],
+        done: ['Done', 'done']
+      }
+      const PR = { high: 'High', normal: 'Normal', low: 'Low' }
+      /* Priority: seven ways to show it; the switch above the mockup picks one for every screen */
+      const PLABEL = { high: 'High', normal: 'Normal', low: 'Low' }
+      const prIcon = (v) =>
+        `<span class="badge c-${v}">${{ high: 'P1', normal: 'P2', low: 'P3' }[v]}</span>`
+      const prTextOnly = () => false
+      const prStripeSwatch = prIcon
+      /* A ring that fills as subtasks are completed */
+      const ring = (d, t) => {
+        const c = 2 * Math.PI * 6
+        return `<svg class="ring" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="var(--border-strong)" stroke-width="2" /><circle cx="8" cy="8" r="6" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-dasharray="${(c * d) / t} ${c}" transform="rotate(-90 8 8)" /></svg>`
+      }
+
+      /* All tasks, de-duplicated. due: [text, class]; subs: [done, total]; time as in Hours */
+      const D = { over: 'due-over', today: 'due-today' }
+      const K = {}
+      const add = (id, title, list, o = {}) =>
+        (K[id] = { id, title, list, status: 'todo', prio: 'normal', tags: [], ...o })
+      // Research
+      add('r1', 'Share a reading list with Kathy on language of instruction', 'Reading', {
+        status: 'doing',
+        prio: 'high',
+        due: ['Sep 27', D.over],
+        time: '3:45',
+        running: 1
+      })
+      add('r2', 'Write up Kathy and Michael meeting notes', 'Language Mapping › Scoping', {
+        status: 'doing',
+        due: ['Oct 2', D.over]
+      })
+      add('r3', 'Download training slides and materials', 'Coursework & Training', {
+        status: 'doing',
+        prio: 'low',
+        due: ['Oct 2', D.over],
+        time: '0:15'
+      })
+      add(
+        'r4',
+        'Develop Study 2: Ghana EGRA USAID data processing pipeline',
+        'Study 2: USAID Analysis › Data Cleaning & Analysis',
+        { status: 'doing', tags: ['ghana', 'study 2', 'usaid'], subs: [0, 6], time: '9:15' }
+      )
+      add('r5', 'Set up Central Command for Research', 'Admin & Logistics', {
+        status: 'doing',
+        prio: 'low',
+        time: '18:00'
+      })
+      add('r6', 'Prepare for the upcoming supervision meeting', 'Supervisor Meetings', {
+        prio: 'high',
+        due: ['Oct 9'],
+        rep: 1,
+        subs: [0, 3]
+      })
+      add('o1', 'Check for new articles in Kathy’s reading list', 'Reading', {
+        prio: 'low',
+        due: ['Mar 12', D.over],
+        rep: 1
+      })
+      add('o2', 'Finalise Study 1 paper title', 'Writing', {
+        prio: 'high',
+        due: ['Oct 2', D.over],
+        tags: ['study 1']
+      })
+      add(
+        'o3',
+        'Clean up and share meeting notes from the previous supervisor meeting',
+        'Supervisor Meetings',
+        { prio: 'high', due: ['Sep 24', D.over], rep: 1 }
+      )
+      add('o4', 'Back up RHUL folder to OneDrive and Dropbox', 'Admin & Logistics', {
+        prio: 'low',
+        due: ['Sep 25', D.over],
+        rep: 1
+      })
+      add('o5', 'Log supervisor meetings and trainings for the week', 'Admin & Logistics', {
+        due: ['Sep 25', D.over],
+        rep: 1,
+        subs: [0, 4]
+      })
+      add('u1', 'Prepare a presentation for CastlesFest', 'Presenting', {
+        prio: 'high',
+        due: ['Oct 7']
+      })
+      add('u2', 'Complete Introduction to Bayesian Data Analysis', 'Coursework & Training', {
+        due: ['Oct 9']
+      })
+      add('u3', 'Check upcoming conferences', 'Coursework & Training', {
+        prio: 'low',
+        due: ['Oct 9']
+      })
+      add('u4', 'Check upcoming summer schools', 'Coursework & Training', {
+        prio: 'low',
+        due: ['Oct 9']
+      })
+      add('u5', 'Check upcoming external trainings', 'Coursework & Training', {
+        prio: 'low',
+        due: ['Oct 9']
+      })
+      add('u6', 'Check upcoming internal trainings', 'Coursework & Training', {
+        prio: 'low',
+        due: ['Oct 9']
+      })
+      add('a1', 'Upgrade to PhD (January 2027)', 'Admin & Logistics', {
+        prio: 'high',
+        due: ['Jan 4, 2027']
+      })
+      add('a2', 'Complete Research Assistant contract setup', 'Admin & Logistics', {
+        status: 'doing',
+        time: '5:00'
+      })
+      add('a3', 'Prepare for the upgrade meeting', 'Admin & Logistics', {
+        status: 'doing',
+        time: '1:15'
+      })
+      add('b1', 'Complete unsupervised learning in R', 'Coursework & Training', { prio: 'low' })
+      add('b2', 'Register with the Information Commissioner’s Office', 'Coursework & Training')
+      add('b3', 'Identify and track the leading journals in my field', 'Reading')
+      add('b4', 'Create a personal website (e.g., on GitHub)', 'Admin & Logistics', { prio: 'low' })
+      add('b5', 'Set up Research Professional account', 'Admin & Logistics', { prio: 'low' })
+      add('d1', 'Write a data management plan for Study 1 & Study 2', 'Writing', {
+        status: 'done',
+        time: '8:00'
+      })
+      add('d2', 'Update the ethics approval forms', 'Admin & Logistics', {
+        status: 'done',
+        tags: ['ethics']
+      })
+      add('d3', 'Draft Luminos data sharing agreement scope', 'Admin & Logistics', {
+        status: 'done',
+        tags: ['luminos']
+      })
+      // Work
+      add('w1', 'Draft a Liberia RAI for the upcoming endline', 'Luminos › Transition Support', {
+        status: 'doing',
+        tags: ['billable'],
+        due: ['Today', D.today],
+        time: '7:15'
+      })
+      add('w2', 'Prepare for and complete meeting with Neha', 'Luminos › Document Automation', {
+        due: ['Today', D.today]
+      })
+      add('w3', 'Update the milestone and deliverable plan', 'Luminos › Document Automation', {
+        status: 'doing',
+        tags: ['billable'],
+        due: ['Jul 12', D.over],
+        time: '0:45'
+      })
+      add('w4', 'Coordinate and communicate: September', 'Luminos › Document Automation', {
+        status: 'doing',
+        tags: ['billable'],
+        due: ['Sep 30', D.over],
+        time: '3:00'
+      })
+      add('w5', 'Review developer proposals and plan interviews', 'Luminos › Document Automation', {
+        status: 'doing',
+        tags: ['billable'],
+        due: ['Sep 30', D.over],
+        time: '9:30'
+      })
+      add('w6', 'Interview developers and complete follow-ups', 'Luminos › Document Automation', {
+        status: 'doing',
+        tags: ['billable'],
+        due: ['Sep 30', D.over],
+        time: '4:15'
+      })
+      add(
+        'x1',
+        'Incorporate Liberia Direct Delivery EGRA/EGMA 2025–26 data',
+        'Luminos › Historical Data Analysis',
+        { tags: ['billable'], due: ['Jul 3', D.over] }
+      )
+      add(
+        'x2',
+        'Incorporate Liberia Direct Delivery classroom observation tool 2025–26',
+        'Luminos › Historical Data Analysis',
+        { tags: ['billable'], due: ['Jul 6', D.over] }
+      )
+      add(
+        'x3',
+        'Incorporate Ethiopia Direct Delivery Tigray classroom observation tool',
+        'Luminos › Historical Data Analysis',
+        { tags: ['billable'], due: ['Jul 15', D.over] }
+      )
+      add(
+        'x4',
+        'Incorporate Ghana Direct Delivery Asante Twi classroom observation tool',
+        'Luminos › Historical Data Analysis',
+        { tags: ['billable'], due: ['Aug 4', D.over] }
+      )
+      add(
+        'x5',
+        'Incorporate Ghana Direct Delivery Dagbani classroom observation tool',
+        'Luminos › Historical Data Analysis',
+        { tags: ['billable'], due: ['Aug 4', D.over] }
+      )
+      add('y1', 'Back up Consulting folder to Dropbox', 'Admin & Logistics', {
+        due: ['Oct 9'],
+        rep: 1
+      })
+
+      /* Subtasks (real names and times from the export). A subtask has no date unless it was given one. */
+      const kid = (parent, n, title, status, time, o = {}) => {
+        add(parent + '_' + n, title, '', { status, time, parent, ...o })
+        ;(K[parent].kids ||= []).push(parent + '_' + n)
+      }
+      ;[
+        ['Select the relevant variables from Ghana EGRA USAID 2015 data file', 'doing', '2:00'],
+        ['Handle errors and missing data, recode variables', 'doing', '4:45'],
+        ['Construct new variables as needed for analysis', 'doing', '1:30'],
+        ['Reproduce key statistics to verify processing', 'doing', '0:15'],
+        ['Conduct preliminary descriptive analysis', 'todo', ''],
+        ['Document the data processing pipeline', 'doing', '0:45']
+      ].forEach(([t, st, tm], n) => kid('r4', n, t, st, tm))
+      ;[
+        'Log trainings in the Inkpath log',
+        'Log trainings in the RHUL log',
+        'Log supervisor meetings in the Inkpath log',
+        'Log supervisor meetings in the RHUL log'
+      ].forEach((t, n) => kid('o5', n, t, 'todo', ''))
+      kid('r6', 0, 'Prepare a notes document with previous action items and agenda', 'todo', '', {
+        prio: 'high',
+        due: ['Today', D.today],
+        dated: 1
+      })
+      kid('r6', 1, 'Prepare a presentation or another deliverable', 'todo', '')
+      K.r4.subs = [0, 6]
+      K.o5.subs = [0, 4]
+      K.r6.subs = [0, 2]
+      delete K.r6a
+      delete K.a2.subs
+
+      const S = {
+        pstyle: 'badges',
+        open: {},
+        adding: null,
+        ctx: null,
+        tab: 'today',
+        dialog: false,
+        menu: null,
+        toast: '',
+        last: { research: 'Reading', work: 'Luminos › Document Automation' },
+        seg: { all: 'open', list: 'open', work: 'open' }
+      }
+
+      /* ----- the one table ----- */
+      const COLS = [64, null, 220, 84, 76, 100]
+      const NEXT = { todo: 'doing', doing: 'done', done: 'todo' }
+      function menuFor(t, kind) {
+        if (!S.menu || S.menu.id !== t.id || S.menu.kind !== kind) return ''
+        const opts =
+          kind === 'status' ? Object.entries(ST).map(([k, v]) => [k, v[0]]) : Object.entries(PR)
+        const cur = kind === 'status' ? t.status : t.prio
+        const lead = (k) =>
+          kind === 'status'
+            ? `<span class="s-${k}" style="display:inline-flex">${I[k]}</span>`
+            : prIcon(k)
+        return `<div class="menu">${opts.map(([k, l]) => `<button data-pick="${kind}:${k}" data-id="${t.id}" aria-current="${cur === k}">${lead(k)}${l}</button>`).join('')}</div>`
+      }
+      function statusCell(t) {
+        const hint = `${ST[t.status][0]} · click for ${ST[NEXT[t.status]][0]}`
+        return `<span class="menuwrap"><button class="iconbtn s-${t.status}" data-cell="status" data-id="${t.id}" title="${hint}" aria-label="Status: ${ST[t.status][0]}">${I[t.status]}</button></span>`
+      }
+      function prCell(t) {
+        const label = PR[t.prio]
+        return `<span class="menuwrap"><button class="iconbtn" data-cell="prio" data-id="${t.id}" title="Priority: ${label}" aria-label="Priority: ${label}">${prIcon(t.prio)}</button>${menuFor(t, 'prio')}</span>`
+      }
+      /* The one control for subtasks: a pill that shows the progress (its fill) and the count, and opens them. With none, a ghost pill appears on hover. */
+      function subChip(t) {
+        if (t.kids) {
+          const [d, n] = t.subs
+          const open = !!S.open[t.id]
+          return `<button class="subchip ${open ? 'open' : ''}" data-exp="${t.id}" aria-expanded="${open}" aria-label="${d} of ${n} subtasks done. ${open ? 'Hide' : 'Show'} subtasks" title="${d} of ${n} subtasks done"><span class="fill" style="width:${(d / n) * 100}%"></span><span class="txt">${d}/${n}</span>${open ? svg('<path d="m6 9 6 6 6-6" />', 'i sm') : svg('<path d="m9 18 6-6-6-6" />', 'i sm')}</button>`
+        }
+        return `<button class="subchip ghost" data-addsub="${t.id}" aria-label="Add subtask">+ Subtask</button>`
+      }
+      function row(t, opts = {}) {
+        const rep = t.rep ? `<span class="inds" title="Repeats">${I.repeat}</span>` : ''
+        const dueCell = t.due ? `<span class="${t.due[1] || ''}">${t.due[0]}</span>` : ''
+        const sub = !!t.parent
+        const cls = [sub ? 'kid' : '', opts.end ? 'end' : '', t.running ? 'running' : '']
+          .filter(Boolean)
+          .join(' ')
+        const main =
+          `<tr data-open="${t.id}" data-row="${t.id}" class="${cls}"><td>${statusCell(t)}</td>` +
+          `<td><span class="title ${t.status === 'done' ? 'titledone' : ''}">${t.title}</span>${t.tags.map((x) => `<span class="tag">${x}</span>`).join('')}${rep}${sub ? '' : subChip(t)}</td>` +
+          `<td class="nowrap" style="overflow:hidden;text-overflow:ellipsis">${t.list}</td>` +
+          `<td>${sub ? '' : prCell(t)}</td><td class="nowrap">${t.time || ''}</td><td class="nowrap">${dueCell}</td></tr>`
+        if (sub) return main
+        let more = ''
+        if (S.open[t.id]) {
+          more = (t.kids || []).map((id) => row(K[id])).join('')
+          more += `<tr class="kid end addrow"><td></td><td colspan="5" data-addsub="${t.id}"><span class="${S.adding === t.id ? 'inp' : ''}">${S.adding === t.id ? 'Subtask title… <kbd>Return</kbd>' : '+ Add a subtask'}</span></td></tr>`
+        } else if (opts.dated) {
+          more = (t.kids || [])
+            .filter((id) => K[id].dated)
+            .map((id) => row(K[id], { end: true }))
+            .join('')
+        }
+        return main + more
+      }
+      function table(ids, empty) {
+        const body = ids.length
+          ? ids.map((id) => row(K[id], { dated: true })).join('')
+          : `<tr class="emptyrow"><td></td><td colspan="5">${empty || ''}</td></tr>`
+        return `<div class="twrap"><table class="table" aria-label="Tasks"><colgroup>${COLS.map((w) => `<col${w ? ` style="width:${w}px"` : ''}>`).join('')}</colgroup><thead><tr><th scope="col">Status</th><th scope="col">Task</th><th scope="col">List</th><th scope="col">Priority</th><th scope="col">Time</th><th scope="col">Due</th></tr></thead><tbody>${body}</tbody></table></div>`
+      }
+      function sec(label, count, ids, o = {}) {
+        return `<div class="sec"><div class="sechead ${o.over ? 'over' : ''}"><span class="label">${label} · ${count}</span><span>${o.aside || ''}</span></div>${table(ids, o.empty)}${o.foot || ''}</div>`
+      }
+      const showAll = (n, total) =>
+        `<div class="small muted" style="display:flex;justify-content:space-between;padding:0 4px"><span>Showing ${n} of ${total}</span><button class="link">Show all ${I.down}</button></div>`
+      const ws = () => (S.tab === 'work' ? 'work' : 'research')
+      const addBar = (list) =>
+        `<div class="add" data-new>${I.plus}<span class="ph">Add a task</span><span class="sel mini">Today${I.down}</span><span class="sel mini">${list || S.last[ws()]}${I.down}</span><kbd>Return</kbd></div>`
+      const head = (back, title) =>
+        `<a class="back" href="#">${I.back}${back}</a><div class="head"><h2>${title}</h2><div class="actions">`
+      const newBtn = `<button class="btn primary" data-new>${I.plus}New task</button>`
+      const sel = (t) => `<span class="sel">${t}${I.down}</span>`
+      const segmented = (key, items) =>
+        `<div class="seg" role="group">${items.map(([k, l]) => `<button aria-pressed="${S.seg[key] === k}" data-seg="${key}:${k}">${l}</button>`).join('')}</div>`
+      const filterRow = (key, items, list) =>
+        `<div class="filters"><span class="sel search">${I.search}Search tasks</span>${sel(list || 'All lists')}${sel('Any priority')}${sel('Any tag')}${segmented(key, items)}</div>`
+
+      const screens = {}
+      /* 1. Landing */
+      screens.today = () =>
+        head('Research', 'Tasks') +
+        `<button class="btn" data-go="all">All tasks ${I.arrow}</button>${newBtn}</div></div>` +
+        addBar() +
+        sec('Due today', 1, ['r6'], { empty: 'Nothing is due today.' }) +
+        sec('In progress', 17, ['r1', 'r2', 'r3', 'r4', 'r5'], { foot: showAll(5, 17) }) +
+        sec('Overdue', 7, ['o1', 'o2', 'o3', 'o4', 'o5'], {
+          over: 1,
+          aside:
+            '<button class="quiet">Move to Today</button><button class="quiet">Move to Backlog</button>',
+          foot: showAll(5, 7)
+        }) +
+        sec('Upcoming', 6, ['u1', 'u2', 'u3', 'u4', 'u5', 'u6'], {
+          aside: '<span class="muted small">Next 14 days</span>'
+        }) +
+        `<div class="sec"><div class="sechead"><span class="label">Lists</span><button class="link" data-go="all">Backlog 31 ${I.arrow}</button></div><div class="cards">` +
+        [
+          ['Coursework & Training', 18, ''],
+          ['Reading', 17, '1 overdue'],
+          ['Admin & Logistics', 8, '2 overdue'],
+          ['Writing', 6, '1 overdue'],
+          ['Supervisor Meetings', 3, '1 overdue'],
+          ['Study 2: USAID Analysis', 4, 'Data Cleaning & Analysis'],
+          ['Placement', 3, ''],
+          ['Presenting', 3, ''],
+          ['Language Mapping', 1, 'Scoping']
+        ]
+          .map(
+            ([n, c, x]) =>
+              `<div class="card" data-go="list"><h3>${n}</h3><p class="muted small">${c} open</p><p class="muted small">${x || '&nbsp;'}</p></div>`
+          )
+          .join('') +
+        `</div></div>`
+
+      /* 2. All tasks */
+      screens.all = () => {
+        const s = S.seg.all
+        const ids =
+          s === 'open'
+            ? ['r1', 'r2', 'r3', 'r4', 'o1', 'o2', 'o3', 'o4', 'o5', 'u1', 'u2', 'u3']
+            : s === 'backlog'
+              ? ['b1', 'b2', 'b3', 'b4', 'b5']
+              : ['d1', 'd2', 'd3']
+        const total = s === 'open' ? 32 : s === 'backlog' ? 31 : 436
+        return (
+          head('Tasks', 'All tasks') +
+          newBtn +
+          `</div></div>` +
+          filterRow('all', [
+            ['open', 'Open 32'],
+            ['backlog', 'Backlog 31'],
+            ['done', 'Done 436']
+          ]) +
+          addBar() +
+          `<div class="sec">${table(ids)}${showAll(ids.length, total)}</div>` +
+          `<p class="muted small">Open is anything with a date or in progress. Backlog is open with no date (kept out of Today). Completed dates are not in the export, so Done shows none.</p>`
+        )
+      }
+      /* 3. A list */
+      screens.list = () => {
+        const s = S.seg.list
+        const ids =
+          s === 'open'
+            ? ['o4', 'o5', 'a1', 'a2', 'a3', 'r5']
+            : s === 'backlog'
+              ? ['b4', 'b5']
+              : ['d2', 'd3']
+        return (
+          head('Tasks', 'Admin & Logistics') +
+          newBtn +
+          `</div></div>` +
+          filterRow(
+            'list',
+            [
+              ['open', 'Open 6'],
+              ['backlog', 'Backlog 2'],
+              ['done', 'Done 172']
+            ],
+            'Admin & Logistics'
+          ) +
+          addBar('Admin & Logistics') +
+          `<div class="sec">${table(ids)}</div>`
+        )
+      }
+      /* 4. A task */
+      screens.task = () => {
+        const t = K.r4
+        const subs = [
+          ['Select the relevant variables from Ghana EGRA USAID 2015 data file', 'doing', '2:00'],
+          ['Handle errors and missing data, recode variables', 'doing', '4:45'],
+          ['Construct new variables as needed for analysis', 'doing', '1:30'],
+          ['Reproduce key statistics to verify processing', 'doing', '0:15'],
+          ['Conduct preliminary descriptive analysis', 'todo', ''],
+          ['Document the data processing pipeline', 'doing', '0:45']
+        ]
+        const seg3 = (items, cur, kind) =>
+          `<div class="seg tight">${items.map(([k, l]) => `<button aria-pressed="${cur === k}" data-tseg="${kind}:${k}">${kind === 'status' ? I[k] + l : S.pstyle === 'stripe' ? prStripeSwatch(k) + l : prTextOnly() ? prIcon(k) : prIcon(k) + l}</button>`).join('')}</div>`
+        return (
+          `<div class="head"><a class="back" href="#">${I.back}Tasks</a><div class="actions">${newBtn}</div></div>` +
+          `<div class="taskcols"><div class="stack">` +
+          `<div class="box pad" style="display:grid;gap:12px"><div class="tasktitle">${t.title}</div><div>${t.tags.map((x) => `<span class="tag">${x}</span>`).join('')}<span class="tag" style="border-style:dashed;color:var(--text-muted)">+ Tag</span></div>` +
+          `<div class="metarow">${seg3(
+            [
+              ['todo', 'To do'],
+              ['doing', 'In progress'],
+              ['done', 'Done']
+            ],
+            t.status,
+            'status'
+          )}${seg3(
+            [
+              ['high', 'High'],
+              ['normal', 'Normal'],
+              ['low', 'Low']
+            ],
+            t.prio,
+            'prio'
+          )}</div>` +
+          `<div class="metarow"><div><span class="label">Due</span><span class="field compact muted">No date</span></div><div style="flex:1 1 260px"><span class="label">List</span><span class="field compact" style="min-width:0"><span class="cut">${t.list}</span>${I.down}</span></div><div><span class="label">Repeats</span><span class="field compact">Never${I.down}</span></div></div></div>` +
+          `<div class="box sub"><div class="sechead"><span class="label" style="display:inline-flex;gap:10px;align-items:center">Subtasks · 0 of 6 done<span class="pbar"><i style="width:0%"></i></span></span><button class="quiet" data-new-sub>${I.plus}Add subtask</button></div>` +
+          subs
+            .map(
+              ([n, st, tm]) =>
+                `<div class="srow"><span class="s-${st}" style="display:inline-flex">${I[st]}</span><span>${n}</span><span class="muted" style="font-variant-numeric:tabular-nums">${tm}</span></div>`
+            )
+            .join('') +
+          `</div>` +
+          `<div class="box"><div class="editor"><ul><li>Map languages to Ethnologue</li><li>Include datasets from all years</li></ul></div><div class="facts">Created Jan 14 (illustrative) · Edited Oct 2 · 9 words</div></div>` +
+          `</div><div class="stack">` +
+          `<div class="box pad"><div class="timerow" style="border:0;padding-top:0"><span class="label">Time on this task</span><b style="font-size:18px">9:15</b></div><div class="timerow"><span class="muted">Earlier, from ClickUp</span><span>9:15</span></div><div class="timerow"><span class="muted">In Hours</span><span>0:00</span></div><div style="display:flex;gap:8px;margin-top:12px"><button class="btn small primary">${I.play}Start</button><button class="btn small">${I.plus}Add time</button></div></div>` +
+          `<div class="box pad"><span class="label">Mentioned in</span><p class="muted" style="margin-top:6px">Nothing links here yet.</p></div></div></div>`
+        )
+      }
+      /* 5. Work */
+      screens.work = () =>
+        head('Work', 'Tasks') +
+        `<button class="btn" data-go="all">All tasks ${I.arrow}</button>${newBtn}</div></div>` +
+        addBar() +
+        sec('Due today', 2, ['w2', 'w1']) +
+        sec('In progress', 8, ['w3', 'w4', 'w5', 'w6'], { foot: showAll(4, 8) }) +
+        sec('Overdue', 6, ['x1', 'x2', 'x3', 'x4', 'x5'], {
+          over: 1,
+          aside:
+            '<button class="quiet">Move to Today</button><button class="quiet">Move to Backlog</button>',
+          foot: showAll(5, 6)
+        }) +
+        sec('Upcoming', 1, ['y1'], { aside: '<span class="muted small">Next 14 days</span>' }) +
+        `<div class="sec"><div class="sechead"><span class="label">Lists</span><button class="link">Backlog 4 ${I.arrow}</button></div><div class="cards">` +
+        [
+          [
+            'Luminos',
+            20,
+            'Document Automation, Historical Data Analysis, Admin & Logistics, Transition Support'
+          ],
+          ['Admin & Logistics', 4, '']
+        ]
+          .map(
+            ([n, c, x]) =>
+              `<div class="card"><h3>${n}</h3><p class="muted small">${c} open</p><p class="muted small">${x || '&nbsp;'}</p></div>`
+          )
+          .join('') +
+        `</div></div>`
+
+      /* ----- dialog ----- */
+      function dialog() {
+        const list = S.tab === 'list' ? 'Admin & Logistics' : S.last[ws()]
+        return `<div class="scrim" data-close><div class="dialog" role="dialog" aria-label="New task"><h3>New task</h3><div class="row"><span class="label">Task</span><input class="big" placeholder="What needs doing?" autofocus /></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:14px"><div class="row"><span class="label">Due</span><span class="field compact">Today${I.down}</span></div><div class="row" style="min-width:0"><span class="label">List</span><span class="field compact"><span class="cut">${list}</span>${I.down}</span></div></div><div class="row"><span class="label">Priority</span><div class="seg tight">${['high', 'normal', 'low'].map((k) => `<button aria-pressed="${k === 'normal'}">${S.pstyle === 'stripe' ? prStripeSwatch(k) : prIcon(k)}${prTextOnly() ? '' : PLABEL[k]}</button>`).join('')}</div></div><div style="display:flex;justify-content:flex-end;gap:8px"><button class="btn" data-close>Cancel</button><button class="btn primary" data-close>Add</button></div></div></div>`
+      }
+
+      const frame = document.getElementById('frame')
+      const screen = document.getElementById('screen')
+      function render() {
+        screen.innerHTML = screens[S.tab]()
+        frame.querySelectorAll('.scrim,.toast').forEach((n) => n.remove())
+        if (S.dialog) frame.insertAdjacentHTML('beforeend', dialog())
+        if (S.toast) frame.insertAdjacentHTML('beforeend', `<div class="toast">${S.toast}</div>`)
+        if (S.ctx) {
+          const t = K[S.ctx.id]
+          const b = (a, icon, label) =>
+            `<button data-ctx="${a}" data-id="${t.id}"><span style="display:inline-flex">${icon}</span>${label}</button>`
+          frame.insertAdjacentHTML(
+            'beforeend',
+            `<div class="ctxmenu" style="left:${S.ctx.x}px;top:${S.ctx.y}px"><div class="label grp">Status</div>${Object.entries(
+              ST
+            )
+              .map(([k, v]) =>
+                b(
+                  'status:' + k,
+                  `<span class="s-${k}" style="display:inline-flex">${I[k]}</span>`,
+                  v[0]
+                )
+              )
+              .join('')}<div class="label grp">Priority</div>${Object.keys(PR)
+              .map((k) =>
+                b(
+                  'prio:' + k,
+                  S.pstyle === 'stripe' ? prStripeSwatch(k) : prIcon(k),
+                  prTextOnly() ? '' : PLABEL[k]
+                )
+              )
+              .join(
+                ''
+              )}<div class="label grp">&nbsp;</div>${b('addsub', I.plus, 'Add subtask')}</div>`
+          )
+        }
+        document
+          .querySelectorAll('[data-pstyle]')
+          .forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.pstyle === S.pstyle)))
+
+        const work = S.tab === 'work'
+        document.getElementById('pillR').classList.toggle('on', !work)
+        document.getElementById('chip').hidden = work
+        document.getElementById('pillW').classList.toggle('on', work)
+        document
+          .querySelectorAll('.tab')
+          .forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tab === S.tab)))
+      }
+      const flash = (m) => {
+        S.toast = m
+        render()
+        clearTimeout(flash.t)
+        flash.t = setTimeout(() => {
+          S.toast = ''
+          render()
+        }, 2600)
+      }
+      function setStatus(t, v) {
+        t.status = v
+        if (v === 'done')
+          return flash(
+            t.rep
+              ? 'Done. The next one is due Mon 12 Oct, 7 days from today, with its subtasks.'
+              : 'Done.'
+          )
+        render()
+      }
+      function expandAdd(id) {
+        S.open[id] = true
+        S.adding = id
+        render()
+      }
+      document.addEventListener('click', (e) => {
+        const g = (sel) => e.target.closest(sel)
+        let el
+        if (S.dialog) {
+          if (g('.dialog') && !g('button[data-close]')) return
+          S.dialog = false
+          return render()
+        }
+        if ((el = g('[data-ctx]'))) {
+          const [kind, v] = el.dataset.ctx.split(':')
+          S.ctx = null
+          if (kind === 'addsub') return expandAdd(el.dataset.id)
+          if (kind === 'status') return setStatus(K[el.dataset.id], v)
+          K[el.dataset.id].prio = v
+          return render()
+        }
+        if (S.ctx) {
+          S.ctx = null
+          render()
+        }
+        if ((el = g('[data-exp]'))) {
+          e.stopPropagation()
+          S.open[el.dataset.exp] = !S.open[el.dataset.exp]
+          if (!S.open[el.dataset.exp]) S.adding = null
+          return render()
+        }
+        if ((el = g('[data-addsub]'))) {
+          e.stopPropagation()
+          return expandAdd(el.dataset.addsub)
+        }
+        if ((el = g('[data-pick]'))) {
+          const [kind, v] = el.dataset.pick.split(':')
+          S.menu = null
+          K[el.dataset.id][kind === 'status' ? 'status' : 'prio'] = v
+          return render()
+        }
+        if ((el = g('[data-cell]'))) {
+          e.stopPropagation()
+          const t = K[el.dataset.id]
+          if (el.dataset.cell === 'status') {
+            S.menu = null
+            return setStatus(
+              t,
+              e.shiftKey ? (t.status === 'done' ? 'todo' : 'done') : NEXT[t.status]
+            )
+          }
+          const same = S.menu && S.menu.id === el.dataset.id && S.menu.kind === el.dataset.cell
+          S.menu = same ? null : { id: el.dataset.id, kind: el.dataset.cell }
+          return render()
+        }
+        if (S.menu) {
+          S.menu = null
+          render()
+        }
+        if ((el = g('[data-pstyle]'))) {
+          S.pstyle = el.dataset.pstyle
+          return render()
+        }
+        if ((el = g('[data-tseg]'))) {
+          const [kind, v] = el.dataset.tseg.split(':')
+          if (kind === 'status') return setStatus(K.r4, v)
+          K.r4[kind] = v
+          return render()
+        }
+        if ((el = g('[data-seg]'))) {
+          const [k, v] = el.dataset.seg.split(':')
+          S.seg[k] = v
+          return render()
+        }
+        if (g('[data-new]') || g('[data-new-sub]')) {
+          S.dialog = true
+          return render()
+        }
+        if ((el = g('[data-go]'))) {
+          S.tab = el.dataset.go
+          return render()
+        }
+        if ((el = g('[data-open]'))) {
+          S.tab = 'task'
+          return render()
+        }
+        if ((el = g('.tab'))) {
+          S.tab = el.dataset.tab
+          return render()
+        }
+        if ((el = g('[data-theme-set]'))) {
+          document.documentElement.dataset.theme = el.dataset.themeSet
+          document
+            .querySelectorAll('[data-theme-set]')
+            .forEach((x) => x.setAttribute('aria-pressed', String(x === el)))
+        }
+      })
+      document.addEventListener('contextmenu', (e) => {
+        const r = e.target.closest('[data-row]')
+        if (!r) return
+        e.preventDefault()
+        const f = frame.getBoundingClientRect()
+        S.menu = null
+        S.ctx = {
+          id: r.dataset.row,
+          x: Math.min(e.clientX - f.left, f.width - 210),
+          y: e.clientY - f.top
+        }
+        render()
+      })
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && (S.dialog || S.menu || S.ctx)) {
+          S.dialog = false
+          S.menu = null
+          S.ctx = null
+          render()
+        }
+      })
+      const hash = location.hash.slice(1)
+      if (screens[hash]) S.tab = hash
+      if (location.search.includes('dark'))
+        document.querySelector('[data-theme-set="dark"]').click()
+      if (location.search.includes('dialog')) S.dialog = true
+      const qp = new URLSearchParams(location.search)
+      if (qp.get('p')) S.pstyle = qp.get('p')
+      if (qp.get('open'))
+        qp.get('open')
+          .split(',')
+          .forEach((x) => (S.open[x] = true))
+      if (qp.get('adding')) S.adding = qp.get('adding')
+      if (qp.has('ctx')) S.ctx = { id: 'r4', x: 560, y: 520 }
+      if (location.search.includes('menu'))
+        S.menu = { id: 'r1', kind: location.search.includes('menup') ? 'prio' : 'status' }
+      render()
+    </script>
+  </body>
+</html>
