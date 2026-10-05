@@ -89,17 +89,17 @@ const todos = (text: string): (string[] | string)[][] =>
   parseTodos(text).map((t) => [t.owners, t.text])
 
 describe('writing a TODO', () => {
-  it('writes a bold TODO(XX) and a colon, puts the cursor after, and the text typed next is the TODO text', () => {
+  it('writes a checkbox with a bold TODO(XX) and a colon, puts the cursor after, and the text typed next is the TODO text', () => {
     const { view, type } = harness('Discussed weights.\n\n|')
     insertTodoText(view, view.state.selection.main.from, view.state.selection.main.from, 'EO')
-    expect(show(view)).toBe('Discussed weights.\n\n**TODO(EO)**: |')
+    expect(show(view)).toBe('Discussed weights.\n\n- [ ] **TODO(EO)**: |')
     for (const letter of 'Re-run') type(letter)
     expect(todos(view.state.sliceDoc())).toEqual([[['EO'], 'Re-run']])
   })
-  it('writes **TODO**: for no owner', () => {
+  it('writes a checkbox with **TODO**: for no owner', () => {
     const { view } = harness('|')
     insertTodoText(view, 0, 0, null)
-    expect(show(view)).toBe('**TODO**: |')
+    expect(show(view)).toBe('- [ ] **TODO**: |')
     expect(parseTodos('**TODO**: x')[0]).toMatchObject({ owners: [] })
   })
   it('replaces the range it is given, such as the typed /todo, and one undo gives it back', () => {
@@ -115,8 +115,21 @@ describe('writing a TODO', () => {
     const at = view.state.doc.line(2).to
     view.dispatch({ selection: EditorSelection.cursor(at) })
     insertTodoText(view, at, at, 'AC')
-    expect(view.state.sliceDoc()).toBe('- a\r\n- **TODO(AC)**: \r\n')
-    expect(view.state.selection.main.from).toBe(at + '**TODO(AC)**: '.length)
+    expect(view.state.sliceDoc()).toBe('- a\r\n- [ ] **TODO(AC)**: \r\n')
+    expect(view.state.selection.main.from).toBe(at + '[ ] **TODO(AC)**: '.length)
+  })
+  it('writes plain text in the middle of a line, and in a checkbox or a quote', () => {
+    for (const [doc, expected] of [
+      ['Point one |', 'Point one **TODO(KR)**: |'],
+      ['- [ ] |', '- [ ] **TODO(KR)**: |'],
+      ['> |', '> **TODO(KR)**: |'],
+      ['  1. |', '  1. [ ] **TODO(KR)**: |']
+    ]) {
+      const { view } = harness(doc)
+      const at = view.state.selection.main.from
+      insertTodoText(view, at, at, 'KR')
+      expect(show(view)).toBe(expected)
+    }
   })
   it('reports the text at once, so quitting straight after writing it saves it', () => {
     const { view, reports } = harness('x |')
@@ -274,7 +287,7 @@ describe('closing', () => {
     const request = h.opened[0]
     h.setOpen(false) // the menu closes itself before it writes
     request.insert('EO')
-    expect(h.view.state.sliceDoc()).toBe('**TODO(EO)**: ')
+    expect(h.view.state.sliceDoc()).toBe('- [ ] **TODO(EO)**: ')
     expect(h.isOpen()).toBe(false)
   })
 })

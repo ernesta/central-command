@@ -37,7 +37,7 @@ export interface TodoMenuBridge {
  * The TODO helper: typing `/todo` (at the
  * start of a line or after a space) or pressing Cmd/Ctrl+Shift+T opens the menu of owners, which is `useTodoHelper`'s and
  * knows nothing of the editor. While it is open it takes the arrow keys, Enter, Tab and Escape, and what is typed
- * searches the people (the note does not change); Backspace on an empty search or moving the cursor closes it. Choosing writes `**TODO(XX)**: ` as plain text.
+ * searches the people (the note does not change); Backspace on an empty search or moving the cursor closes it. Choosing writes `- [ ] **TODO(XX)**: ` (a checkbox where a line can hold one).
  */
 
 const TRIGGER = '/todo'
@@ -50,9 +50,20 @@ const KEYS: Record<string, MenuKey> = {
 }
 
 /**
+ * What turns the line into a checkbox item, given the text before the TODO on its line: a whole checkbox item on an empty
+ * line, `[ ] ` after a bullet or number that is already there, nothing in the middle of a line (or in a checkbox or quote).
+ */
+function boxLead(before: string): string {
+  if (/^\s*$/.test(before)) return '- [ ] '
+  if (/^\s*(?:[-*+]|\d+[.)])\s+$/.test(before)) return '[ ] '
+  return ''
+}
+
+/**
  * Replace `[from, to)` with a bold `TODO(XX)` (or `TODO`) followed by a colon and a space, and put the cursor after it, outside
- * the bold. What results is `**TODO(XX)**: `, which is exactly what the TODO parser reads, so typing it by hand and using the
- * helper are the same thing.
+ * the bold. Where a line can be a list item the TODO is written as a checkbox (`- [ ] **TODO(XX)**: `), so it can be ticked in
+ * the note and from the Meetings page; in the middle of a line it is plain text. What results is what the TODO parser reads,
+ * so typing it by hand and using the helper are the same thing.
  */
 export function insertTodoText(
   view: EditorView,
@@ -60,7 +71,8 @@ export function insertTodoText(
   to: number,
   owner: string | null
 ): void {
-  const text = `**${owner ? `TODO(${owner})` : 'TODO'}**: `
+  const line = view.state.doc.lineAt(from)
+  const text = `${boxLead(view.state.sliceDoc(line.from, from))}**${owner ? `TODO(${owner})` : 'TODO'}**: `
   view.dispatch({
     changes: { from, to, insert: text },
     selection: EditorSelection.cursor(from + text.length),
