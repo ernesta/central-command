@@ -142,6 +142,8 @@ const api: Api = {
     setDue: (uids, due) => ipcRenderer.invoke(TASKS_IPC.setDue, uids, due),
     delete: (uid) => ipcRenderer.invoke(TASKS_IPC.delete, uid),
     restore: (uid) => ipcRenderer.invoke(TASKS_IPC.restore, uid),
+    trash: () => ipcRenderer.invoke(TASKS_IPC.trash),
+    snapshot: () => ipcRenderer.invoke(TASKS_IPC.snapshot),
     discardIfEmpty: (uid) => ipcRenderer.invoke(TASKS_IPC.discardIfEmpty, uid),
     onChanged: (listener) => {
       const handler = (_event: Electron.IpcRendererEvent, event: TasksChangedEvent): void =>

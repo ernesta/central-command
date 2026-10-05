@@ -50,6 +50,10 @@ export interface TasksApi {
   restore(uid: string): Promise<Task>
   /** Remove a task nobody wrote in, for real. Resolves with whether it was removed. */
   discardIfEmpty(uid: string): Promise<boolean>
+  /** Deleted tasks that can be brought back (a task deleted with its parent comes back with it), newest first. */
+  trash(): Promise<{ task: Task; deletedAt: string }[]>
+  /** Write a readable copy of every task now (the app also writes one a day). Resolves with the file's name. */
+  snapshot(): Promise<string>
   /** Subscribe to changes. Returns an unsubscribe function. */
   onChanged(listener: (event: TasksChangedEvent) => void): () => void
 }
@@ -63,6 +67,8 @@ export const TASKS_IPC = {
   setDue: 'tasks:set-due',
   delete: 'tasks:delete',
   restore: 'tasks:restore',
+  trash: 'tasks:trash',
+  snapshot: 'tasks:snapshot',
   discardIfEmpty: 'tasks:discard-if-empty',
   changed: 'tasks:changed'
 } as const

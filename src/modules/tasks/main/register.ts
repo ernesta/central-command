@@ -14,7 +14,8 @@ import {
   type TaskWorkspace
 } from '../shared/types'
 import { tasksMigrations } from './migrations'
-import { countAllTasks, listTasks } from './repository'
+import { basename } from 'path'
+import { countAllTasks, listTasks, listTrash } from './repository'
 import { writeTasksSnapshot } from './snapshot'
 import { TasksStore } from './tasks-store'
 
@@ -153,6 +154,22 @@ function register(context: MainContext): () => void {
     broadcast(task.workspace)
     return task
   })
+  ipcMain.handle(TASKS_IPC.trash, () => {
+    const all = listTrash(context.db)
+    const trashed = new Set(all.map((r) => r.task.uid))
+    // A subtask deleted along with its parent comes back with it, so only the ones that stand alone are listed.
+    return all.filter((r) => !r.task.parentUid || !trashed.has(r.task.parentUid))
+  })
+  ipcMain.handle(TASKS_IPC.snapshot, () =>
+    basename(
+      writeTasksSnapshot(
+        context.db,
+        join(context.paths.root, 'backups', 'tasks'),
+        new Date(),
+        'manual'
+      )
+    )
+  )
   ipcMain.handle(TASKS_IPC.discardIfEmpty, (_event, uid: unknown) =>
     changing(asUid(uid), () => store.discardIfEmpty(asUid(uid)))
   )

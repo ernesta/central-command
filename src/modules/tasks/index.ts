@@ -9,6 +9,7 @@ import { TaskPage } from './renderer/TaskPage'
 import { TasksCard } from './renderer/TasksCard'
 import { TasksLanding } from './renderer/TasksLanding'
 import { TasksPage } from './renderer/TasksPage'
+import { TasksSettings } from './renderer/TasksSettings'
 
 /**
  * Tasks: a task manager of the app's own (it replaces ClickUp), in SQLite. Registered once per workspace
@@ -29,7 +30,12 @@ export function createTasksModule(workspace: TaskWorkspace): LiveModuleManifest 
     landingCard: TasksCard,
     search: searchTasks(workspace),
     ...(workspace === 'research'
-      ? { globals: TaskGlobals, shortcuts: TASKS_SHORTCUTS, entities: [taskEntities] }
+      ? {
+          globals: TaskGlobals,
+          shortcuts: TASKS_SHORTCUTS,
+          entities: [taskEntities],
+          settingsSection: TasksSettings
+        }
       : {})
   }
 }

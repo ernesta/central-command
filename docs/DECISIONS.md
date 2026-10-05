@@ -1942,3 +1942,10 @@ The rule logic was built and mutation-checked in stage 1; stage 5 added the **Re
 - **Mod-K**: `searchTasks` (title, tags, list, description; open and soonest due first, done last; the matching text of the description when the title did not match). **Palette and Dock**: "New task" opens the dialog in the workspace being looked at. **Shortcuts**: the Tasks group in the manifest (Mod-Shift-A, Space, arrows, Shift-F10) shows in Settings.
 - **People**: a person's page gains "Open tasks" (tasks not done whose description mentions the person) next to their meetings.
 - Driven in the built app: `@` in a task description offers tasks (and people); the stored text was `[…](cc://task/<uid>)` and `[…](cc://person/…)`; the target task's page showed "Mentioned in" with the line; Mod-K found a task by words of its title; the palette's New task opened the dialog.
+
+## Tasks: stage 9 (buildable part) and what was left (5 Oct 2026)
+
+- **Settings → Tasks** (`TasksSettings`, a `settingsSection` of the Research instance): the deleted tasks (those that stand alone; a subtask deleted with its parent returns with it) each with **Restore**, and **Save a copy now** (a readable JSON copy in `backups/tasks/`, the same as the daily one and the one after an import). Driven in the app, dark: delete, find it in Settings, Restore, copy.
+- **Stage 8 was skipped by instruction** (Work's hour entries become tasks, the billable tag, Work's Month card): it waits for the user's answer. Work's tasks, the `billable` tag from ClickUp and Work's Hours already exist separately.
+- **Left for the user**: review, the real import (steps in `docs/ROADMAP.md`, "For the user"), setting the repeat rules, and the push.
+- **What the unattended run could not check**: the Dock menu item, the packaged app, phone widths. Everything else was driven in the built app (light and dark) and in dev mode.
