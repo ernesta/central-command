@@ -11,6 +11,7 @@ import {
   planWorkHours,
   WORK_CONTRACTS,
   WORK_CORRECTIONS,
+  WORK_LOG_ADDITIONS,
   WORK_MOVES,
   type ContractSpec,
   type WorkPlan,
@@ -106,6 +107,13 @@ describe("the user's contracts", () => {
     expect(WORK_MOVES.map((m) => m.minutes)).toEqual([105, 45, 90])
     expect(WORK_MOVES.reduce((a, m) => a + m.minutes, 0)).toBe(240)
     expect(WORK_MOVES.every((m) => m.to === '2026-05-01')).toBe(true)
+    expect(WORK_LOG_ADDITIONS.map((a) => [a.date, a.minutes, a.client])).toEqual([
+      ['2026-05-21', 45, 'Impact'],
+      ['2026-05-28', 90, 'Teaching & Learning']
+    ])
+    expect(WORK_LOG_ADDITIONS.every((a) => a.date >= '2026-05-01' && a.date <= '2026-05-28')).toBe(
+      true
+    )
     expect(WORK_CORRECTIONS).toEqual([{ date: '2026-10-05', hours: 2.15, minutes: 135 }])
   })
 })

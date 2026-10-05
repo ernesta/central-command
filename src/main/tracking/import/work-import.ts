@@ -69,7 +69,25 @@ export interface LogAddition {
   minutes: number
   client: string
 }
-export const WORK_LOG_ADDITIONS: readonly LogAddition[] = []
+/**
+ * The 2:15 of the May log that the sheet lacks (the user said best guesses are fine, on a day that already has work):
+ * Teaching & Learning's whole section ("Document automation background review", 1:30; the sheet has no Teaching row
+ * before 4 Jun) and the 0:45 the log's meetings line has beyond the sheet's meeting rows.
+ */
+export const WORK_LOG_ADDITIONS: readonly LogAddition[] = [
+  {
+    date: '2026-05-21',
+    label: 'Meetings and emails, synthesizing notes, follow up, planning next steps',
+    minutes: 45,
+    client: 'Impact'
+  },
+  {
+    date: '2026-05-28',
+    label: 'Document automation: background review',
+    minutes: 90,
+    client: 'Teaching & Learning'
+  }
+]
 
 export interface Placed {
   row: number
