@@ -3,6 +3,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { DeleteDialog } from '@renderer/components/DeleteDialog'
+import { isUntouchedBody } from '@renderer/components/untouched'
+import { NEW_MEETING_BODY } from '../shared/front-matter'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
@@ -157,6 +159,9 @@ function MeetingView({
     }
   }
 
+  // A page nothing was typed into goes without asking.
+  const untouched = isUntouchedBody(body, NEW_MEETING_BODY)
+
   const confirmAndDelete = async (): Promise<void> => {
     setDeleting(true)
     setDeleteError(null)
@@ -206,7 +211,11 @@ function MeetingView({
             disabled={moving}
             onChange={(target) => void moveTo(target)}
           />
-          <Button size="small" className={styles.delete} onClick={() => setConfirmDelete(true)}>
+          <Button
+            size="small"
+            className={styles.delete}
+            onClick={() => (untouched ? void confirmAndDelete() : setConfirmDelete(true))}
+          >
             Delete meeting
           </Button>
         </div>

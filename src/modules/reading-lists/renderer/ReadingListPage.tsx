@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { DeleteDialog } from '@renderer/components/DeleteDialog'
+import { isUntouchedBody } from '@renderer/components/untouched'
+import { NEW_LIST_BODY } from '../shared/front-matter'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
@@ -68,6 +70,9 @@ function ListView({
   const goBack = (): void =>
     void (location.key !== 'default' ? navigate(-1) : navigate(readingListsBase))
 
+  // A page nothing was typed into goes without asking.
+  const untouched = !meta.title && isUntouchedBody(body, NEW_LIST_BODY)
+
   const confirmAndDelete = async (): Promise<void> => {
     setDeleting(true)
     setDeleteError(null)
@@ -120,7 +125,11 @@ function ListView({
           }
         />
         <div className={styles.actions}>
-          <Button size="small" className={styles.delete} onClick={() => setConfirmDelete(true)}>
+          <Button
+            size="small"
+            className={styles.delete}
+            onClick={() => (untouched ? void confirmAndDelete() : setConfirmDelete(true))}
+          >
             Delete list
           </Button>
         </div>

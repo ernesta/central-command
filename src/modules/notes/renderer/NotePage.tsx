@@ -3,6 +3,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { DeleteDialog } from '@renderer/components/DeleteDialog'
+import { isUntouchedBody } from '@renderer/components/untouched'
+import { NEW_NOTE_BODY } from '../shared/front-matter'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
@@ -110,6 +112,9 @@ function NoteView({
   const goBack = (): void =>
     void (location.key !== 'default' ? navigate(-1) : navigate(notesBase(noteRef.workspace)))
 
+  // A page nothing was typed into goes without asking.
+  const untouched = !meta.title && !meta.pinned && isUntouchedBody(body, NEW_NOTE_BODY)
+
   const confirmAndDelete = async (): Promise<void> => {
     setDeleting(true)
     setDeleteError(null)
@@ -192,7 +197,11 @@ function NoteView({
           >
             {meta.pinned ? 'Pinned' : 'Pin'}
           </Button>
-          <Button size="small" className={styles.delete} onClick={() => setConfirmDelete(true)}>
+          <Button
+            size="small"
+            className={styles.delete}
+            onClick={() => (untouched ? void confirmAndDelete() : setConfirmDelete(true))}
+          >
             Delete note
           </Button>
         </div>
