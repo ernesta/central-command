@@ -101,10 +101,6 @@ export function SearchResultsPage(): React.JSX.Element {
           setParams(value ? { q: value } : {}, { replace: true })
         }}
       />
-      <p className={styles.hint}>
-        <code>in:notes</code>, <code>in:meetings</code>, <code>in:training</code>,{' '}
-        <code>in:readings</code> or <code>in:people</code> searches just one of them.
-      </p>
       {answered && total === 0 && query.trim() !== '' && (
         <EmptyState heading="No results" message={`Nothing matches “${query.trim()}”.`} />
       )}

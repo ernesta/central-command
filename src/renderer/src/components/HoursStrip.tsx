@@ -61,10 +61,6 @@ export function HoursStrip({
                 </li>
               ))}
           </ul>
-          <p className={styles.note}>
-            Each entry counts fully towards each of its skills, so these add up to more than the
-            total.
-          </p>
         </div>
       )}
     </section>

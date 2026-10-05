@@ -211,13 +211,6 @@ export function MeetingsPage(): React.JSX.Element {
       )}
 
       <div className={styles.content}>{content}</div>
-
-      {rows !== null && visible.length > 0 && (
-        <p className={styles.hint}>
-          Newest first. Click any row to open its notes. Choosing the Supervision series gives you
-          the supervision log. Upcoming meetings are marked. A dash means nothing was recorded.
-        </p>
-      )}
     </div>
   )
 }

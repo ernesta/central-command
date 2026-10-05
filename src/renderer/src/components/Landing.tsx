@@ -177,11 +177,6 @@ export function RecentList({ rows }: { rows: readonly RecentRow[] }): React.JSX.
   )
 }
 
-/** Quiet explanatory text under a section. */
-export function LandingHint({ children }: { children: React.ReactNode }): React.JSX.Element {
-  return <p className={styles.hint}>{children}</p>
-}
-
 /** A white card that holds a list or a message. */
 export function LandingBox({ children }: { children: React.ReactNode }): React.JSX.Element {
   return <div className={styles.box}>{children}</div>

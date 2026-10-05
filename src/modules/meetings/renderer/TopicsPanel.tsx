@@ -115,10 +115,6 @@ export function TopicsPanel({
           Add topic
         </Button>
       )}
-      <p className={styles.hint}>
-        Built from the headings in your notes. Click one to jump to it; tick it when it has been
-        discussed. Unticked topics are what is left to cover or read up on.
-      </p>
     </aside>
   )
 }

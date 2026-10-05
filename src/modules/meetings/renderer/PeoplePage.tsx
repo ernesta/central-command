@@ -99,9 +99,6 @@ export function PeoplePage(): React.JSX.Element {
               void report(await run(window.api.meetings.people.restore(person.name)))
             }
           />
-          <p className={styles.note}>
-            Archived people are not offered when adding people to a note. Old notes still show them.
-          </p>
         </details>
       )}
       {removing && people && (

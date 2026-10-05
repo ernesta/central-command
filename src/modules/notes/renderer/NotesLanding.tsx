@@ -87,11 +87,7 @@ export function NotesLanding(): React.JSX.Element {
       {rows === null ? null : (
         <>
           <LandingSection id="pinned" label={`Pinned · ${pinned.length} of ${MAX_PINNED}`}>
-            {pinnedCards.length === 0 ? (
-              <p className={styles.hint}>Pin a note from its own page.</p>
-            ) : (
-              <SeriesCards cards={pinnedCards} />
-            )}
+            {pinnedCards.length > 0 && <SeriesCards cards={pinnedCards} />}
           </LandingSection>
 
           {groupCards.length > 0 && (

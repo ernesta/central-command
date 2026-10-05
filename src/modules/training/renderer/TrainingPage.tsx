@@ -203,13 +203,6 @@ export function TrainingPage(): React.JSX.Element {
       )}
 
       <div className={styles.content}>{content}</div>
-
-      {rows !== null && visible.length > 0 && (
-        <p className={styles.hint}>
-          Newest first. Click any row to open its notes. Upcoming entries are marked and not
-          counted. A dash means nothing was recorded.
-        </p>
-      )}
     </div>
   )
 }

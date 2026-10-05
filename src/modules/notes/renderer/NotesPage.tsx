@@ -120,10 +120,6 @@ export function NotesPage(): React.JSX.Element {
       </FilterRow>
 
       <div className={styles.content}>{content}</div>
-
-      {rows !== null && visible.length > 0 && (
-        <p className={styles.hint}>Most recently edited first. Click any row to open the note.</p>
-      )}
     </div>
   )
 }
