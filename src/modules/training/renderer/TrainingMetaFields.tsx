@@ -4,7 +4,7 @@ import { PeopleField } from '@renderer/components/PeopleField'
 import { ComboField } from '@renderer/components/ComboField'
 import { DescribedSelect } from '@renderer/components/DescribedSelect'
 import { SkillsField } from '@renderer/components/SkillsField'
-import type { Person } from '@shared/people'
+import { orderNames, type Person } from '@shared/people'
 import { durationMinutes, formatDuration } from '@shared/time'
 import { isValidDate, type TrainingPatch } from '../shared/front-matter'
 import {
@@ -152,9 +152,9 @@ export function TrainingMetaFields({
         <PeopleField
           label="Leads"
           noun="lead"
-          names={meta.leads}
+          names={orderNames(people, meta.leads)}
           people={people}
-          onChange={(leads) => onChange({ leads })}
+          onChange={(leads) => onChange({ leads: orderNames(people, leads) })}
           onAddPerson={onAddPerson}
         />
       </div>
