@@ -3,12 +3,14 @@ import { findMentions } from '@shared/entities'
 import { readableCopy, type CopyPart } from '@shared/entity-copy'
 import { copyRichText } from '../lib/clipboard'
 import { entitiesFacet } from './live-entities'
+import { markdownToHtml } from './live-html'
 
 /*
- * Copy and cut. A selection with no mention copies as the editor always did. One with mentions puts readable text on the
- * clipboard (names, in-text citations and a reference list; meetings and notes by their label) and, in the HTML flavour,
- * the Markdown it came from, so pasting back into the app gives the chips again (`live-paste.ts`). The clipboard first gets
- * the labels at once, then the fuller text once the readings have been looked up.
+ * Copy and cut. Plain text with nothing to format copies as the editor always did. Anything else puts two flavours on the
+ * clipboard: the text (mentions written out: names, in-text citations and a reference list; meetings and notes by their label)
+ * and HTML rendered from the Markdown (`live-html.ts`), so headings, lists, bold and links survive a paste into Slack or Word.
+ * The HTML also carries the Markdown it came from, so pasting back into the app gives the chips again (`live-paste.ts`). The
+ * clipboard first gets the labels at once, then the fuller text once the readings have been looked up.
  */
 
 function selectedMarkdown(view: EditorView): string | null {
@@ -24,10 +26,10 @@ function copySelection(event: ClipboardEvent, view: EditorView, cut: boolean): b
   const markdown = selectedMarkdown(view)
   if (markdown === null || !event.clipboardData) return false
   const mentions = findMentions(markdown)
-  if (mentions.length === 0) return false
-
   const { host } = view.state.facet(entitiesFacet)
-  const quick = readableCopy(markdown, () => null)
+  const quick = readableCopy(markdown, () => null, markdownToHtml)
+  // Nothing to format and nothing to write out: the editor's own plain copy is exactly right.
+  if (mentions.length === 0 && !/<[a-z]/i.test(quick.html.replace(/^<div [^>]*>/, ''))) return false
   event.preventDefault()
   event.clipboardData.setData('text/plain', quick.text)
   event.clipboardData.setData('text/html', quick.html)
@@ -42,7 +44,11 @@ function copySelection(event: ClipboardEvent, view: EditorView, cut: boolean): b
   void Promise.all(seen.values()).then(async (parts) => {
     const byId = new Map([...seen.keys()].map((id, n) => [id, parts[n]] as const))
     // Two mentions of one reading may carry different labels: the label is per mention, the reference is per reading.
-    const full = readableCopy(markdown, (ref) => byId.get(`${ref.kind}/${ref.key}`) ?? null)
+    const full = readableCopy(
+      markdown,
+      (ref) => byId.get(`${ref.kind}/${ref.key}`) ?? null,
+      markdownToHtml
+    )
     if (full.text === quick.text && full.html === quick.html) return
     try {
       await copyRichText(full)

@@ -28,10 +28,12 @@ const escapeHtml = (text: string): string =>
 /**
  * Markdown copied out of a note as readable text: each mention becomes what `part` says (its label when that returns
  * null), and the references of the readings in the text follow, alphabetical, each once.
+ * `render` turns the text into HTML (Markdown to HTML in the editor); without it the HTML is the text as plain paragraphs.
  */
 export function readableCopy(
   markdown: string,
-  part: (ref: EntityRef, label: string) => CopyPart | null
+  part: (ref: EntityRef, label: string) => CopyPart | null,
+  render?: (markdown: string) => string
 ): ReadableCopy {
   const mentions = findMentions(markdown)
   let body = ''
@@ -49,7 +51,7 @@ export function readableCopy(
   const list = [...references.values()].sort((a, b) => a.text.localeCompare(b.text))
   const lines = (s: string): string => escapeHtml(s).replace(/\r?\n/g, '<br>')
   let text = body
-  let html = `<p>${lines(body)}</p>`
+  let html = render ? render(body) : `<p>${lines(body)}</p>`
   if (list.length > 0) {
     text += `\n\n${REFERENCES_HEADING}\n${list.map((r) => r.text).join('\n')}`
     html += `<p>${REFERENCES_HEADING}</p>${list.map((r) => `<p>${r.html}</p>`).join('')}`
