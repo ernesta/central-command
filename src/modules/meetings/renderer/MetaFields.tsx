@@ -12,6 +12,7 @@ import { durationMinutes, formatDuration } from '../shared/time'
 import { Segmented } from '@renderer/components/Segmented'
 import { ComboField } from '@renderer/components/ComboField'
 import { SkillsField } from '@renderer/components/SkillsField'
+import { orderNames } from '@shared/people'
 import { PeopleField } from '@renderer/components/PeopleField'
 import styles from './MetaFields.module.css'
 
@@ -129,9 +130,9 @@ export function MetaFields({
         <PeopleField
           label="Attendees"
           noun="attendee"
-          names={meta.attendees}
+          names={orderNames(people, meta.attendees)}
           people={people}
-          onChange={(attendees) => onChange({ attendees })}
+          onChange={(attendees) => onChange({ attendees: orderNames(people, attendees) })}
           onAddPerson={onAddPerson}
         />
       </div>

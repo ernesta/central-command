@@ -16,6 +16,7 @@ import {
   ownerOptions,
   removePerson,
   restorePerson,
+  orderNames,
   sortPeople,
   updatePerson
 } from './people'
@@ -358,6 +359,19 @@ describe('sortPeople', () => {
       'Zoe Adams'
     ])
     expect(list[0].name).toBe('Zoe Adams')
+  })
+})
+
+describe('orderNames', () => {
+  it('puts you first however the names were added, others alphabetically', () => {
+    const list: Person[] = [
+      { name: 'Zoe Adams', initials: 'ZA', me: false },
+      { name: 'Ernesta Orlovaitė', initials: 'EO', me: true },
+      { name: 'Anat Bardi', initials: 'AB', me: false }
+    ]
+    expect(
+      orderNames(list, ['Zoe Adams', 'Unknown One', 'Ernesta Orlovaitė', 'Anat Bardi'])
+    ).toEqual(['Ernesta Orlovaitė', 'Anat Bardi', 'Unknown One', 'Zoe Adams'])
   })
 })
 

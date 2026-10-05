@@ -212,6 +212,12 @@ export function removePerson(people: readonly Person[], name: string): Person[] 
 export const sortPeople = (people: readonly Person[]): Person[] =>
   [...people].sort((a, b) => Number(b.me) - Number(a.me) || a.name.localeCompare(b.name))
 
+/** Names in display order: "me" first, everyone else alphabetically (names not in the list sort with the others). */
+export function orderNames(people: readonly Person[], names: readonly string[]): string[] {
+  const isMe = (n: string): boolean => findByName(people, n)?.me === true
+  return [...names].sort((a, b) => Number(isMe(b)) - Number(isMe(a)) || a.localeCompare(b))
+}
+
 /** Everyone who is not archived: who can be added to a note. */
 export const activePeople = (people: readonly Person[]): Person[] =>
   people.filter((p) => !p.archived)
