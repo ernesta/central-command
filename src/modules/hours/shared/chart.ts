@@ -21,30 +21,3 @@ export function slotAt(x: number, left: number, slot: number, count: number): nu
   const i = Math.floor((x - left) / slot)
   return i >= 0 && i < count ? i : null
 }
-
-/**
- * An axis for values that can go below zero: the lowest and highest tick are whole steps that hold `min` and
- * `max`, and zero is always a tick. The step is the smallest of `steps` that keeps the ticks to `maxTicks`.
- */
-export function niceRange(
-  min: number,
-  max: number,
-  steps: readonly number[],
-  maxTicks = 7
-): { bottom: number; top: number; step: number; ticks: number[] } {
-  const low = Math.min(min, 0)
-  const high = Math.max(max, 0)
-  const step =
-    steps.find((s) => Math.ceil(high / s) - Math.floor(low / s) < maxTicks) ??
-    steps[steps.length - 1]
-  const bottom = Math.floor(low / step) * step
-  const top = Math.max(Math.ceil(high / step) * step, bottom + step)
-  const ticks: number[] = []
-  for (let v = bottom; v <= top; v += step) ticks.push(v)
-  return { bottom, top, step, ticks }
-}
-
-/** A polyline through the points as an SVG path (`M x y L x y …`); empty for no points. */
-export function linePath(points: readonly { x: number; y: number }[]): string {
-  return points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x} ${p.y}`).join('')
-}

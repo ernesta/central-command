@@ -3,7 +3,6 @@ import { LandingHeader, LandingPage } from '@renderer/components/Landing'
 import { useNow } from '@renderer/state/use-now'
 import { useRunningTimer } from '@renderer/state/use-running-timer'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
-import { BalanceChart } from './BalanceChart'
 import { TypicalWeek } from './TypicalWeek'
 import { WeeksChart } from './WeeksChart'
 import { YearsTable } from './YearsTable'
@@ -30,7 +29,6 @@ export function HoursYearPage(): React.JSX.Element {
       {data && (
         <div className={styles.stack}>
           <WeeksChart data={data} now={now} />
-          <BalanceChart data={data} now={now} />
           <YearHeatMap workspace={workspace} data={data} now={now} />
           <TypicalWeek data={data} now={now} />
           <AllWeeks workspace={workspace} data={data} now={now} />
