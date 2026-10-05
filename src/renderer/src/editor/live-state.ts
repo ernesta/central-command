@@ -59,7 +59,8 @@ export function liveExtensions(options: LiveOptions): Extension[] {
     ...(options.extensions ?? []),
     liveCopy,
     livePaste,
-    EditorView.contentAttributes.of({ 'aria-label': options.label }),
+    // Spelling is checked by the system (underlines; suggestions are in the right-click menu, `src/main/context-menu.ts`).
+    EditorView.contentAttributes.of({ 'aria-label': options.label, spellcheck: 'true' }),
     // Reports the text synchronously on every change: the session saves on its own (longer) timer, so nothing
     // typed just before leaving the page or quitting can be missed.
     EditorView.updateListener.of((update) => {
