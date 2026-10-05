@@ -13,7 +13,7 @@ interface MonthCardProps {
   now: Moment
 }
 
-/** One invoice month at a time: its weeks (whole weeks, Friday to Thursday) with their hours, and the month's total against its plan. */
+/** One invoice month at a time: its weeks (whole weeks) with their hours, and the month's total against its plan. */
 export function MonthCard({
   data,
   week,

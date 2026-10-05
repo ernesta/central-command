@@ -59,3 +59,23 @@ describe('monthsOf', () => {
     expect(monthOfWeek(months, '2026-10-17')).toBeNull()
   })
 })
+
+describe('monthsOf for a contract that runs Wednesday to Tuesday', () => {
+  const old = { ...emptyYear('2025-10-01', WORK_PLAN), weeks: 26 }
+  const months = monthsOf(old)
+
+  it("ends every month on the last day of the week that holds the calendar month's last day", () => {
+    expect(months.map((m) => [m.name, m.from, m.to, m.weeks.length])).toEqual([
+      ['October', '2025-10-01', '2025-11-04', 5],
+      ['November', '2025-11-05', '2025-12-02', 4],
+      ['December', '2025-12-03', '2026-01-06', 5],
+      ['January', '2026-01-07', '2026-02-03', 4],
+      ['February', '2026-02-04', '2026-03-03', 4],
+      ['March', '2026-03-04', '2026-03-31', 4]
+    ])
+  })
+
+  it('has a plan of eight hours a week, so a month is its weeks times eight', () => {
+    expect(months.map((m) => m.plan)).toEqual([2400, 1920, 2400, 1920, 1920, 1920])
+  })
+})

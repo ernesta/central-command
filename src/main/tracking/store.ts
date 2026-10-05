@@ -235,7 +235,7 @@ export class TrackingStore {
     if (!hasContracts(workspace)) return { ok: false, reason: 'no-contracts' }
     if (dayNumber(start) === null || dayNumber(end) === null)
       return { ok: false, reason: 'bad-start' }
-    const weeks = contractWeeks(workspace, start, end)
+    const weeks = contractWeeks(start, end)
     if (!weeks.ok) return weeks
     if (this.overlaps(workspace, start, weeks.weeks, null)) return { ok: false, reason: 'overlap' }
     const year = { ...this.fresh(workspace, start), weeks: weeks.weeks }
@@ -248,7 +248,7 @@ export class TrackingStore {
   /** Move a contract's last day (whole weeks). Never past a day that holds time, and never into another contract. */
   setContractEnd(workspace: Workspace, start: string, end: string): YearResult {
     if (!hasContracts(workspace)) return { ok: false, reason: 'no-contracts' }
-    const weeks = contractWeeks(workspace, start, end)
+    const weeks = contractWeeks(start, end)
     if (!weeks.ok) return weeks
     if (this.overlaps(workspace, start, weeks.weeks, start)) return { ok: false, reason: 'overlap' }
     return this.mutate(workspace, start, (y) => {

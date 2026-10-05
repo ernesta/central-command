@@ -16,8 +16,8 @@ function nextStart(latest: { start: string; weeks?: number } | null): string {
 }
 
 /**
- * Work's contracts. The latest one's last day can be moved (a contract is whole weeks: it starts on a Friday and ends on
- * a Thursday); a new one is added with its first and last day.
+ * Work's contracts. The latest one's last day can be moved (a contract is whole weeks from its own first day, whatever
+ * weekday); a new one is added with its first and last day.
  */
 export function ContractFields({ workspace }: { workspace: HoursWorkspace }): React.JSX.Element {
   const { data } = useTrackingYear(workspace)
@@ -31,16 +31,11 @@ export function ContractFields({ workspace }: { workspace: HoursWorkspace }): Re
     current !== null &&
     ISO.test(shownEnd) &&
     shownEnd !== end &&
-    !contractWeeks(workspace, current.start, shownEnd).ok
+    !contractWeeks(current.start, shownEnd).ok
 
   const changeEnd = (value: string): void => {
     setEndDraft({ for: end, value })
-    if (
-      current &&
-      ISO.test(value) &&
-      value !== end &&
-      contractWeeks(workspace, current.start, value).ok
-    )
+    if (current && ISO.test(value) && value !== end && contractWeeks(current.start, value).ok)
       void window.api.tracking.setContractEnd(workspace, current.start, value)
   }
 
@@ -48,7 +43,7 @@ export function ContractFields({ workspace }: { workspace: HoursWorkspace }): Re
   const [finish, setFinish] = useState('')
   const suggested = nextStart(current)
   const from = start || suggested
-  const check = ISO.test(from) && ISO.test(finish) ? contractWeeks(workspace, from, finish) : null
+  const check = ISO.test(from) && ISO.test(finish) ? contractWeeks(from, finish) : null
   const add = (): void => {
     if (!check?.ok) return
     void window.api.tracking.createContract(workspace, from, finish).then((result) => {

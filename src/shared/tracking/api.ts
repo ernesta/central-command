@@ -73,7 +73,7 @@ export interface TrackingApi {
     type: TimeOffType
   ): Promise<YearResult>
   removeTimeOff(workspace: Workspace, year: string, date: string): Promise<YearResult>
-  /** Start a Work contract from its first to its last day (whole weeks, Friday to Thursday). */
+  /** Start a Work contract from its first to its last day (whole weeks from its first day). */
   createContract(workspace: Workspace, start: string, end: string): Promise<YearResult>
   /** Move a contract's last day. */
   setContractEnd(workspace: Workspace, year: string, end: string): Promise<YearResult>

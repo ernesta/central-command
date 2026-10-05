@@ -64,3 +64,15 @@ describe('a year that starts on a Friday', () => {
     expect(resolveWeek('2026-10-05', FRIDAY, '2026-10-01')).toBe(FRIDAY)
   })
 })
+
+describe('a year that starts on a Wednesday', () => {
+  const WEDNESDAY = '2025-10-01'
+  it('opens on the Wednesday-to-Tuesday week of today', () => {
+    expect(defaultWeek(WEDNESDAY, '2025-10-07')).toBe(WEDNESDAY)
+    expect(defaultWeek(WEDNESDAY, '2025-10-08')).toBe('2025-10-08')
+  })
+  it('takes only a Wednesday inside the year', () => {
+    expect(resolveWeek('2025-10-15', WEDNESDAY, '2025-10-07')).toBe('2025-10-15')
+    expect(resolveWeek('2025-10-13', WEDNESDAY, '2025-10-07')).toBe(WEDNESDAY)
+  })
+})

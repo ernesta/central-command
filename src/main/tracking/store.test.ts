@@ -101,9 +101,9 @@ describe('Work contracts', () => {
     expect(store.years('work')).toEqual([START])
   })
 
-  it('refuses a start that is not a Friday, an end that is not a Thursday, and an overlap', () => {
+  it('refuses a start that is not a date, an end that does not make whole weeks, and an overlap', () => {
     const store = contract()
-    expect(store.createContract('work', '2026-11-03', '2027-04-29')).toEqual({
+    expect(store.createContract('work', '2026-11-31', '2027-04-29')).toEqual({
       ok: false,
       reason: 'bad-start'
     })
@@ -118,6 +118,17 @@ describe('Work contracts', () => {
     expect(store.createContract('research', '2026-10-30', '2027-04-29')).toEqual({
       ok: false,
       reason: 'no-contracts'
+    })
+  })
+
+  it('takes a contract that starts on any weekday, next to another (Wednesday to Tuesday before Friday to Thursday)', () => {
+    const store = contract()
+    expect(store.createContract('work', '2025-10-01', '2026-03-31').ok).toBe(true)
+    expect(store.years('work')).toEqual([START, '2025-10-01'])
+    expect(store.get('work', '2025-10-01').weeks).toBe(26)
+    expect(store.createContract('work', '2026-03-31', '2026-04-27')).toEqual({
+      ok: false,
+      reason: 'overlap'
     })
   })
 

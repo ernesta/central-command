@@ -55,7 +55,7 @@ export interface Plan {
 /** The contents of one year's file for one workspace. */
 export interface TrackingYear {
   version: 1
-  /** A Monday (a Friday for Work); the year is 52 weeks from it, or `weeks`. */
+  /** A Monday (any weekday for a Work contract); the year is 52 weeks from it, or `weeks`. */
   start: string
   /** The length in weeks when it is not 52: a Work contract. */
   weeks?: number
