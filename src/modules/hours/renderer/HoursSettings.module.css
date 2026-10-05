@@ -65,3 +65,16 @@
 .day:focus-visible {
   outline-offset: -2px;
 }
+.block {
+  display: grid;
+  gap: 24px;
+}
+.block + .block {
+  padding-top: 24px;
+  border-top: 1px solid var(--border-soft);
+}
+.subheading {
+  margin: 0;
+  font-size: var(--text-16);
+  font-weight: 600;
+}

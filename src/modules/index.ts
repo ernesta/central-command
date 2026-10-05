@@ -24,6 +24,7 @@ export const modules: ModuleManifest[] = [
   createTimeOffModule('research'),
   createMeetingsModule('work'),
   createNotesModule('work'),
+  createHoursModule('work'),
   ...plannedModules
 ]
 

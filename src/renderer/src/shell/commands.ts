@@ -24,8 +24,8 @@ const COMMANDS: Command[] = [
     id: 'start-timer',
     title: 'Start timer',
     detail: 'Opens Hours, ready for a task name.',
-    // Hours is Research's; the field takes focus on arrival (TodayCard).
-    go: (navigate) => navigate(hoursBase('research'), { state: { focus: 'start' } })
+    // The current workspace's Hours; the field takes focus on arrival (TodayCard).
+    go: (navigate, workspace) => navigate(hoursBase(workspace), { state: { focus: 'start' } })
   },
   {
     id: 'open-settings',

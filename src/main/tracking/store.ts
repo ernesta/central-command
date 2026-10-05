@@ -22,7 +22,7 @@ import type {
   YearResult
 } from '@shared/tracking/api'
 import {
-  DEFAULT_PLAN,
+  defaultPlan,
   emptyYear,
   type Change,
   type Moment,
@@ -323,7 +323,7 @@ export class TrackingStore {
     const previous = before === undefined ? null : this.peek(workspace, before)
     return previous
       ? emptyYear(start, previous.plan, carrySeconds(previous))
-      : emptyYear(start, DEFAULT_PLAN, 0)
+      : emptyYear(start, defaultPlan(workspace), 0)
   }
 
   /** Save `next` if the file still holds what was read. True when it is saved (or already was). */

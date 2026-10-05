@@ -57,5 +57,13 @@ describe('searchCommands', () => {
       await hit.run?.()
       expect(navigate).toHaveBeenCalledWith('/research/hours', { state: { focus: 'start' } })
     })
+
+    it('Start timer opens Hours of the current workspace', async () => {
+      withTimer(false)
+      const navigate = vi.fn()
+      const [hit] = await searchCommands('start timer', navigate, 6, 'work')
+      await hit.run?.()
+      expect(navigate).toHaveBeenCalledWith('/work/hours', { state: { focus: 'start' } })
+    })
   })
 })

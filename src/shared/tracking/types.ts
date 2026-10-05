@@ -79,6 +79,18 @@ export const DEFAULT_PLAN: Plan = {
   allowanceDays: 40
 }
 
+/** Work: eight hours a week and no time off (it has no allowance to track). */
+export const WORK_PLAN: Plan = {
+  hoursPerWeek: 480,
+  workDays: [1, 2, 3, 4, 5],
+  allowanceDays: 0
+}
+
+/** The plan a workspace's first year starts from. */
+export function defaultPlan(workspace: string): Plan {
+  return workspace === 'work' ? WORK_PLAN : DEFAULT_PLAN
+}
+
 export function emptyYear(start: string, plan: Plan = DEFAULT_PLAN, carryIn = 0): TrackingYear {
   return {
     version: 1,

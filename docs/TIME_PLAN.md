@@ -275,7 +275,7 @@ tracks there instead. Hours only: Tasks are a later module (see "Tasks, later"),
 7. **Time off (done 2 Oct 2026; `docs/DECISIONS.md`, "Time off page"):** `src/modules/time-off/`: the page (summary, bar, list, inline Add, remove), the landing card. The planned-days link already came with stage 1.
 8. **Adopt the year in Training and Meetings (done 2 Oct 2026; `docs/DECISIONS.md`, "Training and Meetings use the shared year").**
 9. **Polish, QA, docs (done 2 Oct 2026):** `docs/DECISIONS.md` ("Hours and Time off"), `docs/ROADMAP.md`, `CLAUDE.md` (status, the shared year).
-10. **Later, with the user:** Work's Hours and Time off (after question 1), and Tasks.
+10. **Work's Hours (done 5 Oct 2026):** `createHoursModule('work')` is registered; Work starts at 8:00 a week, Mon–Fri, 0 days off (`defaultPlan`), has no Time off module, and Settings → Hours holds a block per workspace. The idle Start chip and the palette's Start timer follow the current workspace. Left: Tasks, and Work's days worked (the user sets them in Settings).
 
 **Testing for real** (CLAUDE.md): a scratch library via `CENTRAL_COMMAND_HOME`, Playwright, the built app and dev mode. Type real keystrokes into the
 field; Start then quit at once and reopen (the session must still be running); switch tasks many times quickly and check the day's total equals the

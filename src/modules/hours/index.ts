@@ -22,8 +22,8 @@ export function createHoursModule(workspace: HoursWorkspace): LiveModuleManifest
       { path: 'year', element: createElement(HoursYearPage) }
     ],
     landingCard: HoursCard,
-    // A tab named after the module: when Work is registered its settings will need to say which workspace they are for.
-    settingsSection: () => createElement(HoursSettings, { workspace }),
+    // One Hours tab for the whole app (tabs are keyed by module id): Research's instance draws it, with a block per workspace.
+    settingsSection: workspace === 'research' ? HoursSettings : undefined,
     // One timer for the whole app: only one instance draws the chip, whichever workspace it is running in.
     globals: workspace === 'research' ? TimerChip : undefined
   }

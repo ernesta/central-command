@@ -7,7 +7,8 @@ import { formatHours } from '@shared/tracking/format'
 import type { Plan } from '@shared/tracking/types'
 import { currentYear } from '@shared/year'
 import { parseAllowance, parseWeekHours, toggleWorkDay, WEEKDAYS } from '../shared/plan-settings'
-import type { HoursWorkspace } from '../shared/workspaces'
+import { WORKSPACE_LABELS } from '@renderer/shell/workspaces'
+import { HOURS_WORKSPACES, TIME_OFF_WORKSPACES, type HoursWorkspace } from '../shared/workspaces'
 import styles from './HoursSettings.module.css'
 
 /** A field that shows what is saved until it is edited, saves a valid value on Enter or leaving it, and drops anything else. */
@@ -56,26 +57,24 @@ function PlanField({
   )
 }
 
-/**
- * Hours' settings for a workspace: the hours a week, the days worked and the days off a year. They are the plan of
- * the current year (a new year starts from the previous one's).
- */
-export function HoursSettings({ workspace }: { workspace: HoursWorkspace }): React.JSX.Element {
+/** One workspace's plan: the hours a week, the days worked and, where the workspace has time off, the days off a year. */
+function PlanBlock({ workspace }: { workspace: HoursWorkspace }): React.JSX.Element {
   const { settings } = useSettings()
   const year = currentYear(todayIso(), settings.yearStarts)
   const data = useYearFile(workspace, year)
   const save = (patch: Partial<Plan>): void =>
     void window.api.tracking.setPlan(workspace, year, patch)
+  const id = `hours-${workspace}`
 
   return (
-    <section className={styles.section} aria-labelledby="hours-settings">
-      <h2 id="hours-settings" className={styles.heading}>
-        Hours
-      </h2>
+    <div className={styles.block} role="group" aria-labelledby={`${id}-heading`}>
+      <h3 id={`${id}-heading`} className={styles.subheading}>
+        {WORKSPACE_LABELS[workspace]}
+      </h3>
       {data && (
         <>
           <PlanField
-            id="hours-per-week"
+            id={`${id}-per-week`}
             label="Hours per week"
             value={data.plan.hoursPerWeek}
             format={formatHours}
@@ -83,10 +82,10 @@ export function HoursSettings({ workspace }: { workspace: HoursWorkspace }): Rea
             onCommit={(hoursPerWeek) => save({ hoursPerWeek })}
           />
           <div className={styles.field}>
-            <span className={styles.label} id="hours-days-label">
+            <span className={styles.label} id={`${id}-days-label`}>
               Days worked
             </span>
-            <div role="group" aria-labelledby="hours-days-label" className={styles.days}>
+            <div role="group" aria-labelledby={`${id}-days-label`} className={styles.days}>
               {WEEKDAYS.map(({ day, label }) => {
                 const on = data.plan.workDays.includes(day)
                 const next = toggleWorkDay(data.plan.workDays, day)
@@ -105,16 +104,32 @@ export function HoursSettings({ workspace }: { workspace: HoursWorkspace }): Rea
               })}
             </div>
           </div>
-          <PlanField
-            id="hours-days-off"
-            label="Days off a year"
-            value={data.plan.allowanceDays}
-            format={String}
-            parse={parseAllowance}
-            onCommit={(allowanceDays) => save({ allowanceDays })}
-          />
+          {TIME_OFF_WORKSPACES.includes(workspace) && (
+            <PlanField
+              id={`${id}-days-off`}
+              label="Days off a year"
+              value={data.plan.allowanceDays}
+              format={String}
+              parse={parseAllowance}
+              onCommit={(allowanceDays) => save({ allowanceDays })}
+            />
+          )}
         </>
       )}
+    </div>
+  )
+}
+
+/** Hours' settings: a plan block for every workspace that tracks hours. They are the plan of the current year (a new year starts from the previous one's). */
+export function HoursSettings(): React.JSX.Element {
+  return (
+    <section className={styles.section} aria-labelledby="hours-settings">
+      <h2 id="hours-settings" className={styles.heading}>
+        Hours
+      </h2>
+      {HOURS_WORKSPACES.map((workspace) => (
+        <PlanBlock key={workspace} workspace={workspace} />
+      ))}
     </section>
   )
 }

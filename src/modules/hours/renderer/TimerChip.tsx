@@ -3,6 +3,7 @@ import { useLocation } from 'react-router'
 import { Play, Square } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
 import { TopBarPortal } from '@renderer/shell/top-bar-slot'
+import { useQuickActionWorkspace } from '@renderer/shell/useQuickActionWorkspace'
 import { WORKSPACE_LABELS } from '@renderer/shell/workspaces'
 import { useSettings } from '@renderer/state/settings-context'
 import { useNow } from '@renderer/state/use-now'
@@ -221,6 +222,7 @@ function Chip({ running, now }: { running: RunningTimer; now: Moment }): React.J
 
 /** No timer runs: a quiet Start in the running chip's place. It starts at once, unnamed; the chip then asks for a name. */
 function IdleChip(): React.JSX.Element {
+  const workspace = useQuickActionWorkspace()
   return (
     <div className={styles.root}>
       <div className={styles.chip}>
@@ -229,7 +231,7 @@ function IdleChip(): React.JSX.Element {
           className={styles.main}
           onClick={() => {
             openAfterStart = true
-            void window.api.tracking.start('research', '')
+            void window.api.tracking.start(workspace, '')
           }}
         >
           <Play size={12} strokeWidth={1.75} fill="currentColor" aria-hidden />

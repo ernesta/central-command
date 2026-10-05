@@ -72,6 +72,16 @@ describe('the current year', () => {
   })
 })
 
+describe('Work', () => {
+  it('starts with eight hours a week and no days off', () => {
+    expect(open().get('work', '2026-09-21').plan).toEqual({
+      hoursPerWeek: 480,
+      workDays: [1, 2, 3, 4, 5],
+      allowanceDays: 0
+    })
+  })
+})
+
 describe('a new year', () => {
   it('takes the previous plan and its final carry, per workspace', () => {
     const store = open()
@@ -86,7 +96,7 @@ describe('a new year', () => {
     expect(next.plan.hoursPerWeek).toBe(1800)
     expect(next.plan.workDays).toEqual([1, 2, 3, 4])
     expect(next.carryIn).toBe(300)
-    expect(store.get('work', '2026-09-21').plan.hoursPerWeek).toBe(2250)
+    expect(store.get('work', '2026-09-21').plan.hoursPerWeek).toBe(480)
     expect(store.get('work', '2026-09-21').carryIn).toBe(0)
   })
 })
