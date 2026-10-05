@@ -28,12 +28,7 @@ export function StaleTimer({
       <span>
         Started {since} {clockTime(session.start)}. Set an end time.
       </span>
-      <TimeInput
-        className={styles.clock}
-        aria-label="End time"
-        value={time}
-        onChange={(value) => setTime(value ?? '')}
-      />
+      <TimeInput aria-label="End time" value={time} onChange={(value) => setTime(value ?? '')} />
       <Button size="small" variant="primary" disabled={!ready} onClick={end}>
         End
       </Button>

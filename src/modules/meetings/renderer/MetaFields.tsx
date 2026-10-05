@@ -96,13 +96,13 @@ export function MetaFields({
         <label className={styles.label} htmlFor="meeting-start">
           Start
         </label>
-        <TimeInput id="meeting-start" className={styles.input} {...time('start')} />
+        <TimeInput id="meeting-start" aria-label="Start time" {...time('start')} />
       </div>
       <div className={styles.field}>
         <label className={styles.label} htmlFor="meeting-end">
           End
         </label>
-        <TimeInput id="meeting-end" className={styles.input} {...time('end')} />
+        <TimeInput id="meeting-end" aria-label="End time" {...time('end')} />
       </div>
       <div className={styles.field}>
         <span className={styles.label} id="meeting-duration-label">

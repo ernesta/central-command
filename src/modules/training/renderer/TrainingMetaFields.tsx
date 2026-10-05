@@ -83,13 +83,13 @@ export function TrainingMetaFields({
         <label className={styles.label} htmlFor="training-start">
           Start
         </label>
-        <TimeInput id="training-start" className={styles.input} {...time('start')} />
+        <TimeInput id="training-start" aria-label="Start time" {...time('start')} />
       </div>
       <div className={styles.field}>
         <label className={styles.label} htmlFor="training-end">
           End
         </label>
-        <TimeInput id="training-end" className={styles.input} {...time('end')} />
+        <TimeInput id="training-end" aria-label="End time" {...time('end')} />
       </div>
       <div className={styles.field}>
         <span className={styles.label} id="training-duration-label">
