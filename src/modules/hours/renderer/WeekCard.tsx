@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { formatDay, formatHours, formatRange, formatSignedHours } from '@shared/tracking/format'
 import { dailyAim, weekTotals } from '@shared/tracking/plan'
 import { dayRows, weekDaysMinutes } from '@shared/tracking/totals'
+import { defaultClient } from '@shared/tracking/timer'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
 import { addDays, weekNumberOf, yearEnd } from '@shared/year'
 import { earlierLabels } from '../shared/tasks'
@@ -126,17 +127,23 @@ export function WeekCard({
                     )}
                     <TaskList
                       rows={rows}
-                      onRename={(label, to) =>
-                        void tracking.renameTask(workspace, data.start, date, label, to)
+                      clients={data.plan.clients}
+                      onSetClient={(label, from, to) =>
+                        void tracking.setClient(workspace, data.start, date, label, from, to)
                       }
-                      onSetMinutes={(label, m) =>
-                        void tracking.setTaskMinutes(workspace, data.start, date, label, m)
+                      onRename={(label, to, client) =>
+                        void tracking.renameTask(workspace, data.start, date, label, to, client)
+                      }
+                      onSetMinutes={(label, m, client) =>
+                        void tracking.setTaskMinutes(workspace, data.start, date, label, m, client)
                       }
                     />
                     <AddTime
                       labels={labels}
-                      onAdd={(label, m) =>
-                        void tracking.addTime(workspace, data.start, date, label, m)
+                      clients={data.plan.clients}
+                      defaultClient={defaultClient(data)}
+                      onAdd={(label, m, client) =>
+                        void tracking.addTime(workspace, data.start, date, label, m, client)
                       }
                     />
                     {note && <p className={styles.note}>{note}</p>}

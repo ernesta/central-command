@@ -128,6 +128,12 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
+.option .optionClient {
+  margin-left: auto;
+  flex: none;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+}
 .option:hover {
   background: var(--hover-tint);
 }

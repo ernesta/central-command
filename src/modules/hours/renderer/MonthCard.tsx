@@ -100,6 +100,14 @@ export function MonthCard({
           })}
         </tbody>
         <tfoot>
+          {begun &&
+            month.clients.map((c) => (
+              <tr key={c.client ?? ''} className={styles.clientRow}>
+                <th scope="row">{c.client ?? 'No client'} – Total</th>
+                <td className={styles.right}>{formatHours(c.minutes)}</td>
+                <td />
+              </tr>
+            ))}
           <tr>
             <th scope="row">{month.name}</th>
             <td className={styles.right}>{begun ? formatHours(month.minutes) : '—'}</td>

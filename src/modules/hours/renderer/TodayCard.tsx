@@ -2,8 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
 import { Play, Plus } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
+import { Select } from '@renderer/components/Select'
 import { formatDay, formatHours } from '@shared/tracking/format'
 import { dailyAim } from '@shared/tracking/plan'
+import { defaultClient } from '@shared/tracking/timer'
 import { QUARTER } from '@shared/tracking/rounding'
 import { dayMinutes, dayRows } from '@shared/tracking/totals'
 import type { RunningTimer } from '@shared/tracking/api'
@@ -31,6 +33,9 @@ interface TodayCardProps {
 export function TodayCard({ workspace, data, running, now }: TodayCardProps): React.JSX.Element {
   const [name, setName] = useState('')
   const [minutes, setMinutes] = useState(0)
+  const [picked, setPicked] = useState<string | null>(null)
+  const clients = data.plan.clients ?? []
+  const client = picked !== null && clients.includes(picked) ? picked : defaultClient(data)
   const rows = dayRows(data, now.date, now)
   const total = dayMinutes(data, now.date, now)
   const aim = dailyAim(data, now.date)
@@ -46,8 +51,8 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
     if (wantsFocus) startRef.current?.querySelector('input')?.focus()
   }, [wantsFocus, key])
 
-  const start = (label: string): void => {
-    if (!stale) void tracking.start(workspace, label)
+  const start = (label: string, forClient = client): void => {
+    if (!stale) void tracking.start(workspace, label, undefined, forClient)
   }
   const adding = minutes > 0
   const ready = adding ? name.trim() !== '' : !stale
@@ -55,10 +60,11 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
     if (!ready) return
     if (adding) {
       const quarter = Math.max(QUARTER, Math.round(minutes / QUARTER) * QUARTER)
-      void tracking.addTime(workspace, data.start, now.date, name, quarter)
+      void tracking.addTime(workspace, data.start, now.date, name, quarter, client)
     } else start(name)
     setName('')
     setMinutes(0)
+    setPicked(null)
   }
 
   return (
@@ -76,13 +82,17 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
       <TaskList
         rows={rows}
         canStart={!stale}
-        onStart={start}
+        onStart={(label, rowClient) => start(label, rowClient)}
         onStop={() => void tracking.stop()}
-        onSetMinutes={(label, m) =>
-          void tracking.setTaskMinutes(workspace, data.start, now.date, label, m)
+        clients={clients}
+        onSetClient={(label, from, to) =>
+          void tracking.setClient(workspace, data.start, now.date, label, from, to)
         }
-        onRename={(label, to) =>
-          void tracking.renameTask(workspace, data.start, now.date, label, to)
+        onSetMinutes={(label, m, rowClient) =>
+          void tracking.setTaskMinutes(workspace, data.start, now.date, label, m, rowClient)
+        }
+        onRename={(label, to, rowClient) =>
+          void tracking.renameTask(workspace, data.start, now.date, label, to, rowClient)
         }
       />
       <div className={styles.start} ref={startRef}>
@@ -94,6 +104,14 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
           onSubmit={submit}
           labels={labels}
         />
+        {clients.length > 0 && (
+          <Select
+            label="Client"
+            value={client ?? clients[0]}
+            options={clients.map((c) => ({ value: c, label: c }))}
+            onChange={setPicked}
+          />
+        )}
         <DurationField label="Time" value={minutes} onChange={setMinutes} onEnter={submit} />
         <Button
           variant="primary"

@@ -17,6 +17,16 @@
 .row:has(.round) {
   grid-template-columns: 32px minmax(0, 1fr) auto;
 }
+/* With a client's menu there is one more column, between the name and the time. */
+.row:has(.client) {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+.row:has(.round):has(.client) {
+  grid-template-columns: 32px minmax(0, 1fr) auto auto;
+}
+.client {
+  max-width: 190px;
+}
 .row[data-live='true'] {
   background: var(--selected-bg);
   color: var(--selected-text);

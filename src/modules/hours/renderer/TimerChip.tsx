@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
 import { Play, Square } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
+import { Select } from '@renderer/components/Select'
 import { TopBarPortal } from '@renderer/shell/top-bar-slot'
 import { useQuickActionWorkspace } from '@renderer/shell/useQuickActionWorkspace'
 import { WORKSPACE_LABELS } from '@renderer/shell/workspaces'
@@ -14,7 +15,7 @@ import type { RunningTimer } from '@shared/tracking/api'
 import { clockTime, formatDay, formatHours } from '@shared/tracking/format'
 import { dayRows } from '@shared/tracking/totals'
 import type { Moment } from '@shared/tracking/types'
-import { sameLabel } from '@shared/tracking/timer'
+import { sameClient, sameLabel } from '@shared/tracking/timer'
 import { earlierLabels, recentLabels } from '../shared/tasks'
 import { elapsedMinutes } from '../shared/timer'
 import { StaleTimer } from './StaleTimer'
@@ -36,8 +37,13 @@ function TimerPopover({
   const { session } = running
   const data = useYearFile(running.workspace, running.year)
   const others = data
-    ? dayRows(data, now.date).filter((r) => r.label !== '' && !sameLabel(r.label, session.label))
+    ? dayRows(data, now.date).filter(
+        (r) =>
+          r.label !== '' &&
+          !(sameLabel(r.label, session.label) && sameClient(r.client, session.client))
+      )
     : []
+  const clients = data?.plan.clients ?? []
   const tracking = window.api.tracking
   const [name, setName] = useState('')
   const labels = useMemo(() => (data ? earlierLabels(data) : []), [data])
@@ -49,7 +55,14 @@ function TimerPopover({
   // Naming the running task renames this day's unnamed blocks; a name already used today merges into it.
   const rename = (to: string): void => {
     if (!to.trim()) return
-    void tracking.renameTask(running.workspace, running.year, session.date, session.label, to)
+    void tracking.renameTask(
+      running.workspace,
+      running.year,
+      session.date,
+      session.label,
+      to,
+      session.client
+    )
     onClose()
   }
 
@@ -89,6 +102,28 @@ function TimerPopover({
       ) : (
         <div className={styles.full}>{session.label || 'No name yet'}</div>
       )}
+      {clients.length > 0 && (
+        <Select
+          compact
+          label="Client"
+          value={session.client ?? ''}
+          options={[
+            ...(session.client === undefined ? [{ value: '', label: 'No client' }] : []),
+            ...clients.map((c) => ({ value: c, label: c }))
+          ]}
+          onChange={(to) =>
+            to &&
+            void tracking.setClient(
+              running.workspace,
+              running.year,
+              session.date,
+              session.label,
+              session.client,
+              to
+            )
+          }
+        />
+      )}
       {clock === null ? (
         <StaleTimer running={running} now={now} />
       ) : (
@@ -101,17 +136,18 @@ function TimerPopover({
               <span className={styles.label}>Switch to</span>
               <ul className={styles.options}>
                 {others.map((row) => (
-                  <li key={row.label.toLowerCase()}>
+                  <li key={`${row.client ?? ''}\n${row.label.toLowerCase()}`}>
                     <button
                       type="button"
                       className={styles.option}
                       onClick={() => {
-                        void tracking.start(running.workspace, row.label)
+                        void tracking.start(running.workspace, row.label, undefined, row.client)
                         onClose()
                       }}
                     >
                       <Play size={14} strokeWidth={1.75} fill="currentColor" aria-hidden />
                       <span>{row.label}</span>
+                      {row.client && <span className={styles.optionClient}>{row.client}</span>}
                     </button>
                   </li>
                 ))}
