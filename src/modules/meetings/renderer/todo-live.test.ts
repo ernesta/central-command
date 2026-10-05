@@ -105,7 +105,7 @@ describe('writing a TODO', () => {
   it('replaces the range it is given, such as the typed /todo, and one undo gives it back', () => {
     const { view } = harness('Point one /todo|')
     insertTodoText(view, 10, 15, 'KR')
-    expect(show(view)).toBe('Point one **TODO(KR)**: |')
+    expect(show(view)).toBe('Point one\n- [ ] **TODO(KR)**: |')
     undo(view)
     expect(view.state.sliceDoc()).toBe('Point one /todo')
   })
@@ -118,9 +118,10 @@ describe('writing a TODO', () => {
     expect(view.state.sliceDoc()).toBe('- a\r\n- [ ] **TODO(AC)**: \r\n')
     expect(view.state.selection.main.from).toBe(at + '[ ] **TODO(AC)**: '.length)
   })
-  it('writes plain text in the middle of a line, and in a checkbox or a quote', () => {
+  it('starts a new checkbox line in the middle of a line, and writes plain text in a checkbox or a quote', () => {
     for (const [doc, expected] of [
-      ['Point one |', 'Point one **TODO(KR)**: |'],
+      ['Point one |', 'Point one\n- [ ] **TODO(KR)**: |'],
+      ['  - Point one |', '  - Point one\n  - [ ] **TODO(KR)**: |'],
       ['- [ ] |', '- [ ] **TODO(KR)**: |'],
       ['> |', '> **TODO(KR)**: |'],
       ['  1. |', '  1. [ ] **TODO(KR)**: |']
@@ -131,10 +132,15 @@ describe('writing a TODO', () => {
       expect(show(view)).toBe(expected)
     }
   })
+  it('splits a CRLF note with its own line break', () => {
+    const { view } = harness('Point one \r\nnext')
+    insertTodoText(view, 10, 10, 'KR')
+    expect(view.state.sliceDoc()).toBe('Point one\r\n- [ ] **TODO(KR)**: \r\nnext')
+  })
   it('reports the text at once, so quitting straight after writing it saves it', () => {
     const { view, reports } = harness('x |')
     insertTodoText(view, 2, 2, 'EO')
-    expect(reports).toEqual(['x **TODO(EO)**: '])
+    expect(reports).toEqual(['x\n- [ ] **TODO(EO)**: '])
   })
 })
 
@@ -154,7 +160,7 @@ describe('typing /todo', () => {
     h.type('o')
     await frame()
     h.opened[0].insert('KR')
-    expect(h.view.state.sliceDoc()).toBe('Point one **TODO(KR)**: ')
+    expect(h.view.state.sliceDoc()).toBe('Point one\n- [ ] **TODO(KR)**: ')
   })
   it('works at the very start of a line and in a bullet', async () => {
     for (const marked of ['/tod|', '- /tod|', 'a\n\n/tod|']) {

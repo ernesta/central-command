@@ -37,7 +37,7 @@ export interface TodoMenuBridge {
  * The TODO helper: typing `/todo` (at the
  * start of a line or after a space) or pressing Cmd/Ctrl+Shift+T opens the menu of owners, which is `useTodoHelper`'s and
  * knows nothing of the editor. While it is open it takes the arrow keys, Enter, Tab and Escape, and what is typed
- * searches the people (the note does not change); Backspace on an empty search or moving the cursor closes it. Choosing writes `- [ ] **TODO(XX)**: ` (a checkbox where a line can hold one).
+ * searches the people (the note does not change); Backspace on an empty search or moving the cursor closes it. Choosing writes `- [ ] **TODO(XX)**: ` (on a new line when typed mid-line).
  */
 
 const TRIGGER = '/todo'
@@ -50,20 +50,23 @@ const KEYS: Record<string, MenuKey> = {
 }
 
 /**
- * What turns the line into a checkbox item, given the text before the TODO on its line: a whole checkbox item on an empty
- * line, `[ ] ` after a bullet or number that is already there, nothing in the middle of a line (or in a checkbox or quote).
+ * How a TODO is written after `before`, the text before it on its line: a checkbox item on an empty line, `[ ] ` after a
+ * bullet or number already there, plain text in a checkbox, a quote or a table row, and a new checkbox item on the next line
+ * in the middle of a line (a checkbox can only start a line).
  */
-function boxLead(before: string): string {
-  if (/^\s*$/.test(before)) return '- [ ] '
-  if (/^\s*(?:[-*+]|\d+[.)])\s+$/.test(before)) return '[ ] '
-  return ''
+function leadFor(before: string): { lead: string; split: boolean } {
+  if (/^\s*$/.test(before)) return { lead: '- [ ] ', split: false }
+  if (/^\s*(?:[-*+]|\d+[.)])\s+$/.test(before)) return { lead: '[ ] ', split: false }
+  if (/^\s*(?:(?:[-*+]|\d+[.)])\s+\[[ xX]\]\s+|[>|])/.test(before))
+    return { lead: '', split: false }
+  return { lead: '- [ ] ', split: true }
 }
 
 /**
  * Replace `[from, to)` with a bold `TODO(XX)` (or `TODO`) followed by a colon and a space, and put the cursor after it, outside
- * the bold. Where a line can be a list item the TODO is written as a checkbox (`- [ ] **TODO(XX)**: `), so it can be ticked in
- * the note and from the Meetings page; in the middle of a line it is plain text. What results is what the TODO parser reads,
- * so typing it by hand and using the helper are the same thing.
+ * the bold. The TODO is written as a checkbox (`- [ ] **TODO(XX)**: `) so it can be ticked in the note and from the Meetings
+ * page; typed in the middle of a line it starts a new line (the spaces before it go). What results is what the TODO parser
+ * reads, so typing it by hand and using the helper are the same thing.
  */
 export function insertTodoText(
   view: EditorView,
@@ -72,10 +75,16 @@ export function insertTodoText(
   owner: string | null
 ): void {
   const line = view.state.doc.lineAt(from)
-  const text = `${boxLead(view.state.sliceDoc(line.from, from))}**${owner ? `TODO(${owner})` : 'TODO'}**: `
+  const before = view.state.sliceDoc(line.from, from)
+  const { lead, split } = leadFor(before)
+  const marker = `**${owner ? `TODO(${owner})` : 'TODO'}**: `
+  const start = split ? from - (before.length - before.trimEnd().length) : from
+  const text = split
+    ? `${view.state.lineBreak}${/^\s*/.exec(before)?.[0] ?? ''}${lead}${marker}`
+    : lead + marker
   view.dispatch({
-    changes: { from, to, insert: text },
-    selection: EditorSelection.cursor(from + text.length),
+    changes: { from: start, to, insert: text },
+    selection: EditorSelection.cursor(start + text.length),
     scrollIntoView: true,
     userEvent: 'input.complete'
   })
