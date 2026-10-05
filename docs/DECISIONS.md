@@ -1782,3 +1782,8 @@ The imported Work meetings still have no start or end times (the importer leaves
 
 - **What.** `LiveEditor` sets `spellcheck="true"` on its content (`live-state.ts`), so misspelt words get the system's red dotted underline. Chromium's own checker was already active on the Mac; the attribute makes it explicit and survives a change of default. Suggestions and "Add to dictionary" come from the existing right-click menu ("Right-click menu", `src/main/context-menu.ts`). The language follows the macOS spelling settings; the app has no setting of its own.
 - **Checked.** Built app on a scratch library: typing "mispeled wrod" underlined both words and the attribute read `true`. The native right-click menu is not visible to the test driver, so look at it by hand. Mentions, links and Markdown markers are checked like any other text (no exclusions).
+
+## Blank space beside the editor does not start editing (5 Oct 2026)
+
+- **What.** Clicking the page to the right of a note's card, or the card's own padding, put the cursor in the editor. Chrome moves the caret to the nearest editable text when blank, non-editable space is pressed. `LiveEditor` now listens for `mousedown` on the document: a press outside the editor on a container with no text of its own (and not on a button, link, input or other focusable) is cancelled and the active element is blurred. Selecting text elsewhere, buttons and links are untouched.
+- **Checked.** Built app on a scratch library, on a Readings notes page (the same shared editor): a click 10px right of the editor (card padding) and one 80px right (page) both left nothing focused; before the change both focused the editor. The All notes page itself was not driven.
