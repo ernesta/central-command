@@ -4,6 +4,8 @@
 
 **Notes feedback round (2 Oct 2026): stages 1 to 5 built (1 to 3 applied to the real library; stage 4's `npm run tidy:reading-lists` applied 2 Oct 2026); stage 5 built (readable copy of entities; `docs/DECISIONS.md`, "Stage 5 write-up"), the round is finished.** See `docs/DECISIONS.md`, "Notes feedback round, stages 1 and 2" (stage 3 is written up in its list of what was left). Stage 3 (`npm run link:citations`): 40 links in 14 files; 29 citations still have no reading, so the user adds them to Zotero and asks for another pass (a re-run). Stage 4 (done): Reading lists use entities, "Attach a reading…" and the sidebar are gone. Left: (5) readable copy of entities (names; APA in-text citations plus a reference list). Afterwards remind the user about the entity sidebar/hover question.
 
+**Meeting TODOs as checkboxes (5 Oct 2026): built, converted and installed.** Tick open TODOs on the Meetings landing; `/todo` writes a checkbox (a new line when typed mid-line); `npm run convert:todos` was applied to all Research and Work meetings (`docs/DECISIONS.md`, "TODOs as checkboxes"). Nothing left to do; try ticking a TODO from the landing and typing `/todo` in a meeting.
+
 ## For Claude: six things requested 27 Sep 2026, go-ahead given — work through these without further check-in
 
 **Status (27 Sep 2026, evening): all six done and pushed.** Items 1–5 are fully built, tested (unit tests, plus
