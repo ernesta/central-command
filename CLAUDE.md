@@ -11,6 +11,9 @@ ask the user.
   N-API prebuilds so no Electron rebuild is needed)
 - `npm run lint`, `npm run typecheck`, `npm run format`
 - `npm run import:obsidian -- --vault <path> [--apply]`: import reading notes from an Obsidian vault (dry run by default)
+- `npm run import:work-hours -- --sheet <xlsx> --logs <Activity Logs folder> [--detail YYYY-MM] [--apply]`: import the Work sheet "Time Tracking" into two contracts (one entry
+  per row with its client), checked against the monthly Word activity logs (dry run by default; macOS only; never overwrites a contract that holds data; `--apply` only when the
+  user says so, app closed; a dry run on 5 Oct 2026 passes the old contract and leaves the current one as ATTENTION until the user says where 2:15 of the May log belongs)
 - `npm run import:notes -- --vault <path> [--workspace work] [--apply]`: import the free notes (Data Sources, Ideas, Thesis, Placement; with
   `--workspace work`, the loose notes plus Admin & Compliance) from an Obsidian
   vault into Notes, all ungrouped (dry run by default; only ever creates files)
