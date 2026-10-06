@@ -14,7 +14,7 @@ import { earlierLabels } from '../shared/tasks'
 import type { HoursWorkspace } from '../shared/workspaces'
 import { DurationField } from './DurationField'
 import { StaleTimer } from './StaleTimer'
-import { BILLABLE_TAG, billableTasks, listForNewTask } from '../../tasks/shared/billable'
+import { listForNewTask } from '../../tasks/shared/new-task-list'
 import { taskKey, taskKeyForLabel } from '../../tasks/shared/tracked'
 import { useTaskDefaults } from '../../tasks/renderer/useTaskDefaults'
 import { useOpenTasks } from '../../tasks/renderer/useOpenTasks'
@@ -38,7 +38,6 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
   const [name, setName] = useState('')
   const [minutes, setMinutes] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
-  const [billablePick, setBillablePick] = useState<'yes' | 'no'>('yes')
   const clients = data.plan.clients ?? []
   const client = picked !== null && clients.includes(picked) ? picked : defaultClient(data)
   const rows = dayRows(data, now.date, now)
@@ -48,10 +47,6 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
   const openTasks = useOpenTasks(workspace)
   const isWork = workspace === 'work'
   const { last } = useTaskDefaults('work')
-  // A name that is one of the open tasks keeps that task's own billable state; any other name makes a task with the chosen one.
-  const namedKey = taskKeyForLabel(openTasks, name)
-  const named = namedKey ? openTasks.find((t) => taskKey(t.uid) === namedKey) : undefined
-  const billable = named ? billableTasks([named], openTasks).length > 0 : billablePick === 'yes'
   const labels = useMemo(() => {
     const earlier = earlierLabels(data)
     const titles = openTasks
@@ -80,8 +75,7 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
       title: label.trim(),
       list,
       sublist: last.list === list ? last.sublist : '',
-      due: now.date,
-      tags: billable ? [BILLABLE_TAG] : []
+      due: now.date
     })
     return taskKey(made.uid)
   }
@@ -149,18 +143,6 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
             value={client ?? clients[0]}
             options={clients.map((c) => ({ value: c, label: c }))}
             onChange={setPicked}
-          />
-        )}
-        {isWork && (
-          <Select
-            label="Billable"
-            value={billable ? 'yes' : 'no'}
-            options={[
-              { value: 'yes', label: 'Billable' },
-              { value: 'no', label: 'Non-billable' }
-            ]}
-            onChange={setBillablePick}
-            disabled={named !== undefined}
           />
         )}
         <DurationField label="Time" value={minutes} onChange={setMinutes} onEnter={submit} />

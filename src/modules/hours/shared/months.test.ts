@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { emptyYear, WORK_PLAN } from '@shared/tracking/types'
-import { billableYear, monthOfWeek, monthPlanSoFar, monthsOf } from './months'
+import { monthOfWeek, monthPlanSoFar, monthsOf } from './months'
 
 const contract = {
   ...emptyYear('2026-05-01', WORK_PLAN),
@@ -106,7 +106,7 @@ describe('clients in a month', () => {
   })
 })
 
-describe('billable months', () => {
+describe('a month’s plan so far', () => {
   const year = {
     ...contract,
     adjusts: [
@@ -116,14 +116,6 @@ describe('billable months', () => {
     ],
     days: { '2026-10-07': { minutes: 120 } }
   }
-  const billable = (t: string | undefined): boolean => t === 'cc://task/b'
-
-  it('counts only time linked to a billable task, and no imported day totals', () => {
-    const october = monthsOf(billableYear(year, billable)).find((m) => m.name === 'October')!
-    expect(october.minutes).toBe(300)
-    expect(monthsOf(year).find((m) => m.name === 'October')!.minutes).toBe(570)
-  })
-
   it('counts a month’s plan so far by the weeks that have begun', () => {
     const october = monthsOf(year).find((m) => m.name === 'October')!
     expect(monthPlanSoFar(october, '2026-10-06')).toBe(480)
