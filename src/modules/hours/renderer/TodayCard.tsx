@@ -3,8 +3,10 @@ import { useLocation } from 'react-router'
 import { Play, Plus } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
 import { Select } from '@renderer/components/Select'
+import { useOpenContracts } from '@renderer/state/use-open-contracts'
 import { formatDay, formatHours } from '@shared/tracking/format'
 import { dailyAim } from '@shared/tracking/plan'
+import { contractName, yearOfClient } from '@shared/tracking/contracts'
 import { defaultClient, sameLabel } from '@shared/tracking/timer'
 import { QUARTER } from '@shared/tracking/rounding'
 import { dayMinutes, dayRows } from '@shared/tracking/totals'
@@ -38,8 +40,18 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
   const [name, setName] = useState('')
   const [minutes, setMinutes] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
-  const clients = data.plan.clients ?? []
-  const client = picked !== null && clients.includes(picked) ? picked : defaultClient(data)
+  // The clients of every contract that holds today (one contract: its own); the client decides the contract.
+  const { contracts } = useOpenContracts(workspace)
+  const own = data.plan.clients ?? []
+  const offered = contracts.length > 1 ? contracts.flatMap((c) => c.clients) : own
+  const client = picked !== null && offered.includes(picked) ? picked : defaultClient(data)
+  const clientOptions = offered.map((c) => ({
+    value: c,
+    label: c,
+    ...(contracts.length > 1
+      ? { group: contractName(contracts.find((x) => x.clients.includes(c))) }
+      : {})
+  }))
   const rows = dayRows(data, now.date, now)
   const total = dayMinutes(data, now.date, now)
   const aim = dailyAim(data, now.date)
@@ -92,7 +104,15 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
     if (adding) {
       const quarter = Math.max(QUARTER, Math.round(minutes / QUARTER) * QUARTER)
       void keyFor(name).then((key) =>
-        tracking.addTime(workspace, data.start, now.date, name, quarter, client, key)
+        tracking.addTime(
+          workspace,
+          (client && yearOfClient(contracts, client)) || data.start,
+          now.date,
+          name,
+          quarter,
+          client,
+          key
+        )
       )
     } else start(name, client, true)
     setName('')
@@ -117,7 +137,7 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
         canStart={!stale}
         onStart={(label, rowClient) => start(label, rowClient)}
         onStop={() => void tracking.stop()}
-        clients={clients}
+        clients={own}
         onSetClient={(label, from, to) =>
           void tracking.setClient(workspace, data.start, now.date, label, from, to)
         }
@@ -137,11 +157,11 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
           onSubmit={submit}
           labels={labels}
         />
-        {clients.length > 0 && (
+        {offered.length > 0 && (
           <Select
             label="Client"
-            value={client ?? clients[0]}
-            options={clients.map((c) => ({ value: c, label: c }))}
+            value={client ?? offered[0]}
+            options={clientOptions}
             onChange={setPicked}
           />
         )}

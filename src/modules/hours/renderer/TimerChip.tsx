@@ -8,10 +8,12 @@ import { useQuickActionWorkspace } from '@renderer/shell/useQuickActionWorkspace
 import { WORKSPACE_LABELS } from '@renderer/shell/workspaces'
 import { useSettings } from '@renderer/state/settings-context'
 import { useNow } from '@renderer/state/use-now'
+import { useOpenContracts } from '@renderer/state/use-open-contracts'
 import { useRunningTimer } from '@renderer/state/use-running-timer'
 import { useYearFile } from '@renderer/state/use-year-file'
 import { WORKSPACES } from '@shared/settings'
 import type { RunningTimer } from '@shared/tracking/api'
+import { contractName } from '@shared/tracking/contracts'
 import { clockTime, formatDay, formatHours } from '@shared/tracking/format'
 import { dayRows } from '@shared/tracking/totals'
 import type { Moment } from '@shared/tracking/types'
@@ -256,20 +258,46 @@ function Chip({ running, now }: { running: RunningTimer; now: Moment }): React.J
   )
 }
 
-/** No timer runs: a quiet Start in the running chip's place. It starts at once, unnamed; the chip then asks for a name. */
+/**
+ * No timer runs: a quiet Start in the running chip's place. It starts at once, unnamed; the chip then asks for a name.
+ * Where several clients could be started for (Work, with overlapping contracts) a Client menu sits before it,
+ * on the client used last; the client decides the contract.
+ */
 function IdleChip(): React.JSX.Element {
   const workspace = useQuickActionWorkspace()
+  const { contracts, last } = useOpenContracts(workspace)
+  const [picked, setPicked] = useState<string | null>(null)
+  const all = contracts.flatMap((c) => c.clients)
+  const choose = all.length > 1
+  const client = picked !== null && all.includes(picked) ? picked : last
   return (
-    <div className={styles.root}>
+    <div className={[styles.root, choose && styles.idle].filter(Boolean).join(' ')}>
+      {choose && (
+        <Select
+          compact
+          label="Client"
+          value={client ?? all[0]}
+          options={all.map((c) => ({
+            value: c,
+            label: c,
+            ...(contracts.length > 1
+              ? { group: contractName(contracts.find((x) => x.clients.includes(c))) }
+              : {})
+          }))}
+          onChange={setPicked}
+        />
+      )}
       <div className={styles.chip}>
         <button
           type="button"
           className={styles.main}
           onClick={() => {
             openAfterStart = true
-            void window.api.tracking.start(workspace, '').then((result) => {
-              if (!result.ok) openAfterStart = false
-            })
+            void window.api.tracking
+              .start(workspace, '', undefined, choose ? client : undefined)
+              .then((result) => {
+                if (!result.ok) openAfterStart = false
+              })
           }}
         >
           <Play size={12} strokeWidth={1.75} fill="currentColor" aria-hidden />
