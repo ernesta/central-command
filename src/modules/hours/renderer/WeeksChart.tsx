@@ -62,6 +62,12 @@ export function WeeksChart({ data, now }: { data: TrackingYear; now: Moment }): 
       <header className={styles.head}>
         <h2 className={styles.title}>Weeks</h2>
         <ul className={styles.legend}>
+          {!aimed && (
+            <li>
+              <i className={styles.met} />
+              Hours
+            </li>
+          )}
           {aimed && (
             <>
               <li>

@@ -99,9 +99,11 @@ export function WeekCard({
             <th scope="col" className={styles.right}>
               Hours
             </th>
-            <th scope="col">
-              {data.plan.weekAim || !aimed ? '' : `Aim ${perDay > 0 ? formatHours(perDay) : ''}`}
-            </th>
+            {aimed && (
+              <th scope="col">
+                {data.plan.weekAim ? '' : `Aim ${perDay > 0 ? formatHours(perDay) : ''}`}
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -211,23 +213,25 @@ function DayRows({
         <td className={styles.right}>
           {past ? formatHours(minutes) : <span className={styles.muted}>—</span>}
         </td>
-        <td>
-          {past && bar && (
-            <div className={styles.track} aria-hidden>
-              <i
-                className={styles.fill}
-                style={{ width: `${barFill(minutes, aim, perDay) * 100}%` }}
-              />
-              {aim !== null && (
-                <b className={styles.tick} style={{ left: `${(1 / BAR_SCALE) * 100}%` }} />
-              )}
-            </div>
-          )}
-        </td>
+        {bar && (
+          <td>
+            {past && (
+              <div className={styles.track} aria-hidden>
+                <i
+                  className={styles.fill}
+                  style={{ width: `${barFill(minutes, aim, perDay) * 100}%` }}
+                />
+                {aim !== null && (
+                  <b className={styles.tick} style={{ left: `${(1 / BAR_SCALE) * 100}%` }} />
+                )}
+              </div>
+            )}
+          </td>
+        )}
       </tr>
       {expanded && (
         <tr className={styles.detail}>
-          <td colSpan={3}>
+          <td colSpan={bar ? 3 : 2}>
             <div className={styles.detailBody}>{children}</div>
           </td>
         </tr>
