@@ -116,3 +116,10 @@
 .muted {
   color: var(--text-muted);
 }
+
+.note {
+  margin: 0;
+  padding: 4px 24px 10px;
+  font-size: var(--text-13);
+  color: var(--text-muted);
+}

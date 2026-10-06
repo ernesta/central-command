@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { emptyYear, WORK_PLAN } from '@shared/tracking/types'
-import { monthOfWeek, monthsOf } from './months'
+import { billableYear, monthOfWeek, monthPlanSoFar, monthsOf } from './months'
 
 const contract = {
   ...emptyYear('2026-05-01', WORK_PLAN),
@@ -103,5 +103,31 @@ describe('clients in a month', () => {
   it('has none where the plan has no clients', () => {
     const research = { ...y, plan: { ...y.plan, clients: undefined } }
     expect(monthsOf(research).every((m) => m.clients.length === 0)).toBe(true)
+  })
+})
+
+describe('billable months', () => {
+  const year = {
+    ...contract,
+    adjusts: [
+      { id: 'a', date: '2026-10-02', label: 'x', minutes: 300, task: 'cc://task/b' },
+      { id: 'b', date: '2026-10-05', label: 'y', minutes: 60, task: 'cc://task/n' },
+      { id: 'c', date: '2026-10-06', label: 'z', minutes: 90 }
+    ],
+    days: { '2026-10-07': { minutes: 120 } }
+  }
+  const billable = (t: string | undefined): boolean => t === 'cc://task/b'
+
+  it('counts only time linked to a billable task, and no imported day totals', () => {
+    const october = monthsOf(billableYear(year, billable)).find((m) => m.name === 'October')!
+    expect(october.minutes).toBe(300)
+    expect(monthsOf(year).find((m) => m.name === 'October')!.minutes).toBe(570)
+  })
+
+  it('counts a month’s plan so far by the weeks that have begun', () => {
+    const october = monthsOf(year).find((m) => m.name === 'October')!
+    expect(monthPlanSoFar(october, '2026-10-06')).toBe(480)
+    expect(monthPlanSoFar(october, '2026-10-09')).toBe(960)
+    expect(monthPlanSoFar(october, '2026-09-01')).toBe(0)
   })
 })

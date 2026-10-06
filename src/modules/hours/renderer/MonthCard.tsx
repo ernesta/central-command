@@ -1,11 +1,14 @@
 import { useMemo } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { formatHours, formatRange } from '@shared/tracking/format'
+import { formatHours, formatRange, formatSignedHours } from '@shared/tracking/format'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
-import { monthOfWeek, monthsOf } from '../shared/months'
+import { billableYear, monthOfWeek, monthPlanSoFar, monthsOf } from '../shared/months'
+import { useBillableKeys } from '../../tasks/renderer/useBillableKeys'
+import type { HoursWorkspace } from '../shared/workspaces'
 import styles from './MonthCard.module.css'
 
 interface MonthCardProps {
+  workspace: HoursWorkspace
   data: TrackingYear
   /** The first day of the week the page shows; its month is the one shown. */
   week: string
@@ -13,19 +16,40 @@ interface MonthCardProps {
   now: Moment
 }
 
-/** One invoice month at a time: its weeks (whole weeks) with their hours, and the month's total against its plan. */
+/**
+ * One invoice month at a time, billable time only (time linked to a billable task): its weeks (whole weeks) with their hours, the
+ * month against its plan, and the balance against what the weeks begun so far expect. What the month leaves out is said, not hidden.
+ */
 export function MonthCard({
+  workspace,
   data,
   week,
   onWeekChange,
   now
 }: MonthCardProps): React.JSX.Element | null {
-  const months = useMemo(() => monthsOf(data, now), [data, now])
+  const keys = useBillableKeys(workspace)
+  const { months, all, unlinked } = useMemo(
+    () => ({
+      months: monthsOf(
+        billableYear(data, (t) => t !== undefined && (keys?.has(t) ?? false)),
+        now
+      ),
+      all: monthsOf(data, now),
+      unlinked: monthsOf(
+        billableYear(data, (t) => t === undefined),
+        now
+      )
+    }),
+    [data, keys, now]
+  )
   const month = monthOfWeek(months, week)
   if (!month) return null
   const index = months.indexOf(month)
   const left = month.plan - month.minutes
   const begun = month.from <= now.date
+  const balance = month.minutes - monthPlanSoFar(month, now.date)
+  const unlinkedMinutes = unlinked[index]?.minutes ?? 0
+  const otherMinutes = (all[index]?.minutes ?? 0) - month.minutes - unlinkedMinutes
 
   return (
     <section className={styles.card} aria-label="Month">
@@ -41,7 +65,7 @@ export function MonthCard({
             <ChevronLeft size={16} strokeWidth={1.75} aria-hidden />
           </button>
           <span className={styles.label}>
-            {month.name} · {formatRange(month.from, month.to)}
+            Billable · {month.name} · {formatRange(month.from, month.to)}
           </span>
           <button
             type="button"
@@ -60,6 +84,14 @@ export function MonthCard({
           </span>
         )}
       </header>
+      {begun && (
+        <p className={styles.note}>
+          Balance {formatSignedHours(balance)} against{' '}
+          {formatHours(monthPlanSoFar(month, now.date))} expected so far
+          {otherMinutes > 0 && ` · Not billable ${formatHours(otherMinutes)}`}
+          {unlinkedMinutes > 0 && ` · Not linked to a task ${formatHours(unlinkedMinutes)}`}
+        </p>
+      )}
       <table className={styles.table}>
         <thead>
           <tr>
@@ -109,7 +141,7 @@ export function MonthCard({
               </tr>
             ))}
           <tr>
-            <th scope="row">{month.name}</th>
+            <th scope="row">Billable – {month.name}</th>
             <td className={styles.right}>{begun ? formatHours(month.minutes) : '—'}</td>
             <td className={styles.right}>{formatHours(month.plan)}</td>
           </tr>

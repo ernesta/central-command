@@ -82,3 +82,24 @@ export function monthsOf(year: TrackingYear, now?: Moment): ContractMonth[] {
 export function monthOfWeek(months: readonly ContractMonth[], week: string): ContractMonth | null {
   return months.find((m) => m.weeks.some((w) => w.from === week)) ?? null
 }
+
+/**
+ * The year as invoiced: only time linked to a billable task (`isBillable` is given a session's or entry's task key), no imported
+ * day totals. Months of this year are the billable months; the difference from the whole year's months is what they leave out.
+ */
+export function billableYear(
+  year: TrackingYear,
+  isBillable: (task: string | undefined) => boolean
+): TrackingYear {
+  return {
+    ...year,
+    sessions: year.sessions.filter((s) => isBillable(s.task)),
+    adjusts: year.adjusts.filter((a) => isBillable(a.task)),
+    days: {}
+  }
+}
+
+/** A month's plan for the weeks that have begun by `today`: what should be done by now (a week counts whole from its first day). */
+export function monthPlanSoFar(month: ContractMonth, today: string): number {
+  return month.weeks.filter((w) => w.from <= today).reduce((sum, w) => sum + w.plan, 0)
+}

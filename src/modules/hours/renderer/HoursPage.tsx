@@ -49,7 +49,13 @@ export function HoursPage(): React.JSX.Element {
               now={now}
             />
             {data.plan.weekAim && (
-              <MonthCard data={data} week={week} onWeekChange={setWeek} now={now} />
+              <MonthCard
+                workspace={workspace}
+                data={data}
+                week={week}
+                onWeekChange={setWeek}
+                now={now}
+              />
             )}
           </div>
           <div className={styles.stack}>
