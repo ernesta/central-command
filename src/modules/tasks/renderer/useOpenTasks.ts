@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import type { Workspace } from '@shared/settings'
+import { billableTasks } from '../shared/billable'
 import { TASK_WORKSPACES, type Task, type TaskWorkspace } from '../shared/types'
 
 /**
- * The tasks that are not done in a workspace (top-level and subtasks), for Hours to offer by name and to link time to. Empty for
- * a workspace without tasks. Read again when the tasks change.
+ * The tasks that are not done in a workspace (top-level and subtasks), for Hours to offer by name and to link time to. Work offers
+ * only its billable tasks. Empty for a workspace without tasks. Read again when the tasks change.
  */
 export function useOpenTasks(workspace: Workspace): Task[] {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -14,7 +15,9 @@ export function useOpenTasks(workspace: Workspace): Task[] {
     let cancelled = false
     const load = (): void => {
       void window.api.tasks.list(w).then((list) => {
-        if (!cancelled) setTasks(list.filter((t) => t.status !== 'done'))
+        if (cancelled) return
+        const open = list.filter((t) => t.status !== 'done')
+        setTasks(w === 'work' ? billableTasks(open, list) : open)
       })
     }
     load()
