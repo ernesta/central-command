@@ -63,6 +63,42 @@ describe('tidyClickupMarkdown', () => {
     expect(tidyClickupMarkdown('\n\nOne\n\n\n\nTwo  \n\n')).toBe('One\n\nTwo')
   })
 
+  // Cases the real library showed that no synthetic fixture did (6 Oct 2026 dry run).
+
+  it('drops a label whose URL ClickUp escaped for Markdown', () => {
+    const url = 'https://rhul.sharepoint.com/sites/AH_Ethical_Review/SitePages/Home.aspx'
+    const escaped = 'https://rhul.sharepoint.com/sites/AH\\_Ethical\\_Review/SitePages/Home.aspx'
+    expect(tidyClickupMarkdown(`[${escaped}](${url})`)).toBe(url)
+    // The other real one: the domain alongside the escaped URL.
+    const talk = 'https://mariakna.github.io/talks/korochkina_cbu_talk_091025.pdf'
+    const talkEscaped = 'https://mariakna.github.io/talks/korochkina\\_cbu\\_talk\\_091025.pdf'
+    expect(tidyClickupMarkdown(`[mariakna.github.io ${talkEscaped}](${talk})`)).toBe(talk)
+    // A domain that is not the URL's own is a real word, so the label stays.
+    expect(tidyClickupMarkdown(`[mariakna.github.io ${escaped}](${url})`)).toContain('](')
+  })
+
+  it('gives each bare URL its own line, so two embeds never run together', () => {
+    const a = 'https://post.parliament.uk/fellowships/'
+    const b = 'https://intranet.royalholloway.ac.uk/events.aspx'
+    expect(tidyClickupMarkdown(`[${a}](${a})[${b}](${b})`)).toBe(`${a}\n${b}`)
+    // A separator already there is enough; only a run-together needs the break.
+    expect(tidyClickupMarkdown(`see [${a}](${a})then [${b}](${b})`)).toBe(`see ${a}\nthen ${b}`)
+  })
+
+  it('turns ClickUp bullets into the ones the editor writes', () => {
+    expect(tidyClickupMarkdown('*   https://a.example/x\n*   https://b.example/y')).toBe(
+      '- https://a.example/x\n- https://b.example/y'
+    )
+    expect(tidyClickupMarkdown('*   One\n    *   Nested')).toBe('- One\n    - Nested')
+  })
+
+  it('counts a lone thematic break as nothing, but keeps one among real text', () => {
+    expect(tidyClickupMarkdown('* * *')).toBe('')
+    expect(tidyClickupMarkdown('---')).toBe('')
+    expect(tidyClickupMarkdown('\n\n* * *\n\n')).toBe('')
+    expect(tidyClickupMarkdown('One\n\n* * *\n\nTwo')).toBe('One\n\n* * *\n\nTwo')
+  })
+
   it('is empty for a description that holds nothing', () => {
     expect(tidyClickupMarkdown('')).toBe('')
     expect(tidyClickupMarkdown('\n\n   \n')).toBe('')

@@ -47,12 +47,18 @@ const host = (url: string): string => {
   }
 }
 
+/** Markdown's backslash escapes, so a label holding an escaped URL compares equal to the URL itself. */
+const unescaped = (text: string): string => text.replace(/\\([\\`*_{}[\]()#+\-.!|>~])/g, '$1')
+
+/** A line that is only `* * *`, `---` or `___`: a thematic break, which carries nothing as a description. */
+const isThematicBreak = (line: string): boolean => /^\s*([*\-_]\s*){3,}$/.test(line)
+
 /**
  * Whether a link's label says nothing the URL does not. ClickUp renders an embedded link with its domain and the URL
  * itself as the label, so the label is noise; a label with real words is kept.
  */
 function labelIsJustTheUrl(label: string, url: string): boolean {
-  const collapsed = label.replace(/\s+/g, ' ').trim()
+  const collapsed = unescaped(label).replace(/\s+/g, ' ').trim()
   if (collapsed === '') return true
   const bare = (s: string): string => s.replace(/[.,;:]+$/, '').replace(/\/+$/, '')
   const target = bare(url)
@@ -61,26 +67,54 @@ function labelIsJustTheUrl(label: string, url: string): boolean {
     const p = bare(piece)
     if (p === target || p === domain || p === `www.${domain}`) return false
     // ClickUp sometimes truncates the URL in the label with an ellipsis.
-    const stem = p.replace(/(\.{3}|…)$/, '')
+    const stem = p.replace(/(\.{3}|\u2026)$/, '')
     return !(stem !== p && stem.length > 0 && target.startsWith(stem))
   })
   return leftover.length === 0
 }
 
+const LINK = /(?<!!)\[([^\][]*)\]\(([^()\s]+)\)/g
+
 /**
- * ClickUp's `markdown_description` into the Markdown we store: a link whose label only repeats the URL becomes the
- * bare URL (the editor draws a plain URL as a link), runs of blank lines collapse, and the whole thing is trimmed.
- * Image syntax is left alone.
+ * Every link whose label only repeats its URL becomes the bare URL (the editor draws a plain URL as a link). Two
+ * embeds that sit side by side in ClickUp would otherwise run their URLs together, so a bare URL always gets a line
+ * of its own. A label that says something is kept, with its own escaping, collapsed onto one line.
+ */
+function bareTheLinks(text: string): string {
+  let out = ''
+  let last = 0
+  let afterUrl = false
+  for (const match of text.matchAll(LINK)) {
+    const at = match.index as number
+    const between = text.slice(last, at)
+    if (afterUrl && between !== '' && !/^\s/.test(between)) out += '\n'
+    out += between
+    const [whole, label, url] = match
+    const isBare = labelIsJustTheUrl(label, url)
+    if (isBare && out !== '' && !/\s$/.test(out)) out += '\n'
+    out += isBare ? url : `[${label.replace(/\s+/g, ' ').trim()}](${url})`
+    afterUrl = isBare
+    last = at + whole.length
+  }
+  const tail = text.slice(last)
+  if (afterUrl && tail !== '' && !/^\s/.test(tail)) out += '\n'
+  return out + tail
+}
+
+/**
+ * ClickUp's `markdown_description` into the Markdown we store: embedded links become bare URLs, its `*` bullets
+ * become the `-` the editor writes, runs of blank lines collapse, and the whole thing is trimmed. A description that
+ * holds no letters or digits at all (a lone thematic break) counts as nothing. Image syntax is left alone.
  */
 export function tidyClickupMarkdown(raw: string): string {
-  return raw
-    .replace(/\r\n?/g, '\n')
-    .replace(/(?<!!)\[([^\][]*)\]\(([^()\s]+)\)/g, (_whole, label: string, url: string) =>
-      labelIsJustTheUrl(label, url) ? url : `[${label.replace(/\s+/g, ' ').trim()}](${url})`
-    )
+  const tidied = bareTheLinks(raw.replace(/\r\n?/g, '\n'))
+    .split('\n')
+    .map((line) => (isThematicBreak(line) ? line : line.replace(/^(\s*)\*[ \t]+(?=\S)/, '$1- ')))
+    .join('\n')
     .replace(/[ \t]+$/gm, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
+  return /[A-Za-z0-9]/.test(tidied) ? tidied : ''
 }
 
 /** True when the description is one bare URL and nothing else. */
