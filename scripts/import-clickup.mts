@@ -80,9 +80,7 @@ console.log(
 console.log(
   `Time: ${hours(r.totalMinutes)} across ${nf(r.tasksWithTime)} tasks (${nf(r.totalMinutes)} min; the file: ${nf(source.totalMinutes)} min)`
 )
-console.log(
-  `\nSubtask dates: ${nf(r.subtaskDatesDropped)} dropped (they repeated the parent's), ${nf(r.subtaskDatesKept)} kept`
-)
+console.log(`\nSubtasks with a date: ${nf(r.subtaskDatesKept)} (all kept as they are)`)
 console.log(`Parents with no date that took a subtask's earliest: ${r.parentsTookDate.length}`)
 for (const p of r.parentsTookDate) console.log(`  ${p.due}  ${p.title}`)
 console.log(`\nSub-subtasks moved up to the top-level task: ${r.flattened.length}`)

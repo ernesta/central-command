@@ -148,15 +148,15 @@ describe('planImport', () => {
     expect(find(p, 'd').input.priority).toBe('low')
   })
 
-  it('drops a subtask date that repeats the parent’s and keeps a different one', () => {
+  it('keeps every subtask date, also one that repeats the parent’s', () => {
     const p = plan([
       { 'Task ID': 'p', 'Due Date Text': DUE(10, 9) },
       { 'Task ID': 's1', 'Parent ID': 'p', 'Due Date Text': DUE(10, 9) },
       { 'Task ID': 's2', 'Parent ID': 'p', 'Due Date Text': DUE(10, 7) }
     ])
-    expect(find(p, 's1').input.due).toBeNull()
+    expect(find(p, 's1').input.due).toBe('2026-10-09')
     expect(find(p, 's2').input.due).toBe('2026-10-07')
-    expect(p.report).toMatchObject({ subtaskDatesDropped: 1, subtaskDatesKept: 1 })
+    expect(p.report.subtaskDatesKept).toBe(2)
   })
 
   it('gives a subtask no list and no priority of its own', () => {

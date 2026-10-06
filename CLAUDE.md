@@ -100,7 +100,7 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
 
 ## Where things stand and where to look
 
-- **Tasks is built, unpushed, and not yet imported into the real library** (5 Oct 2026, an unattended run): stages 1 to 7 and the buildable part of 9 of `docs/TASKS_PLAN.md` (SQLite, `src/modules/tasks/`, `npm run import:clickup`, the user's review list is at the top of "For the user" in `docs/ROADMAP.md`). Stage 8 (Work hours become tasks) waits for the user's answer. Decisions: `docs/DECISIONS.md`, "Tasks: plan and mockup" and the stage write-ups. The ClickUp export: `~/CentralCommand/imports/clickup/` (a CSV that lists most tasks twice; de-duplicate by Task ID). Never apply the import to the real library unless asked.
+- **Tasks is built and unpushed; the ClickUp import was applied to the real library on 6 Oct 2026 (so a dry run now reports it already holds tasks)** (5 Oct 2026, an unattended run): stages 1 to 7 and the buildable part of 9 of `docs/TASKS_PLAN.md` (SQLite, `src/modules/tasks/`, `npm run import:clickup`, the user's review list is at the top of "For the user" in `docs/ROADMAP.md`). Stage 8 (Work hours become tasks) waits for the user's answer. Decisions: `docs/DECISIONS.md`, "Tasks: plan and mockup" and the stage write-ups. The ClickUp export: `~/CentralCommand/imports/clickup/` (a CSV that lists most tasks twice; de-duplicate by Task ID). Do not re-run the import with `--apply` (it refuses anyway).
 
 - Phase 1 stages 1 to 6 are done (foundations, shell, Readings sync, Readings UI, detail page with
   notes editor and APA copy, polish pass). What is left is the user's review and the push.

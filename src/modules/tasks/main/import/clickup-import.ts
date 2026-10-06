@@ -227,7 +227,7 @@ export interface ImportReport {
   tasksWithTime: number
   totalMinutes: number
   /** Subtask dates dropped because they repeated the parent's, and ones kept. */
-  subtaskDatesDropped: number
+  /** Subtasks that have a date (all of them are kept as they are). */
   subtaskDatesKept: number
   /** Top-level tasks that had no date and took the earliest date of an open subtask. */
   parentsTookDate: { title: string; due: string }[]
@@ -352,7 +352,6 @@ export function planImport(data: Deduplicated): ImportPlan {
 
   const kept = rows.filter((r) => !leftOut.has(r.id))
   const flattened: ImportReport['flattened'] = []
-  let datesDropped = 0
   let datesKept = 0
   const parentsTookDate: ImportReport['parentsTookDate'] = []
 
@@ -399,18 +398,15 @@ export function planImport(data: Deduplicated): ImportPlan {
     const isSub = parent !== null
     let title = r.name
     let parentSourceId: string | null = null
-    let due = r.due
+    const due = r.due
     if (isSub) {
       parentSourceId = top.id
       if (parent.parentId) {
         title = `${parent.name} › ${r.name}`
         flattened.push({ title: r.name, newTitle: title, underTitle: top.name })
       }
-      // A subtask has a date only when it was given its own.
-      if (due !== null && due === parent.due) {
-        due = null
-        datesDropped++
-      } else if (due !== null) datesKept++
+      // Every subtask keeps the date it has, also when it repeats its parent's.
+      if (due !== null) datesKept++
     }
     const attachmentsText = r.attachments.map((a) => `- [${a.title}](${a.url})`).join('\n')
     const description =
@@ -487,7 +483,6 @@ export function planImport(data: Deduplicated): ImportPlan {
       subtasks,
       tasksWithTime,
       totalMinutes,
-      subtaskDatesDropped: datesDropped,
       subtaskDatesKept: datesKept,
       parentsTookDate,
       flattened,

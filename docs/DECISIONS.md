@@ -1949,3 +1949,7 @@ The rule logic was built and mutation-checked in stage 1; stage 5 added the **Re
 - **Stage 8 was skipped by instruction** (Work's hour entries become tasks, the billable tag, Work's Month card): it waits for the user's answer. Work's tasks, the `billable` tag from ClickUp and Work's Hours already exist separately.
 - **Left for the user**: review, the real import (steps in `docs/ROADMAP.md`, "For the user"), setting the repeat rules, and the push.
 - **What the unattended run could not check**: the Dock menu item, the packaged app, phone widths. Everything else was driven in the built app (light and dark) and in dev mode.
+
+## Tasks: the import was applied, and subtasks keep every date (6 Oct 2026)
+
+The user asked for every subtask to keep its date when it has one, and for the import to be applied without another dry run. The importer no longer drops a subtask date that repeats its parent's (the earlier rule is in the stage 2 write-up, with the 270 it affected); 518 of the 548 subtasks have a date. The importer's tests were updated first. It was then applied to the real library with the app closed: 1,211 tasks (Research 1,009, Work 202), all checks passed, rows read back as planned, and a readable copy saved in `backups/tasks/`. A side effect to watch: a subtask whose date repeats its parent's now also appears nested under the parent on the landing page when that date is today, overdue or upcoming.
