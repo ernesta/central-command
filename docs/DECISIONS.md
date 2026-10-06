@@ -2088,3 +2088,51 @@ Run against the real library with the user's token: ClickUp returned all 1,211 t
 After the fixes: **32 to fill in, 25 of them a bare link and 7 holding text too**; 81 descriptions already held and left alone, 1,022 empty on both sides, nothing held here that ClickUp did not return. The eleven instances of "Check for new articles in Kathy's reading list" each get the Google Docs link, which is what started this.
 
 **Applied to the real library the same day** (the user's go-ahead, app closed, backup `backups/clickup-links-2026-10-06T14-00-12-630Z`, readable copy `backups/tasks/tasks-2026-10-06T14-00-12-657Z-clickup-links.json`): 32 descriptions written and read back, 89 -> 121 tasks with a description. Checked in the database independently of the script's own report: the eleven Kathy tasks hold the Google Docs link, "Check new placement options" holds its four URLs on separate lines, and "Publish Study 1: Luminos data code" is still empty. A second dry run reports nothing left to fill. Not confirmed by eye in the app: the live editor's drawing of a plain URL as a link is an existing, tested feature, so the task pages were not driven.
+
+## The Royal Holloway contract, and the kick-off meeting (6 Oct 2026)
+
+The user's own data, changed by hand with a backup before each step; no app code changed. The one-off scripts stayed in
+the session scratchpad and are not in the repo: these were data edits, not importers anything will run again.
+
+- **The meeting note moved to Work.** `notes/meetings/research/2026-10-02 Other.md` ->
+  `notes/meetings/work/2026-10-02 Royal Holloway.md`, series `Other` -> `Royal Holloway`. Copy first, the original to the
+  macOS Trash after, modified time kept — what `moveNoteFile` does. Checked with `diff` that the only line that differs is
+  `series`. A meeting has no contract and no client, only a workspace and a series, so "move it to the Royal Holloway
+  contract" is a series named for the client, the way Work's other meetings are named (`Document Automation – Luminos`).
+- **The contract** (`time/work/2026-09-28.json`): Royal Holloway, client Royal Holloway, from Mon 28 Sep 2026, 26 weeks (to
+  Sun 28 Mar 2027, matching both Luminos contracts — the user gave no last day and a contract needs one, whole weeks), no
+  fixed hours (`hoursPerWeek: 0`), invoiced Week. Built with the app's own `contractWeeks`, `parsePlan` and `emptyYear` and
+  the same field order `createContract` writes, then checked the way the store does (no other contract starts that day; no
+  overlapping contract shares the client — it does overlap the current Luminos, which runs to 29 Oct 2026, and that is
+  allowed) and read back through `parseYear`.
+- **Two tasks merged into one, in Work.** "Meet with Kathy and Michael about scoping work" (`uc8k3frf`) and "Write up Kathy
+  and Michael meeting notes" (`xhzsavrd`) are one task: `uc8k3frf`, **Kick-off meeting and follow-up**, workspace `work`,
+  **Royal Holloway › Language Mapping**, done, due 2 Oct, 75 minutes. The write-up task is in the trash (`deleted_at`, the
+  app's own soft delete, restorable). Work's lists are client names with sublists (Impact, Teaching & Learning), so the new
+  contract's work gets a list of its own. The name went through "Meeting with Kathy and Michael to kick-start the work, and
+  writing up the notes" first: too long, because this task is reported to the client.
+- **Why 75 minutes and not 60.** ClickUp holds 45 minutes for the meeting and **nothing** for the write-up; the write-up's
+  30 minutes are in the app's own Hours, two timer sessions on 2 Oct. So the merged total is 45 + 30. (The first ask was to
+  fold in a quarter of an hour, on the assumption ClickUp had tracked the write-up; it had not.) Not confirmed against
+  ClickUp itself — the MCP connector has no token ("Oauth token not found") — only against the imported `earlier_minutes`
+  and the Hours entries.
+- **The hours merged into one entry, moved out of Research.** The three sessions of 2 Oct (45 + 30 + 0 minutes) are gone
+  from `time/research/2026-27.json`; the contract holds one typed entry of 75 minutes, client Royal Holloway,
+  `task: cc://task/uc8k3frf`, `earlier: true`. A single session could not be honest about two ranges an hour apart, so it is
+  typed time. `earlier: true` is the Work history import's pattern: Hours counts the 75 like any other time, `trackedByTask`
+  leaves it out, so the task page does not add it on top of the 75 it already carries from ClickUp. Research's week of
+  28 Sep is 1:15 lighter and the Royal Holloway invoice week gains it, which is the point — this was contract work.
+- **`earlier_minutes` was written by hand** (45 -> 75), which the column comment says the app never does. Carrying a merged
+  total needs it: it is the only time these tasks hold, since the 2 Oct sessions were tracked before Tasks existed and so
+  name their task only in their label, with no `cc://task` key.
+- **The datasets task stays in Research**: `s9878yf9`, "Investigate early grade reading datasets in LMICs", moved from
+  Language Mapping › Scoping to **Research Scoping › Initial Review**, its 180 minutes of 2 Oct hours untouched. The user
+  called the destination "Initial Review under Initial Scoping"; the list is named Research Scoping, and Initial Review
+  under it holds eight other "Investigate … data" tasks.
+- **A list exists only through the tasks that carry it** — there is no lists table and nothing in `settings.json` — so
+  Research's Language Mapping list disappeared when its last task left, with nothing to delete. The one remnant: the
+  trashed write-up task still carries `Language Mapping › Scoping` and would bring the list back if it were ever restored.
+- **Backups**: `backups/tasks-rename-20261006-151718/` (the database), `backups/rh-hours-20261006-152159/` (both
+  workspaces' time files), `backups/royal-holloway-20261006-150948/` (`time/work/` before the new contract).
+- **Not driven in the app.** Every change was checked in the files and the database; the Hours page's first invoice week for
+  the new contract and the merged task's page have not been looked at.
