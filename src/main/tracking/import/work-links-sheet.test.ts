@@ -261,6 +261,19 @@ describe('ClickUp task changes', () => {
     ).toMatch(/itself/)
   })
 
+  it('moves ClickUp minutes from one task to another', () => {
+    const two = [task('a', 'Summary', 105, '2025-11-04'), task('b', 'EGRA', 735, '2026-02-09')]
+    const r = applyChanges(two, taskNames(two), parseChanges(text('move,Summary,EGRA,15')).changes)
+    expect(r.problems).toEqual([])
+    expect(r.tasks.map((t) => t.minutes)).toEqual([90, 750])
+    const big = applyChanges(
+      two,
+      taskNames(two),
+      parseChanges(text('move,Summary,EGRA,120')).changes
+    )
+    expect(big.problems[0]).toMatch(/only 1:45 to move/)
+  })
+
   it('refuses a split of all or more than the task has, a missing task and a name already used', () => {
     const run = (rows: string): string[] =>
       applyChanges(base, nm, parseChanges(text(rows)).changes).problems

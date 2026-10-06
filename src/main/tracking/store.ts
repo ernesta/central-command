@@ -15,6 +15,7 @@ import {
   deleteSession
 } from '@shared/tracking/timer'
 import { linkEntries } from './import/work-task-links'
+import { applyEntryLinks } from './import/work-links-apply'
 import { addTime, setDayNote, setTaskMinutes } from '@shared/tracking/totals'
 import { addTimeOff, editTimeOff, removeTimeOff } from '@shared/tracking/timeoff'
 import type {
@@ -218,6 +219,15 @@ export class TrackingStore {
     links: { id: string; uid: string }[]
   ): YearResult {
     return this.mutate(workspace, year, (y) => linkEntries(y, links))
+  }
+
+  /** Give a year's entries and timer sessions their tasks (a one-off; see `applyEntryLinks`). */
+  linkAll(
+    workspace: Workspace,
+    year: string,
+    links: { id: string; task: string; earlier: boolean }[]
+  ): YearResult {
+    return this.mutate(workspace, year, (y) => applyEntryLinks(y, links))
   }
 
   setNote(workspace: Workspace, year: string, date: string, note: string): YearResult {

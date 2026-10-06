@@ -41,10 +41,13 @@ const fail = (message: string): never => {
   console.error(message)
   process.exit(1)
 }
+const dumpFile = arg('dump-tasks')
 const writeFile = arg('write')
 const checkFile = arg('check')
-if (!writeFile && !checkFile)
-  fail('Usage: npm run link:worksheet -- --write <file.csv> | --check <file.csv>')
+if (!writeFile && !checkFile && !dumpFile)
+  fail(
+    'Usage: npm run link:worksheet -- --write <file.csv> | --check <file.csv> | --dump-tasks <file.json>'
+  )
 
 const root = join(
   assertAbsoluteHome(process.env.CENTRAL_COMMAND_HOME || homedir()),
@@ -119,6 +122,18 @@ for (const file of readdirSync(workDir).filter((f) => f.endsWith('.json'))) {
         kind: 'timer'
       })
   }
+}
+if (dumpFile) {
+  // For analysis: every Work task as the sheet names it, with its time, date and billable state.
+  const out = allTasks.map((t) => ({
+    name: names.get(t.uid),
+    minutes: t.minutes,
+    date: t.date,
+    billable: t.billable,
+    sublist: t.sublist
+  }))
+  writeFileSync(resolve(dumpFile), JSON.stringify(out, null, 1))
+  console.log(`Wrote ${out.length} tasks to ${resolve(dumpFile)}`)
 }
 const total = (xs: { minutes: number }[]): number => xs.reduce((a, x) => a + x.minutes, 0)
 
