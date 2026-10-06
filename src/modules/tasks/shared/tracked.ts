@@ -17,7 +17,7 @@ export function taskUidOf(key: string | undefined): string | null {
 
 /**
  * The minutes Hours holds for each task (by uid), from every year given: the reported time of each ended session that names
- * the task, plus time typed for it. A running session is not counted here (the page adds its whole minutes). ClickUp's
+ * the task, plus time typed for it (not history marked `earlier`: ClickUp's time already holds it). A running session is not counted here (the page adds its whole minutes). ClickUp's
  * earlier time is the task's own `earlierMinutes`, never part of this.
  */
 export function trackedByTask(years: readonly TrackingYear[]): Map<string, number> {
@@ -28,7 +28,7 @@ export function trackedByTask(years: readonly TrackingYear[]): Map<string, numbe
   }
   for (const year of years) {
     for (const s of year.sessions) add(s.task, reportedMinutes(s))
-    for (const a of year.adjusts) add(a.task, a.minutes)
+    for (const a of year.adjusts) if (!a.earlier) add(a.task, a.minutes)
   }
   return minutes
 }

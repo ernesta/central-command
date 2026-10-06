@@ -89,7 +89,8 @@ export function parseYear(raw: unknown): TrackingYear | null {
       isString(a.label) &&
       isInt(a.minutes) &&
       (a.client === undefined || isString(a.client)) &&
-      (a.task === undefined || isString(a.task))
+      (a.task === undefined || isString(a.task)) &&
+      (a.earlier === undefined || a.earlier === true)
   )
   const days = record(
     raw.days,

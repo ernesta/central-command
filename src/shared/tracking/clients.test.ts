@@ -185,3 +185,52 @@ describe('the file format', () => {
     expect(emptyYear('2026-09-21').plan.clients).toBeUndefined()
   })
 })
+
+describe('imported history linked to a task', () => {
+  const linked = (): TrackingYear => ({
+    ...work(),
+    adjusts: [
+      {
+        id: 'h1',
+        date: WD,
+        label: 'Meeting',
+        minutes: 60,
+        client: 'Impact',
+        task: 'cc://task/t',
+        earlier: true
+      },
+      {
+        id: 'h2',
+        date: WD,
+        label: 'Meeting',
+        minutes: 30,
+        client: 'Impact',
+        task: 'cc://task/t',
+        earlier: true
+      }
+    ]
+  })
+
+  it('is read and written back with its flag, and a flag that is not true is refused', () => {
+    const y = linked()
+    expect(parseYear(JSON.parse(JSON.stringify(y)))?.adjusts[0].earlier).toBe(true)
+    const bad = JSON.parse(JSON.stringify(y))
+    bad.adjusts[0].earlier = false
+    expect(parseYear(bad)).toBeNull()
+  })
+
+  it('is never replaced when the row is retyped: the typed total includes it', () => {
+    const y = ok(setTaskMinutes(linked(), WD, 'Meeting', 120, nextId(), 'Impact'))
+    expect(dayRows(y, WD)[0].minutes).toBe(120)
+    expect(y.adjusts.filter((a) => a.earlier).map((a) => a.minutes)).toEqual([60, 30])
+    expect(y.adjusts.filter((a) => !a.earlier)).toMatchObject([
+      { minutes: 30, task: 'cc://task/t' }
+    ])
+  })
+
+  it('leaves the history alone when the row is retyped to exactly its total', () => {
+    const y = ok(setTaskMinutes(linked(), WD, 'Meeting', 90, nextId(), 'Impact'))
+    expect(y.adjusts).toHaveLength(2)
+    expect(y.adjusts.every((a) => a.earlier)).toBe(true)
+  })
+})

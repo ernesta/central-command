@@ -170,13 +170,16 @@ export function setTaskMinutes(
   let timer = 0
   for (const s of year.sessions)
     if (s.date === date && s.end !== null && sameTask(s, name, client)) timer += reportedMinutes(s)
-  const match = (a: Adjust): boolean => a.date === date && sameTask(a, name, client)
+  const same = (a: Adjust): boolean => a.date === date && sameTask(a, name, client)
+  // History linked to a task (`earlier`) is never replaced: the typed total includes it, and the new adjustment is the rest.
+  for (const a of year.adjusts) if (same(a) && a.earlier) timer += a.minutes
+  const match = (a: Adjust): boolean => same(a) && !a.earlier
   // The new adjustment takes the place of the first it replaces, so a row does not move when its time is retyped.
   const first = year.adjusts.findIndex(match)
   const others = year.adjusts.filter((a) => !match(a))
-  // Time retyped for a task that Tasks knows stays that task's: the link of what it replaces, or of the row's timer time.
+  // Time retyped for a task that Tasks knows stays that task's: the link of the row's typed or timer time.
   const task =
-    year.adjusts.find((a) => match(a) && a.task)?.task ??
+    year.adjusts.find((a) => same(a) && a.task)?.task ??
     year.sessions.find((s) => s.date === date && sameTask(s, name, client) && s.task)?.task
   const entry: Adjust = {
     id,

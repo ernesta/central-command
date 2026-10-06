@@ -34,6 +34,11 @@ export interface Adjust {
   client?: string
   /** The task the time is for (`cc://task/<uid>`), when it was added from a task's page. */
   task?: string
+  /**
+   * Set on imported history that was linked to its task afterwards: the time is already in the task's ClickUp time, so Tasks
+   * does not add it again. Hours counts it like any other time.
+   */
+  earlier?: true
 }
 
 /** Imported history: a typed total for a day, and a loose note. */

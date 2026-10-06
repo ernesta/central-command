@@ -64,6 +64,25 @@ describe('trackedByTask', () => {
   })
 })
 
+describe('history linked to a task', () => {
+  it('is not added to the task: ClickUp’s time already holds it', () => {
+    const y = year({
+      adjusts: [
+        {
+          id: 'h',
+          date: '2025-10-06',
+          label: 'Old',
+          minutes: 105,
+          task: taskKey('t1'),
+          earlier: true
+        },
+        { id: 'n', date: '2026-10-05', label: 'New', minutes: 30, task: taskKey('t1') }
+      ]
+    })
+    expect(trackedByTask([y]).get('t1')).toBe(30)
+  })
+})
+
 describe('taskKeyForLabel', () => {
   const tasks = [
     { uid: 'a', title: 'Write the paper' },
