@@ -406,3 +406,82 @@ export function checkWorksheet(
     complete
   }
 }
+
+/**
+ * Changes to ClickUp tasks the user decided, so that each task's time can equal the hours given to it:
+ *   split,<task>,<new task name>,<minutes>[,<sublist>]   the new task takes those minutes from <task>
+ *   rename,<task>,<new name>
+ * The sheet's task column then uses the new names.
+ */
+export type TaskChange =
+  | { action: 'split'; task: string; to: string; minutes: number; sublist: string; line: number }
+  | { action: 'rename'; task: string; to: string; line: number }
+
+export function parseChanges(text: string): { changes: TaskChange[]; problems: string[] } {
+  const changes: TaskChange[] = []
+  const problems: string[] = []
+  parseCsv(text)
+    .slice(1)
+    .forEach((c, i) => {
+      if (c.every((x) => x.trim() === '')) return
+      const line = i + 2
+      const [action, task, to, minutes, sublist] = c.map((x) => (x ?? '').trim())
+      if (action === 'rename' && task && to) changes.push({ action, task, to, line })
+      else if (
+        action === 'split' &&
+        task &&
+        to &&
+        Number(minutes) > 0 &&
+        Number(minutes) % 15 === 0
+      )
+        changes.push({ action, task, to, minutes: Number(minutes), sublist: sublist ?? '', line })
+      else
+        problems.push(
+          `Changes line ${line}: not a rename (task, new name) or a split (task, new name, quarter-hour minutes).`
+        )
+    })
+  return { changes, problems }
+}
+
+/** The tasks and names after the changes (a split task keeps the rest of its time; a new task is billable and dated like its source). */
+export function applyChanges(
+  tasks: readonly SheetTask[],
+  names: ReadonlyMap<string, string>,
+  changes: readonly TaskChange[]
+): { tasks: SheetTask[]; names: Map<string, string>; billable: string[]; problems: string[] } {
+  const out = tasks.map((t) => ({ ...t }))
+  const nm = new Map(names)
+  const problems: string[] = []
+  const added: string[] = []
+  const find = (name: string): SheetTask | undefined => {
+    const uid = [...nm].find(([, n]) => n.toLowerCase() === name.toLowerCase())?.[0]
+    return out.find((t) => t.uid === uid)
+  }
+  const taken = (name: string): boolean =>
+    [...nm.values()].some((n) => n.toLowerCase() === name.toLowerCase())
+  for (const c of changes) {
+    const source = find(c.task)
+    if (!source) problems.push(`Changes line ${c.line}: no task called "${c.task}".`)
+    else if (taken(c.to))
+      problems.push(`Changes line ${c.line}: a task called "${c.to}" already exists.`)
+    else if (c.action === 'rename') nm.set(source.uid, c.to)
+    else if (c.minutes >= source.minutes)
+      problems.push(
+        `Changes line ${c.line}: "${c.task}" has only ${formatHours(source.minutes)} to split.`
+      )
+    else {
+      const uid = `split:${added.length + 1}`
+      source.minutes -= c.minutes
+      out.push({
+        ...source,
+        uid,
+        title: c.to,
+        minutes: c.minutes,
+        sublist: c.sublist || source.sublist
+      })
+      nm.set(uid, c.to)
+      added.push(uid)
+    }
+  }
+  return { tasks: out, names: nm, billable: added, problems }
+}

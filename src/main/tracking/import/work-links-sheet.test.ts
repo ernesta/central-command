@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
+  applyChanges,
   buildRows,
   checkWorksheet,
   formatWorksheet,
+  parseChanges,
   parseNewTask,
   parseWorksheet,
   ruleRows,
@@ -210,5 +212,62 @@ describe('task dates', () => {
     const r = check('y/1,90,Draft TORs\ny/2,135,NEW: Task planning [Document Automation]')
     expect(r.dateChanges).toEqual([{ name: 'Draft TORs', from: '2026-07-12', to: '2026-07-10' }])
     expect(r.newTasks[0].due).toBe('2026-10-05')
+  })
+})
+
+describe('ClickUp task changes', () => {
+  const base = [task('u', 'Update TORs and send to developers', 90, '2026-09-02')]
+  const nm = taskNames(base)
+  const text = (rows: string): string => `action,task,to,minutes,sublist\n${rows}`
+
+  it('splits a task and renames the rest, so each hours entry has a task of exactly its time', () => {
+    const { changes, problems } = parseChanges(
+      text(
+        'split,Update TORs and send to developers,Send TORs to developers,60\nrename,Update TORs and send to developers,Update TORs,,'
+      )
+    )
+    expect(problems).toEqual([])
+    const r = applyChanges(base, nm, changes)
+    expect(r.problems).toEqual([])
+    expect(r.tasks.map((t) => [r.names.get(t.uid), t.minutes])).toEqual([
+      ['Update TORs', 30],
+      ['Send TORs to developers', 60]
+    ])
+    expect(r.billable).toHaveLength(1)
+  })
+
+  it('refuses a split of all or more than the task has, a missing task and a name already used', () => {
+    const run = (rows: string): string[] =>
+      applyChanges(base, nm, parseChanges(text(rows)).changes).problems
+    expect(run('split,Update TORs and send to developers,X,90')[0]).toMatch(/only 1:30 to split/)
+    expect(run('rename,Nothing,X,,')[0]).toMatch(/no task called/)
+    expect(
+      run('rename,Update TORs and send to developers,Update TORs and send to developers,,')[0]
+    ).toMatch(/already exists/)
+    expect(parseChanges(text('split,A,B,10')).problems).toHaveLength(1)
+  })
+
+  it('lets the check match hours to the new names', () => {
+    const r = applyChanges(
+      base,
+      nm,
+      parseChanges(
+        text(
+          'split,Update TORs and send to developers,Send TORs,60\nrename,Update TORs and send to developers,Update TORs,,'
+        )
+      ).changes
+    )
+    const e = [
+      entry('y/1', '2026-09-01', 'developer terms of reference', 30),
+      entry('y/2', '2026-09-02', 'sharing terms', 60)
+    ]
+    const c = checkWorksheet(
+      parseWorksheet(sheet('y/1,30,Update TORs\ny/2,60,Send TORs')),
+      e,
+      r.tasks,
+      r.names,
+      new Set(['u', ...r.billable])
+    )
+    expect(c.complete).toBe(true)
   })
 })

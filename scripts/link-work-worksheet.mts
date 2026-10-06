@@ -24,6 +24,8 @@ import {
   checkWorksheet,
   formatTaskList,
   formatWorksheet,
+  applyChanges,
+  parseChanges,
   parseWorksheet,
   ruleRows,
   taskNames,
@@ -160,15 +162,25 @@ if (writeFile) {
 if (checkFile) {
   const path = resolve(checkFile.replace(/^~(?=$|\/)/, homedir()))
   if (!existsSync(path)) fail(`Not found: ${path}`)
+  const changesPath = path.replace(/\.csv$/i, '') + '-changes.csv'
+  const changesFile = existsSync(changesPath)
+    ? parseChanges(readFileSync(changesPath, 'utf8'))
+    : { changes: [], problems: [] }
+  const changed = applyChanges(allTasks, names, changesFile.changes)
+  const parsed = parseWorksheet(readFileSync(path, 'utf8'))
+  parsed.problems.push(...changesFile.problems, ...changed.problems)
   const result = checkWorksheet(
-    parseWorksheet(readFileSync(path, 'utf8')),
+    parsed,
     entries,
-    allTasks,
-    names,
-    new Set(billableTasks.map((t) => t.uid))
+    changed.tasks,
+    changed.names,
+    new Set([...billableTasks.map((t) => t.uid), ...changed.billable])
   )
   const line = (s: string): void => console.log(s)
-  line(`Sheet: ${path}\n`)
+  line(`Sheet: ${path}`)
+  if (changesFile.changes.length > 0)
+    line(`ClickUp changes read: ${changesFile.changes.length} (${changesPath})`)
+  line('')
   if (result.problems.length > 0) {
     line('PROBLEMS')
     for (const p of result.problems) line(`  ${p}`)
