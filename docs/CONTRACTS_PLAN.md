@@ -39,7 +39,15 @@ Luminos. Read `docs/DECISIONS.md`, "Work's Hours: weeks, contracts and months" a
 3. **Hours UI (done 6 Oct 2026, `docs/DECISIONS.md`, "Overlapping contracts, stage 3").** Selector label, Settings form, the periods card (week and month), no-aim display everywhere (Week card, Balance card, charts and weeks, heat map, typical week). Screenshots in light and dark.
 4. **The user's data.** A script `npm run name:contracts`: names both existing contracts "Luminos" (dry run, backup, `--apply` only when the user says so, app closed). Then the user adds Research Assistant and the new Luminos contract in the app. Update `CLAUDE.md`, `docs/DECISIONS.md` (one section, "Overlapping contracts") and `docs/ROADMAP.md`.
 
-## Questions left for the user (ask at stage 3 or 4, not before)
+## The user's answers to the stage 3 questions (6 Oct 2026)
 
-- The Research Assistant contract's name for the client (same as the contract?) and its first and last day.
-- Whether the new Luminos contract keeps the two clients and 8:00 a week aim.
+- **Research Assistant**: the client is named **Royal Holloway** (the contract keeps the name Research Assistant). Dates are provisional (the user may change them): first day Mon 28 Sep 2026, last day **Sun 28 Mar 2027** (26 whole weeks, Mon to Sun), invoiced weekly, no fixed hours. The user adds it in the app (Settings -> Hours) after stage 4, or Claude does not create it.
+- **New Luminos contract**: keeps everything as is (clients Impact and Teaching & Learning, 8:00 a week, invoiced by month). Its dates are not known yet: ask at stage 4. The clients cannot overlap the current Luminos contract (ends Thu 29 Oct 2026), so it starts after that.
+
+## TODO (deferred on 6 Oct 2026 to save the user's usage; do when asked)
+
+- Tests for the stage 3 UI beyond the pure rules: component tests for `InvoiceCard` (week and month, with and without an aim), the new-contract form (refusals, disabled Add) and the no-aim branches of `WeekCard`, `BalanceCard`, `WeeksChart`, `AllWeeks`, `YearsTable`; mutation checks on `hasAim` and `contractToShow`.
+- Drive the Hours page (not only Settings) in dev mode; drive a contract that has ended while an older one holds today.
+- Hours per week in Settings reads 0:00 for a no-aim contract and cannot be set back to "none".
+- A weekly-invoiced contract shows its week header on both the Week card and the invoice card.
+- Starting a timer from a task's page (list-to-client rule) is covered by unit tests only.
