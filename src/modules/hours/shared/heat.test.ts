@@ -56,3 +56,21 @@ describe('monthColumns', () => {
       expect(cols[i].column - cols[i - 1].column).toBeGreaterThanOrEqual(3)
   })
 })
+
+describe('heatDays with no aim', () => {
+  const year = emptyYear(START)
+  year.plan.hoursPerWeek = 0
+  year.plan.weekAim = true
+  year.days['2026-09-22'] = { minutes: 240 }
+  year.days['2026-09-23'] = { minutes: 60 }
+  year.days['2026-09-24'] = { minutes: 150 }
+  const days = heatDays(year, NOW)
+  const level = (date: string): number => days.find((d) => d.date === date)!.level
+
+  it('shades each day against the busiest one', () => {
+    expect(level('2026-09-22')).toBe(3)
+    expect(level('2026-09-24')).toBe(2)
+    expect(level('2026-09-23')).toBe(1)
+    expect(level('2026-09-25')).toBe(0)
+  })
+})

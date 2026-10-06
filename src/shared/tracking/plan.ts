@@ -3,6 +3,11 @@ import { minutesByDate, weeklyMinutes } from './totals'
 import { unlistedAllowance } from './timeoff'
 import type { Moment, TrackingYear } from './types'
 
+/** Whether the year has an aim: a contract with no fixed hours (`hoursPerWeek` 0) has none, so no plan, balance or "to go". */
+export function hasAim(year: Pick<TrackingYear, 'plan'>): boolean {
+  return year.plan.hoursPerWeek > 0
+}
+
 function offDates(year: TrackingYear): Set<string> {
   return new Set(year.timeOff.map((t) => t.date))
 }

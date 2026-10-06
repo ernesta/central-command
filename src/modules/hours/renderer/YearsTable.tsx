@@ -2,8 +2,7 @@ import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import { formatHours, formatSignedHours } from '@shared/tracking/format'
 import type { Workspace } from '@shared/settings'
 import type { Moment } from '@shared/tracking/types'
-import { formatDate } from '@shared/time'
-import { hasContracts } from '@shared/tracking/workspace-weeks'
+import { contractLabel, hasContracts } from '@shared/tracking/workspace-weeks'
 import { yearLabel } from '@shared/year'
 import { yearRows } from '../shared/years'
 import { useYearFiles } from '@renderer/state/use-year-files'
@@ -65,10 +64,12 @@ export function YearsTable({
                 {...rowProps(index)}
                 onClick={() => onSelect(r.start)}
               >
-                <td>{contracts ? formatDate(r.start) : yearLabel(r.start)}</td>
+                <td>{contracts ? contractLabel(r.start, r.weeks, r.name) : yearLabel(r.start)}</td>
                 <td className={styles.right}>{formatHours(r.minutes)}</td>
-                <td className={styles.right}>{formatHours(r.plan)}</td>
-                <td className={styles.right}>{formatSignedHours(Math.round(r.balance))}</td>
+                <td className={styles.right}>{r.aimed ? formatHours(r.plan) : '–'}</td>
+                <td className={styles.right}>
+                  {r.aimed ? formatSignedHours(Math.round(r.balance)) : '–'}
+                </td>
                 <td className={styles.right}>
                   {r.averageWeek === null ? '–' : formatHours(r.averageWeek)}
                 </td>

@@ -37,12 +37,14 @@ export function TypicalWeek({ data, now }: { data: TrackingYear; now: Moment }):
     <section className={styles.card} aria-label="The typical week">
       <header className={styles.head}>
         <h2 className={styles.title}>Typical week</h2>
-        <ul className={styles.legend}>
-          <li>
-            <b className={styles.aimKey} />
-            Daily aim
-          </li>
-        </ul>
+        {week.some((d) => d.aim !== null) && (
+          <ul className={styles.legend}>
+            <li>
+              <b className={styles.aimKey} />
+              Daily aim
+            </li>
+          </ul>
+        )}
       </header>
       <div
         ref={ref}

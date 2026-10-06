@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { formatDay, formatHours, formatRange, formatSignedHours } from '@shared/tracking/format'
-import { dailyAim, weekTotals } from '@shared/tracking/plan'
-import { dayRows, weekDaysMinutes } from '@shared/tracking/totals'
+import { dailyAim, hasAim, weekTotals } from '@shared/tracking/plan'
+import { dayRows, weekDaysMinutes, weekMinutes } from '@shared/tracking/totals'
 import { defaultClient } from '@shared/tracking/timer'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
 import { addDays, weekNumberOf, yearEnd } from '@shared/year'
@@ -48,6 +48,7 @@ export function WeekCard({
   const plan = totals?.plan ?? 0
   const through = plan + (totals?.balance ?? 0)
   const begun = week <= now.date
+  const aimed = hasAim(data)
   const over = addDays(week, 6) < now.date
   const first = week <= data.start
   const last = addDays(week, 7) > yearEnd(data.start, data.weeks)
@@ -84,8 +85,9 @@ export function WeekCard({
         </div>
         {begun && (
           <span className={styles.summary}>
-            {formatHours(through)} of {formatHours(plan)}
-            {over ? '' : ' so far'} · {formatSignedHours(through - plan)}
+            {aimed
+              ? `${formatHours(through)} of ${formatHours(plan)}${over ? '' : ' so far'} · ${formatSignedHours(through - plan)}`
+              : formatHours(weekMinutes(data, week, now))}
           </span>
         )}
       </header>
@@ -97,7 +99,7 @@ export function WeekCard({
               Hours
             </th>
             <th scope="col">
-              {data.plan.weekAim ? '' : `Aim ${perDay > 0 ? formatHours(perDay) : ''}`}
+              {data.plan.weekAim || !aimed ? '' : `Aim ${perDay > 0 ? formatHours(perDay) : ''}`}
             </th>
           </tr>
         </thead>
@@ -118,6 +120,7 @@ export function WeekCard({
                 today={date === now.date}
                 aim={aim}
                 perDay={perDay}
+                bar={aimed}
                 expanded={shown}
                 onToggle={() => setOpened(shown ? null : { week, date })}
               >
@@ -169,6 +172,7 @@ function DayRows({
   today,
   aim,
   perDay,
+  bar,
   expanded,
   onToggle,
   children
@@ -179,6 +183,8 @@ function DayRows({
   today: boolean
   aim: number | null
   perDay: number
+  /** Whether a bar is drawn (a day's share of the aim: none where there is no aim). */
+  bar: boolean
   expanded: boolean
   onToggle: () => void
   children: React.ReactNode
@@ -205,7 +211,7 @@ function DayRows({
           {past ? formatHours(minutes) : <span className={styles.muted}>—</span>}
         </td>
         <td>
-          {past && (
+          {past && bar && (
             <div className={styles.track} aria-hidden>
               <i
                 className={styles.fill}

@@ -1,4 +1,4 @@
-import { dailyAim } from '@shared/tracking/plan'
+import { dailyAim, hasAim } from '@shared/tracking/plan'
 import { minutesByDate } from '@shared/tracking/totals'
 import type { Moment, TimeOffType, TrackingYear } from '@shared/tracking/types'
 import { addDays, YEAR_WEEKS } from '@shared/year'
@@ -16,7 +16,10 @@ export interface HeatDay {
   level: 0 | 1 | 2 | 3
 }
 
-/** How full a day is: against its aim, or, on a day with none, against an average work day. */
+/**
+ * How full a day is: against its aim, or, on a day with none, against an average work day. With no aim at all (a contract
+ * with no fixed hours) a day is shaded against the year's busiest day.
+ */
 export function heatLevel(minutes: number, reference: number): 0 | 1 | 2 | 3 {
   if (minutes <= 0) return 0
   if (reference <= 0) return 3
@@ -30,6 +33,7 @@ export function heatDays(year: TrackingYear, now: Moment): HeatDay[] {
   const off = new Map(year.timeOff.map((t) => [t.date, t.type]))
   const average =
     year.plan.workDays.length > 0 ? year.plan.hoursPerWeek / year.plan.workDays.length : 0
+  const reference = hasAim(year) ? null : Math.max(0, ...minutes.values())
   return Array.from({ length: (year.weeks ?? YEAR_WEEKS) * 7 }, (_, i) => {
     const date = addDays(year.start, i)
     const m = minutes.get(date) ?? 0
@@ -40,7 +44,7 @@ export function heatDays(year: TrackingYear, now: Moment): HeatDay[] {
       aim,
       off: off.get(date) ?? null,
       future: date > now.date,
-      level: heatLevel(m, aim ?? average)
+      level: heatLevel(m, reference ?? aim ?? average)
     }
   })
 }

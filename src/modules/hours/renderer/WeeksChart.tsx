@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useElementWidth } from '@renderer/state/use-element-width'
 import { formatHours, formatRange, formatSignedHours } from '@shared/tracking/format'
-import { weekPlan, weekTotals } from '@shared/tracking/plan'
+import { hasAim, weekPlan, weekTotals } from '@shared/tracking/plan'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
 import { columnPath, niceAxis, slotAt } from '../shared/chart'
 import styles from './WeeksChart.module.css'
@@ -13,10 +13,14 @@ const GAP = 2
 const RADIUS = 4
 const STEP = 600 // a tick every 10 hours
 
-/** The weeks of the year as columns against the weekly plan: met in the accent, under in `--chart-under`. */
+/**
+ * The weeks of the year as columns against the weekly plan: met in the accent, under in `--chart-under`. With no aim they
+ * are all in the accent, with no plan line.
+ */
 export function WeeksChart({ data, now }: { data: TrackingYear; now: Moment }): React.JSX.Element {
   const { ref, width } = useElementWidth()
   const [active, setActive] = useState<number | null>(null)
+  const aimed = hasAim(data)
   const weeks = weekTotals(data, now.date, now).map((w) => ({
     ...w,
     // The plan for the whole week, drawn for every week; `w.plan` is only the part up to today.
@@ -54,26 +58,32 @@ export function WeeksChart({ data, now }: { data: TrackingYear; now: Moment }): 
     active === null ? 0 : Math.min(Math.max(PAD.left + (active + 0.5) * slot, 100), width - 100)
 
   return (
-    <section className={styles.card} aria-label="Weeks against the plan">
+    <section className={styles.card} aria-label={aimed ? 'Weeks against the plan' : 'Weeks'}>
       <header className={styles.head}>
         <h2 className={styles.title}>Weeks</h2>
         <ul className={styles.legend}>
-          <li>
-            <i className={styles.met} />
-            Plan met
-          </li>
-          <li>
-            <i className={styles.under} />
-            Under plan
-          </li>
+          {aimed && (
+            <>
+              <li>
+                <i className={styles.met} />
+                Plan met
+              </li>
+              <li>
+                <i className={styles.under} />
+                Under plan
+              </li>
+            </>
+          )}
           <li>
             <i className={styles.now} />
             This week
           </li>
-          <li>
-            <b className={styles.planKey} />
-            Plan
-          </li>
+          {aimed && (
+            <li>
+              <b className={styles.planKey} />
+              Plan
+            </li>
+          )}
         </ul>
       </header>
       <div
@@ -81,7 +91,7 @@ export function WeeksChart({ data, now }: { data: TrackingYear; now: Moment }): 
         className={styles.plot}
         tabIndex={0}
         role="group"
-        aria-label="Hours a week against the plan; arrow keys move between weeks"
+        aria-label={`Hours a week${aimed ? ' against the plan' : ''}; arrow keys move between weeks`}
         onKeyDown={(event) => {
           if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
             event.preventDefault()
@@ -138,7 +148,7 @@ export function WeeksChart({ data, now }: { data: TrackingYear; now: Moment }): 
                 />
               )
             })}
-            <path className={styles.plan} d={planPath} />
+            {aimed && <path className={styles.plan} d={planPath} />}
             {weeks.map((w, i) =>
               begun(i) ? (
                 <rect
@@ -173,10 +183,12 @@ export function WeeksChart({ data, now }: { data: TrackingYear; now: Moment }): 
             <span className={styles.tipLine}>
               Week {tip.number} · {formatRange(tip.from, tip.to)}
             </span>
-            <span className={styles.tipLine}>
-              Plan {formatHours(tip.fullPlan)}
-              {tip.inProgress ? '' : ` · ${formatSignedHours(tip.minutes - tip.fullPlan)}`}
-            </span>
+            {aimed && (
+              <span className={styles.tipLine}>
+                Plan {formatHours(tip.fullPlan)}
+                {tip.inProgress ? '' : ` · ${formatSignedHours(tip.minutes - tip.fullPlan)}`}
+              </span>
+            )}
           </div>
         )}
       </div>

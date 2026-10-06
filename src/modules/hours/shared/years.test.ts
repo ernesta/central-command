@@ -24,3 +24,17 @@ describe('yearRows', () => {
     expect(past.daysOff).toBe(1)
   })
 })
+
+describe('yearRows for contracts', () => {
+  it('carries the name and length, and says when there is no aim', () => {
+    const luminos = { ...emptyYear('2026-05-01'), weeks: 26, name: 'Luminos' }
+    const open = { ...emptyYear('2026-09-30'), weeks: 5, name: 'Research Assistant' }
+    open.plan.hoursPerWeek = 0
+    open.plan.weekAim = true
+    const rows = yearRows([luminos, open], { date: '2026-10-06', time: '12:00:00' })
+    expect(rows.map((r) => [r.name, r.weeks, r.aimed])).toEqual([
+      ['Research Assistant', 5, false],
+      ['Luminos', 26, true]
+    ])
+  })
+})

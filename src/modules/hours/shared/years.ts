@@ -1,10 +1,16 @@
-import { yearTotals } from '@shared/tracking/plan'
+import { hasAim, yearTotals } from '@shared/tracking/plan'
 import { timeOffCounts } from '@shared/tracking/timeoff'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
 import { yearEnd } from '@shared/year'
 
 export interface YearRow {
   start: string
+  /** The contract's length in weeks (Work). */
+  weeks?: number
+  /** The contract's name (Work). */
+  name?: string
+  /** False for a contract with no fixed hours: it has no plan and no balance. */
+  aimed: boolean
   end: string
   /** Minutes worked so far (the whole year once it is over). */
   minutes: number
@@ -24,6 +30,9 @@ export function yearRows(years: readonly TrackingYear[], now: Moment): YearRow[]
       const totals = yearTotals(data, now.date, now)
       return {
         start: data.start,
+        ...(data.weeks !== undefined ? { weeks: data.weeks } : {}),
+        ...(data.name ? { name: data.name } : {}),
+        aimed: hasAim(data),
         end: yearEnd(data.start, data.weeks),
         minutes: totals.minutes,
         plan: totals.plan,
