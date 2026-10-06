@@ -1,5 +1,6 @@
+import { formatDate } from '../time'
 import { inYear } from '../year'
-import { lastUsedClient } from './timer'
+import { defaultClient, lastUsedClient } from './timer'
 import type { TrackingYear } from './types'
 
 /** The contracts (years) that hold a date, in the order given (newest start first from the store). */
@@ -52,12 +53,34 @@ export interface OpenContract {
   clients: string[]
 }
 
-export function openContracts(years: readonly TrackingYear[], date: string): OpenContract[] {
-  return holding(years, date)
+/** Everything the timer can start for on a day: the contracts with clients, and the client used last (the preselected one). */
+export interface OpenContracts {
+  contracts: OpenContract[]
+  last?: string
+}
+
+export function openContracts(years: readonly TrackingYear[], date: string): OpenContracts {
+  const contracts = holding(years, date)
     .filter((y) => (y.plan.clients ?? []).length > 0)
     .map((y) => ({
       year: y.start,
       ...(y.name ? { name: y.name } : {}),
       clients: y.plan.clients ?? []
     }))
+  const last = contractOfLastClient(
+    holding(years, date).filter((y) => (y.plan.clients ?? []).length > 0),
+    date
+  )
+  const client = last && defaultClient(last)
+  return { contracts, ...(client ? { last: client } : {}) }
+}
+
+/** A contract as the timer's menus name it: its name, else its first day. */
+export function contractName(contract: OpenContract | undefined): string {
+  return contract?.name ?? (contract ? `From ${formatDate(contract.year)}` : '')
+}
+
+/** The contract that has a client among the open ones (the year to add typed time to). */
+export function yearOfClient(open: readonly OpenContract[], client: string): string | undefined {
+  return open.find((c) => c.clients.includes(client))?.year
 }

@@ -40,7 +40,7 @@ import {
   contractForClient,
   contractOfLastClient,
   openContracts,
-  type OpenContract
+  type OpenContracts
 } from '@shared/tracking/contracts'
 import { writeFileAtomicSync } from '../atomic-write'
 
@@ -148,7 +148,7 @@ export class TrackingStore {
   }
 
   /** What a timer can start for today: every contract that holds today (Work) with its clients. */
-  openContracts(workspace: Workspace): OpenContract[] {
+  openContracts(workspace: Workspace): OpenContracts {
     return openContracts(this.holdingToday(workspace), this.deps.now().date)
   }
 

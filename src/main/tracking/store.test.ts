@@ -420,15 +420,20 @@ describe('the timer with overlapping contracts', () => {
 
   it('lists what can start today: every contract that holds it, newest first, with its clients', () => {
     const store = both()
-    expect(store.openContracts('work')).toEqual([
-      { year: RA, name: 'Research Assistant', clients: ['Research Assistant'] },
-      { year: LUMINOS, clients: ['Impact', 'Teaching & Learning'] }
-    ])
+    expect(store.openContracts('work')).toEqual({
+      contracts: [
+        { year: RA, name: 'Research Assistant', clients: ['Research Assistant'] },
+        { year: LUMINOS, clients: ['Impact', 'Teaching & Learning'] }
+      ],
+      last: 'Research Assistant'
+    })
+    store.start('work', 'A', undefined, 'Teaching & Learning')
+    expect(store.openContracts('work').last).toBe('Teaching & Learning')
     at('2026-10-25', '09:00:00')
-    expect(store.openContracts('work').map((c) => c.year)).toEqual([LUMINOS])
+    expect(store.openContracts('work').contracts.map((c) => c.year)).toEqual([LUMINOS])
     at('2027-01-05', '09:00:00')
-    expect(store.openContracts('work')).toEqual([])
-    expect(store.openContracts('research')).toEqual([])
+    expect(store.openContracts('work')).toEqual({ contracts: [] })
+    expect(store.openContracts('research')).toEqual({ contracts: [] })
   })
 
   it('keeps an entry in the contract of its client', () => {

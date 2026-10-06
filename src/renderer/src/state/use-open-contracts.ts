@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import type { Workspace } from '@shared/settings'
-import type { OpenContract } from '@shared/tracking/contracts'
+import type { OpenContracts } from '@shared/tracking/contracts'
+
+const NONE: OpenContracts = { contracts: [] }
 
 /**
  * The contracts that hold today with their clients (Work; none for Research), read again whenever a year file changes
  * and when the day turns. Empty until read.
  */
-export function useOpenContracts(workspace: Workspace): OpenContract[] {
-  const [loaded, setLoaded] = useState<{ workspace: Workspace; list: OpenContract[] } | null>(null)
+export function useOpenContracts(workspace: Workspace): OpenContracts {
+  const [loaded, setLoaded] = useState<{ workspace: Workspace; list: OpenContracts } | null>(null)
   useEffect(() => {
     let cancelled = false
     const load = (): void => {
@@ -24,5 +26,5 @@ export function useOpenContracts(workspace: Workspace): OpenContract[] {
       off()
     }
   }, [workspace])
-  return loaded?.workspace === workspace ? loaded.list : []
+  return loaded?.workspace === workspace ? loaded.list : NONE
 }

@@ -85,11 +85,14 @@ describe('the contract of the client used last', () => {
 
 describe('open contracts', () => {
   it('names each contract that holds the day with its clients; one without clients is left out', () => {
-    expect(openContracts(years, '2026-09-29')).toEqual([
-      { year: '2026-09-25', name: 'Research Assistant', clients: ['Research Assistant'] },
-      { year: '2026-05-01', clients: ['Impact', 'Teaching & Learning'] }
-    ])
+    expect(openContracts(years, '2026-09-29')).toEqual({
+      contracts: [
+        { year: '2026-09-25', name: 'Research Assistant', clients: ['Research Assistant'] },
+        { year: '2026-05-01', clients: ['Impact', 'Teaching & Learning'] }
+      ],
+      last: 'Research Assistant'
+    })
     const bare = { ...luminos(), plan: { ...luminos().plan, clients: undefined } }
-    expect(openContracts([bare], '2026-09-29')).toEqual([])
+    expect(openContracts([bare], '2026-09-29')).toEqual({ contracts: [] })
   })
 })

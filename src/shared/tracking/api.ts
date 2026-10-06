@@ -1,5 +1,5 @@
 import type { Workspace } from '../settings'
-import type { OpenContract } from './contracts'
+import type { OpenContracts } from './contracts'
 import type { ContractTerms, Plan, Session, TimeOffType, TrackingYear } from './types'
 
 /** The one running timer of the whole app, with the file it lives in. */
@@ -30,7 +30,7 @@ export interface TrackingApi {
   /** The running timer, wherever it is. */
   running(): Promise<RunningTimer | null>
   /** The contracts that hold today with their clients: what a timer can start for (Work; Research has none). */
-  openContracts(workspace: Workspace): Promise<OpenContract[]>
+  openContracts(workspace: Workspace): Promise<OpenContracts>
   /** Start a task now, in the contract of its client (the one of the client used last when none is given); a running one stops at the same instant, even in another workspace. */
   start(workspace: Workspace, label: string, task?: string, client?: string): Promise<TimerResult>
   stop(): Promise<TimerResult>
