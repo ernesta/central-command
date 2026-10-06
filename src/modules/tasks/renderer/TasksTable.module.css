@@ -119,7 +119,6 @@
 }
 .titleDone {
   color: var(--text-muted);
-  text-decoration: line-through;
 }
 .tag {
   display: inline-block;

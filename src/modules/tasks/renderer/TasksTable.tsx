@@ -431,7 +431,11 @@ function TaskRowView({
       <td className={styles.nowrap}>{formatTaskTime(minutes)}</td>
       <td className={styles.nowrap}>
         {due && (
-          <span className={styles[`due_${dueTone(due, today)}`]}>{formatDue(due, today)}</span>
+          <span
+            className={styles[`due_${task.status === 'done' ? 'normal' : dueTone(due, today)}`]}
+          >
+            {formatDue(due, today)}
+          </span>
         )}
       </td>
     </tr>
