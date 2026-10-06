@@ -6,7 +6,7 @@ import { formatDate } from '@shared/time'
 import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { yearLabel } from '@shared/year'
 import { yearRows } from '../shared/years'
-import { useYearFiles } from './useYearFiles'
+import { useYearFiles } from '@renderer/state/use-year-files'
 import styles from './YearsTable.module.css'
 
 /** One row per year: its hours, plan so far, balance, average week and days off taken. A row shows that year in the charts above. */
