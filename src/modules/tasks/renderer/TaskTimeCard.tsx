@@ -10,6 +10,13 @@ import type { Task, TaskWorkspace } from '../shared/types'
 import type { TaskTime } from '../shared/views'
 import styles from './TaskPage.module.css'
 
+const monthLabel = (month: string): string =>
+  new Date(`${month}-01T00:00:00Z`).toLocaleString('en-GB', {
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC'
+  })
+
 /**
  * The side panel's time: the total (this task's, with its subtasks), ClickUp's earlier time and Hours' time apart, and the two
  * ways to add to it: Start a timer on the task, or Add time that was not tracked, on a day. Time lives in Hours; a task only
@@ -22,7 +29,8 @@ export function TaskTimeCard({
   own,
   isRunning,
   today,
-  yearFor
+  yearFor,
+  months
 }: {
   task: Task
   workspace: TaskWorkspace
@@ -31,6 +39,8 @@ export function TaskTimeCard({
   isRunning: boolean
   today: string
   yearFor: (date: string) => string | null
+  /** Every hour on this task by month (history included); the two lines below it are for a task with none. */
+  months: { month: string; minutes: number }[]
 }): React.JSX.Element {
   const [adding, setAdding] = useState(false)
   const [date, setDate] = useState(today)
@@ -80,14 +90,25 @@ export function TaskTimeCard({
         <span className={styles.label}>Time on this task</span>
         <b className={styles.total}>{formatTaskTime(time.total) || '0:00'}</b>
       </div>
-      <div className={styles.timeLine}>
-        <span>Earlier, from ClickUp</span>
-        <span>{formatTaskTime(own.earlier) || '0:00'}</span>
-      </div>
-      <div className={styles.timeLine}>
-        <span>In Hours</span>
-        <span>{formatTaskTime(own.tracked) || '0:00'}</span>
-      </div>
+      {months.length > 0 ? (
+        months.map((m) => (
+          <div key={m.month} className={styles.timeLine}>
+            <span>{monthLabel(m.month)}</span>
+            <span>{formatTaskTime(m.minutes)}</span>
+          </div>
+        ))
+      ) : (
+        <>
+          <div className={styles.timeLine}>
+            <span>Earlier, from ClickUp</span>
+            <span>{formatTaskTime(own.earlier) || '0:00'}</span>
+          </div>
+          <div className={styles.timeLine}>
+            <span>In Hours</span>
+            <span>{formatTaskTime(own.tracked) || '0:00'}</span>
+          </div>
+        </>
+      )}
       <div className={styles.timeButtons}>
         {isRunning ? (
           <Button

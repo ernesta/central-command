@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { year as baseYear } from '@shared/tracking/test-utils'
 import type { TrackingYear } from '@shared/tracking/types'
-import { taskKey, taskKeyForLabel, taskUidOf, trackedByTask } from './tracked'
+import { hoursByMonth, taskKey, taskKeyForLabel, taskUidOf, trackedByTask } from './tracked'
 
 const year = (over: Partial<TrackingYear>): TrackingYear => baseYear(over)
 
@@ -80,6 +80,38 @@ describe('history linked to a task', () => {
       ]
     })
     expect(trackedByTask([y]).get('t1')).toBe(30)
+  })
+})
+
+describe('hoursByMonth', () => {
+  it('lists all of a task’s hours by month, history included, oldest first', () => {
+    const y = year({
+      adjusts: [
+        {
+          id: 'h',
+          date: '2025-11-03',
+          label: 'Old',
+          minutes: 90,
+          task: taskKey('t1'),
+          earlier: true
+        },
+        {
+          id: 'g',
+          date: '2025-10-30',
+          label: 'Old',
+          minutes: 30,
+          task: taskKey('t1'),
+          earlier: true
+        },
+        { id: 'n', date: '2025-11-20', label: 'New', minutes: 15, task: taskKey('t1') },
+        { id: 'o', date: '2025-11-20', label: 'Other', minutes: 45, task: taskKey('t2') }
+      ]
+    })
+    expect(hoursByMonth([y], 't1')).toEqual([
+      { month: '2025-10', minutes: 30 },
+      { month: '2025-11', minutes: 105 }
+    ])
+    expect(hoursByMonth([y], 'none')).toEqual([])
   })
 })
 

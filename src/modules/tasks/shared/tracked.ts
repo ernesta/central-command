@@ -46,3 +46,25 @@ export function taskKeyForLabel(
   const hits = tasks.filter((t) => t.title.trim().toLowerCase() === wanted)
   return hits.length === 1 ? taskKey(hits[0].uid) : undefined
 }
+
+/**
+ * Every hour Hours holds for a task by month (`YYYY-MM`, oldest first): ended sessions and typed time, history linked to the task
+ * included (which `trackedByTask` leaves out because ClickUp's time already holds it). For the task page's "by month" list.
+ */
+export function hoursByMonth(
+  years: readonly TrackingYear[],
+  uid: string
+): { month: string; minutes: number }[] {
+  const months = new Map<string, number>()
+  const add = (key: string | undefined, date: string, amount: number): void => {
+    if (taskUidOf(key) === uid && amount !== 0)
+      months.set(date.slice(0, 7), (months.get(date.slice(0, 7)) ?? 0) + amount)
+  }
+  for (const year of years) {
+    for (const s of year.sessions) add(s.task, s.date, s.end === null ? 0 : reportedMinutes(s))
+    for (const a of year.adjusts) add(a.task, a.date, a.minutes)
+  }
+  return [...months]
+    .map(([month, minutes]) => ({ month, minutes }))
+    .sort((a, b) => a.month.localeCompare(b.month))
+}

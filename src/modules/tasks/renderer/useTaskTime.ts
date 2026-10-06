@@ -4,7 +4,7 @@ import { useRunningTimer } from '@renderer/state/use-running-timer'
 import { inYear } from '@shared/year'
 import type { TrackingYear } from '@shared/tracking/types'
 import { elapsedMinutes } from '../../hours/shared/timer'
-import { taskUidOf, trackedByTask } from '../shared/tracked'
+import { hoursByMonth, taskUidOf, trackedByTask } from '../shared/tracked'
 import type { TaskWorkspace } from '../shared/types'
 
 /**
@@ -16,6 +16,8 @@ export function useTaskTime(workspace: TaskWorkspace): {
   running: ReadonlySet<string>
   /** The start of the year file that covers a date, or null when none does (to add time on that day). */
   yearFor: (date: string) => string | null
+  /** A task's hours by month, history included. */
+  months: (uid: string) => { month: string; minutes: number }[]
 } {
   const [years, setYears] = useState<TrackingYear[]>([])
   const { running } = useRunningTimer()
@@ -53,6 +55,7 @@ export function useTaskTime(workspace: TaskWorkspace): {
     }
     const yearFor = (date: string): string | null =>
       years.find((y) => inYear(date, y.start, y.weeks))?.start ?? null
-    return { tracked, running: active, yearFor }
+    const months = (uid: string): { month: string; minutes: number }[] => hoursByMonth(years, uid)
+    return { tracked, running: active, yearFor, months }
   }, [base, running, now, workspace, years])
 }
