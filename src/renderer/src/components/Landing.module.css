@@ -147,6 +147,8 @@
   margin: 0;
   color: var(--text-muted);
   font-size: var(--text-14);
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 

@@ -128,7 +128,11 @@ export function SeriesCards({ cards }: { cards: readonly SeriesCard[] }): React.
             </Link>
           </h3>
           <p className={styles.line}>{c.line}</p>
-          {c.extra && <p className={styles.line}>{c.extra}</p>}
+          {c.extra && (
+            <p className={styles.line} title={c.extra}>
+              {c.extra}
+            </p>
+          )}
         </div>
       ))}
     </div>
