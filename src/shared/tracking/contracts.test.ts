@@ -3,6 +3,7 @@ import {
   clientForList,
   contractForClient,
   contractOfLastClient,
+  contractToShow,
   holding,
   openContracts
 } from './contracts'
@@ -94,5 +95,39 @@ describe('open contracts', () => {
     })
     const bare = { ...luminos(), plan: { ...luminos().plan, clients: undefined } }
     expect(openContracts([bare], '2026-09-29')).toEqual({ contracts: [] })
+  })
+})
+
+describe('the contract the page opens on', () => {
+  const years = ['2026-09-30', '2026-05-01', '2025-10-01']
+  const open = {
+    contracts: [
+      { year: '2026-09-30', name: 'Research Assistant', clients: ['RA'] },
+      { year: '2026-05-01', name: 'Luminos', clients: ['Impact', 'Teaching & Learning'] }
+    ],
+    last: 'Impact'
+  }
+
+  it('is the one last shown when it holds today', () => {
+    expect(contractToShow(years, '2026-10-06', open, '2026-09-30')).toBe('2026-09-30')
+  })
+
+  it('is the one of the client used last when nothing is remembered or it no longer holds today', () => {
+    expect(contractToShow(years, '2026-10-06', open)).toBe('2026-05-01')
+    expect(contractToShow(years, '2026-10-06', open, '2025-10-01')).toBe('2026-05-01')
+  })
+
+  it('is the newest start when no client was used', () => {
+    expect(contractToShow(years, '2026-10-06', { contracts: open.contracts })).toBe('2026-09-30')
+  })
+
+  it('is the newest that has started when none holds today, even if an older one just ended', () => {
+    expect(contractToShow(years, '2027-06-01', { contracts: [] })).toBe('2026-09-30')
+    expect(contractToShow(years, '2026-06-01', { contracts: [] }, '2026-09-30')).toBe('2026-05-01')
+  })
+
+  it('is the newest when none has started, and nothing when there are none', () => {
+    expect(contractToShow(['2027-01-01'], '2026-06-01', { contracts: [] })).toBe('2027-01-01')
+    expect(contractToShow([], '2026-06-01', { contracts: [] })).toBe('')
   })
 })

@@ -84,3 +84,24 @@ export function contractName(contract: OpenContract | undefined): string {
 export function yearOfClient(open: readonly OpenContract[], client: string): string | undefined {
   return open.find((c) => c.clients.includes(client))?.year
 }
+
+/**
+ * The contract the Hours page opens on. Among the contracts that hold today (`open`): the one last shown if it is
+ * among them, else the one of the client used last, else the newest start. With none holding today: the newest one that
+ * has started, else the newest. `years` are the starts, newest first; '' when there are none.
+ */
+export function contractToShow(
+  years: readonly string[],
+  today: string,
+  open: OpenContracts,
+  remembered?: string
+): string {
+  const holding = open.contracts.map((c) => c.year).filter((y) => years.includes(y))
+  if (holding.length > 0) {
+    if (remembered && holding.includes(remembered)) return remembered
+    const ofLast = open.contracts.find((c) => c.year && c.clients.includes(open.last ?? ''))
+    if (ofLast && holding.includes(ofLast.year)) return ofLast.year
+    return [...holding].sort().reverse()[0]
+  }
+  return years.find((y) => y <= today) ?? years[0] ?? ''
+}

@@ -9,6 +9,11 @@ const NONE: OpenContracts = { contracts: [] }
  * and when the day turns. Empty until read.
  */
 export function useOpenContracts(workspace: Workspace): OpenContracts {
+  return useOpenContractsRead(workspace) ?? NONE
+}
+
+/** The same, null until it has been read (a page that must not guess before it knows). */
+export function useOpenContractsRead(workspace: Workspace): OpenContracts | null {
   const [loaded, setLoaded] = useState<{ workspace: Workspace; list: OpenContracts } | null>(null)
   useEffect(() => {
     let cancelled = false
@@ -26,5 +31,5 @@ export function useOpenContracts(workspace: Workspace): OpenContracts {
       off()
     }
   }, [workspace])
-  return loaded?.workspace === workspace ? loaded.list : NONE
+  return loaded?.workspace === workspace ? loaded.list : null
 }
