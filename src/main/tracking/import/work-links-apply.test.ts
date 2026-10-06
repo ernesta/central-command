@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyEntryLinks, planFinal, type ApplyTask } from './work-links-apply'
+import { applyEntryLinks, markEarlier, planFinal, type ApplyTask } from './work-links-apply'
 import { year } from '@shared/tracking/test-utils'
 import { parseChanges, parseWorksheet, taskNames, type SheetEntry } from './work-links-sheet'
 
@@ -195,5 +195,25 @@ describe('applyEntryLinks', () => {
       ok: false,
       reason: 'already-linked'
     })
+  })
+})
+
+describe('markEarlier', () => {
+  const linked = (): ReturnType<typeof year> =>
+    year({
+      adjusts: [
+        { id: 'a', date: '2026-01-01', label: 'x', minutes: 30, task: 'cc://task/t' },
+        { id: 'b', date: '2026-01-02', label: 'y', minutes: 15 }
+      ]
+    })
+  it('marks a linked typed entry and nothing else, and refuses an unlinked or missing one', () => {
+    const r = markEarlier(linked(), ['a'])
+    expect(r.ok && r.year.adjusts).toMatchObject([
+      { id: 'a', earlier: true, minutes: 30 },
+      { id: 'b' }
+    ])
+    expect(r.ok && r.year.adjusts[1].earlier).toBeUndefined()
+    expect(markEarlier(linked(), ['b'])).toEqual({ ok: false, reason: 'not-linked' })
+    expect(markEarlier(linked(), ['zz'])).toEqual({ ok: false, reason: 'missing-entry' })
   })
 })

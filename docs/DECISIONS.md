@@ -2011,3 +2011,9 @@ The user said to link everything that remained as best as possible, make the num
 - **Month card** (billable only) on the scratch result matched the imported months to the minute (June 23:45, October 13:15 with nothing left out). The task page lists a task's hours by month instead of "In Hours 0:00" (`hoursByMonth`).
 - **Tools** (all in `scripts/`): `link:worksheet` (worksheet and check), `link:work-apply` (this step), `link:work-hours` (the first, exact-sum linker, superseded). Planner and rules: `src/main/tracking/import/work-links-apply.ts` (tests), `work-links-sheet.ts`, `work-task-flow.ts`.
 - **Left for the user's review:** names that came from one entry (e.g. "Document automation: project setup" for Identify relevant documents…) and tasks merged or split by judgement (see the backups for the old names); ClickUp's own admin tasks (FreeAgent setup etc.) are non-billable and untouched.
+
+### Stage 8, ClickUp time raised to the hours (6 Oct 2026)
+
+The user: totals must match exactly; where hours exceed a task's ClickUp time, the task is updated. `npm run link:work-match -- --apply` (applied the same day, backups in `backups/work-match-<time>/`) raised the ClickUp time of the 12 tasks that held hours but less ClickUp time (12:45: the five new tasks, the three 2025-26 "Incorporate" tasks, the three 5 Oct Document Automation tasks and the 10 Aug summary task) to their typed hours and marked those entries `earlier`. Result: **billable ClickUp time 324:00 = typed hours 324:00, task by task.** The one thing outside it: the 2:15 Liberia timer session of 5 Oct, which is time tracked live in the app (counted as Hours time on its task), not typed history.
+
+Open question for the user (non-billable work): non-billable tasks with ClickUp time (the admin tasks, 5:30) have no hours; the user wants hours created for them that stay out of the billable summaries (Week, Balance, charts, Month card).
