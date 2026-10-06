@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { contractWeeks } from './workspace-weeks'
+import { contractLabel, contractWeeks } from './workspace-weeks'
 import { dailyAim, weekTotals, yearTotals } from './plan'
 import { emptyYear, WORK_PLAN } from './types'
 
@@ -49,5 +49,13 @@ describe('a week aimed at as a whole', () => {
     const contract = { ...emptyYear('2026-05-01', WORK_PLAN), weeks: 26 }
     expect(weekTotals(contract, '2026-12-01')).toHaveLength(26)
     expect(yearTotals(contract, '2026-12-01').balance).toBe(-26 * 480)
+  })
+})
+
+describe('contractLabel', () => {
+  it('names a contract by its name and dates, or by the dates alone', () => {
+    expect(contractLabel('2026-05-01', 26, 'Luminos')).toBe('Luminos · May 1, 2026 – Oct 29, 2026')
+    expect(contractLabel('2026-05-01', 26)).toBe('May 1, 2026 – Oct 29, 2026')
+    expect(contractLabel('2026-05-01', undefined, 'Luminos')).toBe('Luminos · May 1, 2026')
   })
 })

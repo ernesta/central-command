@@ -1,22 +1,9 @@
-import { hasContracts } from '@shared/tracking/workspace-weeks'
-import { formatDate } from '@shared/time'
-import { addDays, yearLabel } from '@shared/year'
+import { contractLabel, hasContracts } from '@shared/tracking/workspace-weeks'
+import { yearLabel } from '@shared/year'
 import type { Workspace } from '@shared/settings'
 import type { TrackingYear } from '@shared/tracking/types'
 import { useYearFiles } from '../state/use-year-files'
 import { Select } from './Select'
-
-/**
- * A contract by its name and its first and last day: "Luminos · 1 May 2026 – 29 Oct 2026" (the dates alone when it has
- * no name). Without its length, by its first day.
- */
-export function contractLabel(start: string, weeks: number | undefined, name?: string): string {
-  const dates =
-    weeks === undefined
-      ? formatDate(start)
-      : `${formatDate(start)} – ${formatDate(addDays(start, weeks * 7 - 1))}`
-  return name ? `${name} · ${dates}` : dates
-}
 
 function contractLabelOf(file: TrackingYear | undefined, start: string): string {
   return contractLabel(start, file?.weeks, file?.name)

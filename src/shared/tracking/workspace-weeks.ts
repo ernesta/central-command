@@ -1,3 +1,4 @@
+import { formatDate } from '../time'
 import { addDays, dayNumber, daysBetween } from '../year'
 
 /**
@@ -33,4 +34,16 @@ export function contractWeeks(
 /** The first day a contract of `weeks` weeks starting on `start` leaves for the next. */
 export function dayAfterContract(start: string, weeks: number): string {
   return addDays(start, weeks * 7)
+}
+
+/**
+ * A contract by its name and its first and last day: "Luminos · 1 May 2026 – 29 Oct 2026" (the dates alone when it has
+ * no name). Without its length, by its first day.
+ */
+export function contractLabel(start: string, weeks: number | undefined, name?: string): string {
+  const dates =
+    weeks === undefined
+      ? formatDate(start)
+      : `${formatDate(start)} – ${formatDate(addDays(start, weeks * 7 - 1))}`
+  return name ? `${name} · ${dates}` : dates
 }
