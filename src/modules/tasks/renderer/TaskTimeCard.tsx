@@ -30,6 +30,7 @@ export function TaskTimeCard({
   isRunning,
   today,
   yearFor,
+  clientFor,
   months
 }: {
   task: Task
@@ -38,7 +39,9 @@ export function TaskTimeCard({
   own: TaskTime
   isRunning: boolean
   today: string
-  yearFor: (date: string) => string | null
+  yearFor: (date: string, client?: string) => string | null
+  /** The list of this task as a client of a contract that holds the date, when its name is one. */
+  clientFor: (list: string, date: string) => string | undefined
   /** Every hour on this task by month (history included); the two lines below it are for a task with none. */
   months: { month: string; minutes: number }[]
 }): React.JSX.Element {
@@ -49,7 +52,12 @@ export function TaskTimeCard({
 
   const start = async (): Promise<void> => {
     setError(null)
-    const result = await window.api.tracking.start(workspace, task.title, taskKey(task.uid))
+    const result = await window.api.tracking.start(
+      workspace,
+      task.title,
+      taskKey(task.uid),
+      clientFor(task.list, today)
+    )
     if (!result.ok) setError(`Couldn’t start the timer (${result.reason}).`)
   }
   const stop = async (): Promise<void> => {
@@ -57,7 +65,8 @@ export function TaskTimeCard({
     if (!result.ok) setError(`Couldn’t stop the timer (${result.reason}).`)
   }
   const add = async (): Promise<void> => {
-    const year = yearFor(date)
+    const client = clientFor(task.list, date)
+    const year = yearFor(date, client)
     if (year === null) {
       setError('No year of Hours covers that day.')
       return
@@ -70,7 +79,7 @@ export function TaskTimeCard({
         date,
         task.title || 'Untitled',
         quarter,
-        undefined,
+        client,
         taskKey(task.uid)
       )
       if (!result.ok) setError(`Couldn’t add the time (${result.reason}).`)

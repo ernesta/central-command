@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNow } from '@renderer/state/use-now'
 import { useRunningTimer } from '@renderer/state/use-running-timer'
 import { inYear } from '@shared/year'
+import { clientForList, contractForClient } from '@shared/tracking/contracts'
 import type { TrackingYear } from '@shared/tracking/types'
 import { elapsedMinutes } from '../../hours/shared/timer'
 import { hoursByMonth, taskUidOf, trackedByTask } from '../shared/tracked'
@@ -14,8 +15,13 @@ import type { TaskWorkspace } from '../shared/types'
 export function useTaskTime(workspace: TaskWorkspace): {
   tracked: ReadonlyMap<string, number>
   running: ReadonlySet<string>
-  /** The start of the year file that covers a date, or null when none does (to add time on that day). */
-  yearFor: (date: string) => string | null
+  /**
+   * The start of the year file that covers a date, or null when none does (to add time on that day). With overlapping
+   * contracts, the one that has `client`.
+   */
+  yearFor: (date: string, client?: string) => string | null
+  /** A task's list as the client of a contract that holds `date`, when its name is one. */
+  clientFor: (list: string, date: string) => string | undefined
   /** A task's hours by month, history included. */
   months: (uid: string) => { month: string; minutes: number }[]
 } {
@@ -53,9 +59,13 @@ export function useTaskTime(workspace: TaskWorkspace): {
         if (minutes) tracked.set(uid, (tracked.get(uid) ?? 0) + minutes)
       }
     }
-    const yearFor = (date: string): string | null =>
-      years.find((y) => inYear(date, y.start, y.weeks))?.start ?? null
+    const yearFor = (date: string, client?: string): string | null =>
+      (client ? contractForClient(years, date, client) : undefined)?.start ??
+      years.find((y) => inYear(date, y.start, y.weeks))?.start ??
+      null
+    const clientFor = (list: string, date: string): string | undefined =>
+      clientForList(years, date, list)
     const months = (uid: string): { month: string; minutes: number }[] => hoursByMonth(years, uid)
-    return { tracked, running: active, yearFor, months }
+    return { tracked, running: active, yearFor, clientFor, months }
   }, [base, running, now, workspace, years])
 }

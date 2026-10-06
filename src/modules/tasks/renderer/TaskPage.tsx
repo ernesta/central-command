@@ -100,7 +100,7 @@ function TaskView({
 }): React.JSX.Element {
   const navigate = useNavigate()
   const today = todayIso()
-  const { tracked, running, yearFor, months } = useTaskTime(workspace)
+  const { tracked, running, yearFor, clientFor, months } = useTaskTime(workspace)
   const isSub = parent !== undefined
   const [error, setError] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -310,6 +310,7 @@ function TaskView({
             isRunning={running.has(task.uid)}
             today={today}
             yearFor={yearFor}
+            clientFor={clientFor}
             months={months(task.uid)}
           />
           <MentionedIn
