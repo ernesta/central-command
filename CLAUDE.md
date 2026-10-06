@@ -14,6 +14,7 @@ ask the user.
 - `npm run import:work-hours -- --sheet <xlsx> --logs <Activity Logs folder> [--detail YYYY-MM] [--apply]`: import the Work sheet "Time Tracking" into two contracts (one entry
   per row with its client), checked against the monthly Word activity logs (dry run by default; macOS only; never overwrites a contract that holds data; `--apply` only when the
   user says so, app closed; applied on 5 Oct 2026 (both contracts, 128 + 84 entries), so a dry run now reports both as already holding data and writes nothing)
+- `npm run link:work-hours [-- --apply [--include-low]]`: link Work's imported hour entries to billable tasks when their minutes add up to the task's ClickUp time exactly (dry run by default; `--apply` only when the user says so, app closed; backs up `time/work/` first; not yet applied to the real library)
 - `npm run import:clickup -- --file <csv> [--apply]`: import the ClickUp export into Tasks (SQLite; dry run by default; de-duplicates by Task ID and stops if two rows with one id
   differ; never adds to a store that holds tasks; `--apply` only when the user says so, app closed; the report must show 2,193 -> 1,211 rows, 1,082/98/31 by status,
   663/548 top-level/subtasks and 1,612.8 h across 628 tasks)
