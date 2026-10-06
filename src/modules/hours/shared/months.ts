@@ -52,8 +52,10 @@ export function monthsOf(year: TrackingYear, now?: Moment): ContractMonth[] {
   const months: ContractMonth[] = []
   for (const w of weeklyMinutes(year, now)) {
     const id = w.from.slice(0, 7)
-    const week: MonthWeek = { ...w, plan: weekPlan(year, w.from) }
     const last = months[months.length - 1]
+    // Weeks are numbered from 1 in every month.
+    const number = last?.id === id ? last.weeks.length + 1 : 1
+    const week: MonthWeek = { ...w, number, plan: weekPlan(year, w.from) }
     if (last?.id === id) {
       last.weeks.push(week)
       last.to = w.to

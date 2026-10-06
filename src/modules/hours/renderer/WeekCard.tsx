@@ -6,6 +6,7 @@ import { dayRows, weekDaysMinutes } from '@shared/tracking/totals'
 import { defaultClient } from '@shared/tracking/timer'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
 import { addDays, weekNumberOf, yearEnd } from '@shared/year'
+import { monthOfWeek, monthsOf } from '../shared/months'
 import { earlierLabels } from '../shared/tasks'
 import { barFill, BAR_SCALE } from '../shared/week'
 import type { HoursWorkspace } from '../shared/workspaces'
@@ -50,7 +51,10 @@ export function WeekCard({
   const over = addDays(week, 6) < now.date
   const first = week <= data.start
   const last = addDays(week, 7) > yearEnd(data.start, data.weeks)
-  const number = weekNumberOf(week, data.start, data.weeks)
+  // Where weeks belong to invoice months they are numbered within the month.
+  const number = data.plan.weekAim
+    ? monthOfWeek(monthsOf(data, now), week)?.weeks.find((w) => w.from === week)?.number
+    : weekNumberOf(week, data.start, data.weeks)
 
   return (
     <section className={styles.card} aria-label="Week">

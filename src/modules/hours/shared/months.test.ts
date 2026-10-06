@@ -32,6 +32,11 @@ describe('monthsOf', () => {
     expect(months.reduce((n, m) => n + m.weeks.length, 0)).toBe(26)
   })
 
+  it('numbers the weeks from 1 in every month', () => {
+    for (const m of months)
+      expect(m.weeks.map((w) => w.number)).toEqual(m.weeks.map((_, i) => i + 1))
+  })
+
   it('ends a month on the Thursday on or after the last day of the calendar month', () => {
     // 30 Sep 2026 is a Wednesday; 31 Oct is a Saturday.
     const sep = months.find((m) => m.name === 'September')!
