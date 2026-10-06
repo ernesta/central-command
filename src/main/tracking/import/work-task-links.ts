@@ -56,10 +56,10 @@ const tokens = (text: string): Set<string> =>
   )
 
 const DAY = 86_400_000
-const dayNumber = (date: string): number => Date.parse(`${date}T00:00:00Z`) / DAY
+export const dayNumber = (date: string): number => Date.parse(`${date}T00:00:00Z`) / DAY
 
 /** (words in common, weighted by rarity) divided by the weight of the shorter text, 0 to 1. */
-function makeSimilarity(texts: string[]): (a: string, b: string) => number {
+export function makeSimilarity(texts: string[]): (a: string, b: string) => number {
   const df = new Map<string, number>()
   for (const text of texts) for (const w of tokens(text)) df.set(w, (df.get(w) ?? 0) + 1)
   const weight = (w: string): number => Math.log(1 + texts.length / (df.get(w) ?? 1))
