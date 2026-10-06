@@ -34,7 +34,7 @@ Luminos. Read `docs/DECISIONS.md`, "Work's Hours: weeks, contracts and months" a
 
 ## Stages (stop after each and ask; the user clears context between them)
 
-1. **Rules and files.** `name`, `invoice`, zero aim; overlap allowed; `createContract` with its own plan; `parseYear`; tests (include a mutation check on the overlap and same-start refusals, and on "never two contracts for one client on one day").
+1. **Rules and files (done 6 Oct 2026, `docs/DECISIONS.md`, "Overlapping contracts, stage 1").** `name`, `invoice`, zero aim; overlap allowed; `createContract` with its own plan; `parseYear`; tests (include a mutation check on the overlap and same-start refusals, and on "never two contracts for one client on one day").
 2. **Timer and entries find the contract by client.** Store `start`, the Start chip, palette, Today card, task start; `running()` unchanged. Tests; then drive the built app on a scratch library (CLAUDE.md, "Testing the app for real"): two overlapping contracts, start each client's timer, stop, add time, switch contract.
 3. **Hours UI.** Selector label, Settings form, the periods card (week and month), no-aim display everywhere (Week card, Balance card, charts and weeks, heat map, typical week). Screenshots in light and dark.
 4. **The user's data.** A script `npm run name:contracts`: names both existing contracts "Luminos" (dry run, backup, `--apply` only when the user says so, app closed). Then the user adds Research Assistant and the new Luminos contract in the app. Update `CLAUDE.md`, `docs/DECISIONS.md` (one section, "Overlapping contracts") and `docs/ROADMAP.md`.
