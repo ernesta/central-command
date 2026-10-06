@@ -411,11 +411,13 @@ export function checkWorksheet(
  * Changes to ClickUp tasks the user decided, so that each task's time can equal the hours given to it:
  *   split,<task>,<new task name>,<minutes>[,<sublist>]   the new task takes those minutes from <task>
  *   rename,<task>,<new name>
+ *   merge,<task>,<into task>                              the task's time and name go into the other task
  * The sheet's task column then uses the new names.
  */
 export type TaskChange =
   | { action: 'split'; task: string; to: string; minutes: number; sublist: string; line: number }
   | { action: 'rename'; task: string; to: string; line: number }
+  | { action: 'merge'; task: string; to: string; line: number }
 
 export function parseChanges(text: string): { changes: TaskChange[]; problems: string[] } {
   const changes: TaskChange[] = []
@@ -426,7 +428,8 @@ export function parseChanges(text: string): { changes: TaskChange[]; problems: s
       if (c.every((x) => x.trim() === '')) return
       const line = i + 2
       const [action, task, to, minutes, sublist] = c.map((x) => (x ?? '').trim())
-      if (action === 'rename' && task && to) changes.push({ action, task, to, line })
+      if ((action === 'rename' || action === 'merge') && task && to)
+        changes.push({ action, task, to, line })
       else if (
         action === 'split' &&
         task &&
@@ -437,7 +440,7 @@ export function parseChanges(text: string): { changes: TaskChange[]; problems: s
         changes.push({ action, task, to, minutes: Number(minutes), sublist: sublist ?? '', line })
       else
         problems.push(
-          `Changes line ${line}: not a rename (task, new name) or a split (task, new name, quarter-hour minutes).`
+          `Changes line ${line}: not a rename (task, new name), a merge (task, into task) or a split (task, new name, quarter-hour minutes).`
         )
     })
   return { changes, problems }
@@ -461,6 +464,21 @@ export function applyChanges(
     [...nm.values()].some((n) => n.toLowerCase() === name.toLowerCase())
   for (const c of changes) {
     const source = find(c.task)
+    if (c.action === 'merge') {
+      const into = find(c.to)
+      if (!source || !into)
+        problems.push(
+          `Changes line ${c.line}: merge needs two tasks that exist ("${c.task}", "${c.to}").`
+        )
+      else if (source === into)
+        problems.push(`Changes line ${c.line}: a task cannot merge into itself.`)
+      else {
+        into.minutes += source.minutes
+        out.splice(out.indexOf(source), 1)
+        nm.delete(source.uid)
+      }
+      continue
+    }
     if (!source) problems.push(`Changes line ${c.line}: no task called "${c.task}".`)
     else if (taken(c.to))
       problems.push(`Changes line ${c.line}: a task called "${c.to}" already exists.`)

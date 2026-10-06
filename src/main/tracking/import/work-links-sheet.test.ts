@@ -236,6 +236,31 @@ describe('ClickUp task changes', () => {
     expect(r.billable).toHaveLength(1)
   })
 
+  it('merges two tasks into one with both times, which then take the hours of one entry', () => {
+    const two = [
+      task('r', 'Read documents', 60, '2026-06-18'),
+      task('w', 'Write up notes', 75, '2026-06-18')
+    ]
+    const { changes, problems } = parseChanges(
+      text(
+        'merge,Write up notes,Read documents\nrename,Read documents,Background reading and write-up,,'
+      )
+    )
+    expect(problems).toEqual([])
+    const r = applyChanges(two, taskNames(two), changes)
+    expect(r.problems).toEqual([])
+    expect(r.tasks.map((t) => [r.names.get(t.uid), t.minutes])).toEqual([
+      ['Background reading and write-up', 135]
+    ])
+    expect(
+      applyChanges(
+        two,
+        taskNames(two),
+        parseChanges(text('merge,Read documents,Read documents')).changes
+      ).problems[0]
+    ).toMatch(/itself/)
+  })
+
   it('refuses a split of all or more than the task has, a missing task and a name already used', () => {
     const run = (rows: string): string[] =>
       applyChanges(base, nm, parseChanges(text(rows)).changes).problems
