@@ -247,8 +247,8 @@ Choices the plan left open, made conservatively; change any of them by telling C
 
 ### For the user (review and decisions)
 
-- [ ] **Name the two Luminos contracts (6 Oct 2026).** Quit the app everywhere, then say so and Claude runs `npm run name:contracts -- --apply` (the dry run lists both files; a backup is made first).
-- [ ] **Add the two new contracts in Settings -> Hours (6 Oct 2026), after naming.** Research Assistant: client Royal Holloway, first day 28 Sep 2026, last day 28 Mar 2027 (change if needed), weekly hours blank, invoiced Week. New Luminos: clients Impact, Teaching & Learning, weekly hours 8:00, invoiced Month, first day after 29 Oct 2026 (tell Claude the dates).
+- [x] **Name the two Luminos contracts: applied 6 Oct 2026** (both existing contracts; backup `backups/name-contracts-2026-10-06T13-02-18-101Z`).
+- [ ] **Add the two new contracts in Settings -> Hours (6 Oct 2026), after naming.** Royal Holloway (name it Royal Holloway, not Research Assistant): client Royal Holloway, first day 28 Sep 2026, last day 28 Mar 2027 (change if needed), weekly hours blank, invoiced Week. New Luminos: clients Impact, Teaching & Learning, weekly hours 8:00, invoiced Month, first day after 29 Oct 2026 (tell Claude the dates).
 
 - [x] **Non-billable work in Hours: dropped (6 Oct 2026, the user).** Work is billable work only; the billable / non-billable distinction was removed from the app (`docs/DECISIONS.md`, "Work is billable work only"). The 74 non-billable Work tasks (5:30) are in `~/CentralCommand/exports/work-non-billable-tasks.csv`. The `billable` tag was removed from every task and the 74 tasks are in the trash (applied 6 Oct 2026; restorable in Settings → Tasks; backup `backups/drop-billable-*`).
 - [x] **Stage 8 is applied (6 Oct 2026): result reviewed and accepted as it is (6 Oct 2026, the user: no fixes).** A worksheet of the 104 renamed tasks is in `~/CentralCommand/exports/stage8-name-review.csv` if a name ever needs changing; old names are in `~/CentralCommand/backups/work-final-*/`.
