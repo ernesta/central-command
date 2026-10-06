@@ -102,7 +102,7 @@ describe('Work contracts', () => {
     expect(store.years('work')).toEqual([START])
   })
 
-  it('refuses a start that is not a date, an end that does not make whole weeks, and an overlap', () => {
+  it('refuses a start that is not a date and an end that does not make whole weeks', () => {
     const store = contract()
     expect(store.createContract('work', '2026-11-31', '2027-04-29')).toEqual({
       ok: false,
@@ -111,10 +111,6 @@ describe('Work contracts', () => {
     expect(store.createContract('work', '2026-10-30', '2027-04-30')).toEqual({
       ok: false,
       reason: 'bad-end'
-    })
-    expect(store.createContract('work', '2026-10-23', '2026-11-26')).toEqual({
-      ok: false,
-      reason: 'overlap'
     })
     expect(store.createContract('research', '2026-10-30', '2027-04-29')).toEqual({
       ok: false,
@@ -127,9 +123,127 @@ describe('Work contracts', () => {
     expect(store.createContract('work', '2025-10-01', '2026-03-31').ok).toBe(true)
     expect(store.years('work')).toEqual([START, '2025-10-01'])
     expect(store.get('work', '2025-10-01').weeks).toBe(26)
-    expect(store.createContract('work', '2026-03-31', '2026-04-27')).toEqual({
-      ok: false,
-      reason: 'overlap'
+  })
+
+  describe('overlap', () => {
+    const RA = { name: 'Research Assistant', clients: ['Research Assistant'] }
+
+    it('lets contracts with different clients overlap', () => {
+      const store = contract()
+      expect(store.createContract('work', '2026-10-23', '2026-11-26', RA).ok).toBe(true)
+      expect(store.years('work')).toEqual(['2026-10-23', START])
+    })
+
+    it('refuses a second contract that starts on the same day, whatever its clients', () => {
+      const store = contract()
+      expect(store.createContract('work', START, END, RA)).toEqual({
+        ok: false,
+        reason: 'same-start'
+      })
+      expect(store.years('work')).toEqual([START])
+    })
+
+    it('refuses a client that another contract has on any day of the new dates', () => {
+      const store = contract()
+      // Same clients as the first contract, overlapping by one week.
+      expect(store.createContract('work', '2026-10-23', '2026-11-26')).toEqual({
+        ok: false,
+        reason: 'client-overlap'
+      })
+      // One client shared, compared ignoring case.
+      expect(
+        store.createContract('work', '2026-10-23', '2026-11-26', { clients: ['impact', 'New'] })
+      ).toEqual({ ok: false, reason: 'client-overlap' })
+      expect(store.years('work')).toEqual([START])
+    })
+
+    it('lets the same client come back once the other contract has ended', () => {
+      const store = contract()
+      expect(store.createContract('work', '2026-10-30', '2027-04-29').ok).toBe(true)
+    })
+
+    it('keeps a contract from being lengthened into a client of another', () => {
+      const store = contract()
+      expect(store.createContract('work', '2026-10-30', '2027-04-29').ok).toBe(true)
+      expect(store.setContractEnd('work', START, '2026-11-05')).toEqual({
+        ok: false,
+        reason: 'client-overlap'
+      })
+      expect(store.get('work', START).weeks).toBe(26)
+    })
+
+    it('lengthens a contract into one with other clients', () => {
+      const store = contract()
+      expect(store.createContract('work', '2026-10-30', '2027-04-29', RA).ok).toBe(true)
+      expect(store.setContractEnd('work', START, '2026-11-05').ok).toBe(true)
+      expect(store.get('work', START).weeks).toBe(27)
+    })
+  })
+
+  describe('terms', () => {
+    it('keeps the name and the invoice in the file, and reads an old file as monthly', () => {
+      const store = open()
+      const result = store.createContract('work', START, END, {
+        name: ' Luminos ',
+        invoice: 'week'
+      })
+      expect(result.ok).toBe(true)
+      expect(read('work', `${START}.json`)).toMatchObject({ name: 'Luminos', invoice: 'week' })
+      expect(store.createContract('work', '2027-05-01', '2027-10-29').ok).toBe(true)
+      const file = read('work', '2027-05-01.json')
+      expect(file.name).toBeUndefined()
+      expect(file.invoice).toBeUndefined()
+    })
+
+    it('refuses a blank name and a bad plan', () => {
+      const store = open()
+      expect(store.createContract('work', START, END, { name: '  ' })).toEqual({
+        ok: false,
+        reason: 'bad-name'
+      })
+      expect(store.createContract('work', START, END, { clients: ['A', 'a'] })).toEqual({
+        ok: false,
+        reason: 'bad-plan'
+      })
+      expect(store.createContract('work', START, END, { weeklyMinutes: -15 })).toEqual({
+        ok: false,
+        reason: 'bad-plan'
+      })
+      expect(store.years('work')).toEqual([])
+    })
+
+    it('has no aim when the weekly minutes are 0, and the file reads back', () => {
+      const store = open()
+      expect(store.createContract('work', START, END, { weeklyMinutes: 0 }).ok).toBe(true)
+      const year = store.get('work', START)
+      expect(year.plan.hoursPerWeek).toBe(0)
+      expect(year.plan.weekAim).toBe(true)
+      expect(store.setPlan('work', START, { hoursPerWeek: 0 }).ok).toBe(true)
+    })
+
+    it('gives a contract its own plan and starts its carry at 0, not the previous contract', () => {
+      const store = contract()
+      store.setPlan('work', START, { hoursPerWeek: 600, clients: ['Impact'] })
+      at('2026-05-04', '10:00:00')
+      store.start('work', 'A')
+      at('2026-05-04', '10:07:00')
+      store.stop()
+      const made = store.createContract('work', '2026-10-30', '2027-04-29', {
+        clients: ['Research Assistant'],
+        weeklyMinutes: 0
+      })
+      expect(made.ok).toBe(true)
+      const year = store.get('work', '2026-10-30')
+      expect(year.plan.hoursPerWeek).toBe(0)
+      expect(year.plan.clients).toEqual(['Research Assistant'])
+      expect(year.carryIn).toBe(0)
+    })
+
+    it('starts from the default plan when no terms are given', () => {
+      const store = contract()
+      store.setPlan('work', START, { hoursPerWeek: 600 })
+      expect(store.createContract('work', '2026-10-30', '2027-04-29').ok).toBe(true)
+      expect(store.get('work', '2026-10-30').plan.hoursPerWeek).toBe(480)
     })
   })
 
@@ -154,14 +268,6 @@ describe('Work contracts', () => {
       ok: false,
       reason: 'has-time-after'
     })
-  })
-
-  it('starts the next contract with the previous plan and carry', () => {
-    const store = contract()
-    store.setPlan('work', START, { hoursPerWeek: 600 })
-    expect(store.createContract('work', '2026-10-30', '2027-04-29').ok).toBe(true)
-    expect(store.get('work', '2026-10-30').plan.hoursPerWeek).toBe(600)
-    expect(store.years('work')).toEqual(['2026-10-30', START])
   })
 })
 

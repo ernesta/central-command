@@ -28,6 +28,7 @@ import {
   defaultPlan,
   emptyYear,
   type Change,
+  type ContractTerms,
   type Moment,
   type Plan,
   type TimeOffType,
@@ -271,29 +272,60 @@ export class TrackingStore {
   }
 
   /**
-   * Start a contract (a Work year): its first and last day are the user's, whole weeks, and it may not overlap another.
-   * It takes the previous contract's plan and its final rounding carry.
+   * Start a contract (a Work year): its first and last day are the user's, whole weeks. Contracts may overlap, but
+   * never start on the same day (the file is named by it) and never share a client on any day (the client is how an
+   * entry knows its contract). It has a plan of its own, not the previous contract's: `terms` say its clients and
+   * weekly aim (0 is no fixed hours), and what they leave out comes from `defaultPlan`. Nothing is carried over, so
+   * the rounding carry starts at 0.
    */
-  createContract(workspace: Workspace, start: string, end: string): YearResult {
+  createContract(
+    workspace: Workspace,
+    start: string,
+    end: string,
+    terms: ContractTerms = {}
+  ): YearResult {
     if (!hasContracts(workspace)) return { ok: false, reason: 'no-contracts' }
     if (dayNumber(start) === null || dayNumber(end) === null)
       return { ok: false, reason: 'bad-start' }
     const weeks = contractWeeks(start, end)
     if (!weeks.ok) return weeks
-    if (this.overlaps(workspace, start, weeks.weeks, null)) return { ok: false, reason: 'overlap' }
-    const year = { ...this.fresh(workspace, start), weeks: weeks.weeks }
+    const name = terms.name?.trim()
+    if (terms.name !== undefined && !name) return { ok: false, reason: 'bad-name' }
+    if (this.fileStarts(workspace).includes(start)) return { ok: false, reason: 'same-start' }
+    const base = defaultPlan(workspace)
+    const plan = parsePlan({
+      ...base,
+      ...(terms.clients ? { clients: terms.clients } : {}),
+      ...(terms.weeklyMinutes !== undefined ? { hoursPerWeek: terms.weeklyMinutes } : {})
+    })
+    if (!plan) return { ok: false, reason: 'bad-plan' }
+    if (this.sharesClient(workspace, start, weeks.weeks, null, plan.clients ?? [])) {
+      return { ok: false, reason: 'client-overlap' }
+    }
+    const year: TrackingYear = {
+      ...emptyYear(start, plan, 0),
+      weeks: weeks.weeks,
+      ...(name ? { name } : {}),
+      ...(terms.invoice ? { invoice: terms.invoice } : {})
+    }
     if (!this.commit(workspace, { year, text: null }, year)) {
       return { ok: false, reason: 'changed-on-disk' }
     }
     return { ok: true, year }
   }
 
-  /** Move a contract's last day (whole weeks). Never past a day that holds time, and never into another contract. */
+  /**
+   * Move a contract's last day (whole weeks). Never past a day that holds time. It may run into another contract,
+   * but not one that has a client of its own on the days gained.
+   */
   setContractEnd(workspace: Workspace, start: string, end: string): YearResult {
     if (!hasContracts(workspace)) return { ok: false, reason: 'no-contracts' }
     const weeks = contractWeeks(start, end)
     if (!weeks.ok) return weeks
-    if (this.overlaps(workspace, start, weeks.weeks, start)) return { ok: false, reason: 'overlap' }
+    const own = this.peek(workspace, start)?.plan.clients ?? []
+    if (this.sharesClient(workspace, start, weeks.weeks, start, own)) {
+      return { ok: false, reason: 'client-overlap' }
+    }
     return this.mutate(workspace, start, (y) => {
       const last = yearEnd(start, weeks.weeks)
       const used = [...y.sessions, ...y.adjusts].some((s) => s.date > last)
@@ -303,18 +335,24 @@ export class TrackingStore {
     })
   }
 
-  /** Whether a contract of `weeks` weeks from `start` shares a day with another one (`except` is left out). */
-  private overlaps(
+  /**
+   * Whether another contract (`except` is left out) shares a day with one of `weeks` weeks from `start` and has one
+   * of `clients` (compared ignoring case).
+   */
+  private sharesClient(
     workspace: Workspace,
     start: string,
     weeks: number,
-    except: string | null
+    except: string | null,
+    clients: readonly string[]
   ): boolean {
+    const mine = new Set(clients.map((c) => c.toLowerCase()))
     const end = yearEnd(start, weeks)
     return this.fileStarts(workspace).some((s) => {
       if (s === except) return false
       const other = this.peek(workspace, s)
-      return other !== null && s <= end && yearEnd(s, other.weeks) >= start
+      if (!other || s > end || yearEnd(s, other.weeks) < start) return false
+      return (other.plan.clients ?? []).some((c) => mine.has(c.toLowerCase()))
     })
   }
 

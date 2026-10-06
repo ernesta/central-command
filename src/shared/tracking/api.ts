@@ -1,5 +1,5 @@
 import type { Workspace } from '../settings'
-import type { Plan, Session, TimeOffType, TrackingYear } from './types'
+import type { ContractTerms, Plan, Session, TimeOffType, TrackingYear } from './types'
 
 /** The one running timer of the whole app, with the file it lives in. */
 export interface RunningTimer {
@@ -88,7 +88,12 @@ export interface TrackingApi {
   ): Promise<YearResult>
   removeTimeOff(workspace: Workspace, year: string, date: string): Promise<YearResult>
   /** Start a Work contract from its first to its last day (whole weeks from its first day). */
-  createContract(workspace: Workspace, start: string, end: string): Promise<YearResult>
+  createContract(
+    workspace: Workspace,
+    start: string,
+    end: string,
+    terms?: ContractTerms
+  ): Promise<YearResult>
   /** Move a contract's last day. */
   setContractEnd(workspace: Workspace, year: string, end: string): Promise<YearResult>
   /** A year's file changed (any workspace). Returns an unsubscribe function. */

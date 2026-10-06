@@ -1,5 +1,5 @@
 import { BrowserWindow, ipcMain } from 'electron'
-import { TIME_OFF_TYPES, type TimeOffType } from '@shared/tracking/types'
+import { INVOICES, TIME_OFF_TYPES, type Invoice, type TimeOffType } from '@shared/tracking/types'
 import { TRACKING_IPC } from '@shared/tracking/api'
 import { WORKSPACES, type Workspace } from '@shared/settings'
 import type { TrackingStore } from '../tracking/store'
@@ -29,6 +29,12 @@ function timeOffType(value: unknown): TimeOffType {
   const found = TIME_OFF_TYPES.find((t) => t.id === value)
   if (!found) throw new Error('Unknown type')
   return found.id
+}
+
+function invoice(value: unknown): Invoice {
+  const found = INVOICES.find((i) => i === value)
+  if (!found) throw new Error('Unknown invoice')
+  return found
 }
 
 /** Thin handlers: check the arguments' types and hand over to the store, which holds every rule. */
@@ -100,9 +106,15 @@ export function registerTrackingIpc(store: TrackingStore): void {
       ...(Array.isArray(p.clients) ? { clients: p.clients.map(text) } : {})
     })
   })
-  h(TRACKING_IPC.createContract, (_e, ws, start, end) =>
-    store.createContract(workspace(ws), text(start), text(end))
-  )
+  h(TRACKING_IPC.createContract, (_e, ws, start, end, terms) => {
+    const t = (terms ?? {}) as Record<string, unknown>
+    return store.createContract(workspace(ws), text(start), text(end), {
+      ...(t.name !== undefined ? { name: text(t.name) } : {}),
+      ...(Array.isArray(t.clients) ? { clients: t.clients.map(text) } : {}),
+      ...(t.weeklyMinutes !== undefined ? { weeklyMinutes: whole(t.weeklyMinutes) } : {}),
+      ...(t.invoice !== undefined ? { invoice: invoice(t.invoice) } : {})
+    })
+  })
   h(TRACKING_IPC.setContractEnd, (_e, ws, year, end) =>
     store.setContractEnd(workspace(ws), text(year), text(end))
   )
