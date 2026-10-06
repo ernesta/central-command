@@ -18,3 +18,12 @@
 .date[aria-invalid='true'] {
   border-color: var(--danger);
 }
+.group {
+  display: grid;
+  gap: 8px;
+  max-width: 420px;
+}
+.hours {
+  width: 120px;
+  font-variant-numeric: tabular-nums;
+}

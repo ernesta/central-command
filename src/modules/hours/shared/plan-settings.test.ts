@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
   addClient,
+  contractRefusal,
   MAX_CLIENT_LENGTH,
   parseAllowance,
+  parseClientList,
+  parseContractHours,
   parseWeekHours,
   removeClient,
   toggleWorkDay
@@ -74,5 +77,32 @@ describe('removeClient', () => {
   it('never leaves none, and ignores a name that is not there', () => {
     expect(removeClient(['A'], 'A')).toBeNull()
     expect(removeClient(['A', 'B'], 'C')).toBeNull()
+  })
+})
+
+describe('new contract fields', () => {
+  it('reads clients typed on one line', () => {
+    expect(parseClientList('Impact, Teaching & Learning')).toEqual([
+      'Impact',
+      'Teaching & Learning'
+    ])
+    expect(parseClientList(' RA ,, ')).toEqual(['RA'])
+    expect(parseClientList('')).toBeNull()
+    expect(parseClientList('A, a')).toBeNull()
+    expect(parseClientList('x'.repeat(41))).toBeNull()
+  })
+
+  it('reads blank weekly hours as none and otherwise the plan rule', () => {
+    expect(parseContractHours('')).toBe(0)
+    expect(parseContractHours('  ')).toBe(0)
+    expect(parseContractHours('8:00')).toBe(480)
+    expect(parseContractHours('0')).toBeNull()
+    expect(parseContractHours('abc')).toBeNull()
+  })
+
+  it('explains each refusal and has a fallback', () => {
+    for (const reason of ['same-start', 'client-overlap', 'bad-name', 'bad-plan', 'x'])
+      expect(contractRefusal(reason)).not.toBe('')
+    expect(contractRefusal('same-start')).not.toBe(contractRefusal('client-overlap'))
   })
 })

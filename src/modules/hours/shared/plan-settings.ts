@@ -47,3 +47,45 @@ export function removeClient(clients: readonly string[], name: string): string[]
   const next = clients.filter((c) => c !== name)
   return next.length === 0 || next.length === clients.length ? null : next
 }
+
+/** The longest a contract's name may be. */
+export const MAX_CONTRACT_NAME_LENGTH = 40
+
+/** The most clients one contract may list. */
+export const MAX_CLIENTS = 20
+
+/** Clients typed as one line, comma separated: each trimmed, none empty, none twice (ignoring case). Null when there is none or one is too long. */
+export function parseClientList(text: string): string[] | null {
+  let clients: string[] = []
+  for (const part of text.split(',')) {
+    if (part.trim() === '') continue
+    const next = addClient(clients, part)
+    if (!next) return null
+    clients = next
+  }
+  return clients.length > 0 && clients.length <= MAX_CLIENTS ? clients : null
+}
+
+/** A new contract's weekly hours as typed: blank is no fixed hours (0), else a time as for the plan. Null when it cannot be read. */
+export function parseContractHours(text: string): number | null {
+  return text.trim() === '' ? 0 : parseWeekHours(text)
+}
+
+/** Why the store refuses a new contract, in a few words. */
+export function contractRefusal(reason: string): string {
+  switch (reason) {
+    case 'same-start':
+      return 'Another contract starts that day.'
+    case 'client-overlap':
+      return 'A client is in another contract on those days.'
+    case 'bad-name':
+      return 'Give the contract a name.'
+    case 'bad-plan':
+      return 'Check the clients and weekly hours.'
+    case 'bad-start':
+    case 'bad-end':
+      return 'Check the dates.'
+    default:
+      return 'Could not add it. Try again.'
+  }
+}
