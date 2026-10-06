@@ -23,10 +23,11 @@ interface Edge {
   cost: number
 }
 
-/** Cost of a pair, or null when they cannot belong together: too different, or the entry is far from (or after) the due date. */
+/** Cost of a pair, or null when they cannot belong together: too different, or the entry is far from the due date. */
 function pairCost(sim: number, gap: number): number | null {
-  if (sim < MIN_SIMILARITY || gap < -3 || gap > 75) return null
-  return Math.round(((1 - sim) * 10 + Math.max(gap, 0) * 0.08 + (gap < 0 ? 5 : 0)) * 100)
+  // Task dates are moved to the hours later, so an entry may follow its task's due date by weeks (a small cost per day).
+  if (sim < MIN_SIMILARITY || gap < -45 || gap > 75) return null
+  return Math.round(((1 - sim) * 10 + Math.max(gap, 0) * 0.08 + Math.max(-gap, 0) * 0.1) * 100)
 }
 
 export function allocateByFlow(

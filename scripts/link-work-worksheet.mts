@@ -25,6 +25,7 @@ import {
   formatTaskList,
   formatWorksheet,
   parseWorksheet,
+  ruleRows,
   taskNames,
   type SheetEntry,
   type SheetTask
@@ -125,23 +126,34 @@ if (writeFile) {
   if (existsSync(path) || existsSync(tasksPath))
     fail(`Not overwriting: ${path} or ${tasksPath} exists.`)
   const timed = billableTasks.filter((t) => t.minutes > 0)
-  const exact = planTaskLinks(timed, entries).links
+  // Rules first: untracked 5 Oct work, activity logs and timers; the matching only sees what is left.
+  const lastClickUpDay = rows.reduce(
+    (d, r) => (r.created_at.slice(0, 10) > d ? r.created_at.slice(0, 10) : d),
+    ''
+  )
+  const fixed = ruleRows(entries, billableTasks, names, lastClickUpDay)
+  const ruled = new Set(fixed.map((f) => f.entry))
+  const spent = new Map<string, number>()
+  for (const f of fixed) if (f.uid) spent.set(f.uid, (spent.get(f.uid) ?? 0) + f.minutes)
+  const free = entries.filter((e) => !ruled.has(e.key))
+  const open = timed.filter((t) => (spent.get(t.uid) ?? 0) === 0)
+  const exact = planTaskLinks(open, free).links
   const taken = new Set(exact.flatMap((l) => l.entries.map((e) => e.key)))
   const done = new Set(exact.map((l) => l.task.uid))
   const flow = allocateByFlow(
-    timed.filter((t) => !done.has(t.uid)),
-    entries.filter((e) => !taken.has(e.key))
+    open.filter((t) => !done.has(t.uid)),
+    free.filter((e) => !taken.has(e.key))
   )
-  const sheet = buildRows(entries, timed, exact, flow, names)
+  const sheet = buildRows(entries, timed, exact, flow, names, fixed)
   writeFileSync(path, formatWorksheet(sheet))
   writeFileSync(tasksPath, formatTaskList(timed, names))
-  const open = sheet.filter((r) => r.task === '')
+  const blank = sheet.filter((r) => r.task === '')
   console.log(`Wrote ${path} (${sheet.length} rows, ${formatHours(total(entries))} of entries)`)
   console.log(
     `Wrote ${tasksPath} (${timed.length} billable tasks with time, ${formatHours(total(timed))})`
   )
   console.log(
-    `Pre-filled: ${exact.length} tasks by exact sums, ${new Set(flow.map((a) => a.task.uid)).size} by best fit; ${open.length} rows (${formatHours(total(open))}) still blank.`
+    `Pre-filled: ${fixed.length} rows by your rules (5 Oct, activity logs, timers), ${exact.length} tasks by exact sums, ${new Set(flow.map((a) => a.task.uid)).size} by best fit; ${blank.length} rows (${formatHours(total(blank))}) still blank.`
   )
 }
 
@@ -180,8 +192,12 @@ if (checkFile) {
     line(`\nTasks to be made (${result.newTasks.length}):`)
     for (const n of result.newTasks)
       line(
-        `  ${formatHours(n.minutes).padStart(6)}  ${n.title}${n.sublist ? ` [${n.sublist}]` : ' [no sublist given]'}  (${n.entries.length} entries)`
+        `  ${formatHours(n.minutes).padStart(6)}  ${n.title}${n.sublist ? ` [${n.sublist}]` : ' [no sublist given]'}  (${n.entries.length} entries, due ${n.due})`
       )
+  }
+  if (result.dateChanges.length > 0) {
+    line(`\nTask dates that would move to their last entry's day: ${result.dateChanges.length}`)
+    for (const d of result.dateChanges) line(`  ${d.from} -> ${d.to}  ${d.name}`)
   }
   if (result.notBillable.length > 0) {
     line(`\nGiven to a task that is not billable: ${result.notBillable.length} rows`)

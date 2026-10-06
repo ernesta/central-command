@@ -5,6 +5,7 @@ import {
   formatWorksheet,
   parseNewTask,
   parseWorksheet,
+  ruleRows,
   taskNames,
   type SheetEntry,
   type SheetTask
@@ -121,5 +122,81 @@ describe('checkWorksheet', () => {
       new Set(['a', 'b'])
     )
     expect(r.complete).toBe(true)
+  })
+})
+
+describe('ruleRows', () => {
+  const summary = (uid: string, minutes: number, date: string): SheetTask => ({
+    ...task(uid, 'Create and send a monthly summary to Matthew', minutes, date),
+    sublist: 'Admin & Logistics'
+  })
+  const log = (key: string, date: string, month: string, client: string): SheetEntry => ({
+    ...entry(key, date, `Monthly Activity Log: ${month}`, 15),
+    client
+  })
+  const pool = [
+    summary('s1', 30, '2026-07-08'),
+    summary('s2', 0, '2026-08-10'),
+    summary('s3', 15, '2026-09-25')
+  ]
+  const nm = taskNames(pool)
+
+  it('puts each activity log on the nearest summary task with ClickUp time to spare, else makes a task', () => {
+    const logs = [
+      log('l1', '2026-07-07', 'June', 'Impact'),
+      log('l2', '2026-07-07', 'June', 'Teaching & Learning'),
+      log('l3', '2026-07-30', 'July', 'Impact'),
+      log('l4', '2026-09-03', 'August', 'Impact')
+    ]
+    const rows = ruleRows(logs, pool, nm, '2026-10-04')
+    expect(rows.map((r) => [r.entry, r.uid ?? r.task])).toEqual([
+      ['l1', 's1'],
+      ['l2', 's1'],
+      ['l3', 'NEW: Submit activity log: July (Impact) [Admin & Logistics]'],
+      ['l4', 's3']
+    ])
+  })
+
+  it('makes a Document Automation task of each entry after the last day ClickUp was used', () => {
+    const rows = ruleRows(
+      [
+        entry('o', '2026-10-05', 'Document automation: task planning', 135),
+        entry('p', '2026-10-04', 'Old', 30)
+      ],
+      pool,
+      nm,
+      '2026-10-04'
+    )
+    expect(rows).toMatchObject([{ entry: 'o', task: 'NEW: Task planning [Document Automation]' }])
+  })
+
+  it('names a timer’s task, and the check does not let a timer fill ClickUp’s time', () => {
+    const t = [task('l', 'Draft a Liberia RAI for the upcoming endline', 60, '2026-10-04')]
+    const timer: SheetEntry = {
+      ...entry('s', '2026-10-05', 'Liberia RAI for the upcoming endline', 135),
+      kind: 'timer'
+    }
+    expect(ruleRows([timer], t, taskNames(t), '2026-10-04')[0].task).toBe(
+      'Draft a Liberia RAI for the upcoming endline'
+    )
+    const typed = entry('x', '2026-10-04', 'Liberia RAI', 60)
+    const name = 'Draft a Liberia RAI for the upcoming endline'
+    const r = checkWorksheet(
+      parseWorksheet(sheet(`s,135,${name}\nx,60,${name}`)),
+      [timer, typed],
+      t,
+      taskNames(t),
+      new Set(['l'])
+    )
+    expect(r.tasks[0]).toMatchObject({ fit: 'exact', assigned: 60 })
+    expect(r.complete).toBe(true)
+  })
+})
+
+describe('task dates', () => {
+  it('moves a task to the day of its last typed entry, and dates a new task the same way', () => {
+    const r = check('y/1,90,Draft TORs\ny/2,135,NEW: Task planning [Document Automation]')
+    expect(r.dateChanges).toEqual([{ name: 'Draft TORs', from: '2026-07-12', to: '2026-07-10' }])
+    expect(r.newTasks[0].due).toBe('2026-10-05')
   })
 })

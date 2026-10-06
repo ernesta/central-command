@@ -60,13 +60,97 @@ export function taskNames(tasks: readonly SheetTask[]): Map<string, string> {
   return names
 }
 
+/** A row decided by a rule before the matching runs. */
+export interface FixedRow {
+  entry: string
+  minutes: number
+  task: string
+  note: string
+  /** The existing task it goes to, if any. */
+  uid?: string
+}
+
+const capital = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
+
+/**
+ * Rules from the user (6 Oct 2026). Time worked after `after` (the last day ClickUp was used: 5 Oct) was never tracked there: each
+ * of those entries is a new task, named from its label. A monthly activity log (15 minutes per client) goes to the nearest
+ * "monthly summary" task that still has ClickUp time to spare, else a new "Submit activity log" task. A timer session goes to the
+ * task it is named
+ * after, when one has exactly that name.
+ */
+export function ruleRows(
+  entries: readonly SheetEntry[],
+  tasks: readonly SheetTask[],
+  names: ReadonlyMap<string, string>,
+  after: string
+): FixedRow[] {
+  const out: FixedRow[] = []
+  const room = new Map(tasks.map((t) => [t.uid, t.minutes]))
+  const summaries = tasks.filter((t) => /monthly summary/i.test(t.title))
+  const logs = entries
+    .filter((e) => e.kind === 'typed' && /^monthly activity log/i.test(e.label))
+    .sort((a, b) => a.date.localeCompare(b.date))
+  for (const e of logs) {
+    const gap = (t: SheetTask): number => Math.abs(dayNumber(t.date) - dayNumber(e.date))
+    const fits = summaries
+      .filter((t) => gap(t) <= 25 && (room.get(t.uid) ?? 0) >= e.minutes)
+      .sort((a, b) => gap(a) - gap(b))
+    if (fits.length > 0) {
+      const t = fits[0]
+      room.set(t.uid, Math.max(0, (room.get(t.uid) ?? 0) - e.minutes))
+      out.push({
+        entry: e.key,
+        minutes: e.minutes,
+        task: names.get(t.uid) as string,
+        uid: t.uid,
+        note: 'activity log'
+      })
+    } else {
+      const month = e.label.replace(/^monthly activity log:\s*/i, '')
+      out.push({
+        entry: e.key,
+        minutes: e.minutes,
+        task: `NEW: Submit activity log: ${month} (${e.client}) [Admin & Logistics]`,
+        note: 'activity log, no summary task near'
+      })
+    }
+  }
+  for (const e of entries.filter(
+    (x) => x.kind === 'typed' && x.date > after && !/^monthly activity log/i.test(x.label)
+  )) {
+    const title = capital(e.label.replace(/^document automation:\s*/i, ''))
+    out.push({
+      entry: e.key,
+      minutes: e.minutes,
+      task: `NEW: ${title} [Document Automation]`,
+      note: 'not tracked in ClickUp'
+    })
+  }
+  for (const e of entries.filter((x) => x.kind === 'timer')) {
+    const t = tasks.find(
+      (x) => x.title.toLowerCase().endsWith(e.label.trim().toLowerCase()) && x.minutes > 0
+    )
+    if (t)
+      out.push({
+        entry: e.key,
+        minutes: e.minutes,
+        task: names.get(t.uid) as string,
+        uid: undefined,
+        note: 'timer, counts as Hours time'
+      })
+  }
+  return out
+}
+
 /** The pre-filled rows: exact sets first, then the flow's placements, then what is still open, each with a suggestion. */
 export function buildRows(
   entries: readonly SheetEntry[],
   tasks: readonly SheetTask[],
   exact: readonly Link[],
   flow: readonly Allocation[],
-  names: ReadonlyMap<string, string>
+  names: ReadonlyMap<string, string>,
+  fixed: readonly FixedRow[] = []
 ): Row[] {
   const similarity = makeSimilarity([...entries.map((e) => e.label), ...tasks.map((t) => t.title)])
   const rows: Row[] = []
@@ -77,6 +161,10 @@ export function buildRows(
   }
   const byKey = new Map(entries.map((e) => [e.key, e]))
   const used = new Map<string, number>()
+  for (const f of fixed) {
+    place(byKey.get(f.entry) as SheetEntry, f.minutes, f.task, f.note)
+    if (f.uid) used.set(f.uid, (used.get(f.uid) ?? 0) + f.minutes)
+  }
   for (const l of exact)
     for (const e of l.entries) {
       place(
@@ -192,6 +280,8 @@ export interface NewTask {
   sublist: string
   minutes: number
   entries: string[]
+  /** The day of the last typed entry: the new task's date. */
+  due: string
 }
 
 export interface Check {
@@ -202,6 +292,8 @@ export interface Check {
   unassigned: { id: string; minutes: number }[]
   noTask: { id: string; minutes: number }[]
   newTasks: NewTask[]
+  /** Task dates the sheet would move to the day of the task's last typed entry. */
+  dateChanges: { name: string; from: string; to: string }[]
   notBillable: { id: string; task: string; minutes: number }[]
   /** True when everything adds up: every entry accounted for and every billable task's time met exactly. */
   complete: boolean
@@ -229,6 +321,12 @@ export function checkWorksheet(
   const newTasks = new Map<string, NewTask>()
   const notBillable: Check['notBillable'] = []
   const known = new Set(entries.map((e) => e.key))
+  const entry = new Map(entries.map((e) => [e.key, e]))
+  const lastDay = new Map<string, string>()
+  const seenDay = (key: string, id: string): void => {
+    const e = entry.get(id) as SheetEntry
+    if (e.kind === 'typed' && (lastDay.get(key) ?? '') < e.date) lastDay.set(key, e.date)
+  }
   for (const r of parsed.rows) {
     if (!known.has(r.id)) {
       problems.push(`Line ${r.line}: no entry "${r.id}".`)
@@ -240,16 +338,23 @@ export function checkWorksheet(
     else if (parseNewTask(r.task)) {
       const n = parseNewTask(r.task) as { title: string; sublist: string }
       const k = `${n.title.toLowerCase()}|${n.sublist.toLowerCase()}`
-      const cur = newTasks.get(k) ?? { ...n, minutes: 0, entries: [] }
+      const cur = newTasks.get(k) ?? { ...n, minutes: 0, entries: [], due: '' }
       cur.minutes += r.minutes
       cur.entries.push(r.id)
+      seenDay(`new:${k}`, r.id)
+      cur.due = lastDay.get(`new:${k}`) ?? cur.due
       newTasks.set(k, cur)
     } else {
       const uid = byName.get(r.task.toLowerCase())
       if (!uid) problems.push(`Line ${r.line}: no task called "${r.task}".`)
       else if (!billableUids.has(uid))
         notBillable.push({ id: r.id, task: r.task, minutes: r.minutes })
-      else assigned.set(uid, (assigned.get(uid) ?? 0) + r.minutes)
+      else {
+        // A timer's time is new Hours time: it never fills ClickUp's time.
+        if ((entry.get(r.id) as SheetEntry).kind === 'typed')
+          assigned.set(uid, (assigned.get(uid) ?? 0) + r.minutes)
+        seenDay(uid, r.id)
+      }
     }
   }
   for (const e of entries) {
@@ -272,6 +377,13 @@ export function checkWorksheet(
           'exact' | 'short' | 'over'
       }
     })
+  const dateChanges = tasks
+    .filter((t) => lastDay.has(t.uid) && lastDay.get(t.uid) !== t.date)
+    .map((t) => ({
+      name: allTaskNames.get(t.uid) as string,
+      from: t.date,
+      to: lastDay.get(t.uid) as string
+    }))
   const complete =
     problems.length === 0 &&
     unassigned.length === 0 &&
@@ -283,6 +395,7 @@ export function checkWorksheet(
     unassigned,
     noTask,
     newTasks: [...newTasks.values()],
+    dateChanges,
     notBillable,
     complete
   }
