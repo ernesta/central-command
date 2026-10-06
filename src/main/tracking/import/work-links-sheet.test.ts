@@ -112,6 +112,16 @@ describe('checkWorksheet', () => {
     expect(r.complete).toBe(false)
   })
 
+  it('accepts hours that exceed a task’s ClickUp time, but not a task with more ClickUp time than hours', () => {
+    const two = [task('a', 'Draft TORs', 60, '2026-07-12'), task('b', 'Plan', 135, '2026-10-05')]
+    const run = (rows: string): ReturnType<typeof checkWorksheet> =>
+      checkWorksheet(parseWorksheet(sheet(rows)), entries, two, taskNames(two), new Set(['a', 'b']))
+    expect(run('y/1,90,Draft TORs\ny/2,135,Plan').complete).toBe(true)
+    const short = run('y/1,90,Plan\ny/2,135,-')
+    expect(short.tasks.find((t) => t.task.uid === 'a')?.fit).toBe('short')
+    expect(short.complete).toBe(false)
+  })
+
   it('is complete when every entry is placed and every billable task adds up exactly', () => {
     const two = [task('a', 'Draft TORs', 90, '2026-07-12'), task('b', 'Plan', 135, '2026-10-05')]
     const r = checkWorksheet(

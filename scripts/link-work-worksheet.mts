@@ -180,7 +180,7 @@ if (checkFile) {
   )
   for (const t of off)
     line(
-      `  ${t.fit === 'short' ? 'SHORT' : 'OVER '} ${formatHours(Math.abs(t.task.minutes - t.assigned)).padStart(6)}  ${t.name}   (ClickUp ${formatHours(t.task.minutes)}, sheet ${formatHours(t.assigned)})`
+      `  ${t.fit === 'short' ? 'SPLIT' : 'hours+'} ${formatHours(Math.abs(t.task.minutes - t.assigned)).padStart(6)}  ${t.name}   (ClickUp ${formatHours(t.task.minutes)}, sheet ${formatHours(t.assigned)})`
     )
   line(
     `\nEntries with no task yet: ${result.unassigned.length} rows, ${formatHours(total(result.unassigned))}`

@@ -298,7 +298,10 @@ export interface Check {
   /** Task dates the sheet would move to the day of the task's last typed entry. */
   dateChanges: { name: string; from: string; to: string }[]
   notBillable: { id: string; task: string; minutes: number }[]
-  /** True when everything adds up: every entry accounted for and every billable task's time met exactly. */
+  /**
+   * True when every entry has a task and no billable task carries more ClickUp time than the hours given to it ('short': that task
+   * must be split). Hours that exceed a task's ClickUp time ('over') are fine: hours never change, the extra stays on the task.
+   */
   complete: boolean
 }
 
@@ -391,7 +394,7 @@ export function checkWorksheet(
     problems.length === 0 &&
     unassigned.length === 0 &&
     notBillable.length === 0 &&
-    rows.every((r) => r.fit === 'exact')
+    rows.every((r) => r.fit !== 'short')
   return {
     problems,
     tasks: rows,
