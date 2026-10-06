@@ -196,8 +196,8 @@ export function applyEntryLinks(
 }
 
 /**
- * Mark typed entries as held by ClickUp's time (`earlier`) once their task's ClickUp time has been raised to cover them. Only a typed
- * entry that already has a task qualifies; anything else refuses the whole change.
+ * Mark typed entries and ended timer sessions as held by ClickUp's time (`earlier`) once their task's ClickUp time has been raised to
+ * cover them. Only an entry that already has a task qualifies; anything else refuses the whole change.
  */
 export function markEarlier(year: TrackingYear, ids: readonly string[]): Change {
   const wanted = new Set(ids)
@@ -210,7 +210,13 @@ export function markEarlier(year: TrackingYear, ids: readonly string[]): Change 
     if (!a.task) bad = true
     return { ...a, earlier: true as const }
   })
+  const sessions = year.sessions.map((s) => {
+    if (!wanted.has(s.id)) return s
+    seen.add(s.id)
+    if (!s.task || s.end === null) bad = true
+    return { ...s, earlier: true as const }
+  })
   if (bad) return { ok: false, reason: 'not-linked' }
   if (seen.size !== wanted.size) return { ok: false, reason: 'missing-entry' }
-  return { ok: true, year: { ...year, adjusts } }
+  return { ok: true, year: { ...year, adjusts, sessions } }
 }

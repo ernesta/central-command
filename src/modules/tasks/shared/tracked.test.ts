@@ -83,6 +83,36 @@ describe('history linked to a task', () => {
   })
 })
 
+describe('a session covered by ClickUp time', () => {
+  it('is not added to the task again', () => {
+    const y = year({
+      sessions: [
+        {
+          id: 's',
+          date: '2026-10-05',
+          start: '17:00:00',
+          end: '19:00:00',
+          minutes: 120,
+          label: 'X',
+          task: taskKey('t1'),
+          earlier: true
+        },
+        {
+          id: 't',
+          date: '2026-10-06',
+          start: '09:00:00',
+          end: '09:30:00',
+          minutes: 30,
+          label: 'X',
+          task: taskKey('t1')
+        }
+      ]
+    })
+    expect(trackedByTask([y]).get('t1')).toBe(30)
+    expect(hoursByMonth([y], 't1')).toEqual([{ month: '2026-10', minutes: 150 }])
+  })
+})
+
 describe('hoursByMonth', () => {
   it('lists all of a task’s hours by month, history included, oldest first', () => {
     const y = year({

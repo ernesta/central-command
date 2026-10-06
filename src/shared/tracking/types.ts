@@ -23,6 +23,8 @@ export interface Session {
   task?: string
   /** Who the time is for: one of the plan's clients (Work only; Research has none). */
   client?: string
+  /** The task's ClickUp time was raised to cover this session, so Tasks does not add it again (see `Adjust.earlier`). */
+  earlier?: true
 }
 
 /** Typed time for a task on a day, signed, in multiples of 15 minutes. */

@@ -1,7 +1,7 @@
 /**
  * Make every task's ClickUp time equal its hours. A task that holds typed hours but less ClickUp time (new tasks, tasks that had
- * none) has its ClickUp time raised to those hours, and its entries are marked as held by it (`earlier`). A timer session (time
- * tracked live in the app) is not typed history and stays Hours time. Tasks that already match are not touched.
+ * none) has its ClickUp time raised to those hours, and its entries and timer sessions are marked as held by it (`earlier`). Tasks that
+ * already match are not touched.
  *
  *   npm run link:work-match              # dry run
  *   npm run link:work-match -- --apply   # app closed; backs up the hours and the database first, reads everything back
@@ -16,6 +16,7 @@ import { openDatabase } from '../src/main/db/connection'
 import { TrackingStore } from '../src/main/tracking/store'
 import { nowMoment } from '../src/shared/time'
 import { parseYear } from '../src/shared/tracking/parse'
+import { reportedMinutes } from '../src/shared/tracking/rounding'
 import { formatHours } from '../src/shared/tracking/format'
 import { writeTasksSnapshot } from '../src/modules/tasks/main/snapshot'
 
@@ -62,6 +63,15 @@ for (const file of files) {
     typed.set(uid, [
       ...(typed.get(uid) ?? []),
       { year: year!.start, id: a.id, minutes: a.minutes, earlier: a.earlier === true }
+    ])
+  }
+  for (const x of year!.sessions) {
+    const minutes = x.end === null ? 0 : reportedMinutes(x)
+    if (!x.task || minutes <= 0) continue
+    const uid = x.task.replace('cc://task/', '')
+    typed.set(uid, [
+      ...(typed.get(uid) ?? []),
+      { year: year!.start, id: x.id, minutes, earlier: x.earlier === true }
     ])
   }
 }
@@ -148,6 +158,13 @@ for (const file of files) {
     const uid = a.task.replace('cc://task/', '')
     all.set(uid, (all.get(uid) ?? 0) + a.minutes)
     if (a.earlier) held.set(uid, (held.get(uid) ?? 0) + a.minutes)
+  }
+  for (const x of year.sessions) {
+    const minutes = x.end === null ? 0 : reportedMinutes(x)
+    if (!x.task || minutes <= 0) continue
+    const uid = x.task.replace('cc://task/', '')
+    all.set(uid, (all.get(uid) ?? 0) + minutes)
+    if (x.earlier) held.set(uid, (held.get(uid) ?? 0) + minutes)
   }
 }
 for (const [uid, hours] of all) {

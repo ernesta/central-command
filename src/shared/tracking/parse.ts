@@ -79,7 +79,8 @@ export function parseYear(raw: unknown): TrackingYear | null {
       (s.minutes === undefined || (isInt(s.minutes) && s.minutes >= 0)) &&
       isString(s.label) &&
       (s.task === undefined || isString(s.task)) &&
-      (s.client === undefined || isString(s.client))
+      (s.client === undefined || isString(s.client)) &&
+      (s.earlier === undefined || s.earlier === true)
   )
   const adjusts = list(
     raw.adjusts,

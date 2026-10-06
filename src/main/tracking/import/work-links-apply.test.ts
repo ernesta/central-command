@@ -215,5 +215,20 @@ describe('markEarlier', () => {
     expect(r.ok && r.year.adjusts[1].earlier).toBeUndefined()
     expect(markEarlier(linked(), ['b'])).toEqual({ ok: false, reason: 'not-linked' })
     expect(markEarlier(linked(), ['zz'])).toEqual({ ok: false, reason: 'missing-entry' })
+    const withTimer = year({
+      sessions: [
+        {
+          id: 's',
+          date: '2026-10-05',
+          start: '17:00:00',
+          end: '19:00:00',
+          minutes: 120,
+          label: 'L',
+          task: 'cc://task/t'
+        }
+      ]
+    })
+    const t = markEarlier(withTimer, ['s'])
+    expect(t.ok && t.year.sessions[0].earlier).toBe(true)
   })
 })

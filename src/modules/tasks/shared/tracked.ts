@@ -27,7 +27,7 @@ export function trackedByTask(years: readonly TrackingYear[]): Map<string, numbe
     if (uid && amount !== 0) minutes.set(uid, (minutes.get(uid) ?? 0) + amount)
   }
   for (const year of years) {
-    for (const s of year.sessions) add(s.task, reportedMinutes(s))
+    for (const s of year.sessions) if (!s.earlier) add(s.task, reportedMinutes(s))
     for (const a of year.adjusts) if (!a.earlier) add(a.task, a.minutes)
   }
   return minutes
