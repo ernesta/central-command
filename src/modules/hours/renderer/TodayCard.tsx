@@ -14,7 +14,9 @@ import { earlierLabels } from '../shared/tasks'
 import type { HoursWorkspace } from '../shared/workspaces'
 import { DurationField } from './DurationField'
 import { StaleTimer } from './StaleTimer'
-import { taskKeyForLabel } from '../../tasks/shared/tracked'
+import { BILLABLE_TAG, billableTasks, listForNewTask } from '../../tasks/shared/billable'
+import { taskKey, taskKeyForLabel } from '../../tasks/shared/tracked'
+import { useTaskDefaults } from '../../tasks/renderer/useTaskDefaults'
 import { useOpenTasks } from '../../tasks/renderer/useOpenTasks'
 import { TaskField } from './TaskField'
 import { TaskList } from './TaskList'
@@ -36,6 +38,7 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
   const [name, setName] = useState('')
   const [minutes, setMinutes] = useState(0)
   const [picked, setPicked] = useState<string | null>(null)
+  const [billablePick, setBillablePick] = useState<'yes' | 'no'>('yes')
   const clients = data.plan.clients ?? []
   const client = picked !== null && clients.includes(picked) ? picked : defaultClient(data)
   const rows = dayRows(data, now.date, now)
@@ -43,6 +46,12 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
   const aim = dailyAim(data, now.date)
   // Open tasks are offered by name too; a name that is exactly one of them links the time to it.
   const openTasks = useOpenTasks(workspace)
+  const isWork = workspace === 'work'
+  const { last } = useTaskDefaults('work')
+  // A name that is one of the open tasks keeps that task's own billable state; any other name makes a task with the chosen one.
+  const namedKey = taskKeyForLabel(openTasks, name)
+  const named = namedKey ? openTasks.find((t) => taskKey(t.uid) === namedKey) : undefined
+  const billable = named ? billableTasks([named], openTasks).length > 0 : billablePick === 'yes'
   const labels = useMemo(() => {
     const earlier = earlierLabels(data)
     const titles = openTasks
@@ -61,8 +70,26 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
     if (wantsFocus) startRef.current?.querySelector('input')?.focus()
   }, [wantsFocus, key])
 
-  const start = (label: string, forClient = client): void => {
-    if (!stale) void tracking.start(workspace, label, taskKeyForLabel(openTasks, label), forClient)
+  // The task a typed name stands for: the open one it names, else (Work only) a new one, so every hour has a task.
+  const keyFor = async (label: string): Promise<string | undefined> => {
+    const found = taskKeyForLabel(openTasks, label)
+    const list = listForNewTask(openTasks, last.list)
+    if (found || !isWork || label.trim() === '' || !list) return found
+    const made = await window.api.tasks.create({
+      workspace: 'work',
+      title: label.trim(),
+      list,
+      sublist: last.list === list ? last.sublist : '',
+      due: now.date,
+      tags: billable ? [BILLABLE_TAG] : []
+    })
+    return taskKey(made.uid)
+  }
+  const start = (label: string, forClient = client, fresh = false): void => {
+    if (stale) return
+    void (fresh ? keyFor(label) : Promise.resolve(taskKeyForLabel(openTasks, label))).then((key) =>
+      tracking.start(workspace, label, key, forClient)
+    )
   }
   const adding = minutes > 0
   const ready = adding ? name.trim() !== '' : !stale
@@ -70,16 +97,10 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
     if (!ready) return
     if (adding) {
       const quarter = Math.max(QUARTER, Math.round(minutes / QUARTER) * QUARTER)
-      void tracking.addTime(
-        workspace,
-        data.start,
-        now.date,
-        name,
-        quarter,
-        client,
-        taskKeyForLabel(openTasks, name)
+      void keyFor(name).then((key) =>
+        tracking.addTime(workspace, data.start, now.date, name, quarter, client, key)
       )
-    } else start(name)
+    } else start(name, client, true)
     setName('')
     setMinutes(0)
     setPicked(null)
@@ -128,6 +149,18 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
             value={client ?? clients[0]}
             options={clients.map((c) => ({ value: c, label: c }))}
             onChange={setPicked}
+          />
+        )}
+        {isWork && (
+          <Select
+            label="Billable"
+            value={billable ? 'yes' : 'no'}
+            options={[
+              { value: 'yes', label: 'Billable' },
+              { value: 'no', label: 'Non-billable' }
+            ]}
+            onChange={setBillablePick}
+            disabled={named !== undefined}
           />
         )}
         <DurationField label="Time" value={minutes} onChange={setMinutes} onEnter={submit} />

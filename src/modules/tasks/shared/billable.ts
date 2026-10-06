@@ -13,3 +13,14 @@ export function billableTasks<T extends Pick<Task, 'uid' | 'parentUid' | 'tags'>
   const tagged = new Set(all.filter((t) => t.tags.includes(BILLABLE_TAG)).map((t) => t.uid))
   return tasks.filter((t) => tagged.has(t.uid) || (t.parentUid !== null && tagged.has(t.parentUid)))
 }
+
+/** The list a task made from Hours goes to: where the user last added one, else where the billable tasks are, else the first. */
+export function listForNewTask(
+  tasks: readonly Pick<Task, 'list' | 'parentUid' | 'tags' | 'uid'>[],
+  last: string
+): string {
+  if (last) return last
+  const top = tasks.filter((t) => t.parentUid === null && t.list)
+  const tagged = top.find((t) => t.tags.includes(BILLABLE_TAG))
+  return (tagged ?? top[0])?.list ?? ''
+}
