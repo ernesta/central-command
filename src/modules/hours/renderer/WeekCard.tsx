@@ -4,9 +4,9 @@ import { formatDay, formatHours, formatRange, formatSignedHours } from '@shared/
 import { dailyAim, hasAim, weekTotals } from '@shared/tracking/plan'
 import { dayRows, weekDaysMinutes, weekMinutes } from '@shared/tracking/totals'
 import { defaultClient } from '@shared/tracking/timer'
-import type { Moment, TrackingYear } from '@shared/tracking/types'
+import { invoiceOf, type Moment, type TrackingYear } from '@shared/tracking/types'
 import { addDays, weekNumberOf, yearEnd } from '@shared/year'
-import { monthOfWeek, monthsOf } from '../shared/months'
+import { periodOfWeek, periodsOf } from '../shared/periods'
 import { earlierLabels } from '../shared/tasks'
 import { barFill, BAR_SCALE } from '../shared/week'
 import type { HoursWorkspace } from '../shared/workspaces'
@@ -53,9 +53,10 @@ export function WeekCard({
   const first = week <= data.start
   const last = addDays(week, 7) > yearEnd(data.start, data.weeks)
   // Where weeks belong to invoice months they are numbered within the month.
-  const number = data.plan.weekAim
-    ? monthOfWeek(monthsOf(data, now), week)?.weeks.find((w) => w.from === week)?.number
-    : weekNumberOf(week, data.start, data.weeks)
+  const number =
+    data.plan.weekAim && invoiceOf(data) === 'month'
+      ? periodOfWeek(periodsOf(data, now), week)?.weeks.find((w) => w.from === week)?.number
+      : weekNumberOf(week, data.start, data.weeks)
 
   return (
     <section className={styles.card} aria-label="Week">

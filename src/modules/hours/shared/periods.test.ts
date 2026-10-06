@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { emptyYear, WORK_PLAN } from '@shared/tracking/types'
-import { monthOfWeek, monthPlanSoFar, monthsOf } from './months'
+import { periodOfWeek, periodPlanSoFar, periodsOf, monthsOf } from './periods'
 
 const contract = {
   ...emptyYear('2026-05-01', WORK_PLAN),
@@ -60,8 +60,8 @@ describe('monthsOf', () => {
   })
 
   it('finds the month of a week', () => {
-    expect(monthOfWeek(months, '2026-10-16')?.name).toBe('October')
-    expect(monthOfWeek(months, '2026-10-17')).toBeNull()
+    expect(periodOfWeek(months, '2026-10-16')?.name).toBe('October')
+    expect(periodOfWeek(months, '2026-10-17')).toBeNull()
   })
 })
 
@@ -123,8 +123,40 @@ describe('a month’s plan so far', () => {
   }
   it('counts a month’s plan so far by the weeks that have begun', () => {
     const october = monthsOf(year).find((m) => m.name === 'October')!
-    expect(monthPlanSoFar(october, '2026-10-06')).toBe(480)
-    expect(monthPlanSoFar(october, '2026-10-09')).toBe(960)
-    expect(monthPlanSoFar(october, '2026-09-01')).toBe(0)
+    expect(periodPlanSoFar(october, '2026-10-06')).toBe(480)
+    expect(periodPlanSoFar(october, '2026-10-09')).toBe(960)
+    expect(periodPlanSoFar(october, '2026-09-01')).toBe(0)
+  })
+})
+
+describe('periodsOf', () => {
+  const weekly = {
+    ...emptyYear('2026-09-30', { ...WORK_PLAN, hoursPerWeek: 0, clients: ['Research Assistant'] }),
+    weeks: 5,
+    name: 'Research Assistant',
+    invoice: 'week' as const,
+    adjusts: [
+      { id: 'a', date: '2026-10-01', label: 'x', minutes: 120, client: 'Research Assistant' },
+      { id: 'b', date: '2026-10-08', label: 'y', minutes: 90, client: 'Research Assistant' }
+    ]
+  }
+
+  it('is the invoice months for a contract invoiced monthly, and when the file does not say', () => {
+    expect(periodsOf(contract).map((p) => p.name)).toEqual(monthsOf(contract).map((m) => m.name))
+  })
+
+  it('is one period a week for a contract invoiced weekly, numbered in the contract', () => {
+    const periods = periodsOf(weekly)
+    expect(periods.map((p) => p.name)).toEqual(['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'])
+    expect(periods.map((p) => p.minutes)).toEqual([120, 90, 0, 0, 0])
+    expect(periods[0].weeks).toHaveLength(1)
+    expect(periods[0].from).toBe('2026-09-30')
+    expect(periods[0].to).toBe('2026-10-06')
+    expect(periods[0].plan).toBe(0)
+  })
+
+  it('counts a week invoice per client over its own days', () => {
+    expect(periodsOf(weekly)[1].clients).toEqual([{ client: 'Research Assistant', minutes: 90 }])
+    expect(periodOfWeek(periodsOf(weekly), '2026-10-07')?.name).toBe('Week 2')
   })
 })

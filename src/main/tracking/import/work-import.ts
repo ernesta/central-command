@@ -4,7 +4,7 @@ import { parseYear } from '@shared/tracking/parse'
 import { yearTotals } from '@shared/tracking/plan'
 import { minutesByClient, weeklyMinutes, yearMinutes } from '@shared/tracking/totals'
 import { emptyYear, WORK_PLAN, type Adjust, type TrackingYear } from '@shared/tracking/types'
-import { monthsOf } from '../../../modules/hours/shared/months'
+import { monthsOf } from '../../../modules/hours/shared/periods'
 import type { ActivityLog } from './work-logs'
 import type { WorkRow, WorkSheet } from './work-sheet'
 

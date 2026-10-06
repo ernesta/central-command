@@ -10,7 +10,7 @@ import { BalanceCard } from './BalanceCard'
 import { TodayCard } from './TodayCard'
 import { useWeek } from './useWeek'
 import { ContractFields } from './ContractFields'
-import { MonthCard } from './MonthCard'
+import { InvoiceCard } from './InvoiceCard'
 import { WeekCard } from './WeekCard'
 import styles from './HoursPage.module.css'
 
@@ -49,7 +49,7 @@ export function HoursPage(): React.JSX.Element {
               now={now}
             />
             {data.plan.weekAim && (
-              <MonthCard data={data} week={week} onWeekChange={setWeek} now={now} />
+              <InvoiceCard data={data} week={week} onWeekChange={setWeek} now={now} />
             )}
           </div>
           <div className={styles.stack}>
