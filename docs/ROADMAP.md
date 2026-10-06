@@ -6,6 +6,8 @@
 
 **Notes feedback round (2 Oct 2026): stages 1 to 5 built (1 to 3 applied to the real library; stage 4's `npm run tidy:reading-lists` applied 2 Oct 2026); stage 5 built (readable copy of entities; `docs/DECISIONS.md`, "Stage 5 write-up"), the round is finished.** See `docs/DECISIONS.md`, "Notes feedback round, stages 1 and 2" (stage 3 is written up in its list of what was left). Stage 3 (`npm run link:citations`): 40 links in 14 files; 29 citations still have no reading, so the user adds them to Zotero and asks for another pass (a re-run). Stage 4 (done): Reading lists use entities, "Attach a reading…" and the sidebar are gone. Left: (5) readable copy of entities (names; APA in-text citations plus a reference list). Afterwards remind the user about the entity sidebar/hover question.
 
+**Overlapping Work contracts (6 Oct 2026): stages 1 to 4 built, committed, not pushed** (`docs/CONTRACTS_PLAN.md`; `docs/DECISIONS.md`, "Overlapping contracts"). Your steps are the first items in "For the user".
+
 **Work's Hours (5 Oct 2026): built, pushed and installed.** Weeks run Friday to Thursday, every day counts, the week's 8:00 counts from its first day, Work has contracts (own first and last day, whole weeks) and a Month card for invoicing (`docs/DECISIONS.md`, "Work's Hours: weeks, contracts and months"). Importing the user's past Work data from their Google Sheet is in progress (4 stages: 1. a contract may start on any weekday, done 5 Oct 2026; 2. a client on Work entries and the timer, done 5 Oct 2026 (committed, not pushed); 3. the importer, dry run, done 5 Oct 2026 (`npm run import:work-hours`; both contracts pass, the 2:15 of the May log is added at guessed dates; `docs/DECISIONS.md`, "Stage 3"); 4. applied to the real library 5 Oct 2026, `docs/DECISIONS.md`, "Stage 4"; done). Work's Tasks is next.
 
 **Meeting TODOs as checkboxes (5 Oct 2026): built, converted and installed.** Tick open TODOs on the Meetings landing; `/todo` writes a checkbox (a new line when typed mid-line); `npm run convert:todos` was applied to all Research and Work meetings (`docs/DECISIONS.md`, "TODOs as checkboxes"). Nothing left to do; try ticking a TODO from the landing and typing `/todo` in a meeting.
@@ -244,6 +246,9 @@ Choices the plan left open, made conservatively; change any of them by telling C
 ## TODOs
 
 ### For the user (review and decisions)
+
+- [ ] **Name the two Luminos contracts (6 Oct 2026).** Quit the app everywhere, then say so and Claude runs `npm run name:contracts -- --apply` (the dry run lists both files; a backup is made first).
+- [ ] **Add the two new contracts in Settings -> Hours (6 Oct 2026), after naming.** Research Assistant: client Royal Holloway, first day 28 Sep 2026, last day 28 Mar 2027 (change if needed), weekly hours blank, invoiced Week. New Luminos: clients Impact, Teaching & Learning, weekly hours 8:00, invoiced Month, first day after 29 Oct 2026 (tell Claude the dates).
 
 - [x] **Non-billable work in Hours: dropped (6 Oct 2026, the user).** Work is billable work only; the billable / non-billable distinction was removed from the app (`docs/DECISIONS.md`, "Work is billable work only"). The 74 non-billable Work tasks (5:30) are in `~/CentralCommand/exports/work-non-billable-tasks.csv`. The `billable` tag was removed from every task and the 74 tasks are in the trash (applied 6 Oct 2026; restorable in Settings → Tasks; backup `backups/drop-billable-*`).
 - [x] **Stage 8 is applied (6 Oct 2026): result reviewed and accepted as it is (6 Oct 2026, the user: no fixes).** A worksheet of the 104 renamed tasks is in `~/CentralCommand/exports/stage8-name-review.csv` if a name ever needs changing; old names are in `~/CentralCommand/backups/work-final-*/`.

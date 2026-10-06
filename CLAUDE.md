@@ -37,6 +37,7 @@ ask the user.
   default)
 - `npm run people:from-notes [-- --apply]`: list people named in meeting attendees and training leads who are not in the people list, with
   proposed initials (dry run by default; apply only with the app closed)
+- `npm run name:contracts [-- --apply]`: name the existing Work contracts "Luminos" (files in `time/work/`; dry run by default, backs `time/work/` up first, never changes a name that exists; `--apply` only when the user says so, app closed; not yet applied to the real library)
 - `npm run strip:created [-- --apply]`: remove the retired `created:` line from every note's front matter (dry run by default; applied on
   29 Sep 2026, so a dry run now finds nothing)
 - `npm run tidy:series [-- --apply]`: one-off tidy of training series and titles (series = full programme name, title = the session; applied
@@ -262,6 +263,8 @@ to do next, short>. Next meeting <Mon D, YYYY>.` Example: "Key topics: Study 1 p
   content hash, and a new meeting never replaces an existing file.
 - Never send user data over the network.
 - Never commit secrets or user data; user data lives in `~/CentralCommand/`.
+
+- **Overlapping Work contracts (6 Oct 2026, `docs/CONTRACTS_PLAN.md`, stages 1 to 4 built, committed, not pushed)**: a Work contract has a name, an invoice period (`week` or `month`) and may have no weekly aim (`hoursPerWeek: 0`); contracts may overlap, a client belongs to one contract at a time and the timer finds its contract by client; the Hours page has one invoice card over weeks or months and a selector that opens on the contract holding today. What is left is the user's own data: `npm run name:contracts --apply` (when they say so), then they add Research Assistant and the new Luminos in Settings -> Hours (the new Luminos's dates are not known yet). Deferred tests and checks are the TODO list at the end of the plan.
 
 - **Hours and Time off (1 to 2 Oct 2026, stages 1 to 9 of `docs/TIME_PLAN.md`, all built)**: the rules (`src/shared/year.ts`, `src/shared/tracking/`), the store, the importer
   (applied to the real library on 1 Oct 2026), the Hours page for Research (Today, the top-bar timer chip, the week, the balance card, Settings -> Hours), Dock and palette
