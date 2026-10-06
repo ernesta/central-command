@@ -247,6 +247,8 @@ Choices the plan left open, made conservatively; change any of them by telling C
 
 ### For the user (review and decisions)
 
+- [ ] **Fill in the task descriptions the ClickUp export dropped (6 Oct 2026).** The CSV exports only ClickUp's plain-text rendering, so a description that is nothing but a link embed (the Kathy reading list link) came through empty; 89 of 1,211 tasks have a description now. The backfill reads them from the API instead. Get a token from ClickUp (Settings -> Apps -> API Token), then `CLICKUP_API_TOKEN=pk_… npm run backfill:clickup-links` for the dry run, read the list of links and text it would add, and `-- --apply` with the app closed when happy. How many tasks gain a description is unknown until the real dry run. `Checklists` and `Comments` are empty for every row of the export too, so they are likely lossy the same way; say if you want those as well.
+
 - [x] **Name the two Luminos contracts: applied 6 Oct 2026** (both existing contracts; backup `backups/name-contracts-2026-10-06T13-02-18-101Z`).
 - [ ] **Add the two new contracts in Settings -> Hours (6 Oct 2026), after naming.** Royal Holloway (name it Royal Holloway, not Research Assistant): client Royal Holloway, first day 28 Sep 2026, last day 28 Mar 2027 (change if needed), weekly hours blank, invoiced Week. New Luminos: clients Impact, Teaching & Learning, weekly hours 8:00, invoiced Month, first day after 29 Oct 2026 (tell Claude the dates).
 

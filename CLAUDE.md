@@ -18,6 +18,10 @@ ask the user.
 - `npm run link:work-apply [-- --apply]`: applied on 6 Oct 2026 (213 entries linked, tasks renamed, merged, split and made; a second run refuses). Dry run prints every task change.
 - `npm run tidy:work-tasks [-- --apply]`: split Work's Luminos list into Impact and Teaching & Learning by the client of each task's hours, set due dates to the latest hours entry, make tasks with hours "in progress" (applied 6 Oct 2026; a dry run now finds nothing to change)
 - `npm run link:work-hours [-- --apply [--include-low]]`: link Work's imported hour entries to tasks when their minutes add up to the task's ClickUp time exactly (dry run by default; `--apply` only when the user says so, app closed; backs up `time/work/` first; applied 6 Oct 2026, so a dry run now reports both as named)
+- `npm run backfill:clickup-links [-- --apply]`: fill in the task descriptions the ClickUp CSV export dropped (it exports only the plain-text rendering, so a
+  description that is nothing but a link embed came through empty). Reads them 100 tasks a page from the ClickUp API (about 30 requests), needs
+  `CLICKUP_API_TOKEN`, only ever reads ClickUp, and never overwrites a description already held; dry run by default, `--apply` only when the user says so, app
+  closed. Not yet run against the real library (needs the user's token)
 - `npm run import:clickup -- --file <csv> [--apply]`: import the ClickUp export into Tasks (SQLite; dry run by default; de-duplicates by Task ID and stops if two rows with one id
   differ; never adds to a store that holds tasks; `--apply` only when the user says so, app closed; the report must show 2,193 -> 1,211 rows, 1,082/98/31 by status,
   663/548 top-level/subtasks and 1,612.8 h across 628 tasks)
