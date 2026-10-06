@@ -75,7 +75,8 @@ const capital = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
 /**
  * Rules from the user (6 Oct 2026). Time worked after `after` (the last day ClickUp was used: 5 Oct) was never tracked there: each
  * of those entries is a new task, named from its label. A monthly activity log (15 minutes per client) goes to the nearest
- * "monthly summary" task that still has ClickUp time to spare, else a new "Submit activity log" task. A timer session goes to the
+ * "monthly summary" task that still has ClickUp time to spare (else the nearest one with none), and a "Submit activity log" task
+ * is made only when there is no summary task near. A timer session goes to the
  * task it is named
  * after, when one has exactly that name.
  */
@@ -93,9 +94,11 @@ export function ruleRows(
     .sort((a, b) => a.date.localeCompare(b.date))
   for (const e of logs) {
     const gap = (t: SheetTask): number => Math.abs(dayNumber(t.date) - dayNumber(e.date))
-    const fits = summaries
-      .filter((t) => gap(t) <= 25 && (room.get(t.uid) ?? 0) >= e.minutes)
-      .sort((a, b) => gap(a) - gap(b))
+    // A summary task with ClickUp time to spare first; failing that one with no ClickUp time at all (its hours are all new Hours
+    // time); a task is made only when neither exists.
+    const near = summaries.filter((t) => gap(t) <= 25).sort((a, b) => gap(a) - gap(b))
+    const withRoom = near.filter((t) => (room.get(t.uid) ?? 0) >= e.minutes)
+    const fits = withRoom.length > 0 ? withRoom : near.filter((t) => t.minutes === 0)
     if (fits.length > 0) {
       const t = fits[0]
       room.set(t.uid, Math.max(0, (room.get(t.uid) ?? 0) - e.minutes))

@@ -141,18 +141,20 @@ describe('ruleRows', () => {
   ]
   const nm = taskNames(pool)
 
-  it('puts each activity log on the nearest summary task with ClickUp time to spare, else makes a task', () => {
+  it('puts each activity log on the nearest summary task with ClickUp time to spare, else on one with none, else makes a task', () => {
     const logs = [
       log('l1', '2026-07-07', 'June', 'Impact'),
       log('l2', '2026-07-07', 'June', 'Teaching & Learning'),
       log('l3', '2026-07-30', 'July', 'Impact'),
-      log('l4', '2026-09-03', 'August', 'Impact')
+      log('l4', '2026-09-03', 'August', 'Impact'),
+      log('l5', '2026-01-10', 'December', 'Impact')
     ]
     const rows = ruleRows(logs, pool, nm, '2026-10-04')
     expect(rows.map((r) => [r.entry, r.uid ?? r.task])).toEqual([
+      ['l5', 'NEW: Submit activity log: December (Impact) [Admin & Logistics]'],
       ['l1', 's1'],
       ['l2', 's1'],
-      ['l3', 'NEW: Submit activity log: July (Impact) [Admin & Logistics]'],
+      ['l3', 's2'],
       ['l4', 's3']
     ])
   })
