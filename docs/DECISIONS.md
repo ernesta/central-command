@@ -2075,3 +2075,16 @@ Found by using the app: "Check for new articles in Kathy's reading list" had a l
 - **Tests**: 14 on the pure rule, the real Kathy embed among them as a fixture. Mutation check on the never-overwrite guard fails two tests.
 - **Driven against a stand-in ClickUp** (`CLICKUP_API_BASE`, a dependency-free server in the scratchpad) on a copy of the real library, never the real one: pagination over three pages plus the archived pass, a 429 waited out from `X-RateLimit-Reset`, 81 existing descriptions left alone, 22 written and read back, and a re-run finding nothing left to fill.
 - **Left**: the real dry run and `--apply`, which need the user's token. How many tasks actually gain a description is unknown until then; the fake server used synthetic embeds.
+
+### The real dry run, and four things no fixture had shown (6 Oct 2026)
+
+Run against the real library with the user's token: ClickUp returned all 1,211 tasks in **15 requests**, and the first report found 33 descriptions to fill. Reading it (the rule in `CLAUDE.md`: read every line of an importer's dry run on the real data) found four faults, all fixed and each now a test:
+
+- **Markdown's backslash escapes.** ClickUp escapes the URL inside the label (`AH\_Ethical\_Review`), so it did not compare equal to the URL and four links kept an unreadable `[mariakna.github.io https://…\_escop2025.pdf](…)` label. The label is unescaped for the comparison only; a label that is kept keeps its own escaping.
+- **Two embeds side by side ran their URLs together.** "Check new placement options" held four links in two lines, as `https://post.parliament.uk/fellowships/https://intranet.royalholloway.ac.uk/…` — a string that is no use as either URL. A bare URL now always gets a line of its own, and a separator already in the text is left as it is.
+- **ClickUp's `*   ` bullets** become the `- ` the editor writes (three tasks hold bulleted lists of links).
+- **A description that is only a thematic break** (`* * *`, on "Publish Study 1: Luminos data code") counts as nothing, so the task is left alone rather than given a line of punctuation.
+
+After the fixes: **32 to fill in, 25 of them a bare link and 7 holding text too**; 81 descriptions already held and left alone, 1,022 empty on both sides, nothing held here that ClickUp did not return. The eleven instances of "Check for new articles in Kathy's reading list" each get the Google Docs link, which is what started this.
+
+`--apply` was not run: the permission classifier refused it, so it is the user's to run.
