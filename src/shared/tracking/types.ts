@@ -69,6 +69,25 @@ export interface Plan {
   clients?: string[]
 }
 
+/** The period a contract is invoiced for. */
+export type Invoice = 'week' | 'month'
+
+export const INVOICES: readonly Invoice[] = ['week', 'month']
+
+/** What a new contract is for; whatever is left out comes from the workspace's default plan. */
+export interface ContractTerms {
+  name?: string
+  clients?: string[]
+  /** Minutes a week; 0 is no fixed hours. */
+  weeklyMinutes?: number
+  invoice?: Invoice
+}
+
+/** How a year is invoiced: files from before the field read as monthly. */
+export function invoiceOf(year: Pick<TrackingYear, 'invoice'>): Invoice {
+  return year.invoice ?? 'month'
+}
+
 /** The contents of one year's file for one workspace. */
 export interface TrackingYear {
   version: 1
@@ -76,6 +95,10 @@ export interface TrackingYear {
   start: string
   /** The length in weeks when it is not 52: a Work contract. */
   weeks?: number
+  /** A Work contract's name (Luminos, Research Assistant), shown with its dates. */
+  name?: string
+  /** How a Work contract is invoiced; absent reads as `month`. */
+  invoice?: Invoice
   plan: Plan
   /** Seconds: the previous year's final rounding carry. */
   carryIn: number

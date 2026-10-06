@@ -1,6 +1,13 @@
 import { dayNumber } from '../year'
 import { timeToSeconds } from './rounding'
-import { DEFAULT_PLAN, TIME_OFF_TYPES, emptyYear, type Plan, type TrackingYear } from './types'
+import {
+  DEFAULT_PLAN,
+  INVOICES,
+  TIME_OFF_TYPES,
+  emptyYear,
+  type Plan,
+  type TrackingYear
+} from './types'
 
 type Obj = Record<string, unknown>
 
@@ -17,7 +24,9 @@ const isTime = (v: unknown): v is string => isString(v) && timeToSeconds(v) !== 
 export function parsePlan(raw: unknown): Plan | null {
   if (!isObj(raw)) return null
   const { hoursPerWeek, workDays, allowanceDays } = raw
-  if (!isInt(hoursPerWeek) || hoursPerWeek <= 0 || hoursPerWeek > 7 * 24 * 60) return null
+  // Zero is "no fixed hours" and only means something for a plan aimed at by the week (a Work contract).
+  const least = raw.weekAim === true ? 0 : 1
+  if (!isInt(hoursPerWeek) || hoursPerWeek < least || hoursPerWeek > 7 * 24 * 60) return null
   if (!Array.isArray(workDays) || workDays.length === 0) return null
   if (!workDays.every((d) => isInt(d) && d >= 1 && d <= 7)) return null
   if (!isInt(allowanceDays) || allowanceDays < 0 || allowanceDays > 366) return null
@@ -66,6 +75,12 @@ export function parseYear(raw: unknown): TrackingYear | null {
   if (!plan) return null
   if (raw.weeks !== undefined && (!isInt(raw.weeks) || raw.weeks < 1 || raw.weeks > 156))
     return null
+  if (
+    raw.name !== undefined &&
+    (!isString(raw.name) || raw.name.trim() === '' || raw.name !== raw.name.trim())
+  )
+    return null
+  if (raw.invoice !== undefined && !INVOICES.includes(raw.invoice as never)) return null
   const carryIn = raw.carryIn === undefined ? 0 : raw.carryIn
   if (typeof carryIn !== 'number' || !Number.isFinite(carryIn)) return null
   const sessions = list(

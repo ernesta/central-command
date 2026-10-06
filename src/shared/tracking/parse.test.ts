@@ -27,6 +27,25 @@ describe('parseYear', () => {
     expect(parseYear({ ...good(), plan: { ...plan, weekAim: 'yes' } })).toBeNull()
   })
 
+  it('takes a contract name and an invoice of week or month, and refuses anything else', () => {
+    const year = parseYear({ ...good(), name: 'Luminos', invoice: 'week' })
+    expect(year?.name).toBe('Luminos')
+    expect(year?.invoice).toBe('week')
+    expect(parseYear({ ...good(), invoice: 'month' })?.invoice).toBe('month')
+    expect(parseYear(good())?.name).toBeUndefined()
+    expect(parseYear({ ...good(), invoice: 'year' })).toBeNull()
+    expect(parseYear({ ...good(), invoice: 1 })).toBeNull()
+    expect(parseYear({ ...good(), name: '' })).toBeNull()
+    expect(parseYear({ ...good(), name: ' Luminos' })).toBeNull()
+    expect(parseYear({ ...good(), name: 5 })).toBeNull()
+  })
+
+  it('reads a year with no fixed hours (0 a week) when it is aimed at by the week', () => {
+    const plan = { hoursPerWeek: 0, workDays: [1, 2, 3, 4, 5, 6, 7], allowanceDays: 0 }
+    expect(parseYear({ ...good(), plan: { ...plan, weekAim: true } })?.plan.hoursPerWeek).toBe(0)
+    expect(parseYear({ ...good(), plan })).toBeNull()
+  })
+
   it('keeps unknown keys, at the top and in entries', () => {
     const doc = {
       ...good(),
@@ -47,6 +66,12 @@ describe('parsePlan', () => {
       parsePlan({ hoursPerWeek: 480, workDays: [3, 1, 3], allowanceDays: 0 })?.workDays
     ).toEqual([1, 3])
     expect(parsePlan({ hoursPerWeek: 0, workDays: [1], allowanceDays: 1 })).toBeNull()
+    expect(
+      parsePlan({ hoursPerWeek: -15, workDays: [1], allowanceDays: 1, weekAim: true })
+    ).toBeNull()
+    expect(
+      parsePlan({ hoursPerWeek: 0, workDays: [1], allowanceDays: 0, weekAim: true })
+    ).not.toBeNull()
     expect(parsePlan({ hoursPerWeek: 480, workDays: [8], allowanceDays: 1 })).toBeNull()
     expect(parsePlan({ hoursPerWeek: 480, workDays: [], allowanceDays: 1 })).toBeNull()
     expect(parsePlan({ hoursPerWeek: 480, workDays: [1], allowanceDays: 1.5 })).toBeNull()
