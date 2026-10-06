@@ -28,13 +28,19 @@ export function sameTask(
 export function defaultClient(year: TrackingYear): string | undefined {
   const clients = year.plan.clients ?? []
   if (clients.length === 0) return undefined
+  return lastUsedClient(year)?.client ?? clients[0]
+}
+
+/** The client of the latest session or typed entry that has one on the plan's list, and when (sortable text). */
+export function lastUsedClient(year: TrackingYear): { client: string; at: string } | undefined {
+  const clients = year.plan.clients ?? []
   const used = [
     ...year.sessions.map((s) => ({ client: s.client, at: `${s.date} ${s.start}` })),
     ...year.adjusts.map((a) => ({ client: a.client, at: `${a.date} 99:99:99` }))
-  ]
-    .filter((e) => e.client !== undefined && clients.includes(e.client))
-    .sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0))
-  return used[0]?.client ?? clients[0]
+  ].filter(
+    (e): e is { client: string; at: string } => e.client !== undefined && clients.includes(e.client)
+  )
+  return used.sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0))[0]
 }
 
 /**

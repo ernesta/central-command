@@ -322,6 +322,131 @@ describe('clients on Work entries', () => {
   })
 })
 
+describe('the timer with overlapping contracts', () => {
+  const LUMINOS = '2026-05-01'
+  const RA = '2026-09-25'
+  const both = (): TrackingStore => {
+    const store = open()
+    expect(store.createContract('work', LUMINOS, '2026-10-29').ok).toBe(true)
+    expect(
+      store.createContract('work', RA, '2026-10-22', {
+        name: 'Research Assistant',
+        clients: ['Research Assistant'],
+        weeklyMinutes: 0,
+        invoice: 'week'
+      }).ok
+    ).toBe(true)
+    return store
+  }
+
+  it('starts in the contract that has the client, each in its own file', () => {
+    const store = both()
+    store.start('work', 'Marking', undefined, 'Research Assistant')
+    expect(store.running()).toMatchObject({ workspace: 'work', year: RA })
+    at('2026-09-29', '11:00:00')
+    store.start('work', 'Calls', undefined, 'Impact')
+    expect(store.running()).toMatchObject({ year: LUMINOS })
+    expect(read('work', `${RA}.json`).sessions).toMatchObject([
+      { client: 'Research Assistant', end: '11:00:00', minutes: 60 }
+    ])
+    expect(read('work', `${LUMINOS}.json`).sessions).toMatchObject([
+      { client: 'Impact', end: null }
+    ])
+  })
+
+  it('never runs two timers: starting in the other contract stops the first at the same instant', () => {
+    const store = both()
+    store.start('work', 'A', undefined, 'Impact')
+    at('2026-09-29', '10:30:00')
+    store.start('work', 'B', undefined, 'Research Assistant')
+    const running = [LUMINOS, RA].flatMap((f) =>
+      read('work', `${f}.json`).sessions.filter((x: Doc) => x.end === null)
+    )
+    expect(running).toHaveLength(1)
+    expect(read('work', `${LUMINOS}.json`).sessions[0].end).toBe('10:30:00')
+    expect(read('work', `${RA}.json`).sessions[0].start).toBe('10:30:00')
+  })
+
+  it('with no client takes the contract of the client used last', () => {
+    const store = both()
+    store.start('work', 'A', undefined, 'Impact')
+    at('2026-09-29', '10:15:00')
+    store.stop()
+    at('2026-09-29', '10:20:00')
+    store.start('work', '')
+    expect(store.running()?.year).toBe(LUMINOS)
+    expect(store.running()?.session.client).toBe('Impact')
+    at('2026-09-29', '10:40:00')
+    store.start('work', 'B', undefined, 'Research Assistant')
+    at('2026-09-29', '10:50:00')
+    store.stop()
+    store.start('work', '')
+    expect(store.running()?.year).toBe(RA)
+    expect(store.running()?.session.client).toBe('Research Assistant')
+  })
+
+  it('counts typed time as use of a client too', () => {
+    const store = both()
+    store.start('work', 'A', undefined, 'Impact')
+    at('2026-09-29', '10:15:00')
+    store.stop()
+    expect(store.addTime('work', RA, '2026-09-29', 'Marking', 30, 'Research Assistant').ok).toBe(
+      true
+    )
+    store.start('work', '')
+    expect(store.running()?.year).toBe(RA)
+  })
+
+  it('refuses a client no contract holding today has, and changes nothing', () => {
+    const store = both()
+    expect(store.start('work', 'A', undefined, 'Luminos')).toEqual({
+      ok: false,
+      reason: 'bad-client'
+    })
+    expect(store.running()).toBeNull()
+    expect(read('work', `${RA}.json`).sessions).toEqual([])
+  })
+
+  it('refuses a client of a contract that has ended when another holds today', () => {
+    const store = both()
+    at('2026-10-25', '09:00:00') // after RA's last day (22 Oct), inside Luminos
+    expect(store.start('work', 'A', undefined, 'Research Assistant')).toEqual({
+      ok: false,
+      reason: 'bad-client'
+    })
+    expect(store.start('work', 'A').ok).toBe(true)
+    expect(store.running()?.year).toBe(LUMINOS)
+  })
+
+  it('lists what can start today: every contract that holds it, newest first, with its clients', () => {
+    const store = both()
+    expect(store.openContracts('work')).toEqual([
+      { year: RA, name: 'Research Assistant', clients: ['Research Assistant'] },
+      { year: LUMINOS, clients: ['Impact', 'Teaching & Learning'] }
+    ])
+    at('2026-10-25', '09:00:00')
+    expect(store.openContracts('work').map((c) => c.year)).toEqual([LUMINOS])
+    at('2027-01-05', '09:00:00')
+    expect(store.openContracts('work')).toEqual([])
+    expect(store.openContracts('research')).toEqual([])
+  })
+
+  it('keeps an entry in the contract of its client', () => {
+    const store = both()
+    expect(store.addTime('work', RA, '2026-09-29', 'Marking', 30, 'Impact')).toEqual({
+      ok: false,
+      reason: 'bad-client'
+    })
+  })
+
+  it('still starts at once in the only contract that holds today', () => {
+    const store = open()
+    store.createContract('work', LUMINOS, '2026-10-29')
+    expect(store.start('work', '').ok).toBe(true)
+    expect(store.running()?.year).toBe(LUMINOS)
+  })
+})
+
 describe('a new year', () => {
   it('takes the previous plan and its final carry', () => {
     const store = open()

@@ -187,6 +187,7 @@ const api: Api = {
     years: (workspace) => ipcRenderer.invoke(TRACKING_IPC.years, workspace),
     get: (workspace, year) => ipcRenderer.invoke(TRACKING_IPC.get, workspace, year),
     running: () => ipcRenderer.invoke(TRACKING_IPC.running),
+    openContracts: (workspace) => ipcRenderer.invoke(TRACKING_IPC.openContracts, workspace),
     start: (workspace, label, task, client) =>
       ipcRenderer.invoke(TRACKING_IPC.start, workspace, label, task, client),
     stop: () => ipcRenderer.invoke(TRACKING_IPC.stop),

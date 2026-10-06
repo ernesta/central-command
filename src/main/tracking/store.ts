@@ -36,6 +36,12 @@ import {
 } from '@shared/tracking/types'
 import { dayNumber, inYear, yearEnd, yearLabel, yearStartOf, yearsPresent } from '@shared/year'
 import { contractWeeks, hasContracts } from '@shared/tracking/workspace-weeks'
+import {
+  contractForClient,
+  contractOfLastClient,
+  openContracts,
+  type OpenContract
+} from '@shared/tracking/contracts'
 import { writeFileAtomicSync } from '../atomic-write'
 
 export interface TrackingDeps {
@@ -97,7 +103,11 @@ export class TrackingStore {
   get(workspace: Workspace, year: string): TrackingYear {
     this.checkYear(workspace, year)
     const loaded = this.load(workspace, year)
-    if (loaded.text === null && !hasContracts(workspace) && year === this.currentStart(workspace)) {
+    if (
+      loaded.text === null &&
+      !hasContracts(workspace) &&
+      year === yearStartOf(this.deps.now().date, this.deps.starts())
+    ) {
       this.commit(workspace, loaded, loaded.year)
     }
     return loaded.year
@@ -118,13 +128,14 @@ export class TrackingStore {
   // ---- the timer ----
 
   /**
-   * Start a task now. Whatever runs stops at the same instant: in the same file that is one write, in another
+   * Start a task now, in the contract of its client (see `startingYear`). Whatever runs stops at the same instant: in the same file that is one write, in another
    * workspace it is a stop and then a start (never two timers at once, even if the app dies between them).
    */
   start(workspace: Workspace, label: string, task?: string, client?: string): TimerResult {
     const now = this.deps.now()
-    const year = this.currentStart(workspace)
-    if (year === null) return { ok: false, reason: 'outside-year' }
+    const found = this.startingYear(workspace, client)
+    if (!found.ok) return found
+    const year = found.year
     const running = this.running()
     if (running && !(running.workspace === workspace && running.year === year)) {
       const stopped = this.mutate(running.workspace, running.year, (y) => stopSession(y, now))
@@ -134,6 +145,11 @@ export class TrackingStore {
       startSession(y, now, label, this.newId(), task, client)
     )
     return result.ok ? { ok: true, running: this.running() } : result
+  }
+
+  /** What a timer can start for today: every contract that holds today (Work) with its clients. */
+  openContracts(workspace: Workspace): OpenContract[] {
+    return openContracts(this.holdingToday(workspace), this.deps.now().date)
   }
 
   stop(): TimerResult {
@@ -381,15 +397,39 @@ export class TrackingStore {
     return join(this.root, workspace, yearFileName(start, workspace))
   }
 
-  private currentStart(workspace: Workspace): string | null {
+  /** Every contract (Work) that holds today, newest start first. */
+  private holdingToday(workspace: Workspace): TrackingYear[] {
     const today = this.deps.now().date
-    if (hasContracts(workspace)) {
-      return (
-        this.fileStarts(workspace).find((s) => inYear(today, s, this.peek(workspace, s)?.weeks)) ??
-        null
-      )
+    const years: TrackingYear[] = []
+    for (const start of this.fileStarts(workspace)) {
+      const year = this.peek(workspace, start)
+      if (year && inYear(today, start, year.weeks)) years.push(year)
     }
-    return yearStartOf(today, this.deps.starts())
+    return years
+  }
+
+  /**
+   * The year a timer starts in. A workspace with the shared year has one. With contracts, the contract is found from
+   * the client: the one holding today that has it; with no client, the one of the client used last. Several may hold
+   * today (they overlap), but a client is in one of them.
+   */
+  private startingYear(
+    workspace: Workspace,
+    client: string | undefined
+  ): { ok: true; year: string } | { ok: false; reason: string } {
+    const today = this.deps.now().date
+    if (!hasContracts(workspace)) {
+      const year = yearStartOf(today, this.deps.starts())
+      return year === null ? { ok: false, reason: 'outside-year' } : { ok: true, year }
+    }
+    const open = this.holdingToday(workspace)
+    if (open.length === 0) return { ok: false, reason: 'outside-year' }
+    // A client no contract has falls to the first one, which refuses it (`bad-client`) without changing anything.
+    const chosen =
+      client === undefined
+        ? contractOfLastClient(open, today)
+        : (contractForClient(open, today, client) ?? open[0])
+    return { ok: true, year: chosen!.start }
   }
 
   /** Only a year the shared list knows (every start, and the 52-week steps back from the first). */

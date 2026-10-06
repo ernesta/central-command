@@ -43,6 +43,7 @@ export function registerTrackingIpc(store: TrackingStore): void {
   h(TRACKING_IPC.years, (_e, ws) => store.years(workspace(ws)))
   h(TRACKING_IPC.get, (_e, ws, year) => store.get(workspace(ws), text(year)))
   h(TRACKING_IPC.running, () => store.running())
+  h(TRACKING_IPC.openContracts, (_e, ws) => store.openContracts(workspace(ws)))
   h(TRACKING_IPC.start, (_e, ws, label, task, client) =>
     store.start(workspace(ws), text(label), optionalText(task), optionalText(client))
   )
