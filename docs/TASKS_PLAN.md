@@ -1,6 +1,6 @@
 # Tasks: plan
 
-Status: **approved by the user on 5 Oct 2026 (mockup round 5). Built in an unattended run on 5 Oct 2026: stages 0 to 7 and the buildable part of 9 are done and committed (not pushed); stage 8 waits for the user's answer; the real-library import is not applied.** Mockup: `docs/design/tasks-mockup.html` (open it in a
+Status: **stage 8 (Work hours become tasks) was done and applied on 6 Oct 2026 (`docs/DECISIONS.md`, "Stage 8 …").** Approved by the user on 5 Oct 2026 (mockup round 5). Built in an unattended run on 5 Oct 2026: stages 0 to 7 and the buildable part of 9 are done and committed (not pushed); stage 8 waits for the user's answer; the real-library import is not applied.** Mockup: `docs/design/tasks-mockup.html` (open it in a
 browser: five screens, light and dark, clickable). Read this with `CLAUDE.md`, `docs/DECISIONS.md` and `docs/TIME_PLAN.md` ("Tasks, later"). The user is
 leaving ClickUp (the annual subscription renews within days; they exported everything to `~/CentralCommand/imports/clickup/`, one CSV), so Tasks is a
 **replacement task manager**, not an integration. No two-way sync, no ClickUp API.
