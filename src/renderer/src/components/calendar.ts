@@ -22,3 +22,19 @@ export function monthGrid(month: string): string[] {
   } while (monthOf(day) === month || days.length % 7 !== 0)
   return days
 }
+
+const POPOVER_WIDTH = 248
+const POPOVER_HEIGHT = 300
+const EDGE = 8
+
+/** Where the fixed calendar goes: under the button, above it when there is no room below, and inside the window sideways. */
+export function popoverPlace(
+  rect: { top: number; bottom: number; left: number },
+  width: number,
+  height: number
+): { top: number; left: number } {
+  const below = rect.bottom + 4
+  const above = rect.top - 4 - POPOVER_HEIGHT
+  const top = below + POPOVER_HEIGHT > height - EDGE && above >= EDGE ? above : below
+  return { top, left: Math.max(EDGE, Math.min(rect.left, width - POPOVER_WIDTH - EDGE)) }
+}

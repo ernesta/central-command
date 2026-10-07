@@ -1,7 +1,7 @@
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { formatDate, formatShortDate } from '@shared/time'
-import { monthGrid, monthOf, shiftMonth } from './calendar'
+import { monthGrid, monthOf, popoverPlace, shiftMonth } from './calendar'
 import styles from './DatePicker.module.css'
 
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
@@ -43,14 +43,29 @@ export function DatePicker({
   const [month, setMonth] = useState(monthOf(value ?? today))
   const wrapRef = useRef<HTMLSpanElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
+  const [place, setPlace] = useState({ top: 0, left: 0 })
+
+  // The calendar is fixed to the window, so no scrolling or clipping ancestor (a dialog, a card) can cut it off. It sits under the
+  // button, or above it when there is no room below, and follows the button while the page scrolls or resizes.
+  const reposition = (): void => {
+    const rect = buttonRef.current?.getBoundingClientRect()
+    if (rect) setPlace(popoverPlace(rect, window.innerWidth, window.innerHeight))
+  }
 
   useEffect(() => {
     if (!open) return
+    const onMove = (): void => reposition()
+    window.addEventListener('scroll', onMove, true)
+    window.addEventListener('resize', onMove)
     const onDown = (event: MouseEvent): void => {
       if (!wrapRef.current?.contains(event.target as Node)) setOpen(false)
     }
     document.addEventListener('mousedown', onDown)
-    return () => document.removeEventListener('mousedown', onDown)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      window.removeEventListener('scroll', onMove, true)
+      window.removeEventListener('resize', onMove)
+    }
   }, [open])
 
   const choose = (date: string | null): void => {
@@ -90,6 +105,7 @@ export function DatePicker({
         aria-expanded={open}
         onClick={() => {
           setMonth(monthOf(value ?? today))
+          reposition()
           setOpen((o) => !o)
         }}
       >
@@ -97,7 +113,12 @@ export function DatePicker({
         {text}
       </button>
       {open && (
-        <div className={styles.popover} role="dialog" aria-label={`${label} calendar`}>
+        <div
+          className={styles.popover}
+          style={place}
+          role="dialog"
+          aria-label={`${label} calendar`}
+        >
           <div className={styles.head}>
             <button
               type="button"
