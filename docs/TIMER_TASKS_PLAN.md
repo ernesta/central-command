@@ -83,7 +83,7 @@ Self-study is training too, must be reported, and must not need a new task per l
    is (see stage 5). Drive the app in both workspaces, dev and production.
 3. **Meetings: task and derived hours.** A task on each meeting note (proposed, editable), minutes derived from its times, overlap
    warning, the Hours page shows them. Supervision log still reads the note.
-4. **Trainings: series task, lecture subtasks and derived hours.** A subtask per training note, created with it (series parent found
+4. **Trainings: series task, lecture subtasks and derived hours (done 7 Oct 2026; `docs/DECISIONS.md`, "Timer and tasks, stage 4"; changed with the user: the subtask is made automatically once a series is chosen, only for new notes, which carry a `task: auto` marker until then).** A subtask per training note, created with it (series parent found
    or offered); minutes derived from the note's times; the Start button on the training page; typed time on a subtask; overlap
    warning; the training hours counter, per-skill totals and the Inkpath export read the lecture totals from the shared store.
    Check the reports still match for sessions without self-study.
