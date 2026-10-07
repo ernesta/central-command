@@ -131,6 +131,8 @@ export function GroupField({
           aria-label={`Choose a ${noun}`}
           onKeyDown={(event) => {
             if (event.key === 'Escape') {
+              // Only the menu closes: a native <dialog> around it would close on Escape too unless this is prevented.
+              event.preventDefault()
               event.stopPropagation()
               close()
             }
