@@ -121,13 +121,13 @@ Hours' days and balance (that would double-count the Hours the user imported). W
 5. **Recurrence**: set a rule, complete, the next appears with its subtasks, drifting from the completion date.
 6. **Time**: task picker in the Hours timer, Add time, totals with `earlier_minutes`.
 7. **Everywhere**: `cc://task/<uid>` mentions and a provider, "Mentioned in", Mod-K search, palette and Dock items, Settings shortcuts, the People page's open tasks.
-8. **Work**: the user's Work-hours-to-tasks decision, billable tag, Work's Month card. **Built 6 Oct 2026** (`npm run link:work-hours`, billable-only Start list); the Month card has no billable rows; applying is the user's call.
+8. **Work**: the user's Work-hours-to-tasks decision, billable tag, Work's Month card. **Built 6 Oct 2026** (`npm run link:work-hours`); applied 6 Oct 2026. Work is billable work only, so there is no billable tag or filter.
 9. **Tidy**: Settings -> Tasks, DECISIONS.md write-up, ROADMAP, the real-library import (when asked).
 
 Every stage that touches UI or data flow is driven in the built app on a scratch library (`CLAUDE.md`, "Testing the app for real").
 
 ## Still open
 
-- ~~How Work's hour entries should turn into tasks~~ Decided 6 Oct 2026: match by exact minutes, billable only (`docs/DECISIONS.md`, "Tasks: stage 8 write-up"). The real link is not applied yet. Natural-language quick-add and the mobile app are not in scope.
+- ~~How Work's hour entries should turn into tasks~~ Decided 6 Oct 2026: match by exact minutes (`docs/DECISIONS.md`, "Tasks: stage 8 write-up"). The real link is not applied yet. Natural-language quick-add and the mobile app are not in scope.
 - The stripe has two jobs (a running timer, the subtask thread) and the user wants no third. The depth-2 flattening on import is approved.
 - Shortcut for Add a task: Mod-Shift-A is proposed; the user said they do not care for now.
