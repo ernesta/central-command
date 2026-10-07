@@ -48,6 +48,8 @@ export interface CreateTrainingInput {
   mode?: TrainingMode | null
   skills?: string[]
   leads?: string[]
+  /** `auto` for a note made in the app (it gets its lecture subtask when a series is chosen); leave out otherwise. */
+  task?: string
   /** The note body; a new entry gets the standard template when omitted. */
   body?: string
 }

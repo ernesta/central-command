@@ -70,7 +70,8 @@ export function parseTrainingMeta(head: string): ParsedTrainingMeta {
       institution: text('institution'),
       folder: text('folder'),
       organisation: text('organisation'),
-      points: text('points')
+      points: text('points'),
+      task: text('task') ?? ''
     },
     problems
   }
@@ -91,7 +92,8 @@ const ORDER: (keyof TrainingMeta)[] = [
   'institution',
   'folder',
   'organisation',
-  'points'
+  'points',
+  'task'
 ]
 
 /**
@@ -101,13 +103,16 @@ const ORDER: (keyof TrainingMeta)[] = [
  */
 export function updateTrainingHead(head: string, patch: TrainingPatch): string {
   // An empty date removes the key: the entry is planned, with no date yet.
-  const changes = 'date' in patch && patch.date === '' ? { ...patch, date: null } : patch
+  let changes: Record<string, Value | undefined> = { ...patch }
+  if ('date' in patch && patch.date === '') changes = { ...changes, date: null }
+  // An empty task removes the key: the note has none (and is not marked).
+  if ('task' in patch && patch.task === '') changes = { ...changes, task: null }
   return updateHeadKeys(head, changes, {
     order: ORDER,
     style: (key) =>
       key === 'start' || key === 'end'
         ? 'quote'
-        : key === 'date' || key === 'points'
+        : key === 'date' || key === 'points' || key === 'task'
           ? 'plain'
           : 'auto'
   })

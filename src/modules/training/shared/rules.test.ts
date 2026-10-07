@@ -31,6 +31,7 @@ const row = (date: string, over: Partial<TrainingIndexRow> = {}): TrainingIndexR
   leads: [],
   institution: null,
   folder: null,
+  task: '',
   summary: '',
   excerpt: '',
   hasNotes: false,

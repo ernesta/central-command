@@ -348,3 +348,42 @@ describe('isSafeRelativeFolder', () => {
     }
   })
 })
+
+describe('a lecture task', () => {
+  it('a note made with task auto carries the marker; one made without carries none', async () => {
+    const marked = await make({ task: 'auto', title: 'Marked' })
+    expect(marked.meta.task).toBe('auto')
+    expect(disk(marked.ref.id)).toContain('task: auto')
+    expect(getTrainingRow(db, 'research', marked.ref.id)?.task).toBe('auto')
+    const plain = await make({ title: 'Plain' })
+    expect(plain.meta.task).toBe('')
+    expect(disk(plain.ref.id)).not.toContain('task:')
+  })
+
+  it('is written to the file and the index when set, and the body stays as it was', async () => {
+    const made = await make({ task: 'auto', body: '## Notes\nhello\n' })
+    const saved = await store.save(made.ref, { meta: { task: 'k3f9a2x1' } }, made.note.hash)
+    expect(saved.status).toBe('saved')
+    expect(disk(made.ref.id)).toContain('task: k3f9a2x1')
+    expect(splitNote(disk(made.ref.id)).body).toBe('## Notes\nhello\n')
+    expect(getTrainingRow(db, 'research', made.ref.id)?.task).toBe('k3f9a2x1')
+  })
+
+  it('refuses a value that is not a task id, and leaves the file alone', async () => {
+    const made = await make()
+    const before = disk(made.ref.id)
+    await expect(
+      store.save(made.ref, { meta: { task: 'x\ntitle: Other' } }, made.note.hash)
+    ).rejects.toThrow(TrainingError)
+    expect(disk(made.ref.id)).toBe(before)
+  })
+
+  it('an older file is indexed without a task and is never rewritten by reindexing', async () => {
+    mkdirSync(dir, { recursive: true })
+    const text = '---\ndate: 2025-12-10\ntitle: Old\n---\n## Notes\n'
+    writeFileSync(file('2025-12-10 Old'), text)
+    await store.reindexAll('research')
+    expect(getTrainingRow(db, 'research', '2025-12-10 Old')?.task).toBe('')
+    expect(disk('2025-12-10 Old')).toBe(text)
+  })
+})

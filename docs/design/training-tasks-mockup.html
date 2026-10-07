@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Training and tasks decisions</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#edeff2, #14181d);
+    --surface: light-dark(#ffffff, #1f262e);
+    --ink: light-dark(#1b222b, #e6eaee);
+    --text-secondary: light-dark(#3a4652, #c2cad2);
+    --text-muted: light-dark(#5c6672, #98a3af);
+    --border-soft: light-dark(#d3d8de, #2f3843);
+    --border-strong: light-dark(#c3cad2, #3d4855);
+    --hover-tint: light-dark(#f4f6f8, #262e37);
+    --accent: light-dark(#35577a, #86aad0);
+    --accent-contrast: light-dark(#ffffff, #0f1620);
+    --selected-bg: light-dark(#dce6ee, #2a3b4d);
+    --warn: light-dark(#b8741a, #d9a05a);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 32px 16px 80px; background: var(--bg); color: var(--ink); font: 14px/1.45 'IBM Plex Sans', system-ui, sans-serif; }
+  main { max-width: 940px; margin: 0 auto; }
+  h1 { font: 28px Georgia, serif; margin: 0 0 4px; }
+  .lead { color: var(--text-muted); margin: 0 0 14px; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin: 12px 0 0; font-size: 13px; }
+  .decision { margin-top: 44px; padding-top: 8px; border-top: 2px solid var(--border-strong); }
+  .dtag { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--accent); }
+  h2 { font: 22px Georgia, serif; margin: 2px 0 4px; }
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px; }
+  @media (max-width: 760px) { .options { grid-template-columns: 1fr; } }
+  .option { background: var(--surface); border: 2px solid var(--border-soft); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .option.rec { border-color: var(--accent); }
+  .ohead { display: flex; align-items: center; gap: 8px; }
+  .letter { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 999px; background: var(--accent); color: var(--accent-contrast); font-weight: 600; }
+  .oname { font-weight: 600; font-size: 15px; }
+  .badge { margin-left: auto; font-size: 12px; padding: 1px 9px; border-radius: 999px; background: var(--selected-bg); color: var(--ink); }
+  .what { color: var(--text-secondary); font-size: 13px; }
+  .scene { border: 1px dashed var(--border-strong); border-radius: 10px; padding: 12px; background: var(--hover-tint); }
+  .scene .cap { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-bottom: 8px; }
+  .step { display: flex; gap: 8px; align-items: baseline; padding: 3px 0; }
+  .step b { font-weight: 500; }
+  .num { color: var(--text-muted); font-size: 12px; min-width: 14px; }
+  .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-height: 32px; }
+  .k { color: var(--text-muted); min-width: 56px; }
+  .muted { color: var(--text-muted); }
+  .propose { display: inline-flex; gap: 8px; padding: 6px 12px; border: 1px dashed var(--border-strong); border-radius: 8px; background: var(--surface); color: var(--text-secondary); }
+  .link { text-decoration: underline; text-underline-offset: 3px; color: var(--text-secondary); }
+  .btn { display: inline-flex; padding: 5px 13px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface); }
+  .btn.primary { background: var(--accent); color: var(--accent-contrast); border-color: var(--accent); }
+  .pro, .con { font-size: 13px; padding-left: 18px; position: relative; }
+  .pro::before { content: '+'; position: absolute; left: 4px; color: var(--accent); font-weight: 700; }
+  .con::before { content: '–'; position: absolute; left: 4px; color: var(--warn); font-weight: 700; }
+  .list { list-style: none; margin: 0; padding: 0; }
+  .list li { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border-soft); }
+  .list li:last-child { border-bottom: 0; }
+  .grow { flex: 1; }
+  .time { font-variant-numeric: tabular-nums; }
+  .big { font: 26px Georgia, serif; }
+  .bar { height: 8px; border-radius: 4px; background: var(--border-soft); overflow: hidden; margin: 6px 0; }
+  .bar i { display: block; height: 100%; background: var(--accent); }
+  .info { margin-top: 12px; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border-soft); border-left: 4px solid var(--border-strong); border-radius: 8px; font-size: 13px; }
+  .done { border-left-color: var(--accent); }
+  .picker { border: 1px solid var(--border-strong); border-radius: 10px; background: var(--surface); width: 100%; overflow: hidden; }
+  .picker .in { padding: 7px 12px; border-bottom: 1px solid var(--border-soft); }
+  .picker .opt { display: flex; justify-content: space-between; gap: 12px; padding: 6px 12px; }
+  .picker .opt.on { background: var(--selected-bg); }
+  .note { color: var(--warn); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Stage 4, Trainings: what you need to review</h1>
+  <p class="lead">Three decisions, each with two options side by side. Example throughout: the series "Intro to Python", the lecture "Session 3: Plotly", Tue 6 Oct, 10:00 to 11:30.</p>
+  <div class="legend">
+    <span><span class="letter">A</span> / <span class="letter">B</span> = the options you choose between</span>
+    <span><span class="badge">Recommended</span> = what I would pick</span>
+    <span>The dashed box inside an option = what you would see</span>
+  </div>
+
+  <!-- DECISION 1 -->
+  <section class="decision">
+    <span class="dtag">Decision 1 of 3</span>
+    <h2>When is the lecture's task created?</h2>
+    <p class="lead">Every training note needs a task for its hours: a subtask ("Session 3: Plotly") inside the series task ("Intro to Python"). Do you click to make it, or does the app make it for you?</p>
+    <div class="options">
+      <div class="option rec">
+        <div class="ohead"><span class="letter">A</span><span class="oname">You click once</span><span class="badge">Recommended</span></div>
+        <div class="what">The note's Task field shows a proposal. Nothing exists until you click it.</div>
+        <div class="scene">
+          <div class="cap">What you see on the note</div>
+          <div class="step"><span class="num">1</span><span>You create the note, set series and title. Task field:</span></div>
+          <div class="row"><span class="k">Task</span><span class="propose">＋ <b>Session 3: Plotly</b> <span class="muted">in Intro to Python</span></span><span class="link">Other</span></div>
+          <div class="step"><span class="num">2</span><span>You click it. The app creates the subtask (and "Intro to Python" if it is missing):</span></div>
+          <div class="row"><span class="k">Task</span><span><b>Session 3: Plotly</b> <span class="muted">Intro to Python · Training</span></span><span class="link">Change</span></div>
+        </div>
+        <div class="pro">Your existing entries and tasks stay untouched until you click.</div>
+        <div class="pro">Same behaviour as the Task field on meetings.</div>
+        <div class="pro">Title and series are already typed when the task gets its name.</div>
+        <div class="con">One extra click per lecture.</div>
+      </div>
+      <div class="option">
+        <div class="ohead"><span class="letter">B</span><span class="oname">Automatic with the note</span></div>
+        <div class="what">The task is created the moment a new training note exists, with no click.</div>
+        <div class="scene">
+          <div class="cap">What happens</div>
+          <div class="step"><span class="num">1</span><span>You create a new note. The app instantly creates the task:</span></div>
+          <div class="row"><span class="k">Task</span><span><b>Untitled</b> <span class="muted">Training</span></span></div>
+          <div class="step"><span class="num">2</span><span>You type the series and title. The task is renamed and moved to follow:</span></div>
+          <div class="row"><span class="k">Task</span><span><b>Session 3: Plotly</b> <span class="muted">Intro to Python · Training</span></span></div>
+        </div>
+        <div class="pro">No click needed.</div>
+        <div class="con">A new note is "Untitled" with no series, so the task starts wrong and is renamed as you type.</div>
+        <div class="con">Makes tasks for notes you may delete or never use.</div>
+        <div class="con">Changes your task list every time you create a note.</div>
+      </div>
+    </div>
+    <div class="info"><b>Same either way (nothing to choose):</b> the series task is named after the series, in a Research list called "Training". A note with no series gets one plain task named after the note, with no subtask. Renaming the note later does not rename the task.</div>
+  </section>
+
+  <!-- DECISION 2 -->
+  <section class="decision">
+    <span class="dtag">Decision 2 of 3</span>
+    <h2>Where do you add time by hand to a lecture?</h2>
+    <p class="lead">For self-study you did not time with Start. A lecture's subtask has no page of its own, so the app needs a place to type minutes.</p>
+    <div class="options">
+      <div class="option rec">
+        <div class="ohead"><span class="letter">A</span><span class="oname">On the training page and in the Hours pickers</span><span class="badge">Recommended</span></div>
+        <div class="what">One button on the note, plus lectures listed wherever you already pick a task.</div>
+        <div class="scene">
+          <div class="cap">On the training note</div>
+          <div class="row"><span class="btn primary">▶ Start</span><span class="btn">Add time</span><span class="muted">self-study on this lecture</span></div>
+          <div class="cap" style="margin-top:12px">In the Hours page's Start and Add time picker</div>
+          <div class="picker">
+            <div class="in">Plotly</div>
+            <div class="opt on"><span>Session 3: Plotly</span><span class="muted">Intro to Python</span></div>
+            <div class="opt"><span>Intro to Python</span><span class="muted">Training</span></div>
+          </div>
+        </div>
+        <div class="pro">Where you already are when you study: the lecture's own page.</div>
+        <div class="pro">No change to the series task's page.</div>
+        <div class="con">To add time to a lecture from the series task, open the note instead.</div>
+      </div>
+      <div class="option">
+        <div class="ohead"><span class="letter">B</span><span class="oname">A and also on the series task's Time card</span></div>
+        <div class="what">Everything in A, plus a lecture chooser on the "Intro to Python" task page.</div>
+        <div class="scene">
+          <div class="cap">On the series task page, Time card</div>
+          <div class="row"><span class="btn">Add time</span><span class="muted">for</span><span class="btn">Session 3: Plotly ▾</span><span class="btn">0:45</span></div>
+          <div class="cap" style="margin-top:12px">Plus everything in A</div>
+          <div class="row"><span class="muted">Start and Add time on the note, lectures in the pickers</span></div>
+        </div>
+        <div class="pro">Add time to any lecture without leaving the series.</div>
+        <div class="con">A third place for the same thing, more UI to maintain.</div>
+        <div class="con">The task page then has two kinds of Add time (the series' own and a lecture's).</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DECISION 3 -->
+  <section class="decision">
+    <span class="dtag">Decision 3 of 3</span>
+    <h2>Does the task page's Time card count meetings and lectures?</h2>
+    <p class="lead">Today the Time card adds up timers and typed time only. Meeting and lecture hours come from the notes, so they are missing there even though the Hours page counts them.</p>
+    <div class="options">
+      <div class="option rec">
+        <div class="ohead"><span class="letter">A</span><span class="oname">Yes, include them</span><span class="badge">Recommended</span></div>
+        <div class="what">The Time card uses the same minutes as the Hours page. Display only, nothing is written.</div>
+        <div class="scene">
+          <div class="cap">Time card of "Intro to Python"</div>
+          <div class="big">6:45</div>
+          <div class="bar"><i style="width:100%"></i></div>
+          <ul class="list">
+            <li><span class="grow">Session 3: Plotly</span><span class="time">2:15</span></li>
+            <li><span class="grow">Session 2: Pandas</span><span class="time">1:30</span></li>
+            <li><span class="grow">Session 1: Basics</span><span class="time">3:00</span></li>
+          </ul>
+        </div>
+        <div class="pro">The series total is right, and "Supervision" shows its meetings too.</div>
+        <div class="pro">The task page and the Hours page agree.</div>
+        <div class="con">Changes what the Time card and the Tasks table show for meeting tasks you already have, once they have a task.</div>
+      </div>
+      <div class="option">
+        <div class="ohead"><span class="letter">B</span><span class="oname">Not yet</span></div>
+        <div class="what">Leave the Time card as it is. Noted as an open point for later.</div>
+        <div class="scene">
+          <div class="cap">Time card of "Intro to Python"</div>
+          <div class="big">0:45</div>
+          <div class="bar"><i style="width:100%"></i></div>
+          <div class="muted" style="font-size:13px">Only the self-study timer. The lecture sessions are missing.</div>
+        </div>
+        <div class="pro">Smaller change now.</div>
+        <div class="con">The series task's total is wrong (too low) until it is done.</div>
+        <div class="con">Task page and Hours page disagree.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DECIDED -->
+  <section class="decision">
+    <span class="dtag">Already decided by you (for your information, no action)</span>
+    <h2>The Hours page</h2>
+    <div class="info done">
+      The lecture's own session is a read-only row that opens the note. Self-study timers and typed time are normal editable rows. All of it counts in every total. The note, the Training table and the counter show one combined total with no split.
+      <ul class="list" style="margin-top:8px">
+        <li><span class="muted">Note</span><span class="grow"><b style="font-weight:500">Session 3: Plotly</b> <span class="muted">10:00–11:30</span></span><span class="time">1:30</span></li>
+        <li><span class="muted">Timer</span><span class="grow"><b style="font-weight:500">Session 3: Plotly</b> <span class="muted">19:10–19:55</span></span><span class="time">0:45</span></li>
+        <li><span class="muted">On the note</span><span class="grow"><b style="font-weight:500">2:15</b> in total</span></li>
+      </ul>
+      <p class="note" style="margin:8px 0 0">A self-study timer that overlaps the lecture's own time shows a warning and changes nothing.</p>
+    </div>
+  </section>
+</main>
+</body>
+</html>

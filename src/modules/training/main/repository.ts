@@ -15,6 +15,7 @@ interface Row {
   leads: string
   institution: string | null
   folder: string | null
+  task: string
   summary: string
   excerpt: string
   has_notes: number
@@ -37,6 +38,7 @@ function toIndexRow(row: Row): TrainingIndexRow {
     leads: JSON.parse(row.leads) as string[],
     institution: row.institution,
     folder: row.folder,
+    task: row.task,
     summary: row.summary,
     excerpt: row.excerpt,
     hasNotes: row.has_notes === 1,
@@ -49,16 +51,16 @@ function toIndexRow(row: Row): TrainingIndexRow {
 export function upsertTraining(db: Database, row: TrainingIndexRow): void {
   db.prepare(
     `INSERT INTO training (workspace, entry_id, date, start_time, end_time, title, series, type, mode,
-                           skills, leads, institution, folder, summary, excerpt, has_notes, problems,
+                           skills, leads, institution, folder, task, summary, excerpt, has_notes, problems,
                            content_hash)
      VALUES (@workspace, @id, @date, @start, @end, @title, @series, @type, @mode,
-             @skills, @leads, @institution, @folder, @summary, @excerpt, @hasNotes, @problems,
+             @skills, @leads, @institution, @folder, @task, @summary, @excerpt, @hasNotes, @problems,
              @contentHash)
      ON CONFLICT (workspace, entry_id) DO UPDATE SET
        date = excluded.date, start_time = excluded.start_time, end_time = excluded.end_time,
        title = excluded.title, series = excluded.series, type = excluded.type, mode = excluded.mode,
        skills = excluded.skills, leads = excluded.leads, institution = excluded.institution,
-       folder = excluded.folder, summary = excluded.summary, excerpt = excluded.excerpt,
+       folder = excluded.folder, task = excluded.task, summary = excluded.summary, excerpt = excluded.excerpt,
        has_notes = excluded.has_notes, problems = excluded.problems,
        content_hash = excluded.content_hash`
   ).run({

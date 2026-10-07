@@ -41,7 +41,8 @@ describe('parseTrainingMeta', () => {
       institution: 'Royal Holloway',
       folder: '2025-26/SEDarc/2025 12 10 Data Management',
       organisation: 'SEDarc DTP',
-      points: '1'
+      points: '1',
+      task: ''
     })
   })
 
@@ -84,5 +85,21 @@ describe('updateTrainingHead', () => {
     const text = HEAD + '## Summary\n\n  odd\t\n'
     const out = applyTrainingChanges(text, { meta: { series: 'DataCamp' } })
     expect(splitNote(out).body).toBe('## Summary\n\n  odd\t\n')
+  })
+})
+
+describe('the task of a note', () => {
+  it('reads a task uid and the auto marker, and an older note has none', () => {
+    expect(parseTrainingMeta('---\ntitle: A\ntask: k3f9a2x1\n---\n').meta.task).toBe('k3f9a2x1')
+    expect(parseTrainingMeta('---\ntitle: A\ntask: auto\n---\n').meta.task).toBe('auto')
+    expect(parseTrainingMeta(HEAD).meta.task).toBe('')
+  })
+
+  it('is written only when set; an empty one removes the line; nothing else moves', () => {
+    const set = updateTrainingHead(HEAD, { task: 'k3f9a2x1' })
+    expect(set).toContain('\ntask: k3f9a2x1\n')
+    expect(set.replace('task: k3f9a2x1\n', '')).toBe(HEAD)
+    expect(updateTrainingHead(set, { task: '' })).toBe(HEAD)
+    expect(updateTrainingHead(HEAD, { title: 'B' })).not.toContain('task:')
   })
 })

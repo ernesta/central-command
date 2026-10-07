@@ -21,7 +21,8 @@ export function NewTrainingButton(): React.JSX.Element {
       const file = await window.api.training.create({
         workspace: 'research',
         title: 'Untitled',
-        date: todayIso()
+        date: todayIso(),
+        task: 'auto'
       })
       void navigate(entryRoute(file.ref.id), { state: { isNew: true } })
     } catch (e) {

@@ -87,7 +87,8 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
       const file = await window.api.training.create({
         workspace: 'research',
         title: 'Untitled',
-        date: todayIso()
+        date: todayIso(),
+        task: 'auto'
       })
       navigate(entryRoute(file.ref.id), { state: { isNew: true } })
     }

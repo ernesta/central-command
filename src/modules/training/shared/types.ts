@@ -145,6 +145,11 @@ export interface TrainingMeta {
   /** Kept from the Inkpath log; not shown yet. */
   organisation: string | null
   points: string | null
+  /**
+   * The lecture's task: a task uid (the subtask its hours belong to), `auto` for a note made after lectures got tasks that has none
+   * yet (it gets its subtask when a series is chosen), '' for a note with none: every older note, which is left alone.
+   */
+  task: string
 }
 
 /** Which entry: the folder (workspace) and the file's base name, e.g. "2025-12-10 Data Management and Security". */
@@ -168,6 +173,8 @@ export interface TrainingIndexRow {
   leads: string[]
   institution: string | null
   folder: string | null
+  /** The note's `task:` value: a task uid, `auto` or ''. */
+  task: string
   /** Plain text of the Summary section; '' when empty. */
   summary: string
   /** Plain text of the whole note, for search. */
