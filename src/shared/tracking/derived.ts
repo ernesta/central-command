@@ -23,14 +23,20 @@ export interface DerivedEntry {
 /**
  * The year as it is shown: the same year with the derived entries added as ended sessions marked `derived`. A copy, in memory: nothing
  * is written, so deleting the note takes its hours with it. An entry lands in the year that holds its date (and, in Work, whose
- * plan has its client; one with no client cannot be placed in Work). A derived block carries no reported minutes of its own, so it
+ * plan has its client; one with no client cannot be placed in Work). An entry whose task already has history on that day that was
+ * linked afterwards (`earlier`) is left out: those hours are already in the year. A derived block carries no reported minutes of its own, so it
  * is rounded to the quarter on its own and never touches the rounding carry of the real sessions.
  */
 export function withDerived(year: TrackingYear, entries: readonly DerivedEntry[]): TrackingYear {
   const clients = year.plan.clients ?? []
   const added: Session[] = []
+  // Imported history linked to a task already holds that day's hours (`earlier`): the note's times must not add them again.
+  const counted = new Set<string>()
+  for (const s of year.sessions) if (s.earlier && s.task) counted.add(`${s.date} ${s.task}`)
+  for (const a of year.adjusts) if (a.earlier && a.task) counted.add(`${a.date} ${a.task}`)
   for (const e of entries) {
     if (!inYear(e.date, year.start, year.weeks)) continue
+    if (counted.has(`${e.date} ${e.task}`)) continue
     let client: string | undefined
     if (clients.length > 0) {
       client = clients.find((c) => fold(c) === fold(e.client ?? ''))

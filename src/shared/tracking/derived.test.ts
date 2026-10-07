@@ -41,6 +41,66 @@ describe('withDerived', () => {
     ])
   })
 
+  it('adds nothing when imported history linked to the task already holds that day', () => {
+    const task = 'cc://task/abc12345'
+    const adjust = {
+      id: 'a1',
+      date: '2026-09-24',
+      label: 'Supervision',
+      minutes: 60,
+      task,
+      earlier: true as const
+    }
+    const base = { ...year(), adjusts: [adjust] }
+    expect(dayMinutes(withDerived(base, [entry()]), '2026-09-24')).toBe(60)
+    const session = {
+      id: 's1',
+      date: '2026-09-24',
+      start: '14:00:00',
+      end: '15:00:00',
+      label: 'x',
+      task,
+      earlier: true as const
+    }
+    expect(
+      dayMinutes(withDerived({ ...year(), sessions: [session] }, [entry()]), '2026-09-24')
+    ).toBe(dayMinutes({ ...year(), sessions: [session] }, '2026-09-24'))
+  })
+
+  it('still adds the meeting when the history is another day, another task or not marked earlier', () => {
+    const task = 'cc://task/abc12345'
+    const adj = (over: object) => ({
+      id: 'a1',
+      date: '2026-09-24',
+      label: 'S',
+      minutes: 15,
+      task,
+      earlier: true as const,
+      ...over
+    })
+    for (const over of [
+      { date: '2026-09-23' },
+      { task: 'cc://task/zzz99999' },
+      { earlier: undefined }
+    ]) {
+      const shown = withDerived({ ...year(), adjusts: [adj(over)] }, [entry()])
+      expect(shown.sessions).toHaveLength(1)
+    }
+  })
+
+  it('still adds the meeting when the same-day session on the task is not marked earlier', () => {
+    const session = {
+      id: 's1',
+      date: '2026-09-24',
+      start: '09:00:00',
+      end: '09:30:00',
+      label: 'x',
+      task: 'cc://task/abc12345'
+    }
+    const shown = withDerived({ ...year(), sessions: [session] }, [entry()])
+    expect(shown.sessions).toHaveLength(2)
+  })
+
   it('does not mix with the user own time on the same task', () => {
     const base = ok(addTime(year(), '2026-09-24', 'Supervision', 30, nextId()))
     const shown = withDerived(base, [entry()])
