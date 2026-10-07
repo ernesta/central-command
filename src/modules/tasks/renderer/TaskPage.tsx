@@ -436,7 +436,7 @@ function Subtasks({
   )
 }
 
-/** One subtask, all of it editable in place: status, title, due date, tags and notes. */
+/** One subtask, all of it editable in place: status, title, due date and tags. */
 function SubtaskRow({
   kid,
   today,
@@ -450,7 +450,6 @@ function SubtaskRow({
 }): React.JSX.Element {
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState(kid.title)
-  const [notes, setNotes] = useState(kid.description)
 
   const update = (changes: TaskChanges): void => {
     onError(null)
@@ -540,17 +539,6 @@ function SubtaskRow({
       {open && (
         <div className={styles.subDetails}>
           <TagsField tags={kid.tags} onChange={(tags) => update({ tags })} />
-          <textarea
-            className={styles.subNotes}
-            aria-label="Subtask notes"
-            placeholder="Add notes…"
-            rows={3}
-            value={notes}
-            onChange={(event) => setNotes(event.target.value)}
-            onBlur={() => {
-              if (notes !== kid.description) update({ description: notes })
-            }}
-          />
         </div>
       )}
     </div>
