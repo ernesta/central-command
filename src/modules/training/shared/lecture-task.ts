@@ -65,3 +65,17 @@ export function planLectureTask(note: LectureNote, tasks: readonly Task[]): Lect
   }
   return plan.title === undefined && plan.parent === undefined ? { kind: 'none' } : plan
 }
+
+/**
+ * A series task this note's page made a moment ago (while the series was still being typed) that the lecture has now left, with
+ * nothing else in it: the one to put in the trash. Only a task in `made` is ever named, so a task the user made is never touched,
+ * and the trash is restorable. `tasks` is every live task of the workspace.
+ */
+export function strandedParent(
+  made: ReadonlySet<string>,
+  left: string | null,
+  tasks: readonly Task[]
+): string | null {
+  if (!left || !made.has(left)) return null
+  return tasks.some((t) => t.parentUid === left) ? null : left
+}

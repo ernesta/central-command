@@ -1,20 +1,21 @@
 import { useEffect, useRef } from 'react'
 import { useTasksList } from '../../tasks/renderer/useTasksList'
 import type { Task } from '../../tasks/shared/types'
-import { planLectureTask, type ParentTarget } from '../shared/lecture-task'
+import { planLectureTask, strandedParent, type ParentTarget } from '../shared/lecture-task'
 import type { TrainingMeta } from '../shared/types'
 
 /** How long a title or series stays still before the subtask follows it. */
-const SETTLE_MS = 500
+const SETTLE_MS = 800
 
-async function parentUid(target: ParentTarget): Promise<string> {
+async function parentUid(target: ParentTarget, made: Set<string>): Promise<string> {
   if ('uid' in target) return target.uid
-  const made = await window.api.tasks.create({
+  const task = await window.api.tasks.create({
     workspace: 'research',
     title: target.title,
     list: target.list
   })
-  return made.uid
+  made.add(task.uid)
+  return task.uid
 }
 
 /**
@@ -30,6 +31,8 @@ export function useLectureTask(
 ): { tasks: Task[] | null } {
   const { tasks } = useTasksList('research')
   const busy = useRef(false)
+  // Series tasks this page made: the series is typed letter by letter, so one may be left behind and is put in the trash.
+  const made = useRef(new Set<string>())
   const { task, series, title } = meta
 
   useEffect(() => {
@@ -43,14 +46,23 @@ export function useLectureTask(
           const sub = await window.api.tasks.create({
             workspace: 'research',
             title: plan.title,
-            parentUid: await parentUid(plan.parent)
+            parentUid: await parentUid(plan.parent, made.current)
           })
           setTask(sub.uid)
         } else {
+          const left = tasks.find((t) => t.uid === plan.uid)?.parentUid ?? null
           await window.api.tasks.update(plan.uid, {
             ...(plan.title !== undefined ? { title: plan.title } : {}),
-            ...(plan.parent ? { parentUid: await parentUid(plan.parent) } : {})
+            ...(plan.parent ? { parentUid: await parentUid(plan.parent, made.current) } : {})
           })
+          if (plan.parent) {
+            const stranded = strandedParent(
+              made.current,
+              left,
+              await window.api.tasks.list('research')
+            )
+            if (stranded) await window.api.tasks.delete(stranded)
+          }
         }
       } catch (error) {
         console.error('Could not keep the lecture task in step:', error)
@@ -58,11 +70,7 @@ export function useLectureTask(
         busy.current = false
       }
     }
-    // Making the subtask is not worth waiting for; following a title being typed waits until it settles.
-    if (plan.kind === 'create') {
-      void run()
-      return
-    }
+    // The series and the title are typed letter by letter: nothing is made or moved until they settle.
     const timer = setTimeout(() => void run(), SETTLE_MS)
     return () => clearTimeout(timer)
   }, [ready, tasks, task, series, title, setTask])

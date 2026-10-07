@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Task } from '../../tasks/shared/types'
-import { parentFor, planLectureTask } from './lecture-task'
+import { parentFor, planLectureTask, strandedParent } from './lecture-task'
 
 const task = (uid: string, title: string, over: Partial<Task> = {}): Task => ({
   uid,
@@ -120,5 +120,17 @@ describe('planLectureTask', () => {
     ).toEqual({
       kind: 'none'
     })
+  })
+})
+
+describe('strandedParent', () => {
+  const kid = task('s2', 'Other lecture', { list: '', parentUid: 'p1' })
+  it('names a series task this page made once the lecture has left it empty', () => {
+    expect(strandedParent(new Set(['p1']), 'p1', [parent])).toBe('p1')
+  })
+  it('never names one that still has a lecture in it, or that the user made', () => {
+    expect(strandedParent(new Set(['p1']), 'p1', [parent, kid])).toBeNull()
+    expect(strandedParent(new Set(), 'p1', [parent])).toBeNull()
+    expect(strandedParent(new Set(['p1']), null, [parent])).toBeNull()
   })
 })
