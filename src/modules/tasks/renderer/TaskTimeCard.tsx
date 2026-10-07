@@ -1,10 +1,12 @@
 import { Play, Plus, Square } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
+import { useOpenContracts } from '@renderer/state/use-open-contracts'
 import { QUARTER } from '@shared/tracking/rounding'
 import { stopTimer } from '../../hours/renderer/start-request'
 import { DurationField } from '../../hours/renderer/DurationField'
+import { clientForTask } from '../../hours/shared/start-picker'
 import { formatTaskTime } from '../shared/query'
 import { taskKey } from '../shared/tracked'
 import type { Task, TaskWorkspace } from '../shared/types'
@@ -50,16 +52,21 @@ export function TaskTimeCard({
   const [date, setDate] = useState(today)
   const [minutes, setMinutes] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  // The clients to choose from when the task's list names none (nothing is guessed from the client used last).
+  const [asking, setAsking] = useState<string[] | null>(null)
+  const startRef = useRef<HTMLButtonElement>(null)
+  const { contracts } = useOpenContracts(workspace)
 
-  const start = async (): Promise<void> => {
+  const begin = async (client: string | undefined): Promise<void> => {
     setError(null)
-    const result = await window.api.tracking.start(
-      workspace,
-      task.title,
-      taskKey(task.uid),
-      clientFor(task.list, today)
-    )
+    setAsking(null)
+    const result = await window.api.tracking.start(workspace, task.title, taskKey(task.uid), client)
     if (!result.ok) setError(`Couldn’t start the timer (${result.reason}).`)
+  }
+  const start = (): void => {
+    const found = clientForTask(contracts, task.list)
+    if (found.ask) setAsking(found.ask)
+    else void begin(found.client)
   }
   const stop = async (): Promise<void> => {
     await stopTimer()
@@ -130,10 +137,11 @@ export function TaskTimeCard({
           </Button>
         ) : (
           <Button
+            ref={startRef}
             size="small"
             variant="primary"
             icon={<Play size={14} strokeWidth={1.75} aria-hidden />}
-            onClick={() => void start()}
+            onClick={start}
           >
             Start
           </Button>
@@ -146,6 +154,32 @@ export function TaskTimeCard({
           Add time
         </Button>
       </div>
+      {asking && !isRunning && (
+        <div
+          className={styles.addTime}
+          role="group"
+          aria-label="Client"
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              event.stopPropagation()
+              setAsking(null)
+              startRef.current?.focus()
+            }
+          }}
+        >
+          <span className={styles.label}>Which client?</span>
+          {asking.map((client, index) => (
+            <Button
+              key={client}
+              size="small"
+              autoFocus={index === 0}
+              onClick={() => void begin(client)}
+            >
+              {client}
+            </Button>
+          ))}
+        </div>
+      )}
       {adding && (
         <div
           className={styles.addTime}
