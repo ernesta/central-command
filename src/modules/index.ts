@@ -19,6 +19,7 @@ export const modules: ModuleManifest[] = [
   readingsModule,
   createMeetingsModule('research'),
   trainingModule,
+  createNotesModule('life'),
   createNotesModule('research'),
   readingListsModule,
   createHoursModule('research'),

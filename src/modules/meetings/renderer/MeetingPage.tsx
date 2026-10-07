@@ -9,7 +9,7 @@ import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
-import { WorkspaceSelect, type MovableWorkspace } from '@renderer/components/WorkspaceSelect'
+import { WorkspaceSelect } from '@renderer/components/WorkspaceSelect'
 import { liveViewIn, placeCursorOnLine } from '@renderer/editor/live-outline'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { LiveEditor } from '@renderer/editor/LiveEditor'
@@ -145,7 +145,7 @@ function MeetingView({
 
   const [moving, setMoving] = useState(false)
   const [moveError, setMoveError] = useState<string | null>(null)
-  const moveTo = async (target: MovableWorkspace): Promise<void> => {
+  const moveTo = async (target: 'research' | 'work'): Promise<void> => {
     setMoving(true)
     setMoveError(null)
     try {

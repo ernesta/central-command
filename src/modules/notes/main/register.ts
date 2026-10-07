@@ -13,7 +13,7 @@ import { NotesStore } from './notes-store'
 import { listNoteRows } from './repository'
 
 /** Workspaces whose notes folder is created and watched. */
-const ACTIVE_WORKSPACES: readonly NoteWorkspace[] = ['research', 'work']
+const ACTIVE_WORKSPACES: readonly NoteWorkspace[] = ['life', 'research', 'work']
 
 function asObject(value: unknown, what: string): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value))

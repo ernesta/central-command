@@ -19,7 +19,11 @@ import type { NoteRef, NoteWorkspace } from '../shared/types'
 import { GroupField } from './GroupField'
 import { MentionedIn } from '@renderer/entities/MentionedIn'
 import { NoteOutline } from './NoteOutline'
-import { WorkspaceSelect, type MovableWorkspace } from '@renderer/components/WorkspaceSelect'
+import {
+  NOTE_WORKSPACE_CHOICES,
+  WorkspaceSelect,
+  type MovableWorkspace
+} from '@renderer/components/WorkspaceSelect'
 import { noteRoute, notesBase, useNotesWorkspace } from './notes-paths'
 import { useNoteSession } from './useNoteSession'
 import { useNotesList } from './useNotesList'
@@ -170,6 +174,7 @@ function NoteView({
         <div className={styles.actions}>
           <WorkspaceSelect
             compact
+            workspaces={NOTE_WORKSPACE_CHOICES}
             value={noteRef.workspace}
             disabled={moving}
             onChange={(target) => void moveTo(target)}

@@ -10,6 +10,7 @@ import type { AppPaths } from '../paths'
 /** Every folder of notes a mention can be written in. */
 export function backlinkFolders(paths: AppPaths): BacklinkFolder[] {
   return [
+    { kind: 'note', workspace: 'life', dir: join(paths.noteFiles, 'life') },
     ...(['research', 'work'] as const).flatMap((workspace): BacklinkFolder[] => [
       { kind: 'note', workspace, dir: join(paths.noteFiles, workspace) },
       { kind: 'meeting', workspace, dir: join(paths.meetingsNotes, workspace) }

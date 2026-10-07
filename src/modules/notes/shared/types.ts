@@ -1,5 +1,5 @@
-/** Workspaces that can hold notes. Research now; Work later, from the same module code. */
-export const NOTE_WORKSPACES = ['research', 'work'] as const
+/** Workspaces that can hold notes, all from the same module code. */
+export const NOTE_WORKSPACES = ['life', 'research', 'work'] as const
 export type NoteWorkspace = (typeof NOTE_WORKSPACES)[number]
 
 /**

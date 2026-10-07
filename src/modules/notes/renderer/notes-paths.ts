@@ -27,7 +27,7 @@ export function noteRoute(workspace: NoteWorkspace, id: string): string {
   return `${notesBase(workspace)}/n/${encodeURIComponent(id)}`
 }
 
-/** Which workspace's notes the current page belongs to, read from the URL (`/research/…` or `/work/…`). */
+/** Which workspace's notes the current page belongs to, read from the URL (`/life/…`, `/research/…` or `/work/…`). */
 export function useNotesWorkspace(): NoteWorkspace {
   const { pathname } = useLocation()
   const segment = pathname.split('/')[1]
