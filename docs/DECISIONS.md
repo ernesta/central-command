@@ -2158,3 +2158,13 @@ The rules are pure, in `src/shared/tracking/timer.ts`: `setStartAt` and `overlap
 - A start that would swallow an earlier entry whole is refused ("That would cover an earlier entry"); nothing is ever deleted.
 - **The Today form's Add time is not changed**: it takes a duration only, so there is nothing to back-date.
 - Mutation-checked (trim skipped, swallow allowed, touching counted as overlap each fail a test) and driven in the built app on a scratch library, including leaving by clicking outside.
+
+## Tasks: subtasks have no page, and the due date is a calendar (7 Oct 2026)
+
+User feedback after the Tasks review. Design rule they gave: as few clicks as possible, clear and intuitive.
+
+- **A subtask has no page of its own.** `TaskPage` redirects a subtask's route to its parent's page (`<Navigate replace>`), so the table, search, mentions and "Mentioned in" all land on the parent. The parent's Subtasks card edits each row in place (`SubtaskRow`): status, title (saved on Enter or blur; an empty title is put back), due date, delete with Undo, and a chevron that opens tags and notes. A subtask's time is shown but not editable there (time is added on the parent's Time card); that is open if the user wants per-subtask time.
+- **Due date is a calendar, not a dropdown.** `DatePicker` (`src/renderer/src/components/`) is a button ("Today", "Oct 9", "No date") opening a Monday-first month calendar; one click on a day sets it and closes; **Today** and **No date** are in the calendar's footer. `DueField` is now a thin wrapper used by the task page, the Add bar, the New task dialog and subtask rows. The Today/Tomorrow/Next week presets (`presetDate`, `presetOf`) are gone.
+- **The calendar that "randomly disappeared"**: the old field showed the native date input only while the date was not one of the presets, so picking today, tomorrow or +7 days switched back to the dropdown and removed the input mid-pick. The new picker has no such mode.
+- **Not driven in the app yet**: checked by typecheck, lint and unit tests (`calendar.test.ts`) only. Still to look at: the popover is not clipped inside the task page boxes, the Add bar or the New task dialog; dark mode; Escape closes the popover without closing a dialog around it; keyboard use.
+- **Open: subtask notes.** 20 of the 548 subtasks (all live) hold a description, under 11 parents. Proposed, awaiting the user's go-ahead: move each into its parent's description as a `### <subtask title>` section after what is there, clear the subtask's own, then drop the notes field from `SubtaskRow`. A dry-run-by-default script (backs the database up first, prints every change, `--apply` only when the user says so and the app is closed, never overwrites; a second run finds nothing).

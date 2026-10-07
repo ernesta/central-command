@@ -249,6 +249,8 @@ Choices the plan left open, made conservatively; change any of them by telling C
 
 ### For the user (review and decisions)
 
+- **Tasks, 7 Oct 2026 feedback**: subtasks have no page (edited on the parent's) and Due is a calendar popover. Waiting on: your go-ahead to move the 20 subtask notes into their parents (`docs/DECISIONS.md`, "Tasks: subtasks have no page…"), and a look at the popover in the real app.
+
 - [x] **Fill in the task descriptions the ClickUp export dropped: applied 6 Oct 2026.** The CSV exports only ClickUp's plain-text rendering, so a description that is nothing but a link embed (the Kathy reading list link) came through empty. 32 descriptions written (25 a bare link, 7 with text too), 89 -> 121 tasks with a description; backup `backups/clickup-links-2026-10-06T14-00-12-630Z`. `docs/DECISIONS.md`, "The real dry run", lists the four faults reading the dry run caught. Two things left for you: **rotate the ClickUp token**, which was pasted into a chat (it is in no file or commit), and say whether you want `Checklists` and `Comments` too — they are empty for every row of the export, so they are likely lossy the same way.
 
 - [x] **Name the two Luminos contracts: applied 6 Oct 2026** (both existing contracts; backup `backups/name-contracts-2026-10-06T13-02-18-101Z`).
