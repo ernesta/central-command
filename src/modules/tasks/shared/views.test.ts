@@ -131,6 +131,17 @@ describe('listSummaries', () => {
       { list: 'Admin', open: 1, overdue: 0, sublists: [] }
     ])
   })
+  it('in Work shows every client, one with nothing open as a card with none', () => {
+    const rows = [
+      row({ uid: 'a', list: 'Impact' }),
+      row({ uid: 'b', list: 'Teaching', status: 'done' })
+    ]
+    expect(listSummaries(rows, TODAY, ['impact', 'Teaching', 'Royal Holloway'])).toEqual([
+      { list: 'Impact', open: 1, overdue: 0, sublists: [] },
+      { list: 'Royal Holloway', open: 0, overdue: 0, sublists: [] },
+      { list: 'Teaching', open: 0, overdue: 0, sublists: [] }
+    ])
+  })
 })
 
 describe('taskTime and subtaskProgress', () => {

@@ -79,13 +79,24 @@ export interface ListChoice {
   count: number
 }
 
-export function listChoices(rows: readonly TaskRow[]): ListChoice[] {
+/**
+ * The lists the tasks are in, each followed by its sublists. In Work, `clients` adds every client's list even when it holds
+ * no task (`docs/CLIENT_LISTS_PLAN.md`); a list that is no client but holds tasks stays, so those tasks can still be found.
+ */
+export function listChoices(
+  rows: readonly TaskRow[],
+  clients: readonly string[] | null = null
+): ListChoice[] {
   const lists = new Map<string, { count: number; subs: Map<string, number> }>()
   for (const { task } of rows) {
     const entry = lists.get(task.list) ?? { count: 0, subs: new Map() }
     entry.count++
     if (task.sublist) entry.subs.set(task.sublist, (entry.subs.get(task.sublist) ?? 0) + 1)
     lists.set(task.list, entry)
+  }
+  for (const client of clients ?? []) {
+    const held = [...lists.keys()].some((l) => l.toLowerCase() === client.toLowerCase())
+    if (!held) lists.set(client, { count: 0, subs: new Map() })
   }
   return [...lists.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
@@ -106,9 +117,13 @@ export function tagsIn(rows: readonly TaskRow[]): string[] {
 }
 
 /** A query whose list or tag no longer exists must not hide everything: those parts go back to "all". */
-export function reconcileQuery(query: TasksQuery, rows: readonly TaskRow[]): TasksQuery {
+export function reconcileQuery(
+  query: TasksQuery,
+  rows: readonly TaskRow[],
+  clients: readonly string[] | null = null
+): TasksQuery {
   const { list, sublist } = parseListValue(query.list)
-  const lists = listChoices(rows)
+  const lists = listChoices(rows, clients)
   const known =
     query.list === '' ||
     lists.some((c) => c.list === list && (sublist === '' || c.sublist === sublist))
@@ -243,22 +258,42 @@ export function formatTaskTime(minutes: number): string {
   return `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, '0')}`
 }
 
-/** The list a new task goes in when the person has not said: the list being looked at, else the last one used, else the busiest. */
+/**
+ * The list a new task goes in when the person has not said: the list being looked at, else the last one used, else the
+ * busiest. In Work (`clients` given) only a client's list counts, and with no task the first client's; with no client at all
+ * the list is empty, which the store refuses.
+ */
 export function defaultList(
   rows: readonly TaskRow[],
-  options: { filter?: string; last?: { list: string; sublist: string } }
+  options: {
+    filter?: string
+    last?: { list: string; sublist: string }
+    clients?: readonly string[] | null
+  }
 ): { list: string; sublist: string } {
+  const clients = options.clients ?? null
+  const allowed = (list: string): boolean =>
+    clients === null || clients.some((c) => c.toLowerCase() === list.toLowerCase())
   const exists = (list: string, sublist: string): boolean =>
-    listChoices(rows).some((c) => c.list === list && (sublist === '' || c.sublist === sublist))
+    allowed(list) &&
+    listChoices(rows, clients).some(
+      (c) =>
+        c.list.toLowerCase() === list.toLowerCase() && (sublist === '' || c.sublist === sublist)
+    )
+  const canonical = (list: string): string =>
+    clients?.find((c) => c.toLowerCase() === list.toLowerCase()) ?? list
   if (options.filter) {
     const { list, sublist } = parseListValue(options.filter)
-    if (exists(list, sublist)) return { list, sublist }
+    if (exists(list, sublist)) return { list: canonical(list), sublist }
   }
   const last = options.last
-  if (last && last.list && exists(last.list, last.sublist)) return last
+  if (last && last.list && exists(last.list, last.sublist)) {
+    return { list: canonical(last.list), sublist: last.sublist }
+  }
   const busiest = [...rows]
-    .filter((r) => r.task.status !== 'done')
+    .filter((r) => r.task.status !== 'done' && allowed(r.task.list))
     .reduce((m, r) => m.set(r.task.list, (m.get(r.task.list) ?? 0) + 1), new Map<string, number>())
   const top = [...busiest.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]
-  return { list: top ? top[0] : 'General', sublist: '' }
+  if (top) return { list: canonical(top[0]), sublist: '' }
+  return { list: clients ? (clients[0] ?? '') : 'General', sublist: '' }
 }

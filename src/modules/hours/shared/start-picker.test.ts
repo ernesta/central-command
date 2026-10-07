@@ -125,9 +125,10 @@ describe('lists', () => {
     expect(listOfTask(parent, [parent, sub])).toBe('Impact')
   })
 
-  it("a new task goes to the client's list, else the last, else the first, else Inbox", () => {
-    expect(listForNew(tasks, 'impact', 'Inbox')).toBe('Impact')
-    expect(listForNew(tasks, 'Other', 'Marking list')).toBe('Marking list')
+  it("a new task in Work goes to the client's own list, even an empty one; elsewhere the last, else the first, else Inbox", () => {
+    expect(listForNew(tasks, 'Royal Holloway', 'Inbox')).toBe('Royal Holloway')
+    expect(listForNew(tasks, 'Impact', 'Marking list')).toBe('Impact')
+    expect(listForNew(tasks, undefined, 'Marking list')).toBe('Marking list')
     expect(listForNew(tasks, undefined, '')).toBe('Inbox')
     expect(listForNew([], undefined, '')).toBe('Inbox')
   })

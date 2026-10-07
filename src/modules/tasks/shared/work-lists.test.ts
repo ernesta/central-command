@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { canUseList, listFor, outsideRule, workClients } from './work-lists'
+import { canUseList, listFor, offeredLists, outsideRule, workClients } from './work-lists'
 
 describe('workClients', () => {
   it('gathers every contract’s clients once, a shared name having one list', () => {
@@ -31,5 +31,27 @@ describe('outsideRule', () => {
     const tasks = [{ list: 'Impact' }, { list: 'Luminos' }, { list: 'impact' }]
     expect(outsideRule(tasks, ['Impact'])).toEqual([{ list: 'Luminos' }])
     expect(outsideRule(tasks, [])).toHaveLength(3)
+  })
+})
+
+describe('offeredLists', () => {
+  const tasks = [
+    { list: 'impact', sublist: 'Data' },
+    { list: 'Luminos', sublist: 'Old' },
+    { list: 'Impact', sublist: '' }
+  ]
+  it('in Work offers every client, empty ones too, with the sublists in use, and no list that is no client', () => {
+    expect(offeredLists(tasks, ['Impact', 'Royal Holloway'])).toEqual([
+      { list: 'Impact', sublist: '' },
+      { list: 'Royal Holloway', sublist: '' },
+      { list: 'Impact', sublist: 'Data' },
+      { list: 'Impact', sublist: '' }
+    ])
+  })
+  it('in Work with no client offers nothing', () => {
+    expect(offeredLists(tasks, [])).toEqual([])
+  })
+  it('leaves Research as it is', () => {
+    expect(offeredLists(tasks, null)).toEqual(tasks)
   })
 })

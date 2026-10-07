@@ -47,3 +47,21 @@ export function outsideRule<T extends { list: string }>(
 ): T[] {
   return tasks.filter((t) => !canUseList('work', t.list, clients))
 }
+
+/**
+ * The lists and sublists a task may be moved to, as (list, sublist) pairs for the list menu: in Work every client (even with
+ * no task) and the sublists in use under it, in the client's own spelling, and no list that is no client; in Research (`clients`
+ * null) the lists in use as they are.
+ */
+export function offeredLists(
+  tasks: readonly { list: string; sublist: string }[],
+  clients: readonly string[] | null
+): { list: string; sublist: string }[] {
+  if (clients === null) return [...tasks]
+  const own = clients.map((list) => ({ list, sublist: '' }))
+  const held = tasks.flatMap((t) => {
+    const list = listFor('work', t.list, clients)
+    return list === null ? [] : [{ list, sublist: t.sublist }]
+  })
+  return [...own, ...held]
+}

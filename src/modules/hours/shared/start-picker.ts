@@ -86,16 +86,15 @@ export function listOfTask(task: Task, all: readonly Task[]): string {
 }
 
 /**
- * The list a new task goes to: the client's own list when one holds tasks (Work's lists are named for the clients), else
- * where a task was last added, else the first list there is, else "Inbox" (a task needs a list).
+ * The list a new task goes to. In Work (a client is known) it is the client's own list, empty or not: Work's lists are its
+ * clients and nothing else. Elsewhere, where a task was last added, else the first list there is, else "Inbox" (a task needs
+ * a list).
  */
 export function listForNew(
   open: readonly Task[],
   client: string | undefined,
   last: string
 ): string {
-  const own = client
-    ? open.find((t) => t.parentUid === null && t.list.toLowerCase() === client.toLowerCase())?.list
-    : undefined
-  return own ?? (listForNewTask(open, last) || 'Inbox')
+  if (client) return client
+  return listForNewTask(open, last) || 'Inbox'
 }

@@ -127,7 +127,12 @@ export interface ListSummary {
   sublists: string[]
 }
 
-export function listSummaries(rows: readonly TaskRow[], today: string): ListSummary[] {
+/** In Work (`clients` given) every client is a list, so one with nothing open is a card with none. */
+export function listSummaries(
+  rows: readonly TaskRow[],
+  today: string,
+  clients: readonly string[] | null = null
+): ListSummary[] {
   const byList = new Map<string, ListSummary>()
   for (const row of rows) {
     if (row.task.status === 'done') continue
@@ -144,6 +149,10 @@ export function listSummaries(rows: readonly TaskRow[], today: string): ListSumm
       summary.sublists.push(row.task.sublist)
     }
     byList.set(row.task.list, summary)
+  }
+  for (const client of clients ?? []) {
+    const held = [...byList.keys()].some((l) => l.toLowerCase() === client.toLowerCase())
+    if (!held) byList.set(client, { list: client, open: 0, overdue: 0, sublists: [] })
   }
   return [...byList.values()]
     .map((s) => ({ ...s, sublists: s.sublists.sort((a, b) => a.localeCompare(b)) }))

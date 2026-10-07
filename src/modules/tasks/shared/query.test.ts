@@ -146,4 +146,49 @@ describe('defaultList', () => {
     ).toBe('Reading')
     expect(defaultList([], {})).toEqual({ list: 'General', sublist: '' })
   })
+  describe('in Work (with clients)', () => {
+    const work = [
+      row({ uid: 'a', list: 'Impact' }),
+      row({ uid: 'b', list: 'Luminos' }),
+      row({ uid: 'c', list: 'Luminos' })
+    ]
+    const clients = ['Impact', 'Royal Holloway']
+    it('never picks a list that is no client, even the busiest', () => {
+      expect(defaultList(work, { clients })).toEqual({ list: 'Impact', sublist: '' })
+      expect(defaultList(work, { clients, filter: listValue('Luminos') }).list).toBe('Impact')
+      expect(defaultList(work, { clients, last: { list: 'Luminos', sublist: '' } }).list).toBe(
+        'Impact'
+      )
+    })
+    it('takes an empty client list being looked at, in the client’s spelling', () => {
+      expect(defaultList(work, { clients, filter: listValue('royal holloway') })).toEqual({
+        list: 'Royal Holloway',
+        sublist: ''
+      })
+    })
+    it('falls back to the first client, and to nothing with no client', () => {
+      expect(defaultList([], { clients })).toEqual({ list: 'Impact', sublist: '' })
+      expect(defaultList(work, { clients: [] })).toEqual({ list: '', sublist: '' })
+    })
+  })
+})
+
+describe('listChoices with clients', () => {
+  const rows = [row({ uid: 'a', list: 'Impact', sublist: 'Data' }), row({ uid: 'b', list: 'Old' })]
+  it('adds a client that has no task, keeps a list with tasks that is no client', () => {
+    expect(listChoices(rows, ['impact', 'Royal Holloway'])).toEqual([
+      { list: 'Impact', sublist: '', count: 1 },
+      { list: 'Impact', sublist: 'Data', count: 1 },
+      { list: 'Old', sublist: '', count: 1 },
+      { list: 'Royal Holloway', sublist: '', count: 0 }
+    ])
+  })
+  it('is unchanged without clients', () => {
+    expect(listChoices(rows).map((c) => c.list)).toEqual(['Impact', 'Impact', 'Old'])
+  })
+  it('keeps a filter on an empty client list through reconcileQuery', () => {
+    const q = { ...DEFAULT_TASKS_QUERY, list: listValue('Royal Holloway') }
+    expect(reconcileQuery(q, rows, ['Royal Holloway']).list).toBe(q.list)
+    expect(reconcileQuery(q, rows).list).toBe('')
+  })
 })
