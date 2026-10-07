@@ -2146,3 +2146,13 @@ the session scratchpad and are not in the repo: these were data edits, not impor
 - **New notes start where you are.** `QuickActionWorkspace` is now `life | research | work`; the palette's and Dock's "New note" and quick capture (Mod-Shift-n, via the URL) start in Life when Life is the page or the workspace last visited. New meeting, new task and Start timer have no Life, so `researchOrWork` sends them to Work when looking at Work, else Research.
 - **Search already asked Life's notes** (the manifest offers `search`), but they came under a second "Notes" heading. `searchLabel` now heads them "Life notes", as Work's are "Work notes". `in:notes` still means all three.
 - **Not driven in the app**: checked by typecheck, lint and unit tests only (new tests for a Life note, a task from Life, and the Life path). No Life notes exist yet in the real library.
+
+## Timer and tasks, stage 1: a back-dated start on the running timer (7 Oct 2026)
+
+`docs/TIMER_TASKS_PLAN.md`, stage 1. The running timer's popover says "Started 10:30 · 0:15 so far" with a quiet **Change**; it opens one field (`StartedAt.tsx`) that takes a time (`10:15`, `1015`) or minutes ago (`-20`), plus **Since last entry ended** when an earlier entry exists today. The rules are pure, in `src/shared/tracking/timer.ts`: `resolveStart` (what was typed), `overlapsFor` (which earlier entries a start would touch), `setStartAt` (the change), `lastEndBefore`.
+
+- Today only (a timer from an earlier day still needs its end time), never before midnight (`-N` reaching back past 00:00 is refused: "add the time instead"), never after now. Moving the start later, up to now, is allowed.
+- An earlier entry of the day that overlaps is trimmed to end where the timer now starts, and its reported minutes are worked out again against the carry without it, so the carry still adds up. The field says which entry it will shorten before Enter. An entry ending exactly at the new start is not an overlap.
+- A start that would swallow an earlier entry whole is refused (`covers-entry`); nothing is ever deleted. This is the one thing the plan did not spell out; it follows "warn, never change silently".
+- **The Today form's Add time is not changed**: it takes a duration only (typed time has no start or end), so there is nothing to back-date. Left to the user: whether Add time should gain "from" and "to".
+- Checked with mutation checks (trim skipped, swallow allowed, midnight limit removed, touching counted as overlap: each fails a test) and by driving the built app and dev mode on a scratch library.

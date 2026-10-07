@@ -14,12 +14,13 @@ import { useYearFile } from '@renderer/state/use-year-file'
 import { WORKSPACES } from '@shared/settings'
 import type { RunningTimer } from '@shared/tracking/api'
 import { contractName } from '@shared/tracking/contracts'
-import { clockTime, formatDay, formatHours } from '@shared/tracking/format'
+import { formatDay, formatHours } from '@shared/tracking/format'
 import { dayRows } from '@shared/tracking/totals'
 import type { Moment } from '@shared/tracking/types'
 import { sameClient, sameLabel } from '@shared/tracking/timer'
 import { earlierLabels, recentLabels } from '../shared/tasks'
 import { elapsedMinutes } from '../shared/timer'
+import { StartedAt } from './StartedAt'
 import { StaleTimer } from './StaleTimer'
 import { TaskField } from './TaskField'
 import styles from './TimerChip.module.css'
@@ -130,9 +131,7 @@ function TimerPopover({
         <StaleTimer running={running} now={now} />
       ) : (
         <>
-          <div className={styles.muted}>
-            Started {clockTime(session.start)} · {formatHours(clock)} so far
-          </div>
+          <StartedAt running={running} data={data} now={now} clock={clock} />
           {!unnamed && others.length > 0 && (
             <div className={styles.switch}>
               <span className={styles.label}>Switch to</span>
