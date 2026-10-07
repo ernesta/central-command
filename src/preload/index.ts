@@ -136,6 +136,7 @@ const api: Api = {
   tasks: {
     list: (workspace) => ipcRenderer.invoke(TASKS_IPC.list, workspace),
     get: (uid) => ipcRenderer.invoke(TASKS_IPC.get, uid),
+    clients: (workspace) => ipcRenderer.invoke(TASKS_IPC.clients, workspace),
     create: (input) => ipcRenderer.invoke(TASKS_IPC.create, input),
     update: (uid, changes) => ipcRenderer.invoke(TASKS_IPC.update, uid, changes),
     setStatus: (uid, status) => ipcRenderer.invoke(TASKS_IPC.setStatus, uid, status),

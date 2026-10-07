@@ -78,9 +78,9 @@ function register(context: MainContext): () => void {
     starts: () => context.settings.get().yearStarts,
     now: trackingMoment
   })
-  const store = new TasksStore(context.db, undefined, () =>
+  const clients = (): string[] =>
     workClients(tracking.years('work').map((y) => tracking.get('work', y).plan))
-  )
+  const store = new TasksStore(context.db, undefined, clients)
   const broadcast = (workspace: TaskWorkspace): void => {
     const event: TasksChangedEvent = { workspace }
     for (const window of BrowserWindow.getAllWindows()) {
@@ -105,6 +105,9 @@ function register(context: MainContext): () => void {
     listTasks(context.db, asWorkspace(workspace))
   )
   ipcMain.handle(TASKS_IPC.get, (_event, uid: unknown) => store.get(asUid(uid)))
+  ipcMain.handle(TASKS_IPC.clients, (_event, workspace: unknown) =>
+    asWorkspace(workspace) === 'work' ? clients() : null
+  )
   ipcMain.handle(TASKS_IPC.create, (_event, input: unknown) => {
     const o = asObject(input, 'task')
     const priority = text(o.priority)

@@ -39,6 +39,11 @@ export interface TasksApi {
   /** Every task of a workspace that is not in the trash, subtasks included. */
   list(workspace: TaskWorkspace): Promise<Task[]>
   get(uid: string): Promise<Task | null>
+  /**
+   * The top-level lists a workspace allows: in Work its clients (every client of every contract, once each); null in Research,
+   * whose lists are free.
+   */
+  clients(workspace: TaskWorkspace): Promise<string[] | null>
   create(input: CreateTaskInput): Promise<Task>
   update(uid: string, changes: TaskChanges): Promise<Task>
   setStatus(uid: string, status: TaskStatus): Promise<TaskStatusResult>
@@ -61,6 +66,7 @@ export interface TasksApi {
 export const TASKS_IPC = {
   list: 'tasks:list',
   get: 'tasks:get',
+  clients: 'tasks:clients',
   create: 'tasks:create',
   update: 'tasks:update',
   setStatus: 'tasks:set-status',
