@@ -1,0 +1,18 @@
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 4px;
+}
+.total {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: var(--text-14);
+  color: var(--text-muted);
+}
+.total b {
+  color: var(--ink);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}

@@ -9,6 +9,8 @@ interface DeleteDialogProps {
   noun: string
   /** What goes with it, after "and all its": notes by default; a note says "text". */
   contents?: string
+  /** One more sentence, when there is something to know first. */
+  note?: string
   busy: boolean
   onCancel: () => void
   onConfirm: () => void
@@ -20,6 +22,7 @@ export function DeleteDialog({
   heading,
   noun,
   contents = 'notes',
+  note,
   busy,
   onCancel,
   onConfirm
@@ -43,6 +46,7 @@ export function DeleteDialog({
     >
       {heading} and all its {contents} will be removed from Central Command. The file moves to the
       macOS Trash, so you can still restore it from there.
+      {note ? ` ${note}` : ''}
     </Dialog>
   )
 }

@@ -220,8 +220,11 @@ describe('entriesInYearOrPlanned', () => {
 })
 
 describe('a lecture total (session plus self-study, one number)', () => {
-  const lecture = (date: string, task: string, over: Partial<TrainingIndexRow> = {}) =>
-    row(date, { task, series: 'Intro', skills: ['Networking (RP)'], ...over })
+  const lecture = (
+    date: string,
+    task: string,
+    over: Partial<TrainingIndexRow> = {}
+  ): TrainingIndexRow => row(date, { task, series: 'Intro', skills: ['Networking (RP)'], ...over })
   const study = new Map([['k1', 45]])
 
   it('is the session alone for a note with no self-study or no task: the same numbers as before', () => {

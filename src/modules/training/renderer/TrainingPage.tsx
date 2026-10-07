@@ -33,6 +33,7 @@ import { TRAINING_TYPES } from '../shared/types'
 import { NewTrainingButton } from './NewTrainingButton'
 import { TrainingTable } from './TrainingTable'
 import { todayIso, trainingBase } from './training-paths'
+import { useSelfStudy } from './useSelfStudy'
 import { useTrainingList } from './useTrainingList'
 import { useTrainingView } from './useTrainingView'
 import styles from './TrainingPage.module.css'
@@ -40,6 +41,7 @@ import styles from './TrainingPage.module.css'
 /** The training log: the totals for an academic year, filters and the list of entries. */
 export function TrainingPage(): React.JSX.Element {
   const { rows, meetings, people } = useTrainingList()
+  const selfStudy = useSelfStudy()
   const { settings } = useSettings()
   // A series card on the landing page opens the list already filtered to that series (for this visit only).
   const [params] = useSearchParams()
@@ -71,7 +73,7 @@ export function TrainingPage(): React.JSX.Element {
         })
   const visible = queryTraining(all, query, people)
   const aim = settings.trainingAimHours
-  const hours = trainingHours(everything, year, today, aim)
+  const hours = trainingHours(everything, year, today, aim, selfStudy)
   const meetingMinutes = meetingHours(meetings, year, today).minutes
 
   const exportPdf = async (): Promise<void> => {
@@ -112,7 +114,8 @@ export function TrainingPage(): React.JSX.Element {
         )}
       </EmptyState>
     )
-  } else content = <TrainingTable rows={visible} people={people} today={today} />
+  } else
+    content = <TrainingTable rows={visible} people={people} today={today} selfStudy={selfStudy} />
 
   const noteParts = [
     `${hours.entries} ${hours.entries === 1 ? 'entry' : 'entries'}`,

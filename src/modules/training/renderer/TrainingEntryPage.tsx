@@ -16,9 +16,15 @@ import type { Person } from '@shared/people'
 import { formatDate } from '@shared/time'
 import { institutionOptions, seriesOptions } from '../shared/rules'
 import type { TrainingRef } from '../shared/types'
+import { formatHours } from '@shared/tracking/format'
+import { lectureTaskUid } from '../shared/lecture-entries'
 import { FilesPanel } from './FilesPanel'
+import { LectureHours } from './LectureHours'
+import { LectureTask } from './LectureTask'
 import { entryRoute, trainingBase } from './training-paths'
 import { TrainingMetaFields } from './TrainingMetaFields'
+import { useLectureTask } from './useLectureTask'
+import { useSelfStudy } from './useSelfStudy'
 import { useTrainingSession } from './useTrainingSession'
 import styles from './TrainingEntryPage.module.css'
 
@@ -90,6 +96,10 @@ function EntryView({
   }, [ready])
 
   const { meta, body, save, error, conflict, reloadedFromDisk, problems, updatedAt } = snapshot
+  const { tasks } = useLectureTask(meta, ready, (task) => session.setMeta({ task }))
+  const selfStudy = useSelfStudy()
+  const lectureUid = lectureTaskUid(meta.task)
+  const studied = lectureUid ? (selfStudy.get(lectureUid) ?? 0) : 0
   useDocumentTitle(meta.title)
 
   // Back goes to wherever the user came from (the list); with no history, the list.
@@ -116,6 +126,14 @@ function EntryView({
     try {
       await session.dispose() // saves anything pending first
       await window.api.training.delete(session.getRef())
+      // The lecture's task goes with it (to the Tasks trash); the hours tracked on it stay in Hours.
+      if (lectureUid) {
+        try {
+          await window.api.tasks.delete(lectureUid)
+        } catch (e) {
+          console.error('Could not delete the lecture task:', e)
+        }
+      }
       void navigate(trainingBase)
     } catch (e) {
       setDeleteError(ipcErrorMessage(e))
@@ -223,7 +241,18 @@ function EntryView({
         institutionSuggestions={institutionsUsed}
         onChange={(patch) => session.setMeta(patch)}
         onAddPerson={addPerson}
+        taskField={
+          meta.task ? (
+            <LectureTask
+              task={meta.task}
+              series={meta.series}
+              tasks={tasks}
+              onRemake={() => session.setMeta({ task: 'auto' })}
+            />
+          ) : undefined
+        }
       />
+      <LectureHours id={entryRef.id} meta={meta} tasks={tasks} />
 
       <div className={styles.split}>
         <div className={styles.doc} ref={docRef}>
@@ -248,6 +277,11 @@ function EntryView({
         open={confirmDelete}
         heading={heading}
         noun="training entry"
+        note={
+          studied > 0
+            ? `It has ${formatHours(studied)} of self-study: that time stays in Hours.`
+            : undefined
+        }
         busy={deleting}
         onCancel={() => setConfirmDelete(false)}
         onConfirm={() => void confirmAndDelete()}

@@ -1,5 +1,6 @@
 import { TriangleAlert } from 'lucide-react'
 import { durationMinutes } from '../shared/time'
+import type { DerivedKind } from '@shared/tracking/types'
 import type { MeetingMeta, MeetingWorkspace } from '../shared/types'
 import { useMeetingClashes } from './useMeetingClashes'
 import styles from './MeetingHoursNote.module.css'
@@ -11,13 +12,16 @@ import styles from './MeetingHoursNote.module.css'
 export function MeetingHoursNote({
   workspace,
   id,
-  meta
+  meta,
+  kind = 'meeting'
 }: {
   workspace: MeetingWorkspace
   id: string
-  meta: MeetingMeta
+  /** What it needs of a note: a meeting's, or a lecture's (`task` is its uid, '' for none). */
+  meta: Pick<MeetingMeta, 'task' | 'date' | 'start' | 'end'>
+  kind?: DerivedKind
 }): React.JSX.Element | null {
-  const clashes = useMeetingClashes(workspace, id, meta)
+  const clashes = useMeetingClashes(workspace, id, meta, kind)
   if (clashes.length > 0) {
     const names = clashes
       .map(

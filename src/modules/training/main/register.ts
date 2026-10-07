@@ -5,9 +5,11 @@ import { exportHtmlAsPdf } from '../../../main/export-pdf'
 import { readNoteFile } from '../../../main/notes/guarded-file'
 import { listMeetingRows } from '../../meetings/main/repository'
 import { meetingHours } from '../../meetings/shared/hours'
-import { todayIso } from '@shared/time'
+import { todayIso, trackingMoment } from '@shared/time'
 import { dayNumber } from '@shared/year'
 import { NotesWatcher } from '../../../main/notes/watcher'
+import { TrackingStore } from '../../../main/tracking/store'
+import { trackedByTask } from '../../tasks/shared/tracked'
 import type { MainContext, MainModule } from '../../main-registry'
 import {
   TRAINING_IPC,
@@ -48,6 +50,11 @@ function asRef(value: unknown): TrainingRef {
 }
 
 function register({ db, paths, settings }: MainContext): () => void {
+  // Read only: the Hours files, for the time tracked on each lecture's task (its self-study) in the PDF.
+  const tracking = new TrackingStore(paths.time, {
+    starts: () => settings.get().yearStarts,
+    now: trackingMoment
+  })
   const dirFor = (workspace: TrainingWorkspace): string => join(paths.trainingNotes, workspace)
   const store = new TrainingStore({ db, dirFor, trash: (path) => shell.trashItem(path) })
 
@@ -78,7 +85,8 @@ function register({ db, paths, settings }: MainContext): () => void {
         year,
         today,
         aimHours: settings.get().trainingAimHours,
-        meetingMinutes: meetingHours(listMeetingRows(db, 'research'), year, today).minutes
+        meetingMinutes: meetingHours(listMeetingRows(db, 'research'), year, today).minutes,
+        selfStudy: trackedByTask(tracking.years('research').map((y) => tracking.get('research', y)))
       })
       return exportHtmlAsPdf(event.sender, {
         html,

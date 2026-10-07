@@ -3,9 +3,9 @@ import { Link, useNavigate } from 'react-router'
 import { SkillChips } from '@renderer/components/SkillChips'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import type { Person } from '@shared/people'
-import { durationMinutes, formatDate, formatDuration } from '@shared/time'
+import { formatDate, formatDuration } from '@shared/time'
 import { formatTimeRange, initialsFor } from '@modules/meetings/shared/query'
-import { isUpcoming } from '../shared/rules'
+import { entryMinutes, isUpcoming, type SelfStudy } from '../shared/rules'
 import { typeLabel, type TrainingIndexRow } from '../shared/types'
 import { entryRoute } from './training-paths'
 import styles from './TrainingTable.module.css'
@@ -20,11 +20,14 @@ const VISIBLE_LEADS = 3
 export function TrainingTable({
   rows,
   people,
-  today
+  today,
+  selfStudy
 }: {
   rows: TrainingIndexRow[]
   people: Person[]
   today: string
+  /** Minutes tracked on each lecture's task, so a duration is the lecture's total. */
+  selfStudy?: SelfStudy
 }): React.JSX.Element {
   const navigate = useNavigate()
   const { tableProps, rowProps } = useRowNavigation(
@@ -55,7 +58,7 @@ export function TrainingTable({
         </thead>
         <tbody>
           {rows.map((row, index) => {
-            const duration = durationMinutes(row.start, row.end)
+            const duration = entryMinutes(row, selfStudy)
             const shown = row.leads.slice(0, VISIBLE_LEADS)
             const more = row.leads.length - shown.length
             return (

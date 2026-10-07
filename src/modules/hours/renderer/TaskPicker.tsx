@@ -7,7 +7,13 @@ import { useTaskDefaults } from '../../tasks/renderer/useTaskDefaults'
 import { useOpenTasks } from '../../tasks/renderer/useOpenTasks'
 import { taskKey } from '../../tasks/shared/tracked'
 import type { Task } from '../../tasks/shared/types'
-import { clientForTask, listForNew, listOfTask, pickerOptions } from '../shared/start-picker'
+import {
+  clientForTask,
+  detailOfTask,
+  listForNew,
+  listOfTask,
+  pickerOptions
+} from '../shared/start-picker'
 import type { HoursWorkspace } from '../shared/workspaces'
 import styles from './TaskPicker.module.css'
 
@@ -182,7 +188,7 @@ export function TaskPicker({
               {item.kind === 'task' ? (
                 <>
                   <span className={styles.optionTitle}>{item.task.title}</span>
-                  <span className={styles.detail}>{listOfTask(item.task, tasks)}</span>
+                  <span className={styles.detail}>{detailOfTask(item.task, tasks)}</span>
                 </>
               ) : (
                 <>
@@ -225,7 +231,7 @@ export function TaskPicker({
                   onClick={() => choose({ kind: 'task', task })}
                 >
                   <span className={styles.optionTitle}>{task.title}</span>
-                  <span className={styles.detail}>{listOfTask(task, tasks)}</span>
+                  <span className={styles.detail}>{detailOfTask(task, tasks)}</span>
                 </button>
               </li>
             ))}

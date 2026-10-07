@@ -4,6 +4,7 @@ import {
   clientForTask,
   clientOfList,
   listForNew,
+  detailOfTask,
   listOfTask,
   pickerOptions,
   recentTasks
@@ -123,6 +124,14 @@ describe('lists', () => {
     const sub = task('s', 'Sub', { list: '', parentUid: 'p' })
     expect(listOfTask(sub, [parent, sub])).toBe('Impact')
     expect(listOfTask(parent, [parent, sub])).toBe('Impact')
+  })
+
+  it('the picker names a subtask by the task it belongs to, and any other task by its list', () => {
+    const parent = task('p', 'Intro to Python', { list: 'Training' })
+    const sub = task('s', 'Session 3', { list: '', parentUid: 'p' })
+    expect(detailOfTask(sub, [parent, sub])).toBe('Intro to Python')
+    expect(detailOfTask(parent, [parent, sub])).toBe('Training')
+    expect(detailOfTask(sub, [sub])).toBe('')
   })
 
   it("a new task in Work goes to the client's own list, even an empty one; elsewhere the last, else the first, else Inbox", () => {

@@ -15,7 +15,7 @@ import {
 import { useYear } from '@renderer/state/use-year'
 import { useSettings } from '@renderer/state/settings-context'
 import { formatHours } from '@shared/skills'
-import { durationMinutes, formatDate, formatDuration } from '@shared/time'
+import { formatDate, formatDuration } from '@shared/time'
 import { initialsFor } from '@modules/meetings/shared/query'
 import { meetingHours } from '@modules/meetings/shared/hours'
 import {
@@ -24,8 +24,10 @@ import {
   isUpcoming,
   meetingsLine,
   recentAndUpcoming,
+  entryMinutes,
   seriesSummaries,
   trainingHours,
+  type SelfStudy,
   yearHoursTitle
 } from '../shared/rules'
 import { TRAINING_MODE_LABELS, type TrainingIndexRow } from '../shared/types'
@@ -37,12 +39,13 @@ import {
   trainingListRoute,
   trainingPlanRoute
 } from './training-paths'
+import { useSelfStudy } from './useSelfStudy'
 import { useTrainingList } from './useTrainingList'
 
 /** What to say at the right of a "recent and upcoming" row. */
-function noteFor(row: TrainingIndexRow, today: string): string {
+function noteFor(row: TrainingIndexRow, today: string, selfStudy: SelfStudy): string {
   if (isUpcoming(row, today)) return row.start ?? 'No time yet'
-  const minutes = durationMinutes(row.start, row.end)
+  const minutes = entryMinutes(row, selfStudy)
   return [
     minutes === null ? '' : formatDuration(minutes),
     row.mode ? TRAINING_MODE_LABELS[row.mode] : ''
@@ -54,6 +57,7 @@ function noteFor(row: TrainingIndexRow, today: string): string {
 /** The Training landing page: the year's hours, a card per series, and the recent and upcoming entries. */
 export function TrainingLanding(): React.JSX.Element {
   const { rows, meetings, people } = useTrainingList()
+  const selfStudy = useSelfStudy()
   const { settings } = useSettings()
   const today = todayIso()
   const all = rows ?? []
@@ -62,10 +66,10 @@ export function TrainingLanding(): React.JSX.Element {
     today
   )
   const aim = settings.trainingAimHours
-  const hours = trainingHours(all, year, today, aim)
+  const hours = trainingHours(all, year, today, aim, selfStudy)
   const meetingMinutes = meetingHours(meetings, year, today).minutes
   const { upcoming, recent } = recentAndUpcoming(entriesInYearOrPlanned(all, year, today), today)
-  const summaries = seriesSummaries(entriesInYear(all, year), today)
+  const summaries = seriesSummaries(entriesInYear(all, year), today, selfStudy)
 
   const noteParts = [
     `${hours.entries} ${hours.entries === 1 ? 'entry' : 'entries'}`,
@@ -79,7 +83,7 @@ export function TrainingLanding(): React.JSX.Element {
     badge: isUpcoming(row, today) ? (row.date ? 'Upcoming' : 'Planned') : undefined,
     title: row.title || 'Untitled',
     people: row.leads.map((name) => ({ name, initials: initialsFor(name, people) })),
-    note: noteFor(row, today)
+    note: noteFor(row, today, selfStudy)
   }))
 
   return (

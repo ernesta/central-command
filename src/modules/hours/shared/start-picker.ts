@@ -85,6 +85,12 @@ export function listOfTask(task: Task, all: readonly Task[]): string {
   return all.find((t) => t.uid === task.parentUid)?.list ?? ''
 }
 
+/** What the picker shows beside a task: its list, or for a subtask (a lecture) the task it belongs to. */
+export function detailOfTask(task: Task, all: readonly Task[]): string {
+  if (!task.parentUid) return task.list
+  return all.find((t) => t.uid === task.parentUid)?.title ?? listOfTask(task, all)
+}
+
 /**
  * The list a new task goes to. In Work (a client is known) it is the client's own list, empty or not: Work's lists are its
  * clients and nothing else. Elsewhere, where a task was last added, else the first list there is, else "Inbox" (a task needs
