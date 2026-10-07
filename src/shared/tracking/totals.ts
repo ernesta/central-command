@@ -43,7 +43,7 @@ export function dayRows(year: TrackingYear, date: string, now?: Moment): TaskRow
     return row
   }
   const sessions = year.sessions
-    .filter((s) => s.date === date)
+    .filter((s) => s.date === date && !s.derived)
     .map((s, i) => ({ s, i }))
     .sort((a, b) => (timeToSeconds(a.s.start) ?? 0) - (timeToSeconds(b.s.start) ?? 0) || a.i - b.i)
   for (const { s } of sessions) {

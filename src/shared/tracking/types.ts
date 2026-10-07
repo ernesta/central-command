@@ -23,6 +23,11 @@ export interface Session {
   task?: string
   /** Who the time is for: one of the plan's clients (Work only; Research has none). */
   client?: string
+  /**
+   * In memory only, never saved: the block comes from a meeting note's date, start and end (`id` is the meeting), not from the
+   * timer. Hours reads it and never changes it; the note is where it is edited. See `withDerived`.
+   */
+  derived?: { kind: 'meeting'; id: string }
   /** The task's ClickUp time was raised to cover this session, so Tasks does not add it again (see `Adjust.earlier`). */
   earlier?: true
 }
