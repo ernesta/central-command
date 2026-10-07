@@ -8,6 +8,8 @@ export interface TaskRow {
   label: string
   /** The client the row is for (Work); a task is a label and a client. */
   client?: string
+  /** The task (`cc://task/<uid>`) its time carries, when any of it does; older label-only time has none. */
+  task?: string
   minutes: number
   running: boolean
   sessionIds: string[]
@@ -46,13 +48,19 @@ export function dayRows(year: TrackingYear, date: string, now?: Moment): TaskRow
     .sort((a, b) => (timeToSeconds(a.s.start) ?? 0) - (timeToSeconds(b.s.start) ?? 0) || a.i - b.i)
   for (const { s } of sessions) {
     const row = find(s.label, s.client)
+    if (s.task && !row.task) row.task = s.task
     row.sessionIds.push(s.id)
     if (s.end === null) {
       row.running = true
       row.minutes += runningMinutes(s, now)
     } else row.minutes += reportedMinutes(s)
   }
-  for (const a of year.adjusts) if (a.date === date) find(a.label, a.client).minutes += a.minutes
+  for (const a of year.adjusts) {
+    if (a.date !== date) continue
+    const row = find(a.label, a.client)
+    if (a.task && !row.task) row.task = a.task
+    row.minutes += a.minutes
+  }
   return rows.filter((r) => r.minutes !== 0 || r.running)
 }
 
