@@ -7,14 +7,16 @@ import { dailyAim } from '@shared/tracking/plan'
 import { dayMinutes } from '@shared/tracking/totals'
 import { inYear } from '@shared/year'
 import { hoursBase, useHoursWorkspace } from './hours-paths'
+import { useShownYear } from './useMeetingHours'
 import styles from './HoursCard.module.css'
 
 /** The Hours entry on a workspace's landing page: today's time against the aim. The title is a real link whose hit area covers the whole card. */
 export function HoursCard(): React.JSX.Element {
   const workspace = useHoursWorkspace()
-  const { data } = useTrackingYear(workspace)
+  const { data: stored } = useTrackingYear(workspace)
   const { running } = useRunningTimer()
   const now = useNow(running !== null)
+  const data = useShownYear(workspace, stored, now.date)
   const today = data && inYear(now.date, data.start, data.weeks) ? data : null
   const aim = today ? dailyAim(today, now.date) : null
 

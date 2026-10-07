@@ -14,6 +14,7 @@ import { DurationField } from './DurationField'
 import { startUnnamed, stopTimer } from './start-request'
 import { StaleTimer } from './StaleTimer'
 import { TaskPicker, type PickedTask, type TaskPickerHandle } from './TaskPicker'
+import { MeetingRows } from './MeetingRows'
 import { TaskList } from './TaskList'
 import styles from './TodayCard.module.css'
 
@@ -100,6 +101,7 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
           void tracking.renameTask(workspace, data.start, now.date, label, to, rowClient)
         }
       />
+      <MeetingRows workspace={workspace} data={data} date={now.date} now={now} />
       <div className={styles.start}>
         <TaskPicker
           ref={picker}

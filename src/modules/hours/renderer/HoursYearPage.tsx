@@ -9,14 +9,16 @@ import { YearsTable } from './YearsTable'
 import { YearHeatMap } from './YearHeatMap'
 import { AllWeeks } from './AllWeeks'
 import { hoursBase, useHoursWorkspace } from './hours-paths'
+import { useShownYear } from './useMeetingHours'
 import styles from './HoursYearPage.module.css'
 
 /** Charts and weeks: the year as a whole. The views are added one at a time. */
 export function HoursYearPage(): React.JSX.Element {
   const workspace = useHoursWorkspace()
-  const { year, years, setYear, data } = useTrackingYear(workspace)
+  const { year, years, setYear, data: stored } = useTrackingYear(workspace)
   const { running } = useRunningTimer()
   const now = useNow(running !== null)
+  const data = useShownYear(workspace, stored, now.date)
 
   return (
     <LandingPage>

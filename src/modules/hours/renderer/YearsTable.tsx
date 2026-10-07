@@ -6,6 +6,8 @@ import { contractLabel, hasContracts } from '@shared/tracking/workspace-weeks'
 import { yearLabel } from '@shared/year'
 import { yearRows } from '../shared/years'
 import { useYearFiles } from '@renderer/state/use-year-files'
+import type { HoursWorkspace } from '../shared/workspaces'
+import { useShownYears } from './useMeetingHours'
 import styles from './YearsTable.module.css'
 
 /** One row per year: its hours, plan so far, balance, average week and days off taken. A row shows that year in the charts above. */
@@ -22,7 +24,7 @@ export function YearsTable({
   onSelect: (year: string) => void
   now: Moment
 }): React.JSX.Element | null {
-  const files = useYearFiles(workspace, years)
+  const files = useShownYears(workspace as HoursWorkspace, useYearFiles(workspace, years), now.date)
   const rows = files ? yearRows(files, now) : []
   const { tableProps, rowProps } = useRowNavigation(rows.length, (i) => onSelect(rows[i].start))
   if (!files) return null

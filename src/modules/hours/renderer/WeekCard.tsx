@@ -9,6 +9,7 @@ import { periodOfWeek, periodsOf } from '../shared/periods'
 import { barFill, BAR_SCALE } from '../shared/week'
 import type { HoursWorkspace } from '../shared/workspaces'
 import { AddTime } from './AddTime'
+import { MeetingRows } from './MeetingRows'
 import { TaskList } from './TaskList'
 import styles from './WeekCard.module.css'
 
@@ -145,6 +146,7 @@ export function WeekCard({
                         void tracking.setTaskMinutes(workspace, data.start, date, label, m, client)
                       }
                     />
+                    <MeetingRows workspace={workspace} data={data} date={date} now={now} />
                     <AddTime
                       workspace={workspace}
                       clients={data.plan.clients}

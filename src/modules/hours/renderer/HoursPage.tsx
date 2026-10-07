@@ -8,6 +8,7 @@ import { inYear } from '@shared/year'
 import { useHoursWorkspace } from './hours-paths'
 import { BalanceCard } from './BalanceCard'
 import { TodayCard } from './TodayCard'
+import { useShownYear } from './useMeetingHours'
 import { useWeek } from './useWeek'
 import { ContractFields } from './ContractFields'
 import { InvoiceCard } from './InvoiceCard'
@@ -17,10 +18,12 @@ import styles from './HoursPage.module.css'
 /** The Hours page: the year selector in the header, then Today, the week and the balance. */
 export function HoursPage(): React.JSX.Element {
   const workspace = useHoursWorkspace()
-  const { year, years, loaded, setYear, data } = useTrackingYear(workspace)
+  const { year, years, loaded, setYear, data: stored } = useTrackingYear(workspace)
   const { running } = useRunningTimer()
   const now = useNow(running !== null)
-  const { week, setWeek } = useWeek(data?.start ?? year, now.date, data?.weeks)
+  // The year with its meetings' hours worked out from the notes (read-only, never saved).
+  const data = useShownYear(workspace, stored, now.date)
+  const { week, setWeek } = useWeek(stored?.start ?? year, now.date, stored?.weeks)
 
   return (
     <LandingPage>

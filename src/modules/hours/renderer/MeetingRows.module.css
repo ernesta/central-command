@@ -1,0 +1,46 @@
+.row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: var(--radius-card);
+}
+.row:not(:has(.warn)) {
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+}
+.icon {
+  color: var(--text-muted);
+}
+.name {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  align-items: baseline;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius-control);
+}
+.name:hover .title {
+  text-decoration: underline;
+}
+.title {
+  overflow-wrap: anywhere;
+}
+.when,
+.client {
+  color: var(--text-muted);
+  font-size: var(--text-14);
+  font-variant-numeric: tabular-nums;
+}
+.warn {
+  display: inline-grid;
+  color: var(--danger);
+}
+.time {
+  padding: 2px 8px;
+  font-size: var(--text-16);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
