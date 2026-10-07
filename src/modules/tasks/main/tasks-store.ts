@@ -22,6 +22,7 @@ import {
   purge,
   writeTask
 } from './repository'
+import { listFor } from '../shared/work-lists'
 
 export interface Clock {
   /** Today in local time, YYYY-MM-DD. */
@@ -61,17 +62,36 @@ function checkDue(due: string | null | undefined): string | null {
  * `discardIfEmpty`, for a task that was never written in.
  */
 export class TasksStore {
+  /**
+   * `workClients` gives Work's clients; when it is set, a Work task's top-level list must be one of them (the rule of
+   * `docs/CLIENT_LISTS_PLAN.md`, kept here so no caller can get round it). Left out, as in importers and scripts, any list goes.
+   */
   constructor(
     private readonly db: Database,
-    private readonly clock: Clock = systemClock
+    private readonly clock: Clock = systemClock,
+    private readonly workClients?: () => readonly string[]
   ) {}
+
+  /** The list to store for a top-level task, or an error when Work's rule refuses it. */
+  private checkedList(workspace: Task['workspace'], list: string): string {
+    if (!this.workClients) return list
+    const clients = this.workClients()
+    const allowed = listFor(workspace, list, clients)
+    if (allowed === null) {
+      throw new Error(
+        `"${list}" is not a client, and Work's lists are its clients (${clients.join(', ') || 'none yet'})`
+      )
+    }
+    return allowed
+  }
 
   /** Create a task (or a subtask, with `parentUid`). Subtasks take their parent's workspace and have no list. */
   create(input: NewTask): Task {
     return this.db.transaction(() => this.insert(input))()
   }
 
-  private insert(input: NewTask): Task {
+  /** `ruled` is false for the next occurrence of a series and its subtasks, which keep the list they had. */
+  private insert(input: NewTask, ruled = true): Task {
     const now = this.clock.now()
     const uids = allUids(this.db)
     let uid = newUid()
@@ -93,6 +113,8 @@ export class TasksStore {
       if (input.position === undefined) position = maxPosition(this.db, parentUid) + 1
     } else if (!list) {
       throw new Error('A task needs a list')
+    } else if (ruled) {
+      list = this.checkedList(workspace, list)
     }
     if (input.recurrence && !isValidRecurrence(input.recurrence))
       throw new Error('Invalid repeat rule')
@@ -151,7 +173,10 @@ export class TasksStore {
         if (task.parentUid) throw new Error('A subtask has no list of its own')
         const list = (changes.list ?? task.list).trim()
         if (!list) throw new Error('A task needs a list')
-        next.list = list
+        next.list =
+          changes.list !== undefined && list !== task.list
+            ? this.checkedList(task.workspace, list)
+            : list
         next.sublist =
           changes.list !== undefined && changes.sublist === undefined
             ? ''
@@ -195,13 +220,13 @@ export class TasksStore {
         if (openInSeries(this.db, seriesUid, task.uid) === 0) {
           const made = nextOccurrence(updated, listSubtasks(this.db, task.uid), this.clock.today())
           if (made) {
-            next = this.insert(made.task)
+            next = this.insert(made.task, false)
             if (!task.seriesUid) writeTask(this.db, { ...updated, seriesUid })
             this.db
               .prepare('UPDATE tasks SET series_uid = ? WHERE uid = ?')
               .run(seriesUid, next.uid)
             next = { ...next, seriesUid }
-            for (const sub of made.subtasks) this.insert({ ...sub, parentUid: next.uid })
+            for (const sub of made.subtasks) this.insert({ ...sub, parentUid: next.uid }, false)
           }
         }
       }

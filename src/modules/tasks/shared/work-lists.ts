@@ -1,0 +1,41 @@
+import type { TaskWorkspace } from './types'
+
+/**
+ * Work's top-level lists are exactly its clients (`docs/CLIENT_LISTS_PLAN.md`). Research's lists are topical and free.
+ * A sublist is free text in both and is not checked here.
+ */
+
+/** Every client of every contract, past and present, once each, in the order given (a client in two contracts has one list). */
+export function workClients(plans: readonly { clients?: readonly string[] }[]): string[] {
+  const seen = new Map<string, string>()
+  for (const plan of plans) {
+    for (const raw of plan.clients ?? []) {
+      const client = raw.trim()
+      if (client && !seen.has(client.toLowerCase())) seen.set(client.toLowerCase(), client)
+    }
+  }
+  return [...seen.values()]
+}
+
+/**
+ * The top-level list a task may be given: the client's own spelling when `list` names one (case and outer spaces ignored),
+ * `list` trimmed anywhere that has no rule (Research, Life), and null in Work when `list` is no client.
+ */
+export function listFor(
+  workspace: TaskWorkspace,
+  list: string,
+  clients: readonly string[]
+): string | null {
+  const name = list.trim()
+  if (workspace !== 'work') return name
+  return clients.find((c) => c.toLowerCase() === name.toLowerCase()) ?? null
+}
+
+/** Whether a top-level list may be used in a workspace. */
+export function canUseList(
+  workspace: TaskWorkspace,
+  list: string,
+  clients: readonly string[]
+): boolean {
+  return listFor(workspace, list, clients) !== null
+}

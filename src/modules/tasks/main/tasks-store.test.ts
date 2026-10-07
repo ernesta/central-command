@@ -261,3 +261,57 @@ describe('delete, restore and discardIfEmpty', () => {
     expect(store.discardIfEmpty(withKid.uid)).toBe(false)
   })
 })
+
+describe('Work’s lists are its clients', () => {
+  let clients = ['Impact', 'Royal Holloway']
+  let ruled: TasksStore
+  beforeEach(() => {
+    clients = ['Impact', 'Royal Holloway']
+    ruled = new TasksStore(db, clock, () => clients)
+  })
+  const inWork = (list: string): ReturnType<TasksStore['create']> =>
+    ruled.create({ workspace: 'work', title: 't', list })
+
+  it('creates in a client’s list, in the client’s spelling', () => {
+    expect(inWork(' impact ').list).toBe('Impact')
+  })
+  it('refuses a Work list that is not a client, and a client that has gone', () => {
+    expect(() => inWork('Admin')).toThrow('not a client')
+    clients = ['Impact']
+    expect(() => inWork('Royal Holloway')).toThrow('not a client')
+    expect(listTasks(db, 'work')).toHaveLength(0)
+  })
+  it('refuses a move to a list that is not a client, and keeps the task where it was', () => {
+    const t = inWork('Impact')
+    expect(() => ruled.update(t.uid, { list: 'Admin' })).toThrow('not a client')
+    expect(ruled.get(t.uid)?.list).toBe('Impact')
+    expect(ruled.update(t.uid, { list: 'Royal Holloway' }).list).toBe('Royal Holloway')
+  })
+  it('keeps sublists free text', () => {
+    const t = inWork('Impact')
+    expect(ruled.update(t.uid, { sublist: 'Anything at all' }).sublist).toBe('Anything at all')
+  })
+  it('does not touch a task that was already outside the rule unless its list changes', () => {
+    const old = store.create({ workspace: 'work', title: 'old', list: 'Luminos' })
+    expect(ruled.update(old.uid, { title: 'renamed', list: 'Luminos' }).list).toBe('Luminos')
+    expect(() => ruled.update(old.uid, { list: 'Elsewhere' })).toThrow('not a client')
+  })
+  it('lets a repeating task start its next occurrence even from an old list', () => {
+    const old = store.create({
+      workspace: 'work',
+      title: 'weekly',
+      list: 'Luminos',
+      recurrence: { every: 1, unit: 'week' }
+    })
+    expect(ruled.setStatus(old.uid, 'done').next?.list).toBe('Luminos')
+  })
+  it('leaves Research free and gives a subtask no list to check', () => {
+    expect(ruled.create({ workspace: 'research', title: 'r', list: 'Reading' }).list).toBe(
+      'Reading'
+    )
+    const p = inWork('Impact')
+    expect(
+      ruled.create({ workspace: 'work', title: 's', parentUid: p.uid, list: 'Admin' }).list
+    ).toBe('')
+  })
+})

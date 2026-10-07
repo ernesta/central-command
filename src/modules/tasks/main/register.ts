@@ -17,6 +17,9 @@ import { tasksMigrations } from './migrations'
 import { basename } from 'path'
 import { countAllTasks, listTasks, listTrash } from './repository'
 import { writeTasksSnapshot } from './snapshot'
+import { TrackingStore } from '../../../main/tracking/store'
+import { trackingMoment } from '@shared/time'
+import { workClients } from '../shared/work-lists'
 import { TasksStore } from './tasks-store'
 
 /** One readable copy of the tasks per day, taken when the app starts (nothing is written while there are no tasks). */
@@ -70,7 +73,14 @@ function register(context: MainContext): () => void {
   } catch (error) {
     console.error('Could not take the daily tasks snapshot:', error)
   }
-  const store = new TasksStore(context.db)
+  // Work's lists are its clients: read from the contracts on disk each time, so a client added in Settings counts at once.
+  const tracking = new TrackingStore(context.paths.time, {
+    starts: () => context.settings.get().yearStarts,
+    now: trackingMoment
+  })
+  const store = new TasksStore(context.db, undefined, () =>
+    workClients(tracking.years('work').map((y) => tracking.get('work', y).plan))
+  )
   const broadcast = (workspace: TaskWorkspace): void => {
     const event: TasksChangedEvent = { workspace }
     for (const window of BrowserWindow.getAllWindows()) {
