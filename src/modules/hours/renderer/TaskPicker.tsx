@@ -36,6 +36,8 @@ interface TaskPickerProps {
   autoFocus?: boolean
   /** The clients to choose among, when the time is for one contract (a past day of it); else the contracts holding today. */
   clients?: readonly string[]
+  /** Taken as the client when the task's own cannot be told. */
+  hintClient?: string
   /** Offered while nothing is typed. */
   recent?: readonly Task[]
   ref?: React.Ref<TaskPickerHandle>
@@ -55,6 +57,7 @@ export function TaskPicker({
   placeholder,
   autoFocus,
   clients,
+  hintClient,
   recent = [],
   ref
 }: TaskPickerProps): React.JSX.Element {
@@ -105,7 +108,8 @@ export function TaskPicker({
     if (busy) return
     const list = item.kind === 'task' ? listOfTask(item.task, tasks) : ''
     const found = clientForTask(contracts, list)
-    if (found.ask) setAsking({ item, clients: found.ask })
+    if (found.ask && hintClient && found.ask.includes(hintClient)) void finish(item, hintClient)
+    else if (found.ask) setAsking({ item, clients: found.ask })
     else void finish(item, found.client)
   }
 

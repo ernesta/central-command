@@ -8,6 +8,8 @@ import type { Workspace } from '@shared/settings'
 export interface PickerRequest {
   /** Typed into the field already (an older entry's name, say). */
   query: string
+  /** The client the entry already has (an older row started again): used when the task's own client cannot be told. */
+  client?: string
   /** Stop the timer once it has its task. */
   stopAfter: boolean
   nonce: number
@@ -17,8 +19,15 @@ let current: PickerRequest | null = null
 let nonce = 0
 const listeners = new Set<() => void>()
 
-export function requestPicker(options: { query?: string; stopAfter?: boolean } = {}): void {
-  current = { query: options.query ?? '', stopAfter: options.stopAfter ?? false, nonce: ++nonce }
+export function requestPicker(
+  options: { query?: string; stopAfter?: boolean; client?: string } = {}
+): void {
+  current = {
+    query: options.query ?? '',
+    stopAfter: options.stopAfter ?? false,
+    ...(options.client ? { client: options.client } : {}),
+    nonce: ++nonce
+  }
   for (const l of listeners) l()
 }
 
@@ -50,7 +59,7 @@ export async function startUnnamed(
   client?: string
 ): Promise<void> {
   const result = await window.api.tracking.start(workspace, label, undefined, client)
-  if (result.ok) requestPicker({ query: label })
+  if (result.ok) requestPicker({ query: label, client })
 }
 
 /**

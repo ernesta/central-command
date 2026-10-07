@@ -113,7 +113,7 @@ export function TaskList({
                 setName(row.label)
               }}
             >
-              {row.label || 'No name yet'}
+              {row.label || 'No task yet'}
             </button>
           )}
           {clients.length > 0 && onSetClient && (

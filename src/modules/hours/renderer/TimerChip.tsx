@@ -34,6 +34,7 @@ function TimerPopover({
   now,
   clock,
   query,
+  hintClient,
   stopAfter,
   onClose
 }: {
@@ -42,6 +43,7 @@ function TimerPopover({
   clock: number | null
   /** Typed into the picker at first. */
   query: string
+  hintClient?: string
   /** The picker was opened by Stop: the timer stops once it has its task. */
   stopAfter: boolean
   onClose: () => void
@@ -91,6 +93,7 @@ function TimerPopover({
             onChange={setName}
             onPick={give}
             recent={recent}
+            hintClient={hintClient}
             autoFocus
           />
         </>
@@ -239,6 +242,7 @@ function Chip({ running, now }: { running: RunningTimer; now: Moment }): React.J
           now={now}
           clock={clock}
           query={request?.query ?? ''}
+          hintClient={request?.client}
           stopAfter={request?.stopAfter ?? false}
           onClose={close}
         />
