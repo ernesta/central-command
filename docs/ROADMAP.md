@@ -1,5 +1,7 @@
 # Roadmap
 
+**One rule for starting work, every hour has a task (7 Oct 2026, `docs/TIMER_TASKS_PLAN.md`): stage 1 done and pushed** (the running timer's Started time is an editable time field; `docs/DECISIONS.md`, "Timer and tasks, stage 1"). Next: stage 2, one Start picker. Open for the user: should the Today form's Add time gain "from" and "to"? (It takes a duration only, so it was not back-dated.)
+
 **Tasks (5 Oct 2026): built in an unattended run, awaiting the user's review; not pushed. The ClickUp import was applied to the real library on 6 Oct 2026 at the user's request (1,211 tasks; every subtask keeps its date).** Stages 1 to 7 and the buildable part of 9 are done (store and rules, ClickUp importer, landing / All tasks / table, task page with the description in the live editor, recurrence, time, mentions and search everywhere, Settings → Tasks). Stage 8 (Work hours become tasks) waits for the user's answer. Plan: `docs/TASKS_PLAN.md`; write-ups per stage in `docs/DECISIONS.md` ("Tasks: stage N write-up"); mockup `docs/design/tasks-mockup.html`.
 
 **Live markup in the notes editor, the Typora way (requested 30 Sep 2026): finished.** All nine stages are done (`docs/EDITOR_LIVE_MARKUP_PLAN.md`; decision in `docs/DECISIONS.md`, "Notes editor: CodeMirror 6, with the Markdown text as the document"). `LiveEditor` (CodeMirror 6, the Markdown text is the document) is the only editor in every module; Milkdown and its packages are gone. Everything is pushed. What is left is your review of stages 7 and 8 and the open questions, all in "For the user" below.
