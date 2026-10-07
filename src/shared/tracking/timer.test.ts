@@ -11,9 +11,7 @@ import {
   endSessionAt,
   deleteSession,
   renameTask,
-  lastEndBefore,
   overlapsFor,
-  resolveStart,
   runningSession,
   setStartAt,
   startSession,
@@ -305,33 +303,5 @@ describe('starting earlier than now', () => {
   it('moves the start later too, up to now', () => {
     const { y, id } = running()
     expect(ok(setStartAt(y, id, '10:45:00', at(D, '10:45:00'))).sessions[1].start).toBe('10:45:00')
-  })
-
-  it('finds the end of the last entry before the timer', () => {
-    const { y } = running()
-    expect(lastEndBefore(y, runningSession(y)!)).toBe('10:00:00')
-    expect(
-      lastEndBefore(ok(startSession(year(), at(D, '09:00:00'), 'A', nextId())), runningSession(y)!)
-    ).toBeNull()
-  })
-})
-
-describe('resolveStart', () => {
-  const now = at(D, '10:45:30')
-  it('reads a time of day', () => {
-    expect(resolveStart('10:15', now)).toEqual({ ok: true, time: '10:15:00' })
-    expect(resolveStart('915', now)).toEqual({ ok: true, time: '09:15:00' })
-    expect(resolveStart('0915', now)).toEqual({ ok: true, time: '09:15:00' })
-  })
-  it('reads minutes ago from now', () => {
-    expect(resolveStart('-20', now)).toEqual({ ok: true, time: '10:25:30' })
-    expect(resolveStart('- 5', now)).toEqual({ ok: true, time: '10:40:30' })
-  })
-  it('stops at midnight, the future and nonsense', () => {
-    expect(resolveStart('-30', at(D, '00:10:00'))).toEqual({ ok: false, reason: 'before-midnight' })
-    expect(resolveStart('-10', at(D, '00:10:00'))).toEqual({ ok: true, time: '00:00:00' })
-    expect(resolveStart('11:00', now)).toEqual({ ok: false, reason: 'in-future' })
-    expect(resolveStart('24:00', now)).toEqual({ ok: false, reason: 'bad-time' })
-    expect(resolveStart('soon', now)).toEqual({ ok: false, reason: 'bad-time' })
   })
 })

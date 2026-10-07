@@ -131,7 +131,7 @@ function TimerPopover({
         <StaleTimer running={running} now={now} />
       ) : (
         <>
-          <StartedAt running={running} data={data} now={now} clock={clock} />
+          <StartedAt running={running} clock={clock} />
           {!unnamed && others.length > 0 && (
             <div className={styles.switch}>
               <span className={styles.label}>Switch to</span>

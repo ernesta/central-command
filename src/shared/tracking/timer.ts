@@ -143,46 +143,6 @@ export function endSessionAt(year: TrackingYear, id: string, time: string): Chan
   return close(year, session, time)
 }
 
-/** The end of the latest ended session before `session` on its day: where "Since last entry ended" puts a start. */
-export function lastEndBefore(year: TrackingYear, session: Session): string | null {
-  const start = timeToSeconds(session.start) ?? 0
-  const ends = year.sessions
-    .filter((s) => s.id !== session.id && s.date === session.date && s.end !== null)
-    .filter((s) => (timeToSeconds(s.end as string) ?? Infinity) <= start)
-    .map((s) => s.end as string)
-  return ends.sort()[ends.length - 1] ?? null
-}
-
-/**
- * What a typed start means: a time of day (`10:15`, `1015`) or minutes ago (`-20`). The result is a time on today's
- * date; it is refused when it is not a time, lies after now, or (minutes ago) would reach back past midnight.
- */
-export function resolveStart(
-  raw: string,
-  now: Moment
-): { ok: true; time: string } | { ok: false; reason: string } {
-  const text = raw.trim()
-  const nowSeconds = timeToSeconds(now.time)
-  if (nowSeconds === null) return { ok: false, reason: 'bad-time' }
-  const ago = /^-\s*(\d+)$/.exec(text)
-  let seconds: number | null
-  if (ago) {
-    seconds = nowSeconds - Number(ago[1]) * 60
-    if (seconds < 0) return { ok: false, reason: 'before-midnight' }
-  } else {
-    const m = /^(\d{1,2}):?(\d{2})$/.exec(text)
-    seconds =
-      m && Number(m[1]) < 24 && Number(m[2]) < 60 ? Number(m[1]) * 3600 + Number(m[2]) * 60 : null
-    if (seconds === null) return { ok: false, reason: 'bad-time' }
-  }
-  if (seconds > nowSeconds) return { ok: false, reason: 'in-future' }
-  const p = (n: number): string => String(n).padStart(2, '0')
-  return {
-    ok: true,
-    time: `${p(Math.floor(seconds / 3600))}:${p(Math.floor((seconds % 3600) / 60))}:${p(seconds % 60)}`
-  }
-}
-
 /**
  * The earlier entries of the running session's day that a start at `time` would overlap: each with the end it would
  * be trimmed to. An entry that starts at or after `time` would be swallowed whole (`swallowed`).
