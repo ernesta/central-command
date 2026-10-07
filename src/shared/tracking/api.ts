@@ -38,6 +38,15 @@ export interface TrackingApi {
   endAt(workspace: Workspace, year: string, id: string, time: string): Promise<TimerResult>
   /** Change when the running timer started (today, not after now); an earlier entry it overlaps is trimmed. */
   setStart(workspace: Workspace, year: string, id: string, time: string): Promise<TimerResult>
+  /** Give the running timer its task: its name, key and client (the task's list) become the timer's. */
+  assignTask(
+    workspace: Workspace,
+    year: string,
+    id: string,
+    label: string,
+    task: string,
+    client?: string
+  ): Promise<TimerResult>
   deleteSession(workspace: Workspace, year: string, id: string): Promise<YearResult>
   setTaskMinutes(
     workspace: Workspace,
@@ -114,6 +123,7 @@ export const TRACKING_IPC = {
   stop: 'tracking:stop',
   endAt: 'tracking:end-at',
   setStart: 'tracking:set-start',
+  assignTask: 'tracking:assign-task',
   deleteSession: 'tracking:delete-session',
   setTaskMinutes: 'tracking:set-task-minutes',
   renameTask: 'tracking:rename-task',

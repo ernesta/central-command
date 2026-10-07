@@ -54,6 +54,16 @@ export function registerTrackingIpc(store: TrackingStore): void {
   h(TRACKING_IPC.setStart, (_e, ws, year, id, time) =>
     store.setStart(workspace(ws), text(year), text(id), text(time))
   )
+  h(TRACKING_IPC.assignTask, (_e, ws, year, id, label, task, client) =>
+    store.assignTask(
+      workspace(ws),
+      text(year),
+      text(id),
+      text(label),
+      text(task),
+      optionalText(client)
+    )
+  )
   h(TRACKING_IPC.deleteSession, (_e, ws, year, id) =>
     store.deleteSession(workspace(ws), text(year), text(id))
   )

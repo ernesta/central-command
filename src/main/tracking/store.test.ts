@@ -354,6 +354,32 @@ describe('the timer with overlapping contracts', () => {
     ])
   })
 
+  it('moves a timer to the contract of the task it is given, so it is in one file only', () => {
+    const store = both()
+    store.start('work', '', undefined, 'Impact')
+    const { year, session } = store.running()!
+    expect(year).toBe(LUMINOS)
+    store.assignTask('work', year, session.id, 'Marking', 'cc://task/m', 'Research Assistant')
+    expect(store.running()).toMatchObject({ year: RA })
+    expect(store.running()!.session).toMatchObject({
+      id: session.id,
+      label: 'Marking',
+      task: 'cc://task/m',
+      client: 'Research Assistant',
+      start: '10:00:00'
+    })
+    expect(read('work', `${LUMINOS}.json`).sessions).toEqual([])
+  })
+
+  it('keeps the timer where it is when the task is in the same contract', () => {
+    const store = both()
+    store.start('work', '', undefined, 'Impact')
+    const { year, session } = store.running()!
+    store.assignTask('work', year, session.id, 'Calls', 'cc://task/c', 'Impact')
+    expect(store.running()).toMatchObject({ year: LUMINOS })
+    expect(read('work', `${RA}.json`).sessions).toEqual([])
+  })
+
   it('never runs two timers: starting in the other contract stops the first at the same instant', () => {
     const store = both()
     store.start('work', 'A', undefined, 'Impact')

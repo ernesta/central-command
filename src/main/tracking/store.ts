@@ -5,6 +5,7 @@ import { WORKSPACES, type Workspace } from '@shared/settings'
 import { parseYear, parsePlan } from '@shared/tracking/parse'
 import { carrySeconds } from '@shared/tracking/rounding'
 import {
+  assignTask,
   endSessionAt,
   runningSession,
   setStartAt,
@@ -168,6 +169,47 @@ export class TrackingStore {
     const now = this.deps.now()
     if (running.session.date >= now.date) return
     this.mutate(running.workspace, running.year, (y) => endFinishedDay(y, now))
+  }
+
+  /**
+   * Give the running timer its task (see `assignTask`). When the task's client belongs to another contract than the one
+   * holding the timer, the session moves there: written to the new file first, then taken out of the old, so a crash leaves
+   * the timer twice, never nowhere.
+   */
+  assignTask(
+    workspace: Workspace,
+    year: string,
+    id: string,
+    label: string,
+    task: string,
+    client?: string
+  ): TimerResult {
+    const target =
+      client !== undefined && hasContracts(workspace)
+        ? this.startingYear(workspace, client)
+        : { ok: true as const, year }
+    if (!target.ok) return target
+    if (target.year === year) {
+      const here = this.mutate(workspace, year, (y) => assignTask(y, id, label, task, client))
+      return here.ok ? { ok: true, running: this.running() } : here
+    }
+    // The client is in another contract: build the session there, then take it out of this one.
+    const session = this.peek(workspace, year)?.sessions.find((s) => s.id === id)
+    if (!session) return { ok: false, reason: 'not-running' }
+    const moved = this.mutate(workspace, target.year, (y) => {
+      const assigned = assignTask(
+        { ...y, sessions: [...y.sessions, session] },
+        id,
+        label,
+        task,
+        client
+      )
+      return assigned
+    })
+    if (!moved.ok) return moved
+    const left = this.mutate(workspace, year, (y) => ({ ok: true, year: deleteSession(y, id) }))
+    if (!left.ok) return left
+    return { ok: true, running: this.running() }
   }
 
   /** Change when the running timer started (see `setStartAt`). */

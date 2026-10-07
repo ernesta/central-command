@@ -7,6 +7,7 @@ import {
   roundToQuarter
 } from './rounding'
 import {
+  assignTask,
   endFinishedDay,
   endSessionAt,
   deleteSession,
@@ -303,5 +304,52 @@ describe('starting earlier than now', () => {
   it('moves the start later too, up to now', () => {
     const { y, id } = running()
     expect(ok(setStartAt(y, id, '10:45:00', at(D, '10:45:00'))).sessions[1].start).toBe('10:45:00')
+  })
+})
+
+describe('assignTask', () => {
+  const running = (extra: Partial<TrackingYear> = {}): TrackingYear =>
+    ok(startSession(year(extra), at(D, '09:00:00'), '', 'r1'))
+
+  it('gives the running timer its name and task, keeping its start', () => {
+    const y = ok(assignTask(running(), 'r1', ' Deck ', 'cc://task/a'))
+    expect(y.sessions[0]).toMatchObject({
+      label: 'Deck',
+      task: 'cc://task/a',
+      start: '09:00:00',
+      end: null
+    })
+  })
+
+  it("takes the task's client, and keeps the timer's own when none is given", () => {
+    const plan = { hoursPerWeek: 0, workDays: [1], allowanceDays: 0, clients: ['A', 'B'] }
+    const y = running({ plan })
+    expect(ok(assignTask(y, 'r1', 'x', 'cc://task/a', 'B')).sessions[0].client).toBe('B')
+    const kept = ok(assignTask(y, 'r1', 'x', 'cc://task/a')).sessions[0].client
+    expect(kept).toBe('A')
+  })
+
+  it('refuses a client that is not on the plan, a stopped session and an empty name', () => {
+    const plan = { hoursPerWeek: 0, workDays: [1], allowanceDays: 0, clients: ['A'] }
+    expect(assignTask(running({ plan }), 'r1', 'x', 'cc://task/a', 'Z')).toEqual({
+      ok: false,
+      reason: 'bad-client'
+    })
+    const stopped = ok(stopSession(running(), at(D, '10:00:00')))
+    expect(assignTask(stopped, 'r1', 'x', 'cc://task/a')).toEqual({
+      ok: false,
+      reason: 'not-running'
+    })
+    expect(assignTask(running(), 'r1', '  ', 'cc://task/a')).toEqual({
+      ok: false,
+      reason: 'empty-label'
+    })
+  })
+
+  it('changes nothing but the running session', () => {
+    let y = ok(startSession(year(), at(D, '08:00:00'), 'Earlier', 'e1'))
+    y = ok(startSession(y, at(D, '09:00:00'), '', 'r1'))
+    const after = ok(assignTask(y, 'r1', 'Deck', 'cc://task/a'))
+    expect(after.sessions[0]).toEqual(y.sessions[0])
   })
 })

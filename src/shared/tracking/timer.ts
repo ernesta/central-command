@@ -115,6 +115,37 @@ export function startSession(
   return { ok: true, year: { ...current, sessions: [...current.sessions, session] } }
 }
 
+/**
+ * Give the running session its task: its name becomes the task's title, its key the task's, and its client the task's
+ * (kept when none is given). This is how a timer started at once, with no task yet, gets one. Nothing else changes, so
+ * the start time and every other entry stay as they are.
+ */
+export function assignTask(
+  year: TrackingYear,
+  id: string,
+  label: string,
+  task: string,
+  client?: string
+): Change {
+  const session = year.sessions.find((s) => s.id === id)
+  if (!session || session.end !== null) return { ok: false, reason: 'not-running' }
+  const name = label.trim()
+  if (!name || !task) return { ok: false, reason: 'empty-label' }
+  const chosen = resolveClient(year, client ?? session.client)
+  if (!chosen.ok) return chosen
+  const { client: _old, ...rest } = session
+  const next: Session = {
+    ...rest,
+    label: name,
+    task,
+    ...(chosen.client !== undefined ? { client: chosen.client } : {})
+  }
+  return {
+    ok: true,
+    year: { ...year, sessions: year.sessions.map((s) => (s.id === id ? next : s)) }
+  }
+}
+
 /** Stop the running task now. A session from an earlier day is not stopped by the clock: it needs an end time. */
 export function stopSession(year: TrackingYear, now: Moment): Change {
   const running = runningSession(year)

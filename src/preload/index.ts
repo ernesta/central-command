@@ -195,6 +195,8 @@ const api: Api = {
       ipcRenderer.invoke(TRACKING_IPC.endAt, workspace, year, id, time),
     setStart: (workspace, year, id, time) =>
       ipcRenderer.invoke(TRACKING_IPC.setStart, workspace, year, id, time),
+    assignTask: (workspace, year, id, label, task, client) =>
+      ipcRenderer.invoke(TRACKING_IPC.assignTask, workspace, year, id, label, task, client),
     deleteSession: (workspace, year, id) =>
       ipcRenderer.invoke(TRACKING_IPC.deleteSession, workspace, year, id),
     setTaskMinutes: (workspace, year, date, label, minutes, client) =>
