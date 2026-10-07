@@ -1,6 +1,6 @@
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft, ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useState, useSyncExternalStore } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, Navigate, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { Dialog } from '@renderer/components/Dialog'
 import { EmptyState } from '@renderer/components/EmptyState'
@@ -54,13 +54,14 @@ export function TaskPage(): React.JSX.Element {
       </div>
     )
   }
+  // A subtask has no page of its own: everything about it is set on its parent's page.
   const parent = task.parentUid ? tasks.find((t) => t.uid === task.parentUid) : undefined
-  const row = rows.find((r) => r.task.uid === (parent ? parent.uid : task.uid))
+  if (parent) return <Navigate replace to={taskRoute(workspace, parent.uid)} />
+  const row = rows.find((r) => r.task.uid === task.uid)
   return (
     <TaskView
       key={task.uid}
       task={task}
-      parent={parent}
       row={row ?? { task, kids: [] }}
       rows={rows}
       workspace={workspace}
@@ -87,13 +88,11 @@ function useSaver(
 
 function TaskView({
   task,
-  parent,
   row,
   rows,
   workspace
 }: {
   task: Task
-  parent: Task | undefined
   row: TaskRow
   rows: readonly TaskRow[]
   workspace: TaskWorkspace
@@ -101,7 +100,6 @@ function TaskView({
   const navigate = useNavigate()
   const today = todayIso()
   const { tracked, running, yearFor, clientFor, months } = useTaskTime(workspace)
-  const isSub = parent !== undefined
   const [error, setError] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -128,7 +126,7 @@ function TaskView({
   const time = taskTime(row, tracked)
   const own = taskTime({ task, kids: [] }, tracked)
   const progress = subtaskProgress(row.kids)
-  const backTo = parent ? taskRoute(workspace, parent.uid) : tasksBase(workspace)
+  const backTo = tasksBase(workspace)
 
   const remove = async (): Promise<void> => {
     setBusy(true)
@@ -156,14 +154,14 @@ function TaskView({
     }
   }
 
-  const untouchedNow = titleText === '' && bodyText.trim() === '' && row.kids.length === 0 && !isSub
+  const untouchedNow = titleText === '' && bodyText.trim() === '' && row.kids.length === 0
 
   return (
     <div className={styles.page}>
       <div className={styles.top}>
         <Link className={styles.back} to={backTo}>
           <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-          {parent ? parent.title || 'Task' : 'Tasks'}
+          Tasks
         </Link>
         <Button
           size="small"
@@ -233,53 +231,46 @@ function TaskView({
                 }))}
                 onChange={(status) => void setTaskStatus(task, status)}
               />
-              {!isSub && (
-                <Segmented
-                  label="Priority"
-                  value={task.priority}
-                  options={TASK_PRIORITIES.map((p) => ({ value: p, label: PRIORITY_LABELS[p] }))}
-                  onChange={(priority) => update({ priority })}
-                />
-              )}
+              <Segmented
+                label="Priority"
+                value={task.priority}
+                options={TASK_PRIORITIES.map((p) => ({ value: p, label: PRIORITY_LABELS[p] }))}
+                onChange={(priority) => update({ priority })}
+              />
             </div>
             <div className={styles.metaRow}>
               <div className={styles.field}>
                 <span className={styles.label}>Due</span>
                 <DueField value={task.due} today={today} onChange={(due) => update({ due })} />
               </div>
-              {!isSub && (
-                <div className={styles.field}>
-                  <span className={styles.label}>Repeats</span>
-                  <RecurrenceField
-                    value={task.recurrence}
-                    onChange={(recurrence) => update({ recurrence })}
-                  />
-                </div>
-              )}
-              {!isSub && (
-                <div className={[styles.field, styles.grow].join(' ')}>
-                  <span className={styles.label}>List</span>
-                  <ListField
-                    list={task.list}
-                    sublist={task.sublist}
-                    rows={rows}
-                    onChange={({ list, sublist }) => update({ list, sublist })}
-                  />
-                </div>
-              )}
+              <div className={styles.field}>
+                <span className={styles.label}>Repeats</span>
+                <RecurrenceField
+                  value={task.recurrence}
+                  onChange={(recurrence) => update({ recurrence })}
+                />
+              </div>
+              <div className={[styles.field, styles.grow].join(' ')}>
+                <span className={styles.label}>List</span>
+                <ListField
+                  list={task.list}
+                  sublist={task.sublist}
+                  rows={rows}
+                  onChange={({ list, sublist }) => update({ list, sublist })}
+                />
+              </div>
             </div>
           </section>
 
-          {!isSub && (
-            <Subtasks
-              task={task}
-              kids={row.kids}
-              workspace={workspace}
-              done={progress.done}
-              total={progress.total}
-              tracked={tracked}
-            />
-          )}
+          <Subtasks
+            task={task}
+            kids={row.kids}
+            workspace={workspace}
+            today={today}
+            done={progress.done}
+            total={progress.total}
+            tracked={tracked}
+          />
 
           <EditorCard
             text={bodyText}
@@ -342,7 +333,7 @@ function TaskView({
             </>
           }
         >
-          {isSub || row.kids.length === 0
+          {row.kids.length === 0
             ? 'It goes to the trash; you can undo right after.'
             : `It and its ${row.kids.length} ${row.kids.length === 1 ? 'subtask' : 'subtasks'} go to the trash; you can undo right after.`}
         </Dialog>
@@ -355,6 +346,7 @@ function Subtasks({
   task,
   kids,
   workspace,
+  today,
   done,
   total,
   tracked
@@ -362,6 +354,7 @@ function Subtasks({
   task: Task
   kids: readonly Task[]
   workspace: TaskWorkspace
+  today: string
   done: number
   total: number
   tracked: ReadonlyMap<string, number>
@@ -399,31 +392,16 @@ function Subtasks({
         </button>
       </div>
       {kids.map((kid) => (
-        <div key={kid.uid} className={styles.subRow}>
-          <button
-            type="button"
-            className={styles.iconButton}
-            aria-label={`Status: ${STATUS_LABELS[kid.status]}`}
-            title={`${STATUS_LABELS[kid.status]}`}
-            onClick={() =>
-              void setTaskStatus(
-                kid,
-                kid.status === 'done' ? 'todo' : kid.status === 'todo' ? 'doing' : 'done'
-              )
-            }
-          >
-            <StatusIcon status={kid.status} size={20} />
-          </button>
-          <Link className={styles.subTitle} to={taskRoute(workspace, kid.uid)}>
-            {kid.title || 'Untitled'}
-          </Link>
-          <span className={styles.subTime}>
-            {formatTaskTime(kid.earlierMinutes + (tracked.get(kid.uid) ?? 0))}
-          </span>
-        </div>
+        <SubtaskRow
+          key={kid.uid}
+          kid={kid}
+          today={today}
+          minutes={kid.earlierMinutes + (tracked.get(kid.uid) ?? 0)}
+          onError={setError}
+        />
       ))}
       {adding && (
-        <div className={styles.subRow}>
+        <div className={styles.subAdd}>
           <span />
           <input
             autoFocus
@@ -455,5 +433,126 @@ function Subtasks({
         </p>
       )}
     </section>
+  )
+}
+
+/** One subtask, all of it editable in place: status, title, due date, tags and notes. */
+function SubtaskRow({
+  kid,
+  today,
+  minutes,
+  onError
+}: {
+  kid: Task
+  today: string
+  minutes: number
+  onError: (message: string | null) => void
+}): React.JSX.Element {
+  const [open, setOpen] = useState(false)
+  const [title, setTitle] = useState(kid.title)
+  const [notes, setNotes] = useState(kid.description)
+
+  const update = (changes: TaskChanges): void => {
+    onError(null)
+    window.api.tasks.update(kid.uid, changes).catch((e: unknown) => onError(ipcErrorMessage(e)))
+  }
+  const saveTitle = (): void => {
+    const text = title.trim()
+    if (text === kid.title) return
+    if (text === '') setTitle(kid.title)
+    else update({ title: text })
+  }
+  const remove = (): void => {
+    window.api.tasks
+      .delete(kid.uid)
+      .then(() =>
+        showTaskToast(`Deleted “${kid.title || 'Untitled'}”.`, {
+          label: 'Undo',
+          run: () =>
+            void window.api.tasks
+              .restore(kid.uid)
+              .catch((e: unknown) => showTaskToast(`Couldn’t bring it back: ${ipcErrorMessage(e)}`))
+        })
+      )
+      .catch((e: unknown) => onError(ipcErrorMessage(e)))
+  }
+
+  return (
+    <div className={styles.subItem}>
+      <div className={styles.subRow}>
+        <button
+          type="button"
+          className={styles.iconButton}
+          aria-label={`Status: ${STATUS_LABELS[kid.status]}`}
+          title={`${STATUS_LABELS[kid.status]}`}
+          onClick={() =>
+            void setTaskStatus(
+              kid,
+              kid.status === 'done' ? 'todo' : kid.status === 'todo' ? 'doing' : 'done'
+            )
+          }
+        >
+          <StatusIcon status={kid.status} size={20} />
+        </button>
+        <input
+          className={styles.subTitleInput}
+          aria-label="Subtask title"
+          placeholder="Untitled"
+          value={title}
+          onChange={(event) => setTitle(event.target.value.replace(/[\r\n]/g, ' '))}
+          onBlur={saveTitle}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault()
+              event.currentTarget.blur()
+            }
+          }}
+        />
+        <DueField
+          label="Subtask due"
+          value={kid.due}
+          today={today}
+          onChange={(due) => update({ due })}
+        />
+        <span className={styles.subTime}>{formatTaskTime(minutes)}</span>
+        <button
+          type="button"
+          className={styles.iconButton}
+          aria-label={open ? 'Hide details' : 'Show details'}
+          aria-expanded={open}
+          onClick={() => setOpen((o) => !o)}
+        >
+          {open ? (
+            <ChevronUp size={16} strokeWidth={1.75} aria-hidden />
+          ) : (
+            <ChevronDown size={16} strokeWidth={1.75} aria-hidden />
+          )}
+        </button>
+        <button
+          type="button"
+          className={styles.iconButton}
+          aria-label="Delete subtask"
+          onClick={remove}
+        >
+          <Trash2 size={16} strokeWidth={1.75} aria-hidden />
+        </button>
+      </div>
+      {open && (
+        <div className={styles.subDetails}>
+          <TagsField tags={kid.tags} onChange={(tags) => update({ tags })} />
+          <textarea
+            className={styles.subNotes}
+            aria-label="Subtask notes"
+            placeholder="Add notes…"
+            rows={3}
+            value={notes}
+            onChange={(event) => setNotes(event.target.value)}
+            onBlur={() => {
+              if (notes !== kid.description) update({ description: notes })
+            }}
+          />
+        </div>
+      )}
+    </div>
   )
 }
