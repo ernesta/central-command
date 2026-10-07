@@ -7,8 +7,9 @@ the work was started and in which workspace. They want one consistent, sensible 
 ## What the user decided (not to be re-asked)
 
 - **Option A: every hour belongs to a task, in every workspace** (Research and Work; Life has no hours). No unlinked entries for new data.
-- **Trainings and meetings also have tasks and their hours are tracked.** They are one generic task per series, not one per
-  occurrence. Reports show the task's generic title.
+- **Trainings and meetings also have tasks and their hours are tracked.** Meetings: one generic task per series, not one per
+  occurrence. Trainings (changed 7 Oct 2026, see "Trainings: series task and lecture subtasks"): one parent task per series and
+  **one subtask per lecture**. Reports show the task's generic title.
 - **Starting a timer always starts immediately**, then the task is picked or created.
 - **A meeting or training is a note with typed date, start and end. There is no "live meeting" and no timer is needed for them.**
   Never make the user choose between "timer" and "no timer" for the same kind of thing.
@@ -47,6 +48,24 @@ the work was started and in which workspace. They want one consistent, sensible 
    minutes come from the shared store. Client reports list entries under the task's title.
 6. **Overlap**: a note whose times overlap another entry shows a warning and changes nothing.
 
+## Trainings: series task and lecture subtasks (decided with the user, 7 Oct 2026; do not re-ask)
+
+Self-study is training too, must be reported, and must not need a new task per lecture or a second note.
+
+- **A series is a parent task** ("Intro to Python"); **each lecture (training note) is a subtask** of it, created automatically with
+  the note. Subtask time already rolls up into the parent (`taskTime`, `trackedByTask`), so a series total needs nothing new.
+- **A lecture's hours are one total, no split shown**: the derived session time (the note's date, start and end) plus every timer or
+  typed entry on its subtask (self-study). The same note holds the self-study notes.
+- **Start on a training note's page** starts the timer at once on that lecture's subtask: no picker, no Create. The normal Start
+  picker lists the lectures as well.
+- **Self-study is lecture-specific only** (the user's choice). No course-wide time on the parent, so no extra Inkpath lines: each
+  Inkpath line is a lecture's total. Self-study inherits the series' skills; the training hours counter, per-skill totals and the
+  Inkpath export sum the lecture total.
+- **Needs, not built**: a way to add time by hand to a subtask (today only the parent's Time card takes typed time; open in
+  `docs/DECISIONS.md`, "A subtask has no page of its own"). Subtasks stay hidden under their parent in the task lists, and a subtask's
+  route still redirects to its parent (the training note is the lecture's page).
+- **Overlap**: a self-study timer that overlaps the lecture's own session time warns and changes nothing (rule 6).
+
 ## Open questions (ask the user when the stage needs them)
 
 - Which task a meeting series maps to in Work vs Research, and what the generic titles are (the training's series already exists).
@@ -64,10 +83,13 @@ the work was started and in which workspace. They want one consistent, sensible 
    is (see stage 5). Drive the app in both workspaces, dev and production.
 3. **Meetings: task and derived hours.** A task on each meeting note (proposed, editable), minutes derived from its times, overlap
    warning, the Hours page shows them. Supervision log still reads the note.
-4. **Trainings: task and derived hours.** Same for trainings; the training hours counter, per-skill totals and the Inkpath
-   export read the shared store. Check the reports still match.
+4. **Trainings: series task, lecture subtasks and derived hours.** A subtask per training note, created with it (series parent found
+   or offered); minutes derived from the note's times; the Start button on the training page; typed time on a subtask; overlap
+   warning; the training hours counter, per-skill totals and the Inkpath export read the lecture totals from the shared store.
+   Check the reports still match for sessions without self-study.
 5. **Historical data** (a separate conversation first, read-only look at the real data before any rule): label-only Research and Work
-   hours without a task, the 129 training entries with times but no task, the existing meetings. Importer-style scripts: dry run,
+   hours without a task, the 129 training entries with times but no task (series parents and lecture subtasks, only for entries
+   with hours), the existing meetings. Importer-style scripts: dry run,
    backup, `--apply` only when the user says so, app closed.
 
 Update `CLAUDE.md`, `docs/DECISIONS.md` and `docs/ROADMAP.md` at the end of each stage.
