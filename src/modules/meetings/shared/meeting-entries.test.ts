@@ -97,6 +97,11 @@ describe('overlapping', () => {
     expect(overlapping('14:00', '15:00', running, 14 * 3600 + 45 * 60)).toHaveLength(1)
     expect(overlapping('14:00', '14:30', running, 15 * 3600)).toHaveLength(0)
   })
+  it('counts a timer that has only just started', () => {
+    const fresh = [{ label: 'Now', start: '14:30:20', end: null }]
+    expect(overlapping('14:00', '15:00', fresh, 14 * 3600 + 30 * 60 + 20)).toHaveLength(1)
+    expect(overlapping('14:00', '14:30', fresh, 14 * 3600 + 30 * 60 + 20)).toHaveLength(0)
+  })
   it('never compares a meeting with itself', () => {
     const me = [{ label: 'Me', start: '14:00', end: '15:00', meeting: 'research/a' }]
     expect(overlapping('14:00', '15:00', me, 0, 'research/a')).toEqual([])

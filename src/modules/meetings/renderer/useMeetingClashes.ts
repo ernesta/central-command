@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { RunningTimer } from '@shared/tracking/api'
-import { timeToSeconds } from '@shared/tracking/rounding'
 import type { Session } from '@shared/tracking/types'
 import { todayIso } from '@shared/time'
 import { useMeetingEntries } from '../../hours/renderer/useMeetingHours'
@@ -56,9 +55,7 @@ export function useMeetingClashes(
         ? [running.session]
         : []
     const now = new Date()
-    const seconds = timeToSeconds(
-      `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
-    )
+    const seconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()
     return overlapping(
       meta.start,
       meta.end,
@@ -66,7 +63,7 @@ export function useMeetingClashes(
         ...occupiedBySessions([...own, ...elsewhere], date),
         ...occupiedByMeetings(entries, date, workspace)
       ],
-      seconds ?? 0,
+      seconds,
       `${workspace}/${id}`
     )
   }, [sessions, running, entries, workspace, id, date, meta.start, meta.end])

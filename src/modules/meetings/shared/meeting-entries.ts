@@ -94,7 +94,13 @@ export function overlapping(
   return others.filter((o) => {
     if (self !== undefined && o.meeting === self) return false
     const s = timeToSeconds(o.start)
-    const e = o.end === null ? now : timeToSeconds(o.end)
+    // A timer that has only just started still occupies its start.
+    const e =
+      o.end === null && s !== null
+        ? Math.max(now, s + 1)
+        : o.end === null
+          ? null
+          : timeToSeconds(o.end)
     if (s === null || e === null || e <= s) return false
     return s < b && a < e
   })
