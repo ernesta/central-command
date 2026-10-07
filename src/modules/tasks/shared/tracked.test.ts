@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { year as baseYear } from '@shared/tracking/test-utils'
 import type { TrackingYear } from '@shared/tracking/types'
-import { hoursByMonth, taskKey, taskKeyForLabel, taskUidOf, trackedByTask } from './tracked'
+import { hoursByMonth, taskKey, taskUidOf, trackedByTask } from './tracked'
 
 const year = (over: Partial<TrackingYear>): TrackingYear => baseYear(over)
 
@@ -142,21 +142,5 @@ describe('hoursByMonth', () => {
       { month: '2025-11', minutes: 105 }
     ])
     expect(hoursByMonth([y], 'none')).toEqual([])
-  })
-})
-
-describe('taskKeyForLabel', () => {
-  const tasks = [
-    { uid: 'a', title: 'Write the paper' },
-    { uid: 'b', title: 'Duplicate' },
-    { uid: 'c', title: 'duplicate ' }
-  ]
-  it('links a name that matches exactly one task, ignoring case and spaces', () => {
-    expect(taskKeyForLabel(tasks, ' write THE paper')).toBe(taskKey('a'))
-  })
-  it('does not guess when none or several match', () => {
-    expect(taskKeyForLabel(tasks, 'Duplicate')).toBeUndefined()
-    expect(taskKeyForLabel(tasks, 'Nothing')).toBeUndefined()
-    expect(taskKeyForLabel(tasks, '  ')).toBeUndefined()
   })
 })

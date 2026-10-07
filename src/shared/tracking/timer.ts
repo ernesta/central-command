@@ -133,9 +133,8 @@ export function assignTask(
   if (!name || !task) return { ok: false, reason: 'empty-label' }
   const chosen = resolveClient(year, client ?? session.client)
   if (!chosen.ok) return chosen
-  const { client: _old, ...rest } = session
   const next: Session = {
-    ...rest,
+    ...session,
     label: name,
     task,
     ...(chosen.client !== undefined ? { client: chosen.client } : {})
