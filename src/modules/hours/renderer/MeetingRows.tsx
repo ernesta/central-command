@@ -1,11 +1,13 @@
 import { Link } from 'react-router'
-import { CalendarClock, TriangleAlert } from 'lucide-react'
+import { CalendarClock, GraduationCap, TriangleAlert } from 'lucide-react'
 import { formatHours } from '@shared/tracking/format'
 import { derivedRows } from '@shared/tracking/derived'
 import { timeToSeconds } from '@shared/tracking/rounding'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
 import { meetingRoute } from '../../meetings/renderer/meetings-paths'
+import { entryRoute } from '../../training/renderer/training-paths'
 import {
+  noteKey,
   occupiedByMeetings,
   occupiedBySessions,
   overlapping
@@ -23,8 +25,8 @@ interface MeetingRowsProps {
 }
 
 /**
- * A day's meetings, read-only: the task's title, the note's times and the hours it reports, linking to the note, which is where
- * they are changed. A line that overlaps a timer block or another meeting says so and changes nothing.
+ * A day's meetings and lectures, read-only: the task's title, the note's times and the hours it reports, linking to the note, which
+ * is where they are changed. A line that overlaps a timer block or another meeting says so and changes nothing.
  */
 export function MeetingRows({
   workspace,
@@ -43,22 +45,24 @@ export function MeetingRows({
   const seconds = timeToSeconds(now.time) ?? 0
 
   return (
-    <ul className={listStyles.list} aria-label="Meetings">
+    <ul className={listStyles.list} aria-label="Meetings and training">
       {rows.map((row) => {
         const clashes = overlapping(
           row.start,
           row.end,
           [...sessions, ...meetings],
           seconds,
-          `${workspace}/${row.id}`
+          noteKey(row.kind, workspace, row.id)
         )
+        const lecture = row.kind === 'training'
+        const Icon = lecture ? GraduationCap : CalendarClock
         return (
-          <li key={row.id} className={styles.row}>
-            <CalendarClock size={16} strokeWidth={1.75} className={styles.icon} aria-hidden />
+          <li key={`${row.kind}:${row.id}`} className={styles.row}>
+            <Icon size={16} strokeWidth={1.75} className={styles.icon} aria-hidden />
             <Link
               className={styles.name}
-              to={meetingRoute(workspace, row.id)}
-              aria-label={`Open the meeting ${row.id}`}
+              to={lecture ? entryRoute(row.id) : meetingRoute(workspace, row.id)}
+              aria-label={`Open the ${lecture ? 'lecture' : 'meeting'} ${row.id}`}
             >
               <span className={styles.title}>{row.label}</span>
               <span className={styles.when}>

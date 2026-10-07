@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { RunningTimer } from '@shared/tracking/api'
-import type { Session } from '@shared/tracking/types'
+import type { DerivedKind, Session } from '@shared/tracking/types'
 import { todayIso } from '@shared/time'
 import { useMeetingEntries } from '../../hours/renderer/useMeetingHours'
 import {
+  noteKey,
   occupiedByMeetings,
   occupiedBySessions,
   overlapping,
@@ -18,7 +19,9 @@ import type { MeetingMeta, MeetingWorkspace } from '../shared/types'
 export function useMeetingClashes(
   workspace: MeetingWorkspace,
   id: string,
-  meta: Pick<MeetingMeta, 'date' | 'start' | 'end'>
+  meta: Pick<MeetingMeta, 'date' | 'start' | 'end'>,
+  /** A lecture is a training note: the same clock, its own kind. */
+  kind: DerivedKind = 'meeting'
 ): Occupied[] {
   const [sessions, setSessions] = useState<{ date: string; list: Session[] } | null>(null)
   const [running, setRunning] = useState<RunningTimer | null>(null)
@@ -64,7 +67,7 @@ export function useMeetingClashes(
         ...occupiedByMeetings(entries, date, workspace)
       ],
       seconds,
-      `${workspace}/${id}`
+      noteKey(kind, workspace, id)
     )
-  }, [sessions, running, entries, workspace, id, date, meta.start, meta.end])
+  }, [sessions, running, entries, workspace, id, kind, date, meta.start, meta.end])
 }

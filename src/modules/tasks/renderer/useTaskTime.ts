@@ -1,16 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNow } from '@renderer/state/use-now'
 import { useRunningTimer } from '@renderer/state/use-running-timer'
+import { todayIso } from '@shared/time'
 import { inYear } from '@shared/year'
+import { withDerived } from '@shared/tracking/derived'
 import { clientForList, contractForClient } from '@shared/tracking/contracts'
 import type { TrackingYear } from '@shared/tracking/types'
+import { useMeetingEntries } from '../../hours/renderer/useMeetingHours'
 import { elapsedMinutes } from '../../hours/shared/timer'
 import { hoursByMonth, taskUidOf, trackedByTask } from '../shared/tracked'
 import type { TaskWorkspace } from '../shared/types'
 
 /**
- * What Hours holds for each task of a workspace (minutes by task uid, every year, a running timer counted in whole minutes) and
- * which task has a timer running. Read again whenever a year file changes. ClickUp's earlier time is not here (it is on the task).
+ * What Hours holds for each task of a workspace (minutes by task uid, every year, a running timer counted in whole minutes, and the
+ * hours its meetings and lectures derive, the same minutes the Hours page counts) and which task has a timer running. Read again whenever a year file changes. ClickUp's earlier time is not here (it is on the task).
  */
 export function useTaskTime(workspace: TaskWorkspace): {
   tracked: ReadonlyMap<string, number>
@@ -28,6 +31,8 @@ export function useTaskTime(workspace: TaskWorkspace): {
   const [years, setYears] = useState<TrackingYear[]>([])
   const { running } = useRunningTimer()
   const now = useNow(false)
+  const entries = useMeetingEntries(workspace, todayIso())
+  const shown = useMemo(() => years.map((y) => withDerived(y, entries)), [years, entries])
 
   useEffect(() => {
     let cancelled = false
@@ -47,7 +52,7 @@ export function useTaskTime(workspace: TaskWorkspace): {
     }
   }, [workspace])
 
-  const base = useMemo(() => trackedByTask(years), [years])
+  const base = useMemo(() => trackedByTask(shown), [shown])
   return useMemo(() => {
     const tracked = new Map(base)
     const active = new Set<string>()
@@ -65,7 +70,7 @@ export function useTaskTime(workspace: TaskWorkspace): {
       null
     const clientFor = (list: string, date: string): string | undefined =>
       clientForList(years, date, list)
-    const months = (uid: string): { month: string; minutes: number }[] => hoursByMonth(years, uid)
+    const months = (uid: string): { month: string; minutes: number }[] => hoursByMonth(shown, uid)
     return { tracked, running: active, yearFor, clientFor, months }
-  }, [base, running, now, workspace, years])
+  }, [base, running, now, workspace, years, shown])
 }

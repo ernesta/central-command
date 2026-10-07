@@ -304,6 +304,8 @@ function TaskView({
             yearFor={yearFor}
             clientFor={clientFor}
             months={months(task.uid)}
+            list={task.list}
+            parts={row.kids.filter((k) => k.status !== 'done')}
           />
           <MentionedIn
             kind="task"
