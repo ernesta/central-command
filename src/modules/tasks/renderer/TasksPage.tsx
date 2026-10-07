@@ -26,6 +26,7 @@ import type { TaskView } from '../shared/views'
 import { AddBar } from './AddBar'
 import { NewTaskButton } from './NewTaskButton'
 import { PRIORITY_LABELS } from './task-labels'
+import { useWorkClients } from './useWorkClients'
 import { TasksTable } from './TasksTable'
 import { tasksBase, todayIso, useTasksWorkspace } from './tasks-paths'
 import { useTaskTime } from './useTaskTime'
@@ -61,7 +62,8 @@ export function TasksPage(): React.JSX.Element {
   const [showAll, setShowAll] = useState(false)
   const today = todayIso()
   const all = rows ?? []
-  const query: TasksQuery = rows === null ? saved : reconcileQuery(saved, all)
+  const clients = useWorkClients(workspace)
+  const query: TasksQuery = rows === null ? saved : reconcileQuery(saved, all, clients)
   const set = (patch: Partial<TasksQuery>): void => {
     setShowAll(false)
     setQuery(patch)
@@ -85,6 +87,9 @@ export function TasksPage(): React.JSX.Element {
   let content: React.ReactNode = null
   if (rows === null) content = null
   else if (all.length === 0) {
+    content = <EmptyState heading="No tasks yet" message="Add one above." />
+  } else if (visible.length === 0 && query.list && !all.some((r) => r.task.list === titleList)) {
+    // A client's list that holds no task yet (the filter is the list alone, so there is nothing to clear).
     content = <EmptyState heading="No tasks yet" message="Add one above." />
   } else if (visible.length === 0) {
     content = (
@@ -146,7 +151,7 @@ export function TasksPage(): React.JSX.Element {
           value={query.list}
           options={[
             { value: '', label: 'All lists' },
-            ...listChoices(all).map((c) => ({
+            ...listChoices(all, clients).map((c) => ({
               value: listValue(c.list, c.sublist),
               label: c.sublist ? `${c.list} › ${c.sublist}` : c.list
             }))

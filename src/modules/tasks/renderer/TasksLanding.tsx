@@ -19,6 +19,7 @@ import { NewTaskButton } from './NewTaskButton'
 import { showTaskToast } from './task-toast'
 import { TasksTable } from './TasksTable'
 import { tasksAllRoute, todayIso, useTasksWorkspace } from './tasks-paths'
+import { useWorkClients } from './useWorkClients'
 import { useTaskTime } from './useTaskTime'
 import { useTasksList } from './useTasksList'
 import styles from './TasksLanding.module.css'
@@ -37,7 +38,8 @@ export function TasksLanding(): React.JSX.Element {
 
   const all = rows ?? []
   const sections = landingSections(all, today)
-  const lists = listSummaries(all, today)
+  const clients = useWorkClients(workspace)
+  const lists = listSummaries(all, today, clients)
   const backlog = all.filter(isBacklog).length
 
   const limited = (id: string, list: SectionRow[]): SectionRow[] =>

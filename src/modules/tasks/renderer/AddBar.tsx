@@ -2,10 +2,12 @@ import { Plus } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { defaultList } from '../shared/query'
+import { canUseList } from '../shared/work-lists'
 import type { TaskWorkspace } from '../shared/types'
 import type { TaskRow } from '../shared/views'
 import { DueField } from './DueField'
 import { ListField } from './ListField'
+import { useWorkClients } from './useWorkClients'
 import { useTaskDefaults } from './useTaskDefaults'
 import styles from './AddBar.module.css'
 
@@ -33,7 +35,10 @@ export function AddBar({
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
-  const list = chosen ?? defaultList(rows, { filter: listFilter, last })
+  const clients = useWorkClients(workspace)
+  // A list chosen earlier that is no longer a client (renamed or removed meanwhile) gives way to the default.
+  const picked = chosen && canUseList(workspace, chosen.list, clients ?? []) ? chosen : null
+  const list = picked ?? defaultList(rows, { filter: listFilter, last, clients })
 
   const submit = async (): Promise<void> => {
     if (title.trim() === '' || busy) return
@@ -77,6 +82,7 @@ export function AddBar({
       />
       <DueField value={due} today={today} onChange={setDue} />
       <ListField
+        workspace={workspace}
         list={list.list}
         sublist={list.sublist}
         rows={rows}

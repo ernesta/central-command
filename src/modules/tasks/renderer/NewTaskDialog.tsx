@@ -4,10 +4,12 @@ import { Dialog } from '@renderer/components/Dialog'
 import { Segmented } from '@renderer/components/Segmented'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { defaultList } from '../shared/query'
+import { canUseList } from '../shared/work-lists'
 import { TASK_PRIORITIES, type TaskPriority, type TaskWorkspace } from '../shared/types'
 import type { TaskRow } from '../shared/views'
 import { DueField } from './DueField'
 import { ListField } from './ListField'
+import { useWorkClients } from './useWorkClients'
 import { PRIORITY_LABELS } from './task-labels'
 import { useTaskDefaults } from './useTaskDefaults'
 import styles from './NewTaskDialog.module.css'
@@ -33,7 +35,10 @@ export function NewTaskDialog({
   const [chosen, setChosen] = useState<{ list: string; sublist: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const list = chosen ?? defaultList(rows, { filter: listFilter, last })
+  const clients = useWorkClients(workspace)
+  // A list chosen earlier that is no longer a client (renamed or removed meanwhile) gives way to the default.
+  const picked = chosen && canUseList(workspace, chosen.list, clients ?? []) ? chosen : null
+  const list = picked ?? defaultList(rows, { filter: listFilter, last, clients })
 
   const add = async (): Promise<void> => {
     if (title.trim() === '' || busy) return
@@ -100,7 +105,13 @@ export function NewTaskDialog({
           </div>
           <div className={styles.field}>
             <span className={styles.label}>List</span>
-            <ListField list={list.list} sublist={list.sublist} rows={rows} onChange={setChosen} />
+            <ListField
+              workspace={workspace}
+              list={list.list}
+              sublist={list.sublist}
+              rows={rows}
+              onChange={setChosen}
+            />
           </div>
         </div>
         <div className={styles.field}>

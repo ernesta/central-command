@@ -253,6 +253,7 @@ function TaskView({
               <div className={[styles.field, styles.grow].join(' ')}>
                 <span className={styles.label}>List</span>
                 <ListField
+                  workspace={workspace}
                   list={task.list}
                   sublist={task.sublist}
                   rows={rows}

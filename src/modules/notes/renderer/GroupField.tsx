@@ -22,6 +22,11 @@ interface GroupFieldProps {
   noun?: string
   /** Whether "No group" can be chosen (a task always has a list). */
   allowNone?: boolean
+  /**
+   * Whether the form can make a new top-level group (default). When not (Work's lists are its clients), the form makes a
+   * sublist and must say what it sits inside.
+   */
+  allowNewTop?: boolean
 }
 
 /**
@@ -35,7 +40,8 @@ export function GroupField({
   groups,
   onChange,
   noun = 'group',
-  allowNone = true
+  allowNone = true,
+  allowNewTop = true
 }: GroupFieldProps): React.JSX.Element {
   const [open, setOpen] = useState(false)
   const [filter, setFilter] = useState('')
@@ -83,14 +89,19 @@ export function GroupField({
   const isCurrent = (g: string, s: string): boolean =>
     nameKey(g) === nameKey(group) && nameKey(s) === nameKey(subgroup)
 
+  // Without new top-level groups the form's "Inside" starts at this group, else the first there is.
+  const target =
+    inside ||
+    (allowNewTop ? '' : groups.some((g) => g.name === group) ? group : (groups[0]?.name ?? ''))
+
   const addNew = (): void => {
     if (!isValidName(name)) {
       setError('A name cannot be empty or contain / or ›.')
       return
     }
     choose(
-      inside
-        ? { group: inside, subgroup: cleanName(name) }
+      target
+        ? { group: target, subgroup: cleanName(name) }
         : { group: cleanName(name), subgroup: '' }
     )
   }
@@ -173,46 +184,48 @@ export function GroupField({
               <li className={styles.empty}>No {noun} matches.</li>
             )}
           </ul>
-          <form
-            className={styles.new}
-            onSubmit={(event) => {
-              event.preventDefault()
-              addNew()
-            }}
-          >
-            <label className={styles.newLabel} htmlFor="new-group">
-              New {noun}
-            </label>
-            <div className={styles.newRow}>
-              <input
-                id="new-group"
-                className={styles.input}
-                placeholder="Name"
-                value={name}
-                onChange={(event) => {
-                  setName(event.target.value)
-                  setError(null)
-                }}
-              />
-              <Select
-                label="Inside"
-                value={inside}
-                options={[
-                  { value: '', label: 'Inside nothing' },
-                  ...groups.map((g) => ({ value: g.name, label: `Inside ${g.name}` }))
-                ]}
-                onChange={setInside}
-              />
-              <button type="submit" className={styles.submit} disabled={name.trim() === ''}>
-                Add
-              </button>
-            </div>
-            {error && (
-              <p className={styles.error} role="alert">
-                {error}
-              </p>
-            )}
-          </form>
+          {(allowNewTop || groups.length > 0) && (
+            <form
+              className={styles.new}
+              onSubmit={(event) => {
+                event.preventDefault()
+                addNew()
+              }}
+            >
+              <label className={styles.newLabel} htmlFor="new-group">
+                New {allowNewTop ? noun : `sub${noun}`}
+              </label>
+              <div className={styles.newRow}>
+                <input
+                  id="new-group"
+                  className={styles.input}
+                  placeholder="Name"
+                  value={name}
+                  onChange={(event) => {
+                    setName(event.target.value)
+                    setError(null)
+                  }}
+                />
+                <Select
+                  label="Inside"
+                  value={target}
+                  options={[
+                    ...(allowNewTop ? [{ value: '', label: 'Inside nothing' }] : []),
+                    ...groups.map((g) => ({ value: g.name, label: `Inside ${g.name}` }))
+                  ]}
+                  onChange={setInside}
+                />
+                <button type="submit" className={styles.submit} disabled={name.trim() === ''}>
+                  Add
+                </button>
+              </div>
+              {error && (
+                <p className={styles.error} role="alert">
+                  {error}
+                </p>
+              )}
+            </form>
+          )}
         </div>
       )}
     </div>
