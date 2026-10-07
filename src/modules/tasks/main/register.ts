@@ -140,7 +140,8 @@ function register(context: MainContext): () => void {
       list: text(o.list),
       sublist: text(o.sublist),
       recurrence: asRecurrence(o.recurrence),
-      tags: asTags(o.tags)
+      tags: asTags(o.tags),
+      parentUid: o.parentUid === undefined ? undefined : asUid(o.parentUid)
     }
     // Fields that were not sent must stay out of the patch altogether (`undefined` means "leave it").
     for (const key of Object.keys(patch) as (keyof TaskChanges)[]) {

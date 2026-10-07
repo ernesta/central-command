@@ -182,6 +182,15 @@ export class TasksStore {
             ? ''
             : (changes.sublist ?? task.sublist).trim()
       }
+      if (changes.parentUid !== undefined && changes.parentUid !== task.parentUid) {
+        if (!task.parentUid) throw new Error('Only a subtask can move under another task')
+        const parent = getTask(this.db, changes.parentUid)
+        if (!parent) throw new Error('No such task')
+        if (parent.parentUid) throw new Error('A subtask cannot have subtasks')
+        if (parent.workspace !== task.workspace) throw new Error('A task stays in its workspace')
+        next.parentUid = parent.uid
+        next.position = maxPosition(this.db, parent.uid) + 1
+      }
       if (changes.recurrence !== undefined) {
         if (changes.recurrence && task.parentUid) throw new Error('A subtask cannot repeat')
         if (changes.recurrence && !isValidRecurrence(changes.recurrence)) {

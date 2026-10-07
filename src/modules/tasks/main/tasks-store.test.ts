@@ -315,3 +315,29 @@ describe('Work’s lists are its clients', () => {
     ).toBe('')
   })
 })
+
+describe('moving a subtask under another task', () => {
+  it('takes it to the end of the new parent and leaves its hours key (uid) alone', () => {
+    const a = make('A')
+    const b = make('B')
+    store.create({ workspace: 'research', title: 'existing', parentUid: b.uid })
+    const sub = store.create({ workspace: 'research', title: 'Lecture', parentUid: a.uid })
+    const moved = store.update(sub.uid, { parentUid: b.uid })
+    expect(moved.uid).toBe(sub.uid)
+    expect(moved.parentUid).toBe(b.uid)
+    expect(listSubtasks(db, a.uid)).toHaveLength(0)
+    expect(listSubtasks(db, b.uid).map((t) => t.title)).toEqual(['existing', 'Lecture'])
+  })
+
+  it('refuses a top-level task, a subtask as the parent and another workspace', () => {
+    const a = make('A')
+    const b = make('B')
+    const other = store.create({ workspace: 'work', title: 'W', list: 'Impact' })
+    const sub = store.create({ workspace: 'research', title: 'Lecture', parentUid: a.uid })
+    const sub2 = store.create({ workspace: 'research', title: 'Two', parentUid: b.uid })
+    expect(() => store.update(a.uid, { parentUid: b.uid })).toThrow('Only a subtask')
+    expect(() => store.update(sub.uid, { parentUid: sub2.uid })).toThrow('cannot have subtasks')
+    expect(() => store.update(sub.uid, { parentUid: other.uid })).toThrow('workspace')
+    expect(store.get(sub.uid)?.parentUid).toBe(a.uid)
+  })
+})
