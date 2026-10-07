@@ -108,8 +108,12 @@ export function occupiedBySessions(sessions: readonly Session[], date: string): 
 }
 
 /** The other meetings of a day, as things a meeting can overlap. */
-export function occupiedByMeetings(entries: readonly MeetingEntry[], date: string): Occupied[] {
+export function occupiedByMeetings(
+  entries: readonly Pick<MeetingEntry, 'id' | 'date' | 'start' | 'end' | 'label'>[],
+  date: string,
+  workspace: MeetingWorkspace
+): Occupied[] {
   return entries
     .filter((e) => e.date === date)
-    .map((e) => ({ label: e.label, start: e.start, end: e.end, meeting: `${e.workspace}/${e.id}` }))
+    .map((e) => ({ label: e.label, start: e.start, end: e.end, meeting: `${workspace}/${e.id}` }))
 }

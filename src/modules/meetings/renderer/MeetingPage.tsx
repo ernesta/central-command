@@ -19,6 +19,7 @@ import { meetingHeading } from '../shared/time'
 import { appendTopic, parseTopics, topicOffset, type Topic } from '../shared/topics'
 import { fixedSeries, type MeetingRef, type MeetingWorkspace, type Person } from '../shared/types'
 import { meetingRoute, meetingsBase, useMeetingsWorkspace } from './meetings-paths'
+import { MeetingHoursNote } from './MeetingHoursNote'
 import { MetaFields } from './MetaFields'
 import { MentionedIn } from '@renderer/entities/MentionedIn'
 import { TopicsPanel } from './TopicsPanel'
@@ -278,6 +279,7 @@ function MeetingView({
         onChange={(patch) => session.setMeta(patch)}
         onAddPerson={addPerson}
       />
+      <MeetingHoursNote workspace={meetingRef.workspace} id={meetingRef.id} meta={meta} />
 
       <div className={styles.split}>
         <div className={styles.doc} ref={editorRef}>

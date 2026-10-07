@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { meetingEntries, overlapping, occupiedBySessions, type TaskInfo } from './meeting-entries'
+import {
+  meetingEntries,
+  occupiedByMeetings,
+  occupiedBySessions,
+  overlapping,
+  type TaskInfo
+} from './meeting-entries'
 import type { MeetingIndexRow } from './types'
 
 const row = (over: Partial<MeetingIndexRow> = {}): MeetingIndexRow => ({
@@ -114,5 +120,14 @@ describe('overlapping', () => {
       }
     ]
     expect(occupiedBySessions(sessions, '2026-09-24').map((o) => o.label)).toEqual(['A'])
+  })
+})
+
+describe('occupiedByMeetings', () => {
+  it('lists the meetings of that day only, keyed by workspace and id', () => {
+    const e = { id: 'a', date: '2026-09-24', start: '14:00', end: '15:00', label: 'Supervision' }
+    expect(
+      occupiedByMeetings([e, { ...e, id: 'b', date: '2026-09-25' }], '2026-09-24', 'work')
+    ).toEqual([{ label: 'Supervision', start: '14:00', end: '15:00', meeting: 'work/a' }])
   })
 })

@@ -1,0 +1,67 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+}
+.value,
+.propose {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  font-size: var(--text-14);
+}
+.propose {
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--hover-tint);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+}
+.propose:hover:not(:disabled) {
+  border-style: solid;
+  color: var(--ink);
+}
+.propose:disabled {
+  opacity: 0.55;
+}
+.title {
+  color: var(--ink);
+}
+.list {
+  color: var(--text-muted);
+}
+.link {
+  padding: 2px 6px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: var(--text-14);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.link:hover {
+  color: var(--ink);
+}
+.icon {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--text-muted);
+}
+.icon:hover {
+  background: var(--hover-tint);
+  color: var(--ink);
+}
+.picker {
+  min-width: 260px;
+}

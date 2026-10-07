@@ -36,17 +36,9 @@ export function MeetingRows({
   if (rows.length === 0) return null
   const sessions = occupiedBySessions(data.sessions, date)
   const meetings = occupiedByMeetings(
-    rows.map((r) => ({
-      workspace,
-      id: r.id,
-      date,
-      start: r.start,
-      end: r.end,
-      minutes: 0,
-      task: '',
-      label: r.label
-    })),
-    date
+    rows.map((r) => ({ ...r, date })),
+    date,
+    workspace
   )
   const seconds = timeToSeconds(now.time) ?? 0
 

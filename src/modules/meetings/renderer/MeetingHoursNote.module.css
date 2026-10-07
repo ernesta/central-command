@@ -1,0 +1,15 @@
+.warn,
+.quiet {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0 4px;
+  font-size: var(--text-14);
+}
+.warn {
+  color: var(--danger);
+}
+.quiet {
+  color: var(--text-muted);
+}
