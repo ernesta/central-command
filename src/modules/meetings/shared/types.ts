@@ -45,6 +45,8 @@ export interface MeetingMeta {
   discussed: string[]
   /** Skills the meeting built, as written (normally from the shared skills list); at most MAX_SKILLS. */
   skills: string[]
+  /** The uid of the task the meeting's hours belong to (`cc://task/<uid>`); '' when it has none. */
+  task: string
 }
 
 /** Which meeting: the folder (workspace) and the file's base name, e.g. "2026-09-24 Supervision". */
@@ -61,6 +63,8 @@ export interface MeetingIndexRow {
   id: string
   /** The id mentions of this meeting use (`cc://meeting/<uid>`); '' until something first links to it. */
   uid: string
+  /** The uid of the meeting's task; '' when it has none. */
+  task: string
   series: string
   date: string
   start: string | null

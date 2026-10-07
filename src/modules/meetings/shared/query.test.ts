@@ -18,6 +18,7 @@ const row = (id: string, over: Partial<MeetingIndexRow> = {}): MeetingIndexRow =
   workspace: 'research',
   id,
   uid: '',
+  task: '',
   series: 'Supervision',
   date: id.slice(0, 10),
   start: null,

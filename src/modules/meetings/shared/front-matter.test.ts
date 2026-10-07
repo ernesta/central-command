@@ -118,7 +118,8 @@ describe('parseMeta', () => {
       mode: 'in-person',
       attendees: ['Kathy Rastle', 'Arnaud Chevalier', 'Ernesta Orlovaitė'],
       discussed: ['Study 1 model results'],
-      skills: []
+      skills: [],
+      task: ''
     })
   })
 
@@ -299,5 +300,22 @@ describe('discussed topics with quotes in them', () => {
   it('reads an apostrophe inside a plain item as text, not as the start of a quoted item', () => {
     const head = HEAD.replace('[Study 1 model results]', "[Reviewer's comments, Next steps]")
     expect(parseMeta(head).meta.discussed).toEqual(["Reviewer's comments", 'Next steps'])
+  })
+})
+
+describe('the task of a meeting', () => {
+  it('reads it, and treats a missing key as none', () => {
+    expect(parseMeta('---\nseries: Supervision\ntask: k3f9a2x1\n---\n').meta.task).toBe('k3f9a2x1')
+    expect(parseMeta('---\nseries: Supervision\n---\n').meta.task).toBe('')
+  })
+
+  it('writes it as plain text, leaves every other line alone and removes it when emptied', () => {
+    const head = '---\nseries: Supervision # keep\ndate: 2026-09-24\nuid: abcd1234\n---\n'
+    const written = updateHead(head, { task: 'k3f9a2x1' })
+    expect(written).toContain('task: k3f9a2x1\n')
+    expect(written).toContain('series: Supervision # keep\n')
+    expect(written).toContain('uid: abcd1234\n')
+    expect(parseMeta(written).meta.task).toBe('k3f9a2x1')
+    expect(updateHead(written, { task: '' })).toBe(head)
   })
 })

@@ -72,6 +72,9 @@ function checkPatch(patch: MetaPatch): void {
       throw new MeetingError(`Invalid ${key} time: ${value}`)
     }
   }
+  if (patch.task !== undefined && !/^[A-Za-z0-9_-]*$/.test(patch.task)) {
+    throw new MeetingError(`Invalid task: ${patch.task}`)
+  }
   if (patch.mode !== undefined && patch.mode !== null && !MEETING_MODES.includes(patch.mode)) {
     throw new MeetingError(`Unknown mode: ${patch.mode}`)
   }

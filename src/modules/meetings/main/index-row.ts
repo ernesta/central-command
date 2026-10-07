@@ -36,6 +36,7 @@ export function buildIndexRow(
     workspace,
     id,
     uid: readUid(head),
+    task: meta.task,
     series: meta.series,
     date,
     start: meta.start,

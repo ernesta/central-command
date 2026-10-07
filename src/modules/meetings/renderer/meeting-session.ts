@@ -27,6 +27,7 @@ export type DiskVersion = EntryDiskVersion<MeetingMeta>
 export type MeetingSnapshot = EntrySnapshot<MeetingMeta>
 
 const EMPTY_META: MeetingMeta = {
+  task: '',
   series: '',
   date: '',
   start: null,

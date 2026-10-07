@@ -75,7 +75,8 @@ export function parseMeta(head: string): ParsedMeta {
         .filter(Boolean),
       skills: asList(value('skills'))
         .map((s) => s.trim())
-        .filter(Boolean)
+        .filter(Boolean),
+      task: asText(value('task')).trim()
     },
     problems
   }
@@ -94,7 +95,8 @@ const ORDER: (keyof MeetingMeta)[] = [
   'mode',
   'attendees',
   'skills',
-  'discussed'
+  'discussed',
+  'task'
 ]
 
 /**
@@ -105,11 +107,18 @@ const ORDER: (keyof MeetingMeta)[] = [
  */
 export function updateHead(head: string, patch: MetaPatch): string {
   // An empty date removes the key: the meeting is planned, with no date yet.
-  const changes = 'date' in patch && patch.date === '' ? { ...patch, date: null } : patch
+  let changes: Record<string, Value | undefined> = { ...patch }
+  if ('date' in patch && patch.date === '') changes = { ...changes, date: null }
+  // An empty task removes the key: the meeting has no task.
+  if ('task' in patch && patch.task === '') changes = { ...changes, task: null }
   return updateHeadKeys(head, changes, {
     order: ORDER,
     style: (key) =>
-      key === 'start' || key === 'end' ? 'quote' : key === 'date' ? 'plain' : 'auto',
+      key === 'start' || key === 'end'
+        ? 'quote'
+        : key === 'date' || key === 'task'
+          ? 'plain'
+          : 'auto',
     keepEmptyList: ['attendees']
   })
 }

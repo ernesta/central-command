@@ -6,6 +6,7 @@ interface Row {
   workspace: MeetingWorkspace
   meeting_id: string
   uid: string
+  task: string
   series: string
   date: string
   start_time: string | null
@@ -32,6 +33,7 @@ function toIndexRow(row: Row, todos: TodoItem[]): MeetingIndexRow {
     workspace: row.workspace,
     id: row.meeting_id,
     uid: row.uid,
+    task: row.task,
     series: row.series,
     date: row.date,
     start: row.start_time,
@@ -55,12 +57,12 @@ export function upsertMeeting(db: Database, row: MeetingIndexRow): void {
 
 function upsertMeetingRow(db: Database, row: MeetingIndexRow): void {
   db.prepare(
-    `INSERT INTO meetings (workspace, meeting_id, uid, series, date, start_time, end_time, mode,
+    `INSERT INTO meetings (workspace, meeting_id, uid, task, series, date, start_time, end_time, mode,
                            attendees, skills, summary, excerpt, problems, topic_count, content_hash)
-     VALUES (@workspace, @id, @uid, @series, @date, @start, @end, @mode,
+     VALUES (@workspace, @id, @uid, @task, @series, @date, @start, @end, @mode,
              @attendees, @skills, @summary, @excerpt, @problems, @topicCount, @contentHash)
      ON CONFLICT (workspace, meeting_id) DO UPDATE SET
-       uid = excluded.uid, series = excluded.series, date = excluded.date, start_time = excluded.start_time,
+       uid = excluded.uid, task = excluded.task, series = excluded.series, date = excluded.date, start_time = excluded.start_time,
        end_time = excluded.end_time, mode = excluded.mode, attendees = excluded.attendees, skills = excluded.skills,
        summary = excluded.summary, excerpt = excluded.excerpt, problems = excluded.problems, topic_count = excluded.topic_count,
        content_hash = excluded.content_hash`

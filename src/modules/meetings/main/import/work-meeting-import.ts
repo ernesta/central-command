@@ -124,6 +124,7 @@ export function planWorkMeetingImport(input: WorkPlanInput): WorkMeetingImportPl
     }
 
     const meta: MeetingMeta = {
+      task: '',
       series,
       date: parsed.date,
       start: null,

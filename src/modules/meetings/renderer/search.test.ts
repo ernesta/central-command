@@ -6,6 +6,7 @@ const meeting = (over: Partial<MeetingIndexRow>): MeetingIndexRow => ({
   workspace: 'research',
   id: '2025-10-14 Supervision',
   uid: '',
+  task: '',
   series: 'Supervision',
   date: '2025-10-14',
   start: null,

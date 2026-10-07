@@ -365,6 +365,7 @@ export function planMeetingImport(input: PlanInput): MeetingImportPlan {
     }
 
     const meta: MeetingMeta = {
+      task: '',
       series: note.series,
       date: note.date,
       start,

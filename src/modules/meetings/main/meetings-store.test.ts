@@ -649,3 +649,54 @@ describe('tickTodo', () => {
     expect(disk('2026-09-24 Supervision')).toBe(before)
   })
 })
+
+describe('a meeting task', () => {
+  it('is written to the front matter and the index only when set, and the body stays as it was', async () => {
+    const made = await store.create({
+      workspace: 'research',
+      series: 'Supervision',
+      date: '2026-09-24',
+      body: '## Notes\nhello\n'
+    })
+    expect(made.meta.task).toBe('')
+    expect(disk(made.ref.id)).not.toContain('task:')
+    const saved = await store.save(made.ref, { meta: { task: 'k3f9a2x1' } }, made.note.hash)
+    expect(saved.status).toBe('saved')
+    expect(disk(made.ref.id)).toContain('task: k3f9a2x1')
+    expect(splitNote(disk(made.ref.id)).body).toBe('## Notes\nhello\n')
+    expect(getMeetingRow(db, 'research', made.ref.id)?.task).toBe('k3f9a2x1')
+    const again = await store.read(made.ref)
+    await store.save(made.ref, { meta: { task: '' } }, again.note.hash)
+    expect(disk(made.ref.id)).not.toContain('task:')
+    expect(getMeetingRow(db, 'research', made.ref.id)?.task).toBe('')
+  })
+
+  it('refuses a value that is not a task id, and leaves the file alone', async () => {
+    const made = await store.create({
+      workspace: 'research',
+      series: 'Supervision',
+      date: '2026-09-24'
+    })
+    const before = disk(made.ref.id)
+    await expect(
+      store.save(made.ref, { meta: { task: 'cc://task/x\nseries: Other' } }, made.note.hash)
+    ).rejects.toThrow(MeetingError)
+    expect(disk(made.ref.id)).toBe(before)
+  })
+
+  it('is found by reindexing a note that already has one, and a note without one stays without', async () => {
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(
+      file('2026-09-24 Supervision'),
+      '---\nseries: Supervision\ndate: 2026-09-24\ntask: abc12345\n---\n## Notes\n'
+    )
+    writeFileSync(
+      file('2026-09-25 Supervision'),
+      '---\nseries: Supervision\ndate: 2026-09-25\n---\n## Notes\n'
+    )
+    await store.reindexAll('research')
+    expect(getMeetingRow(db, 'research', '2026-09-24 Supervision')?.task).toBe('abc12345')
+    expect(getMeetingRow(db, 'research', '2026-09-25 Supervision')?.task).toBe('')
+    expect(disk('2026-09-25 Supervision')).not.toContain('task:')
+  })
+})

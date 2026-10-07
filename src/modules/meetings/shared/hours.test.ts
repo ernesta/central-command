@@ -6,6 +6,7 @@ const row = (date: string, over: Partial<MeetingIndexRow> = {}): MeetingIndexRow
   workspace: 'research',
   id: `${date} Supervision`,
   uid: '',
+  task: '',
   series: 'Supervision',
   date,
   start: '10:00',
