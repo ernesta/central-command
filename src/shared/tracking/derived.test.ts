@@ -3,7 +3,7 @@ import { derivedRows, withDerived, type DerivedEntry } from './derived'
 import { carrySeconds } from './rounding'
 import { addTime, dayMinutes, dayRows, minutesByClient, weekMinutes } from './totals'
 import { nextId, ok, year } from './test-utils'
-import type { TrackingYear } from './types'
+import type { Adjust, TrackingYear } from './types'
 
 const entry = (over: Partial<DerivedEntry> = {}): DerivedEntry => ({
   id: '2026-09-24 Supervision',
@@ -69,7 +69,7 @@ describe('withDerived', () => {
 
   it('still adds the meeting when the history is another day, another task or not marked earlier', () => {
     const task = 'cc://task/abc12345'
-    const adj = (over: object) => ({
+    const adj = (over: object): Adjust => ({
       id: 'a1',
       date: '2026-09-24',
       label: 'S',
