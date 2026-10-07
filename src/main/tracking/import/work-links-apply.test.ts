@@ -3,22 +3,14 @@ import { applyEntryLinks, markEarlier, planFinal, type ApplyTask } from './work-
 import { year } from '@shared/tracking/test-utils'
 import { parseChanges, parseWorksheet, taskNames, type SheetEntry } from './work-links-sheet'
 
-const task = (
-  uid: string,
-  title: string,
-  minutes: number,
-  date: string,
-  tags: string[] = ['billable']
-): ApplyTask => ({
+const task = (uid: string, title: string, minutes: number, date: string): ApplyTask => ({
   uid,
   title,
   minutes,
   date,
-  billable: true,
   list: 'Luminos',
   sublist: 'Document Automation',
   status: 'done',
-  tags,
   parentUid: null
 })
 const entry = (
@@ -52,7 +44,7 @@ const run = (
 describe('planFinal', () => {
   it('renames a task to its entry, dates it on the last entry and marks the entries as already in ClickUp', () => {
     const p = run(
-      [task('a', 'Draft TORs', 150, '2026-07-12', [])],
+      [task('a', 'Draft TORs', 150, '2026-07-12')],
       [
         entry('y/1', '2026-06-20', 'developer terms of reference', 60),
         entry('y/2', '2026-07-12', 'Developer terms of reference', 90)
@@ -65,8 +57,7 @@ describe('planFinal', () => {
       oldTitle: 'Draft TORs',
       title: 'Developer terms of reference',
       due: '2026-07-12',
-      earlier: 150,
-      tagBillable: true
+      earlier: 150
     })
     expect(p.links.every((l) => l.earlier)).toBe(true)
   })
@@ -74,8 +65,8 @@ describe('planFinal', () => {
   it('keeps a task’s name when its entries are worded differently, and takes the shared wording otherwise', () => {
     const p = run(
       [
-        task('a', 'Classroom Observation Data: loading', 90, '2026-03-24', []),
-        task('b', 'Plan', 30, '2026-03-25', [])
+        task('a', 'Classroom Observation Data: loading', 90, '2026-03-24'),
+        task('b', 'Plan', 30, '2026-03-25')
       ],
       [
         entry('y/1', '2026-03-01', 'Liberia 2022-23', 45),
@@ -88,7 +79,7 @@ describe('planFinal', () => {
     expect(p.tasks.map((t) => t.title)).toEqual(['Classroom Observation Data: loading', 'Planning'])
   })
 
-  it('makes a task for a new name, with hours only (not already in ClickUp), done and billable', () => {
+  it('makes a task for a new name, with hours only (not already in ClickUp), done', () => {
     const p = run(
       [],
       [entry('y/1', '2026-10-05', 'developer contract preparation', 30)],
@@ -100,7 +91,6 @@ describe('planFinal', () => {
       earlier: 0,
       sublist: 'Document Automation',
       status: 'done',
-      tagBillable: true,
       due: '2026-10-05'
     })
     expect(p.links[0].earlier).toBe(false)

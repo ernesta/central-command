@@ -14,8 +14,6 @@ export interface LinkTask {
   minutes: number
   /** YYYY-MM-DD: the due date, else the day it was created. */
   date: string
-  /** Billable by its own tag or its parent's. */
-  billable: boolean
 }
 
 export interface LinkEntry {
@@ -36,12 +34,10 @@ export interface Link {
 
 export interface LinkPlan {
   links: Link[]
-  /** Timed tasks (billable) that no set of entries reaches exactly. */
+  /** Timed tasks that no set of entries reaches exactly. */
   unmatched: LinkTask[]
-  /** Billable timed tasks whose best set is no better than another: left alone. */
+  /** Timed tasks whose best set is no better than another: left alone. */
   ambiguous: { task: LinkTask; sets: LinkEntry[][] }[]
-  /** Not billable but their numbers match: listed, never linked. */
-  notBillable: Link[]
 }
 
 // Generic words and the verbs titles start with carry no meaning for a match.
@@ -180,13 +176,10 @@ export function planTaskLinks(tasks: readonly LinkTask[], entries: readonly Link
     }
   }
 
-  const all = timed.flatMap((t) => done.get(t.uid) ?? [])
-  const billableTimed = timed.filter((t) => t.billable)
   return {
-    links: all.filter((l) => l.task.billable),
-    notBillable: all.filter((l) => !l.task.billable),
-    unmatched: billableTimed.filter((t) => !done.has(t.uid) && !ambiguous.has(t.uid)),
-    ambiguous: billableTimed
+    links: timed.flatMap((t) => done.get(t.uid) ?? []),
+    unmatched: timed.filter((t) => !done.has(t.uid) && !ambiguous.has(t.uid)),
+    ambiguous: timed
       .filter((t) => !done.has(t.uid) && ambiguous.has(t.uid))
       .map((task) => ({ task, sets: ambiguous.get(task.uid) as LinkEntry[][] }))
   }

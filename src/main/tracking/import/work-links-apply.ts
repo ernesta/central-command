@@ -5,8 +5,7 @@
  *  - each hours entry belongs to one task; hours never change;
  *  - a task's ClickUp time after the splits, merges and moves equals the hours given to it (or it has none and carries hours only);
  *  - a linked task whose entries all say the same thing is renamed to that wording; one that gathers differently worded entries keeps
- *    its ClickUp name; every linked task is dated on its last typed entry;
- *  - every linked task is billable.
+ *    its ClickUp name; every linked task is dated on its last typed entry.
  */
 import { formatHours } from '@shared/tracking/format'
 import type { Change, TrackingYear } from '@shared/tracking/types'
@@ -21,7 +20,6 @@ import {
 
 export interface ApplyTask extends SheetTask {
   status: string
-  tags: string[]
   parentUid: string | null
 }
 
@@ -37,8 +35,6 @@ export interface TaskPlan {
   list: string
   sublist: string
   status: string
-  /** The tag billable has to be added. */
-  tagBillable: boolean
   hours: number
   entries: number
 }
@@ -140,7 +136,6 @@ export function planFinal(input: {
       list: current ? current.list : 'Luminos',
       sublist: current ? current.sublist : (f?.sublist ?? ''),
       status: existing ? existing.status : 'done',
-      tagBillable: existing ? !existing.tags.includes('billable') : true,
       hours,
       entries: own.length
     })
@@ -149,7 +144,7 @@ export function planFinal(input: {
   }
   // A task that still holds ClickUp time but no entry would lose that time.
   for (const t of changed.tasks)
-    if (t.billable && t.minutes > 0 && !targets.has(t.uid))
+    if (t.minutes > 0 && !targets.has(t.uid))
       problems.push(
         `"${changed.names.get(t.uid)}" keeps ${formatHours(t.minutes)} of ClickUp time but has no hours.`
       )

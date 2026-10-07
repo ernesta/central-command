@@ -5,7 +5,7 @@
  *   npm run link:work-apply -- --apply          # does it (the app must be closed)
  *
  * What it writes: splits, merges (the merged task goes to the trash), moves of ClickUp time, new tasks, every linked task renamed
- * to its entry's name and dated on its last typed entry, the billable tag, and on every hours entry its task and (when ClickUp's
+ * to its entry's name and dated on its last typed entry, and on every hours entry its task and (when ClickUp's
  * time already holds it) `earlier`. Hours never change. Before writing it copies `time/work/` and the database to
  * `~/CentralCommand/backups/work-final-<time>/`; it writes the tasks in one transaction, the hours through the Hours store, then
  * reads everything back and checks the totals; a failed read-back says what to restore.
@@ -73,34 +73,25 @@ interface Row {
   earlier_minutes: number
   due: string | null
   created_at: string
-  tags: string | null
 }
 const load = (): Row[] =>
   db
     .prepare(
-      `SELECT t.uid, t.title, t.parent_uid, t.status, t.list, t.sublist, t.earlier_minutes, t.due, t.created_at,
-              (SELECT group_concat(tag, '|') FROM task_tags g WHERE g.task_uid = t.uid) AS tags
+      `SELECT t.uid, t.title, t.parent_uid, t.status, t.list, t.sublist, t.earlier_minutes, t.due, t.created_at
          FROM tasks t WHERE t.workspace = 'work' AND t.deleted_at IS NULL`
     )
     .all() as Row[]
 const rows = load()
 const byUid = new Map(rows.map((r) => [r.uid, r]))
-const tagged = (r: Row): boolean => (r.tags ?? '').split('|').includes('billable')
 const homeOf = (r: Row): Row => (r.parent_uid ? (byUid.get(r.parent_uid) ?? r) : r)
-const billable = (r: Row): boolean =>
-  tagged(r) ||
-  tagged(homeOf(r)) ||
-  (homeOf(r).list === 'Luminos' && homeOf(r).sublist !== 'Admin & Logistics')
 const tasks: ApplyTask[] = rows.map((r) => ({
   uid: r.uid,
   title: r.title,
   minutes: r.earlier_minutes,
   date: (r.due ?? r.created_at).slice(0, 10),
-  billable: billable(r),
   list: homeOf(r).list,
   sublist: homeOf(r).sublist,
   status: r.status,
-  tags: r.tags ? r.tags.split('|') : [],
   parentUid: r.parent_uid
 }))
 const names = taskNames(tasks)
@@ -184,7 +175,7 @@ if (problems.length > 0) {
 console.log(`\n=== Tasks: old name -> new name, date, ClickUp time, hours`)
 for (const t of [...plan.tasks].sort((a, b) => a.due.localeCompare(b.due)))
   console.log(
-    `${t.existing ? '    ' : 'NEW '}${t.due}  ClickUp ${h(t.earlier).padStart(6)}  hours ${h(t.hours).padStart(6)}  ${t.oldTitle === t.title ? t.title : `${t.oldTitle}  ->  ${t.title}`}${t.tagBillable ? '  [+billable]' : ''}`
+    `${t.existing ? '    ' : 'NEW '}${t.due}  ClickUp ${h(t.earlier).padStart(6)}  hours ${h(t.hours).padStart(6)}  ${t.oldTitle === t.title ? t.title : `${t.oldTitle}  ->  ${t.title}`}`
   )
 if (plan.retire.length > 0) {
   console.log(`\n=== Merged away (to the trash)`)
@@ -229,7 +220,6 @@ db.transaction(() => {
       sublist: t.sublist,
       status: 'done',
       due: t.due,
-      tags: ['billable'],
       earlierMinutes: t.earlier
     })
     uidOf.set(t.target, made.uid)
@@ -237,10 +227,8 @@ db.transaction(() => {
   const setTask = db.prepare(
     'UPDATE tasks SET title = ?, due = ?, earlier_minutes = ?, updated_at = ? WHERE uid = ?'
   )
-  const tag = db.prepare("INSERT OR IGNORE INTO task_tags (task_uid, tag) VALUES (?, 'billable')")
   for (const t of plan.tasks.filter((x) => x.existing)) {
     setTask.run(t.title, t.due, t.earlier, now, t.target)
-    if (t.tagBillable) tag.run(t.target)
     uidOf.set(t.target, t.target)
   }
   // Tasks that only changed ClickUp time (the source of a split or a move that holds no hours of its own).

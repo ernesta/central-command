@@ -1,6 +1,6 @@
 /**
  * One-off: link Work's imported hour entries to the tasks they were worked on, by the numbers (a task's ClickUp time must
- * equal the entries' minutes exactly), for billable tasks only.
+ * equal the entries' minutes exactly).
  *
  *   npm run link:work-hours                        # dry run: every link, every task left alone, nothing written
  *   npm run link:work-hours -- --apply             # writes the high and medium links (app closed)
@@ -45,27 +45,21 @@ const db = new Database(databaseFile, { readonly: true })
 interface Row {
   uid: string
   title: string
-  parent_uid: string | null
   earlier_minutes: number
   due: string | null
   created_at: string
-  tags: string | null
 }
 const rows = db
   .prepare(
-    `SELECT t.uid, t.title, t.parent_uid, t.earlier_minutes, t.due, t.created_at,
-            (SELECT group_concat(tag, '|') FROM task_tags g WHERE g.task_uid = t.uid) AS tags
+    `SELECT t.uid, t.title, t.earlier_minutes, t.due, t.created_at
        FROM tasks t WHERE t.workspace = 'work' AND t.deleted_at IS NULL`
   )
   .all() as Row[]
-const tagged = (r: Row): boolean => (r.tags ?? '').split('|').includes('billable')
-const byUid = new Map(rows.map((r) => [r.uid, r]))
 const tasks: LinkTask[] = rows.map((r) => ({
   uid: r.uid,
   title: r.title,
   minutes: r.earlier_minutes,
-  date: (r.due ?? r.created_at).slice(0, 10),
-  billable: tagged(r) || (r.parent_uid !== null && tagged(byUid.get(r.parent_uid) as Row))
+  date: (r.due ?? r.created_at).slice(0, 10)
 }))
 
 const entries: LinkEntry[] = []
@@ -100,7 +94,7 @@ const total = (es: LinkEntry[]): number => es.reduce((a, e) => a + e.minutes, 0)
 console.log(`Library   : ${root}`)
 console.log('Mode      : dry run (nothing is written)\n')
 console.log(
-  `Work tasks ${tasks.length} (${tasks.filter((t) => t.billable).length} billable, ${tasks.filter((t) => t.minutes > 0).length} with time); entries to match ${entries.length} (${h(total(entries))}); entries already linked ${alreadyLinked}\n`
+  `Work tasks ${tasks.length} (${tasks.filter((t) => t.minutes > 0).length} with time); entries to match ${entries.length} (${h(total(entries))}); entries already linked ${alreadyLinked}\n`
 )
 
 for (const confidence of ['high', 'medium', 'low'] as const) {
@@ -116,26 +110,14 @@ for (const confidence of ['high', 'medium', 'low'] as const) {
 }
 const linkedEntries = plan.links.flatMap((l) => l.entries)
 console.log(
-  `LINKED: ${plan.links.length} billable tasks, ${linkedEntries.length} of ${entries.length} entries, ${h(total(linkedEntries))} of ${h(total(entries))}`
+  `LINKED: ${plan.links.length} tasks, ${linkedEntries.length} of ${entries.length} entries, ${h(total(linkedEntries))} of ${h(total(entries))}`
 )
 console.log(
   `Every task's entries add up to its ClickUp time exactly: ${plan.links.every((l) => total(l.entries) === l.task.minutes) ? 'yes' : 'NO'}\n`
 )
 
-if (plan.notBillable.length > 0) {
-  console.log(
-    `=== Numbers match but the task is not billable (not linked): ${plan.notBillable.length}`
-  )
-  for (const l of plan.notBillable) {
-    console.log(`${h(l.task.minutes).padStart(6)}  ${l.task.title}`)
-    for (const e of l.entries) console.log(`          <- ${line(e)}`)
-  }
-  console.log('')
-}
 if (plan.ambiguous.length > 0) {
-  console.log(
-    `=== Billable tasks with two equally good sets (left alone): ${plan.ambiguous.length}`
-  )
+  console.log(`=== Tasks with two equally good sets (left alone): ${plan.ambiguous.length}`)
   for (const a of plan.ambiguous) {
     console.log(`${h(a.task.minutes).padStart(6)}  ${a.task.title}   [due ${a.task.date}]`)
     a.sets.forEach((s, i) =>
@@ -144,9 +126,7 @@ if (plan.ambiguous.length > 0) {
   }
   console.log('')
 }
-console.log(
-  `=== Billable tasks with time that no entries add up to (left alone): ${plan.unmatched.length}`
-)
+console.log(`=== Tasks with time that no entries add up to (left alone): ${plan.unmatched.length}`)
 for (const t of plan.unmatched)
   console.log(`${h(t.minutes).padStart(6)}  ${t.title}   [due ${t.date}]`)
 const left = entries.filter((e) => !linkedEntries.includes(e))

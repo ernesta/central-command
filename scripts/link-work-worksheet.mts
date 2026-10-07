@@ -6,8 +6,7 @@
  *
  * Edit the `task` column in a spreadsheet: a task's name (see `<file>-tasks.csv`), `NEW: Title [Sublist]` for a task to be
  * made, `-` for time that gets no task, or blank for undecided. To split an entry between tasks, copy its row, give each row its
- * share of the minutes and its own task. Billable is a task tagged `billable` (or a subtask of one) or any Luminos task outside
- * the Admin & Logistics sublist.
+ * share of the minutes and its own task.
  */
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 import { homedir } from 'os'
@@ -66,34 +65,25 @@ interface Row {
   earlier_minutes: number
   due: string | null
   created_at: string
-  tags: string | null
 }
 const db = new Database(databaseFile, { readonly: true })
 const rows = db
   .prepare(
-    `SELECT t.uid, t.title, t.parent_uid, t.list, t.sublist, t.earlier_minutes, t.due, t.created_at,
-            (SELECT group_concat(tag, '|') FROM task_tags g WHERE g.task_uid = t.uid) AS tags
+    `SELECT t.uid, t.title, t.parent_uid, t.list, t.sublist, t.earlier_minutes, t.due, t.created_at
        FROM tasks t WHERE t.workspace = 'work' AND t.deleted_at IS NULL`
   )
   .all() as Row[]
 const byUid = new Map(rows.map((r) => [r.uid, r]))
-const tagged = (r: Row): boolean => (r.tags ?? '').split('|').includes('billable')
 const home = (r: Row): Row => (r.parent_uid ? (byUid.get(r.parent_uid) ?? r) : r)
-const billable = (r: Row): boolean =>
-  tagged(r) ||
-  tagged(home(r)) ||
-  (home(r).list === 'Luminos' && home(r).sublist !== 'Admin & Logistics')
 const toTask = (r: Row): SheetTask => ({
   uid: r.uid,
   title: r.title,
   minutes: r.earlier_minutes,
   date: (r.due ?? r.created_at).slice(0, 10),
-  billable: billable(r),
   list: home(r).list,
   sublist: home(r).sublist
 })
 const allTasks = rows.map(toTask)
-const billableTasks = allTasks.filter((t) => t.billable)
 const names = taskNames(allTasks)
 
 const entries: SheetEntry[] = []
@@ -124,12 +114,11 @@ for (const file of readdirSync(workDir).filter((f) => f.endsWith('.json'))) {
   }
 }
 if (dumpFile) {
-  // For analysis: every Work task as the sheet names it, with its time, date and billable state.
+  // For analysis: every Work task as the sheet names it, with its time and date.
   const out = allTasks.map((t) => ({
     name: names.get(t.uid),
     minutes: t.minutes,
     date: t.date,
-    billable: t.billable,
     sublist: t.sublist
   }))
   writeFileSync(resolve(dumpFile), JSON.stringify(out, null, 1))
@@ -142,13 +131,13 @@ if (writeFile) {
   const tasksPath = path.replace(/\.csv$/i, '') + '-tasks.csv'
   if (existsSync(path) || existsSync(tasksPath))
     fail(`Not overwriting: ${path} or ${tasksPath} exists.`)
-  const timed = billableTasks.filter((t) => t.minutes > 0)
+  const timed = allTasks.filter((t) => t.minutes > 0)
   // Rules first: untracked 5 Oct work, activity logs and timers; the matching only sees what is left.
   const lastClickUpDay = rows.reduce(
     (d, r) => (r.created_at.slice(0, 10) > d ? r.created_at.slice(0, 10) : d),
     ''
   )
-  const fixed = ruleRows(entries, billableTasks, names, lastClickUpDay)
+  const fixed = ruleRows(entries, allTasks, names, lastClickUpDay)
   const ruled = new Set(fixed.map((f) => f.entry))
   const spent = new Map<string, number>()
   for (const f of fixed) if (f.uid) spent.set(f.uid, (spent.get(f.uid) ?? 0) + f.minutes)
@@ -166,9 +155,7 @@ if (writeFile) {
   writeFileSync(tasksPath, formatTaskList(timed, names))
   const blank = sheet.filter((r) => r.task === '')
   console.log(`Wrote ${path} (${sheet.length} rows, ${formatHours(total(entries))} of entries)`)
-  console.log(
-    `Wrote ${tasksPath} (${timed.length} billable tasks with time, ${formatHours(total(timed))})`
-  )
+  console.log(`Wrote ${tasksPath} (${timed.length} tasks with time, ${formatHours(total(timed))})`)
   console.log(
     `Pre-filled: ${fixed.length} rows by your rules (5 Oct, activity logs, timers), ${exact.length} tasks by exact sums, ${new Set(flow.map((a) => a.task.uid)).size} by best fit; ${blank.length} rows (${formatHours(total(blank))}) still blank.`
   )
@@ -184,13 +171,7 @@ if (checkFile) {
   const changed = applyChanges(allTasks, names, changesFile.changes)
   const parsed = parseWorksheet(readFileSync(path, 'utf8'))
   parsed.problems.push(...changesFile.problems, ...changed.problems)
-  const result = checkWorksheet(
-    parsed,
-    entries,
-    changed.tasks,
-    changed.names,
-    new Set([...billableTasks.map((t) => t.uid), ...changed.billable])
-  )
+  const result = checkWorksheet(parsed, entries, changed.tasks, changed.names)
   const line = (s: string): void => console.log(s)
   line(`Sheet: ${path}`)
   if (changesFile.changes.length > 0)
@@ -203,7 +184,7 @@ if (checkFile) {
   }
   const off = result.tasks.filter((t) => t.fit !== 'exact')
   line(
-    `Billable tasks with ClickUp time: ${result.tasks.length}; exact ${result.tasks.length - off.length}, not exact ${off.length}`
+    `Tasks with ClickUp time: ${result.tasks.length}; exact ${result.tasks.length - off.length}, not exact ${off.length}`
   )
   for (const t of off)
     line(
@@ -226,11 +207,7 @@ if (checkFile) {
     line(`\nTask dates that would move to their last entry's day: ${result.dateChanges.length}`)
     for (const d of result.dateChanges) line(`  ${d.from} -> ${d.to}  ${d.name}`)
   }
-  if (result.notBillable.length > 0) {
-    line(`\nGiven to a task that is not billable: ${result.notBillable.length} rows`)
-    for (const r of result.notBillable) line(`  ${formatHours(r.minutes)}  ${r.task}  (${r.id})`)
-  }
   line(
-    `\n${result.complete ? 'COMPLETE: every entry is accounted for and every billable task adds up.' : 'NOT COMPLETE yet.'}`
+    `\n${result.complete ? 'COMPLETE: every entry is accounted for and every task adds up.' : 'NOT COMPLETE yet.'}`
   )
 }

@@ -6,8 +6,7 @@ const task = (uid: string, title: string, minutes: number, date: string): LinkTa
   uid,
   title,
   minutes,
-  date,
-  billable: true
+  date
 })
 const entry = (key: string, date: string, label: string, minutes: number): LinkEntry => ({
   key,

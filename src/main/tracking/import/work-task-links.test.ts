@@ -2,18 +2,11 @@ import { describe, expect, it } from 'vitest'
 import { year } from '@shared/tracking/test-utils'
 import { linkEntries, planTaskLinks, type LinkEntry, type LinkTask } from './work-task-links'
 
-const task = (
-  uid: string,
-  title: string,
-  minutes: number,
-  date: string,
-  billable = true
-): LinkTask => ({
+const task = (uid: string, title: string, minutes: number, date: string): LinkTask => ({
   uid,
   title,
   minutes,
-  date,
-  billable
+  date
 })
 let n = 0
 const entry = (date: string, label: string, minutes: number): LinkEntry => ({
@@ -74,15 +67,6 @@ describe('planTaskLinks', () => {
     )
     expect(plan.links).toHaveLength(0)
     expect(plan.ambiguous).toHaveLength(2)
-  })
-
-  it('does not link a task that is not billable, but reports it', () => {
-    const plan = planTaskLinks(
-      [task('a', 'Draft Oromia SPELL Training Manual', 360, '2026-07-07', false)],
-      [entry('2026-07-07', 'Draft: Oromia SPELL Training Manual', 360)]
-    )
-    expect(plan.links).toEqual([])
-    expect(plan.notBillable.map((l) => l.task.uid)).toEqual(['a'])
   })
 
   it('ignores an entry that is far from the due date or about something else', () => {

@@ -18,7 +18,6 @@ const task = (uid: string, title: string, minutes: number, date: string): SheetT
   title,
   minutes,
   date,
-  billable: true,
   list: 'Luminos',
   sublist: 'Document Automation'
 })
@@ -41,10 +40,9 @@ const entries = [
   entry('y/2', '2026-10-05', 'Document automation: task planning', 135)
 ]
 const names = taskNames(tasks)
-const billable = new Set(['a', 'b', 'c'])
 const sheet = (rows: string): string => `id,minutes,task\n${rows}`
 const check = (rows: string): ReturnType<typeof checkWorksheet> =>
-  checkWorksheet(parseWorksheet(sheet(rows)), entries, tasks, names, billable)
+  checkWorksheet(parseWorksheet(sheet(rows)), entries, tasks, names)
 
 describe('the worksheet', () => {
   it('names a task by its title, adding the due date only when titles repeat', () => {
@@ -80,7 +78,7 @@ describe('the worksheet', () => {
 })
 
 describe('checkWorksheet', () => {
-  it('is not complete while a billable task with time is short, even when every entry has a task', () => {
+  it('is not complete while a task with time is short, even when every entry has a task', () => {
     const r = check('y/1,90,Draft TORs\ny/2,135,NEW: Task planning [Document Automation]')
     expect(r.problems).toEqual([])
     expect(r.newTasks).toMatchObject([{ title: 'Task planning', minutes: 135 }])
@@ -100,38 +98,28 @@ describe('checkWorksheet', () => {
     expect(check('y/1,60,Draft TORs\ny/2,135,-').problems[0]).toMatch(/add up to 1:00/)
   })
 
-  it('flags a name that is no task, an unknown entry and a task that is not billable', () => {
+  it('flags a name that is no task and an unknown entry', () => {
     expect(check('y/1,90,Nothing like it\ny/2,135,-').problems[0]).toMatch(/no task called/)
     expect(check('zzz,15,-').problems[0]).toMatch(/no entry/)
-    const r = checkWorksheet(
-      parseWorksheet(sheet('y/1,90,Draft TORs\ny/2,135,-')),
-      entries,
-      tasks,
-      names,
-      new Set(['b', 'c'])
-    )
-    expect(r.notBillable).toHaveLength(1)
-    expect(r.complete).toBe(false)
   })
 
   it('accepts hours that exceed a task’s ClickUp time, but not a task with more ClickUp time than hours', () => {
     const two = [task('a', 'Draft TORs', 60, '2026-07-12'), task('b', 'Plan', 135, '2026-10-05')]
     const run = (rows: string): ReturnType<typeof checkWorksheet> =>
-      checkWorksheet(parseWorksheet(sheet(rows)), entries, two, taskNames(two), new Set(['a', 'b']))
+      checkWorksheet(parseWorksheet(sheet(rows)), entries, two, taskNames(two))
     expect(run('y/1,90,Draft TORs\ny/2,135,Plan').complete).toBe(true)
     const short = run('y/1,90,Plan\ny/2,135,-')
     expect(short.tasks.find((t) => t.task.uid === 'a')?.fit).toBe('short')
     expect(short.complete).toBe(false)
   })
 
-  it('is complete when every entry is placed and every billable task adds up exactly', () => {
+  it('is complete when every entry is placed and every task adds up exactly', () => {
     const two = [task('a', 'Draft TORs', 90, '2026-07-12'), task('b', 'Plan', 135, '2026-10-05')]
     const r = checkWorksheet(
       parseWorksheet(sheet('y/1,90,Draft TORs\ny/2,135,Plan')),
       entries,
       two,
-      taskNames(two),
-      new Set(['a', 'b'])
+      taskNames(two)
     )
     expect(r.complete).toBe(true)
   })
@@ -199,8 +187,7 @@ describe('ruleRows', () => {
       parseWorksheet(sheet(`s,135,${name}\nx,60,${name}`)),
       [timer, typed],
       t,
-      taskNames(t),
-      new Set(['l'])
+      taskNames(t)
     )
     expect(r.tasks[0]).toMatchObject({ fit: 'exact', assigned: 60 })
     expect(r.complete).toBe(true)
@@ -233,7 +220,6 @@ describe('ClickUp task changes', () => {
       ['Update TORs', 30],
       ['Send TORs to developers', 60]
     ])
-    expect(r.billable).toHaveLength(1)
   })
 
   it('merges two tasks into one with both times, which then take the hours of one entry', () => {
@@ -303,8 +289,7 @@ describe('ClickUp task changes', () => {
       parseWorksheet(sheet('y/1,30,Update TORs\ny/2,60,Send TORs')),
       e,
       r.tasks,
-      r.names,
-      new Set(['u', ...r.billable])
+      r.names
     )
     expect(c.complete).toBe(true)
   })

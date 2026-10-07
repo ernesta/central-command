@@ -228,7 +228,7 @@ export function formatWorksheet(rows: readonly Row[]): string {
   return `${lines.join('\n')}\n`
 }
 
-/** The billable tasks with time, for the user to look names up (the same names the task column takes). */
+/** The tasks with time, for the user to look names up (the same names the task column takes). */
 export function formatTaskList(
   tasks: readonly SheetTask[],
   names: ReadonlyMap<string, string>
@@ -289,7 +289,7 @@ export interface NewTask {
 
 export interface Check {
   problems: string[]
-  /** Billable tasks with ClickUp time, and what the sheet gives them. */
+  /** Tasks with ClickUp time, and what the sheet gives them. */
   tasks: { task: SheetTask; name: string; assigned: number; fit: 'exact' | 'short' | 'over' }[]
   /** Entries with no task in the sheet, in minutes. */
   unassigned: { id: string; minutes: number }[]
@@ -297,9 +297,8 @@ export interface Check {
   newTasks: NewTask[]
   /** Task dates the sheet would move to the day of the task's last typed entry. */
   dateChanges: { name: string; from: string; to: string }[]
-  notBillable: { id: string; task: string; minutes: number }[]
   /**
-   * True when every entry has a task and no billable task carries more ClickUp time than the hours given to it ('short': that task
+   * True when every entry has a task and no task carries more ClickUp time than the hours given to it ('short': that task
    * must be split). Hours that exceed a task's ClickUp time ('over') are fine: hours never change, the extra stays on the task.
    */
   complete: boolean
@@ -315,8 +314,7 @@ export function checkWorksheet(
   parsed: { rows: ParsedRow[]; problems: string[] },
   entries: readonly SheetEntry[],
   tasks: readonly SheetTask[],
-  allTaskNames: ReadonlyMap<string, string>,
-  billableUids: ReadonlySet<string>
+  allTaskNames: ReadonlyMap<string, string>
 ): Check {
   const problems = [...parsed.problems]
   const byName = new Map([...allTaskNames].map(([uid, name]) => [name.toLowerCase(), uid]))
@@ -325,7 +323,6 @@ export function checkWorksheet(
   const unassigned: Check['unassigned'] = []
   const noTask: Check['noTask'] = []
   const newTasks = new Map<string, NewTask>()
-  const notBillable: Check['notBillable'] = []
   const known = new Set(entries.map((e) => e.key))
   const entry = new Map(entries.map((e) => [e.key, e]))
   const lastDay = new Map<string, string>()
@@ -353,8 +350,6 @@ export function checkWorksheet(
     } else {
       const uid = byName.get(r.task.toLowerCase())
       if (!uid) problems.push(`Line ${r.line}: no task called "${r.task}".`)
-      else if (!billableUids.has(uid))
-        notBillable.push({ id: r.id, task: r.task, minutes: r.minutes })
       else {
         // A timer's time is new Hours time: it never fills ClickUp's time.
         if ((entry.get(r.id) as SheetEntry).kind === 'typed')
@@ -372,7 +367,7 @@ export function checkWorksheet(
       )
   }
   const rows = tasks
-    .filter((t) => billableUids.has(t.uid) && t.minutes > 0)
+    .filter((t) => t.minutes > 0)
     .map((task) => {
       const a = assigned.get(task.uid) ?? 0
       return {
@@ -391,10 +386,7 @@ export function checkWorksheet(
       to: lastDay.get(t.uid) as string
     }))
   const complete =
-    problems.length === 0 &&
-    unassigned.length === 0 &&
-    notBillable.length === 0 &&
-    rows.every((r) => r.fit !== 'short')
+    problems.length === 0 && unassigned.length === 0 && rows.every((r) => r.fit !== 'short')
   return {
     problems,
     tasks: rows,
@@ -402,7 +394,6 @@ export function checkWorksheet(
     noTask,
     newTasks: [...newTasks.values()],
     dateChanges,
-    notBillable,
     complete
   }
 }
@@ -451,12 +442,12 @@ export function parseChanges(text: string): { changes: TaskChange[]; problems: s
   return { changes, problems }
 }
 
-/** The tasks and names after the changes (a split task keeps the rest of its time; a new task is billable and dated like its source). */
+/** The tasks and names after the changes (a split task keeps the rest of its time; a new task is dated like its source). */
 export function applyChanges(
   tasks: readonly SheetTask[],
   names: ReadonlyMap<string, string>,
   changes: readonly TaskChange[]
-): { tasks: SheetTask[]; names: Map<string, string>; billable: string[]; problems: string[] } {
+): { tasks: SheetTask[]; names: Map<string, string>; problems: string[] } {
   const out = tasks.map((t) => ({ ...t }))
   const nm = new Map(names)
   const problems: string[] = []
@@ -525,5 +516,5 @@ export function applyChanges(
       added.push(uid)
     }
   }
-  return { tasks: out, names: nm, billable: added, problems }
+  return { tasks: out, names: nm, problems }
 }
