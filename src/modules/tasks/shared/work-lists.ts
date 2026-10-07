@@ -19,7 +19,7 @@ export function workClients(plans: readonly { clients?: readonly string[] }[]): 
 
 /**
  * The top-level list a task may be given: the client's own spelling when `list` names one (case and outer spaces ignored),
- * `list` trimmed anywhere that has no rule (Research, Life), and null in Work when `list` is no client.
+ * `list` trimmed anywhere that has no rule (Research), and null in Work when `list` is no client.
  */
 export function listFor(
   workspace: TaskWorkspace,
@@ -38,4 +38,12 @@ export function canUseList(
   clients: readonly string[]
 ): boolean {
   return listFor(workspace, list, clients) !== null
+}
+
+/** The live top-level Work tasks whose list is no client: what `npm run check:work-lists` reports (expected: none). */
+export function outsideRule<T extends { list: string }>(
+  tasks: readonly T[],
+  clients: readonly string[]
+): T[] {
+  return tasks.filter((t) => !canUseList('work', t.list, clients))
 }

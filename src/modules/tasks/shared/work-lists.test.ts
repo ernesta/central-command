@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { canUseList, listFor, workClients } from './work-lists'
+import { canUseList, listFor, outsideRule, workClients } from './work-lists'
 
 describe('workClients', () => {
   it('gathers every contract’s clients once, a shared name having one list', () => {
@@ -20,8 +20,16 @@ describe('listFor', () => {
     expect(listFor('work', 'Admin', clients)).toBeNull()
     expect(canUseList('work', 'Luminos', clients)).toBe(false)
   })
-  it('leaves Research and Life free', () => {
+  it('leaves Research free', () => {
     expect(listFor('research', ' Reading ', clients)).toBe('Reading')
-    expect(canUseList('life', 'Anything', [])).toBe(true)
+    expect(canUseList('research', 'Anything', [])).toBe(true)
+  })
+})
+
+describe('outsideRule', () => {
+  it('lists the tasks whose list is no client', () => {
+    const tasks = [{ list: 'Impact' }, { list: 'Luminos' }, { list: 'impact' }]
+    expect(outsideRule(tasks, ['Impact'])).toEqual([{ list: 'Luminos' }])
+    expect(outsideRule(tasks, [])).toHaveLength(3)
   })
 })
