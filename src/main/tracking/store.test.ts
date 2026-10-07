@@ -565,6 +565,26 @@ describe('the timer', () => {
     expect(store.start('research', 'B').ok).toBe(true)
   })
 
+  it('changes when the running timer started and saves it', () => {
+    const store = open()
+    at('2026-09-29', '09:00:00')
+    store.start('research', 'A')
+    at('2026-09-29', '10:00:00')
+    store.start('research', 'B')
+    at('2026-09-29', '10:10:00')
+    const id = store.running()!.session.id
+    const result = store.setStart('research', '2026-09-21', id, '09:30:00')
+    expect(result.ok && result.running?.session.start).toBe('09:30:00')
+    expect(store.get('research', '2026-09-21').sessions[0]).toMatchObject({
+      end: '09:30:00',
+      minutes: 30
+    })
+    expect(store.setStart('research', '2026-09-21', id, '23:00:00')).toEqual({
+      ok: false,
+      reason: 'in-future'
+    })
+  })
+
   it("finds a session still running in last year's file across the boundary", () => {
     const store = open()
     at('2026-09-20', '23:00:00')

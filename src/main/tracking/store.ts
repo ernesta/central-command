@@ -7,6 +7,7 @@ import { carrySeconds } from '@shared/tracking/rounding'
 import {
   endSessionAt,
   runningSession,
+  setStartAt,
   startSession,
   endFinishedDay,
   renameTask,
@@ -167,6 +168,13 @@ export class TrackingStore {
     const now = this.deps.now()
     if (running.session.date >= now.date) return
     this.mutate(running.workspace, running.year, (y) => endFinishedDay(y, now))
+  }
+
+  /** Change when the running timer started (see `setStartAt`). */
+  setStart(workspace: Workspace, year: string, id: string, time: string): TimerResult {
+    const now = this.deps.now()
+    const result = this.mutate(workspace, year, (y) => setStartAt(y, id, time, now))
+    return result.ok ? { ok: true, running: this.running() } : result
   }
 
   endAt(workspace: Workspace, year: string, id: string, time: string): TimerResult {

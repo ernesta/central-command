@@ -143,6 +143,97 @@ export function endSessionAt(year: TrackingYear, id: string, time: string): Chan
   return close(year, session, time)
 }
 
+/** The end of the latest ended session before `session` on its day: where "Since last entry ended" puts a start. */
+export function lastEndBefore(year: TrackingYear, session: Session): string | null {
+  const start = timeToSeconds(session.start) ?? 0
+  const ends = year.sessions
+    .filter((s) => s.id !== session.id && s.date === session.date && s.end !== null)
+    .filter((s) => (timeToSeconds(s.end as string) ?? Infinity) <= start)
+    .map((s) => s.end as string)
+  return ends.sort()[ends.length - 1] ?? null
+}
+
+/**
+ * What a typed start means: a time of day (`10:15`, `1015`) or minutes ago (`-20`). The result is a time on today's
+ * date; it is refused when it is not a time, lies after now, or (minutes ago) would reach back past midnight.
+ */
+export function resolveStart(
+  raw: string,
+  now: Moment
+): { ok: true; time: string } | { ok: false; reason: string } {
+  const text = raw.trim()
+  const nowSeconds = timeToSeconds(now.time)
+  if (nowSeconds === null) return { ok: false, reason: 'bad-time' }
+  const ago = /^-\s*(\d+)$/.exec(text)
+  let seconds: number | null
+  if (ago) {
+    seconds = nowSeconds - Number(ago[1]) * 60
+    if (seconds < 0) return { ok: false, reason: 'before-midnight' }
+  } else {
+    const m = /^(\d{1,2}):?(\d{2})$/.exec(text)
+    seconds =
+      m && Number(m[1]) < 24 && Number(m[2]) < 60 ? Number(m[1]) * 3600 + Number(m[2]) * 60 : null
+    if (seconds === null) return { ok: false, reason: 'bad-time' }
+  }
+  if (seconds > nowSeconds) return { ok: false, reason: 'in-future' }
+  const p = (n: number): string => String(n).padStart(2, '0')
+  return {
+    ok: true,
+    time: `${p(Math.floor(seconds / 3600))}:${p(Math.floor((seconds % 3600) / 60))}:${p(seconds % 60)}`
+  }
+}
+
+/**
+ * The earlier entries of the running session's day that a start at `time` would overlap: each with the end it would
+ * be trimmed to. An entry that starts at or after `time` would be swallowed whole (`swallowed`).
+ */
+export function overlapsFor(
+  year: TrackingYear,
+  session: Session,
+  time: string
+): { trimmed: Session[]; swallowed: Session[] } {
+  const start = timeToSeconds(time) ?? 0
+  const trimmed: Session[] = []
+  const swallowed: Session[] = []
+  for (const s of year.sessions) {
+    if (s.id === session.id || s.date !== session.date || s.end === null) continue
+    const from = timeToSeconds(s.start) ?? 0
+    const to = timeToSeconds(s.end) ?? 0
+    if (to <= start) continue
+    if (from >= start) swallowed.push(s)
+    else trimmed.push(s)
+  }
+  return { trimmed, swallowed }
+}
+
+/**
+ * Change when the running session started (it was forgotten, so starting "now" was wrong). Today only, never before
+ * midnight, never after now. An earlier entry that overlaps is trimmed to end where this one starts, and its reported
+ * minutes are worked out again; one that would vanish entirely is a refusal, nothing is deleted.
+ */
+export function setStartAt(year: TrackingYear, id: string, time: string, now: Moment): Change {
+  const session = year.sessions.find((s) => s.id === id)
+  if (!session || session.end !== null) return { ok: false, reason: 'not-running' }
+  if (session.date !== now.date) return { ok: false, reason: 'stale' }
+  const start = timeToSeconds(time)
+  const nowSeconds = timeToSeconds(now.time)
+  if (start === null || nowSeconds === null || start >= 24 * 3600)
+    return { ok: false, reason: 'bad-time' }
+  if (start > nowSeconds) return { ok: false, reason: 'in-future' }
+  const { trimmed, swallowed } = overlapsFor(year, session, time)
+  if (swallowed.length > 0) return { ok: false, reason: 'covers-entry' }
+  let sessions = year.sessions.map((s) => (s.id === id ? { ...s, start: time } : s))
+  for (const old of trimmed) {
+    // Its minutes are reported again against the carry without it, so the carry keeps adding up.
+    const carry =
+      carrySeconds({ ...year, sessions }) - (exactSeconds(old) - (old.minutes ?? 0) * 60)
+    const cut: Session = { ...old, end: time }
+    const minutes = reportFor(carry, exactSeconds(cut))
+    sessions = sessions.map((s) => (s.id === old.id ? { ...cut, minutes } : s))
+  }
+  return { ok: true, year: { ...year, sessions } }
+}
+
 /** Remove a session. Nothing else is recalculated: every other session keeps its frozen minutes. */
 export function deleteSession(year: TrackingYear, id: string): TrackingYear {
   return { ...year, sessions: year.sessions.filter((s) => s.id !== id) }

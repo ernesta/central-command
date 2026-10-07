@@ -11,7 +11,11 @@ import {
   endSessionAt,
   deleteSession,
   renameTask,
+  lastEndBefore,
+  overlapsFor,
+  resolveStart,
   runningSession,
+  setStartAt,
   startSession,
   stopSession
 } from './timer'
@@ -227,5 +231,107 @@ describe('the running row', () => {
     let y = ok(startSession(year(), at(D, '23:30:00'), 'A', 'a'))
     y = ok(stopSession(y, at(D, '25:30:00')))
     expect(y.sessions[0]).toMatchObject({ end: '25:30:00', minutes: 120 })
+  })
+})
+
+describe('starting earlier than now', () => {
+  /** A 09:00-10:00 entry, then a timer started at 10:30 and checked at 10:45. */
+  function running(): { y: TrackingYear; id: string } {
+    let y = ok(startSession(year(), at(D, '09:00:00'), 'A', nextId()))
+    y = ok(stopSession(y, at(D, '10:00:00')))
+    y = ok(startSession(y, at(D, '10:30:00'), 'B', nextId()))
+    return { y, id: runningSession(y)!.id }
+  }
+
+  it('moves the start back into a gap and leaves the earlier entry alone', () => {
+    const { y, id } = running()
+    const moved = ok(setStartAt(y, id, '10:15:00', at(D, '10:45:00')))
+    expect(runningSession(moved)?.start).toBe('10:15:00')
+    expect(moved.sessions[0]).toMatchObject({ end: '10:00:00', minutes: 60 })
+  })
+
+  it('trims the end of an earlier entry it overlaps and reports its minutes again', () => {
+    const { y, id } = running()
+    const moved = ok(setStartAt(y, id, '09:30:00', at(D, '10:45:00')))
+    expect(moved.sessions[0]).toMatchObject({ start: '09:00:00', end: '09:30:00', minutes: 30 })
+    expect(runningSession(moved)?.start).toBe('09:30:00')
+  })
+
+  it('keeps the carry adding up after a trim', () => {
+    let y = ok(startSession(year(), at(D, '09:00:00'), 'A', nextId()))
+    y = ok(stopSession(y, at(D, '09:50:00'))) // 50 min exact -> 45 reported, 5 carried
+    y = ok(startSession(y, at(D, '10:00:00'), 'B', nextId()))
+    const id = runningSession(y)!.id
+    const moved = ok(setStartAt(y, id, '09:40:00', at(D, '10:30:00')))
+    const first = moved.sessions[0]
+    expect(first).toMatchObject({ end: '09:40:00', minutes: 45 })
+    // carry = exact - reported, nothing lost or invented
+    expect(carrySeconds(moved)).toBe(exactSeconds(first) - first.minutes! * 60)
+  })
+
+  it('refuses a start that would swallow an earlier entry, and changes nothing', () => {
+    const { y, id } = running()
+    const result = setStartAt(y, id, '08:30:00', at(D, '10:45:00'))
+    expect(result).toEqual({ ok: false, reason: 'covers-entry' })
+    expect(overlapsFor(y, runningSession(y)!, '08:30:00').swallowed).toHaveLength(1)
+  })
+
+  it('treats an entry ending exactly where the timer starts as no overlap', () => {
+    const { y } = running()
+    expect(overlapsFor(y, runningSession(y)!, '10:00:00')).toEqual({ trimmed: [], swallowed: [] })
+  })
+
+  it('refuses a start after now, a bad time, a stopped session and one from an earlier day', () => {
+    const { y, id } = running()
+    expect(setStartAt(y, id, '11:00:00', at(D, '10:45:00'))).toEqual({
+      ok: false,
+      reason: 'in-future'
+    })
+    expect(setStartAt(y, id, 'nope', at(D, '10:45:00'))).toEqual({ ok: false, reason: 'bad-time' })
+    expect(setStartAt(y, id, '25:00:00', at(D, '26:00:00'))).toEqual({
+      ok: false,
+      reason: 'bad-time'
+    })
+    expect(setStartAt(y, y.sessions[0].id, '09:00:00', at(D, '10:45:00'))).toEqual({
+      ok: false,
+      reason: 'not-running'
+    })
+    expect(setStartAt(y, id, '10:00:00', at('2026-09-30', '09:00:00'))).toEqual({
+      ok: false,
+      reason: 'stale'
+    })
+  })
+
+  it('moves the start later too, up to now', () => {
+    const { y, id } = running()
+    expect(ok(setStartAt(y, id, '10:45:00', at(D, '10:45:00'))).sessions[1].start).toBe('10:45:00')
+  })
+
+  it('finds the end of the last entry before the timer', () => {
+    const { y } = running()
+    expect(lastEndBefore(y, runningSession(y)!)).toBe('10:00:00')
+    expect(
+      lastEndBefore(ok(startSession(year(), at(D, '09:00:00'), 'A', nextId())), runningSession(y)!)
+    ).toBeNull()
+  })
+})
+
+describe('resolveStart', () => {
+  const now = at(D, '10:45:30')
+  it('reads a time of day', () => {
+    expect(resolveStart('10:15', now)).toEqual({ ok: true, time: '10:15:00' })
+    expect(resolveStart('915', now)).toEqual({ ok: true, time: '09:15:00' })
+    expect(resolveStart('0915', now)).toEqual({ ok: true, time: '09:15:00' })
+  })
+  it('reads minutes ago from now', () => {
+    expect(resolveStart('-20', now)).toEqual({ ok: true, time: '10:25:30' })
+    expect(resolveStart('- 5', now)).toEqual({ ok: true, time: '10:40:30' })
+  })
+  it('stops at midnight, the future and nonsense', () => {
+    expect(resolveStart('-30', at(D, '00:10:00'))).toEqual({ ok: false, reason: 'before-midnight' })
+    expect(resolveStart('-10', at(D, '00:10:00'))).toEqual({ ok: true, time: '00:00:00' })
+    expect(resolveStart('11:00', now)).toEqual({ ok: false, reason: 'in-future' })
+    expect(resolveStart('24:00', now)).toEqual({ ok: false, reason: 'bad-time' })
+    expect(resolveStart('soon', now)).toEqual({ ok: false, reason: 'bad-time' })
   })
 })
