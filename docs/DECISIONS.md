@@ -2144,4 +2144,3 @@ the session scratchpad and are not in the repo: these were data edits, not impor
 - **New notes start where you are.** `QuickActionWorkspace` is now `life | research | work`; the palette's and Dock's "New note" and quick capture (Mod-Shift-n, via the URL) start in Life when Life is the page or the workspace last visited. New meeting, new task and Start timer have no Life, so `researchOrWork` sends them to Work when looking at Work, else Research.
 - **Search already asked Life's notes** (the manifest offers `search`), but they came under a second "Notes" heading. `searchLabel` now heads them "Life notes", as Work's are "Work notes". `in:notes` still means all three.
 - **Not driven in the app**: checked by typecheck, lint and unit tests only (new tests for a Life note, a task from Life, and the Life path). No Life notes exist yet in the real library.
-
