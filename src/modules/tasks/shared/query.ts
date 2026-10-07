@@ -1,4 +1,3 @@
-import { addDays } from '@shared/year'
 import { formatDate, formatShortDate } from '@shared/time'
 import { fold } from '@shared/text'
 import { TASK_PRIORITIES, type TaskPriority } from './types'
@@ -224,25 +223,6 @@ export function viewCounts(rows: readonly TaskRow[], query: TasksQuery): Record<
     counts[view] = queryTasks(rows, { ...query, view }).length
   }
   return counts
-}
-
-export type DuePreset = 'today' | 'tomorrow' | 'week' | 'none' | 'date'
-
-/** The date a preset stands for; null for "no date". */
-export function presetDate(preset: Exclude<DuePreset, 'date'>, today: string): string | null {
-  if (preset === 'today') return today
-  if (preset === 'tomorrow') return addDays(today, 1)
-  if (preset === 'week') return addDays(today, 7)
-  return null
-}
-
-/** Which preset a date is, or `date` when it is none of them. */
-export function presetOf(due: string | null, today: string): DuePreset {
-  if (due === null) return 'none'
-  if (due === today) return 'today'
-  if (due === addDays(today, 1)) return 'tomorrow'
-  if (due === addDays(today, 7)) return 'week'
-  return 'date'
 }
 
 /** A due date as a table shows it: "Today", "Oct 9", "Jan 4, 2027" (the year only when it is not this year). */

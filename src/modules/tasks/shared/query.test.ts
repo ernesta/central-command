@@ -9,8 +9,6 @@ import {
   listValue,
   normaliseTasksQuery,
   parseListValue,
-  presetDate,
-  presetOf,
   queryTasks,
   reconcileQuery,
   tagsIn,
@@ -109,15 +107,6 @@ describe('queryTasks', () => {
 
 describe('dates and time', () => {
   const today = '2026-10-05'
-  it('names a preset and its date', () => {
-    expect(presetDate('today', today)).toBe(today)
-    expect(presetDate('tomorrow', today)).toBe('2026-10-06')
-    expect(presetDate('week', today)).toBe('2026-10-12')
-    expect(presetDate('none', today)).toBeNull()
-    expect(presetOf('2026-10-06', today)).toBe('tomorrow')
-    expect(presetOf('2026-10-20', today)).toBe('date')
-    expect(presetOf(null, today)).toBe('none')
-  })
   it('shows a due date with the year only when it is not this year', () => {
     expect(formatDue(today, today)).toBe('Today')
     expect(formatDue('2026-10-09', today)).toBe('Oct 9')

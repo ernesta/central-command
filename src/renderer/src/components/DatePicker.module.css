@@ -1,0 +1,113 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+}
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-13);
+  white-space: nowrap;
+}
+.button:hover {
+  background: var(--hover-tint);
+}
+.empty {
+  color: var(--text-muted);
+}
+.popover {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  width: 248px;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  box-shadow: var(--shadow-float);
+}
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.month {
+  font-size: var(--text-13);
+  font-weight: 600;
+  color: var(--ink);
+}
+.nav {
+  display: inline-flex;
+  padding: 4px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--text-muted);
+}
+.nav:hover {
+  background: var(--hover-tint);
+  color: var(--ink);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.weekday {
+  padding: 4px 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--text-12);
+}
+.day {
+  height: 30px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--text-13);
+  font-variant-numeric: tabular-nums;
+}
+.day:hover {
+  background: var(--hover-tint);
+}
+.outside {
+  color: var(--text-muted);
+}
+.today {
+  border-color: var(--accent);
+}
+.selected,
+.selected:hover {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+.foot {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-faint);
+}
+.quick {
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--accent);
+  font-size: var(--text-13);
+}
+.quick:hover {
+  background: var(--hover-tint);
+}
