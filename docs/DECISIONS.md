@@ -2183,6 +2183,20 @@ The rules are pure, in `src/shared/tracking/timer.ts`: `setStartAt` and `overlap
 - **Mutation checks**: removing the create check, the update check, or the series exemption each makes a test fail (2, 2 and 1 tests).
 - Not driven in the app: no UI changed (stage 3 changes the UI and is where the app is driven). Until then the UI still offers "new list" in Work, and choosing it now fails with the store's message.
 
+## Client lists, stage 2: lists follow clients (7 Oct 2026)
+
+`docs/CLIENT_LISTS_PLAN.md`, stage 2. Research untouched.
+
+- **How a list with no tasks exists.** It does not: lists are derived from tasks (there is no lists table). A client's list is "allowed" because the client is in some contract's plan (`workClients`, read from disk on every call), so **adding a client in Settings or creating a contract is all it takes**; nothing is written to Tasks. Stage 3's Tasks page will show every client as a list, empty or not, by merging `workClients` with the task lists.
+- **Rules** are plain functions in `src/shared/tracking/client-names.ts` (`cleanClientName`, `allClients`, `canonicalClient`, `clientsLost`, `checkRename`, `renameClientInYear`, `clientRefusal`); the store applies them (`TrackingStore.setPlan`, `createContract`, new `renameClient`), the IPC handler is one line.
+- **Seam to Tasks.** `TrackingStore.setClientTasks(ClientTasks)` (`count`, `rename`), given in `main/index.ts` once the database is open (`src/modules/tasks/main/client-tasks.ts`, top-level Work tasks only, compared ignoring case). Without it (tests, scripts) nothing is checked. A rename sends the Tasks windows a changed event.
+- **Removing a client** (`setPlan` with a shorter `clients`): refused with `client-has-tasks` (and `detail: { client, tasks }`: "Teaching still has 1 task. Move or delete them first.") when no *other* contract still has the client and its list holds tasks. **Trashed tasks count** (restoring one would otherwise break the rule). A client that another contract also has is removable; its list stays.
+- **Renaming** (`renameClient`, new `tracking:rename-client`; in the UI, click a client's chip in Settings -> Hours, Enter saves, Escape cancels, an empty or 40+ character name or one another client has is refused): the tasks move first, then every contract that has the client gets the new name in its plan and on each session and typed entry (reported minutes untouched). If a contract cannot be saved, the contracts already changed and the tasks are put back. Changing only the case is allowed.
+- **One spelling per client.** A name that another contract already has in other case ("impact") takes that contract's spelling, in `createContract` and `setPlan`, so a client has one list.
+- **Tests**: `client-names.test.ts` (rules) and `src/main/tracking/client-lists.test.ts` (real files, in-memory database, the real task store with the stage 1 rule). **Mutation checks**: removal guard off, tasks not renamed, tasks not restored on failure, contracts not restored, the first-contract-only rename, and the spelling rule in `createContract` and in `setPlan` each fail a test (the last one first survived; its test was added).
+- **Driven in the app** (scratch library, built app and dev, `Settings -> Hours`, Work): remove a client with a task (message, nothing changes), rename (tasks, both contracts' plans and the hours entry follow), rename to an existing name (message), Escape cancels, add a client (a task can be made in its list at once), add a contract with a new client (same). No console errors. The editing chip is a few pixels taller than the plain chip.
+- **Not done:** the real library has not been touched; a client edited by hand in a year file is not noticed.
+
 ## Tasks: subtasks have no page, and the due date is a calendar (7 Oct 2026)
 
 User feedback after the Tasks review. Design rule they gave: as few clicks as possible, clear and intuitive.
