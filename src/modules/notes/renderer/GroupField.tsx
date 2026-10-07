@@ -185,13 +185,8 @@ export function GroupField({
             )}
           </ul>
           {(allowNewTop || groups.length > 0) && (
-            <form
-              className={styles.new}
-              onSubmit={(event) => {
-                event.preventDefault()
-                addNew()
-              }}
-            >
+            // Not a <form>: this field sits inside other forms (the Add bar, New task), and a form inside a form never submits.
+            <div className={styles.new} role="group">
               <label className={styles.newLabel} htmlFor="new-group">
                 New {allowNewTop ? noun : `sub${noun}`}
               </label>
@@ -205,6 +200,13 @@ export function GroupField({
                     setName(event.target.value)
                     setError(null)
                   }}
+                  onKeyDown={(event) => {
+                    // Enter adds the name here and must not reach the form around the field (it would add a task).
+                    if (event.key !== 'Enter') return
+                    event.preventDefault()
+                    event.stopPropagation()
+                    if (name.trim() !== '') addNew()
+                  }}
                 />
                 <Select
                   label="Inside"
@@ -215,7 +217,12 @@ export function GroupField({
                   ]}
                   onChange={setInside}
                 />
-                <button type="submit" className={styles.submit} disabled={name.trim() === ''}>
+                <button
+                  type="button"
+                  className={styles.submit}
+                  disabled={name.trim() === ''}
+                  onClick={addNew}
+                >
                   Add
                 </button>
               </div>
@@ -224,7 +231,7 @@ export function GroupField({
                   {error}
                 </p>
               )}
-            </form>
+            </div>
           )}
         </div>
       )}
