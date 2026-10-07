@@ -27,7 +27,7 @@ top-level lists in Work.** Read `CLAUDE.md`, `docs/TASKS_PLAN.md`, `docs/CONTRAC
 5. With this, the Start picker's "Which client?" question can only appear for a task made before the rule or by an importer; keep it
    as a safety net. The task page's Start should then ask the same question instead of falling back to the client used last.
 
-## Open questions (ask the user at the start of stage 1)
+## Open questions (answered 7 Oct 2026: 1 always shown, 2 refuse, 3 one list, 4 free text)
 
 1. Are empty client lists shown anywhere (the Tasks page lists and filters) or only once they hold a task?
 2. Removing a client that still has tasks: refuse, or move its tasks to another client's list (which one)? Past contracts keep their
@@ -37,7 +37,7 @@ top-level lists in Work.** Read `CLAUDE.md`, `docs/TASKS_PLAN.md`, `docs/CONTRAC
 
 ## Stages (stop after each and ask; the user clears context between them)
 
-1. **The rule and its store check.** A plain module `work-lists` (the lists a workspace may have, from the clients; `canUseList`),
+1. **(Done 7 Oct 2026, not pushed.) The rule and its store check.** A plain module `work-lists` (the lists a workspace may have, from the clients; `canUseList`),
    the provider in `register.ts`, `create` and `update` refusing a Work top-level list that is not a client, with tests (mutation
    check: remove the refusal and a test fails). A dry-run-first script `npm run check:work-lists` that only reports tasks outside
    the rule (expected: none). Research untouched.

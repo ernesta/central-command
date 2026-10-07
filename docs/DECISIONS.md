@@ -2172,6 +2172,17 @@ The rules are pure, in `src/shared/tracking/timer.ts`: `setStartAt` and `overlap
 - **Open points**: the task page's Start still takes the client from the list and falls back to the one used last when the list is no client (it does not ask); a taskless timer is not stoppable from the chip's Stop on a day boundary except through its end-time prompt.
 - Tests: `assignTask` and the store's move between contracts (mutation-checked: no removal from the old file, and the not-running guard each fail a test), the picker rules, the palette. **Driven in the app on a scratch library, dev and the built app, Research and Work**: Start then pick, Create, Stop asking, Switch to, ambiguous client, creating in Work, old row play, Add time, palette Start; no console errors. One bug found only that way: an older row's client was lost, so the picker asked for it again (fixed by the hint).
 
+## Client lists, stage 1: Work's top-level lists are its clients (7 Oct 2026)
+
+`docs/CLIENT_LISTS_PLAN.md`, stage 1. Answers to the four open questions: **empty client lists are always shown** on the Tasks page (stage 3); **removing a client whose list holds tasks is refused**; **a client name in two contracts has one list** (Luminos twice); **sublists stay free text**.
+
+- **The rule** is a plain module, `src/modules/tasks/shared/work-lists.ts`: `workClients` (every client of every contract, past and present, once each, case-insensitive), `listFor` / `canUseList` (in Work a list must be a client, and the client's own spelling is stored; Research is free) and `outsideRule`.
+- **The store enforces it** (`TasksStore`'s optional third constructor argument, the clients provider). `create` and `update` refuse a Work top-level list that is no client ("... is not a client, and Work's lists are its clients (...)"); a subtask has no list, so nothing to check. `update` checks only when the list actually changes, so a task already outside the rule can still be renamed; the next occurrence of a repeating task and its subtasks keep their list (completing a task must never fail on the rule). Importers and scripts build the store with no provider and are unchanged.
+- **`register.ts`** gives the store a provider that reads the Work contracts from disk on every call through a `TrackingStore` (read-only use; Work has contracts, so nothing is created), so a client added in Settings counts at once. It fails closed: with no contracts there are no clients, so no Work task can be made until one exists.
+- **`npm run check:work-lists`** only reports (database opened read-only): the clients with their task counts and every live top-level Work task outside the rule, exit code 1 when there are any. **On a copy of the real library (7 Oct 2026): Impact 79, Teaching & Learning 28, Royal Holloway 1, none outside the rule.** It reported a task I moved to "Luminos" on the copy.
+- **Mutation checks**: removing the create check, the update check, or the series exemption each makes a test fail (2, 2 and 1 tests).
+- Not driven in the app: no UI changed (stage 3 changes the UI and is where the app is driven). Until then the UI still offers "new list" in Work, and choosing it now fails with the store's message.
+
 ## Tasks: subtasks have no page, and the due date is a calendar (7 Oct 2026)
 
 User feedback after the Tasks review. Design rule they gave: as few clicks as possible, clear and intuitive.
