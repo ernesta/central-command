@@ -43,7 +43,7 @@ top-level lists in Work.** Read `CLAUDE.md`, `docs/TASKS_PLAN.md`, `docs/CONTRAC
    the rule (expected: none). Research untouched.
 2. **(Done 7 Oct 2026, not pushed.) Lists follow clients.** Creating a contract or adding a client makes its list; renaming a client renames the list and its
    tasks; the removal rule from question 2. The two Hours settings screens (`ContractFields`, `ClientFields`) are where this starts.
-3. **The UI offers only client lists in Work.** `ListField`/`GroupField` use in `NewTaskDialog`, `AddBar`, `TaskPage` and the
+3. **(Done 7 Oct 2026, not pushed.) The UI offers only client lists in Work.** `ListField`/`GroupField` use in `NewTaskDialog`, `AddBar`, `TaskPage` and the
    picker's Create (`listForNew`) drop "new list" in Work; the Tasks page shows what question 1 decided; the task page's Start asks
    for the client when the list names none. Drive the app in Work and Research, dev and the built app, on a scratch library.
 
