@@ -3,7 +3,7 @@ import { hoursBase } from '@modules/hours/renderer/hours-paths'
 import { peopleRoute } from '@modules/meetings/renderer/meetings-paths'
 import { fold } from '@shared/text'
 import { searchTerms, type SearchHit } from '@shared/search'
-import { QUICK_ACTIONS, type QuickActionWorkspace } from './quick-actions'
+import { QUICK_ACTIONS, researchOrWork, type QuickActionWorkspace } from './quick-actions'
 
 const DEFAULT_LIMIT = 6
 
@@ -25,7 +25,8 @@ const COMMANDS: Command[] = [
     title: 'Start timer',
     detail: 'Opens Hours, ready for a task name.',
     // The current workspace's Hours; the field takes focus on arrival (TodayCard).
-    go: (navigate, workspace) => navigate(hoursBase(workspace), { state: { focus: 'start' } })
+    go: (navigate, workspace) =>
+      navigate(hoursBase(researchOrWork(workspace)), { state: { focus: 'start' } })
   },
   {
     id: 'open-settings',

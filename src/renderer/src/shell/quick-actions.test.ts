@@ -26,6 +26,18 @@ describe('runQuickAction', () => {
     expect(navigate).toHaveBeenCalledWith('/work/notes/n/Untitled', { state: { focus: 'body' } })
   })
 
+  it('starts a note in Life', async () => {
+    const create = vi.fn(async () => ({ ref: { id: 'Untitled' } }))
+    ;(window as unknown as { api: unknown }).api = { notes: { create } }
+    await runQuickAction('new-note', vi.fn(), 'life')
+    expect(create).toHaveBeenCalledWith({ workspace: 'life' })
+  })
+
+  it('starts a task in Research from Life, which has no tasks', async () => {
+    await runQuickAction('new-task', vi.fn(), 'life')
+    expect(openNewTask).toHaveBeenCalledWith({ workspace: 'research' })
+  })
+
   it('starts a meeting in Work with the series Other', async () => {
     const create = vi.fn(async () => ({ ref: { id: 'm1' } }))
     ;(window as unknown as { api: unknown }).api = { meetings: { create } }
@@ -52,7 +64,8 @@ describe('quickActionWorkspace', () => {
     expect(quickActionWorkspace('/work/notes/all')).toBe('work')
     expect(quickActionWorkspace('/research/notes', 'work')).toBe('research')
     expect(quickActionWorkspace('/search', 'work')).toBe('work')
-    expect(quickActionWorkspace('/settings', 'life')).toBe('research')
+    expect(quickActionWorkspace('/settings', 'life')).toBe('life')
+    expect(quickActionWorkspace('/life/notes')).toBe('life')
     expect(quickActionWorkspace('/')).toBe('research')
   })
 })

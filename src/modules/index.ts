@@ -60,9 +60,11 @@ export function moduleGlobals(): { id: string; Global: ComponentType }[] {
   )
 }
 
-/** Work's results are headed "Work meetings", "Work notes": the same module under a second workspace would otherwise repeat a heading. */
+/** Work's and Life's results are headed "Work notes", "Life notes": the same module under another workspace would otherwise repeat a heading. */
 function searchLabel(m: LiveModuleManifest): string {
-  return m.workspace === 'work' ? `Work ${m.label.toLowerCase()}` : m.label
+  if (m.workspace === 'work') return `Work ${m.label.toLowerCase()}`
+  if (m.workspace === 'life') return `Life ${m.label.toLowerCase()}`
+  return m.label
 }
 
 /** What a note can mention, from every module, in registration order (the order of the picker's groups). */

@@ -17,8 +17,13 @@ export interface QuickAction {
   go: (navigate: NavigateFunction, workspace: QuickActionWorkspace) => void | Promise<void>
 }
 
-/** Where a quick action starts things: the workspace being looked at, Research anywhere else (Life has none). */
-export type QuickActionWorkspace = 'research' | 'work'
+/** Where a quick action starts things: the workspace being looked at, Research anywhere else. Only notes exist in Life. */
+export type QuickActionWorkspace = 'life' | 'research' | 'work'
+
+/** Meetings, tasks and training have no Life: they start in Work when looking at Work, else in Research. */
+export function researchOrWork(workspace: QuickActionWorkspace): 'research' | 'work' {
+  return workspace === 'work' ? 'work' : 'research'
+}
 
 /**
  * The workspace of the page (`/work/…`). A page outside any workspace (the search results, Settings) uses the
@@ -26,9 +31,9 @@ export type QuickActionWorkspace = 'research' | 'work'
  */
 export function quickActionWorkspace(pathname: string, remembered = ''): QuickActionWorkspace {
   const segment = pathname.split('/')[1]
-  return (segment === 'work' || segment === 'research' ? segment : remembered) === 'work'
-    ? 'work'
-    : 'research'
+  const known = ['life', 'research', 'work']
+  const chosen = known.includes(segment) ? segment : remembered
+  return known.includes(chosen) ? (chosen as QuickActionWorkspace) : 'research'
 }
 
 /**
@@ -50,7 +55,8 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
     id: 'new-meeting',
     title: 'New meeting',
     detail: 'Starts today, filled in at leisure.',
-    go: async (navigate, workspace) => {
+    go: async (navigate, current) => {
+      const workspace = researchOrWork(current)
       const file = await window.api.meetings.create({
         workspace,
         series: defaultSeries(workspace),
@@ -63,7 +69,7 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
     id: 'new-task',
     title: 'New task',
     detail: 'Opens the task form, in the list you are looking at.',
-    go: (_navigate, workspace) => openNewTask({ workspace })
+    go: (_navigate, workspace) => openNewTask({ workspace: researchOrWork(workspace) })
   },
   {
     id: 'stop-timer',
