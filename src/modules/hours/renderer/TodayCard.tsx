@@ -1,26 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation } from 'react-router'
+import { useRef, useState } from 'react'
 import { Play, Plus } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
-import { Select } from '@renderer/components/Select'
 import { useOpenContracts } from '@renderer/state/use-open-contracts'
 import { formatDay, formatHours } from '@shared/tracking/format'
 import { dailyAim } from '@shared/tracking/plan'
-import { contractName, yearOfClient } from '@shared/tracking/contracts'
-import { defaultClient, sameLabel } from '@shared/tracking/timer'
+import { yearOfClient } from '@shared/tracking/contracts'
 import { QUARTER } from '@shared/tracking/rounding'
-import { dayMinutes, dayRows } from '@shared/tracking/totals'
+import { dayMinutes, dayRows, type TaskRow } from '@shared/tracking/totals'
 import type { RunningTimer } from '@shared/tracking/api'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
-import { earlierLabels } from '../shared/tasks'
 import type { HoursWorkspace } from '../shared/workspaces'
 import { DurationField } from './DurationField'
+import { startUnnamed, stopTimer } from './start-request'
 import { StaleTimer } from './StaleTimer'
-import { listForNewTask } from '../../tasks/shared/new-task-list'
-import { taskKey, taskKeyForLabel } from '../../tasks/shared/tracked'
-import { useTaskDefaults } from '../../tasks/renderer/useTaskDefaults'
-import { useOpenTasks } from '../../tasks/renderer/useOpenTasks'
-import { TaskField } from './TaskField'
+import { TaskPicker, type PickedTask, type TaskPickerHandle } from './TaskPicker'
 import { TaskList } from './TaskList'
 import styles from './TodayCard.module.css'
 
@@ -33,91 +26,50 @@ interface TodayCardProps {
 }
 
 /**
- * Today: the total against the aim, one row per task, and one form to begin another: a name and a time. With the
- * time at 0:00 it starts the timer (a name can wait); with a time it adds that much, as if it had been tracked.
+ * Today: the total against the aim, one row per task, and one form to begin another: a task and a time. With the time at
+ * 0:00 it starts the timer (with no task typed, it starts at once and asks which); with a time it adds that much, as if it
+ * had been tracked. Either way the task is the picker's: an open one, or a new one made on the spot.
  */
 export function TodayCard({ workspace, data, running, now }: TodayCardProps): React.JSX.Element {
   const [name, setName] = useState('')
   const [minutes, setMinutes] = useState(0)
-  const [picked, setPicked] = useState<string | null>(null)
-  // The clients of every contract that holds today (one contract: its own); the client decides the contract.
+  const picker = useRef<TaskPickerHandle>(null)
+  // The contracts that hold today (one contract: its own); the task's client decides the contract.
   const { contracts } = useOpenContracts(workspace)
   const own = data.plan.clients ?? []
-  const offered = contracts.length > 1 ? contracts.flatMap((c) => c.clients) : own
-  const client = picked !== null && offered.includes(picked) ? picked : defaultClient(data)
-  const clientOptions = offered.map((c) => ({
-    value: c,
-    label: c,
-    ...(contracts.length > 1
-      ? { group: contractName(contracts.find((x) => x.clients.includes(c))) }
-      : {})
-  }))
   const rows = dayRows(data, now.date, now)
   const total = dayMinutes(data, now.date, now)
   const aim = dailyAim(data, now.date)
-  // Open tasks are offered by name too; a name that is exactly one of them links the time to it.
-  const openTasks = useOpenTasks(workspace)
-  const isWork = workspace === 'work'
-  const { last } = useTaskDefaults('work')
-  const labels = useMemo(() => {
-    const earlier = earlierLabels(data)
-    const titles = openTasks
-      .map((t) => t.title.trim())
-      .filter((t) => t && !earlier.some((l) => sameLabel(l, t)))
-    return [...earlier, ...new Set(titles)]
-  }, [data, openTasks])
   const stale = running && running.session.date !== now.date ? running : null
   const tracking = window.api.tracking
-  const startRef = useRef<HTMLDivElement>(null)
-  const { state, key } = useLocation() as { state: { focus?: string } | null; key: string }
-  const wantsFocus = state?.focus === 'start'
 
-  // "Start timer" in the palette arrives here asking for the field (a fresh location key each time).
-  useEffect(() => {
-    if (wantsFocus) startRef.current?.querySelector('input')?.focus()
-  }, [wantsFocus, key])
-
-  // The task a typed name stands for: the open one it names, else (Work only) a new one, so every hour has a task.
-  const keyFor = async (label: string): Promise<string | undefined> => {
-    const found = taskKeyForLabel(openTasks, label)
-    const list = listForNewTask(openTasks, last.list)
-    if (found || !isWork || label.trim() === '' || !list) return found
-    const made = await window.api.tasks.create({
-      workspace: 'work',
-      title: label.trim(),
-      list,
-      sublist: last.list === list ? last.sublist : '',
-      due: now.date
-    })
-    return taskKey(made.uid)
-  }
-  const start = (label: string, forClient = client, fresh = false): void => {
+  const start = (row: TaskRow): void => {
     if (stale) return
-    void (fresh ? keyFor(label) : Promise.resolve(taskKeyForLabel(openTasks, label))).then((key) =>
-      tracking.start(workspace, label, key, forClient)
-    )
+    if (row.task) void tracking.start(workspace, row.label, row.task, row.client)
+    else void startUnnamed(workspace, row.label, row.client)
   }
   const adding = minutes > 0
   const ready = adding ? name.trim() !== '' : !stale
-  const submit = (): void => {
-    if (!ready) return
+  // The picked task: add the time typed, or start the timer on it.
+  const picked = async (task: PickedTask): Promise<void> => {
     if (adding) {
       const quarter = Math.max(QUARTER, Math.round(minutes / QUARTER) * QUARTER)
-      void keyFor(name).then((key) =>
-        tracking.addTime(
-          workspace,
-          (client && yearOfClient(contracts, client)) || data.start,
-          now.date,
-          name,
-          quarter,
-          client,
-          key
-        )
+      await tracking.addTime(
+        workspace,
+        (task.client && yearOfClient(contracts, task.client)) || data.start,
+        now.date,
+        task.label,
+        quarter,
+        task.client,
+        task.task
       )
-    } else start(name, client, true)
-    setName('')
+    } else if (!stale) await tracking.start(workspace, task.label, task.task, task.client)
     setMinutes(0)
-    setPicked(null)
+  }
+  const submit = (): void => {
+    if (!ready) return
+    if (name.trim() !== '') picker.current?.submit()
+    else void startUnnamed(workspace)
   }
 
   return (
@@ -135,8 +87,8 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
       <TaskList
         rows={rows}
         canStart={!stale}
-        onStart={(label, rowClient) => start(label, rowClient)}
-        onStop={() => void tracking.stop()}
+        onStart={start}
+        onStop={() => void stopTimer()}
         clients={own}
         onSetClient={(label, from, to) =>
           void tracking.setClient(workspace, data.start, now.date, label, from, to)
@@ -148,23 +100,16 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
           void tracking.renameTask(workspace, data.start, now.date, label, to, rowClient)
         }
       />
-      <div className={styles.start} ref={startRef}>
-        <TaskField
+      <div className={styles.start}>
+        <TaskPicker
+          ref={picker}
+          workspace={workspace}
           label="What are you working on?"
           placeholder="What are you working on?"
           value={name}
           onChange={setName}
-          onSubmit={submit}
-          labels={labels}
+          onPick={picked}
         />
-        {offered.length > 0 && (
-          <Select
-            label="Client"
-            value={client ?? offered[0]}
-            options={clientOptions}
-            onChange={setPicked}
-          />
-        )}
         <DurationField label="Time" value={minutes} onChange={setMinutes} onEnter={submit} />
         <Button
           variant="primary"

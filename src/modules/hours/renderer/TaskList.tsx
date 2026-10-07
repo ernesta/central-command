@@ -18,7 +18,7 @@ interface TaskListProps {
   /** Moves a row to another client (`from` is its client now). */
   onSetClient?: (label: string, from: string | undefined, to: string) => void
   /** Start (or switch to) a task and stop it: given on Today only. */
-  onStart?: (label: string, client?: string) => void
+  onStart?: (row: TaskRow) => void
   onStop?: () => void
   /** Whether starting is possible at all (not while an earlier day's timer waits for an end time). */
   canStart?: boolean
@@ -73,7 +73,7 @@ export function TaskList({
                 row.running ? `Stop ${row.label || 'task'}` : `Start ${row.label || 'task'}`
               }
               disabled={!row.running && !canStart}
-              onClick={() => (row.running ? onStop() : onStart(row.label, row.client))}
+              onClick={() => (row.running ? onStop() : onStart(row))}
             >
               {row.running ? (
                 <Square size={12} strokeWidth={1.75} fill="currentColor" aria-hidden />

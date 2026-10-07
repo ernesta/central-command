@@ -1,13 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { formatDay, formatHours, formatRange, formatSignedHours } from '@shared/tracking/format'
 import { dailyAim, hasAim, weekTotals } from '@shared/tracking/plan'
 import { dayRows, weekDaysMinutes, weekMinutes } from '@shared/tracking/totals'
-import { defaultClient } from '@shared/tracking/timer'
 import { invoiceOf, type Moment, type TrackingYear } from '@shared/tracking/types'
 import { addDays, weekNumberOf, yearEnd } from '@shared/year'
 import { periodOfWeek, periodsOf } from '../shared/periods'
-import { earlierLabels } from '../shared/tasks'
 import { barFill, BAR_SCALE } from '../shared/week'
 import type { HoursWorkspace } from '../shared/workspaces'
 import { AddTime } from './AddTime'
@@ -33,7 +31,6 @@ export function WeekCard({
 }: WeekCardProps): React.JSX.Element {
   const [opened, setOpened] = useState<{ week: string; date: string } | null>(null)
   const open = opened?.week === week ? opened.date : null
-  const labels = useMemo(() => earlierLabels(data), [data])
   const tracking = window.api.tracking
 
   const days = weekDaysMinutes(data, week, now)
@@ -149,11 +146,18 @@ export function WeekCard({
                       }
                     />
                     <AddTime
-                      labels={labels}
+                      workspace={workspace}
                       clients={data.plan.clients}
-                      defaultClient={defaultClient(data)}
-                      onAdd={(label, m, client) =>
-                        void tracking.addTime(workspace, data.start, date, label, m, client)
+                      onAdd={(task, m) =>
+                        void tracking.addTime(
+                          workspace,
+                          data.start,
+                          date,
+                          task.label,
+                          m,
+                          task.client,
+                          task.task
+                        )
                       }
                     />
                     {note && <p className={styles.note}>{note}</p>}
