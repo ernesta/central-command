@@ -156,4 +156,12 @@ export function emptyYear(start: string, plan: Plan = DEFAULT_PLAN, carryIn = 0)
 }
 
 /** A refused change says why; the caller shows nothing explanatory, it just does not change. */
-export type Change = { ok: true; year: TrackingYear } | { ok: false; reason: string }
+/** A client that cannot go because its Tasks list still holds tasks. */
+export interface ClientHoldsTasks {
+  client: string
+  tasks: number
+}
+
+export type Change =
+  | { ok: true; year: TrackingYear }
+  | { ok: false; reason: string; detail?: ClientHoldsTasks }

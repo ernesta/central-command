@@ -16,6 +16,8 @@ import { registerEntitiesIpc } from './ipc/entities'
 import { openDatabase } from './db/connection'
 import { runMigrations } from './db/migrate'
 import { mainModules } from '@modules/main-registry'
+import { createClientTasks } from '@modules/tasks/main/client-tasks'
+import { TASKS_IPC, type TasksChangedEvent } from '@modules/tasks/shared/api'
 import { defaultSettings } from '@shared/settings'
 import { todayIso, trackingMoment } from '@shared/time'
 import { buildContextMenu } from './context-menu'
@@ -190,6 +192,16 @@ app.whenReady().then(async () => {
     mainModules.flatMap((m) => m.migrations)
   )
   registerEntitiesIpc(paths, db)
+  // Work's clients are Tasks lists: removing or renaming one in Hours looks after its tasks.
+  tracking.setClientTasks(
+    createClientTasks(db, () => {
+      for (const window of BrowserWindow.getAllWindows()) {
+        window.webContents.send(TASKS_IPC.changed, {
+          workspace: 'work'
+        } satisfies TasksChangedEvent)
+      }
+    })
+  )
   const disposers = mainModules
     .map((m) => m.register({ db, paths, settings }))
     .filter((d): d is () => void => typeof d === 'function')

@@ -221,6 +221,8 @@ const api: Api = {
       ipcRenderer.invoke(TRACKING_IPC.createContract, workspace, start, end, terms),
     setContractEnd: (workspace, year, end) =>
       ipcRenderer.invoke(TRACKING_IPC.setContractEnd, workspace, year, end),
+    renameClient: (workspace, from, to) =>
+      ipcRenderer.invoke(TRACKING_IPC.renameClient, workspace, from, to),
     setPlan: (workspace, year, plan) =>
       ipcRenderer.invoke(TRACKING_IPC.setPlan, workspace, year, plan),
     addTimeOff: (workspace, year, from, to, type) =>

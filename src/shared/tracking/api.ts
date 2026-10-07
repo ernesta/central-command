@@ -1,6 +1,6 @@
 import type { Workspace } from '../settings'
 import type { OpenContracts } from './contracts'
-import type { ContractTerms, Plan, Session, TimeOffType, TrackingYear } from './types'
+import type { Change, ContractTerms, Plan, Session, TimeOffType, TrackingYear } from './types'
 
 /** The one running timer of the whole app, with the file it lives in. */
 export interface RunningTimer {
@@ -11,7 +11,7 @@ export interface RunningTimer {
 }
 
 /** The result of a change to one year: the year as saved, or why it was refused (nothing changes then). */
-export type YearResult = { ok: true; year: TrackingYear } | { ok: false; reason: string }
+export type YearResult = Change
 
 /** The result of starting or stopping: the timer that runs afterwards (null when none does). */
 export type TimerResult = { ok: true; running: RunningTimer | null } | { ok: false; reason: string }
@@ -108,6 +108,12 @@ export interface TrackingApi {
     end: string,
     terms?: ContractTerms
   ): Promise<YearResult>
+  /** Rename a Work client: its Tasks list and tasks, and its name in every contract and entry that has it. */
+  renameClient(
+    workspace: Workspace,
+    from: string,
+    to: string
+  ): Promise<{ ok: true } | { ok: false; reason: string }>
   /** Move a contract's last day. */
   setContractEnd(workspace: Workspace, year: string, end: string): Promise<YearResult>
   /** A year's file changed (any workspace). Returns an unsubscribe function. */
@@ -135,6 +141,7 @@ export const TRACKING_IPC = {
   editTimeOff: 'tracking:edit-time-off',
   removeTimeOff: 'tracking:remove-time-off',
   createContract: 'tracking:create-contract',
+  renameClient: 'tracking:rename-client',
   setContractEnd: 'tracking:set-contract-end',
   changed: 'tracking:changed'
 } as const

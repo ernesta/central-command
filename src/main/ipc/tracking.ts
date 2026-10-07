@@ -129,6 +129,9 @@ export function registerTrackingIpc(store: TrackingStore): void {
       ...(t.invoice !== undefined ? { invoice: invoice(t.invoice) } : {})
     })
   })
+  h(TRACKING_IPC.renameClient, (_e, ws, from, to) =>
+    store.renameClient(workspace(ws), text(from), text(to))
+  )
   h(TRACKING_IPC.setContractEnd, (_e, ws, year, end) =>
     store.setContractEnd(workspace(ws), text(year), text(end))
   )

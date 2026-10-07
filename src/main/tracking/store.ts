@@ -44,7 +44,26 @@ import {
   openContracts,
   type OpenContracts
 } from '@shared/tracking/contracts'
+import {
+  canonicalClient,
+  checkRename,
+  clientsLost,
+  renameClientInYear
+} from '@shared/tracking/client-names'
 import { writeFileAtomicSync } from '../atomic-write'
+
+/**
+ * What the store asks of Tasks about a Work client, whose name is also a top-level list there. Given after the database
+ * opens (`setClientTasks`); without it (tests, scripts) a client may be removed and renamed freely.
+ */
+export interface ClientTasks {
+  /** How many tasks, in the Trash too, have the client as their list. */
+  count(client: string): number
+  /** Move every task in the list `from` to the list `to`. */
+  rename(from: string, to: string): void
+}
+
+export type RenameClientResult = { ok: true } | { ok: false; reason: string }
 
 export interface TrackingDeps {
   /** The year starts from Settings, oldest first. */
@@ -81,12 +100,18 @@ const FILE = /^\d{4}-\d{2}(-\d{2})?\.json$/
  */
 export class TrackingStore {
   private readonly newId: () => string
+  private clientTasks: ClientTasks | null = null
 
   constructor(
     private readonly root: string,
     private readonly deps: TrackingDeps
   ) {
     this.newId = deps.newId ?? (() => randomUUID().replace(/-/g, '').slice(0, 8))
+  }
+
+  /** Let removing and renaming a Work client look after its Tasks list. */
+  setClientTasks(clientTasks: ClientTasks | null): void {
+    this.clientTasks = clientTasks
   }
 
   // ---- reading ----
@@ -306,11 +331,83 @@ export class TrackingStore {
     return this.mutate(workspace, year, (y) => setDayNote(y, date, note))
   }
 
+  /**
+   * Change a plan. In Work its clients are Tasks lists: a client the plan loses (and no other contract has) whose list
+   * still holds tasks is refused (`client-has-tasks`), and a name another contract already spells differently in case
+   * takes that spelling, so a client has one list.
+   */
   setPlan(workspace: Workspace, year: string, patch: Partial<Plan>): YearResult {
     return this.mutate(workspace, year, (y) => {
-      const plan = parsePlan({ ...y.plan, ...patch })
-      return plan ? { ok: true, year: { ...y, plan } } : { ok: false, reason: 'bad-plan' }
+      const others = this.otherPlans(workspace, year)
+      const clients = patch.clients?.map((c) => canonicalClient(others, c))
+      const plan = parsePlan({ ...y.plan, ...patch, ...(clients ? { clients } : {}) })
+      if (!plan) return { ok: false, reason: 'bad-plan' }
+      if (hasContracts(workspace) && this.clientTasks) {
+        for (const lost of clientsLost(y.plan.clients ?? [], plan.clients ?? [], others)) {
+          const tasks = this.clientTasks.count(lost)
+          if (tasks > 0) {
+            return { ok: false, reason: 'client-has-tasks', detail: { client: lost, tasks } }
+          }
+        }
+      }
+      return { ok: true, year: { ...y, plan } }
     })
+  }
+
+  /** The plans of every other contract in a workspace (none where there are no contracts). */
+  private otherPlans(workspace: Workspace, except: string): Plan[] {
+    if (!hasContracts(workspace)) return []
+    return this.fileStarts(workspace)
+      .filter((s) => s !== except)
+      .flatMap((s) => this.peek(workspace, s)?.plan ?? [])
+  }
+
+  /**
+   * Rename a Work client everywhere: its Tasks list and every task in it, and in every contract that has it, the plan's
+   * list and the client of each session and typed entry. Refused when `from` is no client, `to` is no valid name or
+   * another client has it. The tasks move first; if a contract cannot be saved the rest is put back.
+   */
+  renameClient(workspace: Workspace, from: string, to: string): RenameClientResult {
+    if (!hasContracts(workspace)) return { ok: false, reason: 'no-contracts' }
+    const starts = this.fileStarts(workspace)
+    const plans = starts.flatMap((s) => this.peek(workspace, s)?.plan ?? [])
+    const check = checkRename(plans, from, to)
+    if (!check.ok) return check
+    const name = check.to
+    const has = (s: string): boolean =>
+      (this.peek(workspace, s)?.plan.clients ?? []).some(
+        (c) => c.toLowerCase() === from.toLowerCase()
+      )
+    const owners = starts.filter(has)
+    const current = plans
+      .flatMap((p) => p.clients ?? [])
+      .find((c) => c.toLowerCase() === from.toLowerCase())
+    if (current === name) return { ok: true }
+    this.clientTasks?.rename(from, name)
+    const done: string[] = []
+    const undo = (): void => {
+      for (const s of done) {
+        this.mutate(workspace, s, (y) => ({ ok: true, year: renameClientInYear(y, name, from) }))
+      }
+      this.clientTasks?.rename(name, from)
+    }
+    try {
+      for (const start of owners) {
+        const result = this.mutate(workspace, start, (y) => ({
+          ok: true,
+          year: renameClientInYear(y, from, name)
+        }))
+        if (!result.ok) {
+          undo()
+          return result
+        }
+        done.push(start)
+      }
+    } catch (error) {
+      undo()
+      throw error
+    }
+    return { ok: true }
   }
 
   addTimeOff(
@@ -359,9 +456,10 @@ export class TrackingStore {
     if (terms.name !== undefined && !name) return { ok: false, reason: 'bad-name' }
     if (this.fileStarts(workspace).includes(start)) return { ok: false, reason: 'same-start' }
     const base = defaultPlan(workspace)
+    const others = this.otherPlans(workspace, start)
     const plan = parsePlan({
       ...base,
-      ...(terms.clients ? { clients: terms.clients } : {}),
+      ...(terms.clients ? { clients: terms.clients.map((c) => canonicalClient(others, c)) } : {}),
       ...(terms.weeklyMinutes !== undefined ? { hoursPerWeek: terms.weeklyMinutes } : {})
     })
     if (!plan) return { ok: false, reason: 'bad-plan' }

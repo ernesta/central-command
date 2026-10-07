@@ -1,3 +1,4 @@
+import { MAX_CLIENT_NAME } from '@shared/tracking/client-names'
 import { parseHours } from '@shared/tracking/format'
 
 /** Monday is 1, as in the plan's `workDays`. */
@@ -32,7 +33,7 @@ export function parseAllowance(text: string): number | null {
 }
 
 /** The longest a client's name may be. */
-export const MAX_CLIENT_LENGTH = 40
+export const MAX_CLIENT_LENGTH = MAX_CLIENT_NAME
 
 /** The client list with a name added: trimmed, not empty, not there already (ignoring case). Null when it cannot be added. */
 export function addClient(clients: readonly string[], text: string): string[] | null {
