@@ -13,7 +13,7 @@ import type { NoteLocationState } from './NotePage'
  */
 export function QuickCapture(): null {
   const navigate = useNavigate()
-  // A note starts in the workspace being looked at (Research anywhere that is not Work).
+  // A note starts in the workspace being looked at (Research anywhere outside a workspace).
   const workspace = useNotesWorkspace()
   const busy = useRef(false)
 

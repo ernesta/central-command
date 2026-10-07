@@ -2136,3 +2136,12 @@ the session scratchpad and are not in the repo: these were data edits, not impor
   workspaces' time files), `backups/royal-holloway-20261006-150948/` (`time/work/` before the new contract).
 - **Not driven in the app.** Every change was checked in the files and the database; the Hours page's first invoice week for
   the new contract and the merged task's page have not been looked at.
+
+## Notes in Life (7 Oct 2026)
+
+- **Life is a third notes workspace**, from the same module code as Research and Work: `createNotesModule('life')`, `'life'` in `NOTE_WORKSPACES`, a `notes/life/` folder created and watched at start-up (`ACTIVE_WORKSPACES`), and a Life folder among the backlink folders, so mentions and "Mentioned in" cover Life notes. Life has no meetings, tasks, hours or training.
+- **A note's Workspace menu offers Life, Research and Work**; a meeting's still offers Research and Work. `WorkspaceSelect` is generic over the choices it is given (`NOTE_WORKSPACE_CHOICES`, `MEETING_WORKSPACES`), so a meeting page cannot be handed Life.
+- **New notes start where you are.** `QuickActionWorkspace` is now `life | research | work`; the palette's and Dock's "New note" and quick capture (Mod-Shift-n, via the URL) start in Life when Life is the page or the workspace last visited. New meeting, new task and Start timer have no Life, so `researchOrWork` sends them to Work when looking at Work, else Research.
+- **Search already asked Life's notes** (the manifest offers `search`), but they came under a second "Notes" heading. `searchLabel` now heads them "Life notes", as Work's are "Work notes". `in:notes` still means all three.
+- **Not driven in the app**: checked by typecheck, lint and unit tests only (new tests for a Life note, a task from Life, and the Life path). No Life notes exist yet in the real library.
+

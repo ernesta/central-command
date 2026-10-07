@@ -173,6 +173,8 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   `src/shared/entities.ts`; notes and meetings get a `uid` in their front matter when first linked; person renames rewrite mentions;
   "Mentioned in" panels read the note folders on request). Tasks, when built, add one provider and one kind.
 
+- **Notes in Life (7 Oct 2026)**: Notes is registered for Life too (`createNotesModule('life')`, files in `notes/life/`); a note's Workspace menu offers all three, new notes start in the workspace you are in, search heads them "Life notes" (`docs/DECISIONS.md`, "Notes in Life"). Life has nothing else yet; checked by tests only, not driven in the app.
+
 - **Live markup editor (30 Sep 2026, all nine stages done; all pushed)**: `LiveEditor` replaced
   Milkdown everywhere and Milkdown is gone (architecture above). The user's open questions about it (live editor questions 1 to 14, the stage 7 and 8 review
   items) are in `docs/ROADMAP.md`, "For the user"; do not act on them until they answer. Never write scratch files (logs, screenshots) outside the session scratchpad.
