@@ -1,5 +1,7 @@
 # Roadmap
 
+**Stage 5, Research (7 Oct 2026): looked at, waiting for the user's answers** (https://claude.ai/artifact/8bbh2gsUXqPrxL44FL2uum; `docs/DECISIONS.md`, "Linking Research's historical data"). Decisions: no hours for notes dated before 1 Oct 2026, the 34 supervision links, which tasks hold the 65 trainings with no title match, the untimed Luminos / Other / Rastle Lab meetings, the 1-5 Oct hours, retiring `task: auto`. No script exists yet.
+
 **Clean-up to do once the historical trainings are linked (stage 4 of `docs/TIMER_TASKS_PLAN.md`, decided 7 Oct 2026):** a new training note is saved with an automatic-task marker in its front matter and gets its lecture subtask when a series is chosen; the 129 old notes have no marker and are deliberately left alone (no task, no field, no derived hours). Their hand-made tasks are linked in stage 5. When that is done, drop the marker and treat every training note the same way (one rule instead of "marked" and "unmarked"). The user also wants hours and tasks to have a more direct relationship over time.
 
 **Stage 4 follow-ups (Trainings, 7 Oct 2026):** try it on a new training: choose a series (the lecture task appears by itself), add times, Start, Add time, and open the series task. Existing trainings are untouched until stage 5. Open points are at the end of `docs/DECISIONS.md`, "Timer and tasks, stage 4".
