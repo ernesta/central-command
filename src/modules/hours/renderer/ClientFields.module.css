@@ -26,6 +26,18 @@
   font-size: var(--text-13);
   white-space: nowrap;
 }
+.name {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: text;
+}
+.rename {
+  width: 160px;
+  height: 24px;
+}
 .remove {
   display: grid;
   place-items: center;

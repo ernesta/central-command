@@ -163,5 +163,4 @@ export interface ClientHoldsTasks {
 }
 
 export type Change =
-  | { ok: true; year: TrackingYear }
-  | { ok: false; reason: string; detail?: ClientHoldsTasks }
+  { ok: true; year: TrackingYear } | { ok: false; reason: string; detail?: ClientHoldsTasks }
