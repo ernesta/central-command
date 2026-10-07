@@ -4,6 +4,7 @@ import { formatDate, durationMinutes } from '@shared/time'
 import { formatHours, minutesPerSkill } from '@shared/skills'
 import { findByName } from '@shared/people'
 import type { Person } from '@shared/people'
+import { lectureTaskUid } from './lecture-entries'
 import { TRAINING_MODE_LABELS, type TrainingIndexRow, type TrainingMode } from './types'
 
 /** An entry that has not happened yet: after `today` (YYYY-MM-DD), or planned with no date yet. */
@@ -29,6 +30,23 @@ export function entriesInYear(rows: readonly TrainingIndexRow[], year: string): 
   return rows.filter((r) => inYear(r.date, year))
 }
 
+/** Minutes tracked on each task (by uid) in Hours: a lecture's self-study timers and typed time. */
+export type SelfStudy = ReadonlyMap<string, number>
+
+/**
+ * A lecture's hours as one total, with no split: the note's own session (its start and end) plus everything tracked on its
+ * subtask. A note with no task has only its session, exactly as before. Null when there is neither (no times, no self-study).
+ */
+export function entryMinutes(
+  row: Pick<TrainingIndexRow, 'start' | 'end' | 'task'>,
+  selfStudy?: SelfStudy
+): number | null {
+  const session = durationMinutes(row.start, row.end)
+  const uid = lectureTaskUid(row.task)
+  const extra = uid ? (selfStudy?.get(uid) ?? 0) : 0
+  return session === null && extra === 0 ? null : (session ?? 0) + extra
+}
+
 export interface TrainingHours {
   /** Entries counted: in the year and not upcoming. */
   entries: number
@@ -48,12 +66,13 @@ export function trainingHours(
   rows: readonly TrainingIndexRow[],
   year: string,
   today: string,
-  aimHours: number
+  aimHours: number,
+  selfStudy?: SelfStudy
 ): TrainingHours {
   const counted = entriesInYear(rows, year).filter((r) => !isUpcoming(r, today))
   const timed = counted.map((r) => ({
     skills: r.skills,
-    minutes: durationMinutes(r.start, r.end)
+    minutes: entryMinutes(r, selfStudy)
   }))
   const minutes = timed.reduce((n, t) => n + (t.minutes ?? 0), 0)
   return {
@@ -236,13 +255,17 @@ export interface SeriesSummary {
 }
 
 /** One summary per series that has entries among the rows given. */
-export function seriesSummaries(rows: readonly TrainingIndexRow[], today: string): SeriesSummary[] {
+export function seriesSummaries(
+  rows: readonly TrainingIndexRow[],
+  today: string,
+  selfStudy?: SelfStudy
+): SeriesSummary[] {
   return seriesOptions(rows).map((series) => {
     const mine = rows.filter((r) => r.series === series && !isUpcoming(r, today))
     return {
       series,
       count: mine.length,
-      minutes: mine.reduce((n, r) => n + (durationMinutes(r.start, r.end) ?? 0), 0)
+      minutes: mine.reduce((n, r) => n + (entryMinutes(r, selfStudy) ?? 0), 0)
     }
   })
 }

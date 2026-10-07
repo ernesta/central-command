@@ -30,6 +30,7 @@ describe('withDerived', () => {
     expect(dayRows(shown, '2026-09-24')).toEqual([])
     expect(derivedRows(shown, '2026-09-24')).toEqual([
       {
+        kind: 'meeting',
         id: '2026-09-24 Supervision',
         label: 'Supervision',
         task: 'cc://task/abc12345',
@@ -81,5 +82,20 @@ describe('withDerived', () => {
       entry({ id: 'early', start: '09:00', end: '09:30' })
     ])
     expect(derivedRows(shown, '2026-09-24').map((r) => r.id)).toEqual(['early', 'late'])
+  })
+})
+
+describe('a lecture next to a meeting', () => {
+  it('keeps its kind, so a row links to the right note, and counts like any other block', () => {
+    const shown = withDerived(year(), [
+      entry({ kind: 'training', id: 'same', start: '10:00', end: '11:30', label: 'Plotly' }),
+      entry({ id: 'same', start: '14:00', end: '15:00' })
+    ])
+    expect(derivedRows(shown, '2026-09-24').map((r) => [r.kind, r.id, r.minutes])).toEqual([
+      ['training', 'same', 90],
+      ['meeting', 'same', 60]
+    ])
+    expect(dayMinutes(shown, '2026-09-24')).toBe(150)
+    expect(new Set(shown.sessions.map((s) => s.id)).size).toBe(2)
   })
 })

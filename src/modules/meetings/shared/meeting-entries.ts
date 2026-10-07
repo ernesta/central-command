@@ -1,5 +1,5 @@
 import { timeToSeconds } from '@shared/tracking/rounding'
-import type { Session } from '@shared/tracking/types'
+import type { DerivedKind, Session } from '@shared/tracking/types'
 import { fold } from '@shared/text'
 import { durationMinutes } from './time'
 import type { MeetingIndexRow, MeetingWorkspace } from './types'
@@ -115,11 +115,27 @@ export function occupiedBySessions(sessions: readonly Session[], date: string): 
 
 /** The other meetings of a day, as things a meeting can overlap. */
 export function occupiedByMeetings(
-  entries: readonly Pick<MeetingEntry, 'id' | 'date' | 'start' | 'end' | 'label'>[],
+  entries: readonly (Pick<MeetingEntry, 'id' | 'date' | 'start' | 'end' | 'label'> & {
+    kind?: DerivedKind
+  })[],
   date: string,
   workspace: MeetingWorkspace
 ): Occupied[] {
   return entries
     .filter((e) => e.date === date)
-    .map((e) => ({ label: e.label, start: e.start, end: e.end, meeting: `${workspace}/${e.id}` }))
+    .map((e) => ({
+      label: e.label,
+      start: e.start,
+      end: e.end,
+      meeting: noteKey(e.kind, workspace, e.id)
+    }))
+}
+
+/** What `Occupied.meeting` and the `self` of `overlapping` hold for a note: a meeting and a lecture of one name are two things. */
+export function noteKey(
+  kind: DerivedKind | undefined,
+  workspace: MeetingWorkspace,
+  id: string
+): string {
+  return `${kind ?? 'meeting'}:${workspace}/${id}`
 }

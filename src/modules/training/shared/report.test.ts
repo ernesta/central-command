@@ -76,3 +76,21 @@ describe('trainingReportHtml', () => {
     expect(reportFileName('2025-09-22')).toBe('Training log 2025-26.pdf')
   })
 })
+
+describe('trainingReportHtml with self-study', () => {
+  const rows = [
+    row('2025-10-01', { title: 'Lecture', task: 'k1' }),
+    row('2025-10-02', { title: 'Other' })
+  ]
+  it('is the same page when there is no self-study', () => {
+    expect(trainingReportHtml({ ...input(rows), selfStudy: new Map() })).toBe(
+      trainingReportHtml(input(rows))
+    )
+  })
+  it('shows a lecture as one total: its session plus the time tracked on it', () => {
+    const html = trainingReportHtml({ ...input(rows), selfStudy: new Map([['k1', 45]]) })
+    // A 90-minute session plus 45 minutes of self-study is 2.3 h; the other entry stays 1.5 h, 3.8 h in all.
+    expect(html).toContain('<td class="nw r">2.3 h</td>')
+    expect(html).toContain('<strong>3.8 h</strong> of 200 h in 2 entries')
+  })
+})

@@ -1,8 +1,15 @@
 import { yearLabel } from '@shared/year'
 import { escapeHtml, reportPageHtml } from '@shared/report-page'
 import { formatHours, sortSkills } from '@shared/skills'
-import { durationMinutes, formatDate } from '@shared/time'
-import { compareNewestFirst, entriesInYear, isUpcoming, trainingHours } from './rules'
+import { formatDate } from '@shared/time'
+import {
+  compareNewestFirst,
+  entryMinutes,
+  entriesInYear,
+  isUpcoming,
+  trainingHours,
+  type SelfStudy
+} from './rules'
 import { typeLabel, type TrainingIndexRow } from './types'
 
 export interface TrainingReportInput {
@@ -13,6 +20,8 @@ export interface TrainingReportInput {
   aimHours: number
   /** Minutes of meetings in the same year, mentioned in one quiet line; 0 to leave it out. */
   meetingMinutes: number
+  /** Minutes tracked on each lecture's subtask; each line is a lecture's total. Left out: sessions only. */
+  selfStudy?: SelfStudy
 }
 
 /** The file name suggested for the export, for example "Training log 2025-26.pdf". */
@@ -30,12 +39,12 @@ export function trainingReportHtml(input: TrainingReportInput): string {
   const rows = entriesInYear(input.rows, year)
     .filter((r) => !isUpcoming(r, today))
     .sort((a, b) => -compareNewestFirst(a, b))
-  const hours = trainingHours(input.rows, year, today, aimHours)
+  const hours = trainingHours(input.rows, year, today, aimHours, input.selfStudy)
   const label = yearLabel(year)
 
   const body = rows
     .map((r) => {
-      const minutes = durationMinutes(r.start, r.end)
+      const minutes = entryMinutes(r, input.selfStudy)
       const time = r.start && r.end ? `${r.start}–${r.end}` : (r.start ?? '')
       return `<tr>
 <td class="nw">${escapeHtml(r.date ? formatDate(r.date) : '')}</td>

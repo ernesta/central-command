@@ -27,10 +27,13 @@ export interface Session {
    * In memory only, never saved: the block comes from a meeting note's date, start and end (`id` is the meeting), not from the
    * timer. Hours reads it and never changes it; the note is where it is edited. See `withDerived`.
    */
-  derived?: { kind: 'meeting'; id: string }
+  derived?: { kind: DerivedKind; id: string }
   /** The task's ClickUp time was raised to cover this session, so Tasks does not add it again (see `Adjust.earlier`). */
   earlier?: true
 }
+
+/** Where derived time comes from: a meeting note, or a training note (a lecture's own session). */
+export type DerivedKind = 'meeting' | 'training'
 
 /** Typed time for a task on a day, signed, in multiples of 15 minutes. */
 export interface Adjust {

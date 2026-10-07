@@ -3,6 +3,7 @@ import type { Person } from '@shared/people'
 import {
   DEFAULT_TRAINING_QUERY,
   entriesInYear,
+  entryMinutes,
   entriesInYearOrPlanned,
   isUpcoming,
   leadNames,
@@ -12,6 +13,7 @@ import {
   reconcileTrainingQuery,
   institutionOptions,
   seriesOptions,
+  seriesSummaries,
   trainingFiltersActive,
   trainingHours
 } from './rules'
@@ -214,5 +216,54 @@ describe('entriesInYearOrPlanned', () => {
       'Planned'
     ])
     expect(entriesInYearOrPlanned(rows, '2025-09-22', today).map((r) => r.title)).toEqual(['Talk'])
+  })
+})
+
+describe('a lecture total (session plus self-study, one number)', () => {
+  const lecture = (date: string, task: string, over: Partial<TrainingIndexRow> = {}) =>
+    row(date, { task, series: 'Intro', skills: ['Networking (RP)'], ...over })
+  const study = new Map([['k1', 45]])
+
+  it('is the session alone for a note with no self-study or no task: the same numbers as before', () => {
+    const rows = [
+      lecture('2026-01-01', 'k1'),
+      lecture('2026-01-02', ''),
+      lecture('2026-01-03', 'auto')
+    ]
+    const plain = trainingHours(rows, '2025-09-22', TODAY, 200)
+    expect(trainingHours(rows, '2025-09-22', TODAY, 200, new Map())).toEqual(plain)
+    expect(trainingHours(rows, '2025-09-22', TODAY, 200, new Map([['other', 99]]))).toEqual(plain)
+    expect(plain.minutes).toBe(180)
+  })
+
+  it('adds the self-study of the lecture to its session, in the total and in every skill', () => {
+    const rows = [lecture('2026-01-01', 'k1'), lecture('2026-01-02', 'k2')]
+    const hours = trainingHours(rows, '2025-09-22', TODAY, 200, study)
+    expect(hours.minutes).toBe(60 + 45 + 60)
+    expect(hours.perSkill).toEqual([{ skill: 'Networking (RP)', minutes: 165 }])
+  })
+
+  it('never gives an older note (no task) the self-study of a task, even one with the same uid text', () => {
+    expect(entryMinutes({ start: '10:00', end: '11:00', task: '' }, study)).toBe(60)
+    expect(
+      entryMinutes({ start: '10:00', end: '11:00', task: 'auto' }, new Map([['auto', 5]]))
+    ).toBe(60)
+  })
+
+  it('counts self-study on a lecture with no times, and says nothing is missing', () => {
+    const rows = [lecture('2026-01-01', 'k1', { start: null, end: null })]
+    const hours = trainingHours(rows, '2025-09-22', TODAY, 200, study)
+    expect(hours.minutes).toBe(45)
+    expect(hours.withoutTimes).toBe(0)
+    expect(trainingHours(rows, '2025-09-22', TODAY, 200).withoutTimes).toBe(1)
+    expect(entryMinutes({ start: null, end: null, task: 'k2' }, study)).toBeNull()
+  })
+
+  it('totals each series with its lectures self-study', () => {
+    const rows = [lecture('2026-01-01', 'k1'), lecture('2026-01-02', 'k2')]
+    expect(seriesSummaries(rows, TODAY, study)).toEqual([
+      { series: 'Intro', count: 2, minutes: 165 }
+    ])
+    expect(seriesSummaries(rows, TODAY)).toEqual([{ series: 'Intro', count: 2, minutes: 120 }])
   })
 })

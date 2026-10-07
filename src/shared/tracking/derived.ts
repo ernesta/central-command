@@ -1,11 +1,13 @@
 import { fold } from '../text'
 import { inYear } from '../year'
 import { reportedMinutes } from './rounding'
-import type { Session, TrackingYear } from './types'
+import type { DerivedKind, Session, TrackingYear } from './types'
 
-/** Time that is not tracked here but worked out from somewhere else (a meeting note's date, start and end). */
+/** Time that is not tracked here but worked out from somewhere else (a meeting or training note's date, start and end). */
 export interface DerivedEntry {
-  /** The meeting (its file's base name); with the date it is what a row links to. */
+  /** Where it comes from; a meeting when left out. */
+  kind?: DerivedKind
+  /** The note (its file's base name); with the kind it is what a row links to. */
   id: string
   date: string
   /** HH:MM */
@@ -34,23 +36,25 @@ export function withDerived(year: TrackingYear, entries: readonly DerivedEntry[]
       client = clients.find((c) => fold(c) === fold(e.client ?? ''))
       if (client === undefined) continue
     }
+    const kind = e.kind ?? 'meeting'
     added.push({
-      id: `meeting:${e.id}`,
+      id: `${kind}:${e.id}`,
       date: e.date,
       start: `${e.start}:00`,
       end: `${e.end}:00`,
       label: e.label,
       task: e.task,
       ...(client !== undefined ? { client } : {}),
-      derived: { kind: 'meeting', id: e.id }
+      derived: { kind, id: e.id }
     })
   }
   return added.length === 0 ? year : { ...year, sessions: [...year.sessions, ...added] }
 }
 
-/** One read-only line of a day: a meeting, with the minutes it reports. */
+/** One read-only line of a day: a meeting or a lecture, with the minutes it reports. */
 export interface DerivedRow {
-  /** The meeting. */
+  kind: DerivedKind
+  /** The note. */
   id: string
   label: string
   client?: string
@@ -66,6 +70,7 @@ export function derivedRows(year: TrackingYear, date: string): DerivedRow[] {
     .filter((s) => s.date === date && s.derived && s.end !== null)
     .sort((a, b) => a.start.localeCompare(b.start))
     .map((s) => ({
+      kind: s.derived?.kind ?? 'meeting',
       id: s.derived?.id ?? '',
       label: s.label,
       ...(s.client !== undefined ? { client: s.client } : {}),
