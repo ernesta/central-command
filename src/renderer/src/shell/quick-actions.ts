@@ -1,6 +1,7 @@
 import type { NavigateFunction } from 'react-router'
 import { meetingRoute } from '@modules/meetings/renderer/meetings-paths'
 import { defaultSeries } from '@modules/meetings/shared/types'
+import { stopTimer } from '@modules/hours/renderer/start-request'
 import { openNewTask } from '@modules/tasks/renderer/new-task-store'
 import { noteRoute } from '@modules/notes/renderer/notes-paths'
 import { entryRoute } from '@modules/training/renderer/training-paths'
@@ -74,10 +75,8 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
   {
     id: 'stop-timer',
     title: 'Stop timer',
-    detail: 'Ends the task that is running.',
-    go: async () => {
-      await window.api.tracking.stop()
-    }
+    detail: 'Ends the task that is running; asks for a task if it has none.',
+    go: () => stopTimer()
   },
   {
     id: 'new-training',

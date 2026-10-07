@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { QUARTER } from '@shared/tracking/rounding'
+import { stopTimer } from '../../hours/renderer/start-request'
 import { DurationField } from '../../hours/renderer/DurationField'
 import { formatTaskTime } from '../shared/query'
 import { taskKey } from '../shared/tracked'
@@ -61,8 +62,7 @@ export function TaskTimeCard({
     if (!result.ok) setError(`Couldn’t start the timer (${result.reason}).`)
   }
   const stop = async (): Promise<void> => {
-    const result = await window.api.tracking.stop()
-    if (!result.ok) setError(`Couldn’t stop the timer (${result.reason}).`)
+    await stopTimer()
   }
   const add = async (): Promise<void> => {
     const client = clientFor(task.list, date)

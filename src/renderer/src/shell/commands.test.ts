@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest'
+import { clearPickerRequest, currentPickerRequest } from '@modules/hours/renderer/start-request'
 import { searchCommands } from './commands'
 
 describe('searchCommands', () => {
@@ -24,46 +25,54 @@ describe('searchCommands', () => {
   })
 
   describe('timer commands', () => {
-    const withTimer = (running: boolean): void => {
+    const withTimer = (running: { session: { task?: string } } | null): void => {
       ;(window as unknown as { api: unknown }).api = {
         tracking: {
-          running: async () => (running ? {} : null),
+          running: async () => running,
+          start: vi.fn(async () => ({ ok: true, running: {} })),
           stop: vi.fn(async () => ({ ok: true, running: null }))
         }
       }
     }
-
-    it('offers Stop timer only while a timer runs', async () => {
-      withTimer(true)
-      expect((await searchCommands('timer', vi.fn())).map((h) => h.key)).toEqual([
-        'stop-timer',
-        'start-timer'
-      ])
-      withTimer(false)
+    it('offers Stop timer only while a timer runs, and Start timer only while none does', async () => {
+      withTimer({ session: { task: 'cc://task/a' } })
+      expect((await searchCommands('timer', vi.fn())).map((h) => h.key)).toEqual(['stop-timer'])
+      withTimer(null)
       expect((await searchCommands('timer', vi.fn())).map((h) => h.key)).toEqual(['start-timer'])
     })
 
-    it('stops the timer', async () => {
-      withTimer(true)
+    it('stops a timer that has a task', async () => {
+      withTimer({ session: { task: 'cc://task/a' } })
       const [hit] = await searchCommands('stop timer', vi.fn())
       await hit.run?.()
       expect(window.api.tracking.stop).toHaveBeenCalled()
     })
 
-    it('Start timer opens Hours asking for the field', async () => {
-      withTimer(false)
-      const navigate = vi.fn()
-      const [hit] = await searchCommands('start timer', navigate)
+    it('does not stop a timer with no task: it asks for one first', async () => {
+      withTimer({ session: {} })
+      clearPickerRequest()
+      const [hit] = await searchCommands('stop timer', vi.fn())
       await hit.run?.()
-      expect(navigate).toHaveBeenCalledWith('/research/hours', { state: { focus: 'start' } })
+      expect(window.api.tracking.stop).not.toHaveBeenCalled()
+      expect(currentPickerRequest()).toMatchObject({ stopAfter: true })
     })
 
-    it('Start timer opens Hours of the current workspace', async () => {
-      withTimer(false)
+    it('Start timer starts at once in the current workspace and opens the picker', async () => {
+      withTimer(null)
+      clearPickerRequest()
       const navigate = vi.fn()
       const [hit] = await searchCommands('start timer', navigate, 6, 'work')
       await hit.run?.()
-      expect(navigate).toHaveBeenCalledWith('/work/hours', { state: { focus: 'start' } })
+      expect(window.api.tracking.start).toHaveBeenCalledWith('work', '', undefined, undefined)
+      expect(navigate).not.toHaveBeenCalled()
+      expect(currentPickerRequest()).toMatchObject({ stopAfter: false })
+    })
+
+    it('Start timer in Life starts in Research', async () => {
+      withTimer(null)
+      const [hit] = await searchCommands('start timer', vi.fn(), 6, 'life')
+      await hit.run?.()
+      expect(window.api.tracking.start).toHaveBeenCalledWith('research', '', undefined, undefined)
     })
   })
 })

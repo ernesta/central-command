@@ -1,5 +1,5 @@
 import type { NavigateFunction } from 'react-router'
-import { hoursBase } from '@modules/hours/renderer/hours-paths'
+import { startUnnamed } from '@modules/hours/renderer/start-request'
 import { peopleRoute } from '@modules/meetings/renderer/meetings-paths'
 import { fold } from '@shared/text'
 import { searchTerms, type SearchHit } from '@shared/search'
@@ -23,10 +23,10 @@ const COMMANDS: Command[] = [
   {
     id: 'start-timer',
     title: 'Start timer',
-    detail: 'Opens Hours, ready for a task name.',
-    // The current workspace's Hours; the field takes focus on arrival (TodayCard).
-    go: (navigate, workspace) =>
-      navigate(hoursBase(researchOrWork(workspace)), { state: { focus: 'start' } })
+    detail: 'Starts now, then asks which task.',
+    // The same Start as the top bar's: a timer at once, with the picker open for it.
+    go: (_navigate, workspace) => startUnnamed(researchOrWork(workspace)),
+    whileRunning: false
   },
   {
     id: 'open-settings',
