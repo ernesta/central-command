@@ -238,6 +238,10 @@
   gap: 8px;
   margin-top: 4px;
 }
+.ask {
+  display: grid;
+  gap: 6px;
+}
 .addTime {
   display: flex;
   flex-wrap: wrap;

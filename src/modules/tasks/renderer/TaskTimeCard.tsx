@@ -156,7 +156,7 @@ export function TaskTimeCard({
       </div>
       {asking && !isRunning && (
         <div
-          className={styles.addTime}
+          className={styles.ask}
           role="group"
           aria-label="Client"
           onKeyDown={(event) => {
@@ -168,16 +168,18 @@ export function TaskTimeCard({
           }}
         >
           <span className={styles.label}>Which client?</span>
-          {asking.map((client, index) => (
-            <Button
-              key={client}
-              size="small"
-              autoFocus={index === 0}
-              onClick={() => void begin(client)}
-            >
-              {client}
-            </Button>
-          ))}
+          <div className={styles.timeButtons}>
+            {asking.map((client, index) => (
+              <Button
+                key={client}
+                size="small"
+                autoFocus={index === 0}
+                onClick={() => void begin(client)}
+              >
+                {client}
+              </Button>
+            ))}
+          </div>
         </div>
       )}
       {adding && (
