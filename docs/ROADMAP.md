@@ -1,5 +1,7 @@
 # Roadmap
 
+**Discard a running timer (8 Oct 2026): built, pushed, not driven in the app** (`docs/DECISIONS.md`, "Discard a running timer"). Next: a Delete on saved entries (Today and week rows), then look at Stop and the idle Start sharing one spot in the top bar.
+
 **PS5210 (8 Oct 2026): linked and applied to the real library.** **Stage 5, Research (7 Oct 2026): looked at, waiting for the user's answers** (https://claude.ai/artifact/8bbh2gsUXqPrxL44FL2uum; `docs/DECISIONS.md`, "Linking Research's historical data"). Decisions: no hours for notes dated before 1 Oct 2026, the 34 supervision links, which tasks hold the 65 trainings with no title match, the untimed Luminos / Other / Rastle Lab meetings, the 1-5 Oct hours, retiring `task: auto`. No script exists yet.
 
 **Clean-up to do once the historical trainings are linked (stage 4 of `docs/TIMER_TASKS_PLAN.md`, decided 7 Oct 2026):** a new training note is saved with an automatic-task marker in its front matter and gets its lecture subtask when a series is chosen; the 129 old notes have no marker and are deliberately left alone (no task, no field, no derived hours). Their hand-made tasks are linked in stage 5. When that is done, drop the marker and treat every training note the same way (one rule instead of "marked" and "unmarked"). The user also wants hours and tasks to have a more direct relationship over time.
