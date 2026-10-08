@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
-import { Play, Square } from 'lucide-react'
+import { Play, Square, Trash2 } from 'lucide-react'
 import { Select } from '@renderer/components/Select'
 import { researchOrWork } from '@renderer/shell/quick-actions'
 import { TopBarPortal } from '@renderer/shell/top-bar-slot'
@@ -78,6 +78,12 @@ function TimerPopover({
     onClose()
   }
 
+  /** A timer started by mistake: drop it, saving nothing. */
+  const discard = async (): Promise<void> => {
+    await tracking.deleteSession(running.workspace, running.year, session.id)
+    onClose()
+  }
+
   return (
     <div className={styles.popover} role="dialog" aria-label="Timer">
       {taskless && clock !== null ? (
@@ -152,6 +158,12 @@ function TimerPopover({
             </button>
           )}
         </>
+      )}
+      {clock !== null && (
+        <button type="button" className={styles.discard} onClick={() => void discard()}>
+          <Trash2 size={12} strokeWidth={1.75} aria-hidden />
+          Discard
+        </button>
       )}
     </div>
   )

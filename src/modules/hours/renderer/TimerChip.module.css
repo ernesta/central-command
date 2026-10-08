@@ -157,6 +157,20 @@
 .stopButton:hover {
   background: var(--hover-tint);
 }
+.discard {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: start;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+}
+.discard:hover {
+  color: var(--text-secondary);
+}
 /* The idle chip has no clock or Stop, so its button carries the whole shape. */
 .startRow {
   display: flex;
