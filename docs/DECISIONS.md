@@ -2332,3 +2332,12 @@ The Training landing's "Recent and upcoming" list showed a title without its ser
 - **Used in:** the landing's recent list (the title itself; no separate line, and `RecentRow` is unchanged), the "Mentioned in" panels (`titleOf` in `src/main/entities/backlinks.ts`), the entry page heading (label, then the date), and the search hit's title (its detail is now only the date, since the series would repeat). Hours rows, as before.
 - **Not changed:** the Training table keeps Series as its own column; the Person page's Trainings list keeps the series in its note column; the PDF report keeps its series tag; a lecture's subtask keeps its bare title, because a task page and the task lists always show it under its parent. Training entries are not an entity kind, so there are no chips for them.
 - Tests: the backlink title ("PS5210: Lecture 1", a bare title without a series) and the search hit. Typecheck, lint and tests pass; not driven in the app.
+
+## The Time card names what it shows (9 Oct 2026)
+
+The task page's Time card always listed "Earlier, from ClickUp" and "In Hours", even at 0:00. Both labels were unclear ("Hours" is an internal module name, and where the time came from does not matter to the reader), and a task with no time looked broken.
+
+- **Earlier:** ClickUp's older time (undated, imported) is one line, "Earlier", shown only when it is above zero. It now shows next to month lines too; before, it was hidden whenever any month existed, so the lines did not add up to the total.
+- **Months:** tracked time shows by month ("Oct 2026"), as before.
+- **No time at all:** the card shows the current month at 0:00 instead of two zero lines. The "In Hours" line is gone.
+- Code: `src/modules/tasks/renderer/TaskTimeCard.tsx` only. The card shows the task's own time; the total still includes subtasks. No test covers the card; typecheck, lint and tests pass; not driven in the app.
