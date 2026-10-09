@@ -19,10 +19,10 @@ import { useEscapeFullScreen } from './useEscapeFullScreen'
 import { GlobalSearch } from './GlobalSearch'
 import { SearchResultsPage } from './SearchResultsPage'
 import { SettingsPage } from './SettingsPage'
+import { LifeLanding } from './LifeLanding'
 import { ResearchLanding } from './ResearchLanding'
 import { TopBar } from './TopBar'
 import { WorkLanding } from './WorkLanding'
-import { WorkspaceEmpty } from './WorkspaceEmpty'
 import styles from './Shell.module.css'
 
 function workspaceFromPath(pathname: string): Workspace | null {
@@ -127,7 +127,7 @@ export function Shell(): React.JSX.Element {
             <Route path="/research" element={<ResearchLanding />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/search" element={<SearchResultsPage />} />
-            <Route path="/life" element={<WorkspaceEmpty workspace="life" />} />
+            <Route path="/life" element={<LifeLanding />} />
             <Route path="/work" element={<WorkLanding />} />
             {modules.flatMap((m) =>
               m.status === 'live'
