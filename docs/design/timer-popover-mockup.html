@@ -1,0 +1,97 @@
+<title>Timer card mockups</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@500&display=swap">
+<style>
+  /* Layout: three running-timer cards side by side, each labelled, using Central Command's own tokens. */
+  :root {
+    --bg: #edeff2; --surface: #ffffff; --ink: #1b222b; --text-secondary: #3a4652; --text-muted: #5c6672;
+    --border-soft: #d3d8de; --border-strong: #c3cad2; --hover-tint: #f4f6f8;
+    --accent: #35577a; --accent-contrast: #ffffff; --selected-bg: #dce6ee; --selected-text: #1f3a52;
+    --shadow: rgba(27, 34, 43, 0.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14181d; --surface: #1f262e; --ink: #e6eaee; --text-secondary: #c2cad2; --text-muted: #98a3af;
+      --border-soft: #2f3843; --border-strong: #3d4855; --hover-tint: #262e37;
+      --accent: #86aad0; --accent-contrast: #0f1620; --selected-bg: #2a3b4d; --selected-text: #d3e3f2;
+      --shadow: rgba(0, 0, 0, 0.55); color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14181d; --surface: #1f262e; --ink: #e6eaee; --text-secondary: #c2cad2; --text-muted: #98a3af;
+    --border-soft: #2f3843; --border-strong: #3d4855; --hover-tint: #262e37;
+    --accent: #86aad0; --accent-contrast: #0f1620; --selected-bg: #2a3b4d; --selected-text: #d3e3f2;
+    --shadow: rgba(0, 0, 0, 0.55); color-scheme: dark;
+  }
+  body { background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', system-ui, sans-serif; padding-inline: 16px; padding-block: 28px; }
+  main { max-width: 1100px; margin: 0 auto; display: grid; gap: 24px; }
+  h1 { font-family: 'Newsreader', Georgia, serif; font-weight: 500; font-size: 28px; margin: 0; text-wrap: balance; }
+  .lead { margin: 0; color: var(--text-secondary); font-size: 15px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); gap: 20px; align-items: start; }
+  .option { display: grid; gap: 10px; min-width: 0; }
+  .option h2 { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+  .option p { margin: 0; font-size: 13px; color: var(--text-secondary); }
+  .stage { padding: 12px; border-radius: 14px; background: var(--hover-tint); }
+  .chip { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 3px 4px 3px 10px; border: 1px solid var(--border-strong); border-radius: 999px; background: var(--surface); font-size: 14px; font-variant-numeric: tabular-nums; color: var(--text-secondary); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .pill b { color: var(--ink); font-weight: 500; }
+  .pill i { font-style: normal; padding: 3px 10px; border-radius: 999px; background: var(--selected-bg); color: var(--selected-text); font-size: 12px; font-weight: 600; }
+  .card { width: min(380px, 100%); margin-left: auto; box-sizing: border-box; display: grid; gap: 12px; padding: 16px; background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; box-shadow: 0 8px 24px var(--shadow); font-size: 14px; }
+  .title { font-weight: 600; font-size: 15px; }
+  .list { font-size: 13px; color: var(--text-muted); }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .time { color: var(--text-muted); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 6px; }
+  .box { padding: 3px 8px; border: 1px solid var(--border-strong); border-radius: 8px; color: var(--ink); }
+  .btn { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); font-weight: 500; }
+  .quiet { font: inherit; font-size: 13px; padding: 0; border: 0; background: none; color: var(--text-muted); }
+  .rule { border: 0; border-top: 1px solid var(--border-faint, var(--border-soft)); margin: 0; }
+  .links { display: flex; gap: 16px; }
+  .btns { display: flex; gap: 8px; }
+  .more { margin-left: auto; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; color: var(--text-muted); border: 1px solid var(--border-soft); }
+  .menu { justify-self: end; display: grid; gap: 2px; padding: 4px; border: 1px solid var(--border-soft); border-radius: 8px; width: 140px; font-size: 13px; }
+  .menu span { padding: 5px 8px; border-radius: 6px; }
+  .menu span:first-child { background: var(--hover-tint); }
+  .ask { font-size: 15px; font-weight: 500; }
+
+  h3 { margin: 8px 0 0; font-size: 20px; font-family: 'Newsreader', Georgia, serif; font-weight: 500; }
+  .input { padding: 8px 10px; border: 1px solid var(--accent); border-radius: 8px; background: var(--surface); color: var(--ink); font-size: 14px; }
+  .input.ph { color: var(--text-muted); border-color: var(--border-strong); }
+  .head { font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+  .opts { display: grid; gap: 2px; }
+  .opt { display: flex; justify-content: space-between; gap: 12px; padding: 7px 8px; border-radius: 8px; }
+  .opt.on { background: var(--hover-tint); }
+  .opt small { color: var(--text-muted); font-size: 13px; white-space: nowrap; }
+  .create { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 7px 8px; border-radius: 8px; background: var(--hover-tint); }
+  .sel { padding: 2px 8px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface); font-size: 13px; }
+  .field { display: grid; gap: 4px; }
+  .field .head { margin: 0; }
+  .nolist { color: var(--text-muted); font-style: italic; }
+  .action { display: grid; gap: 12px; padding-top: 8px; border-top: 1px solid var(--border-soft); }
+  .action > p { margin: 0; font-size: 14px; color: var(--text-secondary); }
+  .stagehead { font-size: 13px; color: var(--text-muted); margin: 0; }
+  .qbtn { font: inherit; font-size: 13px; padding: 6px 8px; border: 0; background: none; color: var(--text-muted); }
+  .acts { display: flex; align-items: center; gap: 4px; }
+  .tight .time { font-size: 13px; }
+  .ibtn { display: grid; place-items: center; width: 30px; height: 30px; border: 0; border-radius: 8px; background: none; color: var(--text-muted); }
+  .ibtn:hover { background: var(--hover-tint); color: var(--ink); }
+</style>
+<main>
+<h1>Timer: the full set</h1>
+<p class="lead">Five states of the timer popover. In every state the current timer is the top block with Stop and Discard, and the picker is below it. Left and right are two ways of laying out that same block. Pick A or B once; it applies everywhere.</p>
+<section class="action"><h3>1 · Running on a task</h3><p>Click the timer in the top bar.</p><div class="grid"><div class="option"><h2>Option A · Stop and Discard on the clock line</h2><div class="stage"><div class="chip"><span class="pill"><span class="dot"></span><b>Prepare for POST interview</b> 0:01 <i>Stop</i></span></div><div class="card"><div><div><div class="title">Prepare for POST interview</div><div class="list">Admin &amp; Logistics</div></div></div>
+<div class="row tight"><span class="time">Started <span class="box">11 : 50</span> · 0:01</span><span class="acts"><button class="btn primary">Stop</button><button class="qbtn">Discard</button></span></div></div></div></div><div class="option"><h2>Option B · Stop and Discard as buttons below</h2><div class="stage"><div class="chip"><span class="pill"><span class="dot"></span><b>Prepare for POST interview</b> 0:01 <i>Stop</i></span></div><div class="card"><div><div class="title">Prepare for POST interview</div><div class="list">Admin &amp; Logistics</div></div>
+<div class="time">Started <span class="box">11 : 50</span> · 0:01 so far</div>
+<div class="btns"><button class="btn primary">Stop</button><button class="btn">Discard</button></div></div></div></div></div></section><section class="action"><h3>2 · Just started, no task yet</h3><p>Right after pressing Start. The clock is running.</p><div class="grid"><div class="option"><h2>Option A · Stop and Discard on the clock line</h2><div class="stage"><div class="chip"><span class="pill"><span class="dot"></span><b>No task yet</b> 0:01 <i>Stop</i></span></div><div class="card"><div><div><div class="title">No task yet</div><div class="list nolist">Pick one below</div></div></div>
+<div class="row tight"><span class="time">Started <span class="box">11 : 50</span> · 0:01</span><span class="acts"><button class="btn primary">Stop</button><button class="qbtn">Discard</button></span></div><hr class="rule"><div class="input ph">What are you working on?</div><div class="head">Recent</div><div class="opts"><div class="opt"><span>Daily admin</span><small>Admin &amp; Logistics</small></div><div class="opt"><span>Prepare a presentation for CastlesFest</span><small>Presenting</small></div></div></div></div></div><div class="option"><h2>Option B · Stop and Discard as buttons below</h2><div class="stage"><div class="chip"><span class="pill"><span class="dot"></span><b>No task yet</b> 0:01 <i>Stop</i></span></div><div class="card"><div><div class="title">No task yet</div><div class="list nolist">Pick one below</div></div>
+<div class="time">Started <span class="box">11 : 50</span> · 0:01 so far</div>
+<div class="btns"><button class="btn primary">Stop</button><button class="btn">Discard</button></div><hr class="rule"><div class="input ph">What are you working on?</div><div class="head">Recent</div><div class="opts"><div class="opt"><span>Daily admin</span><small>Admin &amp; Logistics</small></div><div class="opt"><span>Prepare a presentation for CastlesFest</span><small>Presenting</small></div></div></div></div></div></div></section><section class="action"><h3>3 · Typing a name that matches tasks</h3><p>Existing tasks first; Create is always last.</p><div class="grid"><div class="option"><h2>Option A · Stop and Discard on the clock line</h2><div class="stage"><div class="chip"><span class="pill"><span class="dot"></span><b>No task yet</b> 0:01 <i>Stop</i></span></div><div class="card"><div><div><div class="title">No task yet</div><div class="list nolist">Pick one below</div></div></div>
+<div class="row tight"><span class="time">Started <span class="box">11 : 50</span> · 0:01</span><span class="acts"><button class="btn primary">Stop</button><button class="qbtn">Discard</button></span></div><hr class="rule"><div class="input">Prepare</div><div class="opts"><div class="opt on"><span>Prepare for POST interview</span><small>Admin &amp; Logistics</small></div><div class="opt"><span>Prepare a presentation for CastlesFest</span><small>Presenting</small></div></div><div class="create"><b>+</b> Create “Prepare” in <span class="sel">Admin &amp; Logistics ▾</span></div></div></div></div><div class="option"><h2>Option B · Stop and Discard as buttons below</h2><div class="stage"><div class="chip"><span class="pill"><span class="dot"></span><b>No task yet</b> 0:01 <i>Stop</i></span></div><div class="card"><div><div class="title">No task yet</div><div class="list nolist">Pick one below</div></div>
+<div class="time">Started <span class="box">11 : 50</span> · 0:01 so far</div>
+<div class="btns"><button class="btn primary">Stop</button><button class="btn">Discard</button></div><hr class="rule"><div class="input">Prepare</div><div class="opts"><div class="opt on"><span>Prepare for POST interview</span><small>Admin &amp; Logistics</small></div><div class="opt"><span>Prepare a presentation for CastlesFest</span><small>Presenting</small></div></div><div class="create"><b>+</b> Create “Prepare” in <span class="sel">Admin &amp; Logistics ▾</span></div></div></div></div></div></section><section class="action"><h3>4 · Typing a new name</h3><p>Create names its list and lets you change it.</p><div class="grid"><div class="option"><h2>Option A · Stop and Discard on the clock line</h2><div class="stage"><div class="chip"><span class="pill"><span class="dot"></span><b>No task yet</b> 0:01 <i>Stop</i></span></div><div class="card"><div><div><div class="title">No task yet</div><div class="list nolist">Pick one below</div></div></div>
+<div class="row tight"><span class="time">Started <span class="box">11 : 50</span> · 0:01</span><span class="acts"><button class="btn primary">Stop</button><button class="qbtn">Discard</button></span></div><hr class="rule"><div class="input">Book venue for viva</div><div class="create"><b>+</b> Create “Book venue for viva” in <span class="sel">Admin &amp; Logistics ▾</span></div></div></div></div><div class="option"><h2>Option B · Stop and Discard as buttons below</h2><div class="stage"><div class="chip"><span class="pill"><span class="dot"></span><b>No task yet</b> 0:01 <i>Stop</i></span></div><div class="card"><div><div class="title">No task yet</div><div class="list nolist">Pick one below</div></div>
+<div class="time">Started <span class="box">11 : 50</span> · 0:01 so far</div>
+<div class="btns"><button class="btn primary">Stop</button><button class="btn">Discard</button></div><hr class="rule"><div class="input">Book venue for viva</div><div class="create"><b>+</b> Create “Book venue for viva” in <span class="sel">Admin &amp; Logistics ▾</span></div></div></div></div></div></section><section class="action"><h3>5 · Pressed Stop with no task</h3><p>Stop is greyed out and says why. Picking a task stops the timer.</p><div class="grid"><div class="option"><h2>Option A · Stop and Discard on the clock line</h2><div class="stage"><div class="chip"><span class="pill"><span class="dot"></span><b>No task yet</b> 0:01 <i style="opacity:.45" title="Pick a task to stop the timer.">Stop</i></span></div><div class="card"><div><div><div class="title">Which task was this?</div><div class="list nolist">Pick a task to stop the timer.</div></div></div>
+<div class="row tight"><span class="time">Started <span class="box">11 : 50</span> · 0:01</span><span class="acts"><button class="btn primary" disabled style="opacity:.45">Stop</button><button class="qbtn">Discard</button></span></div><hr class="rule"><div class="input ph">Search or create a task</div><div class="head">Recent</div><div class="opts"><div class="opt"><span>Daily admin</span><small>Admin &amp; Logistics</small></div><div class="opt"><span>Prepare a presentation for CastlesFest</span><small>Presenting</small></div></div></div></div></div><div class="option"><h2>Option B · Stop and Discard as buttons below</h2><div class="stage"><div class="chip"><span class="pill"><span class="dot"></span><b>No task yet</b> 0:01 <i style="opacity:.45" title="Pick a task to stop the timer.">Stop</i></span></div><div class="card"><div><div class="title">Which task was this?</div><div class="list nolist">Pick a task to stop the timer.</div></div>
+<div class="time">Started <span class="box">11 : 50</span> · 0:01 so far</div>
+<div class="btns"><button class="btn primary" disabled style="opacity:.45">Stop</button><button class="btn">Discard</button></div><hr class="rule"><div class="input ph">Search or create a task</div><div class="head">Recent</div><div class="opts"><div class="opt"><span>Daily admin</span><small>Admin &amp; Logistics</small></div><div class="opt"><span>Prepare a presentation for CastlesFest</span><small>Presenting</small></div></div></div></div></div></div></section></main>
