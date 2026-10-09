@@ -141,7 +141,7 @@ export function WeekCard({
                         void tracking.setClient(workspace, data.start, date, label, from, to)
                       }
                       onRename={(label, to, client, task) =>
-                        void renameRow(workspace, data.start, date, { label, client, task }, to)
+                        renameRow(workspace, data.start, date, { label, client, task }, to)
                       }
                       onDelete={(label, client) =>
                         void tracking.deleteTaskTime(workspace, data.start, date, label, client)

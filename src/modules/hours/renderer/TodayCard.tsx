@@ -102,7 +102,7 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
           void tracking.setTaskMinutes(workspace, data.start, now.date, label, m, rowClient)
         }
         onRename={(label, to, rowClient, task) =>
-          void renameRow(workspace, data.start, now.date, { label, client: rowClient, task }, to)
+          renameRow(workspace, data.start, now.date, { label, client: rowClient, task }, to)
         }
       />
       <MeetingRows workspace={workspace} data={data} date={now.date} now={now} />

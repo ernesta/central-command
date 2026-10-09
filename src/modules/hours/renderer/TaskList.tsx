@@ -3,6 +3,7 @@ import { Play, Square, Trash2 } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
 import { Dialog } from '@renderer/components/Dialog'
 import { Select } from '@renderer/components/Select'
+import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { formatHours } from '@shared/tracking/format'
 import type { TaskRow } from '@shared/tracking/totals'
 import { QUARTER } from '@shared/tracking/rounding'
@@ -15,7 +16,7 @@ interface TaskListProps {
   onSetMinutes: (label: string, minutes: number, client?: string) => void
   /** Renames a task for the day (the row's blocks and typed time with it). */
   /** `task` is the row's task (`cc://task/<uid>`), when it has one: renaming the row renames that task too. */
-  onRename: (label: string, name: string, client?: string, task?: string) => void
+  onRename: (label: string, name: string, client?: string, task?: string) => void | Promise<void>
   /** The plan's clients (Work): each row then shows its client and offers the others. */
   clients?: readonly string[]
   /** Moves a row to another client (`from` is its client now). */
@@ -51,6 +52,7 @@ export function TaskList({
   const [renaming, setRenaming] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [deleting, setDeleting] = useState<TaskRow | null>(null)
+  const [problem, setProblem] = useState('')
   if (rows.length === 0) return null
 
   const begin = (row: TaskRow): void => {
@@ -64,7 +66,12 @@ export function TaskList({
     setEditing(null)
   }
   const commitName = (row: TaskRow): void => {
-    if (name.trim() && name.trim() !== row.label) onRename(row.label, name, row.client, row.task)
+    setProblem('')
+    if (name.trim() && name.trim() !== row.label) {
+      Promise.resolve(onRename(row.label, name, row.client, row.task)).catch((e: unknown) =>
+        setProblem(ipcErrorMessage(e))
+      )
+    }
     setRenaming(null)
   }
 
@@ -177,6 +184,11 @@ export function TaskList({
           </li>
         ))}
       </ul>
+      {problem && (
+        <p role="alert" className={styles.problem}>
+          {problem}
+        </p>
+      )}
       {deleting && onDelete && (
         <Dialog
           title="Delete this time?"

@@ -12,36 +12,22 @@ beforeEach(() => {
 })
 
 describe('renameRow', () => {
-  it('renames the task, then the labels', async () => {
-    await renameRow(
-      'research',
-      '2026-09-21',
-      '2026-10-09',
-      { label: 'Old', task: 'cc://task/abc' },
-      ' New '
-    )
+  it('renames the task, which the main process carries to the hours', async () => {
+    await renameRow('research', 'y', 'd', { label: 'Old', task: 'cc://task/abc' }, ' New ')
     expect(update).toHaveBeenCalledWith('abc', { title: 'New' })
-    expect(renameTask).toHaveBeenCalledWith(
-      'research',
-      '2026-09-21',
-      '2026-10-09',
-      'Old',
-      'New',
-      undefined
-    )
+    expect(renameTask).not.toHaveBeenCalled()
   })
 
   it('changes only the label when the row has no task', async () => {
-    await renameRow('research', '2026-09-21', '2026-10-09', { label: 'Old' }, 'New')
+    await renameRow('research', 'y', 'd', { label: 'Old' }, 'New')
     expect(update).not.toHaveBeenCalled()
-    expect(renameTask).toHaveBeenCalled()
+    expect(renameTask).toHaveBeenCalledWith('research', 'y', 'd', 'Old', 'New', undefined)
   })
 
-  it('leaves the labels alone when the task cannot be renamed', async () => {
+  it('rejects when the task cannot be renamed', async () => {
     update.mockRejectedValue(new Error('no'))
     await expect(
       renameRow('research', 'y', 'd', { label: 'Old', task: 'cc://task/abc' }, 'New')
     ).rejects.toThrow('no')
-    expect(renameTask).not.toHaveBeenCalled()
   })
 })

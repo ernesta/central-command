@@ -131,3 +131,9 @@ button.delete:hover {
 .row[data-live='true'] .delete {
   color: inherit;
 }
+
+.problem {
+  margin: 4px 0 0;
+  color: var(--danger);
+  font-size: var(--text-13);
+}
