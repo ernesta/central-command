@@ -2341,3 +2341,11 @@ The task page's Time card always listed "Earlier, from ClickUp" and "In Hours", 
 - **Months:** tracked time shows by month ("Oct 2026"), as before.
 - **No time at all:** the card shows the current month at 0:00 instead of two zero lines. The "In Hours" line is gone.
 - Code: `src/modules/tasks/renderer/TaskTimeCard.tsx` only. The card shows the task's own time; the total still includes subtasks. No test covers the card; typecheck, lint and tests pass; not driven in the app.
+
+## Copying a to-do leaves the checkbox out (9 Oct 2026)
+
+Copying notes into Word carried the checkboxes of TODOs over as ☐ / ☑ characters, which are just text there and cannot be ticked.
+
+- **Rule:** in the HTML flavour of a copy (`markdownToHtml`, `src/renderer/src/editor/live-html.ts`) a `TaskMarker` writes nothing, so a to-do pastes as a plain bullet with its text. Ticked and open to-dos look the same outside the app.
+- **Not changed:** the plain-text flavour is still the Markdown (`[ ]` stays); a paste back into the app uses the Markdown the copy carries, so the checkboxes come back there.
+- Test: `live-html.test.ts` ("draws nested bullets and numbers, and leaves checkboxes out"). Typecheck, lint and tests pass; not driven in Word.
