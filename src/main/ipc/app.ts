@@ -1,4 +1,4 @@
-import { app, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { APP_NAME } from '@shared/app-info'
 import { IPC, type AppInfo } from '@shared/api'
 
@@ -9,6 +9,10 @@ export function registerAppIpc(dataDir: string): void {
     version: app.getVersion(),
     dataDir
   }))
+  ipcMain.handle(IPC.appLeaveFullScreen, (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender)
+    if (window?.isFullScreen()) window.setFullScreen(false)
+  })
   ipcMain.handle(IPC.appRevealData, async () => {
     const problem = await shell.openPath(dataDir)
     if (problem) throw new Error(problem)

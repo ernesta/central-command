@@ -25,6 +25,7 @@ const api: Api = {
   app: {
     info: () => ipcRenderer.invoke(IPC.appInfo),
     revealData: () => ipcRenderer.invoke(IPC.appRevealData),
+    leaveFullScreen: () => ipcRenderer.invoke(IPC.appLeaveFullScreen),
     onDockAction: (listener) => {
       const handler = (_event: Electron.IpcRendererEvent, action: DockActionId): void =>
         listener(action)

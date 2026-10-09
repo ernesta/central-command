@@ -15,6 +15,7 @@ import { Notice } from '../components/Notice'
 import { useSettings } from '../state/settings-context'
 import { DockActions } from './DockActions'
 import { usePastePlain } from './usePastePlain'
+import { useEscapeFullScreen } from './useEscapeFullScreen'
 import { GlobalSearch } from './GlobalSearch'
 import { SearchResultsPage } from './SearchResultsPage'
 import { SettingsPage } from './SettingsPage'
@@ -36,6 +37,7 @@ export function Shell(): React.JSX.Element {
   const [buildError, setBuildError] = useState<string | null>(null)
   const [searchOpen, setSearchOpen] = useState(false)
   usePastePlain()
+  useEscapeFullScreen()
 
   const openBuild = async (): Promise<void> => {
     const result = await window.api.build.openSession()

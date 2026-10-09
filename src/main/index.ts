@@ -123,24 +123,10 @@ function createWindow(settings: SettingsStore): void {
   mainWindow.on('leave-full-screen', () =>
     mainWindow.webContents.send(IPC.appFullScreenChange, false)
   )
-  // A plain Escape (no modifiers) leaves full screen, the way most full-screen Mac apps behave; the
-  // renderer's own Escape handling (closing a dialog, the find bar, …) still runs independently.
   mainWindow.webContents.on('before-input-event', (event, input) => {
     if (isPastePlainChord(input, process.platform)) {
       event.preventDefault()
       mainWindow.webContents.send(IPC.appPastePlain, clipboard.readText())
-      return
-    }
-    if (
-      input.type === 'keyDown' &&
-      input.key === 'Escape' &&
-      !input.meta &&
-      !input.control &&
-      !input.alt &&
-      !input.shift &&
-      mainWindow.isFullScreen()
-    ) {
-      mainWindow.setFullScreen(false)
     }
   })
 
