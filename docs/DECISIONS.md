@@ -2359,3 +2359,4 @@ A note can link to a file kept beside the notes (a spreadsheet, a PDF): `@` list
 - **Wiring**: `fileEntities` in the Notes manifest (`modules/notes/renderer/entities.ts`); `EntitySummary` gained `open` (wins over `route`); `window.api.entities.listFiles / fileInfo / openFile`.
 - **Not done**: a "Mentioned in" panel for files (a file has no page); a way to add files from inside the app.
 - Checked in the built app on a scratch library: picked with `@`, saved as the link above, drawn as a chip. Opening in Excel was not clicked.
+- **Applied to the real library, 9 Oct 2026**: the line "Full comparison table" in Research's Data Sources Summary note now links its spreadsheet (backup `backups/file-link-2026-10-09/`). The app was rebuilt and installed in `/Applications`.
