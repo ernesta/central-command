@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Extension } from '@codemirror/state'
-import { matchPeople, type OwnerOption } from '../shared/people'
+import { matchPeople, type OwnerOption } from '@shared/people'
 import {
   liveTodoHelper,
   type MenuKey,

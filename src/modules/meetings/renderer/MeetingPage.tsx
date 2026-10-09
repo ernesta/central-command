@@ -13,7 +13,6 @@ import { WorkspaceSelect } from '@renderer/components/WorkspaceSelect'
 import { liveViewIn, placeCursorOnLine } from '@renderer/editor/live-outline'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { LiveEditor } from '@renderer/editor/LiveEditor'
-import { ownerOptions } from '../shared/people'
 import { seriesOptions } from '../shared/query'
 import { meetingHeading } from '../shared/time'
 import { appendTopic, parseTopics, topicOffset, type Topic } from '../shared/topics'
@@ -25,7 +24,6 @@ import { MentionedIn } from '@renderer/entities/MentionedIn'
 import { TopicsPanel } from './TopicsPanel'
 import { useMeetingsList } from './useMeetingsList'
 import { useMeetingSession } from './useMeetingSession'
-import { useTodoHelper } from './useTodoHelper'
 import styles from './MeetingPage.module.css'
 
 /** One meeting: its details, its note (Summary, Previous TODOs, Notes) and the topics panel. */
@@ -87,8 +85,6 @@ function MeetingView({
 
   const { meta, body, save, error, conflict, reloadedFromDisk, problems, updatedAt } = snapshot
   useDocumentTitle(meta.series || meta.date ? meetingHeading(meta.series, meta.date) : null)
-  const owners = useMemo(() => ownerOptions(meta.attendees, people), [meta.attendees, people])
-  const todo = useTodoHelper(owners)
   const topics = useMemo(() => parseTopics(body, meta.discussed), [body, meta.discussed])
 
   // Back goes to wherever the user came from (the landing page or the list); with no history, the landing page.
@@ -289,7 +285,7 @@ function MeetingView({
               initial={snapshot.initialBody}
               placeholder="Write your meeting notes…"
               showPlaceholder={body.trim() === ''}
-              extensions={[todo.live]}
+              attendees={meta.attendees}
               entitySelf={{
                 kind: 'meeting',
                 workspace: meetingRef.workspace,
@@ -313,7 +309,6 @@ function MeetingView({
           />
         </div>
       </div>
-      {todo.menu}
 
       <DeleteDialog
         open={confirmDelete}

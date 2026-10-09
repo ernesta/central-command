@@ -8,7 +8,6 @@ import { MeetingsPage } from './renderer/MeetingsPage'
 import { searchMeetings } from './renderer/search'
 import { PeoplePage } from './renderer/PeoplePage'
 import { PersonPage } from './renderer/PersonPage'
-import { MEETINGS_SHORTCUTS } from './shared/shortcuts'
 import type { MeetingWorkspace } from './shared/types'
 
 /**
@@ -37,7 +36,6 @@ export function createMeetingsModule(workspace: MeetingWorkspace): LiveModuleMan
     ],
     landingCard: MeetingsCard,
     search: searchMeetings(workspace),
-    shortcuts: workspace === 'research' ? MEETINGS_SHORTCUTS : [],
     // Every workspace's people and meetings are offered from wherever a note is written, so one instance carries them.
     entities: workspace === 'research' ? [personEntities, meetingEntities] : []
   }

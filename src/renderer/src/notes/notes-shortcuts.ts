@@ -11,6 +11,9 @@ import {
  * list. `notes-shortcuts.test.ts` checks that the editor's keymap (`editor/live-keymap.ts`) binds every one, so a key
  * that is listed but not bound fails a test instead of leaving the list wrong.
  */
+/** Opens the TODO owner menu in any note (typing `/todo` does the same). */
+export const TODO_SHORTCUT = 'Mod-Shift-t'
+
 export const NOTES_EDITOR_SHORTCUTS: ShortcutGroup = {
   title: 'Notes editor',
   shortcuts: [
@@ -63,6 +66,11 @@ export const NOTES_EDITOR_SHORTCUTS: ShortcutGroup = {
     { action: 'Find and replace in the note', keys: [REPLACE_TOGGLE_SHORTCUT] },
     { action: 'Replace this match', keys: [REPLACE_ONE_SHORTCUT] },
     { action: 'Replace every match', keys: [REPLACE_ALL_SHORTCUT] },
+    {
+      action: 'Add a TODO for someone',
+      keys: [TODO_SHORTCUT],
+      note: 'Or type /todo at the start of a line or after a space. Arrows choose, Enter or Tab picks, Escape closes.'
+    },
     { action: 'Undo', keys: ['Mod-z'] },
     { action: 'Redo', keys: ['Shift-Mod-z', 'Mod-y'] }
   ]

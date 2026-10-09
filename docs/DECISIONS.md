@@ -2398,3 +2398,7 @@ Driven in the real app on a scratch library with a Luminos contract (clients Imp
 - **A running task that is done:** the popover still shows its list. **Trashed:** the timer keeps running and the popover shows the label with no list line (as decided: a task that is gone shows none).
 - **Left as it is:** in the meeting's narrow Task field a long title squeezes the Create row's list to "Imp…"; and the Today row still shows the Client select for a running timer with no task or a trashed one (the legacy exception). Not driven: dev mode for the done and trashed step, dark mode for it, the installed build before this install.
 - Playwright pins the colour scheme to light: emulate dark with `page.emulateMedia({ colorScheme: 'dark' })` (a `settings.json` theme alone does not show in its screenshots).
+
+## `/todo` in every notes editor (9 Oct 2026)
+
+The TODO helper (`/todo` or Cmd-Shift-T, owner menu) is no longer Meetings'. It lives in `src/renderer/src/editor/` (`todo-live.ts`, `useTodoHelper.tsx`) and `LiveEditor` installs it itself, so every note, task description, training entry, reading list and Readings note has it. Owners are the whole people list; a meeting passes `attendees` to have them suggested first. The shortcut is listed once under Settings → Shortcuts → Notes editor (the Meetings group is gone). What it writes is unchanged (`- [ ] **TODO(XX)**: `); only meetings read TODOs as structure (Previous TODOs, open TODOs), elsewhere it is plain text. Checked by driving the built app in a Notes note.

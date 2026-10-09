@@ -20,8 +20,9 @@ describe('the notes editor shortcut list', () => {
 // Every listed chord must be bound in the editor's keymaps (src/renderer/src/editor/), except the ones that are not keys
 // of the keymap (a click, a paste, the main process's Cmd-Shift-V).
 describe('the notes editor shortcut list, against the editor’s keymap', () => {
+  // `Mod-Shift-t` is the TODO helper's own key handler: `todo-live.test.ts` presses it.
   // `@` is a typed character: `live-entities.test.ts` types it and checks the picker is told.
-  const NOT_KEYMAP = new Set(['Mod-Click', 'Mod-v', 'Mod-Shift-v', '@'])
+  const NOT_KEYMAP = new Set(['Mod-Click', 'Mod-v', 'Mod-Shift-v', '@', 'Mod-Shift-t'])
   /** `Shift-Mod-z` and `Mod-Shift-z` are one chord: modifiers in any order, the key in lower case. */
   const canon = (chord: string): string => {
     const parts = chord.split('-')

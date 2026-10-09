@@ -1,7 +1,8 @@
 import { EditorView } from '@codemirror/view'
 import type { Extension } from '@codemirror/state'
-import { useContext, useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { useNavigate } from 'react-router'
+import { ownerOptions, type Person } from '@shared/people'
 import { entityHref, parseEntityHref } from '@shared/entities'
 import { EntityHoverCard } from '../entities/EntityHoverCard'
 import { EntityPicker } from '../entities/EntityPicker'
@@ -11,6 +12,7 @@ import { providerFor, type EntitySelf } from '../entities/registry'
 import { useEntityHover } from '../entities/useEntityHover'
 import { FindContext } from '../notes/FindContext'
 import { createLiveState } from './live-state'
+import { useTodoHelper } from './useTodoHelper'
 import styles from './LiveEditor.module.css'
 
 /** What every page that edits Markdown passes to the editor; see `EDITOR_LIVE_MARKUP_PLAN.md`. */
@@ -27,7 +29,9 @@ export interface LiveEditorProps {
   autoFocus?: boolean
   /** The note or meeting this text belongs to, so `@` never offers it as a link to itself. */
   entitySelf?: EntitySelf
-  /** More CodeMirror extensions for one kind of note (the Meetings TODO helper). Applied once, when the editor is built. */
+  /** The people at this meeting, suggested first by the `/todo` menu. Other notes leave it out. */
+  attendees?: readonly string[]
+  /** More CodeMirror extensions for one kind of note. Applied once, when the editor is built. */
   extensions?: readonly Extension[]
 }
 
@@ -43,6 +47,7 @@ export function LiveEditor({
   showPlaceholder,
   autoFocus,
   entitySelf,
+  attendees,
   extensions
 }: LiveEditorProps): React.JSX.Element {
   const navigate = useNavigate()
@@ -51,7 +56,21 @@ export function LiveEditor({
   const viewRef = useRef<EditorView | null>(null)
   const [start] = useState(initial)
   const find = useContext(FindContext)
-  const [extra] = useState(extensions)
+
+  // `/todo` works in every note; the owners are the people list, the meeting's attendees first.
+  const [people, setPeople] = useState<Person[]>([])
+  useEffect(() => {
+    let cancelled = false
+    void window.api.meetings.people.list().then((list) => {
+      if (!cancelled) setPeople(list)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+  const owners = useMemo(() => ownerOptions(attendees ?? [], people), [attendees, people])
+  const todo = useTodoHelper(owners)
+  const [extra] = useState(() => [todo.live, ...(extensions ?? [])])
 
   // The `@` picker and what mentions point at, for this editor (see `src/renderer/src/entities`).
   const [controller] = useState(() => new EntityPickerController())
@@ -175,6 +194,7 @@ export function LiveEditor({
         onChoose={(index) => void controller.choose(index)}
       />
       {hover && <EntityHoverCard controller={controller} target={hover} />}
+      {todo.menu}
     </div>
   )
 }

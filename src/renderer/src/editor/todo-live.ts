@@ -1,9 +1,9 @@
 import { EditorSelection, Prec, type Extension } from '@codemirror/state'
 import { EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view'
 import type { SyntaxNode } from '@lezer/common'
-import { treeTo } from '@renderer/editor/live-lines'
+import { treeTo } from './live-lines'
 import { matchesShortcut } from '@shared/shortcuts'
-import { TODO_SHORTCUT } from '../shared/shortcuts'
+import { TODO_SHORTCUT } from '../notes/notes-shortcuts'
 
 /**
  * Where the menu should open, and the text the chosen TODO replaces (the typed `/todo`, or nothing). Made by the editor
