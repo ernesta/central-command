@@ -82,6 +82,7 @@ export function TrainingLanding(): React.JSX.Element {
     date: row.date ? formatDate(row.date) : 'No date yet',
     badge: isUpcoming(row, today) ? (row.date ? 'Upcoming' : 'Planned') : undefined,
     title: row.title || 'Untitled',
+    detail: row.series || undefined,
     people: row.leads.map((name) => ({ name, initials: initialsFor(name, people) })),
     note: noteFor(row, today, selfStudy)
   }))

@@ -146,6 +146,8 @@ export interface RecentRow {
   /** "Upcoming" or "Planned" beside the title, when it has not happened. */
   badge?: string
   title: string
+  /** A quiet line under the title (a training's series). */
+  detail?: string
   /** Initials of the people involved (the first three are shown). */
   people: readonly { name: string; initials: string }[]
   note: string
@@ -162,6 +164,7 @@ export function RecentList({ rows }: { rows: readonly RecentRow[] }): React.JSX.
             <span>
               {row.title}
               {row.badge && <span className={styles.upcoming}>{row.badge}</span>}
+              {row.detail && <span className={styles.detail}>{row.detail}</span>}
             </span>
             <span className={styles.chips}>
               {row.people.slice(0, 3).map((p) => (
