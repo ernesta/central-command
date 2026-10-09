@@ -1,8 +1,5 @@
-import { Plus } from 'lucide-react'
-import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Button } from '@renderer/components/Button'
-import { ipcErrorMessage } from '@renderer/lib/ipc-error'
+import { CreateButton } from '@renderer/components/CreateButton'
 import { noteRoute, useNotesWorkspace } from './notes-paths'
 
 /**
@@ -18,36 +15,15 @@ export function NewNoteButton({
 }): React.JSX.Element {
   const navigate = useNavigate()
   const workspace = useNotesWorkspace()
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const create = async (): Promise<void> => {
-    setBusy(true)
-    setError(null)
-    try {
-      const file = await window.api.notes.create({ workspace, group, subgroup })
-      void navigate(noteRoute(workspace, file.ref.id), { state: { focus: 'title' } })
-    } catch (e) {
-      setError(ipcErrorMessage(e))
-      setBusy(false)
-    }
-  }
 
   return (
-    <>
-      <Button
-        variant="primary"
-        disabled={busy}
-        icon={<Plus size={14} strokeWidth={2} aria-hidden />}
-        onClick={() => void create()}
-      >
-        New note
-      </Button>
-      {error && (
-        <span role="alert" style={{ color: 'var(--danger)', fontSize: 'var(--text-13)' }}>
-          {error}
-        </span>
-      )}
-    </>
+    <CreateButton
+      create={async () => {
+        const file = await window.api.notes.create({ workspace, group, subgroup })
+        void navigate(noteRoute(workspace, file.ref.id), { state: { focus: 'title' } })
+      }}
+    >
+      New note
+    </CreateButton>
   )
 }
