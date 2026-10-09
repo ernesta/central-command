@@ -113,13 +113,12 @@
   align-items: center;
   gap: 8px;
 }
-/* Every row keeps the Delete column, so the times line up whether or not a row offers it. */
+/* Every row keeps the delete column, so the times line up whether or not a row offers it. */
 .delete {
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
-  width: 64px;
+  width: 24px;
   padding: 4px 0;
   border: 0;
   background: none;

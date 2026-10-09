@@ -169,8 +169,7 @@ export function TaskList({
                     aria-label={`Delete ${row.label || 'task'}`}
                     onClick={() => setDeleting(row)}
                   >
-                    <Trash2 size={12} strokeWidth={1.75} aria-hidden />
-                    Delete
+                    <Trash2 size={14} strokeWidth={1.75} aria-hidden />
                   </button>
                 ))}
             </span>
