@@ -2323,3 +2323,12 @@ Hours rows are one per task per day (sessions and typed time added together), no
 - **Found by a test:** the first version also matched a derived block with the same label; it now skips derived ones explicitly (mutation-checked, as is the `earlier` rule).
 - **Driven (scratch library, dev and production build, screenshots looked at):** Cancel changes nothing; confirm removes both sessions of a task on Today (file and totals checked); week day rows offer Delete; a running timer's row has none; Discard on a taskless timer removes it and leaves no session. **Not driven:** Work's Hours, a task-linked row (the Tasks Time card is covered by tests only), a derived row on screen.
 - **Open (not changed):** Stop and the idle Start chip share a spot in the top bar; a double-click on Stop may start a taskless timer. Not reproduced here.
+
+## A training is "Series: title" everywhere (9 Oct 2026)
+
+The Training landing's "Recent and upcoming" list showed a title without its series, so an entry like "Lecture 1" did not say what it belonged to. Hours rows already read "Series: lecture" (previous section), so the user asked for one pattern, not a second one.
+
+- **One helper:** `lectureLabel(series, title)` (`src/modules/training/shared/lecture-entries.ts`, now exported) gives "Series: title". It returns the title alone when there is no series, when the title is the series, or when the title already starts with "Series:" (older notes have titles such as "DataCamp: R basics"; the series must not be doubled).
+- **Used in:** the landing's recent list (the title itself; no separate line, and `RecentRow` is unchanged), the "Mentioned in" panels (`titleOf` in `src/main/entities/backlinks.ts`), the entry page heading (label, then the date), and the search hit's title (its detail is now only the date, since the series would repeat). Hours rows, as before.
+- **Not changed:** the Training table keeps Series as its own column; the Person page's Trainings list keeps the series in its note column; the PDF report keeps its series tag; a lecture's subtask keeps its bare title, because a task page and the task lists always show it under its parent. Training entries are not an entity kind, so there are no chips for them.
+- Tests: the backlink title ("PS5210: Lecture 1", a bare title without a series) and the search hit. Typecheck, lint and tests pass; not driven in the app.
