@@ -92,6 +92,11 @@ describe('overlapping', () => {
   it('names what overlaps, and not what only touches', () => {
     expect(overlapping('14:00', '15:00', others, 0).map((o) => o.label)).toEqual(['Writing'])
   })
+  it('ignores the seconds of a timer that stopped as a meeting starts', () => {
+    const timer = [{ label: 'Prepare', start: '14:52:10', end: '15:00:25' }]
+    expect(overlapping('15:00', '16:00', timer, 0)).toEqual([])
+    expect(overlapping('14:59', '16:00', timer, 0)).toHaveLength(1)
+  })
   it('counts a running block until now', () => {
     const running = [{ label: 'Now', start: '14:30:00', end: null }]
     expect(overlapping('14:00', '15:00', running, 14 * 3600 + 45 * 60)).toHaveLength(1)

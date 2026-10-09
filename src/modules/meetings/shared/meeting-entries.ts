@@ -67,6 +67,10 @@ export function meetingEntries(
   return entries
 }
 
+function wholeMinute<T extends number | null>(seconds: T): T {
+  return (seconds === null ? null : Math.floor(seconds / 60) * 60) as T
+}
+
 /** Something on the clock a meeting can overlap: a timer block, another meeting. Times are HH:MM or HH:MM:SS. */
 export interface Occupied {
   label: string
@@ -93,14 +97,16 @@ export function overlapping(
   if (a === null || b === null || b <= a) return []
   return others.filter((o) => {
     if (self !== undefined && o.meeting === self) return false
-    const s = timeToSeconds(o.start)
+    // A note's times are whole minutes, a timer's carry seconds: compare in whole minutes, or a timer stopped at 15:00:25
+    // would overlap a meeting that starts at 15:00.
+    const s = wholeMinute(timeToSeconds(o.start))
     // A timer that has only just started still occupies its start.
     const e =
       o.end === null && s !== null
-        ? Math.max(now, s + 1)
+        ? Math.max(wholeMinute(now), s + 60)
         : o.end === null
           ? null
-          : timeToSeconds(o.end)
+          : wholeMinute(timeToSeconds(o.end))
     if (s === null || e === null || e <= s) return false
     return s < b && a < e
   })
