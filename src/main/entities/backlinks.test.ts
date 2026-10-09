@@ -71,6 +71,20 @@ describe('findBacklinks', () => {
 })
 
 describe('contextOf', () => {
+  it('names a training entry by its title and series', async () => {
+    mkdirSync(join(root, 'training'))
+    put(
+      'training',
+      'Lecture.md',
+      '---\ntitle: Lecture 1\nseries: PS5210\n---\n\n[Kathy](cc://person/Kathy%20Rastle)\n'
+    )
+    put('training', 'Bare.md', '---\ntitle: Workshop\n---\n\n[Kathy](cc://person/Kathy%20Rastle)\n')
+    const found = await findBacklinks(TARGET, [
+      { kind: 'training', workspace: 'research', dir: join(root, 'training') }
+    ])
+    expect(found.map((f) => f.title)).toEqual(['Lecture 1 · PS5210', 'Workshop'])
+  })
+
   it('shortens a long line and drops markdown marks', () => {
     const text = `# Heading with [link](cc://note/x) ${'word '.repeat(60)}`
     const out = contextOf(text, 5)

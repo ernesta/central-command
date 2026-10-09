@@ -22,6 +22,11 @@ function titleOf(kind: BacklinkSource['kind'], id: string, head: string): string
   if (kind === 'meeting')
     return meetingHeading(frontValue(head, 'series'), frontValue(head, 'date'))
   if (kind === 'reading-notes') return `Notes on ${id}`
+  if (kind === 'training') {
+    const title = frontValue(head, 'title') || id
+    const series = frontValue(head, 'series')
+    return series ? `${title} · ${series}` : title
+  }
   return frontValue(head, 'title') || id
 }
 
