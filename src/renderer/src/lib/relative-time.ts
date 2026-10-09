@@ -1,3 +1,5 @@
+import { formatDate, todayIso } from '@shared/time'
+
 /** "just now", "2 min ago", "3 h ago", "yesterday", "5 days ago", then a date. */
 export function formatRelativeTime(iso: string, now: Date = new Date()): string {
   const then = new Date(iso)
@@ -11,5 +13,5 @@ export function formatRelativeTime(iso: string, now: Date = new Date()): string 
   const days = Math.round(hours / 24)
   if (days === 1) return 'yesterday'
   if (days < 30) return `${days} days ago`
-  return then.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+  return formatDate(todayIso(then))
 }
