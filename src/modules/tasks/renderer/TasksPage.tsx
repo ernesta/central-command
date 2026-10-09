@@ -71,6 +71,9 @@ export function TasksPage(): React.JSX.Element {
 
   const visible = queryTasks(all, query, tracked)
   const counts = viewCounts(all, query)
+  // Open also shows its undated to-dos under it, in a section of their own, so they are not missed.
+  const backlog =
+    query.view === 'open' ? queryTasks(all, { ...query, view: 'backlog' }, tracked) : []
   const shown = showAll ? visible : visible.slice(0, PAGE_ROWS)
   const filtersActive =
     query.search.trim() !== '' || query.list !== '' || query.priority !== 'all' || query.tag !== ''
@@ -91,7 +94,7 @@ export function TasksPage(): React.JSX.Element {
   } else if (visible.length === 0 && query.list && !all.some((r) => r.task.list === titleList)) {
     // A client's list that holds no task yet (the filter is the list alone, so there is nothing to clear).
     content = <EmptyState heading="No tasks yet" message="Add one above." />
-  } else if (visible.length === 0) {
+  } else if (visible.length === 0 && backlog.length === 0) {
     content = (
       <EmptyState heading="No matching tasks" message="Try a different search or filter.">
         {filtersActive && (
@@ -104,15 +107,17 @@ export function TasksPage(): React.JSX.Element {
   } else {
     content = (
       <>
-        <TasksTable
-          rows={shown.map((r) => ({ ...r, nested: [] }))}
-          workspace={workspace}
-          today={today}
-          label="Tasks"
-          tracked={tracked}
-          running={running}
-          sort={{ key: query.sort, dir: query.dir, onSort }}
-        />
+        {visible.length > 0 && (
+          <TasksTable
+            rows={shown.map((r) => ({ ...r, nested: [] }))}
+            workspace={workspace}
+            today={today}
+            label="Tasks"
+            tracked={tracked}
+            running={running}
+            sort={{ key: query.sort, dir: query.dir, onSort }}
+          />
+        )}
         {visible.length > shown.length && (
           <p className={styles.more}>
             <span>
@@ -122,6 +127,22 @@ export function TasksPage(): React.JSX.Element {
               Show all
             </button>
           </p>
+        )}
+        {backlog.length > 0 && (
+          <section className={styles.backlog} aria-labelledby="backlog-heading">
+            <h2 id="backlog-heading" className={styles.sectionHeading}>
+              Backlog {backlog.length}
+            </h2>
+            <TasksTable
+              rows={backlog.map((r) => ({ ...r, nested: [] }))}
+              workspace={workspace}
+              today={today}
+              label="Backlog"
+              tracked={tracked}
+              running={running}
+              sort={{ key: query.sort, dir: query.dir, onSort }}
+            />
+          </section>
         )}
       </>
     )

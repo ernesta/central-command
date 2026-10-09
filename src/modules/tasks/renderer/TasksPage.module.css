@@ -37,6 +37,15 @@
   gap: 8px;
   min-width: 0;
 }
+.backlog {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+.sectionHeading {
+  margin: 0;
+  font-size: var(--text-16);
+}
 .more {
   display: flex;
   justify-content: space-between;
