@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { Play, Square } from 'lucide-react'
+import { Play, Square, Trash2 } from 'lucide-react'
+import { Button } from '@renderer/components/Button'
+import { Dialog } from '@renderer/components/Dialog'
 import { Select } from '@renderer/components/Select'
 import { formatHours } from '@shared/tracking/format'
 import type { TaskRow } from '@shared/tracking/totals'
@@ -17,6 +19,8 @@ interface TaskListProps {
   clients?: readonly string[]
   /** Moves a row to another client (`from` is its client now). */
   onSetClient?: (label: string, from: string | undefined, to: string) => void
+  /** Deletes a task's saved time for the day, once confirmed. Not offered for a running row or one with nothing to remove. */
+  onDelete?: (label: string, client?: string) => void
   /** Start (or switch to) a task and stop it: given on Today only. */
   onStart?: (row: TaskRow) => void
   onStop?: () => void
@@ -36,6 +40,7 @@ export function TaskList({
   onRename,
   clients = [],
   onSetClient,
+  onDelete,
   onStart,
   onStop,
   canStart = true
@@ -44,6 +49,7 @@ export function TaskList({
   const [draft, setDraft] = useState(0)
   const [renaming, setRenaming] = useState<string | null>(null)
   const [name, setName] = useState('')
+  const [deleting, setDeleting] = useState<TaskRow | null>(null)
   if (rows.length === 0) return null
 
   const begin = (row: TaskRow): void => {
@@ -62,97 +68,141 @@ export function TaskList({
   }
 
   return (
-    <ul className={styles.list}>
-      {rows.map((row) => (
-        <li key={rowKey(row).toLowerCase()} className={styles.row} data-live={row.running}>
-          {onStart && onStop && (
-            <button
-              type="button"
-              className={styles.round}
-              aria-label={
-                row.running ? `Stop ${row.label || 'task'}` : `Start ${row.label || 'task'}`
-              }
-              disabled={!row.running && !canStart}
-              onClick={() => (row.running ? onStop() : onStart(row))}
-            >
-              {row.running ? (
-                <Square size={12} strokeWidth={1.75} fill="currentColor" aria-hidden />
-              ) : (
-                <Play size={12} strokeWidth={1.75} fill="currentColor" aria-hidden />
-              )}
-            </button>
-          )}
-          {renaming === rowKey(row) ? (
-            <input
-              className={styles.rename}
-              aria-label={`Name of ${row.label || 'task'}`}
-              autoFocus
-              value={name}
-              onChange={(event) => setName(event.target.value.replace(/[\r\n]/g, ''))}
-              onFocus={(event) => event.target.select()}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  event.preventDefault()
-                  commitName(row)
-                } else if (event.key === 'Escape') {
-                  event.preventDefault()
-                  event.stopPropagation()
-                  setRenaming(null)
+    <>
+      <ul className={styles.list}>
+        {rows.map((row) => (
+          <li key={rowKey(row).toLowerCase()} className={styles.row} data-live={row.running}>
+            {onStart && onStop && (
+              <button
+                type="button"
+                className={styles.round}
+                aria-label={
+                  row.running ? `Stop ${row.label || 'task'}` : `Start ${row.label || 'task'}`
                 }
-              }}
-              onBlur={() => commitName(row)}
-            />
-          ) : (
-            <button
-              type="button"
-              className={styles.nameButton}
-              data-empty={row.label === '' || undefined}
-              aria-label={`Rename ${row.label || 'task'}`}
-              onClick={() => {
-                setRenaming(rowKey(row))
-                setName(row.label)
-              }}
-            >
-              {row.label || 'No task yet'}
-            </button>
-          )}
-          {clients.length > 0 && onSetClient && (
-            <Select
-              compact
-              className={styles.client}
-              label={`Client of ${row.label || 'task'}`}
-              value={row.client ?? ''}
-              options={[
-                ...(row.client === undefined ? [{ value: '', label: 'No client' }] : []),
-                ...clients.map((c) => ({ value: c, label: c }))
-              ]}
-              onChange={(to) => to && onSetClient(row.label, row.client, to)}
-            />
-          )}
-          {row.running ? (
-            <span className={styles.time}>{formatHours(row.minutes)}</span>
-          ) : editing === rowKey(row) ? (
-            <DurationField
-              autoFocus
-              label={`Time on ${row.label || 'task'}`}
-              value={draft}
-              onChange={setDraft}
-              onEnter={() => commit(row)}
-              onEscape={() => setEditing(null)}
-              onBlur={() => commit(row)}
-            />
-          ) : (
-            <button
-              type="button"
-              className={styles.timeButton}
-              aria-label={`Edit time on ${row.label || 'task'}`}
-              onClick={() => begin(row)}
-            >
-              {formatHours(row.minutes)}
-            </button>
-          )}
-        </li>
-      ))}
-    </ul>
+                disabled={!row.running && !canStart}
+                onClick={() => (row.running ? onStop() : onStart(row))}
+              >
+                {row.running ? (
+                  <Square size={12} strokeWidth={1.75} fill="currentColor" aria-hidden />
+                ) : (
+                  <Play size={12} strokeWidth={1.75} fill="currentColor" aria-hidden />
+                )}
+              </button>
+            )}
+            {renaming === rowKey(row) ? (
+              <input
+                className={styles.rename}
+                aria-label={`Name of ${row.label || 'task'}`}
+                autoFocus
+                value={name}
+                onChange={(event) => setName(event.target.value.replace(/[\r\n]/g, ''))}
+                onFocus={(event) => event.target.select()}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault()
+                    commitName(row)
+                  } else if (event.key === 'Escape') {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    setRenaming(null)
+                  }
+                }}
+                onBlur={() => commitName(row)}
+              />
+            ) : (
+              <button
+                type="button"
+                className={styles.nameButton}
+                data-empty={row.label === '' || undefined}
+                aria-label={`Rename ${row.label || 'task'}`}
+                onClick={() => {
+                  setRenaming(rowKey(row))
+                  setName(row.label)
+                }}
+              >
+                {row.label || 'No task yet'}
+              </button>
+            )}
+            {clients.length > 0 && onSetClient && (
+              <Select
+                compact
+                className={styles.client}
+                label={`Client of ${row.label || 'task'}`}
+                value={row.client ?? ''}
+                options={[
+                  ...(row.client === undefined ? [{ value: '', label: 'No client' }] : []),
+                  ...clients.map((c) => ({ value: c, label: c }))
+                ]}
+                onChange={(to) => to && onSetClient(row.label, row.client, to)}
+              />
+            )}
+            <span className={styles.end}>
+              {row.running ? (
+                <span className={styles.time}>{formatHours(row.minutes)}</span>
+              ) : editing === rowKey(row) ? (
+                <DurationField
+                  autoFocus
+                  label={`Time on ${row.label || 'task'}`}
+                  value={draft}
+                  onChange={setDraft}
+                  onEnter={() => commit(row)}
+                  onEscape={() => setEditing(null)}
+                  onBlur={() => commit(row)}
+                />
+              ) : (
+                <button
+                  type="button"
+                  className={styles.timeButton}
+                  aria-label={`Edit time on ${row.label || 'task'}`}
+                  onClick={() => begin(row)}
+                >
+                  {formatHours(row.minutes)}
+                </button>
+              )}
+              {onDelete &&
+                (row.running || !row.removable ? (
+                  <span className={styles.delete} aria-hidden />
+                ) : (
+                  <button
+                    type="button"
+                    className={styles.delete}
+                    aria-label={`Delete ${row.label || 'task'}`}
+                    onClick={() => setDeleting(row)}
+                  >
+                    <Trash2 size={12} strokeWidth={1.75} aria-hidden />
+                    Delete
+                  </button>
+                ))}
+            </span>
+          </li>
+        ))}
+      </ul>
+      {deleting && onDelete && (
+        <Dialog
+          title="Delete this time?"
+          onCancel={() => setDeleting(null)}
+          actions={
+            <>
+              <Button size="small" onClick={() => setDeleting(null)} autoFocus>
+                Cancel
+              </Button>
+              <Button
+                size="small"
+                variant="danger"
+                onClick={() => {
+                  onDelete(deleting.label, deleting.client)
+                  setDeleting(null)
+                }}
+              >
+                Delete
+              </Button>
+            </>
+          }
+        >
+          {formatHours(deleting.minutes)} on {deleting.label || 'No task yet'} will be removed from
+          this day, and from the task&apos;s tracked time.
+        </Dialog>
+      )}
+    </>
   )
 }

@@ -142,6 +142,9 @@ export function WeekCard({
                       onRename={(label, to, client) =>
                         void tracking.renameTask(workspace, data.start, date, label, to, client)
                       }
+                      onDelete={(label, client) =>
+                        void tracking.deleteTaskTime(workspace, data.start, date, label, client)
+                      }
                       onSetMinutes={(label, m, client) =>
                         void tracking.setTaskMinutes(workspace, data.start, date, label, m, client)
                       }

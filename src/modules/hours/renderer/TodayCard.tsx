@@ -94,6 +94,9 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
         onSetClient={(label, from, to) =>
           void tracking.setClient(workspace, data.start, now.date, label, from, to)
         }
+        onDelete={(label, rowClient) =>
+          void tracking.deleteTaskTime(workspace, data.start, now.date, label, rowClient)
+        }
         onSetMinutes={(label, m, rowClient) =>
           void tracking.setTaskMinutes(workspace, data.start, now.date, label, m, rowClient)
         }
