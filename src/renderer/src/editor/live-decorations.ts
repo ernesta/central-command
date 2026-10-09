@@ -13,7 +13,7 @@ import { isListKind, parseLine } from './live-lines'
 import { blockRevealed, computeReveal, spanRevealed, type Extent, type Reveal } from './live-reveal'
 import { drawFence } from './live-fences'
 import { drawTable } from './live-tables'
-import { BulletWidget, CheckboxWidget, NumberWidget } from './live-widgets'
+import { BulletWidget, CheckboxWidget, NumberWidget, ORDERED_BOX } from './live-widgets'
 
 /*
  * The formatting layer. The document is the Markdown text and is never touched here: everything below is a
@@ -202,8 +202,17 @@ export function buildDecorations(
               line.from,
               lineDeco('live-li', `--li-cols: ${columns(parts.indent)}`)
             )
-            if (parts.kind === 'task' && parts.checked && contentFrom < line.to)
-              add('done', contentFrom, line.to, MARKS.done)
+            const box = parts.kind === 'ordered' ? ORDERED_BOX.exec(parts.content) : null
+            if (box)
+              add(
+                'list',
+                contentFrom,
+                contentFrom + box[0].length,
+                Decoration.replace({ widget: new CheckboxWidget(box[1] !== ' ') })
+              )
+            const done = parts.kind === 'task' ? parts.checked : box !== null && box[1] !== ' '
+            const textFrom = contentFrom + (box ? box[0].length : 0)
+            if (done && textFrom < line.to) add('done', textFrom, line.to, MARKS.done)
             return
           }
           case 'TaskMarker':

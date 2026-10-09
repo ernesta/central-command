@@ -7,6 +7,9 @@ import { parseLine } from './live-lines'
  * is decided by `live-lists.ts`, not by which character happens to be last.
  */
 
+/** The box at the start of a numbered item's text. */
+export const ORDERED_BOX = /^\[([ xX])\] /
+
 export class BulletWidget extends WidgetType {
   eq(): boolean {
     return true
@@ -40,10 +43,14 @@ export class NumberWidget extends WidgetType {
 export function toggleTaskAt(view: EditorView, pos: number): boolean {
   const line = view.state.doc.lineAt(pos)
   const parts = parseLine(line.text)
-  if (parts.kind !== 'task') return false
-  const box = line.from + parts.quote.length + parts.indent.length + 3
+  const prefix = line.from + parts.quote.length + parts.indent.length
+  // A numbered item may carry a box too (`2. [ ] text`): the box sits after the number.
+  const ordered = parts.kind === 'ordered' ? ORDERED_BOX.exec(parts.content) : null
+  if (parts.kind !== 'task' && !ordered) return false
+  const checked = ordered ? ordered[1] !== ' ' : parts.checked
+  const box = prefix + (ordered ? parts.marker.length + 1 : 3)
   view.dispatch({
-    changes: { from: box, to: box + 1, insert: parts.checked ? ' ' : 'x' },
+    changes: { from: box, to: box + 1, insert: checked ? ' ' : 'x' },
     userEvent: 'format.task'
   })
   return true

@@ -255,3 +255,14 @@ describe('blank lines', () => {
     expect(blank.map((seen) => state.doc.lineAt(seen.from).text)).toEqual(['    ', ''])
   })
 })
+
+describe('a box after a number', () => {
+  it('draws the number and the box as two widgets', () => {
+    const doc = '15. [ ] x\n'
+    const widgets = decorationsOf(stateFor(doc, doc.length)).filter((d) => d.kind === 'widget')
+    expect(widgets.map((d) => [d.from, d.to])).toEqual([
+      [0, 4],
+      [4, 8]
+    ])
+  })
+})
