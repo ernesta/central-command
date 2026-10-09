@@ -802,3 +802,16 @@ describe('importing a year', () => {
     expect(store.importYear('research', emptyYear('2026-09-21')).ok).toBe(false)
   })
 })
+
+describe("deleting a task's time", () => {
+  it('saves the day without it, announces the change and leaves the running timer', () => {
+    const store = open()
+    store.addTime('research', '2026-09-21', '2026-09-29', 'Deck', 30)
+    store.addTime('research', '2026-09-21', '2026-09-29', 'Email', 15)
+    events = []
+    const result = store.deleteTaskTime('research', '2026-09-21', '2026-09-29', 'Deck')
+    expect(result.ok).toBe(true)
+    expect(read('research', '2026-27.json').adjusts.map((a: Doc) => a.label)).toEqual(['Email'])
+    expect(events).toEqual([{ workspace: 'research', year: '2026-09-21' }])
+  })
+})

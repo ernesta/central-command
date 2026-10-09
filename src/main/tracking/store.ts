@@ -18,7 +18,7 @@ import {
 } from '@shared/tracking/timer'
 import { linkEntries } from './import/work-task-links'
 import { applyEntryLinks, markEarlier } from './import/work-links-apply'
-import { addTime, setDayNote, setTaskMinutes } from '@shared/tracking/totals'
+import { addTime, deleteTaskTime, setDayNote, setTaskMinutes } from '@shared/tracking/totals'
 import { addTimeOff, editTimeOff, removeTimeOff } from '@shared/tracking/timeoff'
 import type {
   RunningTimer,
@@ -253,6 +253,19 @@ export class TrackingStore {
 
   deleteSession(workspace: Workspace, year: string, id: string): YearResult {
     return this.mutate(workspace, year, (y) => ({ ok: true, year: deleteSession(y, id) }))
+  }
+
+  deleteTaskTime(
+    workspace: Workspace,
+    year: string,
+    date: string,
+    label: string,
+    client?: string
+  ): YearResult {
+    return this.mutate(workspace, year, (y) => ({
+      ok: true,
+      year: deleteTaskTime(y, date, label, client)
+    }))
   }
 
   setTaskMinutes(

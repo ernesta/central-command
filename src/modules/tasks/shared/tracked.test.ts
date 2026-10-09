@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { deleteTaskTime } from '@shared/tracking/totals'
 import { year as baseYear } from '@shared/tracking/test-utils'
 import type { TrackingYear } from '@shared/tracking/types'
 import { hoursByMonth, taskKey, taskUidOf, trackedByTask } from './tracked'
@@ -142,5 +143,41 @@ describe('hoursByMonth', () => {
       { month: '2025-11', minutes: 105 }
     ])
     expect(hoursByMonth([y], 'none')).toEqual([])
+  })
+})
+
+describe("deleting a task's time for a day", () => {
+  it("takes it out of the task's tracked time and its months, and leaves other tasks and days", () => {
+    const key = taskKey('t1')
+    const y = {
+      ...baseYear(),
+      sessions: [
+        {
+          id: 's1',
+          date: '2026-09-29',
+          start: '09:00:00',
+          end: '09:30:00',
+          minutes: 30,
+          label: 'A',
+          task: key
+        },
+        {
+          id: 's2',
+          date: '2026-09-30',
+          start: '09:00:00',
+          end: '10:00:00',
+          minutes: 60,
+          label: 'A',
+          task: key
+        }
+      ],
+      adjusts: [{ id: 'a1', date: '2026-09-29', label: 'A', minutes: 15, task: key }]
+    }
+    const after = deleteTaskTime(y, '2026-09-29', 'A')
+    expect(trackedByTask([after]).get('t1')).toBe(60)
+    expect(hoursByMonth([after], 't1')).toEqual([{ month: '2026-09', minutes: 60 }])
+    const gone = deleteTaskTime(after, '2026-09-30', 'A')
+    expect(trackedByTask([gone]).get('t1')).toBeUndefined()
+    expect(hoursByMonth([gone], 't1')).toEqual([])
   })
 })

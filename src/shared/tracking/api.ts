@@ -48,6 +48,14 @@ export interface TrackingApi {
     client?: string
   ): Promise<TimerResult>
   deleteSession(workspace: Workspace, year: string, id: string): Promise<YearResult>
+  /** Delete a task's saved time for one day (its ended sessions and typed time); a running timer and linked history stay. */
+  deleteTaskTime(
+    workspace: Workspace,
+    year: string,
+    date: string,
+    label: string,
+    client?: string
+  ): Promise<YearResult>
   setTaskMinutes(
     workspace: Workspace,
     year: string,
@@ -131,6 +139,7 @@ export const TRACKING_IPC = {
   setStart: 'tracking:set-start',
   assignTask: 'tracking:assign-task',
   deleteSession: 'tracking:delete-session',
+  deleteTaskTime: 'tracking:delete-task-time',
   setTaskMinutes: 'tracking:set-task-minutes',
   renameTask: 'tracking:rename-task',
   setClient: 'tracking:set-client',

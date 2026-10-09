@@ -13,6 +13,8 @@ export interface TaskRow {
   minutes: number
   running: boolean
   sessionIds: string[]
+  /** Whether Delete would remove anything: some ended session or typed time that is not history linked to a task (`earlier`). */
+  removable: boolean
 }
 
 /** What the running session would report now: only counted when `now` is given and it is on that day. */
@@ -36,7 +38,8 @@ export function dayRows(year: TrackingYear, date: string, now?: Moment): TaskRow
         ...(client !== undefined ? { client } : {}),
         minutes: 0,
         running: false,
-        sessionIds: []
+        sessionIds: [],
+        removable: false
       }
       rows.push(row)
     }
@@ -53,13 +56,17 @@ export function dayRows(year: TrackingYear, date: string, now?: Moment): TaskRow
     if (s.end === null) {
       row.running = true
       row.minutes += runningMinutes(s, now)
-    } else row.minutes += reportedMinutes(s)
+    } else {
+      row.minutes += reportedMinutes(s)
+      if (!s.earlier) row.removable = true
+    }
   }
   for (const a of year.adjusts) {
     if (a.date !== date) continue
     const row = find(a.label, a.client)
     if (a.task && !row.task) row.task = a.task
     row.minutes += a.minutes
+    if (!a.earlier) row.removable = true
   }
   return rows.filter((r) => r.minutes !== 0 || r.running)
 }
@@ -204,6 +211,26 @@ export function setTaskMinutes(
         ? [...others, entry]
         : [...others.slice(0, first), entry, ...others.slice(first)]
   return { ok: true, year: { ...year, adjusts } }
+}
+
+/**
+ * Delete a task's saved time for a day: its ended sessions and its typed time. A running session is never touched (Discard
+ * is for that), nor is a derived block (a meeting or lecture, edited in its note), and history linked to a task (`earlier`) is kept, since the task's ClickUp time holds it. Nothing is recalculated:
+ * every other session keeps its frozen minutes, so the carry does not move. `client` is the row's own, as shown.
+ */
+export function deleteTaskTime(
+  year: TrackingYear,
+  date: string,
+  label: string,
+  client?: string
+): TrackingYear {
+  const gone = (e: { date: string; label: string; client?: string; earlier?: true }): boolean =>
+    e.date === date && !e.earlier && sameTask(e, label, client)
+  return {
+    ...year,
+    sessions: year.sessions.filter((s) => s.derived || s.end === null || !gone(s)),
+    adjusts: year.adjusts.filter((a) => !gone(a))
+  }
 }
 
 /** Add time that was not tracked, for any task and any day (positive, in quarter hours). */

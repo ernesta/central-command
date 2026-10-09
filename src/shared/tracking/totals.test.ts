@@ -3,6 +3,7 @@ import {
   addTime,
   dayMinutes,
   dayRows,
+  deleteTaskTime,
   minutesByDate,
   setDayNote,
   setTaskMinutes,
@@ -10,6 +11,7 @@ import {
   yearMinutes
 } from './totals'
 import { startSession, stopSession } from './timer'
+import { withDerived } from './derived'
 import { at, nextId, ok, year } from './test-utils'
 import type { TrackingYear } from './types'
 
@@ -188,5 +190,79 @@ describe('time for a task of Tasks', () => {
     expect(y.adjusts[0]).toMatchObject({ minutes: 30, task: 'cc://task/abc' })
     y = ok(setTaskMinutes(y, D, 'Write', 120, nextId()))
     expect(y.adjusts[0]).toMatchObject({ minutes: 60, task: 'cc://task/abc' })
+  })
+})
+
+describe("deleting a task's time for a day", () => {
+  it('removes its ended sessions and typed time, and nothing of another task or day', () => {
+    let y = worked(D, [
+      ['Deck', '09:00:00', '09:30:00'],
+      ['Email', '09:30:00', '09:45:00'],
+      [' deck ', '09:45:00', '10:15:00']
+    ])
+    y = ok(addTime(y, D, 'Deck', 30, nextId()))
+    y = ok(addTime(y, '2026-09-28', 'Deck', 60, nextId()))
+    const after = deleteTaskTime(y, D, 'DECK')
+    expect(dayRows(after, D).map((r) => [r.label, r.minutes])).toEqual([['Email', 15]])
+    expect(dayMinutes(after, D)).toBe(15)
+    expect(dayMinutes(after, '2026-09-28')).toBe(60)
+    expect(weekMinutes(after, '2026-09-28')).toBe(75)
+  })
+
+  it("moves no other session's frozen minutes", () => {
+    const y = worked(D, [
+      ['Deck', '09:00:00', '09:07:00'],
+      ['Email', '09:07:00', '09:25:00']
+    ])
+    const after = deleteTaskTime(y, D, 'Deck')
+    expect(after.sessions).toEqual(y.sessions.filter((s) => s.label === 'Email'))
+  })
+
+  it('keeps a task of the same name for another client', () => {
+    let y = year({ plan: { ...year().plan, clients: ['A', 'B'] } })
+    y = ok(addTime(y, D, 'Deck', 30, nextId(), 'A'))
+    y = ok(addTime(y, D, 'Deck', 45, nextId(), 'B'))
+    const after = deleteTaskTime(y, D, 'Deck', 'A')
+    expect(dayRows(after, D).map((r) => [r.client, r.minutes])).toEqual([['B', 45]])
+  })
+
+  it('never touches the running timer', () => {
+    let y = worked(D, [['Deck', '09:00:00', '09:30:00']])
+    y = ok(startSession(y, at(D, '10:00:00'), 'Deck', nextId()))
+    const after = deleteTaskTime(y, D, 'Deck')
+    expect(after.sessions).toHaveLength(1)
+    expect(after.sessions[0].end).toBeNull()
+  })
+
+  it('keeps history linked to a task (earlier), which ClickUp time already holds', () => {
+    let y = year()
+    y = { ...y, adjusts: [{ id: 'a1', date: D, label: 'Deck', minutes: 60, earlier: true }] }
+    y = ok(addTime(y, D, 'Deck', 30, nextId()))
+    const after = deleteTaskTime(y, D, 'Deck')
+    expect(dayMinutes(after, D)).toBe(60)
+    expect(after.adjusts.map((a) => a.id)).toEqual(['a1'])
+  })
+
+  it('marks a row removable only when Delete would remove something', () => {
+    let y = year()
+    y = { ...y, adjusts: [{ id: 'a1', date: D, label: 'Old', minutes: 60, earlier: true }] }
+    y = ok(addTime(y, D, 'New', 30, nextId()))
+    y = ok(startSession(y, at(D, '10:00:00'), 'Live', nextId()))
+    expect(dayRows(y, D, at(D, '10:10:00')).map((r) => [r.label, r.removable])).toEqual([
+      ['Live', false],
+      ['Old', false],
+      ['New', true]
+    ])
+  })
+
+  it('has no row for a meeting or lecture: derived time is not a task row, and is never removed', () => {
+    let y = worked(D, [['Deck', '09:00:00', '09:30:00']])
+    y = withDerived(y, [
+      { id: 'm1', date: D, start: '11:00', end: '12:00', label: 'Deck', task: 'cc://task/t1' }
+    ])
+    expect(y.sessions.some((s) => s.derived)).toBe(true)
+    expect(dayRows(y, D).map((r) => r.sessionIds.length)).toEqual([1])
+    const after = deleteTaskTime(y, D, 'Deck')
+    expect(after.sessions.filter((s) => s.derived)).toHaveLength(1)
   })
 })
