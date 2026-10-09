@@ -79,7 +79,7 @@ export function NotesPage(): React.JSX.Element {
     content = <EmptyState heading="No notes yet" message="Create a note to start." />
   } else if (visible.length === 0) {
     content = (
-      <EmptyState heading="No matching notes" message="Try a different search or group.">
+      <EmptyState heading="No matching notes" message="Try a different search or filter.">
         {filtered && <Button onClick={() => setQuery(DEFAULT_NOTES_QUERY)}>Clear filters</Button>}
       </EmptyState>
     )

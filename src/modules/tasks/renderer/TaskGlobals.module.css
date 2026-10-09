@@ -6,7 +6,7 @@
   max-width: min(560px, calc(100vw - 32px));
   padding: 8px 16px;
   transform: translateX(-50%);
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   background: var(--tooltip-bg);
   color: var(--tooltip-text);
   box-shadow: var(--shadow-float);

@@ -218,7 +218,7 @@
   padding-top: 6px;
   padding-bottom: 6px;
   border-bottom: 0;
-  font-size: 13.5px;
+  font-size: var(--text-13);
 }
 .kid td:first-child {
   position: relative;
