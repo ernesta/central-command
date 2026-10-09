@@ -2360,3 +2360,11 @@ A note can link to a file kept beside the notes (a spreadsheet, a PDF): `@` list
 - **Not done**: a "Mentioned in" panel for files (a file has no page); a way to add files from inside the app.
 - Checked in the built app on a scratch library: picked with `@`, saved as the link above, drawn as a chip. Opening in Excel was not clicked.
 - **Applied to the real library, 9 Oct 2026**: the line "Full comparison table" in Research's Data Sources Summary note now links its spreadsheet (backup `backups/file-link-2026-10-09/`). The app was rebuilt and installed in `/Applications`.
+
+## Cmd-Left and Cmd-Shift-Left in a list item (9 Oct 2026)
+
+Cmd-Shift-Left used to select the bullet with the text, because the line boundary of a top-level item is the bullet itself (only a nested item's boundary fell inside the marker, where `outOfMarkers` moved it to the text start).
+
+- **Rule** (`listStep`, `src/renderer/src/editor/live-motion.ts`): in a bullet, number or checkbox item, a line-start motion goes in two steps. From inside the text it stops at the start of the text; from there (or from before it) it goes to the start of the line. With Shift the first press selects the text only, the second the whole item, so deleting then removes the item. Cmd-Left and Cmd-Shift-Left behave the same (the user's choice, 9 Oct 2026), and so do Home and Shift-Home.
+- **Not changed**: a wrapped row of an item still goes to its own visual row start; headings, quotes and plain lines keep the default; Shift-Up/Down and Option-Shift-Left are untouched.
+- Tests in `live-list-drawing.test.ts` press Home and Shift-Home (jsdom is not a Mac, so the Cmd chords are not pressed). Typecheck, lint and tests pass. Not driven in the built app, and the real-library editor gate was not run.
