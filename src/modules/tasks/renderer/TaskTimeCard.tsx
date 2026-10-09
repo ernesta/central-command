@@ -12,7 +12,7 @@ const monthLabel = (month: string): string =>
   })
 
 /**
- * The side panel's time: the total (this task's, with its subtasks), ClickUp's earlier time and Hours' time apart, and the two
+ * The side panel's time: the total (this task's, with its subtasks), ClickUp's older time (when it has any) and each month's tracked time apart, and the two
  * ways to add to it (`TaskTimeActions`).
  */
 export function TaskTimeCard({
@@ -37,7 +37,7 @@ export function TaskTimeCard({
   yearFor: (date: string, client?: string) => string | null
   /** The list of this task as a client of a contract that holds the date, when its name is one. */
   clientFor: (list: string, date: string) => string | undefined
-  /** Every hour on this task by month (history included); the two lines below it are for a task with none. */
+  /** Every hour on this task by month (history included); a task with none shows this month at 0:00. */
   months: { month: string; minutes: number }[]
   /** The list that names the client (the task's own). */
   list: string
@@ -50,6 +50,12 @@ export function TaskTimeCard({
         <span className={styles.label}>Time on this task</span>
         <b className={styles.total}>{formatTaskTime(time.total) || '0:00'}</b>
       </div>
+      {own.earlier > 0 && (
+        <div className={styles.timeLine}>
+          <span>Earlier</span>
+          <span>{formatTaskTime(own.earlier)}</span>
+        </div>
+      )}
       {months.length > 0 ? (
         months.map((m) => (
           <div key={m.month} className={styles.timeLine}>
@@ -58,16 +64,10 @@ export function TaskTimeCard({
           </div>
         ))
       ) : (
-        <>
-          <div className={styles.timeLine}>
-            <span>Earlier, from ClickUp</span>
-            <span>{formatTaskTime(own.earlier) || '0:00'}</span>
-          </div>
-          <div className={styles.timeLine}>
-            <span>In Hours</span>
-            <span>{formatTaskTime(own.tracked) || '0:00'}</span>
-          </div>
-        </>
+        <div className={styles.timeLine}>
+          <span>{monthLabel(today.slice(0, 7))}</span>
+          <span>0:00</span>
+        </div>
       )}
       <TaskTimeActions
         task={task}
