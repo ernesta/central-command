@@ -163,7 +163,13 @@ function EntryView({
     )
   }
 
-  const heading = `${meta.title || 'Untitled'} · ${meta.date ? formatDate(meta.date) : 'No date yet'}`
+  const heading = [
+    meta.title || 'Untitled',
+    meta.series,
+    meta.date ? formatDate(meta.date) : 'No date yet'
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   return (
     <div className={styles.page}>
