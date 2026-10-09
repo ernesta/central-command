@@ -2368,3 +2368,12 @@ Cmd-Shift-Left used to select the bullet with the text, because the line boundar
 - **Rule** (`listStep`, `src/renderer/src/editor/live-motion.ts`): in a bullet, number or checkbox item, a line-start motion goes in two steps. From inside the text it stops at the start of the text; from there (or from before it) it goes to the start of the line. With Shift the first press selects the text only, the second the whole item, so deleting then removes the item. Cmd-Left and Cmd-Shift-Left behave the same (the user's choice, 9 Oct 2026), and so do Home and Shift-Home.
 - **Not changed**: a wrapped row of an item still goes to its own visual row start; headings, quotes and plain lines keep the default; Shift-Up/Down and Option-Shift-Left are untouched.
 - Tests in `live-list-drawing.test.ts` press Home and Shift-Home (jsdom is not a Mac, so the Cmd chords are not pressed). Typecheck, lint and tests pass. Not driven in the built app, and the real-library editor gate was not run.
+
+## Timer popover, stage 1: the picker (9 Oct 2026)
+
+Plan: `docs/TIMER_POPOVER_PLAN.md`. Stage 1 only (`TaskPicker.tsx`, `start-picker.ts`); the popover layout is stage 2.
+
+- **List on every row**: `detailOfTask` is now the task's list; a subtask shows its parent's list (before, its parent's title).
+- **Create row**: `Create "X" in [List ▾]`, always last once something is typed. The list is the New task dialog's `ListField`, so the same menu and, in Work, only client lists (a new name can only be a sublist). Until changed, the default is shown, never silent. `listForNew(open, clients, last, hint?)`: Work, the time's client (`hintClient`), else the last list if it is a client, else the first client; Research, where a task was last added, else the first list, else Inbox. The client of the new task is then told from the chosen list like any other task's.
+- **Layout**: the matches list no longer scrolls (at most eight rows) so the list field's menu is not clipped; the list stays open while focus moves into the Create row.
+- **Tests**: `start-picker.test.ts` for the two rules. Not driven in the app yet (stage 3), and the Today, Add time and meeting Task field uses were not looked at.
