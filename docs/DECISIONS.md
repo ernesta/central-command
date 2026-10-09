@@ -2407,3 +2407,18 @@ The TODO helper (`/todo` or Cmd-Shift-T, owner menu) is no longer Meetings'. It 
 ## A timer started on a task puts it in progress (9 Oct 2026)
 
 Starting a timer on a task, or giving a running timer its task, sets the task to In progress when it is still To do. A done task stays done (my reading: working on a finished task is not a reason to reopen it; change `setTaskStarted`'s hook in `src/main/index.ts` if the user wants that). `TrackingStore.setTaskStarted(fn)` is the seam, called after a successful `start` with a task and after `assignTask` (both the same-file and the moved-contract case); `main/index.ts` gives it a `TasksStore` and broadcasts `TASKS_IPC.changed` so an open Tasks page refreshes. Meeting and lecture hours are derived, not timers, so they are unaffected. Tests: `src/main/tracking/task-started.test.ts` (they mirror the hook; the wiring in `index.ts` itself is driven only by the app).
+
+## Consistency sweep (9 Oct 2026)
+
+A review for UI, label and behaviour mismatches; the user decided which differences were deliberate. Typecheck, lint and tests pass; **not driven in the app** (changes are small and mostly CSS, labels and one confirmation dialog).
+
+- **`CreateButton`** (`src/renderer/src/components/`): New note, meeting, list and training entry were four copies of one component, each with inline error styling. Each now passes only a `create` function; a refusal shows beside the button in one style.
+- **`Button` variant `danger-outline`**: the Delete button on the note, meeting, training entry, reading list and task pages (five identical `.delete` rules) uses it.
+- **"Couldn’t …"**: 13 user-visible "Could not …" messages (stores, Time off, Hours, Meetings, Training, people) now say "Couldn’t …", as the rest of the app does. `console.error` text is unchanged.
+- **Time off rows** say **Delete** (not Remove) and ask first ("Delete this day?"), like Hours rows. People keep "Remove" (it archives or merges).
+- **Hours days are month first**: `formatDay` gives "Thu, Oct 1" (was "Thu 1 Oct") and `formatRange` "Sep 28 – Oct 4", matching "Sep 24, 2026" everywhere else. The Work importer's contract labels (already applied) are unchanged.
+- **Training's button is "New training entry"**, as in the palette and Dock (it was "New entry"; earlier write-ups still say "New entry").
+- **Notes empty state** says "Try a different search or filter." like the other modules.
+- **Tokens**: the task context menu and toast use `--radius-control` (were 10px); a task-table subtask row uses `--text-13` (was 13.5px).
+- **Relative time** (Readings sync) falls back to `formatDate`, not the system locale.
+- **Left as it is (the user confirmed)**: floating panels use `--radius-control` for small menus and `--radius-card` for larger popovers, on purpose.
