@@ -17,6 +17,7 @@ function countsLine(counts: ReadingCounts): string {
 function runLine(run: SyncRun): string {
   const parts = [`${run.inserted} new`, `${run.updated} updated`]
   if (run.flaggedMissing > 0) parts.push(`${run.flaggedMissing} no longer in Zotero`)
+  if (run.deleted > 0) parts.push(`${run.deleted} removed`)
   return `Last run: ${parts.join(', ')}`
 }
 

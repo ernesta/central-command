@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { runMigrations } from '../../../main/db/migrate'
+import { readingListsMigrations } from '../../reading-lists/main/migrations'
 import type { SyncedFields } from '../shared/types'
 import { readingsMigrations } from './migrations'
 import {
@@ -36,6 +37,7 @@ let db: Database.Database
 beforeEach(() => {
   db = new Database(':memory:')
   runMigrations(db, readingsMigrations)
+  runMigrations(db, readingListsMigrations)
 })
 
 const get = (citekey: string): NonNullable<ReturnType<typeof getReadingByCitekey>> => {
@@ -44,10 +46,31 @@ const get = (citekey: string): NonNullable<ReturnType<typeof getReadingByCitekey
   return r
 }
 
+/** Gives `citekey` a Reading Lists mention, the way `upsertList` would index one. */
+function mentionInReadingList(citekey: string): void {
+  db.prepare(
+    `INSERT INTO reading_list_mentions (workspace, list_id, list_title, section, citekey, annotation)
+     VALUES ('research', 'list-1', 'A list', 'Section', ?, '')`
+  ).run(citekey)
+}
+
+/** Gives `citekey` notes, the way `NotesStore.updateCache` would cache a non-empty note. */
+function attachNotes(citekey: string): void {
+  db.prepare("UPDATE readings SET has_notes = 1, notes_excerpt = 'keep me' WHERE citekey = ?").run(
+    citekey
+  )
+}
+
 describe('applySync: inserting', () => {
   it('inserts new citekeys with added_at and updated_at set to now', () => {
     const counts = applySync(db, [entry('a', { status: 'to_read', tags: ['x'] }), entry('b')], T1)
-    expect(counts).toEqual({ entriesSeen: 2, inserted: 2, updated: 0, flaggedMissing: 0 })
+    expect(counts).toEqual({
+      entriesSeen: 2,
+      inserted: 2,
+      updated: 0,
+      flaggedMissing: 0,
+      deleted: 0
+    })
     expect(get('a')).toMatchObject({
       citekey: 'a',
       status: 'to_read',
@@ -186,16 +209,23 @@ describe('applySync: idempotence', () => {
     applySync(db, input, T1)
     const before = db.prepare('SELECT * FROM readings ORDER BY id').all()
     const counts = applySync(db, input, T2)
-    expect(counts).toEqual({ entriesSeen: 2, inserted: 0, updated: 0, flaggedMissing: 0 })
+    expect(counts).toEqual({
+      entriesSeen: 2,
+      inserted: 0,
+      updated: 0,
+      flaggedMissing: 0,
+      deleted: 0
+    })
     expect(db.prepare('SELECT * FROM readings ORDER BY id').all()).toEqual(before)
   })
 })
 
-describe('applySync: missing from source', () => {
-  it('flags citekeys that leave the export and never deletes them', () => {
+describe('applySync: missing and attached (flagged, never deleted)', () => {
+  it('flags a citekey with notes that leaves the export, and never deletes it', () => {
     applySync(db, [entry('a'), entry('b')], T1)
+    attachNotes('b')
     const counts = applySync(db, [entry('a')], T2)
-    expect(counts.flaggedMissing).toBe(1)
+    expect(counts).toMatchObject({ flaggedMissing: 1, deleted: 0 })
     expect(get('b')).toMatchObject({ missingFromSource: true, updatedAt: T1 })
     expect(get('a').missingFromSource).toBe(false)
     expect(getCounts(db).total).toBe(2)
@@ -203,9 +233,7 @@ describe('applySync: missing from source', () => {
 
   it('keeps notes information on a missing reading', () => {
     applySync(db, [entry('a')], T1)
-    db.prepare(
-      "UPDATE readings SET has_notes = 1, notes_excerpt = 'keep me' WHERE citekey = 'a'"
-    ).run()
+    attachNotes('a')
     applySync(db, [entry('other')], T2)
     expect(get('a')).toMatchObject({
       missingFromSource: true,
@@ -214,14 +242,31 @@ describe('applySync: missing from source', () => {
     })
   })
 
-  it('counts a newly missing reading once, not on every run', () => {
+  it('flags a citekey with only a Reading Lists mention that leaves the export', () => {
     applySync(db, [entry('a'), entry('b')], T1)
+    mentionInReadingList('b')
+    const counts = applySync(db, [entry('a')], T2)
+    expect(counts).toMatchObject({ flaggedMissing: 1, deleted: 0 })
+    expect(get('b').missingFromSource).toBe(true)
+  })
+
+  it('flags a citekey with only an @ mention that leaves the export', () => {
+    applySync(db, [entry('a'), entry('b')], T1)
+    const counts = applySync(db, [entry('a')], T2, new Set(['b']))
+    expect(counts).toMatchObject({ flaggedMissing: 1, deleted: 0 })
+    expect(get('b').missingFromSource).toBe(true)
+  })
+
+  it('counts a newly missing (attached) reading once, not on every run', () => {
+    applySync(db, [entry('a'), entry('b')], T1)
+    attachNotes('b')
     expect(applySync(db, [entry('a')], T2).flaggedMissing).toBe(1)
     expect(applySync(db, [entry('a')], T3).flaggedMissing).toBe(0)
   })
 
   it('clears the flag when the citekey comes back, without bumping updated_at if unchanged', () => {
     applySync(db, [entry('a'), entry('b')], T1)
+    attachNotes('b')
     applySync(db, [entry('a')], T2)
     const counts = applySync(db, [entry('a'), entry('b')], T3)
     expect(counts).toMatchObject({ inserted: 0, updated: 0 })
@@ -230,6 +275,7 @@ describe('applySync: missing from source', () => {
 
   it('clears the flag and updates fields when it comes back changed', () => {
     applySync(db, [entry('a'), entry('b')], T1)
+    attachNotes('b')
     applySync(db, [entry('a')], T2)
     applySync(db, [entry('a'), entry('b', { fullTitle: 'Renamed' })], T3)
     expect(get('b')).toMatchObject({
@@ -239,11 +285,62 @@ describe('applySync: missing from source', () => {
     })
   })
 
-  it('keeps a reading whose citekey changed in Zotero: the old one is flagged, the new inserted', () => {
+  it('keeps a reading (with notes) whose citekey changed in Zotero: the old one is flagged, the new inserted', () => {
     applySync(db, [entry('oldKey')], T1)
+    attachNotes('oldKey')
     applySync(db, [entry('newKey')], T2)
     expect(get('oldKey').missingFromSource).toBe(true)
     expect(get('newKey').missingFromSource).toBe(false)
+  })
+})
+
+describe('applySync: delete-if-unattached when missing', () => {
+  it('deletes a bare citekey that leaves the export, instead of leaving it flagged', () => {
+    applySync(db, [entry('a'), entry('b')], T1)
+    const counts = applySync(db, [entry('a')], T2)
+    expect(counts).toMatchObject({ flaggedMissing: 0, deleted: 1 })
+    expect(getReadingByCitekey(db, 'b')).toBeNull()
+    expect(getCounts(db).total).toBe(1)
+  })
+
+  it('never deletes a citekey that has notes', () => {
+    applySync(db, [entry('a'), entry('b')], T1)
+    attachNotes('b')
+    const counts = applySync(db, [entry('a')], T2)
+    expect(counts).toMatchObject({ deleted: 0, flaggedMissing: 1 })
+    expect(getReadingByCitekey(db, 'b')).not.toBeNull()
+  })
+
+  it('keeps a citekey that has only a Reading Lists mention, rather than deleting it', () => {
+    applySync(db, [entry('a'), entry('b')], T1)
+    mentionInReadingList('b')
+    const counts = applySync(db, [entry('a')], T2)
+    expect(counts).toMatchObject({ deleted: 0, flaggedMissing: 1 })
+    expect(getReadingByCitekey(db, 'b')).not.toBeNull()
+  })
+
+  it('keeps a citekey that has only an @ mention, rather than deleting it', () => {
+    applySync(db, [entry('a'), entry('b')], T1)
+    const counts = applySync(db, [entry('a')], T2, new Set(['b']))
+    expect(counts).toMatchObject({ deleted: 0, flaggedMissing: 1 })
+    expect(getReadingByCitekey(db, 'b')).not.toBeNull()
+  })
+
+  it('leaves a citekey already flagged on an earlier sync alone (no retroactive deletion)', () => {
+    applySync(db, [entry('a'), entry('b')], T1)
+    attachNotes('b')
+    applySync(db, [entry('a')], T2)
+    db.prepare("UPDATE readings SET has_notes = 0, notes_excerpt = '' WHERE citekey = 'b'").run()
+    const counts = applySync(db, [entry('a')], T3)
+    expect(counts).toMatchObject({ deleted: 0, flaggedMissing: 0 })
+    expect(getReadingByCitekey(db, 'b')).not.toBeNull()
+  })
+
+  it("status and tags don't protect a bare citekey from deletion", () => {
+    applySync(db, [entry('a'), entry('b', { status: 'read', tags: ['keep'] })], T1)
+    const counts = applySync(db, [entry('a')], T2)
+    expect(counts.deleted).toBe(1)
+    expect(getReadingByCitekey(db, 'b')).toBeNull()
   })
 })
 
@@ -260,6 +357,7 @@ describe('applySync: atomicity', () => {
 describe('listAllReadings', () => {
   it('returns every reading, including ones missing from the export', () => {
     applySync(db, [entry('a', { status: 'read' }), entry('b')], T1)
+    attachNotes('b')
     applySync(db, [entry('a', { status: 'read' })], T2)
     const all = listAllReadings(db)
     expect(all.map((r) => r.citekey).sort()).toEqual(['a', 'b'])
@@ -286,6 +384,7 @@ describe('getCounts', () => {
       ],
       T1
     )
+    attachNotes('d')
     applySync(
       db,
       [
@@ -309,7 +408,8 @@ describe('sync runs', () => {
       entriesSeen: 3,
       inserted: 3,
       updated: 0,
-      flaggedMissing: 0
+      flaggedMissing: 0,
+      deleted: 0
     })
     recordSyncRun(db, {
       startedAt: T2,
@@ -319,6 +419,7 @@ describe('sync runs', () => {
       inserted: 0,
       updated: 0,
       flaggedMissing: 0,
+      deleted: 0,
       errorMessage: 'boom'
     })
     expect(lastSyncRun(db)).toMatchObject({ status: 'error', errorMessage: 'boom', startedAt: T2 })

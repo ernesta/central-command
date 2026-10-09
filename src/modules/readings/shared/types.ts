@@ -77,6 +77,8 @@ export interface SyncCounts {
   inserted: number
   updated: number
   flaggedMissing: number
+  /** Missing citekeys with nothing attached (no notes, no Reading Lists mention, no `@` mention). */
+  deleted: number
 }
 
 /** A recorded sync attempt (a row of sync_runs). */

@@ -12,6 +12,7 @@ import { tmpdir } from 'os'
 import { join } from 'path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { runMigrations } from '../../../main/db/migrate'
+import { readingListsMigrations } from '../../reading-lists/main/migrations'
 import type { SyncedFields } from '../shared/types'
 import { readingsMigrations } from './migrations'
 import { getReadingByCitekey, applySync } from './repository'
@@ -46,6 +47,7 @@ beforeEach(() => {
   dir = mkdtempSync(join(tmpdir(), 'cc-notes-'))
   db = new Database(':memory:')
   runMigrations(db, readingsMigrations)
+  runMigrations(db, readingListsMigrations)
   applySync(db, [entry('a'), entry('b')], '2026-01-01T00:00:00.000Z')
   store = new NotesStore({ db, notesDir: dir })
 })

@@ -104,20 +104,25 @@ function toColumns(
  * - New citekey: inserted.
  * - Known citekey: synced fields overwritten; `updated_at` moves only if a synced
  *   field actually changed; a "missing" flag is cleared. Notes caches are never touched.
- * - Known citekey absent from the export: flagged `missing_from_source`. Rows are never deleted.
+ * - Known citekey absent from the export, found missing for the first time: deleted outright if
+ *   nothing is attached to it (no notes, no `reading_list_mentions` row, no `@` mention in
+ *   `mentionedCitekeys`); otherwise flagged `missing_from_source`. A citekey already flagged from an
+ *   earlier sync is left as it is (no grace sync, and no retroactive deletion of old flagged rows).
  *
  * Running it twice with the same input changes nothing the second time.
  */
 export function applySync(
   db: Database,
   incoming: readonly SyncedFields[],
-  now: string
+  now: string,
+  mentionedCitekeys: ReadonlySet<string> = new Set()
 ): SyncCounts {
   const counts: SyncCounts = {
     entriesSeen: incoming.length,
     inserted: 0,
     updated: 0,
-    flaggedMissing: 0
+    flaggedMissing: 0,
+    deleted: 0
   }
 
   const existing = new Map(
@@ -141,6 +146,7 @@ export function applySync(
   )
   const unflag = db.prepare('UPDATE readings SET missing_from_source = 0 WHERE citekey = @citekey')
   const flag = db.prepare('UPDATE readings SET missing_from_source = 1 WHERE citekey = @citekey')
+  const deleteRow = db.prepare('DELETE FROM readings WHERE citekey = ?')
 
   db.transaction(() => {
     const present = new Set<string>()
@@ -161,10 +167,26 @@ export function applySync(
         if (current.missing_from_source === 1) unflag.run({ citekey: entry.citekey })
       }
     }
-    for (const [citekey, row] of existing) {
-      if (!present.has(citekey) && row.missing_from_source === 0) {
-        flag.run({ citekey })
-        counts.flaggedMissing++
+
+    const newlyMissing = [...existing].filter(
+      ([citekey, row]) => !present.has(citekey) && row.missing_from_source === 0
+    )
+    if (newlyMissing.length > 0) {
+      const hasListMention = db.prepare(
+        'SELECT 1 FROM reading_list_mentions WHERE citekey = ? LIMIT 1'
+      )
+      for (const [citekey, row] of newlyMissing) {
+        const attached =
+          row.has_notes === 1 ||
+          hasListMention.get(citekey) !== undefined ||
+          mentionedCitekeys.has(citekey)
+        if (attached) {
+          flag.run({ citekey })
+          counts.flaggedMissing++
+        } else {
+          deleteRow.run(citekey)
+          counts.deleted++
+        }
       }
     }
   })()
@@ -178,8 +200,8 @@ export function recordSyncRun(
 ): void {
   db.prepare(
     `INSERT INTO sync_runs
-       (started_at, finished_at, status, entries_seen, inserted, updated, flagged_missing, error_message)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+       (started_at, finished_at, status, entries_seen, inserted, updated, flagged_missing, deleted, error_message)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     run.startedAt,
     run.finishedAt,
@@ -188,6 +210,7 @@ export function recordSyncRun(
     run.inserted,
     run.updated,
     run.flaggedMissing,
+    run.deleted,
     run.errorMessage ?? null
   )
 }
@@ -200,6 +223,7 @@ interface SyncRunRow {
   inserted: number
   updated: number
   flagged_missing: number
+  deleted: number
   error_message: string | null
 }
 
@@ -211,6 +235,7 @@ function rowToRun(row: SyncRunRow): SyncRun {
     entriesSeen: row.entries_seen,
     inserted: row.inserted,
     updated: row.updated,
+    deleted: row.deleted,
     flaggedMissing: row.flagged_missing,
     errorMessage: row.error_message
   }

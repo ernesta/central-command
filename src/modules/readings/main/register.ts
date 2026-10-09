@@ -7,12 +7,18 @@ import { normaliseQuery } from '../shared/query'
 import { queryReadings, collectTags } from './query'
 import { NotesStore } from './notes-store'
 import { NotesWatcher } from '../../../main/notes/watcher'
+import { backlinkFolders } from '../../../main/ipc/entities'
+import { collectMentionedReadingKeys } from '../../../main/entities/reading-mentions'
 import { getCounts, getReadingByCitekey, listAllReadings } from './repository'
 import { SyncService } from './sync-service'
 import { ExportWatcher } from './watcher'
 
 function register({ db, paths, settings }: MainContext): () => void {
-  const sync = new SyncService({ db, getExportPath: () => settings.get().zoteroExportPath })
+  const sync = new SyncService({
+    db,
+    getExportPath: () => settings.get().zoteroExportPath,
+    findMentionedCitekeys: () => collectMentionedReadingKeys(db, backlinkFolders(paths))
+  })
   const watcher = new ExportWatcher({ onChange: () => void sync.sync() })
 
   ipcMain.handle(READINGS_IPC.syncNow, () => sync.sync())

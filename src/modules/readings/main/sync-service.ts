@@ -8,6 +8,13 @@ interface SyncServiceOptions {
   db: Database
   /** Read on every sync, so a changed setting takes effect without a restart. */
   getExportPath: () => string
+  /**
+   * Every citekey `@` mentioned anywhere (notes, meetings, training, reading lists, plans, task
+   * descriptions), scanned once per sync and used to decide whether a citekey missing from the
+   * export may be deleted. Defaults to an empty set, so nothing but notes and Reading Lists
+   * mentions protects a row from deletion.
+   */
+  findMentionedCitekeys?: () => Promise<ReadonlySet<string>>
   now?: () => Date
 }
 
@@ -22,15 +29,22 @@ function errorMessage(error: unknown): string {
 export class SyncService {
   private readonly db: Database
   private readonly getExportPath: () => string
+  private readonly findMentionedCitekeys: () => Promise<ReadonlySet<string>>
   private readonly now: () => Date
   private current: SyncStatus
   private inflight: Promise<void> | null = null
   private rerunRequested = false
   private readonly listeners = new Set<(status: SyncStatus) => void>()
 
-  constructor({ db, getExportPath, now = () => new Date() }: SyncServiceOptions) {
+  constructor({
+    db,
+    getExportPath,
+    findMentionedCitekeys = () => Promise.resolve(new Set()),
+    now = () => new Date()
+  }: SyncServiceOptions) {
     this.db = db
     this.getExportPath = getExportPath
+    this.findMentionedCitekeys = findMentionedCitekeys
     this.now = now
     this.current = this.initialStatus()
   }
@@ -103,8 +117,9 @@ export class SyncService {
 
     try {
       const entries = parseBib(text)
+      const mentioned = await this.findMentionedCitekeys()
       const finishedAt = this.now().toISOString()
-      const counts = applySync(this.db, entries, finishedAt)
+      const counts = applySync(this.db, entries, finishedAt, mentioned)
       const run = { startedAt, finishedAt, status: 'ok' as const, ...counts, errorMessage: null }
       recordSyncRun(this.db, run)
       this.setStatus({ state: 'idle', lastRun: run, lastSuccessAt: finishedAt, message: null })
@@ -122,6 +137,7 @@ export class SyncService {
       inserted: 0,
       updated: 0,
       flaggedMissing: 0,
+      deleted: 0,
       errorMessage: message
     }
     try {

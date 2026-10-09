@@ -270,8 +270,10 @@ to do next, short>. Next meeting <Mon D, YYYY>.` Example: "Key topics: Study 1 p
 ## Never
 
 - Never write to the Zotero `.bib` file or to Zotero.
-- Never delete or overwrite a Readings note file, or delete a `readings` row; missing
-  items are flagged, not removed. Meetings differ: a meeting note can be deleted, but only by an
+- Never delete or overwrite a Readings note file. A `readings` row missing from the Zotero export
+  is deleted only when nothing is attached to it (no notes, no Reading Lists mention, no `@`
+  mention anywhere); a row with any of those is still never deleted, just flagged
+  `missing_from_source`. Meetings differ: a meeting note can be deleted, but only by an
   explicit user action with a confirmation, and it goes to the macOS Trash (`shell.trashItem`),
   never removed outright. Meeting notes are still never overwritten: saves check the file's
   content hash, and a new meeting never replaces an existing file.

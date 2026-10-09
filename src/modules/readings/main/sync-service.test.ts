@@ -4,6 +4,7 @@ import { tmpdir } from 'os'
 import { join } from 'path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { runMigrations } from '../../../main/db/migrate'
+import { readingListsMigrations } from '../../reading-lists/main/migrations'
 import type { SyncStatus } from '../shared/types'
 import { readingsMigrations } from './migrations'
 import { getCounts } from './repository'
@@ -25,6 +26,7 @@ beforeEach(() => {
   bibPath = join(dir, 'export.bib')
   db = new Database(':memory:')
   runMigrations(db, readingsMigrations)
+  runMigrations(db, readingListsMigrations)
   service = new SyncService({ db, getExportPath: () => bibPath })
 })
 afterEach(() => rmSync(dir, { recursive: true, force: true }))
@@ -56,7 +58,7 @@ describe('SyncService: success', () => {
     expect(snapshot()).toEqual(before)
   })
 
-  it('flags readings removed from the export and un-flags them when they return', async () => {
+  it('deletes readings removed from the export that have nothing attached, and reinserts them if they return', async () => {
     copyFileSync(FIXTURE, bibPath)
     await service.sync()
     writeFileSync(
@@ -64,11 +66,55 @@ describe('SyncService: success', () => {
       '@article{vaswaniAttentionAllYou2017, title = {Attention Is All You Need}, author = {Vaswani, Ashish}, date = {2017-06-12}, keywords = {transformers,nlp,read}, abstract = {The dominant sequence transduction models are based on complex recurrent networks.}}'
     )
     const status = await service.sync()
-    expect(status.lastRun).toMatchObject({ entriesSeen: 1, flaggedMissing: 14 })
-    expect(getCounts(db)).toMatchObject({ total: 15, missingFromSource: 14 })
+    expect(status.lastRun).toMatchObject({ entriesSeen: 1, flaggedMissing: 0, deleted: 14 })
+    expect(getCounts(db)).toMatchObject({ total: 1, missingFromSource: 0 })
+    copyFileSync(FIXTURE, bibPath)
+    const status2 = await service.sync()
+    expect(status2.lastRun).toMatchObject({ inserted: 14, deleted: 0 })
+    expect(getCounts(db)).toMatchObject({ total: 15, missingFromSource: 0 })
+  })
+
+  it('flags a removed reading that has notes instead of deleting it', async () => {
     copyFileSync(FIXTURE, bibPath)
     await service.sync()
-    expect(getCounts(db)).toMatchObject({ total: 15, missingFromSource: 0 })
+    db.prepare(
+      "UPDATE readings SET has_notes = 1, notes_excerpt = 'mine' WHERE citekey = 'smithLeeEffectsTreatment2023'"
+    ).run()
+    writeFileSync(
+      bibPath,
+      '@article{vaswaniAttentionAllYou2017, title = {Attention Is All You Need}, author = {Vaswani, Ashish}, date = {2017-06-12}, keywords = {transformers,nlp,read}, abstract = {The dominant sequence transduction models are based on complex recurrent networks.}}'
+    )
+    const status = await service.sync()
+    expect(status.lastRun).toMatchObject({ entriesSeen: 1, flaggedMissing: 1, deleted: 13 })
+    expect(getCounts(db).total).toBe(2)
+    expect(
+      db
+        .prepare(
+          "SELECT missing_from_source FROM readings WHERE citekey = 'smithLeeEffectsTreatment2023'"
+        )
+        .get()
+    ).toMatchObject({ missing_from_source: 1 })
+  })
+
+  it('keeps a removed reading that only has a Reading Lists mention or an @ mention', async () => {
+    copyFileSync(FIXTURE, bibPath)
+    await service.sync()
+    db.prepare(
+      `INSERT INTO reading_list_mentions (workspace, list_id, list_title, section, citekey, annotation)
+       VALUES ('research', 'list-1', 'A list', 'Section', 'smithLeeEffectsTreatment2023', '')`
+    ).run()
+    service = new SyncService({
+      db,
+      getExportPath: () => bibPath,
+      findMentionedCitekeys: () => Promise.resolve(new Set(['abadieWhenShouldYou2023']))
+    })
+    writeFileSync(
+      bibPath,
+      '@article{vaswaniAttentionAllYou2017, title = {Attention Is All You Need}, author = {Vaswani, Ashish}, date = {2017-06-12}, keywords = {transformers,nlp,read}, abstract = {The dominant sequence transduction models are based on complex recurrent networks.}}'
+    )
+    const status = await service.sync()
+    expect(status.lastRun).toMatchObject({ entriesSeen: 1, flaggedMissing: 2, deleted: 12 })
+    expect(getCounts(db).total).toBe(3)
   })
 
   it('picks up a changed export path on the next sync', async () => {
