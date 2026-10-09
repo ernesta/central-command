@@ -14,6 +14,13 @@ export function lectureTaskUid(task: string): string | null {
   return task && task !== 'auto' ? task : null
 }
 
+/** "Series: lecture" for a lecture in a series, the lecture alone otherwise. */
+function lectureLabel(series: string | null, title: string): string {
+  const name = title.trim()
+  const programme = series?.trim()
+  return programme && name !== programme ? `${programme}: ${name}` : name
+}
+
 /**
  * A lecture's own session as the Hours page sees it: one entry per training note that has a task (one that still exists), a date
  * that is not after today, and both times (the end after the start). Worked out from the note every time and never stored. A note
@@ -38,7 +45,7 @@ export function lectureEntries(
       start: row.start ?? '',
       end: row.end ?? '',
       task: `${TASK_PREFIX}${uid}`,
-      label: task.title.trim()
+      label: lectureLabel(row.series, task.title)
     })
   }
   return entries

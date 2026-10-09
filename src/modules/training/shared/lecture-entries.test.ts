@@ -37,9 +37,15 @@ describe('lectureEntries', () => {
         start: '10:00',
         end: '11:30',
         task: 'cc://task/k1',
-        label: 'Session 3: Plotly'
+        label: 'Intro to Python: Session 3: Plotly'
       }
     ])
+  })
+
+  it('labels a lecture without a series by its title alone', () => {
+    expect(lectureEntries([row({ series: null })], tasks, '2026-10-07')[0].label).toBe(
+      'Session 3: Plotly'
+    )
   })
 
   it('gives nothing to an older note, a marked note without a subtask, or a task that is gone', () => {
