@@ -16,6 +16,7 @@ import { StaleTimer } from './StaleTimer'
 import { TaskPicker, type PickedTask, type TaskPickerHandle } from './TaskPicker'
 import { MeetingRows } from './MeetingRows'
 import { TaskList } from './TaskList'
+import { renameRow } from './rename-row'
 import styles from './TodayCard.module.css'
 
 interface TodayCardProps {
@@ -100,8 +101,8 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
         onSetMinutes={(label, m, rowClient) =>
           void tracking.setTaskMinutes(workspace, data.start, now.date, label, m, rowClient)
         }
-        onRename={(label, to, rowClient) =>
-          void tracking.renameTask(workspace, data.start, now.date, label, to, rowClient)
+        onRename={(label, to, rowClient, task) =>
+          void renameRow(workspace, data.start, now.date, { label, client: rowClient, task }, to)
         }
       />
       <MeetingRows workspace={workspace} data={data} date={now.date} now={now} />

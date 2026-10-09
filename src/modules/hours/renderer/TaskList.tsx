@@ -14,7 +14,8 @@ interface TaskListProps {
   /** Saves a task's time for the day, in minutes. */
   onSetMinutes: (label: string, minutes: number, client?: string) => void
   /** Renames a task for the day (the row's blocks and typed time with it). */
-  onRename: (label: string, name: string, client?: string) => void
+  /** `task` is the row's task (`cc://task/<uid>`), when it has one: renaming the row renames that task too. */
+  onRename: (label: string, name: string, client?: string, task?: string) => void
   /** The plan's clients (Work): each row then shows its client and offers the others. */
   clients?: readonly string[]
   /** Moves a row to another client (`from` is its client now). */
@@ -63,7 +64,7 @@ export function TaskList({
     setEditing(null)
   }
   const commitName = (row: TaskRow): void => {
-    if (name.trim() && name.trim() !== row.label) onRename(row.label, name, row.client)
+    if (name.trim() && name.trim() !== row.label) onRename(row.label, name, row.client, row.task)
     setRenaming(null)
   }
 

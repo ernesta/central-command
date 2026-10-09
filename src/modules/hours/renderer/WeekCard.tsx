@@ -11,6 +11,7 @@ import type { HoursWorkspace } from '../shared/workspaces'
 import { AddTime } from './AddTime'
 import { MeetingRows } from './MeetingRows'
 import { TaskList } from './TaskList'
+import { renameRow } from './rename-row'
 import styles from './WeekCard.module.css'
 
 interface WeekCardProps {
@@ -139,8 +140,8 @@ export function WeekCard({
                       onSetClient={(label, from, to) =>
                         void tracking.setClient(workspace, data.start, date, label, from, to)
                       }
-                      onRename={(label, to, client) =>
-                        void tracking.renameTask(workspace, data.start, date, label, to, client)
+                      onRename={(label, to, client, task) =>
+                        void renameRow(workspace, data.start, date, { label, client, task }, to)
                       }
                       onDelete={(label, client) =>
                         void tracking.deleteTaskTime(workspace, data.start, date, label, client)
