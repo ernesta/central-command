@@ -1,6 +1,6 @@
 # Roadmap
 
-**Discard a running timer (8 Oct 2026): built, pushed, not driven in the app** (`docs/DECISIONS.md`, "Discard a running timer"). Next: a Delete on saved entries (Today and week rows), then look at Stop and the idle Start sharing one spot in the top bar.
+**Delete on saved Hours rows (9 Oct 2026): built, not pushed, not installed** (`docs/DECISIONS.md`, "Delete a task's time for a day"). Driven on a scratch library in dev mode and the production build, Research only; **Work's Hours not driven** (same `TaskList`). Discard from 8 Oct is now driven too (both modes) and works. Open for the user: Stop and the idle Start chip share one spot in the top bar (a double-click on Stop may start a new taskless timer); not changed.
 
 **PS5210 (8 Oct 2026): linked and applied to the real library.** **Stage 5, Research (7 Oct 2026): looked at, waiting for the user's answers** (https://claude.ai/artifact/8bbh2gsUXqPrxL44FL2uum; `docs/DECISIONS.md`, "Linking Research's historical data"). Decisions: no hours for notes dated before 1 Oct 2026, the 34 supervision links, which tasks hold the 65 trainings with no title match, the untimed Luminos / Other / Rastle Lab meetings, the 1-5 Oct hours, retiring `task: auto`. No script exists yet.
 
