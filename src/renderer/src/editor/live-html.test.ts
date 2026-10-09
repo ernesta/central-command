@@ -8,9 +8,9 @@ describe('markdownToHtml', () => {
     )
   })
 
-  it('draws nested bullets, numbers and ticked boxes', () => {
+  it('draws nested bullets and numbers, and leaves checkboxes out', () => {
     expect(markdownToHtml('* **TODO(EO)**: a\n  * deeper\n* [x] done\n* [ ] open')).toBe(
-      '<ul><li><strong>TODO(EO)</strong>: a<ul><li>deeper</li></ul></li><li>☑ done</li><li>☐ open</li></ul>'
+      '<ul><li><strong>TODO(EO)</strong>: a<ul><li>deeper</li></ul></li><li>done</li><li>open</li></ul>'
     )
     expect(markdownToHtml('1. one\n2. two')).toBe('<ol><li>one</li><li>two</li></ol>')
   })

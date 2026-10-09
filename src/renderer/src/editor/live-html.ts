@@ -79,7 +79,8 @@ function inlineNode(md: string, node: SyntaxNode): string {
     case 'HardBreak':
       return '<br>'
     case 'TaskMarker':
-      return /x/i.test(md.slice(node.from, node.to)) ? '☑' : '☐'
+      // Left out: a pasted ☐ is only a character in Word, so a to-do copies as a plain bullet.
+      return ''
     default:
       return node.firstChild ? inline(md, node) : esc(md.slice(node.from, node.to))
   }
