@@ -2447,3 +2447,12 @@ Two things the user found on Today (a running row's name field in full screen). 
 - **`LifeLanding.tsx`** (`src/renderer/src/shell/`) renders `WorkspaceLanding(workspace="life")`, same as `ResearchLanding`/`WorkLanding`; `Shell.tsx`'s `/life` route uses it instead of `WorkspaceEmpty`, which is deleted (nothing else used it). The Notes card (already registered, `landingCard: NotesCard`) now shows on Life's landing page.
 - **Bug found by driving it**: `NotesLanding`'s back link (`backLabel={workspace === 'research' ? 'Research' : 'Work'}`) had no Life case, so Life's Notes page read "← Work". Switched to `WORKSPACE_LABELS[workspace]`, the same pattern `HoursPage` and `TimeOffPage` already use. This had been sitting in the 7 Oct code the whole time; type-checking and unit tests never exercise a rendered label string.
 - Checked on a scratch library, production build: opened Life, saw the Notes card, opened Notes, created a note, typed into it, reopened the app and saw it listed and the breadcrumb reading "← Life". Typecheck, lint and the full test suite pass.
+
+## Readings sync, stage 1: skip blank entries at parse time (9 Oct 2026)
+
+Plan: `docs/READINGS_SYNC_PLAN.md`. Stage 1 only: `parseBib` (`src/modules/readings/main/parse-bib.ts`) now leaves out any `.bib` entry with no title, no author/editor and no year — e.g. a Zotero item created by hand with nothing filled in yet, like the blank "Report" entry that prompted the plan. It never becomes a `SyncedFields` row, so it never reaches `applySync` and is never inserted.
+
+- The skip sits after `authors`, `editors`, `year` and `fullTitle` are computed, so it reuses the same blank checks the rest of the function already does (`toCreatorList` returns an empty array, `toYear`/`toText` return `null`/`''`). An entry with *any one* of the three — only a year, only a title, or only an author — is still kept.
+- Fixture: added `@report{blankPlaceholder2026,}` (title, author, editor and year all absent) to `tests/fixtures/readings-sample.bib`; `parse-bib.test.ts` asserts it's left out, plus a synthetic minimal case and the three "keeps a partially-filled entry" cases.
+- Mutation check: commented out the skip, confirmed three tests failed (the blank fixture entry and the two synthetic blank cases appeared in the result), restored it.
+- Typecheck, lint and the full test suite pass. Not driven in the app (no UI or sync-flow change; stage 2 touches `applySync` and is the one to drive against a scratch copy of the real library, per the plan's closing note).

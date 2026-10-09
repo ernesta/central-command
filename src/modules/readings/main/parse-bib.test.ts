@@ -16,8 +16,23 @@ const byKey = (key: string): SyncedFields => {
 }
 
 describe('parseBib on the fixture', () => {
-  it('parses every entry', () => {
+  it('parses every entry except the blank placeholder', () => {
     expect(parsed).toHaveLength(15)
+  })
+
+  it('leaves out an entry with no title, no author/editor and no year', () => {
+    expect(parsed.find((r) => r.citekey === 'blankPlaceholder2026')).toBeUndefined()
+  })
+
+  it('leaves out a report-type entry that has nothing but a citekey', () => {
+    const result = parseBib('@report{blankOnly2026,\n}')
+    expect(result).toHaveLength(0)
+  })
+
+  it('keeps an entry that has only a year, or only a title, or only an author', () => {
+    expect(parseBib('@misc{yearOnly, year = {2020}}')).toHaveLength(1)
+    expect(parseBib('@misc{titleOnly, title = {Something}}')).toHaveLength(1)
+    expect(parseBib('@misc{authorOnly, author = {Doe, Jane}}')).toHaveLength(1)
   })
 
   it('reads a single-author BibLaTeX entry with a full date', () => {

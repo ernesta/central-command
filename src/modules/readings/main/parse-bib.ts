@@ -16,6 +16,7 @@ export class BibParseError extends Error {
  * Parse a Better BibTeX / Better BibLaTeX export into the fields a sync owns.
  * Throws BibParseError if the file cannot be parsed cleanly or has no entries, so
  * callers can leave existing data untouched. Duplicate citekeys keep the first entry.
+ * An entry with no title, no author/editor and no year is not a reading and is left out.
  */
 export function parseBib(text: string): SyncedFields[] {
   let result: ReturnType<typeof parse>
@@ -52,6 +53,9 @@ export function parseBib(text: string): SyncedFields[] {
     const fullTitle = toText(fields.title)
     const { status, tags } = mapKeywords(toKeywords(fields.keywords))
     const abstract = toText(fields.abstract)
+
+    // Not a reading: e.g. a Zotero item created by hand with nothing filled in yet.
+    if (!fullTitle && authors.length === 0 && editors.length === 0 && year === null) continue
 
     readings.push({
       citekey: entry.key,
