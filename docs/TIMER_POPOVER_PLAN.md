@@ -32,7 +32,7 @@ else Inbox), so tasks landed in the wrong list unseen; Stop, Switch and Discard 
 
 ## Stages (stop after each and ask the user)
 
-1. **Picker**: list on every row; the Create row with a visible, changeable list (`TaskPicker.tsx`, `start-picker.ts`: `listForNew`
+1. **Picker (done 9 Oct 2026, `docs/DECISIONS.md`, "Timer popover, stage 1")**: list on every row; the Create row with a visible, changeable list (`TaskPicker.tsx`, `start-picker.ts`: `listForNew`
    becomes the shown default). Used by the popover, Today, Add time and the meeting Task field, so check all four. Tests for the rules.
 2. **Popover**: the layout, the five states, no Switch, no Client select (except taskless legacy entries), Stop disabled with the hint in
    state 5 in the popover and the chip (`TimerChip.tsx`, `TimerChip.module.css`, `start-request.ts` keeps `stopAfter`). Remove dead code
