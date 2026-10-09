@@ -2387,5 +2387,14 @@ Plan: `docs/TIMER_POPOVER_PLAN.md`. Stage 2 built the layout (`TimerChip.tsx`, r
 - **Picker rows**: the title takes the room and wraps; the list is quiet, right-aligned, `max-width: 40%`, one line with an ellipsis and the full name as a tooltip. Recent rows follow the same rule (the `.choices` grid had `minmax(0, 1fr)` missing, so a long row clipped its list).
 - **Create row**: one line, `+ Create "X…" in [List ▾]`; the title truncates (tooltip), the list field shrinks (max 45%) with an ellipsis. The divider above it shows only when matches are above it. `GroupField`'s trigger now wraps its label in a span (`triggerLabel`) so it can truncate; its chevron does not shrink.
 - **Narrow fields**: the meeting's Task field is about 260px wide, and its list inherited `white-space: nowrap`, so the title overlapped the list text. The list now has `min-width: 320px` and `white-space: normal`.
-- **Checked** on a scratch library with a long title, a long list name and a subtask: production build and dev mode, light and dark; states 1 to 5, Recent, Today (match and create), a past day's Add, the meeting Task field. Not checked in the app: a done or trashed running task (unit test only), Work (client lists), the installed build.
+- **Checked** on a scratch library with a long title, a long list name and a subtask: production build and dev mode, light and dark; states 1 to 5, Recent, Today (match and create), a past day's Add, the meeting Task field. Work and the done or trashed running task were checked afterwards (below).
 - Typecheck, lint and tests pass.
+
+### The two checks that were left (9 Oct 2026)
+
+Driven in the real app on a scratch library with a Luminos contract (clients Impact, Teaching & Learning): production build light and dark, dev mode light. Nothing was broken, so no code changed.
+
+- **Work, client lists.** The Create row defaults to a client list (Impact) and its list field offers only the clients, plus "new sublist" inside them. Picking a task in a client's list starts the timer with that client, with no "Which client?" question. Stop with no task (state 5) asks "Which task was this?", Stop is greyed out, picking a task stops the timer with its client. The meeting Task field proposes "<Client> meetings" in the client's list; one click creates it, Other opens the picker.
+- **A running task that is done:** the popover still shows its list. **Trashed:** the timer keeps running and the popover shows the label with no list line (as decided: a task that is gone shows none).
+- **Left as it is:** in the meeting's narrow Task field a long title squeezes the Create row's list to "Imp…"; and the Today row still shows the Client select for a running timer with no task or a trashed one (the legacy exception). Not driven: dev mode for the done and trashed step, dark mode for it, the installed build before this install.
+- Playwright pins the colour scheme to light: emulate dark with `page.emulateMedia({ colorScheme: 'dark' })` (a `settings.json` theme alone does not show in its screenshots).

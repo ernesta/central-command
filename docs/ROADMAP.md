@@ -1,6 +1,6 @@
 # Roadmap
 
-**Timer popover and task picker (9 Oct 2026, `docs/TIMER_POPOVER_PLAN.md`): all three stages done, pushed, installed** (`docs/DECISIONS.md`, "Timer popover, stage 1" and "stages 2 and 3"). To look at in the installed app: the five popover states, the picker with a long title or list, the Create row's list. **Not driven: Work (client lists) and a running task that is done or trashed** (unit test only).
+**Timer popover and task picker (9 Oct 2026, `docs/TIMER_POPOVER_PLAN.md`): all three stages done, pushed, installed** (`docs/DECISIONS.md`, "Timer popover, stage 1" and "stages 2 and 3"). To look at in the installed app: the five popover states, the picker with a long title or list, the Create row's list. Work (client lists) and a running task that is done or trashed were driven on 9 Oct 2026 and need no change (`docs/DECISIONS.md`, "The two checks that were left"); two small things left as they are: a long title squeezes the list in the meeting's narrow Task field, and the Today row's Client select for a timer with no task.
 
 **Delete on saved Hours rows (9 Oct 2026): built, not pushed, not installed** (`docs/DECISIONS.md`, "Delete a task's time for a day"). Driven on a scratch library in dev mode and the production build, Research only; **Work's Hours not driven** (same `TaskList`). Discard from 8 Oct is now driven too (both modes) and works. Open for the user: Stop and the idle Start chip share one spot in the top bar (a double-click on Stop may start a new taskless timer); not changed.
 
