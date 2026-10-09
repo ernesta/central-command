@@ -101,6 +101,7 @@ const FILE = /^\d{4}-\d{2}(-\d{2})?\.json$/
 export class TrackingStore {
   private readonly newId: () => string
   private clientTasks: ClientTasks | null = null
+  private taskStarted: ((task: string) => void) | null = null
 
   constructor(
     private readonly root: string,
@@ -112,6 +113,11 @@ export class TrackingStore {
   /** Let removing and renaming a Work client look after its Tasks list. */
   setClientTasks(clientTasks: ClientTasks | null): void {
     this.clientTasks = clientTasks
+  }
+
+  /** Tell Tasks when a timer starts on a task (Tasks then marks it in progress). */
+  setTaskStarted(taskStarted: ((task: string) => void) | null): void {
+    this.taskStarted = taskStarted
   }
 
   // ---- reading ----
@@ -171,6 +177,7 @@ export class TrackingStore {
     const result = this.mutate(workspace, year, (y) =>
       startSession(y, now, label, this.newId(), task, client)
     )
+    if (result.ok && task) this.taskStarted?.(task)
     return result.ok ? { ok: true, running: this.running() } : result
   }
 
@@ -216,6 +223,7 @@ export class TrackingStore {
     if (!target.ok) return target
     if (target.year === year) {
       const here = this.mutate(workspace, year, (y) => assignTask(y, id, label, task, client))
+      if (here.ok) this.taskStarted?.(task)
       return here.ok ? { ok: true, running: this.running() } : here
     }
     // The client is in another contract: build the session there, then take it out of this one.
@@ -234,6 +242,7 @@ export class TrackingStore {
     if (!moved.ok) return moved
     const left = this.mutate(workspace, year, (y) => ({ ok: true, year: deleteSession(y, id) }))
     if (!left.ok) return left
+    this.taskStarted?.(task)
     return { ok: true, running: this.running() }
   }
 

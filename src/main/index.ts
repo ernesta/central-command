@@ -17,6 +17,7 @@ import { openDatabase } from './db/connection'
 import { runMigrations } from './db/migrate'
 import { mainModules } from '@modules/main-registry'
 import { createClientTasks } from '@modules/tasks/main/client-tasks'
+import { TasksStore } from '@modules/tasks/main/tasks-store'
 import { TASKS_IPC, type TasksChangedEvent } from '@modules/tasks/shared/api'
 import { defaultSettings } from '@shared/settings'
 import { todayIso, trackingMoment } from '@shared/time'
@@ -202,6 +203,18 @@ app.whenReady().then(async () => {
       }
     })
   )
+  // A timer started on a task marks it in progress (a task still to do; done ones stay done).
+  const startedTasks = new TasksStore(db)
+  tracking.setTaskStarted((uid) => {
+    const task = startedTasks.get(uid)
+    if (!task || task.status !== 'todo') return
+    startedTasks.setStatus(uid, 'doing')
+    for (const window of BrowserWindow.getAllWindows()) {
+      window.webContents.send(TASKS_IPC.changed, {
+        workspace: task.workspace
+      } satisfies TasksChangedEvent)
+    }
+  })
   const disposers = mainModules
     .map((m) => m.register({ db, paths, settings }))
     .filter((d): d is () => void => typeof d === 'function')
