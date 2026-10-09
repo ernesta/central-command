@@ -49,11 +49,18 @@
   gap: 10px;
 }
 .optionTitle {
+  flex: 1 1 auto;
   min-width: 0;
 }
+/* The list is quiet and gives way: it never squeezes the title. */
 .detail {
   margin-left: auto;
-  flex: none;
+  flex: 0 1 auto;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
   color: var(--text-muted);
   font-size: var(--text-13);
 }
@@ -64,15 +71,30 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+/* The divider shows only when there are matches above the Create row. */
+.createDivided {
   border-top: 1px solid var(--border-soft);
   margin-top: 4px;
   padding-top: 4px;
 }
 .create {
+  flex: 1 1 auto;
+  min-width: 0;
   padding-top: 6px;
 }
+.createTitle {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.createIn {
+  flex: none;
+}
 .createList {
+  flex: none;
   min-width: 0;
 }
 .group {

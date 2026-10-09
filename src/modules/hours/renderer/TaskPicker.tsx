@@ -198,7 +198,11 @@ export function TaskPicker({
           {items.map((item, index) => (
             <div
               key={item.kind === 'task' ? item.task.uid : 'create'}
-              className={item.kind === 'create' ? styles.createRow : undefined}
+              className={
+                item.kind === 'create'
+                  ? [styles.createRow, index > 0 && styles.createDivided].filter(Boolean).join(' ')
+                  : undefined
+              }
             >
               <div
                 id={`${listId}-${index}`}
@@ -215,12 +219,17 @@ export function TaskPicker({
                 {item.kind === 'task' ? (
                   <>
                     <span className={styles.optionTitle}>{item.task.title}</span>
-                    <span className={styles.detail}>{detailOfTask(item.task, tasks)}</span>
+                    <span className={styles.detail} title={detailOfTask(item.task, tasks)}>
+                      {detailOfTask(item.task, tasks)}
+                    </span>
                   </>
                 ) : (
                   <>
                     <Plus size={14} strokeWidth={1.75} aria-hidden />
-                    <span className={styles.optionTitle}>Create “{item.title}” in</span>
+                    <span className={styles.createTitle} title={`Create “${item.title}”`}>
+                      Create “{item.title}”
+                    </span>
+                    <span className={styles.createIn}>in</span>
                   </>
                 )}
               </div>
@@ -270,7 +279,9 @@ export function TaskPicker({
                   onClick={() => choose({ kind: 'task', task })}
                 >
                   <span className={styles.optionTitle}>{task.title}</span>
-                  <span className={styles.detail}>{detailOfTask(task, tasks)}</span>
+                  <span className={styles.detail} title={detailOfTask(task, tasks)}>
+                    {detailOfTask(task, tasks)}
+                  </span>
                 </button>
               </li>
             ))}
