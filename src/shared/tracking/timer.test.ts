@@ -12,6 +12,7 @@ import {
   endSessionAt,
   deleteSession,
   renameTask,
+  relabelTask,
   overlapsFor,
   runningSession,
   setStartAt,
@@ -351,5 +352,24 @@ describe('assignTask', () => {
     y = ok(startSession(y, at(D, '09:00:00'), '', 'r1'))
     const after = ok(assignTask(y, 'r1', 'Deck', 'cc://task/a'))
     expect(after.sessions[0]).toEqual(y.sessions[0])
+  })
+})
+
+describe('relabelTask', () => {
+  it('gives every entry on the task the new label, on every day, and nothing else', () => {
+    let y = ok(startSession(year(), at(D, '09:00:00'), 'Old', nextId(), 'cc://task/a'))
+    y = ok(stopSession(y, at(D, '10:00:00')))
+    y = ok(startSession(y, at('2026-09-30', '09:00:00'), 'Old', nextId(), 'cc://task/a'))
+    y = ok(stopSession(y, at('2026-09-30', '10:00:00')))
+    y = ok(startSession(y, at(D, '11:00:00'), 'Old', nextId(), 'cc://task/b'))
+    const next = relabelTask(y, 'cc://task/a', ' New ')
+    expect(next.sessions.map((s) => s.label)).toEqual(['New', 'New', 'Old'])
+    expect(next.sessions[0].minutes).toBe(y.sessions[0].minutes)
+  })
+
+  it('returns the same year when nothing changes', () => {
+    const y = ok(startSession(year(), at(D, '09:00:00'), 'New', nextId(), 'cc://task/a'))
+    expect(relabelTask(y, 'cc://task/a', 'New')).toBe(y)
+    expect(relabelTask(y, 'cc://task/a', '  ')).toBe(y)
   })
 })

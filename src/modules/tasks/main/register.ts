@@ -1,4 +1,5 @@
 import { existsSync, readdirSync } from 'fs'
+import { notifyTitleChanged } from './title-hook'
 import { join } from 'path'
 import { BrowserWindow, ipcMain } from 'electron'
 import type { MainContext, MainModule } from '../../main-registry'
@@ -147,7 +148,9 @@ function register(context: MainContext): () => void {
     for (const key of Object.keys(patch) as (keyof TaskChanges)[]) {
       if (patch[key] === undefined) delete patch[key]
     }
-    return changing(asUid(uid), () => store.update(asUid(uid), patch))
+    const updated = changing(asUid(uid), () => store.update(asUid(uid), patch))
+    if (patch.title !== undefined) notifyTitleChanged(updated.uid, updated.title)
+    return updated
   })
   ipcMain.handle(TASKS_IPC.setStatus, (_event, uid: unknown, status: unknown) => {
     if (typeof status !== 'string' || !(TASK_STATUSES as readonly string[]).includes(status)) {

@@ -185,3 +185,15 @@ describe('renaming a client', () => {
     ])
   })
 })
+
+describe('a task renamed in Tasks', () => {
+  it('renames its hours entries in every contract file, and only those', () => {
+    tracking.start('work', 'Old name', 'cc://task/a', 'Impact')
+    tracking.stop()
+    tracking.start('work', 'Other', 'cc://task/b', 'Impact')
+    tracking.stop()
+    tracking.relabelTask('cc://task/a', 'New name')
+    const labels = tracking.get('work', '2026-09-25').sessions.map((s) => s.label)
+    expect(labels).toEqual(['New name', 'Other'])
+  })
+})

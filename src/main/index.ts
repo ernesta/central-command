@@ -1,4 +1,6 @@
 import { app, shell, BrowserWindow, Menu, clipboard, nativeTheme, screen } from 'electron'
+import { taskKey } from '@modules/tasks/shared/tracked'
+import { setTitleChanged } from '@modules/tasks/main/title-hook'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { APP_NAME } from '@shared/app-info'
@@ -201,6 +203,8 @@ app.whenReady().then(async () => {
       } satisfies TasksChangedEvent)
     }
   })
+  // A task renamed in Tasks renames its hours entries.
+  setTitleChanged((uid, title) => tracking.relabelTask(taskKey(uid), title))
   const disposers = mainModules
     .map((m) => m.register({ db, paths, settings }))
     .filter((d): d is () => void => typeof d === 'function')

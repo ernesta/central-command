@@ -257,6 +257,23 @@ export function renameTask(
 }
 
 /**
+ * Give every session and typed adjustment that carries `task` (`cc://task/<uid>`) the task's title as its label, on
+ * every day. Reported minutes are untouched. Returns the same year when nothing carries the task or all already match.
+ */
+export function relabelTask(year: TrackingYear, task: string, label: string): TrackingYear {
+  const name = label.trim()
+  if (!name) return year
+  const stale = (e: { task?: string; label: string }): boolean =>
+    e.task === task && e.label !== name
+  if (!year.sessions.some(stale) && !year.adjusts.some(stale)) return year
+  return {
+    ...year,
+    sessions: year.sessions.map((s) => (stale(s) ? { ...s, label: name } : s)),
+    adjusts: year.adjusts.map((a) => (stale(a) ? { ...a, label: name } : a))
+  }
+}
+
+/**
  * Change the client of a task for one day: every session and typed adjustment of that day with that label and client
  * (`from`). Reported minutes are frozen and untouched. The new client must be on the plan's list.
  */

@@ -12,6 +12,7 @@ import {
   startSession,
   endFinishedDay,
   renameTask,
+  relabelTask,
   setClient,
   stopSession,
   deleteSession
@@ -288,6 +289,17 @@ export class TrackingStore {
     return this.mutate(workspace, year, (y) =>
       setTaskMinutes(y, date, label, minutes, this.newId(), client)
     )
+  }
+
+  /** A task was renamed in Tasks: every hours entry on it, in every workspace and year, takes the new title. */
+  relabelTask(task: string, title: string): void {
+    for (const workspace of WORKSPACES) {
+      for (const start of this.fileStarts(workspace)) {
+        const year = this.peek(workspace, start)
+        if (!year || relabelTask(year, task, title) === year) continue
+        this.mutate(workspace, start, (y) => ({ ok: true, year: relabelTask(y, task, title) }))
+      }
+    }
   }
 
   renameTask(
