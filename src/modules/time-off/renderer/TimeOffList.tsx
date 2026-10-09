@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@renderer/components/Button'
+import { Dialog } from '@renderer/components/Dialog'
 import { Input } from '@renderer/components/Input'
 import { FieldError } from '@renderer/components/FieldError'
 import { Select } from '@renderer/components/Select'
@@ -24,7 +25,7 @@ function DayRow({
   onEdit,
   onDone,
   onSave,
-  onRemove
+  onDelete
 }: {
   row: TimeOffRow
   editing: boolean
@@ -32,7 +33,7 @@ function DayRow({
   onDone: () => void
   /** Resolves with an error message, or null when the change went through. */
   onSave: (date: string, type: TimeOffType) => Promise<string | null>
-  onRemove: () => void
+  onDelete: () => void
 }): React.JSX.Element {
   const [date, setDate] = useState(row.date)
   const [type, setType] = useState<TimeOffType>(row.type)
@@ -51,8 +52,8 @@ function DayRow({
           <Button size="small" aria-label={`Edit ${formatDay(row.date)}`} onClick={onEdit}>
             Edit
           </Button>
-          <Button size="small" aria-label={`Remove ${formatDay(row.date)}`} onClick={onRemove}>
-            Remove
+          <Button size="small" aria-label={`Delete ${formatDay(row.date)}`} onClick={onDelete}>
+            Delete
           </Button>
         </td>
       </tr>
@@ -112,7 +113,7 @@ function DayRow({
   )
 }
 
-/** Every day off of the year, oldest first, with whether it is taken or still booked; each row has Edit and Remove. */
+/** Every day off of the year, oldest first, with whether it is taken or still booked; each row has Edit and Delete. */
 export function TimeOffList({
   workspace,
   data,
@@ -124,6 +125,7 @@ export function TimeOffList({
 }): React.JSX.Element | null {
   const rows = timeOffRows(data, today)
   const [editing, setEditing] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<TimeOffRow | null>(null)
   if (rows.length === 0) return null
 
   return (
@@ -159,14 +161,37 @@ export function TimeOffList({
                   )
                   return result.ok ? null : (REFUSED[result.reason] ?? 'Couldn’t save that day.')
                 }}
-                onRemove={() =>
-                  void window.api.tracking.removeTimeOff(workspace, data.start, row.date)
-                }
+                onDelete={() => setDeleting(row)}
               />
             ))}
           </tbody>
         </table>
       </div>
+      {deleting && (
+        <Dialog
+          title="Delete this day?"
+          onCancel={() => setDeleting(null)}
+          actions={
+            <>
+              <Button size="small" onClick={() => setDeleting(null)} autoFocus>
+                Cancel
+              </Button>
+              <Button
+                size="small"
+                variant="danger"
+                onClick={() => {
+                  void window.api.tracking.removeTimeOff(workspace, data.start, deleting.date)
+                  setDeleting(null)
+                }}
+              >
+                Delete
+              </Button>
+            </>
+          }
+        >
+          {formatDay(deleting.date)} will be removed from your time off.
+        </Dialog>
+      )}
     </section>
   )
 }
