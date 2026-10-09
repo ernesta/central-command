@@ -3,7 +3,7 @@ import { CreateButton } from '@renderer/components/CreateButton'
 import { entryRoute, todayIso } from './training-paths'
 
 /**
- * "New entry": creates an untitled entry for today at once and opens its page (with the title selected), where
+ * "New training entry": creates an untitled entry for today at once and opens its page (with the title selected), where
  * everything is filled in at leisure.
  */
 export function NewTrainingButton(): React.JSX.Element {
@@ -21,7 +21,7 @@ export function NewTrainingButton(): React.JSX.Element {
         void navigate(entryRoute(file.ref.id), { state: { isNew: true } })
       }}
     >
-      New entry
+      New training entry
     </CreateButton>
   )
 }
