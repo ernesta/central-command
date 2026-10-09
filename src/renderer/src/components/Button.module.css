@@ -39,6 +39,15 @@
   background: var(--danger-hover);
 }
 
+.dangerOutline {
+  background: var(--surface);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.dangerOutline:hover:not(:disabled) {
+  background: var(--hover-tint);
+}
+
 .small {
   padding: 6px 12px;
   font-size: var(--text-13);

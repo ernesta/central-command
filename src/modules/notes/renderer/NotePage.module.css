@@ -60,10 +60,6 @@
   box-sizing: border-box;
   height: 32px;
 }
-.delete {
-  color: var(--danger);
-  border-color: var(--danger);
-}
 .notices {
   display: grid;
   gap: 8px;

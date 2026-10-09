@@ -165,7 +165,7 @@ function TaskView({
         </Link>
         <Button
           size="small"
-          className={styles.delete}
+          variant="danger-outline"
           disabled={busy}
           onClick={() => (untouchedNow ? void remove() : setConfirmDelete(true))}
         >

@@ -26,10 +26,6 @@
 .back:hover {
   color: var(--ink);
 }
-.delete {
-  color: var(--danger);
-  border-color: var(--danger);
-}
 .cols {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;

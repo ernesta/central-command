@@ -55,10 +55,6 @@
   align-items: center;
   gap: 16px;
 }
-.delete {
-  color: var(--danger);
-  border-color: var(--danger);
-}
 .notices {
   display: grid;
   gap: 8px;

@@ -210,7 +210,7 @@ function MeetingView({
           />
           <Button
             size="small"
-            className={styles.delete}
+            variant="danger-outline"
             onClick={() => (untouched ? void confirmAndDelete() : setConfirmDelete(true))}
           >
             Delete meeting
