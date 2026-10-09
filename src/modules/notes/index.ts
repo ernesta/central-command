@@ -2,7 +2,7 @@ import { createElement } from 'react'
 import type { LiveModuleManifest } from '../types'
 import { NOTES_SHORTCUTS } from './shared/shortcuts'
 import type { NoteWorkspace } from './shared/types'
-import { noteEntities } from './renderer/entities'
+import { fileEntities, noteEntities } from './renderer/entities'
 import { NotesCard } from './renderer/NotesCard'
 import { NotesLanding } from './renderer/NotesLanding'
 import { QuickCapture } from './renderer/QuickCapture'
@@ -30,7 +30,11 @@ export function createNotesModule(workspace: NoteWorkspace): LiveModuleManifest 
     landingCard: NotesCard,
     search: searchNotes(workspace),
     ...(workspace === 'research'
-      ? { globals: QuickCapture, shortcuts: NOTES_SHORTCUTS, entities: [noteEntities] }
+      ? {
+          globals: QuickCapture,
+          shortcuts: NOTES_SHORTCUTS,
+          entities: [noteEntities, fileEntities]
+        }
       : {})
   }
 }

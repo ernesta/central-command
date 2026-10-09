@@ -9,11 +9,13 @@ import { parseHead, updateHeadKeys } from './front-matter'
  * - `reading`: the citekey.
  * - `meeting`, `note`: a `uid` kept in the item's front matter, added the first time something links to it, so the link
  *   survives renames and moves between workspaces.
+ * - `file`: a file kept beside the notes (a spreadsheet, a PDF), by its path inside the notes folder,
+ *   `research/Data Sources Summary.xlsx`. A file has no front matter to hold a `uid`, so moving or renaming it breaks the link.
  * - `task`: the task's `uid` (always there; tasks live in the database).
  *
  * A kind is one entry here and one provider in the renderer (`renderer/src/entities`).
  */
-export const ENTITY_KINDS = ['person', 'reading', 'meeting', 'note', 'task'] as const
+export const ENTITY_KINDS = ['person', 'reading', 'meeting', 'note', 'file', 'task'] as const
 export type EntityKind = (typeof ENTITY_KINDS)[number]
 
 export interface EntityRef {

@@ -99,3 +99,12 @@ describe('uid in a head', () => {
     expect(readUid('---\nuid: "abcd1234"\n---\n')).toBe('abcd1234')
   })
 })
+
+describe('file mentions', () => {
+  it('round-trips a path with spaces', () => {
+    const ref = { kind: 'file' as const, key: 'research/Data Sources Summary.xlsx' }
+    const href = entityHref(ref)
+    expect(href).toBe('cc://file/research%2FData%20Sources%20Summary.xlsx')
+    expect(parseEntityHref(href)).toEqual(ref)
+  })
+})

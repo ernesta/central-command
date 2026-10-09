@@ -23,8 +23,10 @@ export interface EntityHit {
 export interface EntitySummary {
   title: string
   detail: string
-  /** Where opening it goes. */
-  route: string
+  /** Where opening it goes inside the app. */
+  route?: string
+  /** Opening it in some other way (a file goes to the app the Mac chooses). Wins over `route`. */
+  open?: () => Promise<void>
 }
 
 /** The note or meeting being edited, so it is never offered as a link to itself. */

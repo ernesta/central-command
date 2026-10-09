@@ -1,5 +1,7 @@
-import { StickyNote } from 'lucide-react'
+import { File, StickyNote } from 'lucide-react'
 import { nameFirst } from '@shared/search'
+import { fold } from '@shared/text'
+import type { EntityFile } from '@shared/entity-files'
 import type { EntityProvider } from '@renderer/entities/registry'
 import { groupLabel } from '../shared/groups'
 import { DEFAULT_NOTES_QUERY, displayTitle, queryNotes } from '../shared/query'
@@ -63,6 +65,54 @@ export const noteEntities: EntityProvider = {
       title: displayTitle(row),
       detail: detailOf(row),
       route: noteRoute(row.workspace, row.id)
+    }
+  }
+}
+
+const FILE_WORKSPACE_LABEL: Record<string, string> = {
+  research: 'Research',
+  work: 'Work',
+  life: 'Life'
+}
+
+const sizeLabel = (bytes: number): string =>
+  bytes < 1024 * 1024
+    ? `${Math.max(1, Math.round(bytes / 1024))} KB`
+    : `${(bytes / 1048576).toFixed(1)} MB`
+
+const fileDetail = (file: EntityFile): string =>
+  `${FILE_WORKSPACE_LABEL[file.workspace] ?? file.workspace} · ${sizeLabel(file.size)}`
+
+/** Files kept beside the notes (a spreadsheet, a PDF) that a note can link to; opening one hands it to the Mac. */
+export const fileEntities: EntityProvider = {
+  kind: 'file',
+  heading: 'Files',
+  noun: 'file',
+  icon: File,
+  async search(query, limit) {
+    const files = await window.api.entities.listFiles()
+    const terms = fold(query).split(/\s+/).filter(Boolean)
+    const matching = files.filter((f) => {
+      const text = fold(f.name)
+      return terms.every((term) => text.includes(term))
+    })
+    return nameFirst(matching, (f) => f.name, query)
+      .slice(0, limit)
+      .map((f) => ({
+        id: f.key,
+        title: f.name,
+        detail: fileDetail(f),
+        label: f.name,
+        prepare: async () => ({ kind: 'file' as const, key: f.key })
+      }))
+  },
+  async resolve(key) {
+    const file = await window.api.entities.fileInfo(key)
+    if (!file) return null
+    return {
+      title: file.name,
+      detail: fileDetail(file),
+      open: () => window.api.entities.openFile(key)
     }
   }
 }

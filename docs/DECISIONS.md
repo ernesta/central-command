@@ -2349,3 +2349,13 @@ Copying notes into Word carried the checkboxes of TODOs over as ☐ / ☑ charac
 - **Rule:** in the HTML flavour of a copy (`markdownToHtml`, `src/renderer/src/editor/live-html.ts`) a `TaskMarker` writes nothing, so a to-do pastes as a plain bullet with its text. Ticked and open to-dos look the same outside the app.
 - **Not changed:** the plain-text flavour is still the Markdown (`[ ]` stays); a paste back into the app uses the Markdown the copy carries, so the checkboxes come back there.
 - Test: `live-html.test.ts` ("draws nested bullets and numbers, and leaves checkboxes out"). Typecheck, lint and tests pass; not driven in Word.
+
+## Entity kind `file` (9 Oct 2026)
+
+A note can link to a file kept beside the notes (a spreadsheet, a PDF): `@` lists it under "Files", it is drawn as a chip with a file icon, and Cmd-click opens it in the app the Mac chooses (`shell.openPath`).
+
+- **Address**: `cc://file/research%2FData%20Sources%20Summary.xlsx`, the path inside `notes/notes/`. A file has no front matter for a `uid`, so **moving or renaming it breaks the link** (the chip shows struck through, "No longer available"). Chosen over a hash or an index because the files are put there by hand and rarely move.
+- **Which files**: those directly in `notes/notes/<research|work|life>/` that are not `.md`, not hidden and not symlinks (`src/main/entities/files.ts`). Keys are checked with `isSafeFileKey` (`src/shared/entity-files.ts`) before the disk is touched, so a hand-written link cannot reach outside that folder.
+- **Wiring**: `fileEntities` in the Notes manifest (`modules/notes/renderer/entities.ts`); `EntitySummary` gained `open` (wins over `route`); `window.api.entities.listFiles / fileInfo / openFile`.
+- **Not done**: a "Mentioned in" panel for files (a file has no page); a way to add files from inside the app.
+- Checked in the built app on a scratch library: picked with `@`, saved as the link above, drawn as a chip. Opening in Excel was not clicked.

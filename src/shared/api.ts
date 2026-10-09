@@ -1,4 +1,5 @@
 import type { Backlink, EntityRef } from './entities'
+import type { EntityFile } from './entity-files'
 import type { MeetingsApi } from '../modules/meetings/shared/api'
 import type { NotesApi } from '../modules/notes/shared/api'
 import type { TasksApi } from '../modules/tasks/shared/api'
@@ -59,6 +60,12 @@ export interface Api {
   entities: {
     /** Where an entity is mentioned (`@mentions` in any note), read from the note files. */
     backlinks(ref: EntityRef): Promise<Backlink[]>
+    /** The files kept beside the notes that a note can link to (everything but notes and hidden files). */
+    listFiles(): Promise<EntityFile[]>
+    /** One such file by its key, or null when it is gone. */
+    fileInfo(key: string): Promise<EntityFile | null>
+    /** Opens a linked file in the app the Mac chooses for it. Throws when it is gone. */
+    openFile(key: string): Promise<void>
   }
   readings: ReadingsApi
   meetings: MeetingsApi
@@ -93,5 +100,8 @@ export const IPC = {
   appBeforeClose: 'app:before-close',
   appCloseReady: 'app:close-ready',
   entitiesBacklinks: 'entities:backlinks',
+  entitiesFiles: 'entities:files',
+  entitiesFileInfo: 'entities:file-info',
+  entitiesFileOpen: 'entities:file-open',
   buildOpenSession: 'build:open-session'
 } as const

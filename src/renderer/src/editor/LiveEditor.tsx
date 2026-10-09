@@ -77,7 +77,8 @@ export function LiveEditor({
       void providerFor(ref.kind)
         ?.resolve(ref.key)
         .then((summary) => {
-          if (summary) void navigate(summary.route)
+          if (summary?.open) void summary.open()
+          else if (summary?.route) void navigate(summary.route)
         })
     }
   })

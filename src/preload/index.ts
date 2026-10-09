@@ -44,7 +44,10 @@ const api: Api = {
     }
   },
   entities: {
-    backlinks: (ref) => ipcRenderer.invoke(IPC.entitiesBacklinks, ref)
+    backlinks: (ref) => ipcRenderer.invoke(IPC.entitiesBacklinks, ref),
+    listFiles: () => ipcRenderer.invoke(IPC.entitiesFiles),
+    fileInfo: (key) => ipcRenderer.invoke(IPC.entitiesFileInfo, key),
+    openFile: (key) => ipcRenderer.invoke(IPC.entitiesFileOpen, key)
   },
   readings: {
     sync: {
