@@ -39,9 +39,9 @@ describe('parseHours', () => {
 
 describe('formatDay', () => {
   it('names the weekday, the day and the month', () => {
-    expect(formatDay('2026-10-01')).toBe('Thu 1 Oct')
-    expect(formatDay('2026-09-21')).toBe('Mon 21 Sep')
-    expect(formatDay('2027-01-03')).toBe('Sun 3 Jan')
+    expect(formatDay('2026-10-01')).toBe('Thu, Oct 1')
+    expect(formatDay('2026-09-21')).toBe('Mon, Sep 21')
+    expect(formatDay('2027-01-03')).toBe('Sun, Jan 3')
   })
   it('leaves what is not a date alone', () => {
     expect(formatDay('soon')).toBe('soon')
@@ -51,8 +51,8 @@ describe('formatDay', () => {
 
 describe('formatRange', () => {
   it('gives the first and last day without the weekday', () => {
-    expect(formatRange('2026-09-28', '2026-10-04')).toBe('28 Sep – 4 Oct')
-    expect(formatRange('2026-09-21', '2026-09-27')).toBe('21 Sep – 27 Sep')
+    expect(formatRange('2026-09-28', '2026-10-04')).toBe('Sep 28 – Oct 4')
+    expect(formatRange('2026-09-21', '2026-09-27')).toBe('Sep 21 – Sep 27')
   })
   it('leaves what is not a date alone', () => {
     expect(formatRange('a', 'b')).toBe('a – b')

@@ -38,16 +38,16 @@ export function clockTime(time: string): string {
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-/** "Thu 1 Oct": a day as the Hours pages name it. Anything that is not a date is returned as it is. */
+/** "Thu, Oct 1": a day as the Hours pages name it. Anything that is not a date is returned as it is. */
 export function formatDay(date: string): string {
   if (dayNumber(date) === null) return date
   const [, month, day] = date.split('-').map(Number)
-  return `${WEEKDAYS[weekdayOf(date) - 1]} ${day} ${MONTHS[month - 1]}`
+  return `${WEEKDAYS[weekdayOf(date) - 1]}, ${MONTHS[month - 1]} ${day}`
 }
 
-/** "28 Sep – 4 Oct": the days of a week, from the first to the last. */
+/** "Sep 28 – Oct 4": the days of a week, from the first to the last. */
 export function formatRange(from: string, to: string): string {
-  const day = (date: string): string => formatDay(date).split(' ').slice(1).join(' ')
+  const day = (date: string): string => formatDay(date).split(', ')[1] ?? ''
   return dayNumber(from) === null || dayNumber(to) === null
     ? `${from} – ${to}`
     : `${day(from)} – ${day(to)}`
