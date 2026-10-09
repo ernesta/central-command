@@ -2308,3 +2308,7 @@ The user stopped a task at 15:00 and started a meeting at 15:00; the meeting pag
 
 - **Rule (`overlapping`, `src/modules/meetings/shared/meeting-entries.ts`):** both sides are compared in whole minutes (seconds dropped). Touching is still not an overlap; an overlap of a minute or more still warns. A running block lasts until `now` but occupies at least its first minute. It is the same function for the meeting page (`useMeetingClashes`) and the Hours rows (`MeetingRows`).
 - Test: "ignores the seconds of a timer that stopped as a meeting starts". Typecheck, lint and tests pass; not driven in the app, not installed.
+
+## A lecture's row in Hours names its series (9 Oct 2026)
+
+A lecture's derived row showed only its subtask's title ("fNIRS", "fNIRS Practical Lab"), so two series with a lecture of the same name looked alike. The row's label is now "Series: lecture" (`lectureLabel`, `src/modules/training/shared/lecture-entries.ts`), the series being the note's own `series`. A note with no series, or a title that already equals the series, shows the title alone. Only the derived Hours rows change; the task, the note and the totals do not. Test: "labels a lecture without a series by its title alone". Typecheck, lint and tests pass; checked in the installed app only by looking at the Hours rows.
