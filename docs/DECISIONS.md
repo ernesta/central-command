@@ -2301,3 +2301,10 @@ The user started a timer by accident (the idle Start chip starts at once with no
 - **The two stray entries** (Daily admin, 0 minutes each, 16:36 and 16:41 on 8 Oct) were removed by hand from `time/research/2026-27.json` with the app closed (backup `~/CentralCommand/backups/time-research-*`).
 - **Unexplained:** a second taskless timer started 2 seconds after the first was stopped. Suspect: Stop and the idle Start chip occupy the same spot in the top bar, so a double-click on Stop starts a new timer. Not reproduced.
 - **Left:** a Delete on saved entries (Today and week rows), with a confirmation, the same pattern in every row; then check whether Stop and Start should sit apart.
+
+## A meeting that starts as a timer stops is not an overlap (9 Oct 2026)
+
+The user stopped a task at 15:00 and started a meeting at 15:00; the meeting page warned "Overlaps Prepare a presentation for CastlesFest 14:52–15:00". Cause: a note's times are whole minutes, a timer's carry seconds (the stop was probably 15:00:25), and the warning shows only HH:MM, so it looked like a false alarm. The seconds were inferred from the code, not read from the library.
+
+- **Rule (`overlapping`, `src/modules/meetings/shared/meeting-entries.ts`):** both sides are compared in whole minutes (seconds dropped). Touching is still not an overlap; an overlap of a minute or more still warns. A running block lasts until `now` but occupies at least its first minute. It is the same function for the meeting page (`useMeetingClashes`) and the Hours rows (`MeetingRows`).
+- Test: "ignores the seconds of a timer that stopped as a meeting starts". Typecheck, lint and tests pass; not driven in the app, not installed.
