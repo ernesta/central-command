@@ -84,6 +84,6 @@ export function clientRefusal(reason: string, client?: string, tasks?: number): 
     case 'bad-name':
       return 'Give the client a name of up to 40 characters.'
     default:
-      return 'Could not change it. Try again.'
+      return 'Couldn’t change it. Try again.'
   }
 }

@@ -154,7 +154,7 @@ export class TrainingStore {
         return this.read({ workspace, id })
       }
     }
-    throw new TrainingError('Could not find a free file name for the new entry')
+    throw new TrainingError('Couldn’t find a free file name for the new entry')
   }
 
   async read(ref: TrainingRef): Promise<TrainingFile> {

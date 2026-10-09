@@ -97,7 +97,7 @@ function MeetingView({
     const added = list.find(
       (p) => p.name.toLowerCase() === name.trim().replace(/\s+/g, ' ').toLowerCase()
     )
-    if (!added) throw new Error('Could not add that person')
+    if (!added) throw new Error('Couldn’t add that person')
     return added
   }, [])
 

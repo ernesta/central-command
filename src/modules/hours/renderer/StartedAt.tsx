@@ -57,7 +57,7 @@ export function StartedAt({
         if (result.ok) {
           setDraft(null)
           setRefused(null)
-        } else setRefused(REASONS[result.reason] ?? 'Could not change the start.')
+        } else setRefused(REASONS[result.reason] ?? 'Couldn’t change the start.')
       })
   }
 

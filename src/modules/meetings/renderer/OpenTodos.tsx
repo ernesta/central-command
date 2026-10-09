@@ -39,7 +39,7 @@ export function OpenTodos({
           next.delete(key)
           return next
         })
-        setError(e instanceof Error ? e.message : 'Could not tick that TODO.')
+        setError(e instanceof Error ? e.message : 'Couldn’t tick that TODO.')
       })
   }
 

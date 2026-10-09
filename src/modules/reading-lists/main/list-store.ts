@@ -94,7 +94,7 @@ export class ReadingListStore {
         return this.read({ workspace, id })
       }
     }
-    throw new ReadingListError('Could not find a free file name for the new list')
+    throw new ReadingListError('Couldn’t find a free file name for the new list')
   }
 
   async read(ref: ReadingListRef): Promise<ReadingListFile> {

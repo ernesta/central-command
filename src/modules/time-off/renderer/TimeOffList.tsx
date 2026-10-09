@@ -157,7 +157,7 @@ export function TimeOffList({
                     date,
                     type
                   )
-                  return result.ok ? null : (REFUSED[result.reason] ?? 'Could not save that day.')
+                  return result.ok ? null : (REFUSED[result.reason] ?? 'Couldn’t save that day.')
                 }}
                 onRemove={() =>
                   void window.api.tracking.removeTimeOff(workspace, data.start, row.date)

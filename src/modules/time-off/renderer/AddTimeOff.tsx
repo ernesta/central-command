@@ -40,7 +40,7 @@ export function AddTimeOff({
     if (!ready) return
     const result = await window.api.tracking.addTimeOff(workspace, data.start, from, to, type)
     if (result.ok) onDone()
-    else setError(REFUSED[result.reason] ?? 'Could not add those days.')
+    else setError(REFUSED[result.reason] ?? 'Couldn’t add those days.')
   }
 
   return (

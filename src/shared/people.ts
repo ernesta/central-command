@@ -143,7 +143,7 @@ export function addPerson(people: readonly Person[], input: NewPerson): Person[]
     }
   } else {
     const base = deriveInitials(name)
-    if (!base) throw new PeopleError('Could not work out initials from that name')
+    if (!base) throw new PeopleError('Couldn’t work out initials from that name')
     initials = suggestInitials(
       name,
       people.map((p) => p.initials)

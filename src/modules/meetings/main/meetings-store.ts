@@ -137,7 +137,7 @@ export class MeetingsStore {
         return this.read({ workspace, id })
       }
     }
-    throw new MeetingError('Could not find a free file name for the new meeting')
+    throw new MeetingError('Couldn’t find a free file name for the new meeting')
   }
 
   /** The standard new-meeting body, with Previous TODOs filled from the previous meeting of the series. */

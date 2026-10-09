@@ -110,7 +110,7 @@ export class NotesStore {
         return this.read({ workspace, id })
       }
     }
-    throw new NoteError('Could not find a free file name for the new note')
+    throw new NoteError('Couldn’t find a free file name for the new note')
   }
 
   async read(ref: NoteRef): Promise<NoteFile> {

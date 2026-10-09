@@ -87,6 +87,6 @@ export function contractRefusal(reason: string): string {
     case 'bad-end':
       return 'Check the dates.'
     default:
-      return 'Could not add it. Try again.'
+      return 'Couldn’t add it. Try again.'
   }
 }
