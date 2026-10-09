@@ -8,3 +8,12 @@
   gap: 8px;
   color: var(--text-muted);
 }
+.line {
+  flex-wrap: wrap;
+}
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}

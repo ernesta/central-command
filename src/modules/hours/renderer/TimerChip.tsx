@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
-import { Play, Square, Trash2 } from 'lucide-react'
+import { Play } from 'lucide-react'
 import { Select } from '@renderer/components/Select'
 import { researchOrWork } from '@renderer/shell/quick-actions'
 import { TopBarPortal } from '@renderer/shell/top-bar-slot'
@@ -17,6 +17,7 @@ import type { Moment } from '@shared/tracking/types'
 import { useOpenTasks } from '../../tasks/renderer/useOpenTasks'
 import { taskKey } from '../../tasks/shared/tracked'
 import { recentTasks } from '../shared/start-picker'
+import { popoverHead, STOP_NEEDS_TASK } from '../shared/timer-popover'
 import { elapsedMinutes } from '../shared/timer'
 import type { HoursWorkspace } from '../shared/workspaces'
 import { clearPickerRequest, startUnnamed, stopTimer, usePickerRequest } from './start-request'
@@ -26,8 +27,10 @@ import { TaskPicker, type PickedTask } from './TaskPicker'
 import styles from './TimerChip.module.css'
 
 /**
- * What the popover offers. A timer with no task yet asks for one (the one picker); with a task it shows it, when it began,
- * and the picker again to switch to another, and Stop. A timer from an earlier day only asks for its end.
+ * What the popover offers. Always the current timer first: its task and list, then when it began with Stop and Discard on
+ * the same line. A timer with no task also shows the picker below a divider (Stop pressed with no task greys Stop out
+ * until one is picked). No switching and no change of task: to do something else, Stop and Start. A timer from an
+ * earlier day only asks for its end.
  */
 function TimerPopover({
   running,
@@ -59,7 +62,7 @@ function TimerPopover({
       data ? recentTasks(data, open, now.date).filter((t) => taskKey(t.uid) !== session.task) : [],
     [data, open, now.date, session.task]
   )
-  const taskless = !session.task
+  const head = popoverHead(session, open, stopAfter)
 
   const give = async (picked: PickedTask): Promise<void> => {
     await tracking.assignTask(
@@ -73,9 +76,10 @@ function TimerPopover({
     if (stopAfter) await tracking.stop()
     onClose()
   }
-  const switchTo = async (picked: PickedTask): Promise<void> => {
-    await tracking.start(running.workspace, picked.label, picked.task, picked.client)
-    onClose()
+
+  const stop = async (): Promise<void> => {
+    await stopTimer()
+    if (session.task) onClose()
   }
 
   /** A timer started by mistake: drop it, saving nothing. */
@@ -86,27 +90,12 @@ function TimerPopover({
 
   return (
     <div className={styles.popover} role="dialog" aria-label="Timer">
-      {taskless && clock !== null ? (
-        <>
-          <span className={styles.label}>
-            {stopAfter ? 'Which task was this?' : session.label || 'No task yet'}
-          </span>
-          <TaskPicker
-            workspace={running.workspace as HoursWorkspace}
-            label="What are you working on?"
-            placeholder="What are you working on?"
-            value={name}
-            onChange={setName}
-            onPick={give}
-            recent={recent}
-            hintClient={hintClient}
-            autoFocus
-          />
-        </>
-      ) : (
-        <div className={styles.full}>{session.label || 'No task yet'}</div>
-      )}
-      {clients.length > 0 && !taskless && (
+      <div className={styles.head}>
+        <div className={styles.title}>{head.title}</div>
+        {head.line && <div className={head.hint ? styles.hint : styles.list}>{head.line}</div>}
+      </div>
+      {/* Only an older entry with a name but no task still needs its client chosen here. */}
+      {clients.length > 0 && !session.task && session.label !== '' && (
         <Select
           compact
           label="Client"
@@ -131,39 +120,42 @@ function TimerPopover({
       {clock === null ? (
         <StaleTimer running={running} now={now} />
       ) : (
-        <>
-          <StartedAt running={running} clock={clock} />
-          {!taskless && (
-            <TaskPicker
-              workspace={running.workspace as HoursWorkspace}
-              label="Switch to"
-              placeholder="Switch to another task"
-              value={name}
-              onChange={setName}
-              onPick={switchTo}
-              recent={recent}
-            />
-          )}
-          {!taskless && (
-            <button
-              type="button"
-              className={styles.stopButton}
-              onClick={() => {
-                void tracking.stop()
-                onClose()
-              }}
-            >
-              <Square size={12} strokeWidth={1.75} fill="currentColor" aria-hidden />
-              Stop
-            </button>
-          )}
-        </>
+        <StartedAt
+          running={running}
+          clock={clock}
+          actions={
+            <>
+              <button
+                type="button"
+                className={styles.stopButton}
+                disabled={head.stopDisabled}
+                title={head.stopDisabled ? STOP_NEEDS_TASK : undefined}
+                onClick={() => void stop()}
+              >
+                Stop
+              </button>
+              <button type="button" className={styles.discard} onClick={() => void discard()}>
+                Discard
+              </button>
+            </>
+          }
+        />
       )}
-      {clock !== null && (
-        <button type="button" className={styles.discard} onClick={() => void discard()}>
-          <Trash2 size={12} strokeWidth={1.75} aria-hidden />
-          Discard
-        </button>
+      {head.picker && clock !== null && (
+        <>
+          <hr className={styles.rule} />
+          <TaskPicker
+            workspace={running.workspace as HoursWorkspace}
+            label="What are you working on?"
+            placeholder={stopAfter ? 'Search or create a task' : 'What are you working on?'}
+            value={name}
+            onChange={setName}
+            onPick={give}
+            recent={recent}
+            hintClient={hintClient}
+            autoFocus
+          />
+        </>
       )}
     </div>
   )
@@ -218,6 +210,8 @@ function Chip({ running, now }: { running: RunningTimer; now: Moment }): React.J
   const { open, show, close, rootRef, mainRef, onKeyDown } = usePopover(request !== null)
   const { session } = running
   const clock = elapsedMinutes(session, now)
+  // Stop was pressed with no task: the popover waits for one, and Stop stays off until it has it.
+  const stopBlocked = !session.task && (request?.stopAfter ?? false)
   const current = WORKSPACES.find((w) => w === pathname.split('/')[1]) ?? settings.ui.workspace
 
   return (
@@ -242,7 +236,13 @@ function Chip({ running, now }: { running: RunningTimer; now: Moment }): React.J
           </span>
         </button>
         {clock !== null && (
-          <button type="button" className={styles.stop} onClick={() => void stopTimer()}>
+          <button
+            type="button"
+            className={styles.stop}
+            disabled={stopBlocked}
+            title={stopBlocked ? STOP_NEEDS_TASK : undefined}
+            onClick={() => void stopTimer()}
+          >
             Stop
           </button>
         )}

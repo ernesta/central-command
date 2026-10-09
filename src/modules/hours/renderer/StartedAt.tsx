@@ -17,10 +17,13 @@ const REASONS: Record<string, string> = {
  */
 export function StartedAt({
   running,
-  clock
+  clock,
+  actions
 }: {
   running: RunningTimer
   clock: number
+  /** Buttons at the right end of the line (Stop, Discard). */
+  actions?: React.ReactNode
 }): React.JSX.Element {
   const { session } = running
   const saved = session.start.slice(0, 5)
@@ -82,7 +85,8 @@ export function StartedAt({
             if (time) setDraft(time)
           }}
         />
-        <span>· {formatHours(clock)} so far</span>
+        <span>· {formatHours(clock)}</span>
+        {actions && <span className={styles.actions}>{actions}</span>}
       </div>
       {refused && <FieldError message={refused} />}
     </div>
