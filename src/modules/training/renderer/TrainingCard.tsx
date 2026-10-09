@@ -4,6 +4,7 @@ import { formatDate } from '@shared/time'
 import { useSettings } from '@renderer/state/settings-context'
 import { formatHours } from '@shared/skills'
 import { currentYear, yearLabel } from '@shared/year'
+import { lectureLabel } from '../shared/lecture-entries'
 import { compareNewestFirst, isUpcoming, trainingHours } from '../shared/rules'
 import { useSelfStudy } from './useSelfStudy'
 import { todayIso } from './training-paths'
@@ -39,7 +40,7 @@ export function TrainingCard(): React.JSX.Element {
           </p>
           {latest && (
             <p className={styles.line}>
-              Latest: {latest.title || 'Untitled'}
+              Latest: {lectureLabel(latest.series, latest.title || 'Untitled')}
               {latest.date ? ` · ${formatDate(latest.date)}` : ''}
             </p>
           )}

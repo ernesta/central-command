@@ -2331,6 +2331,7 @@ The Training landing's "Recent and upcoming" list showed a title without its ser
 - **One helper:** `lectureLabel(series, title)` (`src/modules/training/shared/lecture-entries.ts`, now exported) gives "Series: title". It returns the title alone when there is no series, when the title is the series, or when the title already starts with "Series:" (older notes have titles such as "DataCamp: R basics"; the series must not be doubled).
 - **Used in:** the landing's recent list (the title itself; no separate line, and `RecentRow` is unchanged), the "Mentioned in" panels (`titleOf` in `src/main/entities/backlinks.ts`), the entry page heading (label, then the date), and the search hit's title (its detail is now only the date, since the series would repeat). Hours rows, as before.
 - **Not changed:** the Training table keeps Series as its own column; the Person page's Trainings list keeps the series in its note column; the PDF report keeps its series tag; a lecture's subtask keeps its bare title, because a task page and the task lists always show it under its parent. Training entries are not an entity kind, so there are no chips for them.
+- **Added the same day:** the Research landing's Training card ("Latest: …") had been missed; it now uses `lectureLabel` too (`TrainingCard.tsx`).
 - Tests: the backlink title ("PS5210: Lecture 1", a bare title without a series) and the search hit. Typecheck, lint and tests pass; not driven in the app.
 
 ## The Time card names what it shows (9 Oct 2026)
