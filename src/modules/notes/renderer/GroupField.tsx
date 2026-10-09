@@ -121,7 +121,9 @@ export function GroupField({
           setTimeout(() => filterRef.current?.focus(), 0)
         }}
       >
-        {current || `No ${noun}`}
+        <span className={styles.triggerLabel} title={current || undefined}>
+          {current || `No ${noun}`}
+        </span>
         <ChevronDown size={12} strokeWidth={2} aria-hidden />
       </button>
       {open && (

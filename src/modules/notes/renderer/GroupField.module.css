@@ -14,9 +14,18 @@
   color: var(--ink);
   font-size: var(--text-13);
   white-space: nowrap;
+  max-width: 100%;
 }
 .trigger:hover {
   background: var(--hover-tint);
+}
+.trigger svg {
+  flex: none;
+}
+.triggerLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .none {
   color: var(--text-muted);

@@ -25,6 +25,9 @@
   left: 0;
   z-index: 20;
   width: 100%;
+  /* A narrow field (the meeting's Task) still gets a list that reads, and does not inherit a no-wrap. */
+  min-width: 320px;
+  white-space: normal;
   /* At most eight matches and the Create row: no scrolling, so the list field's menu is not clipped. */
   padding: 6px;
   background: var(--surface);
@@ -84,6 +87,9 @@
   min-width: 0;
   padding-top: 6px;
 }
+.create svg {
+  flex: none;
+}
 .createTitle {
   min-width: 0;
   overflow: hidden;
@@ -94,7 +100,12 @@
   flex: none;
 }
 .createList {
-  flex: none;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 45%;
+}
+/* The list field shrinks with an ellipsis rather than pushing the title out. */
+.createList > div {
   min-width: 0;
 }
 .group {
@@ -116,6 +127,7 @@
   padding: 4px;
   scroll-padding: 4px;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 2px;
   max-height: 40vh;
   overflow-y: auto;
