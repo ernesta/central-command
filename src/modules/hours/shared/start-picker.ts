@@ -85,22 +85,26 @@ export function listOfTask(task: Task, all: readonly Task[]): string {
   return all.find((t) => t.uid === task.parentUid)?.list ?? ''
 }
 
-/** What the picker shows beside a task: its list, or for a subtask (a lecture) the task it belongs to. */
+/** What the picker shows beside a task: its list (a subtask shows its parent's). */
 export function detailOfTask(task: Task, all: readonly Task[]): string {
-  if (!task.parentUid) return task.list
-  return all.find((t) => t.uid === task.parentUid)?.title ?? listOfTask(task, all)
+  return listOfTask(task, all)
 }
 
 /**
- * The list a new task goes to. In Work (a client is known) it is the client's own list, empty or not: Work's lists are its
- * clients and nothing else. Elsewhere, where a task was last added, else the first list there is, else "Inbox" (a task needs
- * a list).
+ * The list the Create row offers, shown and changeable before anything is made. In Work (clients known) it is a client's own
+ * list: the one the time is for (`hint`), else the one a task was last added to, else the first. Elsewhere, where a task was
+ * last added, else the first list there is, else "Inbox" (a task needs a list).
  */
 export function listForNew(
   open: readonly Task[],
-  client: string | undefined,
-  last: string
+  clients: readonly string[],
+  last: string,
+  hint?: string
 ): string {
-  if (client) return client
+  if (clients.length > 0) {
+    const same = (a: string, b: string | undefined): boolean =>
+      b !== undefined && a.trim().toLowerCase() === b.trim().toLowerCase()
+    return clients.find((c) => same(c, hint)) ?? clients.find((c) => same(c, last)) ?? clients[0]
+  }
   return listForNewTask(open, last) || 'Inbox'
 }

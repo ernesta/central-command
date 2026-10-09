@@ -126,19 +126,21 @@ describe('lists', () => {
     expect(listOfTask(parent, [parent, sub])).toBe('Impact')
   })
 
-  it('the picker names a subtask by the task it belongs to, and any other task by its list', () => {
+  it("the picker names a task by its list, a subtask by its parent's", () => {
     const parent = task('p', 'Intro to Python', { list: 'Training' })
     const sub = task('s', 'Session 3', { list: '', parentUid: 'p' })
-    expect(detailOfTask(sub, [parent, sub])).toBe('Intro to Python')
+    expect(detailOfTask(sub, [parent, sub])).toBe('Training')
     expect(detailOfTask(parent, [parent, sub])).toBe('Training')
     expect(detailOfTask(sub, [sub])).toBe('')
   })
 
-  it("a new task in Work goes to the client's own list, even an empty one; elsewhere the last, else the first, else Inbox", () => {
-    expect(listForNew(tasks, 'Royal Holloway', 'Inbox')).toBe('Royal Holloway')
-    expect(listForNew(tasks, 'Impact', 'Marking list')).toBe('Impact')
-    expect(listForNew(tasks, undefined, 'Marking list')).toBe('Marking list')
-    expect(listForNew(tasks, undefined, '')).toBe('Inbox')
-    expect(listForNew([], undefined, '')).toBe('Inbox')
+  it("the Create row offers a client list in Work (the time's client, else the last, else the first); elsewhere the last, else the first, else Inbox", () => {
+    const clients = ['Impact', 'Royal Holloway']
+    expect(listForNew(tasks, clients, 'Inbox', 'royal holloway')).toBe('Royal Holloway')
+    expect(listForNew(tasks, clients, 'Royal Holloway')).toBe('Royal Holloway')
+    expect(listForNew(tasks, clients, 'Marking list')).toBe('Impact')
+    expect(listForNew(tasks, [], 'Marking list')).toBe('Marking list')
+    expect(listForNew(tasks, [], '')).toBe('Inbox')
+    expect(listForNew([], [], '')).toBe('Inbox')
   })
 })

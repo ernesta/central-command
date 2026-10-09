@@ -1,12 +1,14 @@
-import { useId, useImperativeHandle, useMemo, useState } from 'react'
+import { useId, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { useOpenContracts } from '@renderer/state/use-open-contracts'
 import type { OpenContract } from '@shared/tracking/contracts'
 import { fold } from '@shared/text'
 import { useTaskDefaults } from '../../tasks/renderer/useTaskDefaults'
 import { useOpenTasks } from '../../tasks/renderer/useOpenTasks'
+import { ListField } from '../../tasks/renderer/ListField'
 import { taskKey } from '../../tasks/shared/tracked'
 import type { Task } from '../../tasks/shared/types'
+import type { TaskRow } from '../../tasks/shared/views'
 import {
   clientForTask,
   detailOfTask,
@@ -29,7 +31,8 @@ export interface TaskPickerHandle {
   submit: () => boolean
 }
 
-type Item = { kind: 'task'; task: Task } | { kind: 'create'; title: string }
+type Item =
+  { kind: 'task'; task: Task } | { kind: 'create'; title: string; list: string; sublist: string }
 
 interface TaskPickerProps {
   workspace: HoursWorkspace
@@ -51,7 +54,7 @@ interface TaskPickerProps {
 
 /**
  * The one way to say which task an hour is for. One field: as you type it lists the open tasks that match and always ends
- * with Create task "…". Choosing one gives its name, key and client back; in Work the client is the task's list, and is
+ * with Create "…" in a list, which is shown and can be changed. Choosing one gives its name, key and client back; in Work the client is the task's list, and is
  * asked only when there are several and the list names none of them. Nothing is listed before anything is typed.
  */
 export function TaskPicker({
@@ -68,6 +71,7 @@ export function TaskPicker({
   ref
 }: TaskPickerProps): React.JSX.Element {
   const listId = useId()
+  const rootRef = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(-1)
   const [asking, setAsking] = useState<{ item: Item; clients: string[] } | null>(null)
@@ -79,10 +83,24 @@ export function TaskPicker({
   const tasks = useOpenTasks(workspace)
   const { last } = useTaskDefaults(workspace)
 
+  const [chosenList, setChosenList] = useState<{ list: string; sublist: string } | null>(null)
+  const rows = useMemo<TaskRow[]>(
+    () => tasks.filter((t) => t.parentUid === null).map((task) => ({ task, kids: [] })),
+    [tasks]
+  )
+  const allClients = contracts.flatMap((c) => c.clients)
+  const defaultList = listForNew(tasks, allClients, last.list, hintClient)
+  const newList = chosenList ?? {
+    list: defaultList,
+    sublist: last.list === defaultList ? last.sublist : ''
+  }
+
   const options = useMemo(() => pickerOptions(tasks, value), [tasks, value])
   const items: Item[] = [
     ...options.tasks.map((task): Item => ({ kind: 'task', task })),
-    ...(options.create !== null ? [{ kind: 'create', title: options.create } as Item] : [])
+    ...(options.create !== null
+      ? [{ kind: 'create', title: options.create, ...newList } as Item]
+      : [])
   ]
   const shown = open && items.length > 0
 
@@ -92,12 +110,11 @@ export function TaskPicker({
       if (item.kind === 'task') {
         await onPick({ label: item.task.title.trim(), task: taskKey(item.task.uid), client })
       } else {
-        const list = listForNew(tasks, client, last.list)
         const made = await window.api.tasks.create({
           workspace,
           title: item.title,
-          list,
-          sublist: last.list === list ? last.sublist : ''
+          list: item.list,
+          sublist: item.sublist
         })
         await onPick({ label: made.title.trim(), task: taskKey(made.uid), client })
       }
@@ -107,12 +124,13 @@ export function TaskPicker({
       setAsking(null)
       setOpen(false)
       setActive(-1)
+      setChosenList(null)
     }
   }
 
   const choose = (item: Item): void => {
     if (busy) return
-    const list = item.kind === 'task' ? listOfTask(item.task, tasks) : ''
+    const list = item.kind === 'task' ? listOfTask(item.task, tasks) : item.list
     const found = clientForTask(contracts, list)
     if (found.ask && hintClient && found.ask.includes(hintClient)) void finish(item, hintClient)
     else if (found.ask) setAsking({ item, clients: found.ask })
@@ -123,7 +141,9 @@ export function TaskPicker({
   const submit = (): boolean => {
     if (value.trim() === '') return false
     const exact = options.tasks.find((t) => fold(t.title.trim()) === fold(value.trim()))
-    choose(exact ? { kind: 'task', task: exact } : { kind: 'create', title: value.trim() })
+    choose(
+      exact ? { kind: 'task', task: exact } : { kind: 'create', title: value.trim(), ...newList }
+    )
     return true
   }
   useImperativeHandle(ref, () => ({ submit }))
@@ -148,7 +168,7 @@ export function TaskPicker({
   }
 
   return (
-    <div className={styles.root}>
+    <div className={styles.root} ref={rootRef}>
       <input
         className={styles.input}
         role="combobox"
@@ -167,34 +187,53 @@ export function TaskPicker({
           setAsking(null)
         }}
         onKeyDown={keys}
-        onBlur={() => setOpen(false)}
+        onBlur={(event) => {
+          // Moving into the list field of the Create row keeps the list open.
+          if (!event.relatedTarget || !rootRef.current?.contains(event.relatedTarget as Node))
+            setOpen(false)
+        }}
       />
       {shown && !asking && (
         <div id={listId} className={styles.list} role="listbox" aria-label={label}>
           {items.map((item, index) => (
             <div
               key={item.kind === 'task' ? item.task.uid : 'create'}
-              id={`${listId}-${index}`}
-              role="option"
-              aria-selected={index === active}
-              data-active={index === active}
-              className={[styles.option, item.kind === 'create' && styles.create]
-                .filter(Boolean)
-                .join(' ')}
-              onMouseEnter={() => setActive(index)}
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={() => choose(item)}
+              className={item.kind === 'create' ? styles.createRow : undefined}
             >
-              {item.kind === 'task' ? (
-                <>
-                  <span className={styles.optionTitle}>{item.task.title}</span>
-                  <span className={styles.detail}>{detailOfTask(item.task, tasks)}</span>
-                </>
-              ) : (
-                <>
-                  <Plus size={14} strokeWidth={1.75} aria-hidden />
-                  <span className={styles.optionTitle}>Create task “{item.title}”</span>
-                </>
+              <div
+                id={`${listId}-${index}`}
+                role="option"
+                aria-selected={index === active}
+                data-active={index === active}
+                className={[styles.option, item.kind === 'create' && styles.create]
+                  .filter(Boolean)
+                  .join(' ')}
+                onMouseEnter={() => setActive(index)}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => choose(item)}
+              >
+                {item.kind === 'task' ? (
+                  <>
+                    <span className={styles.optionTitle}>{item.task.title}</span>
+                    <span className={styles.detail}>{detailOfTask(item.task, tasks)}</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus size={14} strokeWidth={1.75} aria-hidden />
+                    <span className={styles.optionTitle}>Create “{item.title}” in</span>
+                  </>
+                )}
+              </div>
+              {item.kind === 'create' && (
+                <div className={styles.createList}>
+                  <ListField
+                    workspace={workspace}
+                    list={item.list}
+                    sublist={item.sublist}
+                    rows={rows}
+                    onChange={setChosenList}
+                  />
+                </div>
               )}
             </div>
           ))}
