@@ -346,11 +346,13 @@
   -webkit-mask: var(--entity-icon) center / contain no-repeat;
   mask: var(--entity-icon) center / contain no-repeat;
 }
-/* Punctuation right after a chip (or a bracket right before it) never wraps onto a line of its own. CodeMirror puts an empty image
+/* Punctuation right after a chip or a hidden marker (the closing `*` of italics, a link's `](url)`), or a bracket right before one, never wraps onto a line of its own. CodeMirror puts an empty image
    beside every widget, and the line may break at either side of an image; out of the flow it is no longer a place to break
    (it keeps its place in the DOM, so the caret still sits where it did). */
 .wrap :global(.live-chip + img.cm-widgetBuffer),
-.wrap :global(img.cm-widgetBuffer:has(+ .live-chip)) {
+.wrap :global(img.cm-widgetBuffer:has(+ .live-chip)),
+.wrap :global(img.cm-widgetBuffer:has(+ span[contenteditable='false']:empty:not([class]))),
+.wrap :global(span[contenteditable='false']:empty:not([class]) + img.cm-widgetBuffer) {
   position: absolute;
 }
 /* What a mention points at is gone (a deleted reading, a note moved to the Trash). */
