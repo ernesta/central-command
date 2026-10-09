@@ -34,10 +34,10 @@ else Inbox), so tasks landed in the wrong list unseen; Stop, Switch and Discard 
 
 1. **Picker (done 9 Oct 2026, `docs/DECISIONS.md`, "Timer popover, stage 1")**: list on every row; the Create row with a visible, changeable list (`TaskPicker.tsx`, `start-picker.ts`: `listForNew`
    becomes the shown default). Used by the popover, Today, Add time and the meeting Task field, so check all four. Tests for the rules.
-2. **Popover**: the layout, the five states, no Switch, no Client select (except taskless legacy entries), Stop disabled with the hint in
+2. **Popover (done 9 Oct 2026)**: the layout, the five states, no Switch, no Client select (except taskless legacy entries), Stop disabled with the hint in
    state 5 in the popover and the chip (`TimerChip.tsx`, `TimerChip.module.css`, `start-request.ts` keeps `stopAfter`). Remove dead code
    (the switch picker, `switchTo`).
-3. **Check and docs**: drive the real app in a scratch library (CLAUDE.md, "Testing the app for real"; dev mode and production build, dark mode,
+3. **Check and docs (done 9 Oct 2026, `docs/DECISIONS.md`, "Timer popover, stages 2 and 3")**: drive the real app in a scratch library (CLAUDE.md, "Testing the app for real"; dev mode and production build, dark mode,
    screenshots of all five states), lint, typecheck, tests; add a "Timer popover" section to `docs/DECISIONS.md`; update `docs/ROADMAP.md`.
 
 Commits small, one per standalone part. Nothing is pushed unless the user says so.

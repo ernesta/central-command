@@ -2377,3 +2377,15 @@ Plan: `docs/TIMER_POPOVER_PLAN.md`. Stage 1 only (`TaskPicker.tsx`, `start-picke
 - **Create row**: `Create "X" in [List ▾]`, always last once something is typed. The list is the New task dialog's `ListField`, so the same menu and, in Work, only client lists (a new name can only be a sublist). Until changed, the default is shown, never silent. `listForNew(open, clients, last, hint?)`: Work, the time's client (`hintClient`), else the last list if it is a client, else the first client; Research, where a task was last added, else the first list, else Inbox. The client of the new task is then told from the chosen list like any other task's.
 - **Layout**: the matches list no longer scrolls (at most eight rows) so the list field's menu is not clipped; the list stays open while focus moves into the Create row.
 - **Tests**: `start-picker.test.ts` for the two rules. Not driven in the app yet (stage 3), and the Today, Add time and meeting Task field uses were not looked at.
+
+## Timer popover, stages 2 and 3: the popover, and the check (9 Oct 2026)
+
+Plan: `docs/TIMER_POPOVER_PLAN.md`. Stage 2 built the layout (`TimerChip.tsx`, rules in `src/modules/hours/shared/timer-popover.ts`); stage 3 drove it in the real app and fixed what showed.
+
+- **Popover**: the five states of the plan, top block always the running timer (title, its list, `Started [hh : mm] · 0:01`, Stop, Discard); no Switch; the Client select only for an old entry with a name but no task; Stop greyed out with the hint in state 5.
+- **Running task's list** (`popoverHead`): the task is looked up among all tasks (`useTasksList`), not only open ones, so a done task still shows its list. A task that is gone shows none.
+- **Picker rows**: the title takes the room and wraps; the list is quiet, right-aligned, `max-width: 40%`, one line with an ellipsis and the full name as a tooltip. Recent rows follow the same rule (the `.choices` grid had `minmax(0, 1fr)` missing, so a long row clipped its list).
+- **Create row**: one line, `+ Create "X…" in [List ▾]`; the title truncates (tooltip), the list field shrinks (max 45%) with an ellipsis. The divider above it shows only when matches are above it. `GroupField`'s trigger now wraps its label in a span (`triggerLabel`) so it can truncate; its chevron does not shrink.
+- **Narrow fields**: the meeting's Task field is about 260px wide, and its list inherited `white-space: nowrap`, so the title overlapped the list text. The list now has `min-width: 320px` and `white-space: normal`.
+- **Checked** on a scratch library with a long title, a long list name and a subtask: production build and dev mode, light and dark; states 1 to 5, Recent, Today (match and create), a past day's Add, the meeting Task field. Not checked in the app: a done or trashed running task (unit test only), Work (client lists), the installed build.
+- Typecheck, lint and tests pass.
