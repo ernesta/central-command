@@ -2422,3 +2422,10 @@ A review for UI, label and behaviour mismatches; the user decided which differen
 - **Tokens**: the task context menu and toast use `--radius-control` (were 10px); a task-table subtask row uses `--text-13` (was 13.5px).
 - **Relative time** (Readings sync) falls back to `formatDate`, not the system locale.
 - **Left as it is (the user confirmed)**: floating panels use `--radius-control` for small menus and `--radius-card` for larger popovers, on purpose.
+
+## Punctuation after a hidden marker (9 Oct 2026)
+
+A full stop after italic text (`*General*.`) could wrap onto a line of its own. CodeMirror puts an empty `img.cm-widgetBuffer` beside every replaced (hidden) range, and a line may break at either side of an image; the closing `*` is one such range. Chips already had the fix (the image taken out of the flow with `position: absolute`, which keeps it in the DOM so the caret sits where it did); it now also covers the images beside hidden markers: `span[contenteditable='false']:empty:not([class])` is how a classless `Decoration.replace({})` shows up (checkboxes, bullets and chips have classes).
+
+- Found and checked in Chrome with the real `createLiveState` on a bare page, sweeping the width one pixel at a time (150 to 300, and 300 to 520 for the original line): before, italic, bold, code, strikethrough and links each hung a `.` or `,` at one or more widths; after, none. Opening brackets and quotes before a marker never wrapped. Not driven in the app itself. Not checked: headings, quotes, escaped characters (`\*`).
+- If another hanging mark shows up, look first for a widget buffer beside it.
