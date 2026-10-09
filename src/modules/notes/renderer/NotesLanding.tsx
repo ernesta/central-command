@@ -2,6 +2,7 @@ import { ArrowRight, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { EmptyState } from '@renderer/components/EmptyState'
+import { WORKSPACE_LABELS } from '@renderer/shell/workspaces'
 import {
   LandingHeader,
   LandingPage,
@@ -79,7 +80,7 @@ export function NotesLanding(): React.JSX.Element {
     <LandingPage>
       <LandingHeader
         backTo={`/${workspace}`}
-        backLabel={workspace === 'research' ? 'Research' : 'Work'}
+        backLabel={WORKSPACE_LABELS[workspace]}
         title="Notes"
         actions={<NewNoteButton />}
       />
