@@ -15,7 +15,9 @@ import type { RunningTimer } from '@shared/tracking/api'
 import { formatDay, formatHours } from '@shared/tracking/format'
 import type { Moment } from '@shared/tracking/types'
 import { useOpenTasks } from '../../tasks/renderer/useOpenTasks'
+import { useTasksList } from '../../tasks/renderer/useTasksList'
 import { taskKey } from '../../tasks/shared/tracked'
+import type { TaskWorkspace } from '../../tasks/shared/types'
 import { recentTasks } from '../shared/start-picker'
 import { popoverHead, STOP_NEEDS_TASK } from '../shared/timer-popover'
 import { elapsedMinutes } from '../shared/timer'
@@ -54,6 +56,8 @@ function TimerPopover({
   const { session } = running
   const data = useYearFile(running.workspace, running.year)
   const open = useOpenTasks(running.workspace)
+  // All tasks, so the list of a task since done or trashed still shows.
+  const { tasks: all } = useTasksList(running.workspace as TaskWorkspace)
   const clients = data?.plan.clients ?? []
   const tracking = window.api.tracking
   const [name, setName] = useState(query)
@@ -62,7 +66,7 @@ function TimerPopover({
       data ? recentTasks(data, open, now.date).filter((t) => taskKey(t.uid) !== session.task) : [],
     [data, open, now.date, session.task]
   )
-  const head = popoverHead(session, open, stopAfter)
+  const head = popoverHead(session, all ?? open, stopAfter)
 
   const give = async (picked: PickedTask): Promise<void> => {
     await tracking.assignTask(

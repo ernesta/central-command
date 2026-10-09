@@ -19,20 +19,21 @@ export interface PopoverHead {
 
 /**
  * The five states of the popover, from the running timer's task and label and whether Stop was pressed with no task.
+ * `tasks` are all tasks, done or trashed included, so a finished task still shows its list.
  * With a task: its title and list, Stop on. Without: "No task yet" and the picker; after Stop, "Which task was this?"
  * with Stop off until one is picked.
  */
 export function popoverHead(
   session: { task?: string; label: string },
-  open: readonly Task[],
+  tasks: readonly Task[],
   stopAfter: boolean
 ): PopoverHead {
   if (session.task) {
     const uid = taskUidOf(session.task)
-    const task = uid ? open.find((t) => t.uid === uid) : undefined
+    const task = uid ? tasks.find((t) => t.uid === uid) : undefined
     return {
       title: session.label || task?.title || 'No title',
-      line: task ? listOfTask(task, open) || null : null,
+      line: task ? listOfTask(task, tasks) || null : null,
       hint: false,
       stopDisabled: false,
       picker: false

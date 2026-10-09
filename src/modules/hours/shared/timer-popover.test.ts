@@ -6,7 +6,11 @@ import { popoverHead, STOP_NEEDS_TASK } from './timer-popover'
 const task = (uid: string, title: string, extra: Partial<Task> = {}): Task =>
   ({ uid, title, list: 'Admin', parentUid: null, status: 'todo', ...extra }) as Task
 
-const open = [task('1', 'Daily admin'), task('2', 'Lecture', { list: '', parentUid: '1' })]
+const open = [
+  task('1', 'Daily admin'),
+  task('2', 'Lecture', { list: '', parentUid: '1' }),
+  task('3', 'Finished', { list: 'Archive', status: 'done' })
+]
 
 describe('popoverHead', () => {
   it('state 1: a task shows its title and list, Stop on, no picker', () => {
@@ -19,8 +23,9 @@ describe('popoverHead', () => {
     })
   })
 
-  it("a subtask shows its parent's list; a task no longer open shows no list", () => {
+  it("a subtask shows its parent's list; a done task still shows its list; an unknown one shows none", () => {
     expect(popoverHead({ task: taskKey('2'), label: 'Lecture' }, open, false).line).toBe('Admin')
+    expect(popoverHead({ task: taskKey('3'), label: 'Finished' }, open, false).line).toBe('Archive')
     expect(popoverHead({ task: taskKey('9'), label: 'Gone' }, open, false).line).toBeNull()
   })
 
