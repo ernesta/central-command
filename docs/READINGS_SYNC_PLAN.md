@@ -59,16 +59,14 @@ and `docs/DECISIONS.md` ("Notes are Markdown files guarded by content hashes", "
 
 ## Open questions
 
-1. Should a non-default `status` (`read`/`to_read`) or non-empty `tags` also count as "something attached" —
-   protecting a row from deletion even with no notes, no Reading Lists entry and no mention? These are
-   user-set, not Zotero-synced, so losing them silently seems like the same mistake as losing notes.
+1. **(Answered 9 Oct 2026: no.)** `status` and `tags` do not protect a row from deletion. Zotero readings
+   are read-only in this app — everything is added and removed on the Zotero side — so a reading's status
+   and tags are tied to that Zotero item, not independent user data; if the item is truly gone, they go with
+   it. Only `has_notes`, a `reading_list_mentions` row, or an `@` mention count as "something attached."
 2. Where should a suggested (low-confidence) rename surface — an extension of the existing "no longer in
    your Zotero export" banner (a row reading "X looks like it may now be Y — link them?" with Link/Dismiss),
-   or somewhere else?
-3. Should a deletion under rule 2 leave a short trace (citekey, short citation, entry type, when) somewhere
-   such as `sync_runs`, so a surprise loss is traceable even though the row itself is gone? Recommend yes —
-   cheap, and the whole point of this plan is that deletions should now be common enough to want a paper
-   trail.
+   or somewhere else? (Only matters for stage 4.)
+3. **(Answered 9 Oct 2026: no.)** No deletion trace is kept. Just delete; nothing is kept afterward.
 
 ## Stages (stop after each and ask; the user clears context between them)
 
@@ -78,7 +76,7 @@ and `docs/DECISIONS.md` ("Notes are Markdown files guarded by content hashes", "
 2. **Delete-if-unattached when missing.** Extend `applySync`'s missing branch: for a citekey not present in
    the new export, check `has_notes`, `reading_list_mentions` (indexed lookup) and the shared `@`-mention set
    (one pass per sync, not per citekey); delete the row if all three are empty, flag as today otherwise.
-   Resolve open questions 1 and 3 first (they change what "unattached" checks and whether a trace is kept).
+   `status` and `tags` do not factor in (open question 1). No deletion trace is kept (open question 3).
    Update `CLAUDE.md`'s "Never" line. Mutation check both directions (a notes-bearing row never deleted; a
    bare row never left flagged forever).
 3. **Automatic rename matching by DOI/URL.** Within one sync's transaction, before falling back to plain
