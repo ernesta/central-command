@@ -8,8 +8,9 @@ import {
   selectLineStart
 } from '@codemirror/commands'
 import { EditorSelection } from '@codemirror/state'
-import type { Command, KeyBinding } from '@codemirror/view'
+import type { Command, EditorView, KeyBinding } from '@codemirror/view'
 import { liveDecorations } from './live-decorations'
+import { listMarkAt, parseLine } from './live-lines'
 
 /*
  * Cursor motion that must not stop inside a drawn bullet, number or checkbox. Arrow keys and clicks already skip them
@@ -26,8 +27,44 @@ const LINE_START_COMMANDS = new Set<Command>([
   selectLineStart
 ])
 
+const SELECTING = new Set<Command>([
+  selectLineBoundaryBackward,
+  selectLineBoundaryLeft,
+  selectLineStart
+])
+
+/**
+ * In a list item, a line-start motion goes in two steps: first to the start of the text (after the bullet, number or
+ * checkbox), then, from there, to the start of the line, so Cmd-Shift-Left selects the text first and the whole item
+ * on a second press. Only on the item's first visual row; a wrapped row keeps the default (its own start).
+ */
+function listStep(view: EditorView, extend: boolean): boolean {
+  const { state } = view
+  let changed = false
+  const ranges = state.selection.ranges.map((range) => {
+    const line = state.doc.lineAt(range.head)
+    const parts = parseLine(line.text)
+    if (!listMarkAt(state, line.from, parts)) return range
+    const textStart = line.from + parts.quote.length + parts.indent.length + parts.marker.length
+    if (range.head < textStart) return range
+    if (view.moveToLineBoundary(EditorSelection.cursor(range.head), false).head > textStart)
+      return range
+    const head = range.head > textStart ? textStart : line.from
+    changed = true
+    return extend ? EditorSelection.range(range.anchor, head) : EditorSelection.cursor(head)
+  })
+  if (!changed) return false
+  view.dispatch({
+    selection: EditorSelection.create(ranges, state.selection.mainIndex),
+    scrollIntoView: true,
+    userEvent: 'select'
+  })
+  return true
+}
+
 function outOfMarkers(command: Command): Command {
   return (view) => {
+    if (listStep(view, SELECTING.has(command))) return true
     if (!command(view)) return false
     const atomic = view.plugin(liveDecorations)?.atomic
     if (!atomic) return true

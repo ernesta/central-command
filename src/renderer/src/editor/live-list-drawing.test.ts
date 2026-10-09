@@ -74,6 +74,33 @@ describe('in the running editor', () => {
     expect(show(view)).toBe('- a\n  - |bc|')
   })
 
+  it('Home on a top-level item stops at the text, then goes to the line start', () => {
+    const { view } = openView('- ab|c')
+    press(view, 'Home')
+    expect(show(view)).toBe('- |abc')
+    press(view, 'Home')
+    expect(show(view)).toBe('|- abc')
+  })
+
+  it('Shift-Home selects the text first, the whole item on a second press', () => {
+    const { view } = openView('- abc|')
+    press(view, 'Shift-Home')
+    expect(show(view)).toBe('- |abc|')
+    press(view, 'Shift-Home')
+    expect(show(view)).toBe('|- abc|')
+  })
+
+  it('Shift-Home in a checkbox or numbered item behaves the same', () => {
+    const task = openView('- [ ] abc|')
+    press(task.view, 'Shift-Home')
+    expect(show(task.view)).toBe('- [ ] |abc|')
+    const numbered = openView('1. abc|')
+    press(numbered.view, 'Shift-Home')
+    expect(show(numbered.view)).toBe('1. |abc|')
+    press(numbered.view, 'Shift-Home')
+    expect(show(numbered.view)).toBe('|1. abc|')
+  })
+
   it('a click on the checkbox writes [x], and another writes [ ] again', () => {
     const { view, reports } = openView('- [ ] task\n\nafter')
     const box = (): Element => view.dom.querySelector('.live-checkbox') as Element
