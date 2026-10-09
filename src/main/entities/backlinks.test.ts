@@ -82,7 +82,7 @@ describe('contextOf', () => {
     const found = await findBacklinks(TARGET, [
       { kind: 'training', workspace: 'research', dir: join(root, 'training') }
     ])
-    expect(found.map((f) => f.title)).toEqual(['Lecture 1 · PS5210', 'Workshop'])
+    expect(found.map((f) => f.title)).toEqual(['PS5210: Lecture 1', 'Workshop'])
   })
 
   it('shortens a long line and drops markdown marks', () => {

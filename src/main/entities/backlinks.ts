@@ -2,6 +2,7 @@ import { readdir, readFile } from 'fs/promises'
 import { join } from 'path'
 import { findMentions, type Backlink, type BacklinkSource, type EntityRef } from '@shared/entities'
 import { asText, parseHead, readValue, splitNote } from '@shared/front-matter'
+import { lectureLabel } from '@modules/training/shared/lecture-entries'
 import { meetingHeading } from '@shared/time'
 
 /** A folder of notes of one kind, and how to name one of them. */
@@ -23,9 +24,7 @@ function titleOf(kind: BacklinkSource['kind'], id: string, head: string): string
     return meetingHeading(frontValue(head, 'series'), frontValue(head, 'date'))
   if (kind === 'reading-notes') return `Notes on ${id}`
   if (kind === 'training') {
-    const title = frontValue(head, 'title') || id
-    const series = frontValue(head, 'series')
-    return series ? `${title} · ${series}` : title
+    return lectureLabel(frontValue(head, 'series'), frontValue(head, 'title') || id)
   }
   return frontValue(head, 'title') || id
 }

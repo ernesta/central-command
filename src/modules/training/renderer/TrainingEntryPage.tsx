@@ -17,7 +17,7 @@ import { formatDate } from '@shared/time'
 import { institutionOptions, seriesOptions } from '../shared/rules'
 import type { TrainingRef } from '../shared/types'
 import { formatHours } from '@shared/tracking/format'
-import { lectureTaskUid } from '../shared/lecture-entries'
+import { lectureLabel, lectureTaskUid } from '../shared/lecture-entries'
 import { FilesPanel } from './FilesPanel'
 import { LectureHours } from './LectureHours'
 import { LectureTask } from './LectureTask'
@@ -163,13 +163,7 @@ function EntryView({
     )
   }
 
-  const heading = [
-    meta.title || 'Untitled',
-    meta.series,
-    meta.date ? formatDate(meta.date) : 'No date yet'
-  ]
-    .filter(Boolean)
-    .join(' · ')
+  const heading = `${lectureLabel(meta.series, meta.title || 'Untitled')} · ${meta.date ? formatDate(meta.date) : 'No date yet'}`
 
   return (
     <div className={styles.page}>

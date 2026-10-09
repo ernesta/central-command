@@ -15,10 +15,11 @@ export function lectureTaskUid(task: string): string | null {
 }
 
 /** "Series: lecture" for a lecture in a series, the lecture alone otherwise. */
-function lectureLabel(series: string | null, title: string): string {
+export function lectureLabel(series: string | null, title: string): string {
   const name = title.trim()
   const programme = series?.trim()
-  return programme && name !== programme ? `${programme}: ${name}` : name
+  const named = !programme || name === programme || name.startsWith(`${programme}:`)
+  return named ? name : `${programme}: ${name}`
 }
 
 /**

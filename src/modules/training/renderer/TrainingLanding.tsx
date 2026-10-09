@@ -39,6 +39,7 @@ import {
   trainingListRoute,
   trainingPlanRoute
 } from './training-paths'
+import { lectureLabel } from '../shared/lecture-entries'
 import { useSelfStudy } from './useSelfStudy'
 import { useTrainingList } from './useTrainingList'
 
@@ -81,8 +82,7 @@ export function TrainingLanding(): React.JSX.Element {
     to: entryRoute(row.id),
     date: row.date ? formatDate(row.date) : 'No date yet',
     badge: isUpcoming(row, today) ? (row.date ? 'Upcoming' : 'Planned') : undefined,
-    title: row.title || 'Untitled',
-    detail: row.series || undefined,
+    title: lectureLabel(row.series, row.title || 'Untitled'),
     people: row.leads.map((name) => ({ name, initials: initialsFor(name, people) })),
     note: noteFor(row, today, selfStudy)
   }))

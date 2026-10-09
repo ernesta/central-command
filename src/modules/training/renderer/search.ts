@@ -6,6 +6,7 @@ import { formatShortDate, todayIso } from '@shared/time'
 import { DEFAULT_TRAINING_QUERY, queryTraining } from '../shared/rules'
 import { planKey } from '../shared/plan'
 import type { TrainingIndexRow } from '../shared/types'
+import { lectureLabel } from '../shared/lecture-entries'
 import { entryRoute, trainingPlanRoute } from './training-paths'
 
 const DEFAULT_LIMIT = 6
@@ -22,12 +23,10 @@ export function trainingHits(
     .slice(0, limit)
     .map((row) => {
       const inTitle = terms.every((t) => fold(row.title).includes(t))
-      const details = [row.date ? formatShortDate(row.date) : 'No date yet', row.series]
-        .filter(Boolean)
-        .join(' · ')
+      const details = row.date ? formatShortDate(row.date) : 'No date yet'
       return {
         key: row.id,
-        title: row.title || 'Untitled',
+        title: lectureLabel(row.series, row.title || 'Untitled'),
         detail: (!inTitle && snippet(row.excerpt, terms)) || details,
         route: entryRoute(row.id)
       }

@@ -37,11 +37,11 @@ describe('trainingHits', () => {
     })
   ]
 
-  it('finds an entry by its title and describes it by date and series', () => {
+  it('finds an entry by its title and labels it with its series and describes it by date', () => {
     const [hit] = trainingHits(rows, [], 'datacamp')
     expect(hit).toMatchObject({
       title: 'DataCamp: R basics',
-      detail: 'Jan 5 · DataCamp',
+      detail: 'Jan 5',
       route: '/research/training/t/x'
     })
   })
