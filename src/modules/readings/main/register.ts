@@ -9,7 +9,14 @@ import { NotesStore } from './notes-store'
 import { NotesWatcher } from '../../../main/notes/watcher'
 import { backlinkFolders } from '../../../main/ipc/entities'
 import { collectMentionedReadingKeys } from '../../../main/entities/reading-mentions'
-import { getCounts, getReadingByCitekey, listAllReadings } from './repository'
+import {
+  dismissRenameSuggestion,
+  getCounts,
+  getReadingByCitekey,
+  linkRenameSuggestion,
+  listAllReadings,
+  listPendingRenameSuggestions
+} from './repository'
 import { SyncService } from './sync-service'
 import { ExportWatcher } from './watcher'
 
@@ -35,6 +42,17 @@ function register({ db, paths, settings }: MainContext): () => void {
   ipcMain.handle(READINGS_IPC.get, (_event, citekey: unknown) =>
     typeof citekey === 'string' ? getReadingByCitekey(db, citekey) : null
   )
+  ipcMain.handle(READINGS_IPC.renameSuggestionsList, () => listPendingRenameSuggestions(db))
+  ipcMain.handle(READINGS_IPC.renameSuggestionsLink, async (_event, id: unknown) => {
+    if (typeof id !== 'number') throw new Error('Invalid suggestion id')
+    const result = linkRenameSuggestion(db, id, new Date().toISOString())
+    if (result) await notes.rename(result.oldCitekey, result.newCitekey)
+    return result !== null
+  })
+  ipcMain.handle(READINGS_IPC.renameSuggestionsDismiss, (_event, id: unknown) => {
+    if (typeof id !== 'number') throw new Error('Invalid suggestion id')
+    dismissRenameSuggestion(db, id)
+  })
 
   // Push status changes to every open window.
   const offStatus = sync.onStatusChange((status) => {

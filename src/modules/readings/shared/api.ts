@@ -1,6 +1,6 @@
 import type { NoteChangedEvent, NoteContent, NoteWriteResult } from '@shared/notes'
 import type { ReadingsQuery, TagCount } from './query'
-import type { Reading, ReadingCounts, SyncStatus } from './types'
+import type { Reading, ReadingCounts, RenameSuggestion, SyncStatus } from './types'
 
 /** The Readings slice of window.api. */
 export interface ReadingsApi {
@@ -17,6 +17,14 @@ export interface ReadingsApi {
   /** All tags in use, with how many readings carry each. */
   tags(): Promise<TagCount[]>
   get(citekey: string): Promise<Reading | null>
+  renameSuggestions: {
+    /** Every pending ("X looks like it may now be Y") suggestion, oldest first. */
+    list(): Promise<RenameSuggestion[]>
+    /** Merge the pair as stage 3's automatic DOI/URL match would. False if it's no longer there. */
+    link(id: number): Promise<boolean>
+    /** Permanent for this exact old/new pair; touches neither reading. */
+    dismiss(id: number): Promise<void>
+  }
   notes: {
     read(citekey: string): Promise<NoteContent>
     /**
@@ -37,6 +45,9 @@ export const READINGS_IPC = {
   list: 'readings:list',
   tags: 'readings:tags',
   get: 'readings:get',
+  renameSuggestionsList: 'readings:rename-suggestions-list',
+  renameSuggestionsLink: 'readings:rename-suggestions-link',
+  renameSuggestionsDismiss: 'readings:rename-suggestions-dismiss',
   notesRead: 'readings:notes-read',
   notesWrite: 'readings:notes-write',
   notesChanged: 'readings:notes-changed'

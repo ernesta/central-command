@@ -19,6 +19,7 @@ import { SyncIndicator } from './SyncIndicator'
 import { TagFilter } from './TagFilter'
 import { useReadingsList } from './useReadingsList'
 import { useReadingsView } from './useReadingsView'
+import { useRenameSuggestions } from './useRenameSuggestions'
 import { useSyncStatus } from './useSyncStatus'
 import styles from './ReadingsPage.module.css'
 
@@ -43,10 +44,22 @@ export function ReadingsPage(): React.JSX.Element {
   const navigate = useNavigate()
   const { prefs, setPrefs } = useReadingsView()
   const { status, counts, syncNow } = useSyncStatus()
-  // Refetch after every sync attempt, not only when the count of readings changes.
-  const refreshKey = `${status?.state ?? ''}|${status?.lastRun?.finishedAt ?? ''}`
+  const [actionVersion, setActionVersion] = useState(0)
+  // Refetch after every sync attempt, not only when the count of readings changes -- and after a
+  // suggestion is linked or dismissed, since that can rename a reading without a new sync.
+  const refreshKey = `${status?.state ?? ''}|${status?.lastRun?.finishedAt ?? ''}|${actionVersion}`
   const { readings, tags } = useReadingsList(prefs, refreshKey)
+  const suggestions = useRenameSuggestions(refreshKey)
   const [dismissedMissing, setDismissedMissing] = useState(0)
+
+  const linkSuggestion = async (id: number): Promise<void> => {
+    await window.api.readings.renameSuggestions.link(id)
+    setActionVersion((v) => v + 1)
+  }
+  const dismissSuggestion = async (id: number): Promise<void> => {
+    await window.api.readings.renameSuggestions.dismiss(id)
+    setActionVersion((v) => v + 1)
+  }
 
   const open = (reading: Reading): void => {
     void navigate(`${readingsBase}/${encodeURIComponent(reading.citekey)}`)
@@ -185,6 +198,26 @@ export function ReadingsPage(): React.JSX.Element {
           </Notice>
         </div>
       )}
+
+      {suggestions.map((suggestion) => (
+        <div key={suggestion.id} className={styles.notice}>
+          <Notice
+            action={
+              <button
+                type="button"
+                className={styles.link}
+                onClick={() => void linkSuggestion(suggestion.id)}
+              >
+                Link
+              </button>
+            }
+            onDismiss={() => void dismissSuggestion(suggestion.id)}
+          >
+            {suggestion.oldShortCitation} looks like it may now be {suggestion.newShortCitation} —
+            link them?
+          </Notice>
+        </div>
+      ))}
 
       <div className={styles.content}>{content}</div>
     </div>

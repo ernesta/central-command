@@ -6,16 +6,20 @@ import type { SyncedFields } from '../shared/types'
 import { readingsMigrations } from './migrations'
 import {
   applySync,
+  dismissRenameSuggestion,
   getCounts,
   getReadingByCitekey,
   lastSyncRun,
+  linkRenameSuggestion,
   listAllReadings,
+  listPendingRenameSuggestions,
   recordSyncRun
 } from './repository'
 
 const T1 = '2026-01-01T10:00:00.000Z'
 const T2 = '2026-01-02T10:00:00.000Z'
 const T3 = '2026-01-03T10:00:00.000Z'
+const T4 = '2026-01-04T10:00:00.000Z'
 
 function entry(citekey: string, overrides: Partial<SyncedFields> = {}): SyncedFields {
   return {
@@ -423,6 +427,128 @@ describe('applySync: rename matching by DOI/URL (same work renamed in Zotero)', 
     expect(counts).toMatchObject({ inserted: 1, flaggedMissing: 1 })
     expect(get('oldKey').missingFromSource).toBe(true)
     expect(getReadingByCitekey(db, 'newKey')).not.toBeNull()
+  })
+})
+
+describe('applySync: suggested rename matching by title/authors/year (stage 4)', () => {
+  const sameAuthors = [{ family: 'Smith', given: 'A' }]
+  /** A title+authors+year entry with no DOI/URL on either side, distinct from the `entry()` default. */
+  const taY = (citekey: string, overrides: Partial<SyncedFields> = {}): SyncedFields =>
+    entry(citekey, {
+      fullTitle: 'A Shared Title',
+      authors: sameAuthors,
+      year: 2020,
+      reference: { titleSentence: 'A Shared Title' },
+      ...overrides
+    })
+
+  it('records a suggestion for a title/author/year match with no DOI/URL on either side, rather than renaming automatically', () => {
+    applySync(db, [taY('oldKey')], T1)
+    attachNotes('oldKey')
+    const counts = applySync(db, [taY('newKey')], T2)
+    expect(counts).toMatchObject({ inserted: 1, updated: 0, flaggedMissing: 1, deleted: 0 })
+    expect(get('oldKey').missingFromSource).toBe(true)
+    expect(get('newKey')).toBeTruthy()
+    expect(listPendingRenameSuggestions(db)).toEqual([
+      expect.objectContaining({ oldCitekey: 'oldKey', newCitekey: 'newKey' })
+    ])
+  })
+
+  it('Link applies the same merge a DOI/URL match would: id, notes and mentions survive', () => {
+    applySync(db, [taY('oldKey', { status: 'read', tags: ['keep'] })], T1)
+    attachNotes('oldKey')
+    mentionInReadingList('oldKey')
+    const oldId = get('oldKey').id
+
+    applySync(db, [taY('newKey', { status: 'to_read', tags: ['fresh'] })], T2)
+    const suggestion = listPendingRenameSuggestions(db)[0]
+
+    const result = linkRenameSuggestion(db, suggestion.id, T3)
+    expect(result).toEqual({ oldCitekey: 'oldKey', newCitekey: 'newKey' })
+    expect(getReadingByCitekey(db, 'oldKey')).toBeNull()
+    expect(get('newKey')).toMatchObject({
+      id: oldId,
+      status: 'to_read',
+      tags: ['fresh'],
+      hasNotes: true,
+      notesExcerpt: 'keep me',
+      missingFromSource: false,
+      updatedAt: T3
+    })
+    expect(db.prepare('SELECT citekey FROM reading_list_mentions').all()).toEqual([
+      { citekey: 'newKey' }
+    ])
+    expect(listPendingRenameSuggestions(db)).toEqual([])
+  })
+
+  it('linking an unknown suggestion id does nothing and returns null', () => {
+    applySync(db, [taY('oldKey')], T1)
+    attachNotes('oldKey')
+    applySync(db, [taY('newKey')], T2)
+    const before = db.prepare('SELECT * FROM readings ORDER BY id').all()
+    expect(linkRenameSuggestion(db, 999, T3)).toBeNull()
+    expect(db.prepare('SELECT * FROM readings ORDER BY id').all()).toEqual(before)
+  })
+
+  it('Dismiss clears the suggestion without touching either row', () => {
+    applySync(db, [taY('oldKey')], T1)
+    attachNotes('oldKey')
+    applySync(db, [taY('newKey')], T2)
+    const suggestion = listPendingRenameSuggestions(db)[0]
+
+    dismissRenameSuggestion(db, suggestion.id)
+
+    expect(listPendingRenameSuggestions(db)).toEqual([])
+    expect(get('oldKey').missingFromSource).toBe(true)
+    expect(get('oldKey').hasNotes).toBe(true)
+    expect(get('newKey')).toBeTruthy()
+  })
+
+  it('does not resurface a dismissed pair even when the match is recomputed on a later sync', () => {
+    applySync(db, [taY('oldKey')], T1)
+    attachNotes('oldKey')
+    applySync(db, [taY('newKey')], T2) // suggestion recorded, pending
+    dismissRenameSuggestion(db, listPendingRenameSuggestions(db)[0].id)
+
+    // newKey itself vanishes with nothing attached, so it's deleted (stage 2) -- then reappears,
+    // which makes it "newly seen" again while oldKey is still sitting there, unresolved, matching.
+    applySync(db, [], T3)
+    expect(getReadingByCitekey(db, 'newKey')).toBeNull()
+    applySync(db, [taY('newKey')], T4)
+
+    expect(listPendingRenameSuggestions(db)).toEqual([])
+  })
+
+  it('a pair sharing a DOI (not just title/authors/year) is renamed automatically, never suggested', () => {
+    applySync(db, [taY('oldKey', { reference: { titleSentence: 'x', doi: '10.1/x' } })], T1)
+    attachNotes('oldKey')
+    const counts = applySync(
+      db,
+      [taY('newKey', { reference: { titleSentence: 'x', doi: '10.1/x' } })],
+      T2
+    )
+    expect(counts).toMatchObject({ inserted: 0, updated: 1 })
+    expect(getReadingByCitekey(db, 'oldKey')).toBeNull()
+    expect(listPendingRenameSuggestions(db)).toEqual([])
+  })
+
+  it('an ambiguous title/author/year share (more than one candidate) produces no suggestion', () => {
+    applySync(db, [taY('oldA'), taY('oldB')], T1)
+    attachNotes('oldA')
+    attachNotes('oldB')
+    const counts = applySync(db, [taY('newKey')], T2)
+    expect(counts).toMatchObject({ inserted: 1, flaggedMissing: 2, deleted: 0 })
+    expect(listPendingRenameSuggestions(db)).toEqual([])
+  })
+
+  it('does not even record a suggestion for a bare vanished citekey (nothing attached), even if title/author/year match', () => {
+    applySync(db, [taY('oldKey')], T1)
+    const counts = applySync(db, [taY('newKey')], T2)
+    expect(counts).toMatchObject({ inserted: 1, deleted: 1 })
+    expect(getReadingByCitekey(db, 'oldKey')).toBeNull()
+    expect(listPendingRenameSuggestions(db)).toEqual([])
+    // Not just hidden by the join against a deleted row: never written in the first place.
+    expect(db.prepare('SELECT * FROM rename_suggestions').all()).toEqual([])
   })
 })
 

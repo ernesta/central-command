@@ -65,6 +65,11 @@ const api: Api = {
     list: (query) => ipcRenderer.invoke(READINGS_IPC.list, query),
     tags: () => ipcRenderer.invoke(READINGS_IPC.tags),
     get: (citekey) => ipcRenderer.invoke(READINGS_IPC.get, citekey),
+    renameSuggestions: {
+      list: () => ipcRenderer.invoke(READINGS_IPC.renameSuggestionsList),
+      link: (id) => ipcRenderer.invoke(READINGS_IPC.renameSuggestionsLink, id),
+      dismiss: (id) => ipcRenderer.invoke(READINGS_IPC.renameSuggestionsDismiss, id)
+    },
     notes: {
       read: (citekey) => ipcRenderer.invoke(READINGS_IPC.notesRead, citekey),
       write: (citekey, content, baseHash) =>

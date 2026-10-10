@@ -5,6 +5,7 @@ import type {
   Reading,
   ReadingCounts,
   ReadingStatus,
+  RenameSuggestion,
   SyncCounts,
   SyncedFields,
   SyncRun
@@ -98,6 +99,25 @@ function urlOfRow(referenceJson: string | null): string | undefined {
   }
 }
 
+/**
+ * A composite key for the low-confidence rename match (title + authors + year), or undefined if
+ * either side of it is missing -- a weak match on a blank title or year would be worse than no
+ * match at all. `authors` is compared as already-serialised JSON, which is how both a stored row
+ * and an incoming entry's columns represent it, so an identical author list always produces an
+ * identical string.
+ */
+function titleAuthorYearKeyOfRow(row: ReadingRow): string | undefined {
+  const title = row.full_title.trim().toLowerCase()
+  if (!title || row.year == null) return undefined
+  return JSON.stringify([title, row.authors, row.year])
+}
+
+function titleAuthorYearKeyOfEntry(entry: SyncedFields): string | undefined {
+  const title = entry.fullTitle.trim().toLowerCase()
+  if (!title || entry.year == null) return undefined
+  return JSON.stringify([title, JSON.stringify(entry.authors), entry.year])
+}
+
 interface RenameMatch {
   oldCitekey: string
   entry: SyncedFields
@@ -180,6 +200,14 @@ function toColumns(
  *   nothing is attached to it (no notes, no `reading_list_mentions` row, no `@` mention in
  *   `mentionedCitekeys`); otherwise flagged `missing_from_source`. A citekey already flagged from an
  *   earlier sync is left as it is (no grace sync, and no retroactive deletion of old flagged rows).
+ * - A vanished citekey that stays attached (flagged rather than deleted -- including one already
+ *   flagged from an earlier sync, which is attached by the invariant above) and a newly-seen one
+ *   that share no DOI/URL but do match on title + authors + year: recorded in `rename_suggestions`
+ *   as a pending suggestion (`listPendingRenameSuggestions`), rather than merged. A bare vanished
+ *   citekey (nothing attached, about to be deleted) is never matched this way -- there would be
+ *   nothing left for a later Link to merge into. An ambiguous share (more than one candidate pair)
+ *   produces no suggestion, same as stage 3's DOI/URL match. A pair already dismissed
+ *   (`dismissRenameSuggestion`) is never recorded again, by the table's unique (old, new) pair.
  *
  * Running it twice with the same input changes nothing the second time.
  */
@@ -261,7 +289,6 @@ export function applySync(
     }
 
     const renames = [...doiMatches, ...urlMatches]
-    const matchedOldCitekeys = new Set(renames.map((match) => match.oldCitekey))
     const matchedNewCitekeys = new Set(renames.map((match) => match.entry.citekey))
 
     if (renames.length > 0) {
@@ -277,10 +304,49 @@ export function applySync(
       }
     }
 
-    const present = new Set<string>()
+    // Whether each remaining vanished citekey will end up flagged rather than deleted below.
+    // Already flagged from an earlier sync (missing_from_source = 1) implies attached: stage 2
+    // never leaves a bare row flagged, so this never re-checks has_notes/mentions for one.
+    // `reading_list_mentions` is only queried when there's at least one candidate, so a caller
+    // without that table (a unit test exercising just the synced-fields path) never pays for it.
+    const attached = new Map<string, boolean>()
+    if (vanished.size > 0) {
+      const hasListMention = db.prepare(
+        'SELECT 1 FROM reading_list_mentions WHERE citekey = ? LIMIT 1'
+      )
+      for (const [citekey, row] of vanished) {
+        attached.set(
+          citekey,
+          row.missing_from_source === 1 ||
+            row.has_notes === 1 ||
+            hasListMention.get(citekey) !== undefined ||
+            mentionedCitekeys.has(citekey)
+        )
+      }
+    }
+
+    // Low-confidence rename suggestions: only among vanished citekeys that stay attached (and so
+    // keep their row to Link into) -- a bare one is about to be deleted below regardless of any
+    // match, so there would be nothing left to suggest linking to.
+    const attachedVanished = new Map([...vanished].filter(([citekey]) => attached.get(citekey)))
+    const suggestionMatches = matchByKey(
+      attachedVanished,
+      appearing,
+      (row) => titleAuthorYearKeyOfRow(row),
+      (entry) => titleAuthorYearKeyOfEntry(entry)
+    )
+    if (suggestionMatches.length > 0) {
+      const insertSuggestion = db.prepare(
+        `INSERT OR IGNORE INTO rename_suggestions (old_citekey, new_citekey, status, created_at)
+         VALUES (@oldCitekey, @newCitekey, 'pending', @now)`
+      )
+      for (const match of suggestionMatches) {
+        insertSuggestion.run({ oldCitekey: match.oldCitekey, newCitekey: match.entry.citekey, now })
+      }
+    }
+
     for (const entry of incoming) {
       if (matchedNewCitekeys.has(entry.citekey)) continue
-      present.add(entry.citekey)
       const columns = toColumns(entry)
       const current = existing.get(entry.citekey)
       if (!current) {
@@ -297,26 +363,14 @@ export function applySync(
       }
     }
 
-    const newlyMissing = [...existing].filter(
-      ([citekey, row]) =>
-        !present.has(citekey) && !matchedOldCitekeys.has(citekey) && row.missing_from_source === 0
-    )
-    if (newlyMissing.length > 0) {
-      const hasListMention = db.prepare(
-        'SELECT 1 FROM reading_list_mentions WHERE citekey = ? LIMIT 1'
-      )
-      for (const [citekey, row] of newlyMissing) {
-        const attached =
-          row.has_notes === 1 ||
-          hasListMention.get(citekey) !== undefined ||
-          mentionedCitekeys.has(citekey)
-        if (attached) {
-          flag.run({ citekey })
-          counts.flaggedMissing++
-        } else {
-          deleteRow.run(citekey)
-          counts.deleted++
-        }
+    for (const [citekey, row] of vanished) {
+      if (row.missing_from_source === 1) continue // already settled on an earlier sync
+      if (attached.get(citekey)) {
+        flag.run({ citekey })
+        counts.flaggedMissing++
+      } else {
+        deleteRow.run(citekey)
+        counts.deleted++
       }
     }
   })()
@@ -324,6 +378,107 @@ export function applySync(
   for (const { from, to } of performedRenames) onRenamed?.(from, to)
 
   return counts
+}
+
+interface RenameSuggestionRow {
+  id: number
+  old_citekey: string
+  new_citekey: string
+  old_short_citation: string
+  new_short_citation: string
+}
+
+/** Every pending (not yet linked or dismissed) suggested rename, for the "may now be" banner row. */
+export function listPendingRenameSuggestions(db: Database): RenameSuggestion[] {
+  const rows = db
+    .prepare(
+      `SELECT rs.id AS id, rs.old_citekey AS old_citekey, rs.new_citekey AS new_citekey,
+              o.short_citation AS old_short_citation, n.short_citation AS new_short_citation
+       FROM rename_suggestions rs
+       JOIN readings o ON o.citekey = rs.old_citekey
+       JOIN readings n ON n.citekey = rs.new_citekey
+       WHERE rs.status = 'pending'
+       ORDER BY rs.id`
+    )
+    .all() as RenameSuggestionRow[]
+  return rows.map((row) => ({
+    id: row.id,
+    oldCitekey: row.old_citekey,
+    newCitekey: row.new_citekey,
+    oldShortCitation: row.old_short_citation,
+    newShortCitation: row.new_short_citation
+  }))
+}
+
+/**
+ * Confirm a suggested rename: the same merge a DOI/URL match (stage 3) applies automatically,
+ * done here by hand. The vanished row (old citekey) keeps its id, notes and
+ * `reading_list_mentions`, takes the new citekey and the other row's current synced fields; the
+ * duplicate row the sync inserted under the new citekey is removed, and the suggestion with it.
+ * Returns the pair on success, or null if the suggestion (or either row it names) is no longer
+ * there -- nothing to link.
+ */
+export function linkRenameSuggestion(
+  db: Database,
+  id: number,
+  now: string
+): { oldCitekey: string; newCitekey: string } | null {
+  const suggestion = db
+    .prepare('SELECT old_citekey, new_citekey FROM rename_suggestions WHERE id = ?')
+    .get(id) as { old_citekey: string; new_citekey: string } | undefined
+  if (!suggestion) return null
+  const oldCitekey = suggestion.old_citekey
+  const newCitekey = suggestion.new_citekey
+
+  const oldRow = db.prepare('SELECT * FROM readings WHERE citekey = ?').get(oldCitekey) as
+    ReadingRow | undefined
+  const newRow = db.prepare('SELECT * FROM readings WHERE citekey = ?').get(newCitekey) as
+    ReadingRow | undefined
+  if (!oldRow || !newRow) return null
+
+  const renameRow = db.prepare(
+    `UPDATE readings SET
+       citekey = @newCitekey, short_citation = @short_citation, full_title = @full_title,
+       authors = @authors, year = @year, status = @status, tags = @tags, abstract = @abstract,
+       entry_type = @entry_type, reference = @reference, missing_from_source = 0, updated_at = @now
+     WHERE citekey = @oldCitekey`
+  )
+
+  db.transaction(() => {
+    // The duplicate row goes first: citekey is UNIQUE, and the old row is about to take this
+    // same citekey.
+    db.prepare('DELETE FROM readings WHERE citekey = ?').run(newCitekey)
+    renameRow.run({
+      oldCitekey,
+      newCitekey,
+      short_citation: newRow.short_citation,
+      full_title: newRow.full_title,
+      authors: newRow.authors,
+      year: newRow.year,
+      status: newRow.status,
+      tags: newRow.tags,
+      abstract: newRow.abstract,
+      entry_type: newRow.entry_type,
+      reference: newRow.reference,
+      now
+    })
+    db.prepare(
+      'UPDATE reading_list_mentions SET citekey = @newCitekey WHERE citekey = @oldCitekey'
+    ).run({ oldCitekey, newCitekey })
+    db.prepare('DELETE FROM rename_suggestions WHERE id = ?').run(id)
+  })()
+
+  return { oldCitekey, newCitekey }
+}
+
+/**
+ * Dismiss a suggestion without touching either reading. Permanent for this exact old/new pair
+ * (the row is kept, not deleted, so its unique (old_citekey, new_citekey) blocks the same pair
+ * ever being suggested again) -- the same old citekey may still legitimately pair with a
+ * different new one on a later sync.
+ */
+export function dismissRenameSuggestion(db: Database, id: number): void {
+  db.prepare("UPDATE rename_suggestions SET status = 'dismissed' WHERE id = ?").run(id)
 }
 
 export function recordSyncRun(

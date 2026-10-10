@@ -114,3 +114,17 @@ export interface ReadingCounts {
   unset: number
   missingFromSource: number
 }
+
+/**
+ * A vanished citekey and a newly-seen one that match on title, authors and year but share no
+ * DOI/URL (stage 4 of `docs/READINGS_SYNC_PLAN.md`), so the rename isn't automatic. Surfaced for
+ * the user to confirm (Link, which merges exactly as a DOI/URL match would) or dismiss (permanent
+ * for this pair).
+ */
+export interface RenameSuggestion {
+  id: number
+  oldCitekey: string
+  newCitekey: string
+  oldShortCitation: string
+  newShortCitation: string
+}
