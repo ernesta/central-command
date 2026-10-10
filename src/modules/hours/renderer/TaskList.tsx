@@ -3,6 +3,8 @@ import { Play, Square, Trash2 } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
 import { Dialog } from '@renderer/components/Dialog'
 import { Select } from '@renderer/components/Select'
+import { showToast } from '@renderer/components/toast-store'
+import { useNewRowKeys } from '@renderer/components/useNewRowKeys'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { formatHours } from '@shared/tracking/format'
 import type { TaskRow } from '@shared/tracking/totals'
@@ -53,6 +55,7 @@ export function TaskList({
   const [name, setName] = useState('')
   const [deleting, setDeleting] = useState<TaskRow | null>(null)
   const [problem, setProblem] = useState('')
+  const entering = useNewRowKeys(rows.map((row) => rowKey(row).toLowerCase()))
   if (rows.length === 0) return null
 
   const begin = (row: TaskRow): void => {
@@ -79,7 +82,13 @@ export function TaskList({
     <>
       <ul className={styles.list}>
         {rows.map((row) => (
-          <li key={rowKey(row).toLowerCase()} className={styles.row} data-live={row.running}>
+          <li
+            key={rowKey(row).toLowerCase()}
+            className={[styles.row, entering.has(rowKey(row).toLowerCase()) && styles.entering]
+              .filter(Boolean)
+              .join(' ')}
+            data-live={row.running}
+          >
             {onStart && onStop && (
               <button
                 type="button"
@@ -202,8 +211,13 @@ export function TaskList({
                 size="small"
                 variant="danger"
                 onClick={() => {
-                  onDelete(deleting.label, deleting.client)
+                  const { label, client, minutes } = deleting
+                  onDelete(label, client)
                   setDeleting(null)
+                  showToast(`Deleted “${label || 'Untitled'}” (${formatHours(minutes)}).`, {
+                    label: 'Undo',
+                    run: () => onSetMinutes(label, minutes, client)
+                  })
                 }}
               >
                 Delete

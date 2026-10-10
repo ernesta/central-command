@@ -137,3 +137,17 @@ button.delete:hover {
   color: var(--danger);
   font-size: var(--text-13);
 }
+/* A task just added to the day: briefly highlighted so it's easy to spot. Paired with `useNewRowKeys`,
+   whose flash lasts the same 1.4s. The keyframes are repeated in every file that uses them: CSS Modules
+   scope an `animation-name` to its own file, so a shared one elsewhere never matches. */
+.entering {
+  animation: row-added 1.4s ease-out;
+}
+@keyframes row-added {
+  from {
+    background-color: var(--selected-bg);
+  }
+  to {
+    background-color: transparent;
+  }
+}
