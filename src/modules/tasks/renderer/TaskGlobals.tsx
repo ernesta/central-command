@@ -5,18 +5,15 @@ import { NEW_TASK_SHORTCUT } from '../shared/shortcuts'
 import type { TaskWorkspace } from '../shared/types'
 import { closeNewTask, openNewTask, useNewTaskRequest } from './new-task-store'
 import { NewTaskDialog } from './NewTaskDialog'
-import { clearTaskToast, useTaskToast } from './task-toast'
 import { todayIso, useTasksWorkspace } from './tasks-paths'
 import { useTasksList } from './useTasksList'
-import styles from './TaskGlobals.module.css'
 
 /**
- * What must work anywhere in the app: the shortcut that starts a task, the one New task dialog, and the short message
- * ("Done. The next one is due …"). Renders nothing in place.
+ * What must work anywhere in the app: the shortcut that starts a task and the one New task dialog. Renders nothing
+ * in place (the app's one toast, used for "Deleted … Undo" among other messages, is shared and mounted by the shell).
  */
-export function TaskGlobals(): React.JSX.Element {
+export function TaskGlobals(): React.JSX.Element | null {
   const request = useNewTaskRequest()
-  const toast = useTaskToast()
   const { search } = useLocation()
 
   useEffect(() => {
@@ -31,28 +28,7 @@ export function TaskGlobals(): React.JSX.Element {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [search])
 
-  return (
-    <>
-      {request && <NewTaskHost list={request.list ?? ''} workspace={request.workspace} />}
-      {toast && (
-        <div className={styles.toast} role="status">
-          {toast.text}
-          {toast.action && (
-            <button
-              type="button"
-              className={styles.toastAction}
-              onClick={() => {
-                toast.action?.run()
-                clearTaskToast()
-              }}
-            >
-              {toast.action.label}
-            </button>
-          )}
-        </div>
-      )}
-    </>
-  )
+  return request && <NewTaskHost list={request.list ?? ''} workspace={request.workspace} />
 }
 
 /** Loads the workspace's tasks (for the lists to choose from) only while the dialog is open. */

@@ -6,6 +6,7 @@ import { Dialog } from '@renderer/components/Dialog'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { Segmented } from '@renderer/components/Segmented'
+import { showToast } from '@renderer/components/toast-store'
 import { LiveEditor } from '@renderer/editor/LiveEditor'
 import { MentionedIn } from '@renderer/entities/MentionedIn'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
@@ -26,7 +27,6 @@ import { DueField } from './DueField'
 import { ListField } from './ListField'
 import { setTaskStatus, STATUS_LABELS } from './task-actions'
 import { PRIORITY_LABELS } from './task-labels'
-import { showTaskToast } from './task-toast'
 import { StatusIcon } from './TaskIcons'
 import { RecurrenceField } from './RecurrenceField'
 import { TagsField } from './TagsField'
@@ -140,12 +140,12 @@ function TaskView({
       }
       await window.api.tasks.delete(task.uid)
       void navigate(backTo, { replace: true })
-      showTaskToast(`Deleted “${title.current || 'Untitled'}”.`, {
+      showToast(`Deleted “${title.current || 'Untitled'}”.`, {
         label: 'Undo',
         run: () =>
           void window.api.tasks
             .restore(task.uid)
-            .catch((e: unknown) => showTaskToast(`Couldn’t bring it back: ${ipcErrorMessage(e)}`))
+            .catch((e: unknown) => showToast(`Couldn’t bring it back: ${ipcErrorMessage(e)}`))
       })
     } catch (e) {
       setError(ipcErrorMessage(e))
@@ -468,12 +468,12 @@ function SubtaskRow({
     window.api.tasks
       .delete(kid.uid)
       .then(() =>
-        showTaskToast(`Deleted “${kid.title || 'Untitled'}”.`, {
+        showToast(`Deleted “${kid.title || 'Untitled'}”.`, {
           label: 'Undo',
           run: () =>
             void window.api.tasks
               .restore(kid.uid)
-              .catch((e: unknown) => showTaskToast(`Couldn’t bring it back: ${ipcErrorMessage(e)}`))
+              .catch((e: unknown) => showToast(`Couldn’t bring it back: ${ipcErrorMessage(e)}`))
         })
       )
       .catch((e: unknown) => onError(ipcErrorMessage(e)))

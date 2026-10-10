@@ -10,13 +10,13 @@ import {
   SeeAllLink,
   SeriesCards
 } from '@renderer/components/Landing'
+import { showToast } from '@renderer/components/toast-store'
 import { ArrowRight } from 'lucide-react'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { listValue } from '../shared/query'
 import { isBacklog, landingSections, listSummaries, type SectionRow } from '../shared/views'
 import { AddBar } from './AddBar'
 import { NewTaskButton } from './NewTaskButton'
-import { showTaskToast } from './task-toast'
 import { TasksTable } from './TasksTable'
 import { tasksAllRoute, todayIso, useTasksWorkspace } from './tasks-paths'
 import { useWorkClients } from './useWorkClients'
@@ -95,7 +95,7 @@ export function TasksLanding(): React.JSX.Element {
       const uids = sections.overdue.map((r) => r.task.uid)
       await window.api.tasks.setDue(uids, to === 'today' ? today : null)
     } catch (e) {
-      showTaskToast(`Couldn’t move them: ${ipcErrorMessage(e)}`)
+      showToast(`Couldn’t move them: ${ipcErrorMessage(e)}`)
     } finally {
       setMoving(null)
     }

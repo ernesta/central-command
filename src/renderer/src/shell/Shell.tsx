@@ -12,6 +12,7 @@ import {
 } from '@shared/shortcuts'
 import { ErrorBoundary } from '../components/ErrorBoundary'
 import { Notice } from '../components/Notice'
+import { Toast } from '../components/Toast'
 import { useSettings } from '../state/settings-context'
 import { DockActions } from './DockActions'
 import { usePastePlain } from './usePastePlain'
@@ -117,6 +118,7 @@ export function Shell(): React.JSX.Element {
       )}
       {searchOpen && <GlobalSearch onClose={() => setSearchOpen(false)} />}
       <DockActions />
+      <Toast />
       {moduleGlobals().map(({ id, Global }) => (
         <Global key={id} />
       ))}

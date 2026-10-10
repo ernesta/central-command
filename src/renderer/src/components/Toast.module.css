@@ -11,9 +11,17 @@
   color: var(--tooltip-text);
   box-shadow: var(--shadow-float);
   font-size: var(--text-14);
+  animation: toast-in var(--transition-base);
 }
 
-.toastAction {
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 4px);
+  }
+}
+
+.action {
   margin-left: 12px;
   padding: 0;
   border: 0;

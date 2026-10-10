@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronRight, Plus, Repeat } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
+import { showToast } from '@renderer/components/toast-store'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { describeRecurrence } from '../shared/recurrence'
@@ -14,7 +15,6 @@ import {
 } from '../shared/types'
 import { effectiveDue, subtaskProgress, taskTime, type SectionRow } from '../shared/views'
 import { NEXT_STATUS, STATUS_LABELS, nextStatus, setTaskStatus } from './task-actions'
-import { showTaskToast } from './task-toast'
 import { PriorityBadge, StatusIcon } from './TaskIcons'
 import { PRIORITY_LABELS } from './task-labels'
 import { TaskMenu, type MenuGroup } from './TaskMenu'
@@ -308,7 +308,7 @@ async function setPriority(task: Task, priority: TaskPriority): Promise<void> {
   try {
     await window.api.tasks.update(task.uid, { priority })
   } catch (error) {
-    showTaskToast(`Couldn’t change the priority: ${ipcErrorMessage(error)}`)
+    showToast(`Couldn’t change the priority: ${ipcErrorMessage(error)}`)
   }
 }
 

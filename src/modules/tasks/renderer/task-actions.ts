@@ -1,8 +1,8 @@
-import { formatDate } from '@shared/time'
+import { showToast } from '@renderer/components/toast-store'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
+import { formatDate } from '@shared/time'
 import { describeRecurrence } from '../shared/recurrence'
 import type { Task, TaskStatus } from '../shared/types'
-import { showTaskToast } from './task-toast'
 
 /** To do, in progress, done, and round again. */
 export const NEXT_STATUS: Record<TaskStatus, TaskStatus> = {
@@ -31,11 +31,11 @@ export async function setTaskStatus(task: Task, status: TaskStatus): Promise<voi
   try {
     const { next } = await window.api.tasks.setStatus(task.uid, status)
     if (next?.due) {
-      showTaskToast(
+      showToast(
         `Done. The next one is due ${formatDate(next.due)}${task.recurrence ? ` (${describeRecurrence(task.recurrence).toLowerCase()})` : ''}.`
       )
     }
   } catch (error) {
-    showTaskToast(`Couldn’t change the status: ${ipcErrorMessage(error)}`)
+    showToast(`Couldn’t change the status: ${ipcErrorMessage(error)}`)
   }
 }
