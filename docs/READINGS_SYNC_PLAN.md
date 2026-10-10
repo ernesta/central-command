@@ -63,9 +63,13 @@ and `docs/DECISIONS.md` ("Notes are Markdown files guarded by content hashes", "
    are read-only in this app — everything is added and removed on the Zotero side — so a reading's status
    and tags are tied to that Zotero item, not independent user data; if the item is truly gone, they go with
    it. Only `has_notes`, a `reading_list_mentions` row, or an `@` mention count as "something attached."
-2. Where should a suggested (low-confidence) rename surface — an extension of the existing "no longer in
-   your Zotero export" banner (a row reading "X looks like it may now be Y — link them?" with Link/Dismiss),
-   or somewhere else? (Only matters for stage 4.)
+2. **(Answered 10 Oct 2026: the existing banner, and Dismiss is permanent.)** A suggested rename surfaces as
+   an extension of the existing "no longer in your Zotero export" banner: a row reading "X looks like it may
+   now be Y — link them?" with Link/Dismiss. Dismissing a specific old-citekey/new-citekey pair is permanent
+   — it is never suggested again, even if both rows are still sitting there unresolved on a later sync — so
+   stage 4 needs a small stored record of what was dismissed (new table or a column, implementer's choice,
+   keyed on the pair, not on either citekey alone — the same old citekey could legitimately pair with a
+   different new one later).
 3. **(Answered 9 Oct 2026: no.)** No deletion trace is kept. Just delete; nothing is kept afterward.
 
 ## Stages (stop after each and ask; the user clears context between them)
