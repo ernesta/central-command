@@ -15,6 +15,11 @@ interface SyncServiceOptions {
    * mentions protects a row from deletion.
    */
   findMentionedCitekeys?: () => Promise<ReadonlySet<string>>
+  /**
+   * Called for each citekey a sync renamed by DOI/URL match, before the sync is reported idle, so
+   * the reading's own notes file (kept on disk under its old citekey) can follow the rename.
+   */
+  renameNotesFile?: (from: string, to: string) => Promise<void>
   now?: () => Date
 }
 
@@ -30,6 +35,7 @@ export class SyncService {
   private readonly db: Database
   private readonly getExportPath: () => string
   private readonly findMentionedCitekeys: () => Promise<ReadonlySet<string>>
+  private readonly renameNotesFile?: (from: string, to: string) => Promise<void>
   private readonly now: () => Date
   private current: SyncStatus
   private inflight: Promise<void> | null = null
@@ -40,11 +46,13 @@ export class SyncService {
     db,
     getExportPath,
     findMentionedCitekeys = () => Promise.resolve(new Set()),
+    renameNotesFile,
     now = () => new Date()
   }: SyncServiceOptions) {
     this.db = db
     this.getExportPath = getExportPath
     this.findMentionedCitekeys = findMentionedCitekeys
+    this.renameNotesFile = renameNotesFile
     this.now = now
     this.current = this.initialStatus()
   }
@@ -119,7 +127,11 @@ export class SyncService {
       const entries = parseBib(text)
       const mentioned = await this.findMentionedCitekeys()
       const finishedAt = this.now().toISOString()
-      const counts = applySync(this.db, entries, finishedAt, mentioned)
+      const renames: { from: string; to: string }[] = []
+      const counts = applySync(this.db, entries, finishedAt, mentioned, (from, to) =>
+        renames.push({ from, to })
+      )
+      for (const { from, to } of renames) await this.renameNotesFile?.(from, to)
       const run = { startedAt, finishedAt, status: 'ok' as const, ...counts, errorMessage: null }
       recordSyncRun(this.db, run)
       this.setStatus({ state: 'idle', lastRun: run, lastSuccessAt: finishedAt, message: null })

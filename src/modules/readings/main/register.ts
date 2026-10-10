@@ -14,10 +14,14 @@ import { SyncService } from './sync-service'
 import { ExportWatcher } from './watcher'
 
 function register({ db, paths, settings }: MainContext): () => void {
+  // Notes: Markdown files on disk, with caches (has_notes, excerpt) kept in the database.
+  const notes = new NotesStore({ db, notesDir: paths.readingsNotes })
+
   const sync = new SyncService({
     db,
     getExportPath: () => settings.get().zoteroExportPath,
-    findMentionedCitekeys: () => collectMentionedReadingKeys(db, backlinkFolders(paths))
+    findMentionedCitekeys: () => collectMentionedReadingKeys(db, backlinkFolders(paths)),
+    renameNotesFile: (from, to) => notes.rename(from, to)
   })
   const watcher = new ExportWatcher({ onChange: () => void sync.sync() })
 
@@ -45,8 +49,6 @@ function register({ db, paths, settings }: MainContext): () => void {
     void watcher.watch(now.zoteroExportPath).then(() => sync.sync())
   })
 
-  // Notes: Markdown files on disk, with caches (has_notes, excerpt) kept in the database.
-  const notes = new NotesStore({ db, notesDir: paths.readingsNotes })
   ipcMain.handle(READINGS_IPC.notesRead, (_event, citekey: unknown) => {
     if (typeof citekey !== 'string') throw new Error('Invalid citekey')
     return notes.read(citekey)

@@ -175,6 +175,42 @@ describe('NotesStore.write: never deleting or clobbering', () => {
   })
 })
 
+/** Rename a reading's citekey in the database directly, as `applySync`'s DOI/URL match would. */
+function renameCitekey(from: string, to: string): void {
+  db.prepare('UPDATE readings SET citekey = ? WHERE citekey = ?').run(to, from)
+}
+
+describe('NotesStore.rename', () => {
+  it('moves the notes file to follow a citekey rename, content intact', async () => {
+    await store.write('a', 'my notes', EMPTY)
+    renameCitekey('a', 'newKey')
+    await store.rename('a', 'newKey')
+    expect(existsSync(file('a.md'))).toBe(false)
+    expect(readFileSync(file('newKey.md'), 'utf8')).toBe('my notes')
+  })
+
+  it('does nothing when the citekey has no notes file', async () => {
+    renameCitekey('a', 'newKey')
+    await store.rename('a', 'newKey')
+    expect(readdirSync(dir)).toEqual([])
+  })
+
+  it('does nothing when from and to are the same', async () => {
+    await store.write('a', 'mine', EMPTY)
+    await store.rename('a', 'a')
+    expect(readFileSync(file('a.md'), 'utf8')).toBe('mine')
+  })
+
+  it('never overwrites a file already at the new name', async () => {
+    await store.write('a', 'mine', EMPTY)
+    renameCitekey('a', 'newKey')
+    writeFileSync(file('newKey.md'), 'theirs')
+    await store.rename('a', 'newKey')
+    expect(readFileSync(file('a.md'), 'utf8')).toBe('mine')
+    expect(readFileSync(file('newKey.md'), 'utf8')).toBe('theirs')
+  })
+})
+
 describe('NotesStore reindexing', () => {
   it('picks up a note written by another tool', async () => {
     writeFileSync(file('b.md'), '# From Claude\n\n- [ ] follow up')

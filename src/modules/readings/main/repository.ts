@@ -78,6 +78,67 @@ function syncedSignature(r: {
   ])
 }
 
+/** A non-empty DOI from a reading's stored `reference` JSON, or undefined. */
+function doiOfRow(referenceJson: string | null): string | undefined {
+  if (!referenceJson) return undefined
+  try {
+    return (JSON.parse(referenceJson) as ReferenceDetails).doi?.trim() || undefined
+  } catch {
+    return undefined
+  }
+}
+
+/** A non-empty URL from a reading's stored `reference` JSON, or undefined. */
+function urlOfRow(referenceJson: string | null): string | undefined {
+  if (!referenceJson) return undefined
+  try {
+    return (JSON.parse(referenceJson) as ReferenceDetails).url?.trim() || undefined
+  } catch {
+    return undefined
+  }
+}
+
+interface RenameMatch {
+  oldCitekey: string
+  entry: SyncedFields
+}
+
+/**
+ * Pair up vanished citekeys and newly-seen entries that share a value for `key`, one pair per
+ * value. A value shared by more than one candidate on either side is ambiguous and matches
+ * nothing for that value — left to the normal insert/flag/delete path rather than guessed at.
+ */
+function matchByKey(
+  vanished: ReadonlyMap<string, ReadingRow>,
+  appearing: ReadonlyMap<string, SyncedFields>,
+  keyOfRow: (row: ReadingRow) => string | undefined,
+  keyOfEntry: (entry: SyncedFields) => string | undefined
+): RenameMatch[] {
+  const vanishedByValue = new Map<string, string[]>()
+  for (const [citekey, row] of vanished) {
+    const value = keyOfRow(row)
+    if (!value) continue
+    const list = vanishedByValue.get(value)
+    if (list) list.push(citekey)
+    else vanishedByValue.set(value, [citekey])
+  }
+  const appearingByValue = new Map<string, SyncedFields[]>()
+  for (const entry of appearing.values()) {
+    const value = keyOfEntry(entry)
+    if (!value) continue
+    const list = appearingByValue.get(value)
+    if (list) list.push(entry)
+    else appearingByValue.set(value, [entry])
+  }
+  const matches: RenameMatch[] = []
+  for (const [value, oldCitekeys] of vanishedByValue) {
+    const entries = appearingByValue.get(value)
+    if (!entries || oldCitekeys.length !== 1 || entries.length !== 1) continue
+    matches.push({ oldCitekey: oldCitekeys[0], entry: entries[0] })
+  }
+  return matches
+}
+
 function toColumns(
   entry: SyncedFields
 ): Omit<
@@ -101,7 +162,18 @@ function toColumns(
 /**
  * Apply a parsed export to the database in ONE transaction.
  *
- * - New citekey: inserted.
+ * - A vanished citekey (in the database, absent from the export) and a newly-seen one (in the
+ *   export, absent from the database) that share a non-empty DOI, or failing that a non-empty
+ *   URL, are treated as the same work renamed: the existing row is updated in place to the new
+ *   citekey and fields (counted as an update, never a flag or an insert), and
+ *   `reading_list_mentions` is repointed to the new citekey in the same transaction. A DOI or URL
+ *   shared by more than one candidate on either side is ambiguous and is left to the plain
+ *   insert/flag/delete path below rather than guessed at. `onRenamed`, called once per match after
+ *   the transaction commits, lets a caller move the reading's own notes file (kept on disk under
+ *   its old citekey name) to follow — `reading_list_mentions` and the database row move inside the
+ *   transaction because they are this module's own data; a note's or list's own file content (an
+ *   `@` mention written as literal text) is not rewritten here.
+ * - New citekey (and not matched to a vanished one): inserted.
  * - Known citekey: synced fields overwritten; `updated_at` moves only if a synced
  *   field actually changed; a "missing" flag is cleared. Notes caches are never touched.
  * - Known citekey absent from the export, found missing for the first time: deleted outright if
@@ -115,7 +187,8 @@ export function applySync(
   db: Database,
   incoming: readonly SyncedFields[],
   now: string,
-  mentionedCitekeys: ReadonlySet<string> = new Set()
+  mentionedCitekeys: ReadonlySet<string> = new Set(),
+  onRenamed?: (from: string, to: string) => void
 ): SyncCounts {
   const counts: SyncCounts = {
     entriesSeen: incoming.length,
@@ -147,10 +220,66 @@ export function applySync(
   const unflag = db.prepare('UPDATE readings SET missing_from_source = 0 WHERE citekey = @citekey')
   const flag = db.prepare('UPDATE readings SET missing_from_source = 1 WHERE citekey = @citekey')
   const deleteRow = db.prepare('DELETE FROM readings WHERE citekey = ?')
+  const renameRow = db.prepare(
+    `UPDATE readings SET
+       citekey = @citekey, short_citation = @short_citation, full_title = @full_title,
+       authors = @authors, year = @year, status = @status, tags = @tags, abstract = @abstract,
+       entry_type = @entry_type, reference = @reference, missing_from_source = 0, updated_at = @now
+     WHERE citekey = @oldCitekey`
+  )
+
+  const performedRenames: { from: string; to: string }[] = []
 
   db.transaction(() => {
+    const incomingKeys = new Set(incoming.map((entry) => entry.citekey))
+    const vanished = new Map([...existing].filter(([citekey]) => !incomingKeys.has(citekey)))
+    const appearing = new Map(
+      incoming
+        .filter((entry) => !existing.has(entry.citekey))
+        .map((entry) => [entry.citekey, entry])
+    )
+
+    const doiMatches = matchByKey(
+      vanished,
+      appearing,
+      (row) => doiOfRow(row.reference),
+      (entry) => entry.reference.doi?.trim() || undefined
+    )
+    for (const match of doiMatches) {
+      vanished.delete(match.oldCitekey)
+      appearing.delete(match.entry.citekey)
+    }
+    const urlMatches = matchByKey(
+      vanished,
+      appearing,
+      (row) => urlOfRow(row.reference),
+      (entry) => entry.reference.url?.trim() || undefined
+    )
+    for (const match of urlMatches) {
+      vanished.delete(match.oldCitekey)
+      appearing.delete(match.entry.citekey)
+    }
+
+    const renames = [...doiMatches, ...urlMatches]
+    const matchedOldCitekeys = new Set(renames.map((match) => match.oldCitekey))
+    const matchedNewCitekeys = new Set(renames.map((match) => match.entry.citekey))
+
+    if (renames.length > 0) {
+      const renameMentions = db.prepare(
+        'UPDATE reading_list_mentions SET citekey = @to WHERE citekey = @from'
+      )
+      for (const match of renames) {
+        const columns = toColumns(match.entry)
+        renameRow.run({ ...columns, now, oldCitekey: match.oldCitekey })
+        renameMentions.run({ from: match.oldCitekey, to: match.entry.citekey })
+        counts.updated++
+        performedRenames.push({ from: match.oldCitekey, to: match.entry.citekey })
+      }
+    }
+
     const present = new Set<string>()
     for (const entry of incoming) {
+      if (matchedNewCitekeys.has(entry.citekey)) continue
       present.add(entry.citekey)
       const columns = toColumns(entry)
       const current = existing.get(entry.citekey)
@@ -169,7 +298,8 @@ export function applySync(
     }
 
     const newlyMissing = [...existing].filter(
-      ([citekey, row]) => !present.has(citekey) && row.missing_from_source === 0
+      ([citekey, row]) =>
+        !present.has(citekey) && !matchedOldCitekeys.has(citekey) && row.missing_from_source === 0
     )
     if (newlyMissing.length > 0) {
       const hasListMention = db.prepare(
@@ -190,6 +320,8 @@ export function applySync(
       }
     }
   })()
+
+  for (const { from, to } of performedRenames) onRenamed?.(from, to)
 
   return counts
 }

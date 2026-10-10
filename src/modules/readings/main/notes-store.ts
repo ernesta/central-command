@@ -2,7 +2,11 @@ import { readdir } from 'fs/promises'
 import type { Database } from 'better-sqlite3'
 import type { NoteContent, NoteWriteResult } from '@shared/notes'
 import { SEARCH_TEXT_LENGTH, markdownToExcerpt } from '../../../main/notes/excerpt'
-import { readNoteFile, writeNoteFileGuarded } from '../../../main/notes/guarded-file'
+import {
+  readNoteFile,
+  renameNoteFileExclusive,
+  writeNoteFileGuarded
+} from '../../../main/notes/guarded-file'
 import { noteBaseName, noteFileName, notePath } from './notes-path'
 
 interface NotesStoreOptions {
@@ -46,6 +50,19 @@ export class NotesStore {
     )
     if (wrote) this.updateCache(citekey, content)
     return result
+  }
+
+  /**
+   * Follow a reading's citekey rename (a DOI/URL match in a sync): move its notes file from the
+   * old name to the new one, if it has one. Never overwrites a file already at the new name — if
+   * one is there, both are left alone rather than risk losing either.
+   */
+  async rename(from: string, to: string): Promise<void> {
+    if (from === to) return
+    const fromPath = notePath(this.notesDir, from)
+    const { exists } = await readNoteFile(fromPath)
+    if (!exists) return // nothing to move
+    await renameNoteFileExclusive(fromPath, notePath(this.notesDir, to))
   }
 
   /** Recompute one reading's caches from its file on disk. */

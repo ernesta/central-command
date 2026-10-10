@@ -294,6 +294,138 @@ describe('applySync: missing and attached (flagged, never deleted)', () => {
   })
 })
 
+describe('applySync: rename matching by DOI/URL (same work renamed in Zotero)', () => {
+  const withDoi = (
+    citekey: string,
+    doi: string,
+    overrides: Partial<SyncedFields> = {}
+  ): SyncedFields =>
+    entry(citekey, { reference: { titleSentence: `Title of ${citekey}`, doi }, ...overrides })
+  const withUrl = (
+    citekey: string,
+    url: string,
+    overrides: Partial<SyncedFields> = {}
+  ): SyncedFields =>
+    entry(citekey, { reference: { titleSentence: `Title of ${citekey}`, url }, ...overrides })
+
+  it('updates in place on a shared DOI, keeping id and notes, and moving Reading Lists mentions', () => {
+    applySync(db, [withDoi('oldKey', '10.1/x', { status: 'read', tags: ['keep'] })], T1)
+    attachNotes('oldKey')
+    mentionInReadingList('oldKey')
+    const oldId = get('oldKey').id
+
+    const renamed: { from: string; to: string }[] = []
+    // The new export's own status/tags still win, exactly as a normal update would: the match
+    // only decides which row is "the same work", not that its user fields freeze in place.
+    const counts = applySync(
+      db,
+      [withDoi('newKey', '10.1/x', { status: 'to_read', tags: ['fresh'] })],
+      T2,
+      new Set(),
+      (from, to) => renamed.push({ from, to })
+    )
+
+    expect(counts).toMatchObject({ inserted: 0, updated: 1, flaggedMissing: 0, deleted: 0 })
+    expect(getReadingByCitekey(db, 'oldKey')).toBeNull()
+    expect(get('newKey')).toMatchObject({
+      id: oldId,
+      status: 'to_read',
+      tags: ['fresh'],
+      hasNotes: true,
+      notesExcerpt: 'keep me',
+      missingFromSource: false,
+      updatedAt: T2
+    })
+    expect(db.prepare('SELECT citekey FROM reading_list_mentions').all()).toEqual([
+      { citekey: 'newKey' }
+    ])
+    expect(renamed).toEqual([{ from: 'oldKey', to: 'newKey' }])
+  })
+
+  it('updates in place on a shared URL when neither side has a DOI', () => {
+    applySync(db, [withUrl('oldKey', 'https://example.com/paper')], T1)
+    attachNotes('oldKey')
+    const counts = applySync(db, [withUrl('newKey', 'https://example.com/paper')], T2)
+    expect(counts).toMatchObject({ inserted: 0, updated: 1, flaggedMissing: 0, deleted: 0 })
+    expect(getReadingByCitekey(db, 'oldKey')).toBeNull()
+    expect(get('newKey')).toMatchObject({ hasNotes: true, notesExcerpt: 'keep me' })
+  })
+
+  it('prefers a DOI match over a URL match when both would apply', () => {
+    // oldKey shares a DOI with "byDoi" and (coincidentally) a URL with "byUrl"; DOI wins, so "byUrl"
+    // falls through and is inserted fresh rather than being matched.
+    applySync(
+      db,
+      [entry('oldKey', { reference: { titleSentence: 'x', doi: '10.1/x', url: 'https://x/p' } })],
+      T1
+    )
+    attachNotes('oldKey')
+    const counts = applySync(
+      db,
+      [
+        entry('byDoi', { reference: { titleSentence: 'x', doi: '10.1/x' } }),
+        entry('byUrl', { reference: { titleSentence: 'y', url: 'https://x/p' } })
+      ],
+      T2
+    )
+    expect(counts).toMatchObject({ inserted: 1, updated: 1, deleted: 0, flaggedMissing: 0 })
+    expect(getReadingByCitekey(db, 'oldKey')).toBeNull()
+    expect(get('byDoi')).toMatchObject({ hasNotes: true, notesExcerpt: 'keep me' })
+    expect(get('byUrl')).toMatchObject({ hasNotes: false })
+  })
+
+  it('matches two simultaneous vanish+appear pairs by their own distinct DOIs, not cross-matched', () => {
+    applySync(db, [withDoi('oldA', '10.1/a'), withDoi('oldB', '10.1/b')], T1)
+    attachNotes('oldA')
+    attachNotes('oldB')
+    const counts = applySync(db, [withDoi('newA', '10.1/a'), withDoi('newB', '10.1/b')], T2)
+    expect(counts).toMatchObject({ inserted: 0, updated: 2, deleted: 0, flaggedMissing: 0 })
+    expect(getReadingByCitekey(db, 'oldA')).toBeNull()
+    expect(getReadingByCitekey(db, 'oldB')).toBeNull()
+    expect(get('newA').notesExcerpt).toBe('keep me')
+    expect(get('newB').notesExcerpt).toBe('keep me')
+  })
+
+  it('leaves an ambiguous DOI (shared by more than one candidate) to the flag/delete path', () => {
+    applySync(db, [withDoi('oldA', '10.1/dup'), withDoi('oldB', '10.1/dup')], T1)
+    attachNotes('oldA')
+    attachNotes('oldB')
+    const counts = applySync(db, [withDoi('newKey', '10.1/dup')], T2)
+    // No match: oldA and oldB are both flagged (attached), newKey is inserted fresh.
+    expect(counts).toMatchObject({ inserted: 1, updated: 0, flaggedMissing: 2, deleted: 0 })
+    expect(get('oldA').missingFromSource).toBe(true)
+    expect(get('oldB').missingFromSource).toBe(true)
+    expect(get('newKey').hasNotes).toBe(false)
+  })
+
+  it('a vanished citekey with no DOI/URL match still goes through stage 2 logic unchanged', () => {
+    applySync(db, [entry('oldKey'), entry('untouched')], T1)
+    attachNotes('oldKey')
+    const counts = applySync(db, [entry('newKey'), entry('untouched')], T2)
+    expect(counts).toMatchObject({ inserted: 1, updated: 0, flaggedMissing: 1, deleted: 0 })
+    expect(get('oldKey').missingFromSource).toBe(true)
+    expect(get('newKey').hasNotes).toBe(false)
+  })
+
+  it('a bare vanished citekey (nothing attached) with no DOI/URL match is deleted as before', () => {
+    applySync(db, [entry('oldKey')], T1)
+    const counts = applySync(db, [entry('newKey')], T2)
+    expect(counts).toMatchObject({ inserted: 1, updated: 0, flaggedMissing: 0, deleted: 1 })
+    expect(getReadingByCitekey(db, 'oldKey')).toBeNull()
+  })
+
+  it('mutation check: without the DOI/URL match, the rename falls back to flag + insert', () => {
+    // Simulates disabling the match: no reference carries a DOI/URL, so the normal path applies.
+    applySync(db, [entry('oldKey')], T1)
+    attachNotes('oldKey')
+    const counts = applySync(db, [entry('newKey')], T2)
+    expect(counts).not.toMatchObject({ updated: 1 })
+    expect(counts).toMatchObject({ inserted: 1, flaggedMissing: 1 })
+    expect(get('oldKey').missingFromSource).toBe(true)
+    expect(getReadingByCitekey(db, 'newKey')).not.toBeNull()
+  })
+})
+
 describe('applySync: delete-if-unattached when missing', () => {
   it('deletes a bare citekey that leaves the export, instead of leaving it flagged', () => {
     applySync(db, [entry('a'), entry('b')], T1)
