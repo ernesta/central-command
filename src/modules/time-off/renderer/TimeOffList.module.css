@@ -63,3 +63,17 @@
 .actions > * + * {
   margin-left: 8px;
 }
+/* A day just added, or moved here by an edit: briefly highlighted so it's easy to spot. Paired with
+   `useNewRowKeys`, whose flash lasts the same 1.4s. The keyframes are repeated in every file that
+   uses them: CSS Modules scope an `animation-name` to its own file, so a shared one elsewhere never matches. */
+.entering {
+  animation: row-added 1.4s ease-out;
+}
+@keyframes row-added {
+  from {
+    background-color: var(--selected-bg);
+  }
+  to {
+    background-color: transparent;
+  }
+}

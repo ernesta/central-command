@@ -4,6 +4,8 @@ import { Dialog } from '@renderer/components/Dialog'
 import { Input } from '@renderer/components/Input'
 import { FieldError } from '@renderer/components/FieldError'
 import { Select } from '@renderer/components/Select'
+import { showToast } from '@renderer/components/toast-store'
+import { useNewRowKeys } from '@renderer/components/useNewRowKeys'
 import { formatDay } from '@shared/tracking/format'
 import { timeOffRows, type TimeOffRow } from '@shared/tracking/timeoff'
 import { TIME_OFF_TYPES, type TimeOffType, type TrackingYear } from '@shared/tracking/types'
@@ -22,6 +24,7 @@ const TYPE_LABELS = Object.fromEntries(TIME_OFF_TYPES.map((t) => [t.id, t.label]
 function DayRow({
   row,
   editing,
+  entering,
   onEdit,
   onDone,
   onSave,
@@ -29,6 +32,8 @@ function DayRow({
 }: {
   row: TimeOffRow
   editing: boolean
+  /** Just added, or moved here by an edit: flashed once to show where it landed. */
+  entering: boolean
   onEdit: () => void
   onDone: () => void
   /** Resolves with an error message, or null when the change went through. */
@@ -44,7 +49,7 @@ function DayRow({
 
   if (!editing)
     return (
-      <tr>
+      <tr className={entering ? styles.entering : undefined}>
         <td>{formatDay(row.date)}</td>
         <td>{TYPE_LABELS[row.type]}</td>
         {status}
@@ -126,6 +131,7 @@ export function TimeOffList({
   const rows = timeOffRows(data, today)
   const [editing, setEditing] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<TimeOffRow | null>(null)
+  const entering = useNewRowKeys(rows.map((row) => `${row.date}|${row.type}`))
   if (rows.length === 0) return null
 
   return (
@@ -149,6 +155,7 @@ export function TimeOffList({
                 key={`${row.date}|${row.type}`}
                 row={row}
                 editing={editing === row.date}
+                entering={entering.has(`${row.date}|${row.type}`)}
                 onEdit={() => setEditing(row.date)}
                 onDone={() => setEditing(null)}
                 onSave={async (date, type) => {
@@ -180,8 +187,23 @@ export function TimeOffList({
                 size="small"
                 variant="danger"
                 onClick={() => {
-                  void window.api.tracking.removeTimeOff(workspace, data.start, deleting.date)
+                  const { date, type } = deleting
                   setDeleting(null)
+                  void window.api.tracking
+                    .removeTimeOff(workspace, data.start, date)
+                    .then((result) => {
+                      if (!result.ok) return
+                      showToast(`Removed ${formatDay(date)}.`, {
+                        label: 'Undo',
+                        run: () => {
+                          void window.api.tracking
+                            .addTimeOff(workspace, data.start, date, date, type)
+                            .then((added) => {
+                              if (!added.ok) showToast('Couldn’t bring it back.')
+                            })
+                        }
+                      })
+                    })
                 }}
               >
                 Delete
