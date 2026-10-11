@@ -181,3 +181,161 @@ export function applyCitations(text: string, proposals: Proposal[]): string {
   }
   return out
 }
+
+/**
+ * Citekey markers: the Pandoc/Obsidian shorthand `[@Harm2004]` that came in with the imported notes. The plain-text
+ * pass above never sees them (they are not "Author (Year)"), so they stayed as text. A marker names its first author's
+ * surname and the year, which is enough to find the reading but not enough to write the label, so the label is built
+ * from the reading's own authors in the style the rest of the library uses: "Harm & Seidenberg (2004)" when the marker
+ * is read as part of the sentence, "Harm & Seidenberg, 2004" when it sits in brackets as a reference.
+ */
+
+export interface CitekeyMarker {
+  /** The whole `[@Harm2004]`. */
+  start: number
+  end: number
+  text: string
+  /** The surname and year as written, and a year suffix ("2019a") when there is one. */
+  name: string
+  year: number
+  suffix: string
+  /**
+   * True when the marker is a reference inside brackets ("(e.g., following [@Pretorius2019])") rather than a name the
+   * sentence reads out ("(like the languages [@Pretorius2019] discusses)"): it closes the brackets it sits in.
+   */
+  parenthetical: boolean
+}
+
+export interface CitekeyProposal {
+  marker: CitekeyMarker
+  resolution: Resolution
+  /** What the marker becomes when it is linked; '' when it is not. */
+  label: string
+}
+
+const CITEKEY_MARKER = new RegExp(
+  `\\[@(${PARTICLE}[\\p{L}][\\p{L}'’\\-]*)((?:19|20)\\d\\d)([a-z])?\\]`,
+  'gu'
+)
+/** Anything else marker-shaped, so a form this does not understand is reported instead of passed over. */
+const CITEKEY_SHAPED = /\[@[^\]\n]*\]/g
+
+/** Brackets that are the writer's own: inline links and inline code are taken out before they are counted. */
+function openBrackets(line: string): number {
+  const bare = line.replace(/\[[^\]\n]*\]\([^)\n]*\)/g, '').replace(/`[^`\n]*`/g, '')
+  let depth = 0
+  for (const c of bare) {
+    if (c === '(') depth++
+    else if (c === ')' && depth > 0) depth--
+  }
+  return depth
+}
+
+/** Every citekey marker, in order, outside protected ranges. */
+export function findCitekeyMarkers(text: string): CitekeyMarker[] {
+  const skip = protectedRanges(text)
+  const found: CitekeyMarker[] = []
+  for (const m of text.matchAll(CITEKEY_MARKER)) {
+    const start = m.index
+    const end = start + m[0].length
+    if (skip.some(([a, b]) => start < b && end > a)) continue
+    const lineStart = text.lastIndexOf('\n', start - 1) + 1
+    const after = text.slice(end).replace(/^[ \t]+/, '')
+    found.push({
+      start,
+      end,
+      text: m[0],
+      name: m[1],
+      year: Number(m[2]),
+      suffix: m[3] ?? '',
+      parenthetical: after.startsWith(')') && openBrackets(text.slice(lineStart, start)) > 0
+    })
+  }
+  return found
+}
+
+/** Marker-shaped text this does not understand, as written. */
+export function unreadableCitekeys(text: string): Array<{ start: number; text: string }> {
+  const known = new Set(findCitekeyMarkers(text).map((m) => m.text))
+  const skip = protectedRanges(text)
+  return [...text.matchAll(CITEKEY_SHAPED)]
+    .filter(
+      (m) =>
+        !known.has(m[0]) &&
+        !skip.some(([a, b]) => (m.index as number) < b && (m.index as number) + m[0].length > a)
+    )
+    .map((m) => ({ start: m.index, text: m[0] }))
+}
+
+/** Surnames the way the library writes them: "Pretorius", "Harm & Seidenberg", "Chang et al.". */
+export function apaNames(authors: string[]): string {
+  if (authors.length === 0) return ''
+  if (authors.length === 1) return authors[0]
+  if (authors.length === 2) return `${authors[0]} & ${authors[1]}`
+  return `${authors[0]} et al.`
+}
+
+/** The label a marker becomes: a name the sentence reads out, or a reference in brackets. */
+export function citekeyLabel(marker: CitekeyMarker, reading: CitableReading): string {
+  const year = `${marker.year}${marker.suffix}`
+  const names = apaNames(reading.authors)
+  if (!names) return year
+  return marker.parenthetical ? `${names}, ${year}` : `${names} (${year})`
+}
+
+/** The reading a marker names: the year and the first author's surname, and only when exactly one reading fits. */
+export function resolveCitekeyMarker(
+  marker: CitekeyMarker,
+  readings: CitableReading[]
+): Resolution {
+  const fits = readings.filter(
+    (r) => r.year === marker.year && r.authors.length > 0 && sameName(r.authors[0], marker.name)
+  )
+  if (fits.length === 1) return { kind: 'linked', citekey: fits[0].citekey }
+  if (fits.length > 1) return { kind: 'ambiguous', citekeys: fits.map((r) => r.citekey) }
+  return { kind: 'none' }
+}
+
+export function proposeCitekeys(text: string, readings: CitableReading[]): CitekeyProposal[] {
+  return findCitekeyMarkers(text).map((marker) => {
+    const resolution = resolveCitekeyMarker(marker, readings)
+    const reading =
+      resolution.kind === 'linked'
+        ? readings.find((r) => r.citekey === resolution.citekey)
+        : undefined
+    return { marker, resolution, label: reading ? citekeyLabel(marker, reading) : '' }
+  })
+}
+
+/** The text with every linked marker replaced by `[label](cc://reading/citekey)`. */
+export function applyCitekeys(text: string, proposals: CitekeyProposal[]): string {
+  let out = text
+  const linked = proposals.filter((p) => p.resolution.kind === 'linked')
+  for (const p of [...linked].reverse()) {
+    const citekey = (p.resolution as { citekey: string }).citekey
+    out =
+      out.slice(0, p.marker.start) +
+      `[${escapeLabel(p.label)}](${entityHref({ kind: 'reading', key: citekey })})` +
+      out.slice(p.marker.end)
+  }
+  return out
+}
+
+/**
+ * The rewrite undone: every new link back to the marker it came from. The caller checks this gives back the original
+ * text exactly, so a rewrite that touched anything else is left alone rather than written.
+ */
+export function undoCitekeys(next: string, proposals: CitekeyProposal[]): string {
+  let out = next
+  const linked = proposals.filter((p) => p.resolution.kind === 'linked')
+  let at = 0
+  for (const p of linked) {
+    const citekey = (p.resolution as { citekey: string }).citekey
+    const link = `[${escapeLabel(p.label)}](${entityHref({ kind: 'reading', key: citekey })})`
+    const found = out.indexOf(link, at)
+    if (found < 0) return next
+    out = out.slice(0, found) + p.marker.text + out.slice(found + link.length)
+    at = found + p.marker.text.length
+  }
+  return out
+}
