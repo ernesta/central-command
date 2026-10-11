@@ -312,7 +312,7 @@ Order agreed: A, B, D, E, then C. For each: do it on a scratch library (never th
 - [x] **DONE 11 Oct 2026 — B. Work's Hours Delete** (`docs/DECISIONS.md`, "Work's Hours: Delete, Undo and Discard driven"; one bug fixed: Undo lost the task link) (see "Delete on saved Hours rows" above): drive Delete, Undo and Discard on Work's Hours in dev mode and the production build; fix what breaks.
 - [x] **DONE 11 Oct 2026 — D. Two small Hours bugs** (`docs/DECISIONS.md`, "Hours per week for a no-aim contract…"; the first fixed, the second was not a bug and is now tested) (same CONTRACTS_PLAN list): "Hours per week" in Settings reads 0:00 for a no-aim contract and cannot be set back to "none"; check that a weekly-invoiced contract shows its week header on both the Week card and the invoice card.
 - [x] **DONE 11 Oct 2026 — E. Duplicate-key warning on a reading's page** (`docs/DECISIONS.md`, "The duplicate-key warning on a reading's page"; the cause was `ReadingListMentions` keying two mentions of one reading in one section alike, not `ReadingDetailPage.tsx`; fixed).
-- [ ] **C. Tasks at phone width** ("Tasks: review the build", "Not tested"): check Tasks in a narrow window, fix clipping and overflow.
+- [x] **DONE 11 Oct 2026 — C. Tasks at phone width** (`docs/DECISIONS.md`, "Tasks at narrow widths"; the window cannot go below 960 px; two clips at 960 fixed: the table's Due column and a long task title) ("Tasks: review the build", "Not tested").
 - Skipped on purpose, they need the user: "Say when a filter is applied" (wording), and the 14 live editor questions.
 - Done in this round: Previous TODOs no longer come back (carry-over is off since 11 Oct 2026; roadmap line corrected).
 
