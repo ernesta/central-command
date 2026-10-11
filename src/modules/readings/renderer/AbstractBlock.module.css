@@ -1,18 +1,3 @@
-.block {
-  padding: 18px 22px;
-  background: var(--surface);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-card);
-}
-.label {
-  font-family: var(--font-body);
-  margin: 0 0 8px;
-  color: var(--text-muted);
-  font-size: var(--text-11);
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
 .text {
   margin: 0;
   color: var(--text-secondary);
@@ -27,7 +12,7 @@
   -webkit-box-orient: vertical;
 }
 .toggle {
-  margin-top: 8px;
+  justify-self: start;
   padding: 0;
   border: 0;
   background: transparent;

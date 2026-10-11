@@ -68,9 +68,9 @@ export function ReadingDetailPage(): React.JSX.Element {
 }
 
 /**
- * One reading: what it is at the top, your notes in the main column, and everything *about* it —
- * the reference, your notes' outline, the lists it is in and where it is mentioned — in the side
- * column, the same arrangement as a note, a meeting and a training entry.
+ * One reading: what it is at the top, then the paper itself in the main column (its reference, its
+ * abstract, your notes), with the ways in and out of it — your notes' outline, the lists it is in,
+ * where it is mentioned — in the side column, as a note, a meeting and a training entry have.
  */
 function ReadingView({
   reading,
@@ -127,7 +127,6 @@ function ReadingView({
         docRef={docRef}
         side={
           <>
-            <ReferenceBlock reading={reading} />
             <NoteOutline text={snapshot.text} docRef={docRef} />
             <ReadingListMentions citekey={reading.citekey} />
             <MentionedIn kind="reading" entityKey={reading.citekey} />
@@ -135,6 +134,7 @@ function ReadingView({
         }
       >
         <div className={styles.docStack}>
+          <ReferenceBlock reading={reading} />
           {reading.abstract && <AbstractBlock abstract={reading.abstract} />}
           <NotesSection session={session} snapshot={snapshot} />
         </div>

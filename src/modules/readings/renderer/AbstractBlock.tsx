@@ -1,4 +1,5 @@
 import { useId, useState } from 'react'
+import { Panel } from '@renderer/components/Panel'
 import styles from './AbstractBlock.module.css'
 
 /** Roughly six lines at the reading column's width; longer abstracts start collapsed. */
@@ -11,8 +12,7 @@ export function AbstractBlock({ abstract }: { abstract: string }): React.JSX.Ele
   const textId = useId()
 
   return (
-    <section className={styles.block} aria-label="Abstract">
-      <h2 className={styles.label}>Abstract — synced from Zotero</h2>
+    <Panel label="Abstract" heading="Abstract — synced from Zotero">
       <p
         id={textId}
         className={[styles.text, collapsible && !expanded && styles.clamped]
@@ -32,6 +32,6 @@ export function AbstractBlock({ abstract }: { abstract: string }): React.JSX.Ele
           {expanded ? 'Show less' : 'Show more'}
         </button>
       )}
-    </section>
+    </Panel>
   )
 }
