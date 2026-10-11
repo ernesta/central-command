@@ -304,6 +304,19 @@ Choices the plan left open, made conservatively; change any of them by telling C
 
 ### For the user (review and decisions)
 
+### For Claude: low-involvement queue (11 Oct 2026, the user's go-ahead; one item per session, then stop)
+
+Order agreed: A, B, D, E, then C. For each: do it on a scratch library (never the real one), test/lint/typecheck pass, write up in `docs/DECISIONS.md`, small commits, push (the user allowed pushing for these), tick it here, then stop and give the user the prompt for the next one. No decisions for the user unless a fix needs a UI choice.
+
+- [ ] **A. Contract tests and checks** (`docs/CONTRACTS_PLAN.md`, "TODO (deferred …)"): component tests for `InvoiceCard` (week and month, with and without an aim), the new-contract form (refusals, disabled Add) and the no-aim branches of `WeekCard`, `BalanceCard`, `WeeksChart`, `AllWeeks`, `YearsTable`; mutation checks on `hasAim` and `contractToShow`; drive the Hours page in dev mode, including a contract that has ended while an older one holds today.
+- [ ] **B. Work's Hours Delete, not driven** (see "Delete on saved Hours rows" above): drive Delete, Undo and Discard on Work's Hours in dev mode and the production build; fix what breaks.
+- [ ] **D. Two small Hours bugs** (same CONTRACTS_PLAN list): "Hours per week" in Settings reads 0:00 for a no-aim contract and cannot be set back to "none"; check that a weekly-invoiced contract shows its week header on both the Week card and the invoice card.
+- [ ] **E. Duplicate-key warning on a reading's page** (stage 8 finding): `ReadingDetailPage.tsx` gives two sibling components the same `key`; dev mode only, harmless.
+- [ ] **C. Tasks at phone width** ("Tasks: review the build", "Not tested"): check Tasks in a narrow window, fix clipping and overflow.
+- Skipped on purpose, they need the user: "Say when a filter is applied" (wording), and the 14 live editor questions.
+- Done in this round: Previous TODOs no longer come back (carry-over is off since 11 Oct 2026; roadmap line corrected).
+
+
 - [x] **DONE 11 Oct 2026: only "offer" (`Study 1 Model.md`, line 29) and "Rastle's" (`2025-12-17 Rastle Lab.md`, line 13) changed, the other three left as written at the user's word; backups `backups/prose-chips-2026-10-11/` and `prose-chips-2-2026-10-11/`.** (Original item: five spots where the prose reads oddly around a new entity chip.) Found while turning `[@Harm2004]` markers into reading chips: the marker hid the problem, the chip shows it. All five are your own wording, so nothing was changed — read each and tell Claude the fix, or edit in the app. `docs/DECISIONS.md`, "Citekey markers to reading entities".
   - [ ] `notes/research/Study 1 Model.md` line 23 — "connects with Pretorius (2019) two main linguistic features"; wants "Pretorius's".
   - [ ] `notes/research/Study 1 Model.md` line 29 — "Ziegler & Goswami (2005) offers a complementary … view"; wants "offer" (two authors). Line 20 of the same note already says "provide", line 38 "add".
