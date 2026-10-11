@@ -1,5 +1,19 @@
 # Roadmap
 
+**A reading's metadata in the side column (11 Oct 2026): built, committed, not pushed, not driven in the app**
+(`docs/DECISIONS.md`, "A reading's metadata belongs in the side column"). The reading page had the APA reference, the
+reading lists and Mentioned in stacked down the middle, the last two touching; they are now a column of cards on the
+right, with an outline of your notes, the same shape as a note, a meeting and a training entry. Three shared pieces
+came out of it: `SidePanel` (one card for every panel), `DocSplit` (one grid for a note and its panels, used by all
+five pages) and `NoteOutline` moved to the shared notes machinery.
+
+- **For you to look at**, since this container cannot run the app: the reading page itself, and the four pages the
+  shared layout now draws — a meeting, a note, a training entry and the training plan. In particular the side column
+  on a short screen (it scrolls on its own now, rather than each panel being sticky) and Training's two-panel side at
+  full width.
+- Left as they were: the blank strip between the text and the panels on a wide screen (every page has it, and always
+  has), and the training plan's uncapped text width, which is still your open question below.
+
 **Non-entity text to entities (11 Oct 2026): DONE and applied to the real library; nothing left to decide** (`docs/DECISIONS.md`, "Citekey markers to reading entities", "People named in prose to person entities", "The three rules for people in prose", "Mapping the names the rules could not resolve").
 
 - `npm run link:citekeys` — the imported `[@Harm2004]` shorthand: 23 markers, 6 readings, 2 notes. None left.

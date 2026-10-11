@@ -2695,3 +2695,64 @@ Caitlin Collis." Three mentions fell outside those, and were put to her with a r
   copy and diffed first, then the real library diffed against that copy and found byte-identical): 8 chips added in 7
   notes, **74 person chips** in the library, zero rule violations, nothing left to map, and a second run changes
   nothing. A possessive reads correctly: `[Caitlin](cc://person/Caitlin%20Baron)'s guidance`.
+
+## A reading's metadata belongs in the side column (11 Oct 2026)
+
+The user, looking at a reading's page: "this looks terrible. Of course the vertical spacing between the two components
+is an issue but more importantly, this is the sort of metadata that should be displayed in the sidebar on the right.
+Review similar features and make sure there is a consistent way to do it."
+
+**What was wrong.** The reading page stacked everything in one column: the APA reference, the abstract, the reading
+lists, where it is mentioned, then the notes. Each block set its own `margin-top` (24px, 28px, 8px) and `MentionedIn`
+set none at all — it was built for a side column, where the column's gap does the spacing — so on this page the
+reference card and the Mentioned-in card touched. The spacing bug and the layout bug were the same bug: **nothing
+owned the spacing**, because the page was a stack of blocks that each guessed.
+
+**The arrangement, now the same on all five pages with a note.** What the thing *is* at the top, the text in the main
+column, and everything *about* it in a column of cards on the right. Meetings (Topics, Mentioned in), Notes (Outline,
+Mentioned in) and Training entries (Files, Outline) already did this; Readings now does too, with the reference and its
+Copy, an outline of the user's own notes, the lists it is in, and where it is mentioned.
+
+**Three pieces came out of it, and none is a new idea — each is the existing pattern, written once.**
+
+- **`SidePanel`** (`renderer/src/components/`): the card each panel drew for itself — surface, border, radius,
+  small-caps label — with the padding and gaps that had drifted apart (gap 8 or 10, padding 16 or 16/20) settled at one
+  value. It takes a `label` (the accessible name), an optional fuller `heading` where one says more ("Topics · 1 of 3
+  discussed"), `actions` for the heading row, and `as` for the landmark: `nav` for a way around the page, `aside`
+  beside it, `section` otherwise. Adopted by Topics, Files, Mentioned in, the outline, the APA reference and the
+  reading-list mentions.
+- **`DocSplit`** (`renderer/src/notes/`, beside `EditorCard`): the grid four pages had each copied — text capped at
+  780px, a 260px column of panels, 40px between, one column under 900px. The two real differences are asked for by
+  name rather than re-specified: `roomySide` (Training's two panels side by side at 1400px and up) and `fullWidth`
+  (the Training plan, whose text is deliberately uncapped while that question is still open in `docs/ROADMAP.md`).
+- **`NoteOutline` moved** to `renderer/src/notes/`. Three modules drew it and Readings is the fourth; it was never
+  Notes' own, and CLAUDE.md already says shared notes machinery lives there.
+
+**Decisions worth keeping:**
+
+- **The column scrolls, not each panel.** The outline and topics panels were each `position: sticky` with their own
+  `max-height` and `overflow`, inside a column that was *also* sticky. That works for two panels and fails for four:
+  the ones past the fold cannot be reached. The column owns it now, which is what lets Readings carry four. It keeps
+  4px of padding (taken back with a negative margin) so a focused row's ring is not clipped by that scrolling — the
+  pitfall CLAUDE.md records.
+- **The abstract stays in the main column.** It is the paper's own prose, not metadata about it, and a paragraph in a
+  260px strip reads badly. The main column is "the paper, then your notes on it".
+- **Panel order: reference, outline, reading lists, mentioned in.** The reference first because its Copy is the thing
+  used most; the outline next because it belongs to the text beside it; the two "where does this appear" panels last,
+  and both draw nothing when empty.
+- **Readings gained an outline** it did not have. Every other page with an editor has one, and the user has said their
+  reading notes are often long.
+- **The notes session moved up to the page.** The outline needs the text as it is typed, and `NotesSection` owned the
+  session. The page opens it (`ReadingView`, keyed by citekey, the shape `MeetingPage` already uses) and hands it down.
+- **A reading-list mention shows its section on its own line**, not after a `·` left dangling at the end of a narrow
+  line, and its annotation is quieter (12px, muted) now that it sits in a side column and not the page body.
+
+**How it was checked, and what that does not cover.** This was built in a Linux cloud container, where the app cannot
+be driven: no Electron, no macOS, no screen. Instead the real components were mounted in Chromium through a Vite
+harness with a stubbed `window.api` (the reading from the user's own screenshot, nine backlinks, a reading list, a
+four-heading note) and photographed: light and dark, 1440px and 860px, scrolled, plus the four panels in both the
+one-column and the `roomySide` arrangement. The side column measured sticky and scrollable at 1440px and static at
+860px, as intended. Unit tests cover `SidePanel` and `DocSplit`. **Not done:** the app itself (production build and dev
+mode), and the real-library editor gate, which needs `~/CentralCommand`. Nothing here touches the editor's internals,
+but every page that holds one moved, so Meetings, Notes, Training (entry and plan) and Readings each want a look in the
+real app before this is pushed.

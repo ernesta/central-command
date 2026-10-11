@@ -106,7 +106,10 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
 - `src/modules/<name>/`: one folder per feature module, split into `main/`, `renderer/` and `shared/`, with an
   `index.ts` manifest the shell reads. Readings and Meetings are the patterns to copy. Shared notes machinery
   (guarded file access, watcher, editor, session) lives in `src/main/notes/` and `src/renderer/src/notes/`; the
-  remembered-UI-state hook is `useModuleState`.
+  remembered-UI-state hook is `useModuleState`. A page with a note has one shape, and it is not re-specified per page:
+  `DocSplit` (`renderer/src/notes/`) is the text-and-panels grid, `SidePanel` (`renderer/src/components/`) is the card
+  each panel sits in, and the side column — not the panel — is what stays in view and scrolls (`docs/DECISIONS.md`,
+  "A reading's metadata belongs in the side column").
 - `src/renderer/src/editor/`: the one editor, `LiveEditor` (CodeMirror 6; the Markdown text is the document and everything drawn is a decoration
   over it, so opening never reformats and saving writes exactly what is in the editor; markers show only where the cursor is). Notes, Work notes,
   Meetings, Training entries and plan, Reading lists and Readings notes all render it inside `EditorCard`. Decision: `docs/DECISIONS.md`, "Notes
@@ -176,7 +179,8 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   soon"; Ideas, Data Sources, Inbox and Thesis are not modules.
 - Since the Notes review: every editor sits in the shared `EditorCard` (`src/renderer/src/notes/`): a white window with a quiet line
   "Created · Edited · N words" under the text (`docs/DECISIONS.md`, "Editor card"), and a live outline of its own headings beside it
-  (`NoteOutline`, Notes only so far). Meetings' and Training's tables use the shared `useRowNavigation`. All importers and the topic
+  (`NoteOutline`, in `src/renderer/src/notes/` since 11 Oct 2026; Notes, Training entries, the Training plan and Readings).
+  Meetings' and Training's tables use the shared `useRowNavigation`. All importers and the topic
   conversion are applied to the real library (dry runs find nothing left). Everything up to 6 Oct 2026 is pushed. Dark mode is built (Settings → Theme; `docs/DECISIONS.md`, "Dark mode"): colours are `light-dark()` pairs in `tokens.css`, so
   a new colour needs both values. Settings is categorised into tabs (General, one per module, Shortcuts, About; `docs/DECISIONS.md`,
   "Settings").
