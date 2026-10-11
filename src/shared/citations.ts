@@ -1,4 +1,5 @@
 import { entityHref, escapeLabel } from './entities'
+import { protectedRanges } from './note-text'
 
 /**
  * Plain-text citations ("Kim et al. (2020)", "(Castles & Coltheart, 2004)") to reading entities (notes feedback round,
@@ -44,27 +45,6 @@ const CITATION = new RegExp(
     `(?:\\s+\\(${YEAR}\\)|,\\s+\\(?${YEAR}(?![\\p{L}\\d]|[–-]\\d))`,
   'gu'
 )
-
-/** Ranges that must never be touched: front matter, fenced and inline code, existing links, URLs, headings. */
-function protectedRanges(text: string): Array<[number, number]> {
-  const ranges: Array<[number, number]> = []
-  const front = /^---\r?\n[\s\S]*?\r?\n---[ \t]*(?:\r?\n|$)/.exec(text)
-  if (front) ranges.push([0, front[0].length])
-  let offset = 0
-  let fenced = false
-  for (const line of text.split('\n')) {
-    const end = offset + line.length
-    if (/^\s*(```|~~~)/.test(line)) {
-      fenced = !fenced
-      ranges.push([offset, end])
-    } else if (fenced || /^\s{0,3}#{1,6}\s/.test(line)) ranges.push([offset, end])
-    offset = end + 1
-  }
-  for (const re of [/`[^`\n]*`/g, /\[[^\]\n]*\]\([^)\n]*\)/g, /<?https?:\/\/[^\s)>]+>?/g]) {
-    for (const m of text.matchAll(re)) ranges.push([m.index, m.index + m[0].length])
-  }
-  return ranges
-}
 
 const norm = (s: string): string =>
   s
