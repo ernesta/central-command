@@ -6,7 +6,7 @@
 }
 .table {
   width: 100%;
-  min-width: 900px;
+  min-width: 720px;
   table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
@@ -18,7 +18,7 @@
   width: 64px;
 }
 .colList {
-  width: 220px;
+  width: 180px;
 }
 .colPriority {
   width: 84px;
