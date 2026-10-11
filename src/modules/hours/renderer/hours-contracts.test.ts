@@ -104,6 +104,26 @@ describe('the no-aim branches of the Hours cards', () => {
     expect(host.querySelectorAll('[aria-hidden]').length).toBe(host.querySelectorAll('svg').length)
   })
 
+  it.each([false, true])(
+    'a weekly-invoiced contract (aim %s) shows the same week header on the Week card and the invoice card',
+    (aim) => {
+      for (const week of ['2026-09-28', '2026-10-05']) {
+        const data = contract({ aim, invoice: 'week' })
+        const label = (el: React.JSX.Element): string | undefined => {
+          const host = mount(el)
+          const text = host.querySelector('header span')?.textContent ?? undefined
+          unmount()
+          return text
+        }
+        const props = { data, week, onWeekChange: noop, now: NOW }
+        const weekCard = label(createElement(WeekCard, { workspace: 'work', ...props }))
+        const invoice = label(createElement(InvoiceCard, props))
+        expect(weekCard).toMatch(/^Week \d+ · /)
+        expect(invoice).toBe(weekCard)
+      }
+    }
+  )
+
   it('WeekCard with an aim shows the plan and a balance', () => {
     const host = mount(
       createElement(WeekCard, {
