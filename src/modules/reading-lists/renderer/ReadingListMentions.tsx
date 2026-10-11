@@ -28,8 +28,9 @@ export function ReadingListMentions({ citekey }: { citekey: string }): React.JSX
   return (
     <Panel label="In your reading lists">
       <ul className={styles.list}>
-        {mentions.map((m) => (
-          <li key={`${m.ref.id}-${m.section}`} className={styles.row}>
+        {mentions.map((m, i) => (
+          // A list can name a reading twice in one section, so the id and section are not unique.
+          <li key={`${m.ref.id}-${m.section}-${i}`} className={styles.row}>
             <Link className={styles.link} to={readingListRoute(m.ref.id)}>
               {m.listTitle}
             </Link>
