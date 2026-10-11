@@ -58,6 +58,11 @@ ask the user.
   the space itself); dry run by default, backs each note up first, applied 2 Oct 2026 (199 notes, 676 lines; a dry run now finds nothing)
 - `npm run convert:topics [-- --apply]`: turn bold pseudo-headings (`**Topic**`) in meeting notes into `###` topics (dry run by
   default; `--apply` backs each note up first)
+- `npm run cleanup:orphaned-readings [-- --apply]`: one-time catch-up for a readings row flagged "Not in Zotero" before the
+  9 Oct 2026 sync fix (`docs/READINGS_SYNC_PLAN.md`) shipped, which never re-checks an already-flagged row; deletes one only
+  if it is still genuinely unattached (no notes, no Reading Lists mention, no `@` mention) when applied (dry run by default,
+  backs up the database first, `--apply` only when the user says so, app closed; applied 11 Oct 2026, one row, so a dry run
+  now finds nothing)
 
 All of test, lint and typecheck must pass before finishing a checkpoint.
 

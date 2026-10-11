@@ -6,7 +6,9 @@ import type { SyncedFields } from '../shared/types'
 import { readingsMigrations } from './migrations'
 import {
   applySync,
+  deleteOrphanedFlagged,
   dismissRenameSuggestion,
+  findOrphanedFlagged,
   getCounts,
   getReadingByCitekey,
   lastSyncRun,
@@ -599,6 +601,79 @@ describe('applySync: delete-if-unattached when missing', () => {
     const counts = applySync(db, [entry('a')], T2)
     expect(counts.deleted).toBe(1)
     expect(getReadingByCitekey(db, 'b')).toBeNull()
+  })
+})
+
+describe('findOrphanedFlagged / deleteOrphanedFlagged: catching up rows flagged before stage 2', () => {
+  it('finds a flagged citekey with nothing attached', () => {
+    applySync(db, [entry('a'), entry('b')], T1)
+    attachNotes('b') // keeps it flagged rather than deleted by applySync itself
+    applySync(db, [entry('a')], T2)
+    db.prepare("UPDATE readings SET has_notes = 0, notes_excerpt = '' WHERE citekey = 'b'").run()
+
+    expect(findOrphanedFlagged(db, new Set())).toEqual([
+      { citekey: 'b', shortCitation: 'b (2020)' }
+    ])
+  })
+
+  it('leaves out a flagged citekey that still has notes', () => {
+    applySync(db, [entry('a'), entry('b')], T1)
+    attachNotes('b')
+    applySync(db, [entry('a')], T2)
+
+    expect(findOrphanedFlagged(db, new Set())).toEqual([])
+  })
+
+  it('leaves out a flagged citekey with only a Reading Lists mention', () => {
+    applySync(db, [entry('a'), entry('b')], T1)
+    attachNotes('b')
+    applySync(db, [entry('a')], T2)
+    db.prepare("UPDATE readings SET has_notes = 0, notes_excerpt = '' WHERE citekey = 'b'").run()
+    mentionInReadingList('b')
+
+    expect(findOrphanedFlagged(db, new Set())).toEqual([])
+  })
+
+  it('leaves out a flagged citekey with only an @ mention', () => {
+    applySync(db, [entry('a'), entry('b')], T1)
+    attachNotes('b')
+    applySync(db, [entry('a')], T2)
+    db.prepare("UPDATE readings SET has_notes = 0, notes_excerpt = '' WHERE citekey = 'b'").run()
+
+    expect(findOrphanedFlagged(db, new Set(['b']))).toEqual([])
+  })
+
+  it('leaves out a row that is not flagged, even with nothing attached', () => {
+    applySync(db, [entry('a')], T1)
+    expect(findOrphanedFlagged(db, new Set())).toEqual([])
+  })
+
+  it('deleteOrphanedFlagged removes exactly the given citekeys and reports how many', () => {
+    applySync(db, [entry('a'), entry('b'), entry('c')], T1)
+    attachNotes('b')
+    attachNotes('c')
+    applySync(db, [entry('a')], T2)
+    db.prepare(
+      "UPDATE readings SET has_notes = 0, notes_excerpt = '' WHERE citekey IN ('b', 'c')"
+    ).run()
+
+    const deleted = deleteOrphanedFlagged(db, ['b', 'c'])
+    expect(deleted).toBe(2)
+    expect(getReadingByCitekey(db, 'b')).toBeNull()
+    expect(getReadingByCitekey(db, 'c')).toBeNull()
+    expect(getReadingByCitekey(db, 'a')).not.toBeNull()
+  })
+
+  it('deleteOrphanedFlagged re-checks attachment, skipping a citekey that gained notes since planning', () => {
+    applySync(db, [entry('a'), entry('b')], T1)
+    attachNotes('b')
+    applySync(db, [entry('a')], T2)
+    db.prepare("UPDATE readings SET has_notes = 0, notes_excerpt = '' WHERE citekey = 'b'").run()
+    attachNotes('b') // re-attached after the plan was made, before apply
+
+    const deleted = deleteOrphanedFlagged(db, ['b'])
+    expect(deleted).toBe(0)
+    expect(getReadingByCitekey(db, 'b')).not.toBeNull()
   })
 })
 

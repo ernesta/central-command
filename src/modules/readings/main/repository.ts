@@ -481,6 +481,56 @@ export function dismissRenameSuggestion(db: Database, id: number): void {
   db.prepare("UPDATE rename_suggestions SET status = 'dismissed' WHERE id = ?").run(id)
 }
 
+export interface OrphanedFlaggedReading {
+  citekey: string
+  shortCitation: string
+}
+
+/**
+ * Every row flagged `missing_from_source` with nothing attached (no notes, no
+ * `reading_list_mentions` row, no `@` mention) -- the one-off catch-up `applySync` itself never
+ * does: a citekey already flagged on an earlier sync is left exactly as it is (see `applySync`'s
+ * own comment), on the assumption stage 2's delete-if-unattached logic already settled it. A row
+ * flagged before that logic shipped (9 Oct 2026) was never checked, so it can still be unattached
+ * and stuck here forever. Read-only; pair with `deleteOrphanedFlagged` to act on the result.
+ */
+export function findOrphanedFlagged(
+  db: Database,
+  mentionedCitekeys: ReadonlySet<string>
+): OrphanedFlaggedReading[] {
+  const rows = db
+    .prepare(
+      `SELECT citekey, short_citation FROM readings WHERE missing_from_source = 1 AND has_notes = 0`
+    )
+    .all() as { citekey: string; short_citation: string }[]
+  if (rows.length === 0) return []
+  const hasListMention = db.prepare('SELECT 1 FROM reading_list_mentions WHERE citekey = ? LIMIT 1')
+  return rows
+    .filter(
+      (row) => hasListMention.get(row.citekey) === undefined && !mentionedCitekeys.has(row.citekey)
+    )
+    .map((row) => ({ citekey: row.citekey, shortCitation: row.short_citation }))
+}
+
+/**
+ * Deletes exactly the given citekeys, in one transaction, re-checking the same unattached
+ * condition `findOrphanedFlagged` used so a row that gained notes or a mention between planning
+ * and applying is never swept up.
+ */
+export function deleteOrphanedFlagged(db: Database, citekeys: readonly string[]): number {
+  if (citekeys.length === 0) return 0
+  const del = db.prepare(
+    `DELETE FROM readings
+     WHERE citekey = ? AND missing_from_source = 1 AND has_notes = 0
+       AND NOT EXISTS (SELECT 1 FROM reading_list_mentions WHERE citekey = readings.citekey)`
+  )
+  let deleted = 0
+  db.transaction(() => {
+    for (const citekey of citekeys) deleted += del.run(citekey).changes
+  })()
+  return deleted
+}
+
 export function recordSyncRun(
   db: Database,
   run: Omit<SyncRun, 'errorMessage'> & { errorMessage?: string | null }
