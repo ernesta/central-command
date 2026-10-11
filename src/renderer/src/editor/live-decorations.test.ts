@@ -256,6 +256,36 @@ describe('blank lines', () => {
   })
 })
 
+describe('the empty last line after a final line break', () => {
+  const endbreak = (doc: string, anchor: number, head = anchor): string[] => {
+    const state = stateFor(doc, anchor, head)
+    return decorationsOf(state)
+      .filter((seen) => seen.kind.includes('live-endbreak'))
+      .map((seen) => state.doc.lineAt(seen.from).text)
+  }
+
+  it('is drawn with no height when the cursor is elsewhere', () => {
+    expect(endbreak('- a\n- b\n', 1)).toEqual([''])
+  })
+
+  it('shows again while the cursor, or part of a selection, is on it', () => {
+    const doc = '- a\n- b\n'
+    expect(endbreak(doc, doc.length)).toEqual([])
+    expect(endbreak(doc, 0, doc.length)).toEqual([])
+  })
+
+  it('is not a thing when the note has no final line break or a last line of text or spaces', () => {
+    expect(endbreak('- a\n- b', 1)).toEqual([])
+    expect(endbreak('text', 1)).toEqual([])
+    expect(endbreak('text\n  ', 1)).toEqual([])
+  })
+
+  it('leaves the document alone', () => {
+    const doc = '- a\n'
+    expect(stateFor(doc, 0).doc.toString()).toBe(doc)
+  })
+})
+
 describe('a box after a number', () => {
   it('draws the number and the box as two widgets', () => {
     const doc = '15. [ ] x\n'

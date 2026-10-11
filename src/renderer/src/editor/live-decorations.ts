@@ -112,6 +112,18 @@ export function buildDecorations(
       pos = line.to + 1
     }
 
+    // A note ends with one line break, which leaves an empty last line. It is the end of the file, not a blank line
+    // of the note, so it is drawn with no height, until the cursor goes there (nothing in the file changes).
+    const last = doc.line(doc.lines)
+    if (
+      doc.lines > 1 &&
+      last.length === 0 &&
+      last.from >= range.from &&
+      last.from <= range.to &&
+      !state.selection.ranges.some((r) => r.from <= last.to && r.to >= last.from)
+    )
+      add('endbreak', last.from, last.from, lineDeco('live-endbreak'))
+
     syntaxTree(state).iterate({
       from: range.from,
       to: range.to,

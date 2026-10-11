@@ -83,6 +83,14 @@
   line-height: 0.9;
 }
 
+/* The empty line a final line break leaves at the end of a note: no height, until the cursor is on it (spelled out to outrank the `.cm-line` padding reset). */
+.wrap :global(.cm-editor) :global(.cm-line.live-endbreak) {
+  height: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 /* Headings. */
 .wrap :global(.live-h1),
 .wrap :global(.live-h2),

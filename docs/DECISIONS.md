@@ -2804,3 +2804,14 @@ padded every heading, and `tidy:headings` skips `readings/`, so every imported R
 
 Tried on a fixture library in the session scratchpad (a Readings note with spaced headings, a CRLF note, trailing blank lines, a code fence,
 a note without front matter): dry run wrote nothing, apply changed 5 of 8 with backups, the second run found nothing. Not run on the real library.
+
+### Stage 2: the empty last line is drawn with no height (11 Oct 2026)
+
+Built at the user's word ("Build stage 2") rather than after their dry run, so it does not depend on what the dry run showed. `LiveEditor`
+gives the empty last line a note's final line break leaves (`live-endbreak`, in `live-decorations.ts`) no height, so a note ends at its last
+line of text. Nothing in the file changes and the app still writes the same final line break. While the cursor or any part of a selection is
+on that line it is drawn normally, so arrowing down into it, or clicking below the text, still shows where you are. It applies only to a
+truly empty last line of a note with more than one line: a last line holding spaces or text is drawn as before. Decoration rules are
+unit-tested (and the selection check mutation-checked); the CSS was not seen rendered, since this was built in a cloud session without the
+Mac app, so it needs a look in the real app (dev mode and the build).
+
