@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import type { Backlink, EntityKind } from '@shared/entities'
+import { SidePanel } from '@renderer/components/SidePanel'
 import { sourceTarget } from './source-routes'
 import styles from './MentionedIn.module.css'
 
@@ -46,8 +47,7 @@ export function MentionedIn({
   )
   if (links.length === 0) return null
   return (
-    <section className={styles.panel} aria-label="Mentioned in">
-      <h2 className={styles.label}>Mentioned in</h2>
+    <SidePanel label="Mentioned in">
       <ul className={styles.list}>
         {links.map((link) => {
           const { route, icon: Icon } = sourceTarget(link.source)
@@ -62,6 +62,6 @@ export function MentionedIn({
           )
         })}
       </ul>
-    </section>
+    </SidePanel>
   )
 }

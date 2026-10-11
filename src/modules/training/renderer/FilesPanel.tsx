@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { IconButton } from '@renderer/components/IconButton'
 import { Notice } from '@renderer/components/Notice'
+import { SidePanel } from '@renderer/components/SidePanel'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useSettings } from '@renderer/state/settings-context'
 import type { TrainingFolderListing } from '../shared/api'
@@ -82,12 +83,10 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
   const go = (next: string): void => setNav({ folder, sub: next })
 
   return (
-    <section className={styles.panel} aria-labelledby="training-files">
-      <div className={styles.head}>
-        <h2 id="training-files" className={styles.label}>
-          Files
-        </h2>
-        <div className={styles.actions}>
+    <SidePanel
+      label="Files"
+      actions={
+        <>
           {folder && root && (
             <IconButton
               className={styles.iconAction}
@@ -120,9 +119,9 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
               Link a folder…
             </Button>
           )}
-        </div>
-      </div>
-
+        </>
+      }
+    >
       {!root && (
         <p className={styles.quiet}>
           Choose the Trainings folder in Settings to link a folder of slides and readings to this
@@ -198,6 +197,6 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
             ))}
         </>
       )}
-    </section>
+    </SidePanel>
   )
 }

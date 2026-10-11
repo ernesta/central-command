@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@renderer/components/Button'
+import { SidePanel } from '@renderer/components/SidePanel'
 import type { Topic } from '../shared/topics'
 import styles from './TopicsPanel.module.css'
 
@@ -32,10 +33,11 @@ export function TopicsPanel({
   }
 
   return (
-    <aside className={styles.panel} aria-label="Topics">
-      <h2 className={styles.label}>
-        Topics{topics.length > 0 ? ` · ${done} of ${topics.length} discussed` : ''}
-      </h2>
+    <SidePanel
+      as="aside"
+      label="Topics"
+      heading={`Topics${topics.length > 0 ? ` · ${done} of ${topics.length} discussed` : ''}`}
+    >
       {topics.length === 0 ? (
         <p className={styles.empty}>
           No topics yet. Add a <code>###</code> heading under Notes for each thing to cover.
@@ -115,6 +117,6 @@ export function TopicsPanel({
           Add topic
         </Button>
       )}
-    </aside>
+    </SidePanel>
   )
 }
