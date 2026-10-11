@@ -2,6 +2,7 @@ import { transformBody } from '../../../readings/main/obsidian-import'
 import { parseMeta, splitNote, updateHead } from '../../shared/front-matter'
 import { parseTodos } from '../../shared/todos'
 import { extractSection } from '../../shared/sections'
+import { tidyBlankLines } from '@shared/heading-spacing'
 import { durationMinutes } from '../../shared/time'
 import type { MeetingMeta, MeetingMode } from '../../shared/types'
 import { meetingBaseName } from '../file-name'
@@ -341,8 +342,8 @@ export function planMeetingImport(input: PlanInput): MeetingImportPlan {
     const renamed = note.body.replace(/^##\s+Previous Action Items\s*$/gim, '## Previous TODOs')
     const { markdown } = (input.transform ?? keepStructure)(renamed)
     const summary = (row?.comment ?? '').trim()
-    const body = '## Summary\n\n' + (summary ? `${summary}\n\n` : '') + (markdown ? markdown : '')
-    const finalBody = body.endsWith('\n') ? body : `${body}\n`
+    const body = '## Summary\n' + (summary ? `${summary}\n` : '') + (markdown ? markdown : '')
+    const finalBody = tidyBlankLines(body.endsWith('\n') ? body : `${body}\n`)
 
     // Safety: every TODO in the source must still be there, word for word, and no ticked box may change.
     // (Where the app files a TODO, as a Previous TODO or an inline one, is its own business; the text is what matters.)

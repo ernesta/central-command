@@ -148,7 +148,7 @@ describe('Obsidian notes', () => {
     expect(entry.leads).toEqual(['Ryan McKay'])
     expect(entry.patch.leads).toEqual(['Ryan McKay'])
     expect(splitNote(entry.content).body).toContain(
-      '## Notes\n### Overview\n\nSee the site.\n\n### Notes\n\n* One\n  * Two\n'
+      '## Notes\n### Overview\nSee the site.\n### Notes\n* One\n  * Two\n'
     )
     expect(p.reports.unmatchedNotes).toEqual([])
   })

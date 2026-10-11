@@ -65,15 +65,13 @@ describe('transformBody', () => {
   it('keeps real content verbatim and drops empty template sections', () => {
     const { markdown, empty } = transformBody('## Notes\n- first\n- second\n\n## Key Quotes\n- \n')
     expect(empty).toBe(false)
-    expect(markdown).toBe('## Notes\n\n- first\n- second\n')
+    expect(markdown).toBe('## Notes\n- first\n- second\n')
   })
   it('keeps every section that has content', () => {
     const { markdown } = transformBody(
       '## Notes\n- a\n\n## Key Quotes\n- "quoted"\n\n## Further Reading\n- b\n'
     )
-    expect(markdown).toBe(
-      '## Notes\n\n- a\n\n## Key Quotes\n\n- "quoted"\n\n## Further Reading\n\n- b\n'
-    )
+    expect(markdown).toBe('## Notes\n- a\n## Key Quotes\n- "quoted"\n## Further Reading\n- b\n')
   })
   it('turns wikilinks into plain text', () => {
     expect(
@@ -93,14 +91,14 @@ describe('transformBody', () => {
       '- top\n  - child\n    - grandchild\n'
     )
   })
-  it('puts a blank line after each heading, as the editor does', () => {
+  it('keeps no blank line around headings', () => {
     expect(transformBody('## Notes\n- a\n\n## More\n\n- b\n').markdown).toBe(
-      '## Notes\n\n- a\n\n## More\n\n- b\n'
+      '## Notes\n- a\n## More\n- b\n'
     )
   })
-  it('puts a blank line before a heading that directly follows a list', () => {
+  it('does not add a blank line before a heading that directly follows a list', () => {
     expect(transformBody('## Notes\n- a\n## More\n- b\n').markdown).toBe(
-      '## Notes\n\n- a\n\n## More\n\n- b\n'
+      '## Notes\n- a\n## More\n- b\n'
     )
   })
   it('strips trailing whitespace from lines', () => {
@@ -210,7 +208,7 @@ describe('planImport', () => {
       target: 'caladoCostNarrowLens2025.md',
       kind: 'title'
     })
-    expect(first.status === 'import' && first.markdown).toBe('## Notes\n\n- calado note\n')
+    expect(first.status === 'import' && first.markdown).toBe('## Notes\n- calado note\n')
   })
   it('skips empty templates and reports unmatched notes', () => {
     const plan = planImport(notes, readings, new Set())
@@ -240,9 +238,9 @@ describe('planImport', () => {
 describe('transformBody options (used by the meetings import)', () => {
   const text = '## Notes\n### Topic\n- \n- item\n'
   it('keeps headings that are followed straight by another heading, and empty bullets, when asked', () => {
-    expect(transformBody(text).markdown).toBe('### Topic\n\n- item\n')
+    expect(transformBody(text).markdown).toBe('### Topic\n- item\n')
     expect(transformBody(text, { keepEmptyHeadings: true, keepEmptyBullets: true }).markdown).toBe(
-      '## Notes\n\n### Topic\n\n-\n- item\n'
+      '## Notes\n### Topic\n-\n- item\n'
     )
   })
 })

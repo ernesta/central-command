@@ -28,3 +28,23 @@ export function tightenHeadings(body: string): string {
   }
   return raw.filter((_, i) => !drop[i]).join('\n')
 }
+
+/**
+ * `tightenHeadings`, and then no blank line at the very start of the body and none after the last line of text: the
+ * body ends with exactly one line break (the last line's own style, LF or CRLF), and a body that had no final line
+ * break gets none. A blank line is empty or only whitespace. Blank lines inside a code fence stay. Only blank lines are
+ * ever removed, and a body with nothing but blank lines becomes empty.
+ */
+export function tidyBlankLines(body: string): string {
+  const tight = tightenHeadings(body)
+  const raw = tight.split('\n')
+  const { lines } = scan(tight)
+  const blank = (i: number): boolean => !lines[i].inFence && raw[i].trim() === ''
+  let end = raw.length
+  while (end > 0 && blank(end - 1)) end--
+  let start = 0
+  while (start < end && blank(start)) start++
+  if (start === end) return ''
+  // Anything dropped after the last line of text means a line break followed it.
+  return raw.slice(start, end).join('\n') + (end < raw.length ? '\n' : '')
+}

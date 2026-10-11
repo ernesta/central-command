@@ -201,7 +201,7 @@ describe('planMeetingImport', () => {
     })
     expect(
       splitNote(m.content).body.startsWith(
-        '## Summary\n\nKey topics: the Luminos agreement and admin. Key decisions: sign before Christmas.\n\n'
+        '## Summary\nKey topics: the Luminos agreement and admin. Key decisions: sign before Christmas.\n'
       )
     ).toBe(true)
   })
@@ -268,7 +268,7 @@ describe('planMeetingImport', () => {
     // The other meetings get an empty Summary to fill in.
     expect(
       splitNote(byTarget(plan, '2025-11-03 Luminos.md').content).body.startsWith(
-        '## Summary\n\n## Notes\n'
+        '## Summary\n## Notes\n'
       )
     ).toBe(true)
   })
@@ -405,7 +405,7 @@ describe('planMeetingImport: safety', () => {
     })
     const body = splitNote(byTarget(p, '2026-07-09 Supervision.md').content).body
     expect(body).toBe(
-      '## Summary\n\nKey topics: the paper.\n\n## Notes\n\n### Updates\n\n- FRILL tomorrow\n\n### Study 1 Paper\n\n- Feedback\n'
+      '## Summary\nKey topics: the paper.\n## Notes\n### Updates\n- FRILL tomorrow\n### Study 1 Paper\n- Feedback\n'
     )
     expect(parseTopics(body).map((t) => t.text)).toEqual(['Updates', 'Study 1 Paper'])
   })

@@ -1,6 +1,7 @@
 import type { SyncedFields } from '../shared/types'
 import { fold } from './query'
 import { noteFileName } from './notes-path'
+import { tidyBlankLines } from '@shared/heading-spacing'
 
 /** One Obsidian literature note, split into the parts that matter for importing it. */
 export interface ObsidianNote {
@@ -82,24 +83,17 @@ export function transformBody(
     kept.push(line)
   }
 
-  // The editor puts a blank line around every heading and drops trailing spaces. Do the same
-  // so an imported note is already in the editor's canonical form and is not rewritten the
-  // first time it is edited.
-  const isHeading = (line: string | undefined): boolean =>
-    line !== undefined && /^#{1,6}\s/.test(line)
-  const spaced = kept
-    .map((line) => line.replace(/[ \t]+$/, ''))
-    .flatMap((line, n, all) => {
-      const before = n > 0 && isHeading(line) && all[n - 1] !== '' ? [''] : []
-      const after = isHeading(line) && all[n + 1] !== undefined && all[n + 1] !== '' ? [''] : []
-      return [...before, line, ...after]
-    })
-  const markdown = spaced
-    .join('\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
+  // Notes keep no blank line around headings or at either end (the editor draws the space itself; "No blank
+  // lines around headings" in docs/DECISIONS.md), and trailing spaces go, so an imported note is already in the
+  // editor's form and is not rewritten the first time it is edited.
+  const markdown = tidyBlankLines(
+    kept
+      .map((line) => line.replace(/[ \t]+$/, ''))
+      .join('\n')
+      .replace(/\n{3,}/g, '\n\n')
+  )
   const hasText = markdown.split('\n').some((line) => line.trim() !== '' && !/^#{1,6}\s/.test(line))
-  return { markdown: hasText ? `${markdown}\n` : '', empty: !hasText }
+  return { markdown: hasText ? markdown : '', empty: !hasText }
 }
 
 const normalise = (title: string): string =>
