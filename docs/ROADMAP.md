@@ -302,7 +302,7 @@ Choices the plan left open, made conservatively; change any of them by telling C
 
 ### For the user (review and decisions)
 
-- [ ] **Review five spots where the prose reads oddly around a new entity chip (11 Oct 2026).** Found while turning `[@Harm2004]` markers into reading chips: the marker hid the problem, the chip shows it. All five are your own wording, so nothing was changed — read each and tell Claude the fix, or edit in the app. `docs/DECISIONS.md`, "Citekey markers to reading entities".
+- [x] **DONE 11 Oct 2026: four of the five spots fixed, line 34 of `2025-10-22 Supervision.md` left as it was at the user's word; backup `backups/prose-chips-2026-10-11/`.** (Original item: five spots where the prose reads oddly around a new entity chip.) Found while turning `[@Harm2004]` markers into reading chips: the marker hid the problem, the chip shows it. All five are your own wording, so nothing was changed — read each and tell Claude the fix, or edit in the app. `docs/DECISIONS.md`, "Citekey markers to reading entities".
   - [ ] `notes/research/Study 1 Model.md` line 23 — "connects with Pretorius (2019) two main linguistic features"; wants "Pretorius's".
   - [ ] `notes/research/Study 1 Model.md` line 29 — "Ziegler & Goswami (2005) offers a complementary … view"; wants "offer" (two authors). Line 20 of the same note already says "provide", line 38 "add".
   - [ ] `notes/research/Study 1 Model.md` line 33 — "Ziegler & Goswami (2005) "grain sizes" map directly onto these pathways"; wants "Goswami's".
