@@ -18,7 +18,7 @@ import { UNTITLED } from '../shared/query'
 import type { NoteRef, NoteWorkspace } from '../shared/types'
 import { GroupField } from './GroupField'
 import { MentionedIn } from '@renderer/entities/MentionedIn'
-import { NoteOutline } from './NoteOutline'
+import { NoteOutline } from '@renderer/notes/NoteOutline'
 import {
   NOTE_WORKSPACE_CHOICES,
   WorkspaceSelect,
