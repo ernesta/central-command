@@ -48,6 +48,6 @@ Luminos. Read `docs/DECISIONS.md`, "Work's Hours: weeks, contracts and months" a
 
 - **Done 11 Oct 2026 (`docs/DECISIONS.md`, "Contracts: component tests…")**: tests for the stage 3 UI beyond the pure rules: component tests for `InvoiceCard` (week and month, with and without an aim), the new-contract form (refusals, disabled Add) and the no-aim branches of `WeekCard`, `BalanceCard`, `WeeksChart`, `AllWeeks`, `YearsTable`; mutation checks on `hasAim` and `contractToShow`.
 - **Done 11 Oct 2026**: drive the Hours page (not only Settings) in dev mode; drive a contract that has ended while an older one holds today.
-- Hours per week in Settings reads 0:00 for a no-aim contract and cannot be set back to "none".
-- A weekly-invoiced contract shows its week header on both the Week card and the invoice card.
+- **Done 11 Oct 2026** (`docs/DECISIONS.md`, "Hours per week for a no-aim contract…"): Hours per week in Settings now reads "none" for a no-aim contract and can be set back to it.
+- **Done 11 Oct 2026**: a weekly-invoiced contract shows its week header on both cards (checked, tested; no bug).
 - Starting a timer from a task's page (list-to-client rule) is covered by unit tests only.
