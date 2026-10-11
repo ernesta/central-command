@@ -2839,3 +2839,13 @@ focuses nothing and looks exactly like the feature being broken. Measure the con
 notes: over CDP, `page.screenshot` and `setViewportSize` hang on a backgrounded Electron window, so `bringToFront()` first; and CodeMirror's
 caret blinks, so a screenshot catches it only half the time — overriding `.cm-cursorLayer { animation: none }` makes it show every time.)
 
+
+## Previous TODOs carry-over switched off (11 Oct 2026)
+
+The user ran `remove:previous-todos` (29 notes) and then found the section back on `2026-07-29 Supervision`. Not a bug in the script: the app's carry-over rebuilt it from the previous meeting's unticked items when the note was opened (the file's modified time, 13:18, was the moment of opening). The one-off cleanup could never stay clean while carry-over was on, so the user chose to turn carry-over off.
+
+- **New meetings** are made with `## Summary` and `## Notes` only (`NEW_MEETING_BODY`); `create` no longer reads the previous meeting.
+- **Opening a meeting writes nothing**: `MeetingsStore.syncPreviousTodos` returns `{ status: 'saved', added: 0 }` without reading or saving. The IPC method and the session's `prepare` call stay, so turning carry-over back on is a change in one place.
+- `shared/carry-over.ts` (and its tests) stays, unused by the app. `Previous TODOs` sections that a person writes by hand are still parsed and counted as before; only the automatic adding is gone.
+- The three notes that had come back (`2025-10-02`, `2025-10-14`, `2026-07-29` Supervision) were cleaned with `remove:previous-todos --apply`; backup `backups/remove-previous-todos-2026-10-11T16-16-03-589Z`. A dry run now finds nothing.
+- Tests: the old carry-over cases became "a new meeting gets nothing from the previous one" and "opening a meeting writes nothing". Checked by tests only; the app was not driven.
