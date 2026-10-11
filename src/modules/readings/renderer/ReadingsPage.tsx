@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { Link, useNavigate } from 'react-router'
 import { modulePath } from '@modules/types'
@@ -80,6 +80,13 @@ export function ReadingsPage(): React.JSX.Element {
 
   const missing = counts?.missingFromSource ?? 0
   const showMissingNotice = missing > 0 && (missing > dismissedMissing || prefs.missingOnly)
+
+  // The "Show them" link is the only control for missingOnly; once nothing is missing, that
+  // notice (and so the link) disappears, so an active filter left on would otherwise be stuck
+  // with no visible way to turn it off.
+  useEffect(() => {
+    if (counts !== null && missing === 0 && prefs.missingOnly) setPrefs({ missingOnly: false })
+  }, [counts, missing, prefs.missingOnly, setPrefs])
 
   let content: React.ReactNode = null
   if (readings === null || counts === null) {
