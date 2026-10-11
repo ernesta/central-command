@@ -1,8 +1,9 @@
 # Roadmap
 
-**Blank lines in imported notes (11 Oct 2026): stages 1 and 2 built and pushed; `tidy:blank-lines` not yet run on the real library** (`docs/BLANK_LINES_PLAN.md`; `docs/DECISIONS.md`, "Blank lines in imported notes" and its "Stage 2"). Imports now leave no blank lines around headings or at either end, `npm run tidy:blank-lines` cleans the notes already there (Readings included), and the editor draws a note's empty last line with no height.
+**Blank lines in imported notes (11 Oct 2026): DONE — both stages built, applied to the real library and seen in the app; nothing left** (`docs/BLANK_LINES_PLAN.md`; `docs/DECISIONS.md`, "Blank lines in imported notes" and its "Stage 2"). Imports now leave no blank lines around headings or at either end, `npm run tidy:blank-lines` cleaned the notes already there (Readings included), and the editor draws a note's empty last line with no height.
 
-- **For you**: with the app closed, `npm run tidy:blank-lines` (dry run), read it, then `-- --apply` when happy; a second run should find nothing. Then look at the end of a few notes in the app (dev and the build): the empty last line should be gone, and clicking below the text should still put the cursor there.
+- `npm run tidy:blank-lines -- --apply`, **applied 11 Oct 2026**: 20 of 248 notes, 33 blank lines (28 around headings, 5 at the end), nothing left alone; backup `backups/tidy-blank-lines-2026-10-11T14-31-25-833Z/`. A dry run now finds nothing.
+- The empty last line was checked in the app (dev mode and the production build, scratch library): no height with the cursor away, drawn when the cursor is on it, and clicking below the text still puts the cursor there. Nothing for you to verify.
 
 **A reading's metadata in the side column (11 Oct 2026): built, committed, not pushed, not driven in the app**
 (`docs/DECISIONS.md`, "A reading's metadata belongs in the side column" and "Which side of 'about it' the APA

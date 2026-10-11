@@ -2803,7 +2803,18 @@ padded every heading, and `tidy:headings` skips `readings/`, so every imported R
   as an empty last line. The dry run counts those notes, so the user can tell whether that is what their screenshot shows (stage 2 of the plan).
 
 Tried on a fixture library in the session scratchpad (a Readings note with spaced headings, a CRLF note, trailing blank lines, a code fence,
-a note without front matter): dry run wrote nothing, apply changed 5 of 8 with backups, the second run found nothing. Not run on the real library.
+a note without front matter): dry run wrote nothing, apply changed 5 of 8 with backups, the second run found nothing.
+
+**Applied to the real library on 11 Oct 2026**, with the app closed: **20 of 248 notes, 33 blank lines** (0 at the start, 28 around headings,
+5 at the end), by folder `readings` 17, `meetings/work` 1, `notes/research` 1, `notes/work` 1. **No note was left alone** — every one of the
+20 changed in blank lines only, so the "every non-blank line identical" check never had to refuse one. The originals are in
+`backups/tidy-blank-lines-2026-10-11T14-31-25-833Z/`. The second dry run finds nothing.
+
+Readings being 17 of the 20 is the predicted shape: those are the notes `tidy:headings` skipped on 2 Oct, still carrying the Readings
+importer's padded headings. The five at the end were in two notes only, so a blank line after the last line of text was never the common
+case — which the last line of the report bears out: **213 notes ended with exactly one line break and would change in no other way**, and
+that, not a stray blank line, is what the user's screenshot showed. Hence stage 2. (After the apply the count is 233: the 20 tidied notes now
+end that way too, the shape every note the app writes has.)
 
 ### Stage 2: the empty last line is drawn with no height (11 Oct 2026)
 
@@ -2813,5 +2824,18 @@ line of text. Nothing in the file changes and the app still writes the same fina
 on that line it is drawn normally, so arrowing down into it, or clicking below the text, still shows where you are. It applies only to a
 truly empty last line of a note with more than one line: a last line holding spaces or text is drawn as before. Decoration rules are
 unit-tested (and the selection check mutation-checked); the CSS was not seen rendered, since this was built in a cloud session without the
-Mac app, so it needs a look in the real app (dev mode and the build).
+Mac app.
+
+**Seen rendered on 11 Oct 2026**, driven with Playwright against a scratch library in both dev mode and the production build, on a note
+ending with exactly one line break. The two agree to the pixel: with the cursor elsewhere the last line is `cm-line live-blank live-endbreak`
+at **height 0**, and the bottom of the note is the bottom of its last line of text (y=410 in both); with the cursor on it the class is gone,
+the line is **14.4px** and the caret is drawn on it. Clicking below the text puts the caret there from anywhere inside the editor — tried 15,
+45, 90 and 95px below the last line of text, all four focus the editor and show the caret at the end — and typing lands the character at the
+end of the note. So the CSS does what the decoration rules say, in both builds.
+
+One trap worth recording for the next person driving the editor: **"below the text" is only the editor's own area.** The content box here is
+98px taller than the text (bottom 508 against the last text line's 410), and a click past *that* lands on the card, not the editor — it
+focuses nothing and looks exactly like the feature being broken. Measure the content box and click inside it. (Two unrelated Playwright
+notes: over CDP, `page.screenshot` and `setViewportSize` hang on a backgrounded Electron window, so `bringToFront()` first; and CodeMirror's
+caret blinks, so a screenshot catches it only half the time — overriding `.cm-cursorLayer { animation: none }` makes it show every time.)
 
