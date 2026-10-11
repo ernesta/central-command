@@ -200,8 +200,9 @@ function TaskView({
       <div className={styles.cols}>
         <div className={styles.stack}>
           <section className={styles.box} aria-label="Details">
-            <input
+            <textarea
               className={styles.title}
+              rows={1}
               aria-label="Title"
               placeholder="Untitled"
               value={titleText}

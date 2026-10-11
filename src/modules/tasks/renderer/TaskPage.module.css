@@ -58,6 +58,9 @@
   font-size: var(--text-28);
   font-weight: 700;
   line-height: 1.25;
+  field-sizing: content;
+  overflow: hidden;
+  resize: none;
 }
 .title:hover {
   border-color: var(--border-soft);
