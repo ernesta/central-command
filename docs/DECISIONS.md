@@ -2849,3 +2849,13 @@ The user ran `remove:previous-todos` (29 notes) and then found the section back 
 - `shared/carry-over.ts` (and its tests) stays, unused by the app. `Previous TODOs` sections that a person writes by hand are still parsed and counted as before; only the automatic adding is gone.
 - The three notes that had come back (`2025-10-02`, `2025-10-14`, `2026-07-29` Supervision) were cleaned with `remove:previous-todos --apply`; backup `backups/remove-previous-todos-2026-10-11T16-16-03-589Z`. A dry run now finds nothing.
 - Tests: the old carry-over cases became "a new meeting gets nothing from the previous one" and "opening a meeting writes nothing". Checked by tests only; the app was not driven.
+
+
+## The real-library gate caught up (11 Oct 2026)
+
+`LIVE_EDITOR_LIBRARY=<copy> npx vitest run src/renderer/src/editor/live-library` failed 4 of 10 checks on the user's unmodified notes. None was an editor bug; the gate had fallen behind behaviour that shipped later:
+
+- **Mentions:** it expected a space after a chosen mention. Commit `3934c33` removed that on purpose ("no space after a chosen mention"); the gate now expects the mention and nothing more. The earlier guess that a chip at position 0 of `## Summary` lost its space was this same stale expectation.
+- **`/todo`:** it expected a bare `**TODO(XX)**: `. The helper now writes a checkbox item (`todo-live.ts`, `leadFor`). The gate checks what does not depend on that lead: the marker ends at the cursor, the text after the range is untouched, the text before it only loses trailing spaces, one undo restores the note.
+- **List markers and tables:** both counted a mention chip (a `widget`) as a list marker or a table cell. Both now skip widgets whose text holds `](cc://`. The table text check also ignores backticks, which the editor hides in inline code.
+- Copying `backups/` into the gate's library, as CLAUDE.md says, puts every note's earlier versions through the same checks; that is how the chip cases (the `link:people` backups) were found. A run takes about 8 minutes.
