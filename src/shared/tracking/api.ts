@@ -62,7 +62,9 @@ export interface TrackingApi {
     date: string,
     label: string,
     minutes: number,
-    client?: string
+    client?: string,
+    /** The task (`cc://task/<uid>`) to keep the time on when the row has none left (Undo of a delete). */
+    task?: string
   ): Promise<YearResult>
   /** Rename a task for one day (every block and typed time of it); a name already used that day merges the two. */
   renameTask(

@@ -15,7 +15,7 @@ import styles from './TaskList.module.css'
 interface TaskListProps {
   rows: readonly TaskRow[]
   /** Saves a task's time for the day, in minutes. */
-  onSetMinutes: (label: string, minutes: number, client?: string) => void
+  onSetMinutes: (label: string, minutes: number, client?: string, task?: string) => void
   /** Renames a task for the day (the row's blocks and typed time with it). */
   /** `task` is the row's task (`cc://task/<uid>`), when it has one: renaming the row renames that task too. */
   onRename: (label: string, name: string, client?: string, task?: string) => void | Promise<void>
@@ -211,12 +211,12 @@ export function TaskList({
                 size="small"
                 variant="danger"
                 onClick={() => {
-                  const { label, client, minutes } = deleting
+                  const { label, client, minutes, task } = deleting
                   onDelete(label, client)
                   setDeleting(null)
                   showToast(`Deleted “${label || 'Untitled'}” (${formatHours(minutes)}).`, {
                     label: 'Undo',
-                    run: () => onSetMinutes(label, minutes, client)
+                    run: () => onSetMinutes(label, minutes, client, task)
                   })
                 }}
               >

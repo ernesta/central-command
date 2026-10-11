@@ -70,14 +70,15 @@ export function registerTrackingIpc(store: TrackingStore): void {
   h(TRACKING_IPC.deleteTaskTime, (_e, ws, year, date, label, client) =>
     store.deleteTaskTime(workspace(ws), text(year), text(date), text(label), optionalText(client))
   )
-  h(TRACKING_IPC.setTaskMinutes, (_e, ws, year, date, label, minutes, client) =>
+  h(TRACKING_IPC.setTaskMinutes, (_e, ws, year, date, label, minutes, client, task) =>
     store.setTaskMinutes(
       workspace(ws),
       text(year),
       text(date),
       text(label),
       whole(minutes),
-      optionalText(client)
+      optionalText(client),
+      optionalText(task)
     )
   )
   h(TRACKING_IPC.renameTask, (_e, ws, year, date, from, to, client) =>

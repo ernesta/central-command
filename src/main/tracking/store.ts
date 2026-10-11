@@ -284,10 +284,11 @@ export class TrackingStore {
     date: string,
     label: string,
     minutes: number,
-    client?: string
+    client?: string,
+    task?: string
   ): YearResult {
     return this.mutate(workspace, year, (y) =>
-      setTaskMinutes(y, date, label, minutes, this.newId(), client)
+      setTaskMinutes(y, date, label, minutes, this.newId(), client, task)
     )
   }
 

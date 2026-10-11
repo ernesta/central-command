@@ -146,8 +146,16 @@ export function WeekCard({
                       onDelete={(label, client) =>
                         void tracking.deleteTaskTime(workspace, data.start, date, label, client)
                       }
-                      onSetMinutes={(label, m, client) =>
-                        void tracking.setTaskMinutes(workspace, data.start, date, label, m, client)
+                      onSetMinutes={(label, m, client, task) =>
+                        void tracking.setTaskMinutes(
+                          workspace,
+                          data.start,
+                          date,
+                          label,
+                          m,
+                          client,
+                          task
+                        )
                       }
                     />
                     <MeetingRows workspace={workspace} data={data} date={date} now={now} />
