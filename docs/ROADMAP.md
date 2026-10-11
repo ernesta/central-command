@@ -1,5 +1,7 @@
 # Roadmap
 
+**Odd prose around chips (11 Oct 2026): DONE; nothing left to decide.** The five spots found while linking citekeys were settled one by one by the user. Changed: "offers" to "offer" (`notes/research/Study 1 Model.md`, line 29) and "Kathy Rastle research" to "Kathy Rastle's research" (`meetings/research/2025-12-17 Rastle Lab.md`, line 13). Left as written: lines 23 and 33 of Study 1 Model (a possessive "'s" after a chip was tried and reverted, the user dislikes it) and line 34 of `2025-10-22 Supervision.md`. Backups: `backups/prose-chips-2026-10-11/`, `backups/prose-chips-2-2026-10-11/`. Rule for the future: do not add apostrophe-s after a chip; offer a reworded sentence instead.
+
 **CLAUDE.md pruned (11 Oct 2026): DONE.** The Commands section no longer lists the applied one-off scripts (27 bullets; `link:people` shortened); the record of what was applied is in `docs/DECISIONS.md`, "One-off scripts applied to the real library". The scripts themselves stay. Stale "not pushed" lines were fixed in CLAUDE.md and here ("not installed" left as it was, not checkable from git).
 
 **Blank lines in imported notes (11 Oct 2026): DONE — both stages built, applied to the real library and seen in the app; nothing left** (`docs/BLANK_LINES_PLAN.md`; `docs/DECISIONS.md`, "Blank lines in imported notes" and its "Stage 2"). Imports now leave no blank lines around headings or at either end, `npm run tidy:blank-lines` cleaned the notes already there (Readings included), and the editor draws a note's empty last line with no height.
