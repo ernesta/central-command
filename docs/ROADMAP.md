@@ -1,5 +1,9 @@
 # Roadmap
 
+**Blank lines in imported notes (11 Oct 2026): stages 1 and 2 built and pushed; `tidy:blank-lines` not yet run on the real library** (`docs/BLANK_LINES_PLAN.md`; `docs/DECISIONS.md`, "Blank lines in imported notes" and its "Stage 2"). Imports now leave no blank lines around headings or at either end, `npm run tidy:blank-lines` cleans the notes already there (Readings included), and the editor draws a note's empty last line with no height.
+
+- **For you**: with the app closed, `npm run tidy:blank-lines` (dry run), read it, then `-- --apply` when happy; a second run should find nothing. Then look at the end of a few notes in the app (dev and the build): the empty last line should be gone, and clicking below the text should still put the cursor there.
+
 **A reading's metadata in the side column (11 Oct 2026): built, committed, not pushed, not driven in the app**
 (`docs/DECISIONS.md`, "A reading's metadata belongs in the side column" and "Which side of 'about it' the APA
 reference falls on"). The reading page had the APA reference, the reading lists and Mentioned in stacked down the
