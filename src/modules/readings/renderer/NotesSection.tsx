@@ -2,22 +2,26 @@ import { Button } from '@renderer/components/Button'
 import { Notice } from '@renderer/components/Notice'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { LiveEditor } from '@renderer/editor/LiveEditor'
-import { useNotesSession } from '@renderer/notes/useNotesSession'
+import type { NotesSession, NotesSnapshot } from '@renderer/notes/notes-session'
 import styles from './NotesSection.module.css'
 
 /**
  * A reading's notes: a live-render Markdown editor backed by `<citekey>.md`, with autosave and
- * calm handling of the file changing underneath. Render with `key={citekey}`.
+ * calm handling of the file changing underneath. The session is opened by the page, which also
+ * draws the outline of these headings beside it.
  */
-export function NotesSection({ citekey }: { citekey: string }): React.JSX.Element {
-  const { session, snapshot } = useNotesSession(citekey, window.api.readings.notes)
+export function NotesSection({
+  session,
+  snapshot
+}: {
+  session: NotesSession
+  snapshot: NotesSnapshot
+}): React.JSX.Element {
   const { save, error, conflict, hasContent, reloadedFromDisk, text, updatedAt } = snapshot
 
   return (
     <section className={styles.section} aria-label="Notes">
-      <div className={styles.header}>
-        <h2 className={styles.label}>Notes</h2>
-      </div>
+      <h2 className={styles.label}>Notes</h2>
 
       {(conflict || error) && (
         <div className={styles.notices}>

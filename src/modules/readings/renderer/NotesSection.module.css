@@ -1,12 +1,7 @@
+/* The page's grid spaces this from the abstract above it; the section brings no margins of its own. */
 .section {
-  margin-top: 32px;
-}
-.header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 12px;
+  display: grid;
+  gap: 12px;
 }
 .label {
   font-family: var(--font-body);
@@ -20,7 +15,6 @@
 .notices {
   display: grid;
   gap: 8px;
-  margin-bottom: 12px;
 }
 .actions {
   display: flex;

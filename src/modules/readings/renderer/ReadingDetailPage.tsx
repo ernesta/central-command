@@ -1,10 +1,13 @@
 import { ArrowLeft, Check, Copy } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { modulePath } from '@modules/types'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
+import { DocSplit } from '@renderer/notes/DocSplit'
+import { NoteOutline } from '@renderer/notes/NoteOutline'
+import { useNotesSession } from '@renderer/notes/useNotesSession'
 import { ReadingListMentions } from '@modules/reading-lists/renderer/ReadingListMentions'
 import type { Reading } from '../shared/types'
 import { MentionedIn } from '@renderer/entities/MentionedIn'
@@ -22,7 +25,6 @@ export function ReadingDetailPage(): React.JSX.Element {
   const { citekey = '' } = useParams()
   const navigate = useNavigate()
   const [loaded, setLoaded] = useState<Loaded | null>(null)
-  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -52,7 +54,7 @@ export function ReadingDetailPage(): React.JSX.Element {
   if (!reading) {
     return (
       <div className={styles.page}>
-        <div className={styles.column}>{back}</div>
+        {back}
         <EmptyState
           heading="Reading not found"
           message={`There is no reading with the citekey “${citekey}”.`}
@@ -60,6 +62,26 @@ export function ReadingDetailPage(): React.JSX.Element {
       </div>
     )
   }
+
+  // Each reading gets its own notes session, disposed (saving anything pending) when you leave it.
+  return <ReadingView key={reading.citekey} reading={reading} back={back} />
+}
+
+/**
+ * One reading: what it is at the top, your notes in the main column, and everything *about* it —
+ * the reference, your notes' outline, the lists it is in and where it is mentioned — in the side
+ * column, the same arrangement as a note, a meeting and a training entry.
+ */
+function ReadingView({
+  reading,
+  back
+}: {
+  reading: Reading
+  back: React.JSX.Element
+}): React.JSX.Element {
+  const [copied, setCopied] = useState(false)
+  const docRef = useRef<HTMLDivElement>(null)
+  const { session, snapshot } = useNotesSession(reading.citekey, window.api.readings.notes)
 
   const copyCitekey = async (): Promise<void> => {
     await navigator.clipboard.writeText(reading.citekey)
@@ -69,8 +91,8 @@ export function ReadingDetailPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <article className={styles.column}>
-        {back}
+      {back}
+      <header className={styles.head}>
         <div className={styles.citekeyRow}>
           <span className={styles.citekey}>{reading.citekey}</span>
           <button
@@ -95,17 +117,28 @@ export function ReadingDetailPage(): React.JSX.Element {
             <span className={styles.tags}>{reading.tags.join(', ')}</span>
           )}
         </div>
-        {reading.missingFromSource && (
-          <div className={styles.missing}>
-            <Notice>This item is no longer in your Zotero export. Your notes are safe.</Notice>
-          </div>
-        )}
-        <ReferenceBlock reading={reading} />
-        {reading.abstract && <AbstractBlock abstract={reading.abstract} />}
-        <ReadingListMentions key={reading.citekey} citekey={reading.citekey} />
-        <MentionedIn kind="reading" entityKey={reading.citekey} />
-        <NotesSection key={reading.citekey} citekey={reading.citekey} />
-      </article>
+      </header>
+
+      {reading.missingFromSource && (
+        <Notice>This item is no longer in your Zotero export. Your notes are safe.</Notice>
+      )}
+
+      <DocSplit
+        docRef={docRef}
+        side={
+          <>
+            <ReferenceBlock reading={reading} />
+            <NoteOutline text={snapshot.text} docRef={docRef} />
+            <ReadingListMentions citekey={reading.citekey} />
+            <MentionedIn kind="reading" entityKey={reading.citekey} />
+          </>
+        }
+      >
+        <div className={styles.docStack}>
+          {reading.abstract && <AbstractBlock abstract={reading.abstract} />}
+          <NotesSection session={session} snapshot={snapshot} />
+        </div>
+      </DocSplit>
     </div>
   )
 }

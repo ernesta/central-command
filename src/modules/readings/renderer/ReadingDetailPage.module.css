@@ -1,13 +1,14 @@
 .page {
-  padding: 36px 64px 40px;
-}
-.column {
-  max-width: 760px;
+  display: grid;
+  gap: 20px;
+  padding: 36px 64px 48px;
+  align-content: start;
 }
 .back {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  justify-self: start;
   padding: 0;
   border: 0;
   background: transparent;
@@ -17,11 +18,16 @@
 .back:hover {
   color: var(--ink);
 }
+/* What the reading is, at a readable width; everything about it is in the side column. */
+.head {
+  display: grid;
+  gap: 8px;
+  max-width: 780px;
+}
 .citekeyRow {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 20px;
 }
 .citekey {
   color: var(--text-muted);
@@ -44,7 +50,7 @@
   color: var(--ink);
 }
 .title {
-  margin-top: 8px;
+  margin: 0;
   font-size: var(--text-30);
   font-weight: 700;
   line-height: 1.25;
@@ -54,7 +60,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 14px;
-  margin-top: 16px;
+  margin-top: 4px;
 }
 .citation {
   color: var(--text-secondary);
@@ -64,6 +70,13 @@
   color: var(--text-muted);
   font-size: var(--text-13);
 }
-.missing {
-  margin-top: 20px;
+/* The abstract and the notes, one above the other: the gap is the layout's, not each block's own margin. */
+.docStack {
+  display: grid;
+  gap: 24px;
+}
+@media (max-width: 900px) {
+  .page {
+    padding-inline: 24px;
+  }
 }
