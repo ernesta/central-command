@@ -82,7 +82,8 @@ ask the user.
   headings, and after the last line of text (the body then ends with exactly one line break). Only blank lines go (checked: every non-blank line identical); the dry run prints
   where they are per note, a count by folder, and how many notes end with exactly one line break and would change in no other way (the editor draws that break as an empty last
   line; `docs/BLANK_LINES_PLAN.md`, stage 2). Dry run by default, backs each note up to `backups/tidy-blank-lines-<time>/`, writes through the content-hash guard, `--apply` only
-  when the user says so, app closed; **not yet applied to the real library** (a second run after `--apply` finds nothing)
+  when the user says so, app closed; **applied to the real library on 11 Oct 2026** (20 notes, 33 blank lines: 28 around headings, 5 at the end; nothing left alone; backup
+  `backups/tidy-blank-lines-2026-10-11T14-31-25-833Z`), so a dry run now finds nothing
 - `npm run convert:topics [-- --apply]`: turn bold pseudo-headings (`**Topic**`) in meeting notes into `###` topics (dry run by
   default; `--apply` backs each note up first)
 - `npm run cleanup:orphaned-readings [-- --apply]`: one-time catch-up for a readings row flagged "Not in Zotero" before the
