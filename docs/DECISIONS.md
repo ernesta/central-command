@@ -2777,3 +2777,30 @@ a weaker reason (a paragraph reads badly in a 260px strip); this is the stronger
 
 Checked the same way as the change it corrects: rendered in Chromium through the Vite harness, light and dark, 1440px
 and 860px. Still not driven in the real app.
+
+## Blank lines in imported notes (11 Oct 2026)
+
+The user saw empty lines in imported notes: one between the end of a list and a heading and another between the heading and the list under
+it, and an empty line after the last bullet at the end of a note. Plan: `docs/BLANK_LINES_PLAN.md`.
+
+**Why.** Since 2 Oct 2026 notes keep no blank lines around headings (see "No blank lines around headings"), but the Readings importer still
+padded every heading, and `tidy:headings` skips `readings/`, so every imported Readings note kept them. The Meetings importer built
+`## Summary` with a blank line either side as well.
+
+- **The rule** is `tidyBlankLines` in `src/shared/heading-spacing.ts`: `tightenHeadings`, then no blank line at the start of the body and
+  none after the last line of text, which ends with exactly one line break (the last line's own LF or CRLF). A body with no final line break
+  gets none (it only ever removes), a blank-only body becomes empty, and blank lines inside a code fence (even one never closed) stay. Blank
+  means empty or whitespace only, non-breaking spaces included. Mutation-checked: each of its six parts, broken in turn, fails a test.
+- **Importers.** Readings (`transformBody`, which the Training and Work meeting importers also use) and Meetings now run their result through
+  it, so a fresh import is already in the editor's form. Their tests changed from "puts a blank line around a heading" to the opposite.
+- **`npm run tidy:blank-lines`** applies the same rule to the notes already in the library, over every folder including `readings/`.
+- **Readings notes are rewritten here, and that is deliberate.** "Never delete or overwrite a Readings note file" guards against sync and
+  imports replacing what the user wrote. This removes only blank lines (the script refuses a note where any non-blank line would change),
+  backs each file up first and writes through the content-hash guard, the same as a save in the app.
+- **Blank lines after the front matter are not touched** and cannot be counted as "at the start": `splitNote` puts them in the head (they
+  are the separator the app itself writes), so the editor never shows them. The start rule matters only for a note without front matter.
+- **The empty last line may stay.** A body that ends with one line break is the shape every note the app writes has, and CodeMirror draws it
+  as an empty last line. The dry run counts those notes, so the user can tell whether that is what their screenshot shows (stage 2 of the plan).
+
+Tried on a fixture library in the session scratchpad (a Readings note with spaced headings, a CRLF note, trailing blank lines, a code fence,
+a note without front matter): dry run wrote nothing, apply changed 5 of 8 with backups, the second run found nothing. Not run on the real library.

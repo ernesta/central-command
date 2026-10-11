@@ -78,6 +78,11 @@ ask the user.
   Work note of that date, written up twice); "Caitlin" is Caitlin Baron in `2025-10-02 Supervision.md` and `2025-10-20 Impact.md`. Add to the file rather than the script
 - `npm run tidy:headings [-- --apply]`: take out the blank lines next to headings in every note except Readings (new notes are made without them, the editor draws
   the space itself); dry run by default, backs each note up first, applied 2 Oct 2026 (199 notes, 676 lines; a dry run now finds nothing)
+- `npm run tidy:blank-lines [-- --apply]`: take out the blank lines imported notes still show, in every note folder **including `readings/`**: at the start of the body, around
+  headings, and after the last line of text (the body then ends with exactly one line break). Only blank lines go (checked: every non-blank line identical); the dry run prints
+  where they are per note, a count by folder, and how many notes end with exactly one line break and would change in no other way (the editor draws that break as an empty last
+  line; `docs/BLANK_LINES_PLAN.md`, stage 2). Dry run by default, backs each note up to `backups/tidy-blank-lines-<time>/`, writes through the content-hash guard, `--apply` only
+  when the user says so, app closed; **not yet applied to the real library** (a second run after `--apply` finds nothing)
 - `npm run convert:topics [-- --apply]`: turn bold pseudo-headings (`**Topic**`) in meeting notes into `###` topics (dry run by
   default; `--apply` backs each note up first)
 - `npm run cleanup:orphaned-readings [-- --apply]`: one-time catch-up for a readings row flagged "Not in Zotero" before the
