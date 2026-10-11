@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   addClient,
+  formatAimHours,
+  parseAimHours,
   contractRefusal,
   MAX_CLIENT_LENGTH,
   parseAllowance,
@@ -104,5 +106,19 @@ describe('new contract fields', () => {
     for (const reason of ['same-start', 'client-overlap', 'bad-name', 'bad-plan', 'x'])
       expect(contractRefusal(reason)).not.toBe('')
     expect(contractRefusal('same-start')).not.toBe(contractRefusal('client-overlap'))
+  })
+})
+
+describe('weekly hours of a contract with an aim field', () => {
+  it('reads blank and "none" as no fixed hours, and times as for the plan', () => {
+    expect(parseAimHours('')).toBe(0)
+    expect(parseAimHours('  None ')).toBe(0)
+    expect(parseAimHours('8:00')).toBe(480)
+    expect(parseAimHours('abc')).toBeNull()
+    expect(parseAimHours('0:00')).toBeNull()
+  })
+  it('shows no fixed hours as "none" and a time as a time', () => {
+    expect(formatAimHours(0)).toBe('none')
+    expect(formatAimHours(480)).toBe('8:00')
   })
 })

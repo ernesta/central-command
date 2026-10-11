@@ -1,5 +1,5 @@
 import { MAX_CLIENT_NAME } from '@shared/tracking/client-names'
-import { parseHours } from '@shared/tracking/format'
+import { formatHours, parseHours } from '@shared/tracking/format'
 
 /** Monday is 1, as in the plan's `workDays`. */
 export const WEEKDAYS: readonly { day: number; label: string }[] = [
@@ -22,6 +22,17 @@ export function toggleWorkDay(days: readonly number[], day: number): number[] | 
 export function parseWeekHours(text: string): number | null {
   const minutes = parseHours(text)
   return minutes !== null && minutes > 0 && minutes <= 7 * 24 * 60 ? minutes : null
+}
+
+/** A contract's weekly hours in the plan field: a time as for the plan, or blank or "none" for no fixed hours (0). Null when it cannot be read. */
+export function parseAimHours(text: string): number | null {
+  const t = text.trim().toLowerCase()
+  return t === '' || t === 'none' ? 0 : parseWeekHours(t)
+}
+
+/** The weekly hours as the plan field shows them: "none" for no fixed hours. */
+export function formatAimHours(minutes: number): string {
+  return minutes === 0 ? 'none' : formatHours(minutes)
 }
 
 /** Days off a year: a whole number from 0 to 366. Null for anything else. */

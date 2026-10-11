@@ -2,7 +2,14 @@ import { useState } from 'react'
 import { Input } from '@renderer/components/Input'
 import { formatHours } from '@shared/tracking/format'
 import type { Plan } from '@shared/tracking/types'
-import { parseAllowance, parseWeekHours, toggleWorkDay, WEEKDAYS } from '../shared/plan-settings'
+import {
+  formatAimHours,
+  parseAimHours,
+  parseAllowance,
+  parseWeekHours,
+  toggleWorkDay,
+  WEEKDAYS
+} from '../shared/plan-settings'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { WORKSPACE_LABELS } from '@renderer/shell/workspaces'
@@ -77,8 +84,8 @@ function PlanBlock({ workspace }: { workspace: HoursWorkspace }): React.JSX.Elem
             id={`${id}-per-week`}
             label="Hours per week"
             value={data.plan.hoursPerWeek}
-            format={formatHours}
-            parse={parseWeekHours}
+            format={data.plan.weekAim ? formatAimHours : formatHours}
+            parse={data.plan.weekAim ? parseAimHours : parseWeekHours}
             onCommit={(hoursPerWeek) => save({ hoursPerWeek })}
           />
           {!data.plan.weekAim && (
