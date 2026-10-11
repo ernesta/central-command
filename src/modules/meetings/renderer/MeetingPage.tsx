@@ -11,6 +11,7 @@ import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { WorkspaceSelect } from '@renderer/components/WorkspaceSelect'
 import { liveViewIn, placeCursorOnLine } from '@renderer/editor/live-outline'
+import { DocSplit } from '@renderer/notes/DocSplit'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { LiveEditor } from '@renderer/editor/LiveEditor'
 import { seriesOptions } from '../shared/query'
@@ -277,38 +278,40 @@ function MeetingView({
       />
       <MeetingHoursNote workspace={meetingRef.workspace} id={meetingRef.id} meta={meta} />
 
-      <div className={styles.split}>
-        <div className={styles.doc} ref={editorRef}>
-          <EditorCard text={body} edited={updatedAt} save={save} reloaded={reloadedFromDisk}>
-            <LiveEditor
-              key={snapshot.editorKey}
-              initial={snapshot.initialBody}
-              placeholder="Write your meeting notes…"
-              showPlaceholder={body.trim() === ''}
-              attendees={meta.attendees}
-              entitySelf={{
-                kind: 'meeting',
-                workspace: meetingRef.workspace,
-                id: session.getRef().id
-              }}
-              onChange={session.editBody.bind(session)}
-              onBlur={() => void session.flush()}
+      <DocSplit
+        docRef={editorRef}
+        side={
+          <>
+            <TopicsPanel
+              topics={topics}
+              onToggle={toggleTopic}
+              onJump={(topic: Topic, occurrence: number) => jumpTo(topic.text, occurrence)}
+              onAdd={addTopic}
             />
-          </EditorCard>
-        </div>
-        <div className={styles.side}>
-          <TopicsPanel
-            topics={topics}
-            onToggle={toggleTopic}
-            onJump={(topic: Topic, occurrence: number) => jumpTo(topic.text, occurrence)}
-            onAdd={addTopic}
+            <MentionedIn
+              kind="meeting"
+              entityKey={meetingRows?.find((r) => r.id === session.getRef().id)?.uid || null}
+            />
+          </>
+        }
+      >
+        <EditorCard text={body} edited={updatedAt} save={save} reloaded={reloadedFromDisk}>
+          <LiveEditor
+            key={snapshot.editorKey}
+            initial={snapshot.initialBody}
+            placeholder="Write your meeting notes…"
+            showPlaceholder={body.trim() === ''}
+            attendees={meta.attendees}
+            entitySelf={{
+              kind: 'meeting',
+              workspace: meetingRef.workspace,
+              id: session.getRef().id
+            }}
+            onChange={session.editBody.bind(session)}
+            onBlur={() => void session.flush()}
           />
-          <MentionedIn
-            kind="meeting"
-            entityKey={meetingRows?.find((r) => r.id === session.getRef().id)?.uid || null}
-          />
-        </div>
-      </div>
+        </EditorCard>
+      </DocSplit>
 
       <DeleteDialog
         open={confirmDelete}

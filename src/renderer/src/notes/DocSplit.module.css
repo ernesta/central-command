@@ -1,0 +1,57 @@
+.split {
+  display: grid;
+  gap: 40px;
+  align-items: start;
+}
+.hasSide {
+  grid-template-columns: minmax(0, 1fr) 260px;
+}
+/* A comfortable line length for reading and writing; `wide` gives that up for pages that want the room. */
+.doc {
+  min-width: 0;
+  max-width: 780px;
+}
+.wide {
+  max-width: none;
+}
+/* The panels stay in view while the text scrolls, and scroll on their own once there are more of them
+   than fit. 4px of room all round (taken back with the margin) keeps a focused row's ring from being
+   clipped by that scrolling. */
+.side {
+  position: sticky;
+  top: 16px;
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  max-height: calc(100vh - var(--topbar-height) - 48px);
+  margin: -4px;
+  padding: 4px;
+  overflow: auto;
+  scroll-padding: 4px;
+}
+/* Wide enough (full screen on most Mac displays) to give two panels their own columns. */
+@media (min-width: 1400px) {
+  .roomy.hasSide {
+    grid-template-columns: minmax(0, 1fr) 520px;
+  }
+  .roomy .side {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+  /* The first panel takes the outer column, leaving the one written last (the outline, in Training)
+     next to the text it belongs to. */
+  .roomy .side > :first-child {
+    order: 2;
+  }
+}
+/* Too narrow for two columns: the panels follow the text, where nothing needs to stay in view. */
+@media (max-width: 900px) {
+  .hasSide {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .side {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}

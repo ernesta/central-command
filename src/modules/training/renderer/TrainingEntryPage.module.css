@@ -63,40 +63,10 @@
   display: flex;
   gap: 8px;
 }
-.split {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 260px;
-  gap: 40px;
-  align-items: start;
-}
-.doc {
-  max-width: 780px;
-  min-width: 0;
-}
-.side {
-  display: grid;
-  gap: 20px;
-}
+/* The note, Files and the outline are laid out by the shared `DocSplit` (`roomySide`: two columns of
+   panels once the screen is wide enough). */
 @media (max-width: 900px) {
   .page {
     padding-inline: 24px;
-  }
-  .split {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-/* Wide enough (full screen on most Mac displays) to give Files and Outline their own columns,
-   rather than stacking two panels on top of each other in a narrow strip. */
-@media (min-width: 1400px) {
-  .split {
-    grid-template-columns: minmax(0, 1fr) 520px;
-  }
-  .side {
-    grid-template-columns: 1fr 1fr;
-    align-items: start;
-  }
-  /* Outline in the middle, Files on the very right. */
-  .side > :first-child {
-    order: 2;
   }
 }

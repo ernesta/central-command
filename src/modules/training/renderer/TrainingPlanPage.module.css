@@ -32,16 +32,8 @@
   align-items: center;
   gap: 8px;
 }
-/* The same arrangement as a note: the text, then its outline on the right. */
-.layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 260px;
-  gap: 40px;
-  align-items: start;
-}
-.doc {
-  min-width: 0;
-}
+/* The same arrangement as a note — the text, then its outline on the right — laid out by the shared
+   `DocSplit`. The plan's own text is not capped at a note's width (`fullWidth`). */
 .notices {
   display: grid;
   gap: 8px;
@@ -54,8 +46,5 @@
 @media (max-width: 720px) {
   .page {
     padding: 24px 16px 32px;
-  }
-  .layout {
-    grid-template-columns: minmax(0, 1fr);
   }
 }

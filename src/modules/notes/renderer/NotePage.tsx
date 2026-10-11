@@ -9,6 +9,7 @@ import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
+import { DocSplit } from '@renderer/notes/DocSplit'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { LiveEditor } from '@renderer/editor/LiveEditor'
 import { markdownToExcerpt } from '@shared/text'
@@ -261,30 +262,32 @@ function NoteView({
         </div>
       )}
 
-      <div className={styles.split}>
-        <div className={styles.doc} ref={docRef}>
-          <EditorCard text={body} edited={updatedAt} save={save} reloaded={reloadedFromDisk}>
-            <LiveEditor
-              key={snapshot.editorKey}
-              initial={snapshot.initialBody}
-              placeholder="Write your note…"
-              showPlaceholder={body.trim() === ''}
-              // Not after the file changed outside: that editor must not take the cursor.
-              autoFocus={startFocus === 'body' && !reloadedFromDisk}
-              entitySelf={{ kind: 'note', workspace: noteRef.workspace, id: session.getRef().id }}
-              onChange={session.editBody.bind(session)}
-              onBlur={() => void session.flush()}
+      <DocSplit
+        docRef={docRef}
+        side={
+          <>
+            <NoteOutline text={body} docRef={docRef} />
+            <MentionedIn
+              kind="note"
+              entityKey={rows?.find((r) => r.id === session.getRef().id)?.uid || null}
             />
-          </EditorCard>
-        </div>
-        <div className={styles.side}>
-          <NoteOutline text={body} docRef={docRef} />
-          <MentionedIn
-            kind="note"
-            entityKey={rows?.find((r) => r.id === session.getRef().id)?.uid || null}
+          </>
+        }
+      >
+        <EditorCard text={body} edited={updatedAt} save={save} reloaded={reloadedFromDisk}>
+          <LiveEditor
+            key={snapshot.editorKey}
+            initial={snapshot.initialBody}
+            placeholder="Write your note…"
+            showPlaceholder={body.trim() === ''}
+            // Not after the file changed outside: that editor must not take the cursor.
+            autoFocus={startFocus === 'body' && !reloadedFromDisk}
+            entitySelf={{ kind: 'note', workspace: noteRef.workspace, id: session.getRef().id }}
+            onChange={session.editBody.bind(session)}
+            onBlur={() => void session.flush()}
           />
-        </div>
-      </div>
+        </EditorCard>
+      </DocSplit>
 
       <DeleteDialog
         open={confirmDelete}

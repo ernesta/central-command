@@ -6,6 +6,7 @@ import { Button } from '@renderer/components/Button'
 import { IconButton } from '@renderer/components/IconButton'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
+import { DocSplit } from '@renderer/notes/DocSplit'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { LiveEditor } from '@renderer/editor/LiveEditor'
 import { useNotesSession } from '@renderer/notes/useNotesSession'
@@ -71,11 +72,11 @@ function PlanView({ year }: { year: string }): React.JSX.Element {
   // from disk (a new editor) starts from the file's text again.
   const [typed, setTyped] = useState<{ editorKey: number; text: string } | null>(null)
   const text = typed && typed.editorKey === snapshot.editorKey ? typed.text : snapshot.initial
-  const docRef = useRef<HTMLElement>(null)
+  const docRef = useRef<HTMLDivElement>(null)
 
   return (
-    <div className={styles.layout}>
-      <section className={styles.doc} ref={docRef} aria-label={`Training plan ${yearLabel(year)}`}>
+    <DocSplit fullWidth docRef={docRef} side={<NoteOutline text={text} docRef={docRef} />}>
+      <section aria-label={`Training plan ${yearLabel(year)}`}>
         {(conflict || error) && (
           <div className={styles.notices}>
             {conflict && (
@@ -131,7 +132,6 @@ function PlanView({ year }: { year: string }): React.JSX.Element {
           </EditorCard>
         )}
       </section>
-      <NoteOutline text={text} docRef={docRef} />
-    </div>
+    </DocSplit>
   )
 }

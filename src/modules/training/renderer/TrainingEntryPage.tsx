@@ -9,6 +9,7 @@ import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
+import { DocSplit } from '@renderer/notes/DocSplit'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { LiveEditor } from '@renderer/editor/LiveEditor'
 import { NoteOutline } from '@renderer/notes/NoteOutline'
@@ -254,24 +255,27 @@ function EntryView({
       />
       <LectureHours id={entryRef.id} meta={meta} tasks={tasks} />
 
-      <div className={styles.split}>
-        <div className={styles.doc} ref={docRef}>
-          <EditorCard text={body} edited={updatedAt} save={save} reloaded={reloadedFromDisk}>
-            <LiveEditor
-              key={snapshot.editorKey}
-              initial={snapshot.initialBody}
-              placeholder="Write your notes…"
-              showPlaceholder={body.trim() === ''}
-              onChange={session.editBody.bind(session)}
-              onBlur={() => void session.flush()}
-            />
-          </EditorCard>
-        </div>
-        <div className={styles.side}>
-          <FilesPanel folder={meta.folder} onChange={(folder) => session.setMeta({ folder })} />
-          <NoteOutline text={body} docRef={docRef} />
-        </div>
-      </div>
+      <DocSplit
+        docRef={docRef}
+        roomySide
+        side={
+          <>
+            <FilesPanel folder={meta.folder} onChange={(folder) => session.setMeta({ folder })} />
+            <NoteOutline text={body} docRef={docRef} />
+          </>
+        }
+      >
+        <EditorCard text={body} edited={updatedAt} save={save} reloaded={reloadedFromDisk}>
+          <LiveEditor
+            key={snapshot.editorKey}
+            initial={snapshot.initialBody}
+            placeholder="Write your notes…"
+            showPlaceholder={body.trim() === ''}
+            onChange={session.editBody.bind(session)}
+            onBlur={() => void session.flush()}
+          />
+        </EditorCard>
+      </DocSplit>
 
       <DeleteDialog
         open={confirmDelete}
