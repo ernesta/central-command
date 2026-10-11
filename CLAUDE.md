@@ -92,10 +92,9 @@ ask the user.
   backs up the database first, `--apply` only when the user says so, app closed; applied 11 Oct 2026, one row, so a dry run
   now finds nothing)
 - `npm run remove:previous-todos [-- --apply]`: one-off clean-up, remove the whole `## Previous TODOs` section (heading and
-  everything under it) from every meeting note; the app's carry-over (`insertPreviousTodos`) recreates it from the previous
-  meeting's unticked items next time a note in the series is opened or made, so only ticked history is lost, nothing
-  structural (dry run by default, backs up `notes/meetings/` first, `--apply` only when the user says so, app closed;
-  applied 11 Oct 2026, 29 notes, so a dry run now finds nothing)
+  everything under it) from every meeting note; carry-over is **switched off** (11 Oct 2026: new meetings use `## Summary` and `## Notes` only and `syncPreviousTodos` writes nothing; `carry-over.ts` stays unused), so the section
+  does not come back; only ticked history was lost, nothing structural (dry run by default, backs up `notes/meetings/` first, `--apply` only when the user says so, app closed;
+  applied 11 Oct 2026, 29 notes, and again on 3 notes the app had re-filled, so a dry run now finds nothing)
 
 All of test, lint and typecheck must pass before finishing a checkpoint.
 

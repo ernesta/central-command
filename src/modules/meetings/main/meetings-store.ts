@@ -27,7 +27,6 @@ import type {
   MeetingSaveResult,
   SyncPreviousResult
 } from '../shared/api'
-import { carryOver, findPreviousMeeting } from '../shared/carry-over'
 import { tickTodo } from '../shared/todo-boxes'
 import {
   MEETING_MODES,
@@ -129,40 +128,13 @@ export class MeetingsStore {
     for (let attempt = 0; attempt < 50; attempt++) {
       const taken = await this.baseNamesOnDisk(workspace)
       const id = meetingBaseName(input.date ?? '', input.series, taken)
-      const body =
-        input.body ??
-        (await this.templateBody({ workspace, id, series: input.series, date: input.date ?? '' }))
+      const body = input.body ?? NEW_MEETING_BODY
       if (await createNoteFileExclusive(meetingPath(dir, id), head + body)) {
         await this.reindex({ workspace, id })
         return this.read({ workspace, id })
       }
     }
     throw new MeetingError('Couldn’t find a free file name for the new meeting')
-  }
-
-  /** The standard new-meeting body, with Previous TODOs filled from the previous meeting of the series. */
-  private async templateBody(key: {
-    workspace: MeetingWorkspace
-    id: string
-    series: string
-    date: string
-  }): Promise<string> {
-    const previous = await this.previousBody(key)
-    return previous === null ? NEW_MEETING_BODY : carryOver(previous, NEW_MEETING_BODY).body
-  }
-
-  /** The body of the meeting before `key` in its series, or null if there is none. */
-  private async previousBody(key: {
-    workspace: MeetingWorkspace
-    id: string
-    series: string
-    date: string
-  }): Promise<string | null> {
-    const rows = listMeetingRows(this.db, key.workspace)
-    const previous = findPreviousMeeting(rows, key)
-    if (!previous) return null
-    const note = await readNoteFile(this.pathOf({ workspace: key.workspace, id: previous.id }))
-    return note.exists ? splitNote(note.content).body : null
   }
 
   async read(ref: MeetingRef): Promise<MeetingFile> {
@@ -234,18 +206,8 @@ export class MeetingsStore {
   async syncPreviousTodos(ref: MeetingRef, baseHash: string): Promise<SyncPreviousResult> {
     const file = await this.read(ref)
     if (file.note.hash !== baseHash) return { status: 'conflict', disk: file.note }
-    const previous = await this.previousBody({
-      workspace: ref.workspace,
-      id: ref.id,
-      series: file.meta.series,
-      date: file.meta.date
-    })
-    if (previous === null) return { status: 'saved', hash: file.note.hash, added: 0 }
-    const { body, added } = carryOver(previous, file.body)
-    const result = await this.save(ref, { body }, baseHash)
-    return result.status === 'saved'
-      ? { status: 'saved', hash: result.hash, added: added.length }
-      : result
+    // Carry-over is switched off (11 Oct 2026): opening a meeting no longer adds Previous TODOs.
+    return { status: 'saved', hash: file.note.hash, added: 0 }
   }
 
   /** See `MeetingsApi.tickTodo`. */

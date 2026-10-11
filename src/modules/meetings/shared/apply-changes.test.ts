@@ -33,6 +33,6 @@ describe('applyChanges', () => {
   })
 
   it('has a sensible new-meeting body', () => {
-    expect(NEW_MEETING_BODY).toBe('## Summary\n## Previous TODOs\n## Notes\n')
+    expect(NEW_MEETING_BODY).toBe('## Summary\n## Notes\n')
   })
 })

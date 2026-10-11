@@ -167,7 +167,7 @@ describe('create', () => {
     })
     expect(meeting.ref).toEqual(ref('2026-09-24 Supervision'))
     expect(disk('2026-09-24 Supervision')).toBe(
-      "---\nseries: Supervision\ndate: 2026-09-24\nstart: '14:00'\nend: '15:00'\nmode: in-person\nattendees: [Kathy Rastle, Ernesta Orlovaitė]\n---\n\n## Summary\n## Previous TODOs\n## Notes\n"
+      "---\nseries: Supervision\ndate: 2026-09-24\nstart: '14:00'\nend: '15:00'\nmode: in-person\nattendees: [Kathy Rastle, Ernesta Orlovaitė]\n---\n\n## Summary\n## Notes\n"
     )
     expect(meeting.meta).toMatchObject({
       series: 'Supervision',
@@ -429,64 +429,25 @@ describe('delete', () => {
   })
 })
 
-describe('Previous TODOs carry-over', () => {
+describe('Previous TODOs carry-over (switched off)', () => {
   const SUP = { workspace: 'research', series: 'Supervision' } as const
   const previousBody =
-    '## Summary\n\n## Previous TODOs\n\n- [x] **TODO(EO)**: done\n- [ ] **TODO(KR)**: waiting\n\n## Notes\n\n- **TODO(EO)**: inline\n'
+    '## Summary\n\n## Previous TODOs\n\n- [ ] **TODO(KR)**: waiting\n\n## Notes\n'
 
-  it('fills a new meeting from the previous meeting of the same series', async () => {
+  it('a new meeting gets nothing from the previous one', async () => {
     await store.create({ ...SUP, date: '2026-09-17', body: previousBody })
     const m = await store.create({ ...SUP, date: '2026-09-24' })
-    expect(m.body).toBe(
-      '## Summary\n## Previous TODOs\n- [ ] **TODO(KR)**: waiting\n- [ ] **TODO(EO)**: inline\n## Notes\n'
-    )
+    expect(m.body).toBe('## Summary\n## Notes\n')
   })
 
-  it('does not carry from another series, or from a later meeting', async () => {
-    await store.create({
-      workspace: 'research',
-      series: 'Luminos',
-      date: '2026-09-17',
-      body: previousBody
-    })
-    await store.create({ ...SUP, date: '2026-10-01', body: previousBody })
-    const m = await store.create({ ...SUP, date: '2026-09-24' })
-    expect(m.body).toBe('## Summary\n## Previous TODOs\n## Notes\n')
-  })
-
-  it('a body given to create is used as it is, with no carry-over', async () => {
+  it('opening a meeting writes nothing', async () => {
     await store.create({ ...SUP, date: '2026-09-17', body: previousBody })
-    const m = await store.create({ ...SUP, date: '2026-09-24', body: 'mine\n' })
-    expect(m.body).toBe('mine\n')
-  })
-
-  it('syncPreviousTodos adds what is missing when the meeting is opened, and only that', async () => {
     const m = await store.create({ ...SUP, date: '2026-09-24' })
-    await store.create({ ...SUP, date: '2026-09-17', body: previousBody })
-    // Move the new meeting on: tick nothing, type a note, then open it after the previous one changed.
-    const r = m.ref
-    const first = await store.syncPreviousTodos(r, m.note.hash)
-    expect(first).toMatchObject({ status: 'saved', added: 2 })
-    const after = await store.read(r)
-    expect(after.body).toContain('- [ ] **TODO(KR)**: waiting')
-    // Tick one, add a note; a second sync adds nothing and leaves everything as it is.
-    const ticked =
-      after.body.replace('- [ ] **TODO(KR)**: waiting', '- [x] **TODO(KR)**: waiting') + 'my note\n'
-    await store.save(r, { body: ticked }, after.note.hash)
-    const again = await store.read(r)
-    expect(await store.syncPreviousTodos(r, again.note.hash)).toMatchObject({
+    const before = disk(m.ref.id)
+    expect(await store.syncPreviousTodos(m.ref, m.note.hash)).toMatchObject({
       status: 'saved',
       added: 0
     })
-    expect((await store.read(r)).body).toBe(ticked)
-  })
-
-  it('syncPreviousTodos refuses (writes nothing) when the file changed since the caller read it', async () => {
-    await store.create({ ...SUP, date: '2026-09-17', body: previousBody })
-    const m = await store.create({ ...SUP, date: '2026-09-24', body: '## Summary\n\n## Notes\n' })
-    writeFileSync(file(m.ref.id), disk(m.ref.id) + 'edited elsewhere\n')
-    const before = disk(m.ref.id)
-    expect((await store.syncPreviousTodos(m.ref, m.note.hash)).status).toBe('conflict')
     expect(disk(m.ref.id)).toBe(before)
   })
 
@@ -494,14 +455,6 @@ describe('Previous TODOs carry-over', () => {
     const m = await store.create({ ...SUP, date: '2026-09-24' })
     expect(await store.syncPreviousTodos(m.ref, hashContent('stale'))).toMatchObject({
       status: 'conflict'
-    })
-  })
-
-  it('syncPreviousTodos does nothing for the first meeting of a series', async () => {
-    const m = await store.create({ ...SUP, date: '2026-09-24' })
-    expect(await store.syncPreviousTodos(m.ref, m.note.hash)).toMatchObject({
-      status: 'saved',
-      added: 0
     })
   })
 })
@@ -523,7 +476,7 @@ describe('a meeting with no date yet (planned)', () => {
 
   it('gets no Previous TODOs carried over, and is not the previous meeting of another', async () => {
     const planned = await store.create({ workspace: 'research', series: 'Supervision' })
-    expect(planned.body).toBe('## Summary\n## Previous TODOs\n## Notes\n')
+    expect(planned.body).toBe('## Summary\n## Notes\n')
   })
 })
 
