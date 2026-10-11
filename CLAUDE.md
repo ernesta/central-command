@@ -63,6 +63,11 @@ ask the user.
   if it is still genuinely unattached (no notes, no Reading Lists mention, no `@` mention) when applied (dry run by default,
   backs up the database first, `--apply` only when the user says so, app closed; applied 11 Oct 2026, one row, so a dry run
   now finds nothing)
+- `npm run remove:previous-todos [-- --apply]`: one-off clean-up, remove the whole `## Previous TODOs` section (heading and
+  everything under it) from every meeting note; the app's carry-over (`insertPreviousTodos`) recreates it from the previous
+  meeting's unticked items next time a note in the series is opened or made, so only ticked history is lost, nothing
+  structural (dry run by default, backs up `notes/meetings/` first, `--apply` only when the user says so, app closed;
+  applied 11 Oct 2026, 29 notes, so a dry run now finds nothing)
 
 All of test, lint and typecheck must pass before finishing a checkpoint.
 
