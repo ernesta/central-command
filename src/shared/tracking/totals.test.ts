@@ -209,6 +209,21 @@ describe("deleting a task's time for a day", () => {
     expect(weekMinutes(after, '2026-09-28')).toBe(75)
   })
 
+  it('Undo of a delete puts the time back on the same task', () => {
+    let y = year()
+    y = ok(addTime(y, D, 'Deck', 45, nextId(), undefined, 'cc://task/abc'))
+    const row = dayRows(y, D)[0]
+    expect(row.task).toBe('cc://task/abc')
+    const gone = deleteTaskTime(y, D, 'Deck')
+    const back = ok(setTaskMinutes(gone, D, 'Deck', 45, nextId(), undefined, row.task))
+    expect(dayRows(back, D).map((r) => [r.label, r.minutes, r.task])).toEqual([
+      ['Deck', 45, 'cc://task/abc']
+    ])
+    // without the task it comes back label-only: the bug this guards
+    const plain = ok(setTaskMinutes(gone, D, 'Deck', 45, nextId()))
+    expect(dayRows(plain, D)[0].task).toBeUndefined()
+  })
+
   it("moves no other session's frozen minutes", () => {
     const y = worked(D, [
       ['Deck', '09:00:00', '09:07:00'],
