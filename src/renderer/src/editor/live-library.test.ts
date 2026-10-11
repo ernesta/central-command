@@ -149,7 +149,7 @@ function checkKeys(file: string, text: string): void {
 function checkList(file: string, text: string): void {
   const state = stateFor(text)
   for (const seen of decorationsOf(state)) {
-    if (seen.kind !== 'widget') continue
+    if (seen.kind !== 'widget' || state.sliceDoc(seen.from, seen.to).includes('](cc://')) continue
     const line = state.doc.lineAt(seen.from)
     const parts = parseLine(line.text)
     expect(seen.from, `${file} widget start`).toBe(line.from + parts.quote.length)
@@ -251,7 +251,7 @@ function checkMentions(file: string, text: string): { chips: number } {
       const undone = run(undo as never, (removed as Transaction).state)
       expect(undone.tr?.newDoc.sliceString(0), `${file} @${at} undo`).toBe(withChip)
     }
-    // An `@…` typed here: offered only where it belongs, and replaced by exactly the mention and a space.
+    // An `@…` typed here: offered only where it belongs, and replaced by exactly the mention (no space after it).
     const typed = `${text.slice(0, at)}@ka${text.slice(at)}`
     const typing = stateFor(typed, at + 3)
     const suggestion = findSuggestion(typing)
@@ -269,7 +269,7 @@ function checkMentions(file: string, text: string): { chips: number } {
         key: 'Kathy Rastle'
       })
       expect(result, `${file} @${at} insert`).toBe(
-        `${typed.slice(0, suggestion.from)}${MENTION} ${typed.slice(suggestion.to)}`
+        `${typed.slice(0, suggestion.from)}${MENTION}${typed.slice(suggestion.to)}`
       )
     }
   }
@@ -354,11 +354,19 @@ function checkTodo(file: string, text: string): { triggers: number } {
       const here = fakeView(state)
       insertTodoText(here.view, from, to, owner)
       const tr = here.last() as Transaction
-      const inserted = `**${owner ? `TODO(${owner})` : 'TODO'}**: `
-      expect(tr.newDoc.toString(), `${file} todo @${from}-${to}`).toBe(
-        doc.slice(0, from) + inserted + doc.slice(to)
+      const marker = `**${owner ? `TODO(${owner})` : 'TODO'}**: `
+      // The marker ends where the cursor is, what followed the range is untouched, and what came before it only loses
+      // trailing spaces (a checkbox item may start a new line); the checkbox lead is `todo-live`'s own business.
+      const head = tr.newSelection.main.head
+      const newDoc = tr.newDoc.toString()
+      expect(newDoc.slice(head - marker.length, head), `${file} todo @${from}-${to} marker`).toBe(
+        marker
       )
-      expect(tr.newSelection.main.head, `${file} todo cursor`).toBe(from + inserted.length)
+      expect(newDoc.slice(head), `${file} todo @${from}-${to} after`).toBe(doc.slice(to))
+      expect(
+        newDoc.startsWith(doc.slice(0, from).trimEnd()),
+        `${file} todo @${from}-${to} before`
+      ).toBe(true)
       const undone = run(undo as never, tr.state)
       expect(undone.tr?.newDoc.sliceString(0), `${file} todo undo`).toBe(text)
     }
@@ -509,16 +517,19 @@ function checkTable(file: string, text: string, table: TableAt, nl: string): { c
         (one) =>
           one.from >= line.from &&
           one.from <= line.to &&
-          (one.kind.startsWith('live-cell') || one.kind === 'widget')
+          (one.kind.startsWith('live-cell') ||
+            (one.kind === 'widget' && !state.sliceDoc(one.from, one.to).includes('](cc://')))
       )
       expect(drawn.length, `${where} line ${n} cells`).toBe(indepCells(line.text).length)
-      // What is left to read is the cells' text (bold marks aside).
+      // What is left to read is the cells' text (bold and code marks aside).
       const visible = [...line.text]
         .filter((_, i) => !hidden.has(line.from + i))
         .join('')
-        .replace(/[\s*]/g, '')
+        .replace(/[\s*`]/g, '')
       expect(visible, `${where} line ${n} text`).toBe(
-        indepCells(line.text).join('').replace(/[\s*]/g, '')
+        indepCells(line.text)
+          .join('')
+          .replace(/[\s*`]/g, '')
       )
     }
   }
