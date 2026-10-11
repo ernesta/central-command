@@ -1,11 +1,12 @@
 # Roadmap
 
 **A reading's metadata in the side column (11 Oct 2026): built, committed, not pushed, not driven in the app**
-(`docs/DECISIONS.md`, "A reading's metadata belongs in the side column"). The reading page had the APA reference, the
-reading lists and Mentioned in stacked down the middle, the last two touching; they are now a column of cards on the
-right, with an outline of your notes, the same shape as a note, a meeting and a training entry. Three shared pieces
-came out of it: `SidePanel` (one card for every panel), `DocSplit` (one grid for a note and its panels, used by all
-five pages) and `NoteOutline` moved to the shared notes machinery.
+(`docs/DECISIONS.md`, "A reading's metadata belongs in the side column" and "Which side of 'about it' the APA
+reference falls on"). The reading page had the APA reference, the reading lists and Mentioned in stacked down the
+middle, the last two touching. The main column is now the paper — its reference, its abstract, your notes — and the
+side column holds the outline, the lists it is in and where it is mentioned, the same shape as a note, a meeting and a
+training entry. Three shared pieces came out of it: `Panel` (one labelled card, wherever it sits), `DocSplit` (one
+grid for a note and its panels, used by all five pages) and `NoteOutline` moved to the shared notes machinery.
 
 - **For you to look at**, since this container cannot run the app: the reading page itself, and the four pages the
   shared layout now draws — a meeting, a note, a training entry and the training plan. In particular the side column

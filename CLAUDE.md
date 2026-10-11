@@ -107,9 +107,11 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   `index.ts` manifest the shell reads. Readings and Meetings are the patterns to copy. Shared notes machinery
   (guarded file access, watcher, editor, session) lives in `src/main/notes/` and `src/renderer/src/notes/`; the
   remembered-UI-state hook is `useModuleState`. A page with a note has one shape, and it is not re-specified per page:
-  `DocSplit` (`renderer/src/notes/`) is the text-and-panels grid, `SidePanel` (`renderer/src/components/`) is the card
-  each panel sits in, and the side column — not the panel — is what stays in view and scrolls (`docs/DECISIONS.md`,
-  "A reading's metadata belongs in the side column").
+  `DocSplit` (`renderer/src/notes/`) is the text-and-panels grid, `Panel` (`renderer/src/components/`) is the labelled
+  card each panel (and each body block, such as a reading's reference) sits in, and the side column — not the panel —
+  is what stays in view and scrolls. What goes in the side column is what the app knows *about* a thing, not part of
+  the thing itself (`docs/DECISIONS.md`, "A reading's metadata belongs in the side column", "Which side of 'about it'
+  the APA reference falls on").
 - `src/renderer/src/editor/`: the one editor, `LiveEditor` (CodeMirror 6; the Markdown text is the document and everything drawn is a decoration
   over it, so opening never reformats and saving writes exactly what is in the editor; markers show only where the cursor is). Notes, Work notes,
   Meetings, Training entries and plan, Reading lists and Readings notes all render it inside `EditorCard`. Decision: `docs/DECISIONS.md`, "Notes

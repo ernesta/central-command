@@ -2710,8 +2710,8 @@ owned the spacing**, because the page was a stack of blocks that each guessed.
 
 **The arrangement, now the same on all five pages with a note.** What the thing *is* at the top, the text in the main
 column, and everything *about* it in a column of cards on the right. Meetings (Topics, Mentioned in), Notes (Outline,
-Mentioned in) and Training entries (Files, Outline) already did this; Readings now does too, with the reference and its
-Copy, an outline of the user's own notes, the lists it is in, and where it is mentioned.
+Mentioned in) and Training entries (Files, Outline) already did this; Readings now does too, with an outline of the
+user's own notes, the lists it is in, and where it is mentioned.
 
 **Three pieces came out of it, and none is a new idea — each is the existing pattern, written once.**
 
@@ -2737,9 +2737,9 @@ Copy, an outline of the user's own notes, the lists it is in, and where it is me
   pitfall CLAUDE.md records.
 - **The abstract stays in the main column.** It is the paper's own prose, not metadata about it, and a paragraph in a
   260px strip reads badly. The main column is "the paper, then your notes on it".
-- **Panel order: reference, outline, reading lists, mentioned in.** The reference first because its Copy is the thing
-  used most; the outline next because it belongs to the text beside it; the two "where does this appear" panels last,
-  and both draw nothing when empty.
+- **So does the APA reference** (corrected the same day, see below). The side column holds the outline, the reading
+  lists and the mentions, in that order: the outline first because it belongs to the text beside it, the two "where
+  does this appear" panels after it, both drawing nothing when empty.
 - **Readings gained an outline** it did not have. Every other page with an editor has one, and the user has said their
   reading notes are often long.
 - **The notes session moved up to the page.** The outline needs the text as it is typed, and `NotesSection` owned the
@@ -2756,3 +2756,24 @@ one-column and the `roomySide` arrangement. The side column measured sticky and 
 mode), and the real-library editor gate, which needs `~/CentralCommand`. Nothing here touches the editor's internals,
 but every page that holds one moved, so Meetings, Notes, Training (entry and plan) and Readings each want a look in the
 real app before this is pushed.
+
+## Which side of "about it" the APA reference falls on (11 Oct 2026)
+
+Moving the reading page's blocks to the side column took the APA reference with them. The user: "APA reference should
+have been left there at the top since it's really part of the paper."
+
+**The line this draws, and it is the useful part.** The side column is for what the app knows *about* a thing — where
+it is mentioned, which lists it is in, how to get around the text. The reference is not that: it is the paper's own
+identity, the same kind of fact as its title and its authors, and the user reads and copies it as part of the paper.
+Everything the reading page shows now sorts cleanly by that test. The abstract was already kept in the main column for
+a weaker reason (a paragraph reads badly in a 260px strip); this is the stronger one, and it covers both.
+
+- The reference is back at the top of the main column, above the abstract, at the width it had before.
+- The abstract draws the same card as the reference now, so the two blocks that *are* the paper match. Each had set
+  its own padding (16 against 18/22).
+- **`SidePanel` became `Panel`.** It was named after the one place it was first used; a card in the body of a page is
+  the same card. The side column is something `DocSplit` does *to* panels (keeps them in view, scrolls them), not part
+  of what a panel is.
+
+Checked the same way as the change it corrects: rendered in Chromium through the Vite harness, light and dark, 1440px
+and 860px. Still not driven in the real app.
