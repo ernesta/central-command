@@ -2324,6 +2324,15 @@ Hours rows are one per task per day (sessions and typed time added together), no
 - **Driven (scratch library, dev and production build, screenshots looked at):** Cancel changes nothing; confirm removes both sessions of a task on Today (file and totals checked); week day rows offer Delete; a running timer's row has none; Discard on a taskless timer removes it and leaves no session. **Not driven:** Work's Hours, a task-linked row (the Tasks Time card is covered by tests only), a derived row on screen.
 - **Open (not changed):** Stop and the idle Start chip share a spot in the top bar; a double-click on Stop may start a taskless timer. Not reproduced here.
 
+## Work's Hours: Delete, Undo and Discard driven (11 Oct 2026)
+
+Queue item B (`docs/ROADMAP.md`). Driven on a scratch Work library (a contract with two clients, task-linked and label-only sessions and typed time), in dev mode and in the production build, with real keystrokes, screenshots looked at.
+
+- **Works:** Delete on a Work week day lists one trash button per row; Enter on the dialog does nothing (Cancel has focus); confirm removes the sessions and typed time of the row's task and client only (same label for the other client is untouched); day, week, "Hours so far" and the average week drop at once; the toast's Undo restores the time; Discard on a running timer started in Work removes it and leaves no session.
+- **Bug found and fixed:** Undo put the time back as typed time **without the task link**. A deleted row takes its `task` with it, and Undo re-typed the minutes by label and client only, so a task-linked row (every Work hour has one) came back label-only and its time left the task's tracked time and monthly list. `setTaskMinutes` now takes an optional `task` (through `Api`, IPC, preload and store) and uses it when the row has none left; the dialog's Undo passes the row's task. Test in `totals.test.ts` (mutation-checked: without the fallback it fails). Re-driven in both modes: the restored entry carries `cc://task/...`.
+- **Left as is (small):** after Undo the restored row moves to the end of the day's list, and sessions of the row come back as one typed entry (the minutes are the same). The confirm text says "removed" for the whole row total even when part of it is `earlier` history, which stays; only a row with such history shows it.
+- Not driven: a task-linked row on the task page's Time card (covered by tests).
+
 ## A training is "Series: title" everywhere (9 Oct 2026)
 
 The Training landing's "Recent and upcoming" list showed a title without its series, so an entry like "Lecture 1" did not say what it belonged to. Hours rows already read "Series: lecture" (previous section), so the user asked for one pattern, not a second one.
