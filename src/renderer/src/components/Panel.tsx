@@ -1,6 +1,6 @@
-import styles from './SidePanel.module.css'
+import styles from './Panel.module.css'
 
-interface SidePanelProps {
+interface PanelProps {
   /** What the panel is called: its heading, and the name read out for the landmark. */
   label: string
   /** A heading that says more than the label does (“Topics · 2 of 5 discussed”). */
@@ -13,17 +13,18 @@ interface SidePanelProps {
 }
 
 /**
- * One card in a page's side column: a small-caps label, whatever actions belong beside it, and the
- * panel's own content. The column (`DocSplit`) keeps itself in view and scrolls, so a panel is a
- * plain card and every side panel in the app looks the same.
+ * One labelled card: a small-caps label, whatever actions belong beside it, and the card's own
+ * content. Used in a page's side column, where `DocSplit` keeps the column in view and scrolls it,
+ * and in the body of a page for a block that is not the text itself (a reading's reference, its
+ * abstract), so every card in the app looks the same.
  */
-export function SidePanel({
+export function Panel({
   label,
   heading,
   actions,
   as: Landmark = 'section',
   children
-}: SidePanelProps): React.JSX.Element {
+}: PanelProps): React.JSX.Element {
   return (
     <Landmark className={styles.panel} aria-label={label}>
       <div className={styles.head}>

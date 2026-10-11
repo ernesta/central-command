@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { IconButton } from '@renderer/components/IconButton'
 import { Notice } from '@renderer/components/Notice'
-import { SidePanel } from '@renderer/components/SidePanel'
+import { Panel } from '@renderer/components/Panel'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useSettings } from '@renderer/state/settings-context'
 import type { TrainingFolderListing } from '../shared/api'
@@ -83,7 +83,7 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
   const go = (next: string): void => setNav({ folder, sub: next })
 
   return (
-    <SidePanel
+    <Panel
       label="Files"
       actions={
         <>
@@ -197,6 +197,6 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
             ))}
         </>
       )}
-    </SidePanel>
+    </Panel>
   )
 }

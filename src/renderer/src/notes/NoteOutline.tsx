@@ -1,4 +1,4 @@
-import { SidePanel } from '@renderer/components/SidePanel'
+import { Panel } from '@renderer/components/Panel'
 import { headingStart, liveViewIn, scrollToPos } from '@renderer/editor/live-outline'
 import { locatedOutline, type LocatedOutlineItem } from '@shared/markdown-outline'
 import styles from './NoteOutline.module.css'
@@ -27,7 +27,7 @@ export function NoteOutline({
 }): React.JSX.Element {
   const outline = locatedOutline(text, LEVELS)
   return (
-    <SidePanel as="nav" label="Outline">
+    <Panel as="nav" label="Outline">
       {outline.length === 0 ? (
         <p className={styles.empty}>Headings you write appear here.</p>
       ) : (
@@ -51,6 +51,6 @@ export function NoteOutline({
           ))}
         </ul>
       )}
-    </SidePanel>
+    </Panel>
   )
 }

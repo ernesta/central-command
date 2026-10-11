@@ -1,12 +1,12 @@
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import { SidePanel } from './SidePanel'
+import { Panel } from './Panel'
 
-const render = (props: Parameters<typeof SidePanel>[0]): string =>
-  renderToStaticMarkup(createElement(SidePanel, props))
+const render = (props: Parameters<typeof Panel>[0]): string =>
+  renderToStaticMarkup(createElement(Panel, props))
 
-describe('SidePanel', () => {
+describe('Panel', () => {
   it('names the panel for the eye and for assistive tech', () => {
     const html = render({ label: 'Mentioned in', children: createElement('p', null, 'a note') })
     expect(html).toContain('aria-label="Mentioned in"')

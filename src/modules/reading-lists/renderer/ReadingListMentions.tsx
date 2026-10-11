@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
-import { SidePanel } from '@renderer/components/SidePanel'
+import { Panel } from '@renderer/components/Panel'
 import type { ReadingListMention } from '@modules/reading-lists/shared/api'
 import { readingListRoute } from './reading-lists-paths'
 import styles from './ReadingListMentions.module.css'
@@ -26,7 +26,7 @@ export function ReadingListMentions({ citekey }: { citekey: string }): React.JSX
   if (!mentions || mentions.length === 0) return null
 
   return (
-    <SidePanel label="In your reading lists">
+    <Panel label="In your reading lists">
       <ul className={styles.list}>
         {mentions.map((m) => (
           <li key={`${m.ref.id}-${m.section}`} className={styles.row}>
@@ -38,6 +38,6 @@ export function ReadingListMentions({ citekey }: { citekey: string }): React.JSX
           </li>
         ))}
       </ul>
-    </SidePanel>
+    </Panel>
   )
 }

@@ -3,7 +3,7 @@ import styles from './DocSplit.module.css'
 interface DocSplitProps {
   /** The document itself: an `EditorCard`, and whatever belongs with it in the main column. */
   children: React.ReactNode
-  /** The panels beside it, top to bottom (`SidePanel`s). Left out, the document has the page to itself. */
+  /** The panels beside it, top to bottom (`Panel`s). Left out, the document has the page to itself. */
   side?: React.ReactNode
   /** The element the editor sits in, for the outline and the topics panel to scroll it. */
   docRef?: React.RefObject<HTMLDivElement | null>

@@ -1,7 +1,7 @@
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@renderer/components/Button'
-import { SidePanel } from '@renderer/components/SidePanel'
+import { Panel } from '@renderer/components/Panel'
 import type { Topic } from '../shared/topics'
 import styles from './TopicsPanel.module.css'
 
@@ -33,7 +33,7 @@ export function TopicsPanel({
   }
 
   return (
-    <SidePanel
+    <Panel
       as="aside"
       label="Topics"
       heading={`Topics${topics.length > 0 ? ` · ${done} of ${topics.length} discussed` : ''}`}
@@ -117,6 +117,6 @@ export function TopicsPanel({
           Add topic
         </Button>
       )}
-    </SidePanel>
+    </Panel>
   )
 }

@@ -1,7 +1,7 @@
 import { Check, Copy } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@renderer/components/Button'
-import { SidePanel } from '@renderer/components/SidePanel'
+import { Panel } from '@renderer/components/Panel'
 import { copyRichText } from '@renderer/lib/clipboard'
 import { formatApa } from '../shared/apa'
 import type { Reading } from '../shared/types'
@@ -26,7 +26,7 @@ export function ReferenceBlock({ reading }: { reading: Reading }): React.JSX.Ele
   }
 
   return (
-    <SidePanel
+    <Panel
       label="APA reference"
       actions={
         <>
@@ -51,6 +51,6 @@ export function ReferenceBlock({ reading }: { reading: Reading }): React.JSX.Ele
     >
       {/* The HTML is produced by formatApa, which escapes all text; only <i> tags are added. */}
       <p className={styles.text} dangerouslySetInnerHTML={{ __html: reference.html }} />
-    </SidePanel>
+    </Panel>
   )
 }
