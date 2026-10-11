@@ -1,5 +1,18 @@
 # Roadmap
 
+**Non-entity text to entities (11 Oct 2026): DONE and applied to the real library; nothing left to decide** (`docs/DECISIONS.md`, "Citekey markers to reading entities", "People named in prose to person entities", "The three rules for people in prose", "Mapping the names the rules could not resolve").
+
+- `npm run link:citekeys` — the imported `[@Harm2004]` shorthand: 23 markers, 6 readings, 2 notes. None left.
+- `npm run link:people` — people in prose under the user's three rules (**never her, never someone in the meeting, only the first mention per note**), plus her decided spellings. 356 chips at the widest point became **74**. Authoritative and idempotent: a second run changes nothing, and the "to map" report is empty.
+- Her decided spellings live in `~/CentralCommand/data/people-aliases.json` (her data, not the repo) — add to that file when a new shared first name turns up, rather than changing the script.
+- One dictated prose edit, done separately so `link:people` keeps its "only chips move" invariant: "Dr Caitlin" became "Caitlin Collis" in `meetings/work/2026-07-09 Impact.md` (backup `backups/dr-caitlin-2026-10-11T13-02-04/`).
+
+**One hand-made chip was overridden, and she was told.** Rule 3 removed the second of her two `[Caitlin Baron]` chips in `meetings/work/2026-10-05 Document Automation – Luminos.md`. The rule working as asked, but she typed that one herself. 9 of her 10 hand-made chips are untouched.
+
+**Open for the user — five spots where the prose reads oddly around a chip.** Not changed: edits to her own writing, not entity conversions. `notes/research/Study 1 Model.md`: line 23 "connects with Pretorius (2019) two main linguistic features" (wants "Pretorius's"), line 29 "Ziegler & Goswami (2005) offers" (wants "offer"; line 20 already says "provide"), line 33 "Ziegler & Goswami (2005) "grain sizes" map" (wants "Goswami's"). `meetings/research/2025-10-22 Supervision.md` line 34: "Chang et al. (2020) paper describes" (wants "The … paper", or "Chang et al.'s"). `meetings/research/2025-12-17 Rastle Lab.md` line 13: "Jon Carr and Kathy Rastle research on cognition" (wants "Rastle's"). Not in the people list, so unlinkable: Jon Carr, Kirsty, Mohammed, Senyo, Vecten.
+
+**Also found, unrelated and pre-existing at HEAD**: the real-library editor gate (`LIVE_EDITOR_LIBRARY`) fails 4 of its 10 checks on the user's unmodified notes (mentions, list markers, TODO ranges, tables) — the mention one is an inserted chip at position 0 of a note starting `## Summary` getting no trailing space. Confirmed by stashing, so not from this work. Worth a look before the next editor change, since CLAUDE.md treats that gate as must-pass.
+
 **Feedback on adding and removing rows (10 Oct 2026): built, not pushed, not installed** (`docs/DECISIONS.md`, "Feedback on adding and removing rows"). Answers the open "should removing a day off ask first?" question from 2 Oct: a day just added, or moved by an edit, now briefly flashes in Time off; Delete shows a toast with Undo instead of the row just vanishing. The same two changes went into Hours' `TaskList` (Today and Week), since it's the identical shape of problem. Two shared, reusable pieces came out of it (a promoted `Toast`, used by Tasks too; `useNewRowKeys`, a "just added" row flash) — built without a check-in, at the user's request, while they were away. Left for a later, separate look, since they're the same shape of problem but not asked for yet: `SkillsField`/`PeopleField` chips, Settings → Hours' client chips, Reading Lists' entries.
 
 **Consistency sweep (9 Oct 2026): built, pushed, installed** (`docs/DECISIONS.md`, "Consistency sweep"). Not driven in the app: look at the Delete buttons on item pages, a Time off row's Delete dialog, Hours day names ("Thu, Oct 1") and the task context menu.
@@ -266,6 +279,18 @@ Choices the plan left open, made conservatively; change any of them by telling C
 ## TODOs
 
 ### For the user (review and decisions)
+
+- [ ] **Review five spots where the prose reads oddly around a new entity chip (11 Oct 2026).** Found while turning `[@Harm2004]` markers into reading chips: the marker hid the problem, the chip shows it. All five are your own wording, so nothing was changed — read each and tell Claude the fix, or edit in the app. `docs/DECISIONS.md`, "Citekey markers to reading entities".
+  - [ ] `notes/research/Study 1 Model.md` line 23 — "connects with Pretorius (2019) two main linguistic features"; wants "Pretorius's".
+  - [ ] `notes/research/Study 1 Model.md` line 29 — "Ziegler & Goswami (2005) offers a complementary … view"; wants "offer" (two authors). Line 20 of the same note already says "provide", line 38 "add".
+  - [ ] `notes/research/Study 1 Model.md` line 33 — "Ziegler & Goswami (2005) "grain sizes" map directly onto these pathways"; wants "Goswami's".
+  - [ ] `meetings/research/2025-10-22 Supervision.md` line 34 — "Chang et al. (2020) paper describes the basis of the theory of reading"; wants "The … paper" (which keeps the chip a clean citation) or "Chang et al.'s".
+  - [ ] `meetings/research/2025-12-17 Rastle Lab.md` line 13 — "See Jon Carr and Kathy Rastle research on cognition"; wants "Rastle's". Jon Carr is not in your people list, so he cannot be a chip until he is.
+
+- [ ] **Three more ways your notes name a person, not linked (11 Oct 2026).** Each needs one line from you, in `~/CentralCommand/data/people-aliases.json`, if you want it chipped. Noticed while driving the app; none was guessed at.
+  - [ ] "Dr C" in `meetings/work/2026-06-18 Impact.md` — Caitlin Collis or Chris Cummiskey? A single initial is ambiguous, and you have both.
+  - [ ] Surname only in training notes: "Dr Cohen-Chen" (Smadar Cohen-Chen), "Dr Russell" (Emma Russell). The pass links full names and unique first names, not surnames.
+  - [ ] People your notes name who are not in your people list, so they cannot be chips at all: Jon Carr, Kirsty, Mohammed, Senyo, Vecten.
 
 - [ ] **Meetings: a task should not need adding by hand (9 Oct 2026, the user; decide once the old cases are settled, stage 5 for Research).** A new meeting with times but no task has no hours (e.g. `2026-10-08 Rastle Lab`, 15:30 to 16:45, missing from Hours until its Task field is clicked). Today the page only proposes the series' generic task and one click takes it. Decide how a new meeting gets its task by itself (like Trainings, which make theirs once a series is chosen: `task: auto`, or the generic task set when the series is chosen) and whether to drop the "no task, no hours" rule for new notes. Do not build before the user answers; fold it into retiring `task: auto`.
 

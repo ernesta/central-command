@@ -2514,3 +2514,184 @@ The user opened Readings right after the catch-up above ran and saw "No matching
 - **Fix** (`ReadingsPage.tsx`): an effect clears `missingOnly` back to `false` as soon as `missing` reaches 0, so the filter can never outlive the one control that sets it.
 - Typecheck, lint and the full test suite pass (no new unit test: the bug is in page-level effect timing, which the codebase doesn't unit-test for this page; covered instead by driving the app).
 - **Driven against a scratch library** (`CENTRAL_COMMAND_HOME`, production build, Playwright): forced `missingOnly: true` into a scratch `settings.json` with zero missing-from-source readings, then confirmed the pre-fix build reproduced the bug exactly (blank list, "Clear filters" shown, `missingOnly` still `true` on disk afterwards) and the fixed build did not (the readings showed immediately and `missingOnly` was written back to `false`).
+
+## Citekey markers to reading entities (11 Oct 2026)
+
+The user asked for a review of the notes for text that should be an entity, naming `[@Harm2004]`. A sweep of the whole
+library found exactly one such class left: the Pandoc/Obsidian citekey shorthand that came in with the imported Obsidian
+notes — 23 markers over 6 distinct readings, in `notes/research/Study 1 Model.md` (18) and
+`meetings/research/2025-10-22 Supervision.md` (5). Nothing else was outstanding: no wiki links anywhere, and
+`npm run link:citations` finds nothing left to link (its 30 remaining plain-text citations all name readings that are not
+in Zotero, so there is nothing to link them to). The marker form survived that earlier pass because `findCitations` looks
+for "Author (Year)" or "Author, Year" and a marker is neither.
+
+- **Rules in `src/shared/citations.ts`**, beside the plain-text pass rather than in the script, and reusing its
+  `protectedRanges`, `sameName` and `Resolution`: `findCitekeyMarkers`, `resolveCitekeyMarker`, `citekeyLabel`,
+  `apaNames`, `proposeCitekeys`, `applyCitekeys`, `undoCitekeys`, `unreadableCitekeys`.
+- **A marker carries less than a citation does**: only the first author's surname and the year, never how many authors
+  there were. So it is resolved on those two alone and linked only when exactly one reading fits; the label cannot come
+  from the marker's own text and is built from the reading's authors instead (`apaNames`: "Pretorius",
+  "Harm & Seidenberg", "Chang et al."). This is the one real difference from `link:citations`, which keeps the text the
+  user wrote as the label.
+- **Two label forms, chosen by what the sentence does with the marker.** The library already writes both: "Author (Year)"
+  when the sentence reads the name out, "Author, Year" when it is a reference in brackets (`[Conn, 2017]` inside
+  "(e.g., …)"). A marker gets the bracket form only when it *closes* brackets it sits in — the next non-space character
+  is `)` and a `(` is still open earlier on its line. That is narrower than "is inside brackets" on purpose: in
+  "(like the agglutinating languages [@Pretorius2019] discusses)" the marker is inside brackets but is the subject of
+  "discusses", so it needs the narrative form. The rule was checked against all 23 real markers and matches the
+  hand-made judgement on every one (5 bracket form, 18 narrative).
+- Brackets inside an existing `[label](addr)` link or inline code are not counted as open, or the already-linked
+  `[Seidenberg (2011)](cc://reading/…)` earlier on the Supervision note's line would have made the `[@Harm2004]` after
+  it look parenthetical.
+- **Safety**: `undoCitekeys` puts every new link back to the marker it came from, and the script refuses to write unless
+  that gives the original text byte for byte (and the line count is unchanged) — the same shape of check
+  `link:citations` uses, but it cannot reuse that one, since there the label *is* the original text and here it is not.
+  Writes go through `writeNoteFileGuarded` against the hash read at the start, after copying each note to
+  `~/CentralCommand/backups/link-citekeys-<time>/`.
+- **The notes' own prose is not touched**, only the markers. Two sentences read a little oddly afterwards, exactly as
+  they did before ("Ziegler & Goswami (2005) offers", singular verb for two authors, and "Chang et al. (2020) paper
+  describes", missing possessive). Fixing those is editing the user's writing, not linking an entity, so they are left
+  for the user; flagged in `docs/ROADMAP.md`.
+- Mutation checks, all four caught by a test: resolution guessing the first of several candidates; `undoCitekeys`
+  claiming the round trip held; every marker treated as parenthetical; `findCitekeyMarkers` ignoring protected ranges.
+- **Tried on a copy of the real library** (`CENTRAL_COMMAND_HOME` pointed at a copy of `notes` plus the Zotero export):
+  dry run and `--apply` both, then diffed against the originals — 23 links in 2 files, nothing ambiguous, nothing
+  unreadable, and every changed line differs only at its markers. The copy then passed the real-library editor gate
+  (`LIVE_EDITOR_LIBRARY`), so the new chips parse; the 4 failures that gate reports are pre-existing at HEAD on the
+  user's unmodified notes (confirmed by stashing), unrelated to this change, and are listed in `docs/ROADMAP.md`.
+- **Applied to the real library, 11 Oct 2026** (app closed first; the first attempt was refused by the sandbox and the user then authorised it explicitly): 23 links in 2 files, no markers left anywhere in the library, backup `~/CentralCommand/backups/link-citekeys-2026-10-11T10-33-06-476Z/`.
+
+## People named in prose to person entities (11 Oct 2026)
+
+Asked for straight after the citekey pass ("I want prose to be changed to entities as well"): the same treatment for
+people the notes name in prose rather than in a field. 13 mentions of 6 people, all in Research meeting notes.
+
+- **Two passes, because the first name question is the user's to answer.** The first pass linked full names only, on the
+  reasoning that a first name is often ambiguous, often not the person, and often the writer's own shorthand. The user
+  then asked for first names too ("replace people with entities where clear; ask me to map where not"), so a second
+  pass links a first name that exactly **one** person in the list has, keeping the first name as the label
+  (`[Kathy](cc://person/Kathy%20Rastle)`) — the shape `renamePersonMentions` in `entities.ts` already anticipates ("a
+  label the writer chose, such as 'Kathy', stays").
+- **A first name two people share is never guessed**: Caitlin (Baron / Collis) and Chris (Prosser / Cummiskey) are
+  reported with their surrounding line for the user to map — 21 mentions. Robert (Darby / De Vries) appears only in
+  front matter, so there is nothing to map; the first version of that report did not apply protected ranges and wrongly
+  listed it, which would have sent the user looking for prose that is not there.
+- **Two shapes of first-name false positive, both skipped with a printed reason** rather than silently:
+  a capitalised word right after it makes it part of a longer name ("Thomas Henry Huxley", "Dr James D Williams",
+  "**Name**: Ernesta Orlovaite" — a form field whose spelling lacks the diacritic, so the full-name pass did not catch
+  it); and a year in brackets makes it a citation's author ("Collier and Thomas (2017)" is not Thomas Ormerod). An
+  acronym does **not** count as a longer name, or "Share with Kathy PGR Student…" and "Ernesta OOO April 2" would both
+  have been skipped — found by reading the skip list, which is why the script prints it. Five skips in the real
+  library, every one correct.
+- **Front matter is never touched.** `attendees:` and `lead:` are structured fields with their own UI, so a person's
+  name there is already data, not prose. Headings are skipped too: the one full name the pass now leaves behind is the
+  `### Michael Crawford` section title in `2026-07-29 Supervision.md`, whose very next line links him anyway.
+- **`protectedRanges` moved out of `citations.ts` into `src/shared/note-text.ts`** (verbatim, plus a small
+  `isProtected` helper) so both passes agree on what is off limits rather than keeping two copies. No behaviour change;
+  the existing citation tests passing is the check.
+- Longest name first, so a name wholly inside another is matched whole. The real people list has no such pair (checked),
+  but the rule is tested, since the list is the user's to edit.
+- Same safety shape as the citekey pass: `undoPersonMentionsInProse` puts every name back and the script refuses to
+  write unless that reproduces the original byte for byte; `writeNoteFileGuarded` against the hash read at the start;
+  each note copied to `~/CentralCommand/backups/link-people-<time>/` first.
+- Mutation checks, all four caught by a test: word boundary dropped (so "Matthew Jukeson" would link), protected ranges
+  ignored, the round-trip check claiming success, and shortest-name-first. The fourth exposed a weak test — the original
+  containment case had no real containment in it, so the mutation passed; the test now uses a name genuinely inside
+  another and fails on the mutation.
+- **Applied to the real library, 11 Oct 2026, in two passes** (app closed; each tried on a copy and diffed first):
+  13 full-name links in 10 files (backup `backups/link-people-2026-10-11T10-38-37-929Z/`), then 330 links in 50 files
+  once first names were asked for (backup `backups/link-people-2026-10-11T10-50-31-927Z/`). 356 person chips in the
+  library now; a re-run finds nothing. Verification on the copy before writing: all 50 changed notes differ **only** in
+  person chips (compared by stripping every person chip from both sides), and every chip's address resolves to a real
+  person in `people.json`. The real library was then diffed against that copy and is byte-identical. The editor gate
+  shows the same 4 pre-existing failures as HEAD and no new ones.
+- **The user's own convention points the other way, and she was told.** Her hand-made `meetings/work/2026-10-05
+  Document Automation – Luminos.md` chips full names (Matthew Jukes, Caitlin Baron twice, Amrita Gopal, Caitlin Collis,
+  Manuella Ankrah, Claire Wyatt) and deliberately leaves first names plain — "Neha" sits unchipped on the same line as
+  two chips, and "Amrita" is plain on three lines after "Amrita Gopal" was chipped on one. So the second pass changes
+  the convention her notes had been following. It was applied because she asked for it explicitly after the trade-offs
+  were put to her, and it is one command to undo from the backup. Flagged to her in the report.
+- **81 of the 330 are the user's own first name** in her own notes. Raised with her before applying (a chip pointing at
+  oneself adds little), and she asked for everything clear, so it was included; also one command to undo.
+- Mutation checks on the first-name rules, all four caught by a test: short-form checks disabled, a single initial
+  counted as an acronym, a shared first name guessed as the first person, and the citation check removed. Two of the
+  four needed the test tightened first — the originals passed under mutation, which is the whole point of doing it.
+- **Left for the user**: mapping the 21 Caitlin/Chris mentions, and five spots where the prose reads oddly around a new
+  chip (both in `docs/ROADMAP.md`). The prose ones are edits to her own writing, not entity conversions, so none was
+  made.
+
+
+## The three rules for people in prose (11 Oct 2026)
+
+After seeing the second pass chip every mention, the user set the rules herself: "I don't want chips when the people
+are in the meeting. It's clear whom we are referring to", "No need for me to have chips, ever", and, asked where that
+left a non-attendee's repeat mentions, "first mention per note". So:
+
+1. **Never the user themselves** — the person flagged `me: true` in `people.json`, which already existed, so nothing is
+   hardcoded.
+2. **Never someone the note says was present** — `attendees`, or a training's `lead`/`leads`, read with the shared
+   front-matter reader (`peoplePresent`) so the inline-list, quoted and `- item` spellings all work.
+3. **Only the first mention of a person per note** — counting the full name and the first name as the same person, so
+   "Amrita Gopal" on one line and "Amrita" three lines later is one mention, chipped once.
+
+- **The rules describe what her own notes were already doing**, which is the real find here. Her hand-written
+  `meetings/work/2026-10-05 Document Automation – Luminos.md` chips only non-attendees, leaves "Neha" (present) and
+  "Ernesta" (herself) plain, and chips "Amrita Gopal" once before writing "Amrita" plain three times. The two earlier
+  passes had been reasoning about full names versus first names, which was the wrong axis; the axis that mattered was
+  who was in the room.
+- **The pass had to become authoritative**, since 290 chips already existed that the rules forbid. `planPersonChips`
+  works from the note's text alone: take every person chip off, apply the rules to the plain prose, put back the chips
+  they call for. That both adds and removes, and is idempotent by construction — verified by running it on its own
+  output and getting no change, on the real library.
+- **The safety check changed shape with it.** The old one (undo the links, compare with the original) cannot see a
+  *removal*. The new invariant is `unchipPersonMentions(next) === unchipPersonMentions(text)`: only chips may move,
+  never the prose — and it is checked per note before writing. On the real library all 50 changed notes passed it, no
+  non-person chip changed in any note (reading chips in the same lines are untouched), and the result holds zero rule
+  violations.
+- **Effect**: 356 chips -> 66. 174 removals were someone in the meeting, 83 were the user, 32 were repeat mentions, and
+  the rest were the earlier skip rules. 43 of the 66 survivors carry a first name as the label, 23 a full name.
+- **One hand-made chip was overridden, and the user was told.** Rule 3 removed the second of her two
+  `[Caitlin Baron]` chips in the 5 Oct note. It is the rule working as asked, not a fault, but it is a change to
+  something she typed herself. An earlier check of mine reported "all 10 hand-made chips survived"; that check used
+  list membership instead of counting, so two identical chips both matched the one survivor. Corrected to 9 of 10 —
+  the kind of error a multiset needs counting for, worth remembering for any "did we keep everything" check.
+- Mutation checks, all five caught by a test: rule 3 ignored, rules 1 and 2 ignored in the scan, the plan never
+  removing a chip, `peoplePresent` reading nobody, and un-chipping doing nothing (which blinds the invariant).
+- **Left for the user**: the 21 Caitlin/Chris mentions to map, and the five spots where the prose reads oddly around a
+  chip (`docs/ROADMAP.md`).
+
+
+## Mapping the names the rules could not resolve (11 Oct 2026)
+
+The three rules left 21 mentions of a first name two people share. Reporting them with their context, rather than
+guessing, turned out to matter twice over: the rules themselves disposed of 13 of the 21 (the person was in that
+meeting, or was already chipped earlier in the note), so the user only had 8 real decisions to make, and two of the
+*attendee lists* answered the question — Chris Cummiskey attended `2026-02-19 Impact`, Caitlin Baron attended
+`2025-10-16 Luminos`, which is as good as being told.
+
+The user's decisions: "In Work, Chris is always Cummiskey; Caitlin B. is Baron; Dr Caitlin should be replaced by
+Caitlin Collis." Three mentions fell outside those, and were put to her with a reading each, which she took:
+
+- `2025-10-02 Supervision` (Research), "Caitlin" — Baron, because the same series names "Caitlin Baron" 20 days later
+  in the same context (the Luminos CEO Kathy wanted to meet).
+- `2025-10-20 Impact` (Work), "Caitlin" — Baron; written plain, not "Caitlin B.", so her rule did not strictly reach it.
+- `2026-05-21 Luminos` (Research), "Chris" — Cummiskey; her rule said Work, but that note's two Chris lines are
+  verbatim those of `meetings/work/2026-05-21 Impact.md`: one meeting, written up in both workspaces (the Research copy
+  carries extra PhD content, so they are not duplicates, just overlapping).
+
+- **The decisions live in the user's library, not the repo**: `~/CentralCommand/data/people-aliases.json`, entries of
+  `{ text, person, workspaces?, notes? }`. The repo must not hold user data (CLAUDE.md), and an alias list is exactly
+  the thing that will need extending whenever a new shared first name turns up, so it belongs where she can edit it.
+  `aliasesFor` (pure, tested) decides which entries apply to a note; `workspaceOf` reads the workspace out of the path.
+  The script refuses to run if an entry names someone absent from the people list, and a settled spelling drops out of
+  the "to map" report, so the report shrinks to nothing as decisions are made.
+- **"Dr Caitlin should be replaced by Caitlin Collis" is a prose edit, so it was kept out of `link:people`.** That
+  pass's invariant is that only chips ever move; letting it rewrite words too would have cost the one check that makes
+  it safe. It was done first, as a separate one-off against the single note that uses that spelling (two occurrences),
+  guarded by asserting that mapping the new spelling back gives the original and that the line count is unchanged, with
+  the original copied to `~/CentralCommand/backups/dr-caitlin-2026-10-11T13-02-04/`. `link:people` then chipped the
+  first "Caitlin Collis" as an ordinary full name, and left the second plain under rule 3.
+- **Applied to the real library, 11 Oct 2026** (app closed; the whole sequence — prose edit then chipping — run on a
+  copy and diffed first, then the real library diffed against that copy and found byte-identical): 8 chips added in 7
+  notes, **74 person chips** in the library, zero rule violations, nothing left to map, and a second run changes
+  nothing. A possessive reads correctly: `[Caitlin](cc://person/Caitlin%20Baron)'s guidance`.

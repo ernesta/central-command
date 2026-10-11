@@ -54,6 +54,28 @@ ask the user.
 - `npm run tidy:reading-lists [-- --apply]`: bring reading list entries to reading entities (shorten linked ones, link typed citations that match exactly one reading); dry run by default, applied 2 Oct 2026; re-run after adding readings to Zotero
 - `npm run link:citations [-- --apply]`: turn plain-text citations ("Kim et al. (2020)") into reading entities; only an exact single match is linked, the rest are listed (dry run by
   default; applied 2 Oct 2026, re-run when new readings exist)
+- `npm run link:citekeys [-- --apply]`: turn the imported Pandoc/Obsidian citekey markers (`[@Harm2004]`) into reading entities, labelled from the reading's own authors in the
+  library's style ("Harm & Seidenberg (2004)", or "Harm & Seidenberg, 2004" where the marker closes a bracket it sits in); only a marker that fits exactly one reading by first
+  surname and year is linked, the rest are listed, and a rewrite is refused unless putting every marker back gives the original byte for byte (rules in `src/shared/citations.ts`,
+  separate from `link:citations`, which never sees these as they are not written "Author (Year)"). Dry run by default, backs each note up first, `--apply` only when the user says
+  so, app closed; tried on a copy first, then **applied to the real library on 11 Oct 2026** (23 markers, 2 files, 6 readings, nothing ambiguous;
+  backup `backups/link-citekeys-2026-10-11T10-33-06-476Z`), so a dry run now finds nothing
+- `npm run link:people [-- --apply [--first-names-off]]`: people named in prose to person entities, under three rules the user set (11 Oct 2026): **never the user themselves**
+  (the person flagged `me` in `people.json`; nothing hardcoded), **never someone the note says was in the meeting** (`attendees`, or a training's `lead`/`leads` — "it's clear
+  whom we are referring to"), and **only the first mention of a person per note**. What it links: a full name, or a first name exactly one person has ("Kathy" ->
+  `[Kathy](cc://person/Kathy%20Rastle)`, keeping the first name as the label). A first name two people share ("Caitlin", "Chris") is never guessed but listed with its context
+  for the user to map; a first name is also skipped where a longer name follows ("Thomas Henry Huxley") or where it reads as a citation ("Collier and Thomas (2017)"), while an
+  acronym after it is fine ("Kathy PGR"). Every skip and removal prints its reason. **The pass is authoritative**: it adds the chips the rules call for *and takes away ones that
+  break them*, so a second run changes nothing; it is built by un-chipping the note, applying the rules to the plain prose and re-chipping, and refuses to write unless
+  un-chipping the result gives back exactly the un-chipped original (so only chips can ever move — prose, headings, front matter and other kinds of chip never do). Rules in
+  `src/shared/people-mentions.ts`. Dry run by default, backs each note up first, `--apply` only when the user says so, app closed. **Applied to the real library on 11 Oct 2026**:
+  343 chips added over two earlier passes, 290 taken away once the three rules were set, then 8 added from the user's decided spellings, leaving **74** (backups
+  `backups/link-people-*`; the last is `link-people-2026-10-11T12-02-05-056Z`). A dry run now finds nothing and has nothing left to map.
+- **A spelling the rules cannot resolve is the user's call, and lives in their library**, `~/CentralCommand/data/people-aliases.json` (not the repo — it is their data):
+  `{ text, person, workspaces?, notes? }` per entry, where leaving out both `workspaces` and `notes` means everywhere. `link:people` reads it, tries a decided spelling before
+  the generic ones, refuses to start if an entry names someone not in the people list, and leaves a first name out of its "to map" report once an entry settles it. The four
+  entries of 11 Oct 2026: "Caitlin B." is Caitlin Baron everywhere; "Chris" is Chris Cummiskey in Work and in `meetings/research/2026-05-21 Luminos.md` (the same meeting as the
+  Work note of that date, written up twice); "Caitlin" is Caitlin Baron in `2025-10-02 Supervision.md` and `2025-10-20 Impact.md`. Add to the file rather than the script
 - `npm run tidy:headings [-- --apply]`: take out the blank lines next to headings in every note except Readings (new notes are made without them, the editor draws
   the space itself); dry run by default, backs each note up first, applied 2 Oct 2026 (199 notes, 676 lines; a dry run now finds nothing)
 - `npm run convert:topics [-- --apply]`: turn bold pseudo-headings (`**Topic**`) in meeting notes into `###` topics (dry run by
