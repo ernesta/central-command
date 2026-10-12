@@ -94,10 +94,10 @@
   font-size: var(--text-13);
 }
 
-/* Series cards are narrow, so three or four fit on a line and more wrap; they share the full width. */
+/* Series cards are narrow, so up to four share a line (each a quarter of the width) and more wrap. */
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(max(290px, calc((100% - 49px) / 4)), 1fr));
   gap: 16px;
   padding: 4px;
 }
