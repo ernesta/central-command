@@ -12,6 +12,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px 16px;
+  /* The height of an icon button, so a label sits at the same height whether or not its panel has icons. */
+  min-height: 28px;
 }
 .label {
   margin: 0;
@@ -27,4 +29,15 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 4px;
+}
+/* A wide one-line card (the lecture's Task): label, then the content, wrapping when it runs out of room. */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  padding-block: 10px;
+}
+.row .head {
+  flex: none;
 }

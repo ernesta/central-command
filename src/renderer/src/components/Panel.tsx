@@ -9,6 +9,8 @@ interface PanelProps {
   actions?: React.ReactNode
   /** The landmark: `nav` for a way around the page, `aside` for something beside it, `section` otherwise. */
   as?: 'section' | 'aside' | 'nav'
+  /** A wide, one-line card: the label and the content side by side, for a block under the page's details. */
+  row?: boolean
   children?: React.ReactNode
 }
 
@@ -23,10 +25,14 @@ export function Panel({
   heading,
   actions,
   as: Landmark = 'section',
+  row = false,
   children
 }: PanelProps): React.JSX.Element {
   return (
-    <Landmark className={styles.panel} aria-label={label}>
+    <Landmark
+      className={[styles.panel, row && styles.row].filter(Boolean).join(' ')}
+      aria-label={label}
+    >
       <div className={styles.head}>
         <h2 className={styles.label}>{heading ?? label}</h2>
         {actions && <div className={styles.actions}>{actions}</div>}

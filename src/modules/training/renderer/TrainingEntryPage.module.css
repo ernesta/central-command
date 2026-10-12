@@ -63,7 +63,7 @@
   display: flex;
   gap: 8px;
 }
-/* The note, Files and the outline are laid out by the shared `DocSplit` (`roomySide`: two columns of
+/* The note, the outline and Files are laid out by the shared `DocSplit` (`roomySide`: two columns of
    panels once the screen is wide enough). */
 @media (max-width: 900px) {
   .page {

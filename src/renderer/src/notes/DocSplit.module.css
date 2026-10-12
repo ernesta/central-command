@@ -29,19 +29,15 @@
   overflow: auto;
   scroll-padding: 4px;
 }
-/* Wide enough (full screen on most Mac displays) to give two panels their own columns. */
+/* Wide enough (full screen on most Mac displays) to give two panels their own columns: the first panel (the outline,
+   in Training) next to the text it belongs to, the second on the far right. */
 @media (min-width: 1400px) {
   .roomy.hasSide {
-    grid-template-columns: minmax(0, 1fr) 520px;
+    grid-template-columns: minmax(0, 1fr) 460px;
   }
   .roomy .side {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 170px minmax(0, 1fr);
     align-items: start;
-  }
-  /* The first panel takes the outer column, leaving the one written last (the outline, in Training)
-     next to the text it belongs to. */
-  .roomy .side > :first-child {
-    order: 2;
   }
 }
 /* Too narrow for two columns: the panels follow the text, where nothing needs to stay in view. */
