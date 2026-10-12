@@ -35,7 +35,10 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
     window.api.training.files
       .list(folder, sub)
       .then((listing) => {
-        if (!cancelled) setLoaded({ key, listing })
+        if (cancelled) return
+        setLoaded({ key, listing })
+        // The folder was moved or renamed and found again: the link follows it.
+        if (listing.movedTo) onChange(listing.movedTo)
       })
       .catch((e) => {
         if (!cancelled) setLoaded({ key, listing: { status: 'missing' } })
@@ -44,6 +47,7 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
     return () => {
       cancelled = true
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [folder, root, sub, key])
 
   const listing = loaded?.key === key ? loaded.listing : null
@@ -84,6 +88,7 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
             <IconButton
               className={styles.iconAction}
               label="Show in Finder"
+              disabled={listing?.status === 'missing'}
               onClick={() => void act(() => window.api.training.files.reveal(folder, sub, ''))}
             >
               <FolderOpen size={15} strokeWidth={1.75} aria-hidden />

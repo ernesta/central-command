@@ -15,12 +15,16 @@ export interface TrainingFolderEntry {
   size: number | null
 }
 
-export type TrainingFolderListing =
+export type TrainingFolderListing = (
   | { status: 'ok'; entries: TrainingFolderEntry[] }
   /** The Trainings folder setting is empty or is not a folder. */
   | { status: 'no-root' }
   /** The entry's folder is not there (moved or renamed). */
   | { status: 'missing' }
+) & {
+  /** The linked folder had moved or been renamed and was found again: its new path, to be saved as the link. */
+  movedTo?: string
+}
 
 /**
  * Files linked to an entry. The app only ever reads them: it lists, opens with the default app and

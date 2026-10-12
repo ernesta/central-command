@@ -23,7 +23,8 @@ import { TRAINING_WORKSPACES, type TrainingRef, type TrainingWorkspace } from '.
 import { trainingPath } from './file-name'
 import { PlanStore } from './plan-store'
 import { planYearFromFileName } from '../shared/plan'
-import { listFolder, openablePath, relativeToRoot, resolveInside } from './files'
+import { openablePath, relativeToRoot, resolveInside } from './files'
+import { FolderMemory, listLinkedFolder } from './folder-memory'
 import { trainingMigrations } from './migrations'
 import { TrainingStore } from './training-store'
 
@@ -139,8 +140,14 @@ function register({ db, paths, settings }: MainContext): () => void {
     if (typeof value !== 'string') throw new Error(`Invalid ${what}`)
     return value
   }
+  const folderMemory = new FolderMemory(db)
   ipcMain.handle(TRAINING_IPC.filesList, (_event, folder: unknown, sub: unknown) =>
-    listFolder(root(), text(folder, 'folder'), sub === undefined ? '' : text(sub, 'sub-folder'))
+    listLinkedFolder(
+      root(),
+      text(folder, 'folder'),
+      sub === undefined ? '' : text(sub, 'sub-folder'),
+      folderMemory
+    )
   )
   ipcMain.handle(
     TRAINING_IPC.filesOpen,
