@@ -2968,3 +2968,9 @@ Closes the first two bullets of the deferred list in `docs/CONTRACTS_PLAN.md`.
 - **Change:** `formatHours` in `@shared/skills` (Meetings, Training, the hours strip, both PDF reports, the training meetings line) is now the Hours pages' `formatHours` (`@shared/tracking/format`): "2:48", "36:30", "0:00", no unit. Aims are formatted the same way ("of 200:00" in `TrainingCard`, `HoursStrip` and the Training report). Tests updated.
 - **Left as it was:** the length of one meeting or training (`formatDuration`: "1 h 30 min"), which never had fractions. Ask if those should be h:mm too.
 - **Not driven in the app**; typecheck, lint and tests pass.
+
+## Meeting and lecture rows line up with task rows (12 Oct 2026)
+
+- **Why (the user):** on Hours' Today card the last row (a lecture, `MeetingRows`) looked very different from the task rows above it.
+- **Change:** `MeetingRows.module.css` uses the task rows' grid: a 32px first column (the icon centred in it, where tasks have the play button) and a 14px gap. The time keeps room on its right (40px) for the delete button the task rows have, so the times line up in one column.
+- **Not driven in the app**; typecheck, lint and tests pass.
