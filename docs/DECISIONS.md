@@ -2999,3 +2999,10 @@ The user did not know a mention's label could be written, and does not want that
 Same day, two follow-ups the user asked for: a person rename now rewrites the label too, whatever it was (the prose follows the rename; `renamePersonMentions`), and `npm run fullname:chips` writes every existing person chip's label as the full name (dry run: 52 chips in 30 notes, the same chips and addresses, only labels differ; `fullNamePersonChips` in `people-mentions.ts`). Chips of other kinds keep their stored label in the files (the editor shows their current name regardless).
 
 `fullname:chips` was applied to the real library on 12 Oct 2026 (52 chips in 30 notes; backup `backups/fullname-chips-2026-10-12T14-58-41-239Z`); a dry run now finds nothing. `link:people` was then applied for the one chip it proposed (Manuella Ankrah, in `meetings/work/2026-10-05 Document Automation – Luminos.md`; backup `backups/link-people-2026-10-12T14-59-56-248Z`); a dry run now finds nothing.
+
+## Done items are dimmed, not struck through (12 Oct 2026)
+
+- **Why (the user):** a done item's line-through made the text unreadable, and the chip in it (a mention) was not struck at all.
+- **Looked up:** Bear dropped the strikethrough on checked items for lighter grey so done items fade; Day One did the same and users asked for the line back to keep reading them; Fibery, Notejoy, ClickUp, Trello and Dynalist all have requests to drop it or make it optional. A line can also read as "cancelled", and dimming that is too faint fails in some themes.
+- **Change:** `.live-done` (`LiveEditor.module.css`) is only `var(--text-muted)`, no line; `.live-done .live-chip` has `opacity: 0.7`, so a chip dims by the same rule as the text. The ticked box already says done. Real `~~strikethrough~~` and the red strike on a chip whose target is gone are unchanged.
+- **Not driven in the app** at the time of writing (typecheck, lint and tests pass); if the dimmed text is too faint in either theme, adjust the colour and the chip's opacity.
