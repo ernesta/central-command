@@ -45,3 +45,8 @@
 .slot {
   display: contents;
 }
+/* Back sits between the traffic lights and the tabs: a snug button and no gap, so the space on both sides is about even. */
+.lead {
+  gap: 0;
+  --icon-button-size: 32px;
+}
