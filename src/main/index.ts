@@ -1,5 +1,6 @@
 import { app, shell, BrowserWindow, Menu, clipboard, nativeTheme, screen } from 'electron'
 import { taskKey } from '@modules/tasks/shared/tracked'
+import { putStartedTaskInProgress } from '@modules/tasks/main/task-started'
 import { setTitleChanged } from '@modules/tasks/main/title-hook'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -193,10 +194,9 @@ app.whenReady().then(async () => {
   )
   // A timer started on a task marks it in progress (a task still to do; done ones stay done).
   const startedTasks = new TasksStore(db)
-  tracking.setTaskStarted((uid) => {
-    const task = startedTasks.get(uid)
-    if (!task || task.status !== 'todo') return
-    startedTasks.setStatus(uid, 'doing')
+  tracking.setTaskStarted((key) => {
+    const task = putStartedTaskInProgress(startedTasks, key)
+    if (!task) return
     for (const window of BrowserWindow.getAllWindows()) {
       window.webContents.send(TASKS_IPC.changed, {
         workspace: task.workspace

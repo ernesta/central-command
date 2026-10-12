@@ -4,7 +4,9 @@ import { tmpdir } from 'os'
 import { join } from 'path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { tasksMigrations } from '../../modules/tasks/main/migrations'
+import { putStartedTaskInProgress } from '../../modules/tasks/main/task-started'
 import { TasksStore } from '../../modules/tasks/main/tasks-store'
+import { taskKey } from '../../modules/tasks/shared/tracked'
 import { runMigrations } from '../db/migrate'
 import { TrackingStore } from './store'
 
@@ -22,9 +24,7 @@ beforeEach(() => {
     starts: () => ['2026-09-21'],
     now: () => ({ date: '2026-09-29', time: '10:00:00' })
   })
-  tracking.setTaskStarted((uid) => {
-    if (tasks.get(uid)?.status === 'todo') tasks.setStatus(uid, 'doing')
-  })
+  tracking.setTaskStarted((key) => putStartedTaskInProgress(tasks, key))
 })
 afterEach(() => {
   db.close()
@@ -34,20 +34,20 @@ afterEach(() => {
 describe('starting a timer on a task', () => {
   it('puts a task still to do in progress', () => {
     const t = tasks.create({ workspace: 'research', title: 'Write', list: 'Papers' })
-    expect(tracking.start('research', 'Write', t.uid).ok).toBe(true)
+    expect(tracking.start('research', 'Write', taskKey(t.uid)).ok).toBe(true)
     expect(tasks.get(t.uid)?.status).toBe('doing')
   })
   it('leaves a done task done', () => {
     const t = tasks.create({ workspace: 'research', title: 'Write', list: 'Papers' })
     tasks.setStatus(t.uid, 'done')
-    tracking.start('research', 'Write', t.uid)
+    tracking.start('research', 'Write', taskKey(t.uid))
     expect(tasks.get(t.uid)?.status).toBe('done')
   })
   it('does it when a running timer is given its task', () => {
     const t = tasks.create({ workspace: 'research', title: 'Write', list: 'Papers' })
     tracking.start('research', '')
     const running = tracking.running()!
-    tracking.assignTask('research', running.year, running.session.id, 'Write', t.uid)
+    tracking.assignTask('research', running.year, running.session.id, 'Write', taskKey(t.uid))
     expect(tasks.get(t.uid)?.status).toBe('doing')
   })
 })
