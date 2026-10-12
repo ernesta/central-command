@@ -171,11 +171,11 @@ describe('PeopleService and mentions in other notes', () => {
     })
   })
 
-  it('rewrites the mentions of a renamed person (and a label that was the name), backing the note up first', async () => {
+  it('rewrites the mentions of a renamed person (and the label), backing the note up first', async () => {
     const { report } = await service.update('Kathy Rastle', { name: 'Katherine Rastle' })
     expect(report).toEqual({ changed: 1, skipped: [] })
     expect(read(notesDir, 'A note.md')).toBe(
-      'Met [Katherine Rastle](cc://person/Katherine%20Rastle) and [Kath](cc://person/Katherine%20Rastle); not [Joanna Young](cc://person/Joanna%20Young).\n'
+      'Met [Katherine Rastle](cc://person/Katherine%20Rastle) and [Katherine Rastle](cc://person/Katherine%20Rastle); not [Joanna Young](cc://person/Joanna%20Young).\n'
     )
     expect(read(notesDir, 'Unrelated.md')).toBe('Nothing here.\n')
     const [backup] = readdirSync(backupsDir)

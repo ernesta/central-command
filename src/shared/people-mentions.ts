@@ -297,6 +297,20 @@ export function findPersonChips(
     .map((m) => ({ start: m.start, end: m.end, label: m.label, name: m.ref.key }))
 }
 
+/** The text with every person chip's label written as the person's full name (the chip's address), and nothing else changed. */
+export function fullNamePersonChips(text: string): { text: string; changed: number } {
+  let out = text
+  let changed = 0
+  for (const chip of findPersonChips(text).reverse()) {
+    const label = escapeLabel(chip.name)
+    if (text.slice(chip.start, chip.end).startsWith(`[${label}](`)) continue
+    const address = text.slice(chip.start, chip.end).slice(chip.label.length + 1)
+    out = out.slice(0, chip.start) + `[${label}${address}` + out.slice(chip.end)
+    changed++
+  }
+  return { text: out, changed }
+}
+
 /** The text with every person chip replaced by its own label, so `[Kathy](cc://person/…)` becomes `Kathy`. */
 export function unchipPersonMentions(text: string): string {
   let out = text

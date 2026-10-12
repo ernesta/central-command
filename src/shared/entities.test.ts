@@ -56,11 +56,11 @@ describe('findMentions', () => {
 
 describe('renamePersonMentions', () => {
   const names = new Map([['Kathy Rastle', 'Kathy Smith']])
-  it('renames the address and a label that was the name, but not a label the writer chose', () => {
+  it('renames the address and the label, whatever the label was', () => {
     const text =
       'A [Kathy Rastle](cc://person/Kathy%20Rastle) and [Kath](cc://person/Kathy%20Rastle).\n'
     expect(renamePersonMentions(text, names)).toBe(
-      'A [Kathy Smith](cc://person/Kathy%20Smith) and [Kath](cc://person/Kathy%20Smith).\n'
+      'A [Kathy Smith](cc://person/Kathy%20Smith) and [Kathy Smith](cc://person/Kathy%20Smith).\n'
     )
   })
 

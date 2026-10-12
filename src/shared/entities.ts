@@ -94,8 +94,8 @@ export function escapeLabel(label: string): string {
 }
 
 /**
- * The text after a person was renamed: every mention of `from` now names `to`, and its label too when it was the
- * old name (a label the writer chose, such as "Kathy", stays). Nothing else changes; text with no such mention comes
+ * The text after a person was renamed: every mention of `from` now names `to`, and so does its label (the
+ * prose follows the rename). Nothing else changes; text with no such mention comes
  * back untouched.
  */
 export function renamePersonMentions(markdown: string, names: ReadonlyMap<string, string>): string {
@@ -106,10 +106,9 @@ export function renamePersonMentions(markdown: string, names: ReadonlyMap<string
   )
   for (const m of mentions.reverse()) {
     const to = names.get(m.ref.key) as string
-    const label = m.label === escapeLabel(m.ref.key) ? escapeLabel(to) : m.label
     out =
       out.slice(0, m.start) +
-      `[${label}](${entityHref({ kind: 'person', key: to })})` +
+      `[${escapeLabel(to)}](${entityHref({ kind: 'person', key: to })})` +
       out.slice(m.end)
   }
   return out

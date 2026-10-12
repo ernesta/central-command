@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  fullNamePersonChips,
   applyPersonMentionsInProse,
   findPersonMentionsInProse,
   firstNameAliases,
@@ -283,5 +284,16 @@ describe('explicit aliases the user decided', () => {
     expect(planPersonChips(t, aliases, { firstMentionOnly: true }).next).toBe(
       'Budget was not approved but [Caitlin B.](cc://person/Caitlin%20Baron) agreed to an extension.'
     )
+  })
+})
+
+describe('fullNamePersonChips', () => {
+  it('writes every person chip label as the full name and touches nothing else', () => {
+    const text =
+      'Ask [Kathy](cc://person/Kathy%20Rastle) and [Kathy Rastle](cc://person/Kathy%20Rastle), see [x](cc://note/k3f9a2x1).'
+    expect(fullNamePersonChips(text)).toEqual({
+      text: 'Ask [Kathy Rastle](cc://person/Kathy%20Rastle) and [Kathy Rastle](cc://person/Kathy%20Rastle), see [x](cc://note/k3f9a2x1).',
+      changed: 1
+    })
   })
 })
