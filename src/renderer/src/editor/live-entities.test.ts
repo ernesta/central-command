@@ -102,6 +102,13 @@ describe('a mention is drawn as a chip', () => {
     expect(chips(view)[0].style.getPropertyValue('--entity-icon')).toBe('var(--entity-icon-person)')
   })
 
+  it('shows a person as their full name, whatever label the text holds', () => {
+    const { entities } = fakeHost()
+    const { view } = openView('Review [Kathy](cc://person/Kathy%20Rastle) now', entities)
+    expect(chips(view)[0].textContent).toBe('Kathy Rastle')
+    expect(view.state.sliceDoc()).toBe('Review [Kathy](cc://person/Kathy%20Rastle) now')
+  })
+
   it('is drawn again when what it points at has been looked up', () => {
     let missing = false
     const { entities } = fakeHost({

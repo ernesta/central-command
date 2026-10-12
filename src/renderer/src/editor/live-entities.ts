@@ -100,6 +100,10 @@ export function chipStartingAt(state: EditorState, pos: number): Chip | null {
   return null
 }
 
+/** What a chip says: a person is always their full name (the address), whatever label the text holds; the rest show their label. */
+export const chipText = (chip: Pick<Chip, 'label' | 'ref'>): string =>
+  chip.ref.kind === 'person' ? chip.ref.key : chip.label
+
 /** The chip drawn in place of a mention: the icon of its kind and the label, struck through when what it points at is gone. */
 export class ChipWidget extends WidgetType {
   constructor(
@@ -111,7 +115,7 @@ export class ChipWidget extends WidgetType {
   }
   eq(other: ChipWidget): boolean {
     return (
-      other.chip.label === this.chip.label &&
+      chipText(other.chip) === chipText(this.chip) &&
       other.chip.ref.kind === this.chip.ref.kind &&
       other.chip.ref.key === this.chip.ref.key &&
       other.missing === this.missing
@@ -125,7 +129,7 @@ export class ChipWidget extends WidgetType {
     if (this.missing) dom.dataset.missing = 'true'
     dom.style.setProperty('--entity-icon', `var(--entity-icon-${this.chip.ref.kind})`)
     dom.setAttribute('spellcheck', 'false')
-    dom.textContent = this.chip.label
+    dom.textContent = chipText(this.chip)
     // Cmd (Ctrl) with a click opens what the chip points at, this very chip (a position next to two chips could be either).
     dom.addEventListener('mousedown', (event) => {
       if (!(event.metaKey || event.ctrlKey)) return

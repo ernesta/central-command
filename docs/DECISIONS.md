@@ -2991,3 +2991,7 @@ Closes the first two bullets of the deferred list in `docs/CONTRACTS_PLAN.md`.
 - **Cause:** the icon is an inline-block `::before` of the chip, and the line may break after an inline-block, so the icon and the label were two fragments.
 - **Change:** `.live-chip` has `white-space: nowrap` (`LiveEditor.module.css`): the line breaks before a chip, never inside it. A label wider than the whole line would overflow rather than wrap; not checked with a very long title.
 - **Not driven in the app**; typecheck, lint and tests pass.
+
+## A person chip always shows the full name (12 Oct 2026)
+
+The user did not know a mention's label could be written, and does not want that: a chip says exactly what it is. `chipText` (`live-entities.ts`) draws a person chip as the address's name (`Anastasiya Lopukhina`) whatever label the text holds. Display only: files are untouched (so `link:people`'s un-chip check and the first-name chips it wrote still hold), copy already gave the full name. Other kinds still show their label (a reading's citation, a meeting's heading); say if those should follow what the thing is called now.
