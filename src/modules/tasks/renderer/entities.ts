@@ -55,6 +55,7 @@ export const taskEntities: EntityProvider = {
     if (!task) return null
     const parent = task.parentUid ? tasks.find((t) => t.uid === task.parentUid) : undefined
     return {
+      label: task.title || 'Untitled',
       title: task.title || 'Untitled',
       detail: detailOf(task, parent),
       route: taskRoute(task.workspace, task.uid)

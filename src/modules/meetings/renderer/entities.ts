@@ -56,6 +56,7 @@ export const personEntities: EntityProvider = {
     const person = findByName(await window.api.meetings.people.list(), key)
     if (!person) return null
     return {
+      label: person.name,
       title: person.name,
       detail: person.archived ? `${person.initials} · archived` : person.initials,
       route: personRoute(person.name)
@@ -98,6 +99,7 @@ export const meetingEntities: EntityProvider = {
       (await allMeetings(true)).find((r) => r.uid === key)
     if (!row) return null
     return {
+      label: meetingHeading(row.series, row.date),
       title: meetingHeading(row.series, row.date),
       detail: `${row.attendees.slice(0, 3).join(', ') || 'No attendees'} · ${WORKSPACE_LABEL[row.workspace]}`,
       route: meetingRoute(row.workspace, row.id)

@@ -11,6 +11,7 @@ import type { SyntaxNode } from '@lezer/common'
 import { entityHref, escapeLabel, parseEntityHref, type EntityRef } from '@shared/entities'
 import type { EntityHost, MentionTarget, Suggestion } from '../entities/mention-target'
 import { suggestionIn } from '../entities/mention-target'
+import type { Resolved } from '../entities/resolver'
 import { treeTo } from './live-lines'
 
 /*
@@ -100,14 +101,18 @@ export function chipStartingAt(state: EditorState, pos: number): Chip | null {
   return null
 }
 
-/** What a chip says: a person is always their full name (the address), whatever label the text holds; the rest show their label. */
-export const chipText = (chip: Pick<Chip, 'label' | 'ref'>): string =>
-  chip.ref.kind === 'person' ? chip.ref.key : chip.label
+/**
+ * What a chip says: the name of what it points at as it is now, never the label the text was written with. Until that is
+ * known (or when what it pointed at is gone) the text's own label stands in, struck through if gone.
+ */
+export const chipText = (label: string, resolved: Resolved): string =>
+  resolved.state === 'found' ? resolved.summary.label : label
 
 /** The chip drawn in place of a mention: the icon of its kind and the label, struck through when what it points at is gone. */
 export class ChipWidget extends WidgetType {
   constructor(
     readonly chip: Pick<Chip, 'label' | 'ref'>,
+    readonly text: string,
     readonly missing: boolean,
     readonly open: (ref: EntityRef) => void
   ) {
@@ -115,7 +120,7 @@ export class ChipWidget extends WidgetType {
   }
   eq(other: ChipWidget): boolean {
     return (
-      chipText(other.chip) === chipText(this.chip) &&
+      other.text === this.text &&
       other.chip.ref.kind === this.chip.ref.kind &&
       other.chip.ref.key === this.chip.ref.key &&
       other.missing === this.missing
@@ -129,7 +134,7 @@ export class ChipWidget extends WidgetType {
     if (this.missing) dom.dataset.missing = 'true'
     dom.style.setProperty('--entity-icon', `var(--entity-icon-${this.chip.ref.kind})`)
     dom.setAttribute('spellcheck', 'false')
-    dom.textContent = chipText(this.chip)
+    dom.textContent = this.text
     // Cmd (Ctrl) with a click opens what the chip points at, this very chip (a position next to two chips could be either).
     dom.addEventListener('mousedown', (event) => {
       if (!(event.metaKey || event.ctrlKey)) return

@@ -21,6 +21,8 @@ export interface EntityHit {
 
 /** What a mention points at right now, for the hover card and for opening it. */
 export interface EntitySummary {
+  /** What its chip says: its name as it is now (a person's full name, a reading's short citation, a meeting's heading). */
+  label: string
   title: string
   detail: string
   /** Where opening it goes inside the app. */

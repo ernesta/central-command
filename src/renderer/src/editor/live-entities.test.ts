@@ -102,11 +102,25 @@ describe('a mention is drawn as a chip', () => {
     expect(chips(view)[0].style.getPropertyValue('--entity-icon')).toBe('var(--entity-icon-person)')
   })
 
-  it('shows a person as their full name, whatever label the text holds', () => {
-    const { entities } = fakeHost()
-    const { view } = openView('Review [Kathy](cc://person/Kathy%20Rastle) now', entities)
-    expect(chips(view)[0].textContent).toBe('Kathy Rastle')
-    expect(view.state.sliceDoc()).toBe('Review [Kathy](cc://person/Kathy%20Rastle) now')
+  it('says what the mention points at is called now, whatever label the text holds', () => {
+    const { entities } = fakeHost({
+      resolve: (ref) => ({
+        state: 'found',
+        summary: {
+          label: ref.kind === 'person' ? 'Kathy Rastle' : 'Renamed',
+          title: '',
+          detail: ''
+        }
+      })
+    })
+    const { view } = openView(
+      'Met [Kathy](cc://person/Kathy%20Rastle) and [Old](cc://note/k3f9a2x1)',
+      entities
+    )
+    expect(chips(view).map((c) => c.textContent)).toEqual(['Kathy Rastle', 'Renamed'])
+    expect(view.state.sliceDoc()).toBe(
+      'Met [Kathy](cc://person/Kathy%20Rastle) and [Old](cc://note/k3f9a2x1)'
+    )
   })
 
   it('is drawn again when what it points at has been looked up', () => {

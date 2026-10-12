@@ -102,7 +102,11 @@ export class EntityPickerController implements EntityHost {
 
   copyPart = async (ref: EntityRef, label: string): Promise<CopyPart | null> => {
     try {
-      return (await providerFor(ref.kind)?.copy?.(ref.key, label)) ?? null
+      const provider = providerFor(ref.kind)
+      if (provider?.copy) return await provider.copy(ref.key, label)
+      // No special reading outside the app: the name it has now, as its chip says.
+      const summary = await provider?.resolve(ref.key)
+      return summary ? { text: summary.label } : null
     } catch {
       return null
     }

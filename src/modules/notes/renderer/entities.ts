@@ -62,6 +62,7 @@ export const noteEntities: EntityProvider = {
       (await allNotes(true)).find((r) => r.uid === key)
     if (!row) return null
     return {
+      label: displayTitle(row),
       title: displayTitle(row),
       detail: detailOf(row),
       route: noteRoute(row.workspace, row.id)
@@ -110,6 +111,7 @@ export const fileEntities: EntityProvider = {
     const file = await window.api.entities.fileInfo(key)
     if (!file) return null
     return {
+      label: file.name,
       title: file.name,
       detail: fileDetail(file),
       open: () => window.api.entities.openFile(key)

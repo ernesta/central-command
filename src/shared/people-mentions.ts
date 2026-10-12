@@ -5,9 +5,9 @@ import { isProtected, protectedRanges } from './note-text'
 /**
  * People named in prose to person entities (requested 11 Oct 2026): "Reach out to Matthew Jukes" becomes
  * "Reach out to [Matthew Jukes](cc://person/Matthew%20Jukes)", and "Weekly meetings with Kathy" becomes
- * "Weekly meetings with [Kathy](cc://person/Kathy%20Rastle)" — the label stays as the writer wrote it, the address
- * names the person, which is what `renamePersonMentions` in `entities.ts` already expects ("a label the writer chose,
- * such as 'Kathy', stays").
+ * "Weekly meetings with [Kathy](cc://person/Kathy%20Rastle)" — the label is the words in the prose (so un-chipping
+ * gives the note back exactly), the address names the person. The editor draws the chip with the person's full name,
+ * never the label (`chipText`).
  *
  * Front matter is never touched (`attendees:` and `lead:` are structured fields with their own UI), nor are headings,
  * code, URLs or text that is already a link.

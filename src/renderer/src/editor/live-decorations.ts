@@ -8,7 +8,7 @@ import {
   type ViewUpdate
 } from '@codemirror/view'
 import type { SyntaxNode, SyntaxNodeRef } from '@lezer/common'
-import { chipOf, ChipWidget, entitiesFacet, refreshMentions } from './live-entities'
+import { chipOf, chipText, ChipWidget, entitiesFacet, refreshMentions } from './live-entities'
 import { isListKind, parseLine } from './live-lines'
 import { blockRevealed, computeReveal, spanRevealed, type Extent, type Reveal } from './live-reveal'
 import { drawFence } from './live-fences'
@@ -245,12 +245,15 @@ export function buildDecorations(
             const chip = chipOf(state, node.node)
             if (chip) {
               const { host, open } = state.facet(entitiesFacet)
-              const missing = host.resolve(chip.ref).state === 'missing'
+              const resolved = host.resolve(chip.ref)
+              const missing = resolved.state === 'missing'
               add(
                 'chip',
                 chip.from,
                 chip.to,
-                Decoration.replace({ widget: new ChipWidget(chip, missing, open) })
+                Decoration.replace({
+                  widget: new ChipWidget(chip, chipText(chip.label, resolved), missing, open)
+                })
               )
               chipEnd = chip.to
               return

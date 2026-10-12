@@ -25,18 +25,17 @@ export const readingEntities: EntityProvider = {
         prepare: async () => ({ kind: 'reading' as const, key: reading.citekey })
       }))
   },
-  async copy(key, label) {
+  async copy(key) {
     const reading = await window.api.readings.get(key)
     if (!reading) return null
-    // A label the writer changed stays as written; the usual one is the short citation, which reads "A & B (2020)" in
-    // the text of a sentence but "A and B (2020)" when APA says it as part of one.
-    const text = label === reading.shortCitation ? label.replace(' & ', ' and ') : label
-    return { text, reference: formatApa(reading) }
+    // The short citation reads "A & B (2020)" in a chip but "A and B (2020)" when APA says it as part of a sentence.
+    return { text: reading.shortCitation.replace(' & ', ' and '), reference: formatApa(reading) }
   },
   async resolve(key) {
     const reading = await window.api.readings.get(key)
     if (!reading) return null
     return {
+      label: reading.shortCitation,
       title: reading.fullTitle,
       detail: reading.missingFromSource
         ? `${reading.shortCitation} · no longer in Zotero`
