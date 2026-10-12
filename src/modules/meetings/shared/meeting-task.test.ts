@@ -44,7 +44,14 @@ describe('proposeMeetingTask', () => {
       existing: null
     })
   })
-  it('Work: a series that is no client has no proposal, and neither does an empty one', () => {
+  it('Work: a series that is no client is its own task in Teaching & Learning, Other is Meetings, and with no such client there is none', () => {
+    const both = ['Impact', 'Teaching & Learning']
+    expect(proposeMeetingTask('work', 'Document Automation – Vecten', both, [])).toEqual({
+      title: 'Document Automation – Vecten',
+      list: 'Teaching & Learning',
+      existing: null
+    })
+    expect(proposeMeetingTask('work', 'Other', both, [])?.title).toBe('Meetings')
     expect(proposeMeetingTask('work', 'Other', ['Impact'], [])).toBeNull()
     expect(proposeMeetingTask('work', '  ', ['Impact'], [])).toBeNull()
     expect(proposeMeetingTask('work', 'Impact', null, [])).toBeNull()
@@ -88,7 +95,19 @@ describe('planMeetingTask', () => {
       parent: { title: 'Meetings', list: 'Meetings' }
     })
   })
-  it('Work: a series that is no client makes nothing', () => {
+  it('Work: a series that is no client makes its own series task in Teaching & Learning', () => {
+    expect(
+      planMeetingTask(
+        'work',
+        { ...note, series: 'Document Automation – Vecten' },
+        ['Impact', 'Teaching & Learning'],
+        []
+      )
+    ).toEqual({
+      kind: 'create',
+      title: 'Document Automation – Vecten · Oct 12, 2026',
+      parent: { title: 'Document Automation – Vecten', list: 'Teaching & Learning' }
+    })
     expect(planMeetingTask('work', { ...note, series: 'Other' }, ['Impact'], [])).toEqual({
       kind: 'none'
     })

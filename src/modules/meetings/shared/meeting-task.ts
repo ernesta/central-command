@@ -6,6 +6,9 @@ import type { MeetingWorkspace } from './types'
 /** Research keeps its meeting tasks together in one list of its own. */
 export const RESEARCH_MEETINGS_LIST = 'Meetings'
 
+/** Work: the client whose list holds the series task of a series that is no client (the user's answer, 12 Oct 2026). */
+export const OTHER_SERIES_CLIENT = 'Teaching & Learning'
+
 /** The task a meeting's series calls for: its generic title and list, and the open task that already is it (if any). */
 export interface TaskProposal {
   title: string
@@ -18,7 +21,7 @@ export interface TaskProposal {
  *
  * - Research: the series itself ("Supervision", "Rastle Lab", "Luminos"), in the list "Meetings"; the catch-all "Other" is "Meetings".
  * - Work: the series is a client, so "<Client> meetings" in that client's own list (Work's lists are its clients). A series that
- *   is no client has no proposal: the task is chosen, and the picker asks which client.
+ *   is no client is its own task, in the list of `OTHER_SERIES_CLIENT`.
  *
  * `clients` is Work's list of clients (null in Research). An existing task is an open top-level one with that title, in that list
  * first, else in any list (Research) so a task the user already made is taken up rather than duplicated.
@@ -35,9 +38,17 @@ export function proposeMeetingTask(
   let list: string
   if (workspace === 'work') {
     const client = (clients ?? []).find((c) => fold(c) === fold(name))
-    if (!client) return null
-    title = `${client} meetings`
-    list = client
+    if (client) {
+      title = `${client} meetings`
+      list = client
+    } else {
+      // A series that is no client ("Document Automation – Vecten") is still work for one: its own series task, in the list of
+      // the client the user named for them (12 Oct 2026). With that client gone from Work, nothing is proposed.
+      const home = (clients ?? []).find((c) => fold(c) === fold(OTHER_SERIES_CLIENT))
+      if (!home) return null
+      title = fold(name) === fold('Other') ? 'Meetings' : name
+      list = home
+    }
   } else {
     title = fold(name) === fold('Other') ? 'Meetings' : name
     list = RESEARCH_MEETINGS_LIST
@@ -91,7 +102,7 @@ function target(proposal: TaskProposal): MeetingParent {
  *
  * - An older note (`task` empty) is left alone, always.
  * - A marked note (`auto`) gets a subtask once it has a date and its series names a task (`proposeMeetingTask`: found, or made).
- *   Work's series that is no client has none, so nothing is made.
+ *   Work's series that is no client is its own task in `OTHER_SERIES_CLIENT`'s list.
  * - The subtask then follows the note: titled "<series task> · <date>", under the task the series names.
  * - A task the user chose is never renamed or moved: only a subtask whose title this module made is the meeting's own. A task
  *   that is gone is not made again by itself.
