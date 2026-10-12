@@ -66,7 +66,7 @@ export function trainingReportHtml(input: TrainingReportInput): string {
   return reportPageHtml({
     title: `Training log ${label}`,
     subtitle: `Generated ${formatDate(today)}. Entries that have not happened yet are not included.`,
-    totalsHtml: `<strong>${escapeHtml(formatHours(hours.minutes))}</strong> of ${escapeHtml(String(aimHours))} h in ${hours.entries} ${hours.entries === 1 ? 'entry' : 'entries'}${hours.withoutTimes > 0 ? ` (${hours.withoutTimes} without times, counted as 0)` : ''}.${meetingMinutes > 0 ? ` Plus ${escapeHtml(formatHours(meetingMinutes))} of meetings.` : ''}${skills ? `<br>Hours per skill (an entry counts towards each of its skills): ${skills}` : ''}`,
+    totalsHtml: `<strong>${escapeHtml(formatHours(hours.minutes))}</strong> of ${escapeHtml(formatHours(aimHours * 60))} in ${hours.entries} ${hours.entries === 1 ? 'entry' : 'entries'}${hours.withoutTimes > 0 ? ` (${hours.withoutTimes} without times, counted as 0)` : ''}.${meetingMinutes > 0 ? ` Plus ${escapeHtml(formatHours(meetingMinutes))} of meetings.` : ''}${skills ? `<br>Hours per skill (an entry counts towards each of its skills): ${skills}` : ''}`,
     headHtml:
       '<th>Date</th><th>Time</th><th class="r">Hours</th><th>Type</th><th>Title and summary</th><th>Skills</th><th>Leads</th>',
     bodyHtml: body

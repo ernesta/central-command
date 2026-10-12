@@ -28,7 +28,7 @@ export function HoursStrip({
       <div className={styles.total}>
         <span className={styles.value}>
           {formatHours(minutes)}
-          {aim && <span className={styles.aim}> of {aim.hours} h</span>}
+          {aim && <span className={styles.aim}> of {formatHours(aim.hours * 60)}</span>}
         </span>
         {aim && (
           <div

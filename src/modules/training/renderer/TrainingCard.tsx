@@ -36,7 +36,8 @@ export function TrainingCard(): React.JSX.Element {
       ) : (
         <>
           <p className={styles.line}>
-            {formatHours(hours.minutes)} of {settings.trainingAimHours} h · {yearLabel(year)}
+            {formatHours(hours.minutes)} of {formatHours(settings.trainingAimHours * 60)} ·{' '}
+            {yearLabel(year)}
           </p>
           {latest && (
             <p className={styles.line}>

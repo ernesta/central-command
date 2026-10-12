@@ -47,7 +47,7 @@ describe('trainingReportHtml', () => {
     expect(html.indexOf('First')).toBeLessThan(html.indexOf('Second'))
     expect(html).not.toContain('Upcoming')
     expect(html).not.toContain('Last year')
-    expect(html).toContain('<strong>3:00</strong> of 200 h in 2 entries')
+    expect(html).toContain('<strong>3:00</strong> of 200:00 in 2 entries')
   })
 
   it('escapes everything the user wrote', () => {
@@ -91,6 +91,6 @@ describe('trainingReportHtml with self-study', () => {
     const html = trainingReportHtml({ ...input(rows), selfStudy: new Map([['k1', 45]]) })
     // A 90-minute session plus 45 minutes of self-study is 2:15; the other entry stays 1:30, 3:45 in all.
     expect(html).toContain('<td class="nw r">2:15</td>')
-    expect(html).toContain('<strong>3:45</strong> of 200 h in 2 entries')
+    expect(html).toContain('<strong>3:45</strong> of 200:00 in 2 entries')
   })
 })
