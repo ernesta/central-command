@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 0 4px;
+  margin-top: 4px;
 }
 .total {
   display: flex;

@@ -13,13 +13,16 @@ export function LectureTask({
   task,
   series,
   tasks,
-  onRemake
+  onRemake,
+  children
 }: {
   /** The note's `task:` value. */
   task: string
   series: string | null
   tasks: readonly Task[] | null
   onRemake: () => void
+  /** The lecture's hours, shown under its task. */
+  children?: React.ReactNode
 }): React.JSX.Element | null {
   if (!task || tasks === null) return null
   if (task === 'auto') {
@@ -57,6 +60,7 @@ export function LectureTask({
           {parent ? `${parent.title} · ${parent.list}` : own.list}
         </span>
       </div>
+      {children}
     </Panel>
   )
 }
