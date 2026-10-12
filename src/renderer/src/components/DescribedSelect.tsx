@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import type { SelectOption } from './Select'
 import styles from './DescribedSelect.module.css'
@@ -51,6 +51,16 @@ export function DescribedSelect<T extends string>({
     }
     document.addEventListener('mousedown', away)
     return () => document.removeEventListener('mousedown', away)
+  }, [open])
+
+  // A select near the right edge opens its list leftwards, so the list never widens the page.
+  useLayoutEffect(() => {
+    const list = listRef.current
+    if (!open || !list) return
+    if (list.getBoundingClientRect().right > document.documentElement.clientWidth - 8) {
+      list.style.left = 'auto'
+      list.style.right = '0'
+    }
   }, [open])
 
   useEffect(() => {
