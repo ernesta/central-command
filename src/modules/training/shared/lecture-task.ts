@@ -10,21 +10,16 @@ export type ParentTarget = { uid: string } | { title: string; list: string }
 /** What a training note's task needs done now. Pure: it only says, the page does it. */
 export type LecturePlan =
   | { kind: 'none' }
-  /** A marked note with a series and no subtask yet: make the lecture's subtask under the series task. */
-  | { kind: 'create'; title: string; parent: ParentTarget }
-  /** The subtask follows the note: its title, and the series it sits under. */
-  | { kind: 'sync'; uid: string; title?: string; parent?: ParentTarget }
+  /** A marked note with no task yet: make it, under the series task, or on its own (`parent: null`) in Training. */
+  | { kind: 'create'; title: string; parent: ParentTarget | null }
+  /** The task follows the note: its title, and where it sits (under the series task, or `parent: null` for top level in Training). */
+  | { kind: 'sync'; uid: string; title?: string; parent?: ParentTarget | null }
 
 export interface LectureNote {
   /** The note's `task:` value: a task uid, `auto` or ''. */
   task: string
   series: string | null
   title: string
-}
-
-/** The task a standalone lecture (no series) gets: top level in Training, called as the note is. */
-export function standaloneTask(title: string): { title: string; list: string } {
-  return { title: title.trim() || 'Untitled', list: TRAINING_LIST }
 }
 
 /** An open top-level task called the series (in "Training" first, else any list), or the one to create. */
@@ -37,15 +32,19 @@ export function parentFor(series: string, tasks: readonly Task[]): ParentTarget 
   return found ? { uid: found.uid } : { title: name, list: TRAINING_LIST }
 }
 
+/** A title that names a lecture: not empty, not the placeholder. */
+const named = (title: string): boolean => title !== '' && title !== 'Untitled'
+
 /**
- * What a training note's lecture task needs.
+ * What a training note's lecture task needs. The task is always in step with the note, with no clicking:
  *
  * - An older note (`task` empty) is left alone, always.
- * - A marked note (`auto`) with no series yet waits; once it has one, its subtask is made under the series task.
- * - A note with a subtask keeps it in step: the subtask takes the note's title and sits under the task its series names. Clearing
- *   the series leaves it where it is. A task that is not a subtask is never renamed or moved, unless it is a standalone lecture's
- *   (top level in Training, empty: its title follows), and a task that is
- *   gone is not made again by itself.
+ * - A marked note (`auto`) gets its task once it has a series (a subtask under the series task) or a title (a task of its own, top
+ *   level in Training).
+ * - The task takes the note's title, is a subtask under the task its series names, and is a task of its own while the note has no
+ *   series: adding a series moves it under the series task, clearing it takes it back out.
+ * - A task that is not the lecture's own is never renamed or moved: a subtask is always the lecture's, a top-level task only when
+ *   it is in Training with nothing under it. A task that is gone is not made again by itself.
  *
  * `tasks` is every task of the workspace (subtasks too).
  */
@@ -53,30 +52,35 @@ export function planLectureTask(note: LectureNote, tasks: readonly Task[]): Lect
   const series = (note.series ?? '').trim()
   const title = note.title.trim()
   if (note.task === 'auto') {
-    return series
-      ? { kind: 'create', title: title || 'Untitled', parent: parentFor(series, tasks) }
-      : { kind: 'none' }
+    if (series) {
+      return { kind: 'create', title: title || 'Untitled', parent: parentFor(series, tasks) }
+    }
+    return named(title) ? { kind: 'create', title, parent: null } : { kind: 'none' }
   }
   if (!note.task) return { kind: 'none' }
   const own = tasks.find((t) => t.uid === note.task)
   if (!own) return { kind: 'none' }
-  if (!own.parentUid) {
-    // A standalone lecture's task (made by "Make", top level in Training, nothing under it): only its title follows the note.
-    // A top-level task cannot move under a series task, so a series chosen later changes nothing.
-    const ours =
-      fold(own.list) === fold(TRAINING_LIST) && !tasks.some((t) => t.parentUid === own.uid)
-    return ours && title && title !== own.title
-      ? { kind: 'sync', uid: own.uid, title }
-      : { kind: 'none' }
-  }
-  const parent = tasks.find((t) => t.uid === own.parentUid)
-  const plan: { kind: 'sync'; uid: string; title?: string; parent?: ParentTarget } = {
+  const plan: { kind: 'sync'; uid: string; title?: string; parent?: ParentTarget | null } = {
     kind: 'sync',
     uid: own.uid
   }
-  if (title && title !== own.title) plan.title = title
-  if (series && fold(series) !== fold((parent?.title ?? '').trim())) {
-    plan.parent = parentFor(series, tasks)
+  if (title && title !== own.title && (own.parentUid || named(title))) plan.title = title
+  if (own.parentUid) {
+    const parent = tasks.find((t) => t.uid === own.parentUid)
+    if (!series) plan.parent = null
+    else if (fold(series) !== fold((parent?.title ?? '').trim())) {
+      plan.parent = parentFor(series, tasks)
+    }
+  } else {
+    const ours =
+      fold(own.list) === fold(TRAINING_LIST) && !tasks.some((t) => t.parentUid === own.uid)
+    if (!ours) return { kind: 'none' }
+    if (series) {
+      plan.parent = parentFor(
+        series,
+        tasks.filter((t) => t.uid !== own.uid)
+      )
+    }
   }
   return plan.title === undefined && plan.parent === undefined ? { kind: 'none' } : plan
 }

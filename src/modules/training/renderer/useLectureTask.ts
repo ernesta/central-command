@@ -3,8 +3,8 @@ import { useTasksList } from '../../tasks/renderer/useTasksList'
 import type { Task } from '../../tasks/shared/types'
 import {
   planLectureTask,
-  standaloneTask,
   strandedParent,
+  TRAINING_LIST,
   type ParentTarget
 } from '../shared/lecture-task'
 import type { TrainingMeta } from '../shared/types'
@@ -33,7 +33,7 @@ export function useLectureTask(
   meta: TrainingMeta,
   ready: boolean,
   setTask: (uid: string) => void
-): { tasks: Task[] | null; makeStandalone: () => Promise<void> } {
+): { tasks: Task[] | null } {
   const { tasks } = useTasksList('research')
   const busy = useRef(false)
   // Series tasks this page made: the series is typed letter by letter, so one may be left behind and is put in the trash.
@@ -51,16 +51,22 @@ export function useLectureTask(
           const sub = await window.api.tasks.create({
             workspace: 'research',
             title: plan.title,
-            parentUid: await parentUid(plan.parent, made.current)
+            ...(plan.parent
+              ? { parentUid: await parentUid(plan.parent, made.current) }
+              : { list: TRAINING_LIST })
           })
           setTask(sub.uid)
         } else {
           const left = tasks.find((t) => t.uid === plan.uid)?.parentUid ?? null
           await window.api.tasks.update(plan.uid, {
             ...(plan.title !== undefined ? { title: plan.title } : {}),
-            ...(plan.parent ? { parentUid: await parentUid(plan.parent, made.current) } : {})
+            ...(plan.parent
+              ? { parentUid: await parentUid(plan.parent, made.current) }
+              : plan.parent === null
+                ? { parentUid: null, list: TRAINING_LIST }
+                : {})
           })
-          if (plan.parent) {
+          if (plan.parent !== undefined) {
             const stranded = strandedParent(
               made.current,
               left,
@@ -80,22 +86,5 @@ export function useLectureTask(
     return () => clearTimeout(timer)
   }, [ready, tasks, task, series, title, setTask])
 
-  // A training with no series is the user's call: "Make" gives it a task of its own, top level in Training.
-  const makeStandalone = async (): Promise<void> => {
-    if (busy.current) return
-    busy.current = true
-    try {
-      const task = await window.api.tasks.create({
-        workspace: 'research',
-        ...standaloneTask(title)
-      })
-      setTask(task.uid)
-    } catch (error) {
-      console.error('Could not make the lecture task:', error)
-    } finally {
-      busy.current = false
-    }
-  }
-
-  return { tasks, makeStandalone }
+  return { tasks }
 }
