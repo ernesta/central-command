@@ -115,6 +115,25 @@ export function renamePersonMentions(markdown: string, names: ReadonlyMap<string
   return out
 }
 
+/**
+ * The text after a file was renamed or moved: every mention of the file `from` now names `to`, and its label too when it
+ * was the old file name (a label the writer chose stays). Text with no such mention comes back untouched.
+ */
+export function renameFileMentions(markdown: string, from: string, to: string): string {
+  const oldName = escapeLabel(from.split('/').at(-1) as string)
+  const newName = escapeLabel(to.split('/').at(-1) as string)
+  let out = markdown
+  const mentions = findMentions(markdown).filter((m) => m.ref.kind === 'file' && m.ref.key === from)
+  for (const m of mentions.reverse()) {
+    const label = m.label === oldName ? newName : m.label
+    out =
+      out.slice(0, m.start) +
+      `[${label}](${entityHref({ kind: 'file', key: to })})` +
+      out.slice(m.end)
+  }
+  return out
+}
+
 const ID_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789'
 
 /** A new uid: eight characters from an alphabet without look-alikes. `random` gives numbers in [0, 1). */

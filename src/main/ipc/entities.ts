@@ -5,7 +5,9 @@ import { ENTITY_KINDS, type EntityRef } from '@shared/entities'
 import { IPC } from '@shared/api'
 import { findBacklinks, type BacklinkFolder } from '../entities/backlinks'
 import { findTaskBacklinks } from '../entities/task-backlinks'
-import { entityFileInfo, listEntityFiles } from '../entities/files'
+import { FileMemory, resolveEntityFile } from '../entities/file-memory'
+import { moveFileMentions } from '../entities/file-links'
+import { listEntityFiles } from '../entities/files'
 import type { AppPaths } from '../paths'
 
 /** Every folder of notes a mention can be written in. */
@@ -45,11 +47,39 @@ function asKey(value: unknown): string {
 /** Where an entity is mentioned: read from the note files on demand, and from the descriptions of tasks. */
 export function registerEntitiesIpc(paths: AppPaths, db: Database): void {
   ipcMain.handle(IPC.entitiesFiles, () => listEntityFiles(paths.noteFiles))
-  ipcMain.handle(IPC.entitiesFileInfo, (_event, key: unknown) =>
-    entityFileInfo(paths.noteFiles, asKey(key))
+  // A file that was renamed or moved is found again, and the notes that mention it follow it. One move is
+  // handled once, however many chips ask at the same time.
+  const memory = new FileMemory(db)
+  const resolving = new Map<string, ReturnType<typeof resolveEntityFile>>()
+  const resolveFile = (key: string): ReturnType<typeof resolveEntityFile> => {
+    const running = resolving.get(key)
+    if (running) return running
+    const run = (async () => {
+      const resolved = await resolveEntityFile(paths.noteFiles, key, memory)
+      if (resolved.file && resolved.movedFrom) {
+        await moveFileMentions({
+          folders: backlinkFolders(paths),
+          db,
+          backupDir: join(
+            paths.root,
+            'backups',
+            `file-moved-${new Date().toISOString().replace(/[:.]/g, '-')}`
+          ),
+          from: resolved.movedFrom,
+          to: resolved.file.key
+        })
+      }
+      return resolved
+    })().finally(() => resolving.delete(key))
+    resolving.set(key, run)
+    return run
+  }
+  ipcMain.handle(
+    IPC.entitiesFileInfo,
+    async (_event, key: unknown) => (await resolveFile(asKey(key))).file
   )
   ipcMain.handle(IPC.entitiesFileOpen, async (_event, key: unknown) => {
-    const file = await entityFileInfo(paths.noteFiles, asKey(key))
+    const { file } = await resolveFile(asKey(key))
     if (!file) throw new Error('That file is gone')
     const problem = await shell.openPath(join(paths.noteFiles, file.key))
     if (problem) throw new Error(problem)
