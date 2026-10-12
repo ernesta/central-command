@@ -22,6 +22,11 @@ export interface LectureNote {
   title: string
 }
 
+/** The task a standalone lecture (no series) gets: top level in Training, called as the note is. */
+export function standaloneTask(title: string): { title: string; list: string } {
+  return { title: title.trim() || 'Untitled', list: TRAINING_LIST }
+}
+
 /** An open top-level task called the series (in "Training" first, else any list), or the one to create. */
 export function parentFor(series: string, tasks: readonly Task[]): ParentTarget {
   const name = series.trim()
@@ -38,7 +43,8 @@ export function parentFor(series: string, tasks: readonly Task[]): ParentTarget 
  * - An older note (`task` empty) is left alone, always.
  * - A marked note (`auto`) with no series yet waits; once it has one, its subtask is made under the series task.
  * - A note with a subtask keeps it in step: the subtask takes the note's title and sits under the task its series names. Clearing
- *   the series leaves it where it is. A task that is not a subtask (a plain task) is never renamed or moved, and a task that is
+ *   the series leaves it where it is. A task that is not a subtask is never renamed or moved, unless it is a standalone lecture's
+ *   (top level in Training, empty: its title follows), and a task that is
  *   gone is not made again by itself.
  *
  * `tasks` is every task of the workspace (subtasks too).
@@ -53,7 +59,16 @@ export function planLectureTask(note: LectureNote, tasks: readonly Task[]): Lect
   }
   if (!note.task) return { kind: 'none' }
   const own = tasks.find((t) => t.uid === note.task)
-  if (!own || !own.parentUid) return { kind: 'none' }
+  if (!own) return { kind: 'none' }
+  if (!own.parentUid) {
+    // A standalone lecture's task (made by "Make", top level in Training, nothing under it): only its title follows the note.
+    // A top-level task cannot move under a series task, so a series chosen later changes nothing.
+    const ours =
+      fold(own.list) === fold(TRAINING_LIST) && !tasks.some((t) => t.parentUid === own.uid)
+    return ours && title && title !== own.title
+      ? { kind: 'sync', uid: own.uid, title }
+      : { kind: 'none' }
+  }
   const parent = tasks.find((t) => t.uid === own.parentUid)
   const plan: { kind: 'sync'; uid: string; title?: string; parent?: ParentTarget } = {
     kind: 'sync',

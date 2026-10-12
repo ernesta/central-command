@@ -10,21 +10,29 @@ export function LectureTask({
   task,
   series,
   tasks,
-  onRemake
+  onRemake,
+  onMakeAlone
 }: {
   /** The note's `task:` value. */
   task: string
   series: string | null
   tasks: readonly Task[] | null
   onRemake: () => void
+  /** Make the task of a lecture that has no series. */
+  onMakeAlone: () => void
 }): React.JSX.Element | null {
   if (!task || tasks === null) return null
   if (task === 'auto') {
     return (
       <div className={styles.row}>
         <span className={styles.list}>
-          {series ? 'Making the task…' : 'Choose a series and the task is made.'}
+          {series ? 'Making the task…' : 'Choose a series, or make the task on its own.'}
         </span>
+        {!series && (
+          <Button size="small" onClick={onMakeAlone}>
+            Make
+          </Button>
+        )}
       </div>
     )
   }

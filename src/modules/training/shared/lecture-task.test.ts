@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Task } from '../../tasks/shared/types'
-import { parentFor, planLectureTask, strandedParent } from './lecture-task'
+import { parentFor, planLectureTask, standaloneTask, strandedParent } from './lecture-task'
 
 const task = (uid: string, title: string, over: Partial<Task> = {}): Task => ({
   uid,
@@ -112,7 +112,8 @@ describe('planLectureTask', () => {
   })
 
   it('never renames or moves a plain task, and never remakes a task that is gone', () => {
-    expect(planLectureTask({ task: 'p1', series: 'Other', title: 'New name' }, [parent])).toEqual({
+    const plain = task('x1', 'Read', { list: 'Reading' })
+    expect(planLectureTask({ task: 'x1', series: 'Other', title: 'New name' }, [plain])).toEqual({
       kind: 'none'
     })
     expect(
@@ -120,6 +121,35 @@ describe('planLectureTask', () => {
     ).toEqual({
       kind: 'none'
     })
+  })
+})
+
+describe('a standalone lecture', () => {
+  const alone = task('a1', 'Workshop')
+  it('names its task from the title, top level in Training', () => {
+    expect(standaloneTask(' Workshop ')).toEqual({ title: 'Workshop', list: 'Training' })
+    expect(standaloneTask(' ')).toEqual({ title: 'Untitled', list: 'Training' })
+  })
+  it('lets the title follow, and nothing else', () => {
+    expect(
+      planLectureTask({ task: 'a1', series: null, title: 'Plotly workshop' }, [alone])
+    ).toEqual({
+      kind: 'sync',
+      uid: 'a1',
+      title: 'Plotly workshop'
+    })
+    expect(
+      planLectureTask({ task: 'a1', series: 'Intro to Python', title: 'Workshop' }, [alone, parent])
+    ).toEqual({ kind: 'none' })
+  })
+  it('never renames a series task or a task in another list', () => {
+    const kid = task('k', 'Part', { list: '', parentUid: 'p1' })
+    expect(planLectureTask({ task: 'p1', series: null, title: 'New' }, [parent, kid])).toEqual({
+      kind: 'none'
+    })
+    expect(
+      planLectureTask({ task: 'a1', series: null, title: 'New' }, [{ ...alone, list: 'Reading' }])
+    ).toEqual({ kind: 'none' })
   })
 })
 

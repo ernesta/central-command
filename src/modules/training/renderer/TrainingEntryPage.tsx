@@ -97,7 +97,7 @@ function EntryView({
   }, [ready])
 
   const { meta, body, save, error, conflict, reloadedFromDisk, problems, updatedAt } = snapshot
-  const { tasks } = useLectureTask(meta, ready, (task) => session.setMeta({ task }))
+  const { tasks, makeStandalone } = useLectureTask(meta, ready, (task) => session.setMeta({ task }))
   const selfStudy = useSelfStudy()
   const lectureUid = lectureTaskUid(meta.task)
   const studied = lectureUid ? (selfStudy.get(lectureUid) ?? 0) : 0
@@ -249,6 +249,7 @@ function EntryView({
               series={meta.series}
               tasks={tasks}
               onRemake={() => session.setMeta({ task: 'auto' })}
+              onMakeAlone={() => void makeStandalone()}
             />
           ) : undefined
         }
