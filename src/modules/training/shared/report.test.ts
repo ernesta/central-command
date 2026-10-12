@@ -47,7 +47,7 @@ describe('trainingReportHtml', () => {
     expect(html.indexOf('First')).toBeLessThan(html.indexOf('Second'))
     expect(html).not.toContain('Upcoming')
     expect(html).not.toContain('Last year')
-    expect(html).toContain('<strong>3 h</strong> of 200 h in 2 entries')
+    expect(html).toContain('<strong>3:00</strong> of 200 h in 2 entries')
   })
 
   it('escapes everything the user wrote', () => {
@@ -66,9 +66,9 @@ describe('trainingReportHtml', () => {
       ...input([row('2025-10-01', { skills: ['Networking (RP)'], leads: ['Robert Darby'] })]),
       meetingMinutes: 90
     })
-    expect(html).toContain('Networking (RP): 1.5 h')
+    expect(html).toContain('Networking (RP): 1:30')
     expect(html).toContain('Robert Darby')
-    expect(html).toContain('Plus 1.5 h of meetings')
+    expect(html).toContain('Plus 1:30 of meetings')
     expect(trainingReportHtml(input([row('2025-10-01')]))).not.toContain('of meetings')
   })
 
@@ -89,8 +89,8 @@ describe('trainingReportHtml with self-study', () => {
   })
   it('shows a lecture as one total: its session plus the time tracked on it', () => {
     const html = trainingReportHtml({ ...input(rows), selfStudy: new Map([['k1', 45]]) })
-    // A 90-minute session plus 45 minutes of self-study is 2.3 h; the other entry stays 1.5 h, 3.8 h in all.
-    expect(html).toContain('<td class="nw r">2.3 h</td>')
-    expect(html).toContain('<strong>3.8 h</strong> of 200 h in 2 entries')
+    // A 90-minute session plus 45 minutes of self-study is 2:15; the other entry stays 1:30, 3:45 in all.
+    expect(html).toContain('<td class="nw r">2:15</td>')
+    expect(html).toContain('<strong>3:45</strong> of 200 h in 2 entries')
   })
 })

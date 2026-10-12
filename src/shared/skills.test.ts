@@ -25,9 +25,9 @@ describe('skills', () => {
   })
 
   it('formats hours', () => {
-    expect(formatHours(90)).toBe('1.5 h')
-    expect(formatHours(120)).toBe('2 h')
-    expect(formatHours(0)).toBe('0 h')
+    expect(formatHours(90)).toBe('1:30')
+    expect(formatHours(120)).toBe('2:00')
+    expect(formatHours(0)).toBe('0:00')
   })
 
   it('counts an entry fully towards each skill, largest first, ignoring entries without minutes', () => {

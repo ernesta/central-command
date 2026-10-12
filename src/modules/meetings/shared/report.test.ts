@@ -47,7 +47,7 @@ describe('meetingsReportHtml', () => {
     for (const left of ['Upcoming', 'Last year', 'Lab<', 'Planned']) {
       expect(html).not.toContain(left)
     }
-    expect(html).toContain('<strong>2 h</strong> in 2 meetings')
+    expect(html).toContain('<strong>2:00</strong> in 2 meetings')
   })
 
   it('escapes everything the user wrote', () => {
@@ -69,7 +69,7 @@ describe('meetingsReportHtml', () => {
       ])
     )
     expect(html).toContain('(1 without times, counted as 0)')
-    expect(html).toContain('Communication: 1 h')
+    expect(html).toContain('Communication: 1:00')
   })
 
   it('names the file after the year', () => {

@@ -4,6 +4,7 @@
  * restore it. The tag says which group a skill belongs to (GS General Skills, RP Research in
  * Practice, SS Specialist Skills); it also tells apart skills with the same name.
  */
+import { formatHours as formatTrackedHours } from './tracking/format'
 export interface Skill {
   name: string
   inkpath: string
@@ -75,11 +76,8 @@ export function findSkill(name: string): Skill | null {
   return SKILLS.find((s) => s.name.toLowerCase() === key || s.inkpath.toLowerCase() === key) ?? null
 }
 
-/** Whole and part hours as "1.5 h" or "12 h"; no more than one decimal. */
-export function formatHours(totalMinutes: number): string {
-  const hours = Math.round((totalMinutes / 60) * 10) / 10
-  return `${Number.isInteger(hours) ? hours : hours.toFixed(1)} h`
-}
+/** Hours and minutes as "1:30" or "12:00", never decimals (the same as the Hours pages). */
+export const formatHours = formatTrackedHours
 
 /**
  * Minutes per skill. Each entry counts fully towards each of its skills, so the sum can be more than

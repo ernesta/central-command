@@ -202,7 +202,7 @@ describe('option lists', () => {
   })
 
   it('words the meetings line', () => {
-    expect(meetingsLine(2190)).toBe('plus 36.5 h of meetings, which Inkpath also counts')
+    expect(meetingsLine(2190)).toBe('plus 36:30 of meetings, which Inkpath also counts')
   })
 })
 
