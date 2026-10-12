@@ -102,7 +102,7 @@ describe('moveFileMentions', () => {
       'Look at [Data.xlsx](cc://file/work%2FData.xlsx).'
     )
     expect(readFileSync(join(notes, 'b.md'), 'utf8')).toBe('No link.')
-    expect(readFileSync(join(root, 'backup', '0', 'a.md'), 'utf8')).toContain('research/Summary')
+    expect(readFileSync(join(root, 'backup', '0', 'a.md'), 'utf8')).toContain('research%2FSummary')
     expect(db.prepare('SELECT description, updated_at FROM tasks').get()).toEqual({
       description: 'Open [Data.xlsx](cc://file/work%2FData.xlsx)',
       updated_at: 'new'
