@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useCanGoBack } from './history-position'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 import { moduleGlobals, modules } from '@modules/index'
 import { modulePath } from '@modules/types'
@@ -35,6 +36,7 @@ export function Shell(): React.JSX.Element {
   const { settings, update } = useSettings()
   const location = useLocation()
   const navigate = useNavigate()
+  const canGoBack = useCanGoBack()
   const [buildError, setBuildError] = useState<string | null>(null)
   const [searchOpen, setSearchOpen] = useState(false)
   usePastePlain()
@@ -105,7 +107,7 @@ export function Shell(): React.JSX.Element {
       <TopBar
         workspace={workspace}
         onWorkspaceChange={switchWorkspace}
-        canGoBack={location.key !== 'default'}
+        canGoBack={canGoBack}
         onBack={() => void navigate(-1)}
         onBuild={() => void openBuild()}
         onOpenSettings={() => navigate('/settings')}

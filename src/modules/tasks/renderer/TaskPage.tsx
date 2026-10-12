@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useState, useSyncExternalStore } from 'react'
-import { Navigate, useLocation, useNavigate, useParams } from 'react-router'
+import { Navigate, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { Dialog } from '@renderer/components/Dialog'
 import { EmptyState } from '@renderer/components/EmptyState'
@@ -31,7 +31,7 @@ import { StatusIcon } from './TaskIcons'
 import { RecurrenceField } from './RecurrenceField'
 import { TagsField } from './TagsField'
 import { TaskTimeCard } from './TaskTimeCard'
-import { taskRoute, tasksBase, todayIso, useTasksWorkspace } from './tasks-paths'
+import { taskRoute, todayIso, useTasksWorkspace } from './tasks-paths'
 import { useTaskTime } from './useTaskTime'
 import { useTasksList } from './useTasksList'
 import styles from './TaskPage.module.css'
@@ -94,7 +94,6 @@ function TaskView({
   workspace: TaskWorkspace
 }): React.JSX.Element {
   const navigate = useNavigate()
-  const location = useLocation()
   const today = todayIso()
   const { tracked, running, yearFor, clientFor, months } = useTaskTime(workspace)
   const [error, setError] = useState<string | null>(null)
@@ -124,10 +123,7 @@ function TaskView({
   const own = taskTime({ task, kids: [] }, tracked)
   const progress = subtaskProgress(row.kids)
   // Leaving after a delete goes where the visitor came from, as Back does.
-  const leave = (): void =>
-    void (location.key !== 'default'
-      ? navigate(-1)
-      : navigate(tasksBase(workspace), { replace: true }))
+  const leave = (): void => void navigate(-1)
 
   const remove = async (): Promise<void> => {
     setBusy(true)
