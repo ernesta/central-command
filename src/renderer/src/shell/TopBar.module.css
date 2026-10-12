@@ -14,7 +14,7 @@
    normal window (matches where the dots always sit); in full screen the dots (and the system menu bar)
    are hidden until the pointer reaches the very top edge, so the room for them only opens up then too. */
 .bar.macInset {
-  padding-left: 84px;
+  padding-left: 94px;
 }
 .topSentinel {
   position: fixed;
@@ -27,7 +27,7 @@
   -webkit-app-region: no-drag;
 }
 .bar:has(.topSentinel:hover) {
-  padding-left: 84px;
+  padding-left: 94px;
 }
 .lead,
 .pills,
@@ -48,5 +48,5 @@
 /* Back sits between the traffic lights and the tabs: a snug button and no gap, so the space on both sides is about even. */
 .lead {
   gap: 0;
-  --icon-button-size: 32px;
+  --icon-button-size: 28px;
 }
