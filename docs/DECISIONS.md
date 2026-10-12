@@ -2924,3 +2924,10 @@ Closes the first two bullets of the deferred list in `docs/CONTRACTS_PLAN.md`.
 - **Change:** `FilesPanel` no longer shows a size (`formatSize` removed; `FolderEntry.size` stays in the listing, unused by the panel). Names wrap at word boundaries (`overflow-wrap: break-word`, not `anywhere`) and the row's gap and padding are a little tighter, so most names fit on one line. `listFolder` (`src/modules/training/main/files.ts`) leaves out names starting with `~$` as well as hidden (`.`) ones.
 - **Left as is:** other non-dot files such as `_quarto.yml` still show; hiding underscore-prefixed files was offered, not asked for.
 - **Not driven in the app, no new test** (no component tests in the repo; the listing change is one line). Check: open a Training entry whose folder holds long names.
+
+## Training: a lecture's task with or without a series (12 Oct 2026)
+
+- **Why (the user):** standalone trainings (no series) must behave like series ones, automatically, and the task must follow the series both ways with no thinking.
+- **Rule** (`planLectureTask`, `src/modules/training/shared/lecture-task.ts`): a marked (`auto`) note gets its task once it has a series (a subtask under the series task) or a real title (not empty, not "Untitled"; a task of its own, top level in list "Training"). Adding a series moves the task under the series task, clearing it makes the task top level again; the title always follows. A top-level task is only treated as the lecture's own when it is in Training with nothing under it, so a series task or a plain task is never renamed or moved. A series task this page made and the lecture has left empty goes to the trash (as before).
+- **Tasks store:** `update` now lets a top-level task with no subtasks and no repeat become a subtask (it loses its list), and `parentUid: null` with a `list` makes a subtask top level (`TaskChanges.parentUid`). It used to refuse both.
+- **Driven in a scratch library (built app):** title typed, task "Plotly workshop" in Training; series typed, it became a subtask of a new "Intro to Python" task; series cleared, it was top level again and the empty series task was gone. Dev mode not checked.
