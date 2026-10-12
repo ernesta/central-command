@@ -2984,3 +2984,10 @@ Closes the first two bullets of the deferred list in `docs/CONTRACTS_PLAN.md`.
 - **Indent:** a list line's left padding follows its depth in the syntax tree (`--li-depth`, `listDepth` in `live-decorations.ts`), 1.6em per level, so a sub-bullet starts exactly where its parent's text begins, whatever the spaces in the file (`--li-cols`, 0.5em per column, is gone). Driven in the built app on a scratch library (bullets, tasks, numbered parent, three levels); dev mode not driven.
 - **One bullet character, once:** `npm run standardise:bullets [-- --apply]` (`scripts/standardise-bullets.mts`, rules in `src/shared/bullet-style.ts`) writes every `*` or `+` list marker as `-`. It reads real list marks from the Markdown tree (code, `* * *`, emphasis, numbers, front matter and `notes/readings/` untouched), checks that only those characters changed, backs each note up first. **Applied 12 Oct 2026: 655 bullets in 19 notes** (backups: `~/CentralCommand/backups/standardise-bullets-2026-10-12T14-16-26-033Z`); a dry run now finds nothing.
 - **Tests:** `live-lists.test.ts` (Tab, Mod-], Shift-Tab, Mod-[), `bullet-style.test.ts`.
+
+## A chip never breaks across lines (12 Oct 2026)
+
+- **Why (the user):** at the end of a line a person chip showed its icon alone and the name began the next line.
+- **Cause:** the icon is an inline-block `::before` of the chip, and the line may break after an inline-block, so the icon and the label were two fragments.
+- **Change:** `.live-chip` has `white-space: nowrap` (`LiveEditor.module.css`): the line breaks before a chip, never inside it. A label wider than the whole line would overflow rather than wrap; not checked with a very long title.
+- **Not driven in the app**; typecheck, lint and tests pass.

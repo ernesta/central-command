@@ -338,6 +338,8 @@
   color: var(--selected-text);
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
+  /* The icon and the name are one unit: the line may break before a chip, never inside it. */
+  white-space: nowrap;
   cursor: default;
 }
 .wrap :global(.live-chip):hover {
