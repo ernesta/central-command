@@ -45,9 +45,9 @@
 .item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
-  padding: 6px 8px;
+  padding: 6px 6px;
   border: 0;
   border-radius: 6px;
   background: transparent;
@@ -61,10 +61,8 @@
 .name {
   flex: 1;
   min-width: 0;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
-.size {
-  color: var(--text-muted);
-  font-size: var(--text-12);
-  font-variant-numeric: tabular-nums;
+.item svg {
+  flex: none;
 }

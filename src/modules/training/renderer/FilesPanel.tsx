@@ -15,13 +15,6 @@ interface FilesPanelProps {
   onChange: (folder: string | null) => void
 }
 
-function formatSize(bytes: number | null): string {
-  if (bytes === null) return ''
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
-
 /**
  * The files of an entry's linked folder. They are linked, never copied: the app lists them, opens one
  * with its default app or shows it in Finder, and never moves, renames, writes or deletes anything.
@@ -189,7 +182,6 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
                         <File size={15} strokeWidth={1.75} aria-hidden />
                       )}
                       <span className={styles.name}>{entry.name}</span>
-                      <span className={styles.size}>{formatSize(entry.size)}</span>
                     </button>
                   </li>
                 ))}

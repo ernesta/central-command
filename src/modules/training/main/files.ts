@@ -80,7 +80,7 @@ export async function resolveInside(
   return real
 }
 
-/** One level of an entry's folder (or of a sub-folder), folders first. Hidden files and links that lead outside the root are left out. */
+/** One level of an entry's folder (or of a sub-folder), folders first. Hidden files, Office lock files and links that lead outside the root are left out. */
 export async function listFolder(root: string, folder: string, sub = ''): Promise<FolderListing> {
   if (!root || !isAbsolute(root)) return { status: 'no-root' }
   try {
@@ -99,7 +99,8 @@ export async function listFolder(root: string, folder: string, sub = ''): Promis
   const rootReal = await realpath(root)
   const entries: FolderEntry[] = []
   for (const dirent of await readdir(dir, { withFileTypes: true })) {
-    if (dirent.name.startsWith('.')) continue
+    // Hidden files and Office's temporary lock files (`~$name.docx`).
+    if (dirent.name.startsWith('.') || dirent.name.startsWith('~$')) continue
     try {
       const real = await realpath(join(dir, dirent.name))
       if (!inside(rootReal, real)) continue
