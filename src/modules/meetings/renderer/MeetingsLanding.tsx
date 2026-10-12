@@ -131,12 +131,14 @@ export function MeetingsLanding(): React.JSX.Element {
               showSkills={tracksSkills(workspace)}
             />
             <SeriesCards
-              cards={summaries.map((s) => ({
-                key: s.series,
-                to: seriesRoute(workspace, s.series, year),
-                title: s.series,
-                line: seriesLine(s, formatShortDate)
-              }))}
+              cards={summaries
+                .filter((s) => s.count > 0 || s.next)
+                .map((s) => ({
+                  key: s.series,
+                  to: seriesRoute(workspace, s.series, year),
+                  title: s.series,
+                  line: seriesLine(s, formatShortDate)
+                }))}
             />
           </LandingSection>
 
