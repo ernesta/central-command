@@ -276,7 +276,7 @@
 /* Lists: a bullet, number or checkbox stands for the marker; wrapped lines hang under the text, not under the marker. */
 /* (Spelled out to outrank the `.cm-line` padding reset above.) */
 .wrap :global(.cm-editor) :global(.cm-line.live-li) {
-  padding-left: calc(var(--li-cols, 0) * 0.5em + 1.6em);
+  padding-left: calc(var(--li-depth, 0) * 1.6em + 1.6em);
   text-indent: -1.6em;
 }
 .wrap :global(.live-bullet),

@@ -7,7 +7,7 @@ import {
   ViewPlugin,
   type ViewUpdate
 } from '@codemirror/view'
-import type { SyntaxNodeRef } from '@lezer/common'
+import type { SyntaxNode, SyntaxNodeRef } from '@lezer/common'
 import { chipOf, ChipWidget, entitiesFacet, refreshMentions } from './live-entities'
 import { isListKind, parseLine } from './live-lines'
 import { blockRevealed, computeReveal, spanRevealed, type Extent, type Reveal } from './live-reveal'
@@ -43,8 +43,12 @@ const MARKS = {
   done: classMark('live-done')
 }
 
-/** Width of a list item's indentation in columns, a tab counting as four. */
-const columns = (indent: string): number => indent.replace(/\t/g, '    ').length
+/** How many list items enclose this list mark besides its own: 0 for a top-level item. */
+function listDepth(mark: SyntaxNode): number {
+  let depth = -1
+  for (let n: SyntaxNode | null = mark; n; n = n.parent) if (n.name === 'ListItem') depth++
+  return depth
+}
 
 const lineDeco = (name: string, style?: string): Decoration =>
   Decoration.line({ class: name, ...(style ? { attributes: { style } } : {}) })
@@ -212,7 +216,7 @@ export function buildDecorations(
               'li',
               line.from,
               line.from,
-              lineDeco('live-li', `--li-cols: ${columns(parts.indent)}`)
+              lineDeco('live-li', `--li-depth: ${listDepth(node.node)}`)
             )
             const box = parts.kind === 'ordered' ? ORDERED_BOX.exec(parts.content) : null
             if (box)
