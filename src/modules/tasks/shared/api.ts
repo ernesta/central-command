@@ -15,6 +15,7 @@ export interface CreateTaskInput {
   list?: string
   sublist?: string
   description?: string
+  status?: TaskStatus
   priority?: TaskPriority
   /** YYYY-MM-DD, or null for none. */
   due?: string | null

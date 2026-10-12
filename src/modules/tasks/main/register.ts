@@ -115,12 +115,17 @@ function register(context: MainContext): () => void {
     if (priority !== undefined && !(TASK_PRIORITIES as readonly string[]).includes(priority)) {
       throw new Error('Invalid priority')
     }
+    const status = text(o.status)
+    if (status !== undefined && !(TASK_STATUSES as readonly string[]).includes(status)) {
+      throw new Error('Invalid status')
+    }
     const task = store.create({
       workspace: asWorkspace(o.workspace),
       title: text(o.title) ?? '',
       list: text(o.list),
       sublist: text(o.sublist),
       description: text(o.description),
+      status: status as TaskStatus | undefined,
       priority: priority as TaskPriority | undefined,
       due: dateOrNull(o.due),
       parentUid: o.parentUid === null || o.parentUid === undefined ? null : asUid(o.parentUid),

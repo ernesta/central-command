@@ -51,6 +51,7 @@ export function useLectureTask(
           const sub = await window.api.tasks.create({
             workspace: 'research',
             title: plan.title,
+            status: 'doing',
             ...(plan.parent
               ? { parentUid: await parentUid(plan.parent, made.current) }
               : { list: TRAINING_LIST })
