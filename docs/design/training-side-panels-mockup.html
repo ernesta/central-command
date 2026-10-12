@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Training entry: side panels</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#edeff2, #14181d);
+    --surface: light-dark(#ffffff, #1f262e);
+    --ink: light-dark(#1b222b, #e6eaee);
+    --text-secondary: light-dark(#3a4652, #c2cad2);
+    --text-muted: light-dark(#5c6672, #98a3af);
+    --border-soft: light-dark(#d3d8de, #2f3843);
+    --border-strong: light-dark(#c3cad2, #3d4855);
+    --hover-tint: light-dark(#f4f6f8, #262e37);
+    --accent: light-dark(#35577a, #86aad0);
+    --accent-contrast: light-dark(#ffffff, #0f1620);
+    --selected-bg: light-dark(#dce6ee, #2a3b4d);
+    --warn: light-dark(#b8741a, #d9a05a);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 32px 16px 80px; background: var(--bg); color: var(--ink); font: 14px/1.45 'IBM Plex Sans', system-ui, sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; }
+  h1 { font: 28px Georgia, serif; margin: 0 0 4px; }
+  h2 { font: 22px Georgia, serif; margin: 2px 0 4px; }
+  .lead { color: var(--text-muted); margin: 0 0 14px; }
+  .opt { margin-top: 44px; padding-top: 8px; border-top: 2px solid var(--border-strong); }
+  .tag { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--accent); }
+  .badge { margin-left: 8px; font-size: 12px; padding: 1px 9px; border-radius: 999px; background: var(--selected-bg); color: var(--ink); text-transform: none; letter-spacing: 0; }
+  .pro, .con { font-size: 13px; padding-left: 18px; position: relative; }
+  .pro::before { content: '+'; position: absolute; left: 4px; color: var(--accent); font-weight: 700; }
+  .con::before { content: '–'; position: absolute; left: 4px; color: var(--warn); font-weight: 700; }
+  .notes { margin-top: 12px; display: grid; gap: 2px; }
+
+  /* One app screen at about 0.72 scale (a 1400px window). The page region below the top bar only. */
+  .screen { margin-top: 14px; padding: 24px 28px 28px; background: var(--bg); border: 1px solid var(--border-strong); border-radius: 12px; overflow-x: auto; }
+  .frame { min-width: 980px; display: grid; gap: 14px; }
+  .back { color: var(--text-muted); font-size: 12px; }
+  .title { font: 700 26px Georgia, serif; }
+
+  .panel { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; padding: 14px; display: grid; gap: 10px; align-content: start; }
+  /* Every panel head has the same height, with or without icon buttons: the fix for FILES sitting lower than OUTLINE. */
+  .head { display: flex; align-items: center; justify-content: space-between; min-height: 28px; }
+  .label { font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); margin: 0; }
+  .icons { display: flex; gap: 2px; color: var(--text-muted); }
+  .icons i { width: 28px; height: 28px; display: grid; place-items: center; font-style: normal; font-size: 14px; }
+
+  .meta { display: grid; gap: 14px; }
+  .fields { display: flex; flex-wrap: wrap; gap: 12px 18px; }
+  .field { display: grid; gap: 4px; }
+  .field .label { font-size: 10px; }
+  .ctl { height: 32px; min-width: 70px; padding: 0 10px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border-strong); border-radius: 8px; color: var(--ink); white-space: nowrap; }
+  .ctl.dash { border-style: dashed; color: var(--text-muted); }
+  .metaDivider { border: 0; border-top: 1px solid var(--border-soft); margin: 0; }
+
+  .editor { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; min-height: 380px; display: grid; grid-template-rows: 1fr auto; }
+  .editor .text { padding: 18px 22px; font: 700 20px Georgia, serif; display: grid; gap: 12px; align-content: start; }
+  .editor .foot { border-top: 1px solid var(--border-soft); padding: 8px 22px; color: var(--text-muted); font-size: 12px; }
+
+  .olist { display: grid; gap: 0; }
+  .olist span { padding: 3px 8px; border-radius: 6px; color: var(--text-secondary); font-size: 12.5px; }
+  .flist { display: grid; gap: 0; font-size: 13px; }
+  .flist span { padding: 5px 6px; display: flex; gap: 8px; align-items: center; }
+  .flist span::before { content: ''; width: 11px; height: 9px; border: 1.5px solid var(--text-muted); border-radius: 2px; flex: none; }
+  .flist span.file::before { height: 12px; width: 9px; }
+  .crumb { color: var(--text-muted); font-size: 12px; padding: 2px 4px; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; height: 28px; padding: 0 12px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface); color: var(--ink); font-size: 13px; white-space: nowrap; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+  .link { text-decoration: underline; text-underline-offset: 3px; color: var(--ink); }
+  .muted { color: var(--text-muted); }
+  .total b { font: 600 20px Georgia, serif; }
+  .total span { color: var(--text-muted); margin-left: 4px; }
+
+  /* A: the main row is text | outline | files */
+  .gridA { display: grid; grid-template-columns: minmax(0, 1fr) 150px 250px; gap: 18px; align-items: start; }
+  /* B: text | outline | (task over files) */
+  .gridB { display: grid; grid-template-columns: minmax(0, 1fr) 150px 250px; gap: 18px; align-items: start; }
+  .stack { display: grid; gap: 14px; }
+
+  .strip { display: flex; align-items: center; gap: 20px; padding: 10px 14px; min-height: 52px; }
+  .strip .grow { flex: 1; display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+  .strip .acts { display: flex; gap: 8px; }
+  .strip .sep { width: 1px; height: 22px; background: var(--border-soft); }
+
+  .taskB .name { display: grid; gap: 2px; }
+  .taskB .bottom { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--border-soft); }
+  .taskB .acts { display: flex; gap: 8px; }
+  .taskB .acts .btn { flex: 1; }
+
+  .adjust { margin-top: 18px; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border-soft); border-left: 4px solid var(--accent); border-radius: 8px; font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Training entry: the side panels</h1>
+  <p class="lead">Three ways to lay out Task, Outline and Files. In all three: the outline sits right next to the text, Files is the far-right column, and every panel's heading row has the same height (so FILES no longer sits lower than OUTLINE). Shown in your system's light or dark mode.</p>
+
+  <div class="adjust"><b>Same in all three: the alignment fix.</b> Files' three icon buttons are 28px tall and push its heading row below the Outline's text-only heading. The shared Panel gets a fixed 28px minimum heading row, so a label sits at the same height in every panel, in every module.</div>
+
+  <!-- A -->
+  <section class="opt">
+    <div class="tag">A <span class="badge">Recommended</span></div>
+    <h2>Task is a wide strip under the metadata</h2>
+    <p class="lead">One quiet line: what the task is, its total, and the two actions. The side column is then only two reference panels.</p>
+    <div class="screen"><div class="frame">
+      <div class="back">← Training</div>
+      <div class="title">Response Surface Analysis Workshop</div>
+      <div class="panel meta">
+        <div class="fields">
+          <div class="field"><span class="label">Date</span><span class="ctl">12/10/2026</span></div>
+          <div class="field"><span class="label">Start</span><span class="ctl">14 : 00</span></div>
+          <div class="field"><span class="label">End</span><span class="ctl">15 : 00</span></div>
+          <div class="field"><span class="label">Duration</span><span class="ctl dash">1 h</span></div>
+          <div class="field"><span class="label">Series</span><span class="ctl dash" style="min-width:200px">None</span></div>
+          <div class="field"><span class="label">Type</span><span class="ctl" style="min-width:150px">Research methods</span></div>
+        </div>
+        <div class="fields">
+          <div class="field"><span class="label">Format</span><span class="ctl">In person · <b>Online</b> · Self-paced</span></div>
+          <div class="field"><span class="label">Institution</span><span class="ctl" style="min-width:200px">Royal Holloway</span></div>
+          <div class="field"><span class="label">Leads</span><span class="ctl">KI ✕ &nbsp; + add</span></div>
+          <div class="field"><span class="label">Skills</span><span class="ctl">Quantitative skills (SS) ✕ &nbsp; + add</span></div>
+        </div>
+      </div>
+      <div class="panel strip">
+        <h2 class="label" style="font-family:inherit">Task</h2>
+        <div class="grow"><span class="link">Response Surface Analysis Workshop</span><span class="muted">Training</span></div>
+        <span class="total"><b>1:00</b><span>in total</span></span>
+        <span class="sep"></span>
+        <div class="acts"><span class="btn primary">Start</span><span class="btn">Add time</span></div>
+      </div>
+      <div class="gridA">
+        <div class="editor"><div class="text"><span>Summary</span><span>Notes</span></div><div class="foot">Saved · Edited Oct 12, 2026 · 2 words</div></div>
+        <div class="panel"><div class="head"><h2 class="label" style="font-family:inherit">Outline</h2></div><div class="olist"><span>Summary</span><span>Notes</span></div></div>
+        <div class="panel">
+          <div class="head"><h2 class="label" style="font-family:inherit">Files</h2><div class="icons"><i>▭</i><i>⌀</i><i>⇥</i></div></div>
+          <div class="crumb">Response Surface Analysis Workshop</div>
+          <div class="flist"><span>03_Data</span><span>04_R_Scripts</span><span>05_Answer_Key</span><span>07_Validation</span><span>08_Output</span><span class="file">_quarto.yml</span><span class="file">00_START_HERE.html</span></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="notes">
+      <div class="pro">Reads left to right: facts about the entry, then the time on it, then the note.</div>
+      <div class="pro">The side column loses its tallest, busiest panel; Files can use the room.</div>
+      <div class="pro">Same strip can serve Meetings' Task field later (one pattern).</div>
+      <div class="con">Pushes the note down by about 50px.</div>
+      <div class="con">An overlap or missing-time warning needs a line of its own under the strip, only when there is something to say.</div>
+    </div>
+  </section>
+
+  <!-- B -->
+  <section class="opt">
+    <div class="tag">B</div>
+    <h2>Task stays in the side column, above Files, laid out better</h2>
+    <p class="lead">The far-right column holds Task over Files. The task gets a real structure: name and list, then total and actions on one divided row.</p>
+    <div class="screen"><div class="frame">
+      <div class="back">← Training</div>
+      <div class="title">Response Surface Analysis Workshop</div>
+      <div class="panel meta">
+        <div class="fields">
+          <div class="field"><span class="label">Date</span><span class="ctl">12/10/2026</span></div>
+          <div class="field"><span class="label">Start</span><span class="ctl">14 : 00</span></div>
+          <div class="field"><span class="label">End</span><span class="ctl">15 : 00</span></div>
+          <div class="field"><span class="label">Duration</span><span class="ctl dash">1 h</span></div>
+          <div class="field"><span class="label">Series</span><span class="ctl dash" style="min-width:200px">None</span></div>
+          <div class="field"><span class="label">Type</span><span class="ctl" style="min-width:150px">Research methods</span></div>
+        </div>
+        <div class="fields">
+          <div class="field"><span class="label">Format</span><span class="ctl">In person · <b>Online</b> · Self-paced</span></div>
+          <div class="field"><span class="label">Institution</span><span class="ctl" style="min-width:200px">Royal Holloway</span></div>
+          <div class="field"><span class="label">Leads</span><span class="ctl">KI ✕ &nbsp; + add</span></div>
+          <div class="field"><span class="label">Skills</span><span class="ctl">Quantitative skills (SS) ✕ &nbsp; + add</span></div>
+        </div>
+      </div>
+      <div class="gridB">
+        <div class="editor"><div class="text"><span>Summary</span><span>Notes</span></div><div class="foot">Saved · Edited Oct 12, 2026 · 2 words</div></div>
+        <div class="panel"><div class="head"><h2 class="label" style="font-family:inherit">Outline</h2></div><div class="olist"><span>Summary</span><span>Notes</span></div></div>
+        <div class="stack">
+          <div class="panel taskB">
+            <div class="head"><h2 class="label" style="font-family:inherit">Task</h2></div>
+            <div class="name"><span class="link">Response Surface Analysis Workshop</span><span class="muted">Training</span></div>
+            <div class="bottom"><span class="total"><b>1:00</b><span>in total</span></span></div>
+            <div class="acts"><span class="btn primary">Start</span><span class="btn">Add time</span></div>
+          </div>
+          <div class="panel">
+            <div class="head"><h2 class="label" style="font-family:inherit">Files</h2><div class="icons"><i>▭</i><i>⌀</i><i>⇥</i></div></div>
+            <div class="crumb">Response Surface Analysis Workshop</div>
+            <div class="flist"><span>03_Data</span><span>04_R_Scripts</span><span>05_Answer_Key</span><span>07_Validation</span><span>08_Output</span><span class="file">_quarto.yml</span><span class="file">00_START_HERE.html</span></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+    <div class="notes">
+      <div class="pro">Closest to today, smallest change; the note stays high on the page.</div>
+      <div class="pro">Room for an overlap warning inside the Task panel.</div>
+      <div class="con">Still three cards of different heights; the Files list gets pushed down by Task.</div>
+      <div class="con">The column is a third of the screen's right edge doing two unrelated jobs (time and files).</div>
+    </div>
+  </section>
+
+  <!-- C -->
+  <section class="opt">
+    <div class="tag">C</div>
+    <h2>Task becomes a third row of the metadata block</h2>
+    <p class="lead">It is another fact about the entry, so it goes where the other facts are, in the same label-over-value style. Side column: Outline and Files only.</p>
+    <div class="screen"><div class="frame">
+      <div class="back">← Training</div>
+      <div class="title">Response Surface Analysis Workshop</div>
+      <div class="panel meta">
+        <div class="fields">
+          <div class="field"><span class="label">Date</span><span class="ctl">12/10/2026</span></div>
+          <div class="field"><span class="label">Start</span><span class="ctl">14 : 00</span></div>
+          <div class="field"><span class="label">End</span><span class="ctl">15 : 00</span></div>
+          <div class="field"><span class="label">Duration</span><span class="ctl dash">1 h</span></div>
+          <div class="field"><span class="label">Series</span><span class="ctl dash" style="min-width:200px">None</span></div>
+          <div class="field"><span class="label">Type</span><span class="ctl" style="min-width:150px">Research methods</span></div>
+        </div>
+        <div class="fields">
+          <div class="field"><span class="label">Format</span><span class="ctl">In person · <b>Online</b> · Self-paced</span></div>
+          <div class="field"><span class="label">Institution</span><span class="ctl" style="min-width:200px">Royal Holloway</span></div>
+          <div class="field"><span class="label">Leads</span><span class="ctl">KI ✕ &nbsp; + add</span></div>
+          <div class="field"><span class="label">Skills</span><span class="ctl">Quantitative skills (SS) ✕ &nbsp; + add</span></div>
+        </div>
+        <hr class="metaDivider" />
+        <div class="fields" style="align-items:end">
+          <div class="field"><span class="label">Task</span><span class="ctl" style="min-width:300px"><span class="link">Response Surface Analysis Workshop</span><span class="muted">· Training</span></span></div>
+          <div class="field"><span class="label">Time</span><span class="ctl total" style="border-color:transparent;padding:0"><b>1:00</b><span>in total</span></span></div>
+          <div class="acts" style="display:flex;gap:8px;height:32px;align-items:center"><span class="btn primary">Start</span><span class="btn">Add time</span></div>
+        </div>
+      </div>
+      <div class="gridA">
+        <div class="editor"><div class="text"><span>Summary</span><span>Notes</span></div><div class="foot">Saved · Edited Oct 12, 2026 · 2 words</div></div>
+        <div class="panel"><div class="head"><h2 class="label" style="font-family:inherit">Outline</h2></div><div class="olist"><span>Summary</span><span>Notes</span></div></div>
+        <div class="panel">
+          <div class="head"><h2 class="label" style="font-family:inherit">Files</h2><div class="icons"><i>▭</i><i>⌀</i><i>⇥</i></div></div>
+          <div class="crumb">Response Surface Analysis Workshop</div>
+          <div class="flist"><span>03_Data</span><span>04_R_Scripts</span><span>05_Answer_Key</span><span>07_Validation</span><span>08_Output</span><span class="file">_quarto.yml</span><span class="file">00_START_HERE.html</span></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="notes">
+      <div class="pro">One block for everything about the entry; no extra card.</div>
+      <div class="pro">Lines up with the fields above it.</div>
+      <div class="con">The metadata block gets heavier, and it is shared Training chrome, not the lecture's alone.</div>
+      <div class="con">Actions (Start, Add time) in a form-like block read less clearly as actions.</div>
+    </div>
+  </section>
+
+  <div class="adjust">
+    <b>Narrow windows (all three):</b> below about 900px the panels drop under the note as today (outline first, then files). Between 900px and about 1400px the outline and Files stack in one narrow column, the outline on top.<br />
+    <b>Side effect to confirm:</b> in all three, <code>DocSplit</code>'s <code>roomySide</code> becomes "outline column, then outer column" explicitly, instead of the current "first panel goes to the outer column" ordering trick that shuffled these three panels.
+  </div>
+</main>
+</body>
+</html>

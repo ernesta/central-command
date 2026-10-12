@@ -1,9 +1,3 @@
-.box {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 4px;
-}
 .total {
   display: flex;
   align-items: baseline;
@@ -15,4 +9,20 @@
   color: var(--ink);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
+}
+/* Start and Add time, with the Add time form or an error under them when open. */
+.actions {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+/* An overlap or a missing time gets a line of its own under the card's row, and takes no room when there is none. */
+.note {
+  flex-basis: 100%;
+}
+.note:empty {
+  display: none;
+}
+.actions > div:first-child {
+  margin-top: 0;
 }

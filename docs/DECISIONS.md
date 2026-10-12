@@ -2190,7 +2190,7 @@ The rules are pure, in `src/shared/tracking/timer.ts`: `setStartAt` and `overlap
 - **How a list with no tasks exists.** It does not: lists are derived from tasks (there is no lists table). A client's list is "allowed" because the client is in some contract's plan (`workClients`, read from disk on every call), so **adding a client in Settings or creating a contract is all it takes**; nothing is written to Tasks. Stage 3's Tasks page will show every client as a list, empty or not, by merging `workClients` with the task lists.
 - **Rules** are plain functions in `src/shared/tracking/client-names.ts` (`cleanClientName`, `allClients`, `canonicalClient`, `clientsLost`, `checkRename`, `renameClientInYear`, `clientRefusal`); the store applies them (`TrackingStore.setPlan`, `createContract`, new `renameClient`), the IPC handler is one line.
 - **Seam to Tasks.** `TrackingStore.setClientTasks(ClientTasks)` (`count`, `rename`), given in `main/index.ts` once the database is open (`src/modules/tasks/main/client-tasks.ts`, top-level Work tasks only, compared ignoring case). Without it (tests, scripts) nothing is checked. A rename sends the Tasks windows a changed event.
-- **Removing a client** (`setPlan` with a shorter `clients`): refused with `client-has-tasks` (and `detail: { client, tasks }`: "Teaching still has 1 task. Move or delete them first.") when no *other* contract still has the client and its list holds tasks. **Trashed tasks count** (restoring one would otherwise break the rule). A client that another contract also has is removable; its list stays.
+- **Removing a client** (`setPlan` with a shorter `clients`): refused with `client-has-tasks` (and `detail: { client, tasks }`: "Teaching still has 1 task. Move or delete them first.") when no _other_ contract still has the client and its list holds tasks. **Trashed tasks count** (restoring one would otherwise break the rule). A client that another contract also has is removable; its list stays.
 - **Renaming** (`renameClient`, new `tracking:rename-client`; in the UI, click a client's chip in Settings -> Hours, Enter saves, Escape cancels, an empty or 40+ character name or one another client has is refused): the tasks move first, then every contract that has the client gets the new name in its plan and on each session and typed entry (reported minutes untouched). If a contract cannot be saved, the contracts already changed and the tasks are put back. Changing only the case is allowed.
 - **One spelling per client.** A name that another contract already has in other case ("impact") takes that contract's spelling, in `createContract` and `setPlan`, so a client has one list.
 - **Tests**: `client-names.test.ts` (rules) and `src/main/tracking/client-lists.test.ts` (real files, in-memory database, the real task store with the stage 1 rule). **Mutation checks**: removal guard off, tasks not renamed, tasks not restored on failure, contracts not restored, the first-contract-only rename, and the spelling rule in `createContract` and in `setPlan` each fail a test (the last one first survived; its test was added).
@@ -2291,7 +2291,6 @@ The user asked to fix PS5210 alone (3 notes: 30 Sep Introduction, 7 Oct fNIRS an
 ## How stage 5 (Research) is being worked through with the user (8 Oct 2026)
 
 The first report listed six decisions at once and the user asked for **one decision at a time, after the matching is done**. Method since: show one training series at a time with its notes, hours, the task's real name (a lecture is a subtask: name the parent task too) and the difference in hours. Facts learnt: a training note's time is lecture plus self-study (backfilled from the user's tracker, rounded to 30 minutes), ClickUp time is self-study rounded to 15, so for PS5302 the real lecture times must come from the user; the 56 of 67 title-matched trainings whose task has no ClickUp time need no double-count rule; 2025-26 hours and 21-30 Sep 2026 are unlabelled daily totals, but a day can be split into a total plus a typed `earlier` entry on a task (as done for PS5210), which links hours without a general cut-off rule. **Parked by the user:** PS5302 (waiting for the lecture times); the other series (SEDarc 30, no series 16, Psychology Seminar 6, Researcher Development 4, PS2021 2, SENSS Specialist 2, LSE 2) and the title-matched DataCamp, Research Training Seminar and SENSS rows are still to be shown and confirmed one series at a time. Supervision, untimed meetings and the 1-5 Oct hours are not started.
-
 
 ## Discard a running timer (8 Oct 2026)
 
@@ -2443,7 +2442,7 @@ A full stop after italic text (`*General*.`) could wrap onto a line of its own. 
 
 Two things the user found on Today (a running row's name field in full screen). Typecheck, lint and tests pass; **not driven in the app** (the built app was installed, not exercised).
 
-- **Escape leaves full screen only when the page did not want it.** The main process used to leave full screen on every plain Escape (`before-input-event`), so Escape in a rename field cancelled the edit *and* left full screen. That check is gone from `src/main/index.ts`. `useEscapeFullScreen` (`src/renderer/src/shell/`, in `Shell`) listens on `window` in the bubble phase and calls the new `app.leaveFullScreen` IPC (`app:leave-full-screen`, a no-op outside full screen) unless `escapeLeavesFullScreen` says no: the key was already used (`preventDefault`, or `stopPropagation`, which keeps it from reaching `window`), it has a modifier, the focus is in an input, textarea, select, contenteditable or `.cm-editor`, the focused element sits in an `aria-expanded="true"` control, or a `dialog[open]`, menu, listbox or dialog is on the page. The focus and open-layer rules are a net for the ~40 Escape handlers that do neither `preventDefault` nor `stopPropagation`; a new popup that uses Escape and has none of those signs would also leave full screen, so give it `aria-expanded` or `role="menu"`.
+- **Escape leaves full screen only when the page did not want it.** The main process used to leave full screen on every plain Escape (`before-input-event`), so Escape in a rename field cancelled the edit _and_ left full screen. That check is gone from `src/main/index.ts`. `useEscapeFullScreen` (`src/renderer/src/shell/`, in `Shell`) listens on `window` in the bubble phase and calls the new `app.leaveFullScreen` IPC (`app:leave-full-screen`, a no-op outside full screen) unless `escapeLeavesFullScreen` says no: the key was already used (`preventDefault`, or `stopPropagation`, which keeps it from reaching `window`), it has a modifier, the focus is in an input, textarea, select, contenteditable or `.cm-editor`, the focused element sits in an `aria-expanded="true"` control, or a `dialog[open]`, menu, listbox or dialog is on the page. The focus and open-layer rules are a net for the ~40 Escape handlers that do neither `preventDefault` nor `stopPropagation`; a new popup that uses Escape and has none of those signs would also leave full screen, so give it `aria-expanded` or `role="menu"`.
 - **Renaming a row renames its task.** An hours row's label was a copy of the task's title taken when the session started, so editing it renamed only that day's label and left the task, and any other day, behind. Now `renameRow` (`src/modules/hours/renderer/rename-row.ts`): a row with a task renames the task (`tasks.update`); a row with no task yet still changes only that day's label (`renameTask`).
 - **A task renamed anywhere renames its hours.** The tasks `update` handler tells `title-hook.ts` (`notifyTitleChanged`) when a title was sent; `main/index.ts` sets the listener to `TrackingStore.relabelTask(taskKey(uid), title)`, which rewrites the label of every session and typed entry that carries the task, in every workspace, contract and year file (rule `relabelTask` in `src/shared/tracking/timer.ts`; minutes untouched; files that need no change are not rewritten). The hook is a module-level setter, like `setTaskStarted`, because Tasks' own store instance is not the app's tracking store. Without the listener (tests, scripts) only the task changes. Not done: a task's subtasks and meeting or training derived entries keep their own titles (derived entries read the note, not a stored label).
 - **A refused rename says why.** `TaskList` shows the error under the list (`role="alert"`) and leaves everything as it was.
@@ -2461,7 +2460,7 @@ Two things the user found on Today (a running row's name field in full screen). 
 
 Plan: `docs/READINGS_SYNC_PLAN.md`. Stage 1 only: `parseBib` (`src/modules/readings/main/parse-bib.ts`) now leaves out any `.bib` entry with no title, no author/editor and no year — e.g. a Zotero item created by hand with nothing filled in yet, like the blank "Report" entry that prompted the plan. It never becomes a `SyncedFields` row, so it never reaches `applySync` and is never inserted.
 
-- The skip sits after `authors`, `editors`, `year` and `fullTitle` are computed, so it reuses the same blank checks the rest of the function already does (`toCreatorList` returns an empty array, `toYear`/`toText` return `null`/`''`). An entry with *any one* of the three — only a year, only a title, or only an author — is still kept.
+- The skip sits after `authors`, `editors`, `year` and `fullTitle` are computed, so it reuses the same blank checks the rest of the function already does (`toCreatorList` returns an empty array, `toYear`/`toText` return `null`/`''`). An entry with _any one_ of the three — only a year, only a title, or only an author — is still kept.
 - Fixture: added `@report{blankPlaceholder2026,}` (title, author, editor and year all absent) to `tests/fixtures/readings-sample.bib`; `parse-bib.test.ts` asserts it's left out, plus a synthetic minimal case and the three "keeps a partially-filled entry" cases.
 - Mutation check: commented out the skip, confirmed three tests failed (the blank fixture entry and the two synthetic blank cases appeared in the result), restored it.
 - Typecheck, lint and the full test suite pass. Not driven in the app (no UI or sync-flow change; stage 2 touches `applySync` and is the one to drive against a scratch copy of the real library, per the plan's closing note).
@@ -2484,13 +2483,13 @@ Plan: `docs/READINGS_SYNC_PLAN.md`. A citekey missing from the Zotero export, fo
 Plan: `docs/READINGS_SYNC_PLAN.md` (open question 2, answered 10 Oct: the existing "no longer in your Zotero export" banner grows a row per suggestion, and Dismiss is permanent per pair). A vanished citekey and a newly-seen one that match on title + authors + year, but share no DOI/URL, are no longer just flagged and inserted as unrelated rows: the pair is recorded as a suggestion and surfaced for the user to confirm or dismiss, rather than merged automatically the way a DOI/URL match (stage 3) is — a coincidental title/author/year share could splice notes onto the wrong work.
 
 - **`rename_suggestions`** (migration `readings/0004_rename_suggestions`): `old_citekey`, `new_citekey`, `status` (`pending`/`dismissed`), `created_at`, `UNIQUE (old_citekey, new_citekey)`. A dismissed row is kept, never deleted — its unique pair is what makes the dismissal permanent for that exact pair (not for either citekey alone, since the same old citekey could legitimately pair with a different new one later): `applySync` always `INSERT OR IGNORE`s a fresh match, so a pair already present (pending or dismissed) is left exactly as it is.
-- **The match itself** (`repository.ts`) reuses stage 3's `matchByKey` with a new composite key (`title.trim().toLowerCase()`, the serialised authors, the year — undefined, so never matched, if title or year is blank), computed only among vanished citekeys that are *attached* (would be flagged, not deleted) — a bare row is about to disappear in the same sync regardless of any match, so a suggestion for it would have nothing left to link into once gone. "Attached" is now computed once, up front, for every remaining vanished citekey (previously inline, only for ones not already flagged); an already-flagged row from an earlier sync counts as attached by the invariant stage 2 established (a bare row is never left flagged), so it's eligible for a suggestion on a later sync too, without re-querying `has_notes`/`reading_list_mentions` for it. The match never removes anything from `vanished`/`appearing` (unlike stage 3's merge): both rows are inserted/flagged normally, same as if no match existed.
+- **The match itself** (`repository.ts`) reuses stage 3's `matchByKey` with a new composite key (`title.trim().toLowerCase()`, the serialised authors, the year — undefined, so never matched, if title or year is blank), computed only among vanished citekeys that are _attached_ (would be flagged, not deleted) — a bare row is about to disappear in the same sync regardless of any match, so a suggestion for it would have nothing left to link into once gone. "Attached" is now computed once, up front, for every remaining vanished citekey (previously inline, only for ones not already flagged); an already-flagged row from an earlier sync counts as attached by the invariant stage 2 established (a bare row is never left flagged), so it's eligible for a suggestion on a later sync too, without re-querying `has_notes`/`reading_list_mentions` for it. The match never removes anything from `vanished`/`appearing` (unlike stage 3's merge): both rows are inserted/flagged normally, same as if no match existed.
 - **`listPendingRenameSuggestions`** joins the table against `readings` on both citekeys and only returns `status = 'pending'` rows — besides filtering dismissed ones, the join itself is a second line of defence: a suggestion whose row got deleted some other way (there's no such path today, since the matched candidate is always attached) simply stops showing up rather than erroring.
 - **`linkRenameSuggestion`** applies the same merge stage 3's automatic DOI/URL match does, by hand: the duplicate row under the new citekey (inserted by the sync that raised the suggestion) is deleted first — `citekey` is `UNIQUE`, and the old row is about to take it — then the old row (keeping its `id`, notes, `reading_list_mentions`) is relabelled to the new citekey with the new row's current synced fields (status/tags included, same "the newer data wins" rule as stage 3), and the suggestion row is deleted. `register.ts` then moves the reading's own notes file on disk (`notes.rename`, the same helper stage 3's automatic rename uses).
 - **`dismissRenameSuggestion`** only flips `status`; neither `readings` row is touched.
 - UI: `useRenameSuggestions` (new hook, same shape as `useReadingsList`) feeds `ReadingsPage`, which now renders one more `Notice` row per pending suggestion, below the existing missing-count banner, reusing its `styles.notice`/`styles.link`: "X looks like it may now be Y — link them?" with a Link button (calls `renameSuggestions.link`) and the `Notice`'s own Dismiss. Both actions bump a local `actionVersion` that's folded into the same `refreshKey` already driving the readings list and counts, so the table, the missing-count banner and the suggestion rows all refetch together without a real sync.
 - Tests (`repository.test.ts`): a title/author/year match with no DOI/URL on either side produces a suggestion, not a merge; Link survives id/notes/`reading_list_mentions`; linking an unknown id is a no-op; Dismiss clears the suggestion without touching either row; a dismissed pair doesn't resurface even when the match is genuinely recomputed on a later sync (the realistic path: the new citekey's own bare row later vanishes and gets deleted by stage 2, then reappears, making it "newly seen" again); a pair that also shares a DOI is handled by stage 3's automatic path and never suggested; an ambiguous title/author/year share produces no suggestion; a bare vanished citekey is never even written to `rename_suggestions`, not just hidden by the join.
-- Mutation check, two places: disabled the title/author/year match entirely — the 4 tests that expect a suggestion to exist failed, the 4 that expect one *not* to (ambiguous, DOI-sharing, unknown-id, bare-row) still passed, as expected; reverted. Disabled the attachment filter on its own — the bare-row test (checking `rename_suggestions` directly, not just the joined view) failed, as expected; reverted.
+- Mutation check, two places: disabled the title/author/year match entirely — the 4 tests that expect a suggestion to exist failed, the 4 that expect one _not_ to (ambiguous, DOI-sharing, unknown-id, bare-row) still passed, as expected; reverted. Disabled the attachment filter on its own — the bare-row test (checking `rename_suggestions` directly, not just the joined view) failed, as expected; reverted.
 - **Driven against a scratch copy of the real library** (`CENTRAL_COMMAND_HOME`, production build, Playwright): seeded notes for two real readings so they'd stay attached, synced once, then in a copied `.bib` renamed both citekeys and stripped their `doi`/`url`/`urldate` lines (forcing the low-confidence tier rather than stage 3's). Resynced: both appeared as pending suggestions with the correct short citations ("Abadie et al. (2023) looks like it may now be Abadie et al. (2023) — link them?", same for Abdullah et al. (2015), since the short citation is author+year and doesn't include the citekey). Clicked Link on one: the suggestion row disappeared, the old citekey was gone, the new citekey carried the old notes (`hasNotes`, the note file itself under the new filename) and tags, `missingFromSource` cleared. Clicked Dismiss on the other: the row disappeared, neither reading changed. Forced a second sync (`sync.now()`) with nothing else changed: the suggestions list stayed empty and neither row reappeared in the banner. Typecheck, lint and the full test suite pass.
 
 ## Feedback on adding and removing rows (10 Oct 2026)
@@ -2508,7 +2507,7 @@ The user: "Removing an entry is very quick, which is great, but there is no visu
 
 ## Readings sync: catching up the row that started the plan (11 Oct 2026)
 
-The user found the exact "Untitled (n.d.)" / "Not in Zotero" row that prompted `docs/READINGS_SYNC_PLAN.md` still sitting in the real library after stages 1–4 shipped: `applySync`'s delete-if-unattached logic (stage 2) only decides a citekey's fate the first time it is newly found missing, and treats any citekey already flagged `missing_from_source` as attached by invariant (its own comment: "stage 2 never leaves a bare row flagged, so this never re-checks"). That invariant only holds for rows flagged *after* stage 2 shipped (9 Oct 2026); `zotero-item-474` was flagged by the old pre-stage-2 code, which never checked attachment at all, so it was genuinely bare (no notes, no Reading Lists mention, no `@` mention) and permanently stuck.
+The user found the exact "Untitled (n.d.)" / "Not in Zotero" row that prompted `docs/READINGS_SYNC_PLAN.md` still sitting in the real library after stages 1–4 shipped: `applySync`'s delete-if-unattached logic (stage 2) only decides a citekey's fate the first time it is newly found missing, and treats any citekey already flagged `missing_from_source` as attached by invariant (its own comment: "stage 2 never leaves a bare row flagged, so this never re-checks"). That invariant only holds for rows flagged _after_ stage 2 shipped (9 Oct 2026); `zotero-item-474` was flagged by the old pre-stage-2 code, which never checked attachment at all, so it was genuinely bare (no notes, no Reading Lists mention, no `@` mention) and permanently stuck.
 
 - **`findOrphanedFlagged`/`deleteOrphanedFlagged`** (`src/modules/readings/main/repository.ts`): the same unattached check `applySync` applies to a newly-missing citekey, run instead over every row already flagged `missing_from_source`. `deleteOrphanedFlagged` re-checks the condition at delete time (notes, `reading_list_mentions`, `has_notes`) rather than trusting the earlier read, so a row that gained an attachment between planning and applying is skipped, not swept up.
 - **`npm run cleanup:orphaned-readings [-- --apply]`**: dry run by default, lists what it would delete; `--apply` backs up the database (`VACUUM INTO`, `~/CentralCommand/backups/cleanup-orphaned-readings-<time>/`) and deletes, app closed. A one-time catch-up — once run, the invariant `applySync` already assumes is actually true, and a plain sync never needs it again.
@@ -2544,7 +2543,7 @@ for "Author (Year)" or "Author, Year" and a marker is neither.
   user wrote as the label.
 - **Two label forms, chosen by what the sentence does with the marker.** The library already writes both: "Author (Year)"
   when the sentence reads the name out, "Author, Year" when it is a reference in brackets (`[Conn, 2017]` inside
-  "(e.g., …)"). A marker gets the bracket form only when it *closes* brackets it sits in — the next non-space character
+  "(e.g., …)"). A marker gets the bracket form only when it _closes_ brackets it sits in — the next non-space character
   is `)` and a `(` is still open earlier on its line. That is narrower than "is inside brackets" on purpose: in
   "(like the agglutinating languages [@Pretorius2019] discusses)" the marker is inside brackets but is the subject of
   "discusses", so it needs the narrative form. The rule was checked against all 23 real markers and matches the
@@ -2554,7 +2553,7 @@ for "Author (Year)" or "Author, Year" and a marker is neither.
   it look parenthetical.
 - **Safety**: `undoCitekeys` puts every new link back to the marker it came from, and the script refuses to write unless
   that gives the original text byte for byte (and the line count is unchanged) — the same shape of check
-  `link:citations` uses, but it cannot reuse that one, since there the label *is* the original text and here it is not.
+  `link:citations` uses, but it cannot reuse that one, since there the label _is_ the original text and here it is not.
   Writes go through `writeNoteFileGuarded` against the hash read at the start, after copying each note to
   `~/CentralCommand/backups/link-citekeys-<time>/`.
 - **The notes' own prose is not touched**, only the markers. Two sentences read a little oddly afterwards, exactly as
@@ -2615,7 +2614,7 @@ people the notes name in prose rather than in a field. 13 mentions of 6 people, 
   person in `people.json`. The real library was then diffed against that copy and is byte-identical. The editor gate
   shows the same 4 pre-existing failures as HEAD and no new ones.
 - **The user's own convention points the other way, and she was told.** Her hand-made `meetings/work/2026-10-05
-  Document Automation – Luminos.md` chips full names (Matthew Jukes, Caitlin Baron twice, Amrita Gopal, Caitlin Collis,
+Document Automation – Luminos.md` chips full names (Matthew Jukes, Caitlin Baron twice, Amrita Gopal, Caitlin Collis,
   Manuella Ankrah, Claire Wyatt) and deliberately leaves first names plain — "Neha" sits unchipped on the same line as
   two chips, and "Amrita" is plain on three lines after "Amrita Gopal" was chipped on one. So the second pass changes
   the convention her notes had been following. It was applied because she asked for it explicitly after the trade-offs
@@ -2628,7 +2627,6 @@ people the notes name in prose rather than in a field. 13 mentions of 6 people, 
 - **Left for the user**: mapping the 21 Caitlin/Chris mentions, and five spots where the prose reads oddly around a new
   chip (both in `docs/ROADMAP.md`). The prose ones are edits to her own writing, not entity conversions, so none was
   made.
-
 
 ## The three rules for people in prose (11 Oct 2026)
 
@@ -2653,7 +2651,7 @@ left a non-attendee's repeat mentions, "first mention per note". So:
   they call for. That both adds and removes, and is idempotent by construction — verified by running it on its own
   output and getting no change, on the real library.
 - **The safety check changed shape with it.** The old one (undo the links, compare with the original) cannot see a
-  *removal*. The new invariant is `unchipPersonMentions(next) === unchipPersonMentions(text)`: only chips may move,
+  _removal_. The new invariant is `unchipPersonMentions(next) === unchipPersonMentions(text)`: only chips may move,
   never the prose — and it is checked per note before writing. On the real library all 50 changed notes passed it, no
   non-person chip changed in any note (reading chips in the same lines are untouched), and the result holds zero rule
   violations.
@@ -2669,13 +2667,12 @@ left a non-attendee's repeat mentions, "first mention per note". So:
 - **Left for the user**: the 21 Caitlin/Chris mentions to map, and the five spots where the prose reads oddly around a
   chip (`docs/ROADMAP.md`).
 
-
 ## Mapping the names the rules could not resolve (11 Oct 2026)
 
 The three rules left 21 mentions of a first name two people share. Reporting them with their context, rather than
 guessing, turned out to matter twice over: the rules themselves disposed of 13 of the 21 (the person was in that
 meeting, or was already chipped earlier in the note), so the user only had 8 real decisions to make, and two of the
-*attendee lists* answered the question — Chris Cummiskey attended `2026-02-19 Impact`, Caitlin Baron attended
+_attendee lists_ answered the question — Chris Cummiskey attended `2026-02-19 Impact`, Caitlin Baron attended
 `2025-10-16 Luminos`, which is as good as being told.
 
 The user's decisions: "In Work, Chris is always Cummiskey; Caitlin B. is Baron; Dr Caitlin should be replaced by
@@ -2717,8 +2714,8 @@ set none at all — it was built for a side column, where the column's gap does 
 reference card and the Mentioned-in card touched. The spacing bug and the layout bug were the same bug: **nothing
 owned the spacing**, because the page was a stack of blocks that each guessed.
 
-**The arrangement, now the same on all five pages with a note.** What the thing *is* at the top, the text in the main
-column, and everything *about* it in a column of cards on the right. Meetings (Topics, Mentioned in), Notes (Outline,
+**The arrangement, now the same on all five pages with a note.** What the thing _is_ at the top, the text in the main
+column, and everything _about_ it in a column of cards on the right. Meetings (Topics, Mentioned in), Notes (Outline,
 Mentioned in) and Training entries (Files, Outline) already did this; Readings now does too, with an outline of the
 user's own notes, the lists it is in, and where it is mentioned.
 
@@ -2740,7 +2737,7 @@ user's own notes, the lists it is in, and where it is mentioned.
 **Decisions worth keeping:**
 
 - **The column scrolls, not each panel.** The outline and topics panels were each `position: sticky` with their own
-  `max-height` and `overflow`, inside a column that was *also* sticky. That works for two panels and fails for four:
+  `max-height` and `overflow`, inside a column that was _also_ sticky. That works for two panels and fails for four:
   the ones past the fold cannot be reached. The column owns it now, which is what lets Readings carry four. It keeps
   4px of padding (taken back with a negative margin) so a focused row's ring is not clipped by that scrolling — the
   pitfall CLAUDE.md records.
@@ -2771,17 +2768,17 @@ real app before this is pushed.
 Moving the reading page's blocks to the side column took the APA reference with them. The user: "APA reference should
 have been left there at the top since it's really part of the paper."
 
-**The line this draws, and it is the useful part.** The side column is for what the app knows *about* a thing — where
+**The line this draws, and it is the useful part.** The side column is for what the app knows _about_ a thing — where
 it is mentioned, which lists it is in, how to get around the text. The reference is not that: it is the paper's own
 identity, the same kind of fact as its title and its authors, and the user reads and copies it as part of the paper.
 Everything the reading page shows now sorts cleanly by that test. The abstract was already kept in the main column for
 a weaker reason (a paragraph reads badly in a 260px strip); this is the stronger one, and it covers both.
 
 - The reference is back at the top of the main column, above the abstract, at the width it had before.
-- The abstract draws the same card as the reference now, so the two blocks that *are* the paper match. Each had set
+- The abstract draws the same card as the reference now, so the two blocks that _are_ the paper match. Each had set
   its own padding (16 against 18/22).
 - **`SidePanel` became `Panel`.** It was named after the one place it was first used; a card in the body of a page is
-  the same card. The side column is something `DocSplit` does *to* panels (keeps them in view, scrolls them), not part
+  the same card. The side column is something `DocSplit` does _to_ panels (keeps them in view, scrolls them), not part
   of what a panel is.
 
 Checked the same way as the change it corrects: rendered in Chromium through the Vite harness, light and dark, 1440px
@@ -2843,11 +2840,10 @@ the line is **14.4px** and the caret is drawn on it. Clicking below the text put
 end of the note. So the CSS does what the decoration rules say, in both builds.
 
 One trap worth recording for the next person driving the editor: **"below the text" is only the editor's own area.** The content box here is
-98px taller than the text (bottom 508 against the last text line's 410), and a click past *that* lands on the card, not the editor — it
+98px taller than the text (bottom 508 against the last text line's 410), and a click past _that_ lands on the card, not the editor — it
 focuses nothing and looks exactly like the feature being broken. Measure the content box and click inside it. (Two unrelated Playwright
 notes: over CDP, `page.screenshot` and `setViewportSize` hang on a backgrounded Electron window, so `bringToFront()` first; and CodeMirror's
 caret blinks, so a screenshot catches it only half the time — overriding `.cm-cursorLayer { animation: none }` makes it show every time.)
-
 
 ## Previous TODOs carry-over switched off (11 Oct 2026)
 
@@ -2859,7 +2855,6 @@ The user ran `remove:previous-todos` (29 notes) and then found the section back 
 - The three notes that had come back (`2025-10-02`, `2025-10-14`, `2026-07-29` Supervision) were cleaned with `remove:previous-todos --apply`; backup `backups/remove-previous-todos-2026-10-11T16-16-03-589Z`. A dry run now finds nothing.
 - Tests: the old carry-over cases became "a new meeting gets nothing from the previous one" and "opening a meeting writes nothing". Checked by tests only; the app was not driven.
 
-
 ## The real-library gate caught up (11 Oct 2026)
 
 `LIVE_EDITOR_LIBRARY=<copy> npx vitest run src/renderer/src/editor/live-library` failed 4 of 10 checks on the user's unmodified notes. None was an editor bug; the gate had fallen behind behaviour that shipped later:
@@ -2868,7 +2863,6 @@ The user ran `remove:previous-todos` (29 notes) and then found the section back 
 - **`/todo`:** it expected a bare `**TODO(XX)**: `. The helper now writes a checkbox item (`todo-live.ts`, `leadFor`). The gate checks what does not depend on that lead: the marker ends at the cursor, the text after the range is untouched, the text before it only loses trailing spaces, one undo restores the note.
 - **List markers and tables:** both counted a mention chip (a `widget`) as a list marker or a table cell. Both now skip widgets whose text holds `](cc://`. The table text check also ignores backticks, which the editor hides in inline code.
 - Copying `backups/` into the gate's library, as CLAUDE.md says, puts every note's earlier versions through the same checks; that is how the chip cases (the `link:people` backups) were found. A run takes about 8 minutes.
-
 
 ## One-off scripts applied to the real library (record kept when CLAUDE.md dropped them, 11 Oct 2026)
 
@@ -2879,7 +2873,6 @@ The scripts stay in `scripts/` and `package.json`; each is dry-run by default, r
 - **`link:citekeys`** (applied 11 Oct 2026, backup `backups/link-citekeys-2026-10-11T10-33-06-476Z`): the Pandoc/Obsidian markers (`[@Harm2004]`) became reading entities, labelled from the reading's authors in the library's style; 23 markers, 2 files, 6 readings, nothing ambiguous. Only a marker fitting exactly one reading by first surname and year was linked, and a rewrite was refused unless putting every marker back gave the original byte for byte (rules in `src/shared/citations.ts`).
 - **`link:people`** (applied 11 Oct 2026): 343 chips added over two earlier passes, 290 taken away once the three rules were set, then 8 added from the user's decided spellings (`~/CentralCommand/data/people-aliases.json`), leaving 74; last backup `backups/link-people-2026-10-11T12-02-05-056Z`.
 - **Also dropped from CLAUDE.md, recorded elsewhere in this file or in `docs/ROADMAP.md`:** `import:clickup`, `backfill:clickup-links`, `import:work-hours`, `link:worksheet`, `link:work-apply`, `link:work-hours`, `move:subtask-notes`, `link:work-meetings`, `link:ps5210`, `import:work-meetings`, `name:contracts` (applied 6 Oct 2026), `strip:created`, `tidy:series`, `tidy:headings`, `tidy:blank-lines`, `cleanup:orphaned-readings`, `remove:previous-todos`, and the first importers (`import:obsidian`, `import:notes`, `import:meetings`, `import:hours`, `import:training`, `reconcile:meetings`, `convert:topics`).
-
 
 ## Contracts: component tests, mutation checks, driven in dev mode (11 Oct 2026, roadmap queue item A)
 
@@ -2896,7 +2889,6 @@ Closes the first two bullets of the deferred list in `docs/CONTRACTS_PLAN.md`.
 - Tests: `plan-settings.test.ts` (parse and format) and `hours-settings-aim.test.ts` (component: shows `none`, clearing saves 0, nonsense is not saved). Mutation check: putting the plain `formatHours`/`parseWeekHours` back fails two of the three component tests.
 - **Not a bug: the week header.** A weekly-invoiced contract shows `Week N · range` on both the Week card and the invoice card, and the numbers agree for every week stepped through (1, 2, 3, and via the invoice card's own arrows). A test now pins it (`hours-contracts.test.ts`, with and without an aim, two weeks each).
 - **Driven** on a scratch library (a copy of the Royal Holloway contract, invoiced Week, no aim, one session), in the production build and in dev mode, with real keystrokes and screenshots: the field read `none`; `6:30` + Enter saved and showed `6:30`; clearing + Enter went back to `none`; typing `none` + Enter stayed `none`. Both headers read `Week 2 · Oct 5 – Oct 11` on opening and followed the arrows together. Nothing in the real library was touched.
-
 
 ## The duplicate-key warning on a reading's page (11 Oct 2026, queue item E)
 
@@ -2938,3 +2930,10 @@ Closes the first two bullets of the deferred list in `docs/CONTRACTS_PLAN.md`.
 - **Change:** `LectureTask` (`src/modules/training/renderer/`) is now a `Panel` labelled Task at the top of the entry page's side column, above Files and Outline. The task title is a link to the task's page (`taskRoute`; a lecture under a series opens the series task, since a subtask's page redirects to its parent, and the panel's second line names that parent). `LectureHours` (total, Start, Add time, overlap note) is rendered inside it as children. The header's Task field and the `taskField` prop of `TrainingMetaFields` are gone. The "Making the task…", "Give it a title…" and "The task was deleted. Make it again" states are in the same panel; an older note with no marker shows no panel.
 - **Alternative not taken:** all of it in the header where the buttons were. The header row is full, and the side column is where what the app knows about a thing goes.
 - **Not driven in the app, no new test** (no component tests in the repo). Check: open a Training entry with a task; the panel should show title (link), list, total, Start and Add time without clipping in the narrow column.
+
+## Training entry: Task as a strip, Outline beside the text, Files on the right (12 Oct 2026)
+
+- **Why (the user):** the side column was "a jumble": Task, Files and Outline in two columns in an order set by a CSS trick, FILES lower in its card than OUTLINE. Mockup with three options: `docs/design/training-side-panels-mockup.html`; the user chose A.
+- **Change:** `LectureTask` is a wide one-line `Panel` (new `row` prop) under the details block: task link and list, total, Start, Add time; an overlap or missing-time note takes a line of its own under it and no room when there is none. The side column is Outline then Files; `roomySide` is now plainly "first panel in the inner column, second on the far right" (the `order` trick is gone), and the entry page is `fullWidth` so the outline sits against the text.
+- **Alignment:** `Panel`'s heading row has a 28px minimum (the height of an icon button), so a label sits at the same height in every panel in the app.
+- **Driven in the app** (built app, scratch library, 1500px and 1200px): checked by screenshot. A linked folder (icon buttons in Files) and dev mode not checked.

@@ -5,6 +5,16 @@
   gap: 6px;
   font-size: var(--text-14);
 }
+/* The task's name and where it lives, taking the room the total and the buttons leave. */
+.name {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  min-width: 0;
+  font-size: var(--text-14);
+}
 .title {
   color: var(--ink);
   text-decoration: underline;

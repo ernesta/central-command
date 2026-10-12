@@ -244,23 +244,25 @@ function EntryView({
         onAddPerson={addPerson}
       />
 
+      {meta.task && (
+        <LectureTask
+          task={meta.task}
+          series={meta.series}
+          tasks={tasks}
+          onRemake={() => session.setMeta({ task: 'auto' })}
+        >
+          <LectureHours id={entryRef.id} meta={meta} tasks={tasks} />
+        </LectureTask>
+      )}
+
       <DocSplit
         docRef={docRef}
         roomySide
+        fullWidth
         side={
           <>
-            {meta.task && (
-              <LectureTask
-                task={meta.task}
-                series={meta.series}
-                tasks={tasks}
-                onRemake={() => session.setMeta({ task: 'auto' })}
-              >
-                <LectureHours id={entryRef.id} meta={meta} tasks={tasks} />
-              </LectureTask>
-            )}
-            <FilesPanel folder={meta.folder} onChange={(folder) => session.setMeta({ folder })} />
             <NoteOutline text={body} docRef={docRef} />
+            <FilesPanel folder={meta.folder} onChange={(folder) => session.setMeta({ folder })} />
           </>
         }
       >

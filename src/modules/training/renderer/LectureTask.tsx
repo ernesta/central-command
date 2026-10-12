@@ -21,13 +21,13 @@ export function LectureTask({
   series: string | null
   tasks: readonly Task[] | null
   onRemake: () => void
-  /** The lecture's hours, shown under its task. */
+  /** The lecture's hours, on the same line as its task. */
   children?: React.ReactNode
 }): React.JSX.Element | null {
   if (!task || tasks === null) return null
   if (task === 'auto') {
     return (
-      <Panel label="Task">
+      <Panel label="Task" row>
         <div className={styles.row}>
           <span className={styles.list}>
             {series ? 'Making the task…' : 'Give it a title and the task is made.'}
@@ -39,7 +39,7 @@ export function LectureTask({
   const own = tasks.find((t) => t.uid === task)
   if (!own) {
     return (
-      <Panel label="Task">
+      <Panel label="Task" row>
         <div className={styles.row}>
           <span className={styles.list}>The task was deleted.</span>
           <Button size="small" onClick={onRemake}>
@@ -51,8 +51,8 @@ export function LectureTask({
   }
   const parent = own.parentUid ? tasks.find((t) => t.uid === own.parentUid) : undefined
   return (
-    <Panel label="Task">
-      <div className={styles.row}>
+    <Panel label="Task" row>
+      <div className={styles.name}>
         <Link className={styles.title} to={taskRoute(own.workspace, own.uid)}>
           {own.title}
         </Link>
