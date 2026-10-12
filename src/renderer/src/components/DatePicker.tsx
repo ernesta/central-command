@@ -30,7 +30,8 @@ export function DatePicker({
   onChange,
   label,
   placeholder = 'No date',
-  clearable = true
+  clearable = true,
+  plain = false
 }: {
   value: string | null
   today: string
@@ -38,6 +39,8 @@ export function DatePicker({
   label: string
   placeholder?: string
   clearable?: boolean
+  /** Text only, for a table cell: no border, icon or fill until hovered; empty shows only on row hover. */
+  plain?: boolean
 }): React.JSX.Element {
   const [open, setOpen] = useState(false)
   const [month, setMonth] = useState(monthOf(value ?? today))
@@ -99,7 +102,9 @@ export function DatePicker({
       <button
         ref={buttonRef}
         type="button"
-        className={[styles.button, value === null && styles.empty].filter(Boolean).join(' ')}
+        className={[styles.button, plain && styles.plain, value === null && styles.empty]
+          .filter(Boolean)
+          .join(' ')}
         aria-label={`${label}: ${text}`}
         aria-haspopup="dialog"
         aria-expanded={open}
@@ -109,7 +114,7 @@ export function DatePicker({
           setOpen((o) => !o)
         }}
       >
-        <CalendarDays size={14} strokeWidth={1.75} aria-hidden />
+        {!plain && <CalendarDays size={14} strokeWidth={1.75} aria-hidden />}
         {text}
       </button>
       {open && (

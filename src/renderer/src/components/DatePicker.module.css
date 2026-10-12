@@ -22,6 +22,18 @@
 .empty {
   color: var(--text-muted);
 }
+.plain {
+  height: 24px;
+  margin: 0 -8px;
+  padding: 0 8px;
+  border-color: transparent;
+  background: transparent;
+  color: inherit;
+}
+.plain:hover {
+  border-color: var(--border-strong);
+  background: var(--hover-tint);
+}
 .popover {
   position: fixed;
   z-index: 20;

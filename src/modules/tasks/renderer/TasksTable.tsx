@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronRight, Plus, Repeat } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
+import { DatePicker } from '@renderer/components/DatePicker'
 import { showToast } from '@renderer/components/toast-store'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
@@ -18,7 +19,7 @@ import { NEXT_STATUS, STATUS_LABELS, nextStatus, setTaskStatus } from './task-ac
 import { PriorityBadge, StatusIcon } from './TaskIcons'
 import { PRIORITY_LABELS } from './task-labels'
 import { TaskMenu, type MenuGroup } from './TaskMenu'
-import { taskRoute } from './tasks-paths'
+import { taskRoute, useTaskLinkState } from './tasks-paths'
 import styles from './TasksTable.module.css'
 
 type Item =
@@ -94,6 +95,7 @@ export function TasksTable({
   sort?: { key: SortKey; dir: 'asc' | 'desc'; onSort: (key: SortKey) => void }
 }): React.JSX.Element {
   const navigate = useNavigate()
+  const linkState = useTaskLinkState()
   const [open, setOpen] = useState<ReadonlySet<string>>(new Set())
   const [adding, setAdding] = useState<string | null>(null)
   const [menu, setMenu] = useState<MenuState | null>(null)
@@ -119,7 +121,7 @@ export function TasksTable({
   const { tableProps, rowProps } = useRowNavigation(items.length, (index) => {
     const item = items[index]
     if (item.type === 'add') startAdding(item.parent.uid)
-    else void navigate(taskRoute(workspace, item.task.uid))
+    else void navigate(taskRoute(workspace, item.task.uid), { state: linkState })
   })
 
   const menuGroups = (state: MenuState): MenuGroup[] => {
@@ -281,7 +283,9 @@ export function TasksTable({
                 isOpen={open.has(item.task.uid)}
                 rowProps={rowProps(index)}
                 onKeyDown={(e) => onRowKeyDown(e, index)}
-                onOpen={() => void navigate(taskRoute(workspace, item.task.uid))}
+                onOpen={() =>
+                  void navigate(taskRoute(workspace, item.task.uid), { state: linkState })
+                }
                 onToggle={() => toggle(item.task.uid)}
                 onAddSubtask={() => startAdding(item.task.uid)}
                 onPriorityMenu={(x, y) => setMenu({ task: item.task, x, y, kind: 'priority' })}
@@ -302,6 +306,14 @@ export function TasksTable({
       )}
     </div>
   )
+}
+
+async function setDue(task: Task, due: string | null): Promise<void> {
+  try {
+    await window.api.tasks.update(task.uid, { due })
+  } catch (error) {
+    showToast(`Couldn’t change the due date: ${ipcErrorMessage(error)}`)
+  }
 }
 
 async function setPriority(task: Task, priority: TaskPriority): Promise<void> {
@@ -429,14 +441,24 @@ function TaskRowView({
         )}
       </td>
       <td className={styles.nowrap}>{formatTaskTime(minutes)}</td>
-      <td className={styles.nowrap}>
-        {due && (
-          <span
-            className={styles[`due_${task.status === 'done' ? 'normal' : dueTone(due, today)}`]}
-          >
-            {formatDue(due, today)}
-          </span>
-        )}
+      <td className={styles.nowrap} onClick={(event) => event.stopPropagation()}>
+        <span
+          className={
+            due
+              ? styles[`due_${task.status === 'done' ? 'normal' : dueTone(due, today)}`]
+              : undefined
+          }
+        >
+          <DatePicker
+            label="Due"
+            plain
+            value={task.due}
+            // A parent with subtasks and no date of its own shows the earliest of theirs, as a placeholder.
+            placeholder={due ? formatDue(due, today) : 'Add date'}
+            today={today}
+            onChange={(next) => void setDue(task, next)}
+          />
+        </span>
       </td>
     </tr>
   )

@@ -31,7 +31,7 @@ import { StatusIcon } from './TaskIcons'
 import { RecurrenceField } from './RecurrenceField'
 import { TagsField } from './TagsField'
 import { TaskTimeCard } from './TaskTimeCard'
-import { taskRoute, tasksBase, todayIso, useTasksWorkspace } from './tasks-paths'
+import { taskRoute, todayIso, useTaskBack, useTasksWorkspace } from './tasks-paths'
 import { useTaskTime } from './useTaskTime'
 import { useTasksList } from './useTasksList'
 import styles from './TaskPage.module.css'
@@ -40,15 +40,16 @@ import styles from './TaskPage.module.css'
 export function TaskPage(): React.JSX.Element {
   const workspace = useTasksWorkspace()
   const { uid = '' } = useParams()
+  const back = useTaskBack(workspace)
   const { tasks, rows } = useTasksList(workspace)
   if (tasks === null || rows === null) return <div className={styles.page} />
   const task = tasks.find((t) => t.uid === uid)
   if (!task) {
     return (
       <div className={styles.page}>
-        <Link className={styles.back} to={tasksBase(workspace)}>
+        <Link className={styles.back} to={back.to}>
           <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-          Tasks
+          {back.label}
         </Link>
         <EmptyState heading="Task not found" message="It may have been deleted." />
       </div>
@@ -56,7 +57,8 @@ export function TaskPage(): React.JSX.Element {
   }
   // A subtask has no page of its own: everything about it is set on its parent's page.
   const parent = task.parentUid ? tasks.find((t) => t.uid === task.parentUid) : undefined
-  if (parent) return <Navigate replace to={taskRoute(workspace, parent.uid)} />
+  if (parent)
+    return <Navigate replace state={{ from: back }} to={taskRoute(workspace, parent.uid)} />
   const row = rows.find((r) => r.task.uid === task.uid)
   return (
     <TaskView
@@ -126,7 +128,7 @@ function TaskView({
   const time = taskTime(row, tracked)
   const own = taskTime({ task, kids: [] }, tracked)
   const progress = subtaskProgress(row.kids)
-  const backTo = tasksBase(workspace)
+  const { to: backTo, label: backLabel } = useTaskBack(workspace)
 
   const remove = async (): Promise<void> => {
     setBusy(true)
@@ -161,7 +163,7 @@ function TaskView({
       <div className={styles.top}>
         <Link className={styles.back} to={backTo}>
           <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-          Tasks
+          {backLabel}
         </Link>
         <Button
           size="small"
