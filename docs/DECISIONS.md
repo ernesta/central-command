@@ -3012,3 +3012,12 @@ Same day, two follow-ups the user asked for: a person rename now rewrites the la
 - **Why (the user):** typing `@Greg Veramendi` for someone not in the people list showed only "Nothing found."
 - **Change:** the person provider (`personEntities`, `src/modules/meetings/renderer/entities.ts`) appends an "Add <name> · New person" row when the typed query is at least two words and is not an existing person's full name. Choosing it calls `window.api.meetings.people.add({ name })` (initials worked out and made unique as on the People page), then links the new person like any other. One word never offers it: it is more likely a search. No way to choose initials in the picker; change them on the People page.
 - **Not driven in the app** (typecheck, lint and tests pass); no test of the provider itself, which reads `window.api`.
+
+## Tasks table: Back returns to its list, and everything edits in place (12 Oct 2026)
+
+- **Why (the user):** Back on a task page went to the Tasks landing, not the filtered list the task was opened from; and due date, title, tags and list needed the task page, which is too many clicks.
+- **Back:** the table passes `state.from` (path, filters and a label: "All tasks" on `/all`, else "Tasks") when it opens a task; `useTaskBack` (`tasks-paths.ts`) reads it, with the Tasks landing as the fallback (search, a person's page, a link). Delete and the "not found" page use it too; a subtask redirecting to its parent keeps it.
+- **Due:** the Due cell is the shared `DatePicker` with a new `plain` option (text only, a border on hover). A parent with no date of its own shows its subtasks' earliest as the placeholder; "Add date" when none.
+- **Title:** a click on the title text edits it in place (selected; Return or leaving saves, Escape cancels, empty is not saved). Clicking elsewhere on the row still opens the task.
+- **Tags:** the shared `TagsField` (new `inline` option) in the title cell: × removes, "+ Tag" shows on row hover. **List:** the shared `ListField` in the List cell (top-level tasks only; Work offers only client lists). Controls inside a row stop click and key events so they never open the task.
+- Driven in the built app on a scratch library (rename, remove and add a tag, due placeholder, back link); the list picker's change and the due calendar were not exercised. The list picker looks heavy as a bordered button on every row; making it plain on hover is an open choice.
