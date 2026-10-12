@@ -286,3 +286,37 @@
 .addError {
   color: var(--danger);
 }
+
+.editable {
+  cursor: text;
+}
+.editable:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
+}
+.titleInput {
+  box-sizing: border-box;
+  width: min(420px, 60%);
+  margin-right: 8px;
+  padding: 2px 6px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+.titleInput:focus-visible {
+  outline: none;
+}
+.tags {
+  display: inline-block;
+}
+.tags [data-tag-add] {
+  opacity: 0;
+}
+.row:hover .tags [data-tag-add],
+.row:focus-visible .tags [data-tag-add],
+.tags:focus-within [data-tag-add] {
+  opacity: 1;
+}

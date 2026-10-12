@@ -5,10 +5,13 @@ import styles from './TagsField.module.css'
 /** A task's tags as chips you can remove, and a small field to add one. */
 export function TagsField({
   tags,
-  onChange
+  onChange,
+  inline = false
 }: {
   tags: readonly string[]
   onChange: (tags: string[]) => void
+  /** Sits in a line of text (a table row); the "+ Tag" button carries `data-tag-add` so the host can show it on hover. */
+  inline?: boolean
 }): React.JSX.Element {
   const [adding, setAdding] = useState(false)
   const [text, setText] = useState('')
@@ -21,7 +24,7 @@ export function TagsField({
   }
 
   return (
-    <div className={styles.tags}>
+    <div className={[styles.tags, inline && styles.inline].filter(Boolean).join(' ')}>
       {tags.map((tag) => (
         <span key={tag} className={styles.tag}>
           {tag}
@@ -56,7 +59,7 @@ export function TagsField({
           }}
         />
       ) : (
-        <button type="button" className={styles.add} onClick={() => setAdding(true)}>
+        <button type="button" className={styles.add} data-tag-add onClick={() => setAdding(true)}>
           + Tag
         </button>
       )}

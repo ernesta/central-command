@@ -54,3 +54,8 @@
 .input:focus-visible {
   outline: none;
 }
+
+.inline {
+  display: inline-flex;
+  vertical-align: middle;
+}

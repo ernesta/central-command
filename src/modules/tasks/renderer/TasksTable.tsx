@@ -6,18 +6,28 @@ import { showToast } from '@renderer/components/toast-store'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { describeRecurrence } from '../shared/recurrence'
-import { dueTone, formatDue, formatTaskTime, listLabel, type SortKey } from '../shared/query'
+import { dueTone, formatDue, formatTaskTime, type SortKey } from '../shared/query'
 import {
   TASK_PRIORITIES,
   TASK_STATUSES,
   type Task,
+  type TaskChanges,
   type TaskPriority,
   type TaskWorkspace
 } from '../shared/types'
-import { effectiveDue, subtaskProgress, taskTime, type SectionRow } from '../shared/views'
+import {
+  effectiveDue,
+  subtaskProgress,
+  taskTime,
+  type SectionRow,
+  type TaskRow
+} from '../shared/views'
 import { NEXT_STATUS, STATUS_LABELS, nextStatus, setTaskStatus } from './task-actions'
 import { PriorityBadge, StatusIcon } from './TaskIcons'
 import { PRIORITY_LABELS } from './task-labels'
+import { ListField } from './ListField'
+import { TagsField } from './TagsField'
+import { useTasksList } from './useTasksList'
 import { TaskMenu, type MenuGroup } from './TaskMenu'
 import { taskRoute, useTaskLinkState } from './tasks-paths'
 import styles from './TasksTable.module.css'
@@ -96,6 +106,7 @@ export function TasksTable({
 }): React.JSX.Element {
   const navigate = useNavigate()
   const linkState = useTaskLinkState()
+  const { rows: allRows } = useTasksList(workspace)
   const [open, setOpen] = useState<ReadonlySet<string>>(new Set())
   const [adding, setAdding] = useState<string | null>(null)
   const [menu, setMenu] = useState<MenuState | null>(null)
@@ -277,6 +288,8 @@ export function TasksTable({
               <TaskRowView
                 key={item.key}
                 item={item}
+                workspace={workspace}
+                allRows={allRows ?? []}
                 today={today}
                 tracked={tracked}
                 isRunning={running.has(item.task.uid)}
@@ -308,12 +321,64 @@ export function TasksTable({
   )
 }
 
-async function setDue(task: Task, due: string | null): Promise<void> {
+async function updateTask(task: Task, changes: TaskChanges, what: string): Promise<void> {
   try {
-    await window.api.tasks.update(task.uid, { due })
+    await window.api.tasks.update(task.uid, changes)
   } catch (error) {
-    showToast(`Couldn’t change the due date: ${ipcErrorMessage(error)}`)
+    showToast(`Couldn’t ${what}: ${ipcErrorMessage(error)}`)
   }
+}
+
+const setDue = (task: Task, due: string | null): Promise<void> =>
+  updateTask(task, { due }, 'change the due date')
+
+/** Spread on a wrapper so clicks and keys inside a control never reach the row (which opens the task or moves the selection). */
+const stopRow = {
+  onClick: (event: React.MouseEvent) => event.stopPropagation(),
+  onKeyDown: (event: React.KeyboardEvent) => event.stopPropagation()
+}
+
+/** The title: a click edits it in place (Return or leaving saves, Escape undoes); an empty title is not saved. */
+function TitleCell({ task }: { task: Task }): React.JSX.Element {
+  const [editing, setEditing] = useState(false)
+  const [text, setText] = useState(task.title)
+  const classes = [styles.title, task.status === 'done' && styles.titleDone].filter(Boolean)
+  if (!editing) {
+    return (
+      <span
+        className={[...classes, styles.editable].join(' ')}
+        onClick={(event) => {
+          event.stopPropagation()
+          setText(task.title)
+          setEditing(true)
+        }}
+      >
+        {task.title || 'Untitled'}
+      </span>
+    )
+  }
+  const finish = (save: boolean): void => {
+    setEditing(false)
+    const next = text.trim()
+    if (save && next && next !== task.title) void updateTask(task, { title: next }, 'rename it')
+  }
+  return (
+    <input
+      autoFocus
+      className={styles.titleInput}
+      aria-label="Task title"
+      value={text}
+      onChange={(event) => setText(event.target.value)}
+      onFocus={(event) => event.currentTarget.select()}
+      onBlur={() => finish(true)}
+      onClick={(event) => event.stopPropagation()}
+      onKeyDown={(event) => {
+        event.stopPropagation()
+        if (event.key === 'Enter') finish(true)
+        else if (event.key === 'Escape') finish(false)
+      }}
+    />
+  )
 }
 
 async function setPriority(task: Task, priority: TaskPriority): Promise<void> {
@@ -328,6 +393,8 @@ type RowProps = ReturnType<ReturnType<typeof useRowNavigation>['rowProps']>
 
 function TaskRowView({
   item,
+  workspace,
+  allRows,
   today,
   tracked,
   isRunning,
@@ -341,6 +408,8 @@ function TaskRowView({
   onContextMenu
 }: {
   item: Extract<Item, { type: 'task' | 'kid' }>
+  workspace: TaskWorkspace
+  allRows: readonly TaskRow[]
   today: string
   tracked: ReadonlyMap<string, number>
   isRunning: boolean
@@ -398,18 +467,14 @@ function TaskRowView({
         </button>
       </td>
       <td>
-        <span
-          className={[styles.title, task.status === 'done' && styles.titleDone]
-            .filter(Boolean)
-            .join(' ')}
-        >
-          {task.title || 'Untitled'}
+        <TitleCell task={task} />
+        <span className={styles.tags} {...stopRow}>
+          <TagsField
+            inline
+            tags={task.tags}
+            onChange={(tags) => void updateTask(task, { tags }, 'change the tags')}
+          />
         </span>
-        {task.tags.map((tag) => (
-          <span key={tag} className={styles.tag}>
-            {tag}
-          </span>
-        ))}
         {task.recurrence && (
           <span className={styles.repeat} title={describeRecurrence(task.recurrence)}>
             <Repeat size={14} strokeWidth={1.75} aria-label={describeRecurrence(task.recurrence)} />
@@ -420,7 +485,19 @@ function TaskRowView({
         )}
       </td>
       <td className={[styles.nowrap, styles.list].join(' ')}>
-        {isKid ? '' : listLabel(task.list, task.sublist)}
+        {!isKid && (
+          <span {...stopRow}>
+            <ListField
+              workspace={workspace}
+              list={task.list}
+              sublist={task.sublist}
+              rows={allRows}
+              onChange={({ list, sublist }) =>
+                void updateTask(task, { list, sublist }, 'change the list')
+              }
+            />
+          </span>
+        )}
       </td>
       <td>
         {!isKid && (
