@@ -1,6 +1,7 @@
 .card {
+  --stack-gap: 14px;
   display: grid;
-  gap: 14px;
+  gap: var(--stack-gap);
   padding: 20px 24px;
   background: var(--surface);
   border: 1px solid var(--border-soft);
