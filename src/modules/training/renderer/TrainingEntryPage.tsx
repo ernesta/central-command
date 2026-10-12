@@ -242,16 +242,6 @@ function EntryView({
         institutionSuggestions={institutionsUsed}
         onChange={(patch) => session.setMeta(patch)}
         onAddPerson={addPerson}
-        taskField={
-          meta.task ? (
-            <LectureTask
-              task={meta.task}
-              series={meta.series}
-              tasks={tasks}
-              onRemake={() => session.setMeta({ task: 'auto' })}
-            />
-          ) : undefined
-        }
       />
       <LectureHours id={entryRef.id} meta={meta} tasks={tasks} />
 
@@ -260,6 +250,14 @@ function EntryView({
         roomySide
         side={
           <>
+            {meta.task && (
+              <LectureTask
+                task={meta.task}
+                series={meta.series}
+                tasks={tasks}
+                onRemake={() => session.setMeta({ task: 'auto' })}
+              />
+            )}
             <FilesPanel folder={meta.folder} onChange={(folder) => session.setMeta({ folder })} />
             <NoteOutline text={body} docRef={docRef} />
           </>

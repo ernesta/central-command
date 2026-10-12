@@ -25,8 +25,6 @@ interface TrainingMetaFieldsProps {
   institutionSuggestions: string[]
   onChange: (patch: TrainingPatch) => void
   onAddPerson: (name: string) => Promise<Person>
-  /** The lecture's task, shown after the series; nothing for an older note. */
-  taskField?: React.ReactNode
 }
 
 const MODE_OPTIONS = TRAINING_MODES.map((value) => ({
@@ -41,8 +39,7 @@ export function TrainingMetaFields({
   seriesSuggestions,
   institutionSuggestions,
   onChange,
-  onAddPerson,
-  taskField
+  onAddPerson
 }: TrainingMetaFieldsProps): React.JSX.Element {
   const duration = durationMinutes(meta.start, meta.end)
   const knownType = meta.type === null || TRAINING_TYPES.some((t) => t.name === meta.type)
@@ -121,12 +118,6 @@ export function TrainingMetaFields({
           onChange={(series) => onChange({ series: series || null })}
         />
       </div>
-      {taskField && (
-        <div className={styles.field}>
-          <span className={styles.label}>Task</span>
-          {taskField}
-        </div>
-      )}
       <div className={styles.field}>
         <label className={styles.label} htmlFor="training-type">
           Type

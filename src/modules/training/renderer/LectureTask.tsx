@@ -1,6 +1,9 @@
+import { Link } from 'react-router'
 import { Button } from '@renderer/components/Button'
+import { Panel } from '@renderer/components/Panel'
+import { taskRoute } from '../../tasks/renderer/tasks-paths'
 import type { Task } from '../../tasks/shared/types'
-import styles from '../../meetings/renderer/MeetingTask.module.css'
+import styles from './LectureTask.module.css'
 
 /**
  * The task a lecture's hours belong to, shown (it is made and kept in step automatically, `useLectureTask`). A note made before
@@ -21,33 +24,39 @@ export function LectureTask({
   if (!task || tasks === null) return null
   if (task === 'auto') {
     return (
-      <div className={styles.row}>
-        <span className={styles.list}>
-          {series ? 'Making the task…' : 'Give it a title and the task is made.'}
-        </span>
-      </div>
+      <Panel label="Task">
+        <div className={styles.row}>
+          <span className={styles.list}>
+            {series ? 'Making the task…' : 'Give it a title and the task is made.'}
+          </span>
+        </div>
+      </Panel>
     )
   }
   const own = tasks.find((t) => t.uid === task)
   if (!own) {
     return (
-      <div className={styles.row}>
-        <span className={styles.list}>The task was deleted.</span>
-        <Button size="small" onClick={onRemake}>
-          Make it again
-        </Button>
-      </div>
+      <Panel label="Task">
+        <div className={styles.row}>
+          <span className={styles.list}>The task was deleted.</span>
+          <Button size="small" onClick={onRemake}>
+            Make it again
+          </Button>
+        </div>
+      </Panel>
     )
   }
   const parent = own.parentUid ? tasks.find((t) => t.uid === own.parentUid) : undefined
   return (
-    <div className={styles.row}>
-      <span className={styles.value}>
-        <span className={styles.title}>{own.title}</span>
+    <Panel label="Task">
+      <div className={styles.row}>
+        <Link className={styles.title} to={taskRoute(own.workspace, own.uid)}>
+          {own.title}
+        </Link>
         <span className={styles.list}>
           {parent ? `${parent.title} · ${parent.list}` : own.list}
         </span>
-      </span>
-    </div>
+      </div>
+    </Panel>
   )
 }
