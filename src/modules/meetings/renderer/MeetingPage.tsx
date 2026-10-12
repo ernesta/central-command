@@ -152,15 +152,6 @@ function MeetingView({
     setMoveError(null)
     try {
       await session.dispose() // saves anything pending first
-      // The meeting's own subtask goes with it (to the Tasks trash); the hours tracked on it stay in Hours.
-      const own = tasks?.find((t) => t.uid === meta.task)
-      if (own && isOwnMeetingTask(own)) {
-        try {
-          await window.api.tasks.delete(own.uid)
-        } catch (e) {
-          console.error('Could not delete the meeting task:', e)
-        }
-      }
       const moved = await window.api.meetings.move(session.getRef(), target)
       void navigate(meetingRoute(moved.ref.workspace, moved.ref.id), { replace: true })
     } catch (e) {
@@ -178,6 +169,15 @@ function MeetingView({
     setDeleteError(null)
     try {
       await session.dispose() // saves anything pending first
+      // The meeting's own subtask goes with it (to the Tasks trash); the hours tracked on it stay in Hours.
+      const own = tasks?.find((t) => t.uid === meta.task)
+      if (own && isOwnMeetingTask(own)) {
+        try {
+          await window.api.tasks.delete(own.uid)
+        } catch (e) {
+          console.error('Could not delete the meeting task:', e)
+        }
+      }
       await window.api.meetings.delete(session.getRef())
       void navigate(meetingsBase(meetingRef.workspace), { replace: true })
     } catch (e) {
