@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Task } from '../../tasks/shared/types'
-import { proposeMeetingTask } from './meeting-task'
+import { meetingTaskTitle, planMeetingTask, proposeMeetingTask } from './meeting-task'
 
 const task = (over: Partial<Task>): Task =>
   ({
@@ -54,5 +54,95 @@ describe('proposeMeetingTask', () => {
     const right = task({ uid: 'r', title: 'Impact meetings', list: 'Impact' })
     expect(proposeMeetingTask('work', 'Impact', ['Impact'], [wrong])?.existing).toBeNull()
     expect(proposeMeetingTask('work', 'Impact', ['Impact'], [wrong, right])?.existing).toBe(right)
+  })
+})
+
+describe('planMeetingTask', () => {
+  const series = task({ uid: 's', title: 'Supervision', list: 'Meetings' })
+  const note = { task: 'auto', series: 'Supervision', date: '2026-10-12' }
+
+  it('titles a meeting "<series task> · <date>"', () => {
+    expect(meetingTaskTitle('Supervision', '2026-10-12')).toBe('Supervision · Oct 12, 2026')
+  })
+  it('leaves an older note (no task) alone', () => {
+    expect(planMeetingTask('research', { ...note, task: '' }, null, [series])).toEqual({
+      kind: 'none'
+    })
+  })
+  it('a marked note with no date waits', () => {
+    expect(planMeetingTask('research', { ...note, date: '' }, null, [series])).toEqual({
+      kind: 'none'
+    })
+  })
+  it('a marked note makes its subtask under the series task that exists', () => {
+    expect(planMeetingTask('research', note, null, [series])).toEqual({
+      kind: 'create',
+      title: 'Supervision · Oct 12, 2026',
+      parent: { uid: 's' }
+    })
+  })
+  it('makes the series task too when there is none (Other is Meetings)', () => {
+    expect(planMeetingTask('research', { ...note, series: 'Other' }, null, [])).toEqual({
+      kind: 'create',
+      title: 'Meetings · Oct 12, 2026',
+      parent: { title: 'Meetings', list: 'Meetings' }
+    })
+  })
+  it('Work: a series that is no client makes nothing', () => {
+    expect(planMeetingTask('work', { ...note, series: 'Other' }, ['Impact'], [])).toEqual({
+      kind: 'none'
+    })
+    expect(planMeetingTask('work', { ...note, series: 'impact' }, ['Impact'], [])).toEqual({
+      kind: 'create',
+      title: 'Impact meetings · Oct 12, 2026',
+      parent: { title: 'Impact meetings', list: 'Impact' }
+    })
+  })
+
+  const sub = task({
+    uid: 'm',
+    title: 'Supervision · Oct 12, 2026',
+    list: '',
+    parentUid: 's'
+  })
+  it('a subtask in step needs nothing', () => {
+    expect(planMeetingTask('research', { ...note, task: 'm' }, null, [series, sub])).toEqual({
+      kind: 'none'
+    })
+  })
+  it('the subtask follows the date', () => {
+    expect(
+      planMeetingTask('research', { ...note, task: 'm', date: '2026-10-13' }, null, [series, sub])
+    ).toEqual({ kind: 'sync', uid: 'm', title: 'Supervision · Oct 13, 2026' })
+  })
+  it('the subtask follows the series: new title, new series task', () => {
+    const lab = task({ uid: 'l', title: 'Rastle Lab', list: 'Meetings' })
+    expect(
+      planMeetingTask('research', { ...note, task: 'm', series: 'Rastle Lab' }, null, [
+        series,
+        lab,
+        sub
+      ])
+    ).toEqual({
+      kind: 'sync',
+      uid: 'm',
+      title: 'Rastle Lab · Oct 12, 2026',
+      parent: { uid: 'l' }
+    })
+  })
+  it('never renames or moves a task the user chose', () => {
+    const chosen = task({ uid: 'c', title: 'Prepare for the supervision', parentUid: 's' })
+    expect(planMeetingTask('research', { ...note, task: 'c' }, null, [series, chosen])).toEqual({
+      kind: 'none'
+    })
+    const top = task({ uid: 'u', title: 'Supervision · Oct 12, 2026' })
+    expect(planMeetingTask('research', { ...note, task: 'u' }, null, [series, top])).toEqual({
+      kind: 'none'
+    })
+  })
+  it('a task that is gone is not made again by itself', () => {
+    expect(planMeetingTask('research', { ...note, task: 'gone' }, null, [series])).toEqual({
+      kind: 'none'
+    })
   })
 })

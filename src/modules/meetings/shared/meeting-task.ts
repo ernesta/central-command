@@ -1,4 +1,5 @@
 import { fold } from '@shared/text'
+import { formatDate } from '@shared/time'
 import type { Task } from '../../tasks/shared/types'
 import type { MeetingWorkspace } from './types'
 
@@ -46,4 +47,80 @@ export function proposeMeetingTask(
     same.find((t) => fold(t.list) === fold(list)) ??
     (workspace === 'work' ? null : (same[0] ?? null))
   return { title, list: existing?.list || list, existing }
+}
+
+/** The series task a meeting's subtask sits under: one that exists, or the one to create. */
+export type MeetingParent = { uid: string } | { title: string; list: string }
+
+/** What a meeting note's task needs done now. Pure: it only says, the page does it. */
+export type MeetingPlan =
+  | { kind: 'none' }
+  /** A marked note with a date and a series task to sit under: make the subtask. */
+  | { kind: 'create'; title: string; parent: MeetingParent }
+  /** The subtask follows the note: its title, and the series task it sits under. */
+  | { kind: 'sync'; uid: string; title?: string; parent?: MeetingParent }
+
+export interface MeetingNote {
+  /** The note's `task:` value: a task uid, `auto` or ''. */
+  task: string
+  series: string
+  date: string
+}
+
+/** The title a meeting's subtask has: its series task and the date ("Supervision · Oct 12, 2026"). */
+export function meetingTaskTitle(parentTitle: string, date: string): string {
+  return `${parentTitle.trim()} · ${formatDate(date)}`
+}
+
+/** A title this module made: it ends in " · Oct 12, 2026". Anything else on a meeting is a task the user chose, never renamed. */
+const DATED_TITLE = / · [A-Z][a-z]{2} \d{1,2}, \d{4}$/
+
+function target(proposal: TaskProposal): MeetingParent {
+  return proposal.existing
+    ? { uid: proposal.existing.uid }
+    : { title: proposal.title, list: proposal.list }
+}
+
+/**
+ * What a meeting note's task needs. Like a training's lecture task, with no clicking:
+ *
+ * - An older note (`task` empty) is left alone, always.
+ * - A marked note (`auto`) gets a subtask once it has a date and its series names a task (`proposeMeetingTask`: found, or made).
+ *   Work's series that is no client has none, so nothing is made.
+ * - The subtask then follows the note: titled "<series task> · <date>", under the task the series names.
+ * - A task the user chose is never renamed or moved: only a subtask whose title this module made is the meeting's own. A task
+ *   that is gone is not made again by itself.
+ *
+ * `tasks` is every task of the workspace (subtasks too); `clients` is Work's clients (null in Research).
+ */
+export function planMeetingTask(
+  workspace: MeetingWorkspace,
+  note: MeetingNote,
+  clients: readonly string[] | null,
+  tasks: readonly Task[]
+): MeetingPlan {
+  if (!note.task || !note.date) return { kind: 'none' }
+  const open = tasks.filter((t) => t.status !== 'done')
+  const proposal = proposeMeetingTask(workspace, note.series, clients, open)
+  if (note.task === 'auto') {
+    return proposal
+      ? {
+          kind: 'create',
+          title: meetingTaskTitle(proposal.title, note.date),
+          parent: target(proposal)
+        }
+      : { kind: 'none' }
+  }
+  const own = tasks.find((t) => t.uid === note.task)
+  if (!own || !own.parentUid || !DATED_TITLE.test(own.title) || !proposal) return { kind: 'none' }
+  const parent = tasks.find((t) => t.uid === own.parentUid)
+  const parentOk = !!parent && fold(parent.title.trim()) === fold(proposal.title)
+  const plan: { kind: 'sync'; uid: string; title?: string; parent?: MeetingParent } = {
+    kind: 'sync',
+    uid: own.uid
+  }
+  if (!parentOk) plan.parent = target(proposal)
+  const title = meetingTaskTitle(proposal.title, note.date)
+  if (title !== own.title) plan.title = title
+  return plan.title === undefined && plan.parent === undefined ? { kind: 'none' } : plan
 }
