@@ -126,6 +126,19 @@ function previousItem(state: EditorState, node: SyntaxNode): SyntaxNode | null {
   return above.lastChild?.name === 'ListItem' ? above.lastChild : null
 }
 
+/** The bullet character (`-`, `*` or `+`) the item `node` is written with, or null for a numbered item. */
+function bulletOf(state: EditorState, node: SyntaxNode): string | null {
+  const item = itemStartingAt(state, state.doc.lineAt(node.from))
+  return item && item.parts.kind !== 'ordered' ? item.parts.marker[0] : null
+}
+
+/** The change that gives `item` the bullet character `bullet`, so a list never mixes them after a move. */
+function matchBullet(item: ItemAt, bullet: string | null): ChangeSpec[] {
+  if (!bullet || item.parts.kind === 'ordered' || item.parts.marker[0] === bullet) return []
+  const at = item.line.from + item.parts.quote.length + item.parts.indent.length
+  return [{ from: at, to: at + 1, insert: bullet }]
+}
+
 /** Indent each selected item under the item before it. The first item of a list cannot nest, and does nothing. */
 export const indentItem: StateCommand = ({ state, dispatch }) => {
   const items = selectedItems(state)
@@ -137,6 +150,9 @@ export const indentItem: StateCommand = ({ state, dispatch }) => {
     const previous = itemStartingAt(state, state.doc.lineAt(before.from))
     if (!previous) continue
     const pad = ' '.repeat(childIndent(previous.parts))
+    const sub = before.lastChild?.name?.endsWith('List') ? before.lastChild : null
+    const siblings = sub?.firstChild ? bulletOf(state, sub.firstChild) : null
+    changes.push(...matchBullet(item, siblings))
     for (const line of itemLines(state, item.node)) {
       const parts = parseLine(line.text)
       if (blankLine(parts)) continue
@@ -154,7 +170,7 @@ function outdentChanges(state: EditorState, item: ItemAt): ChangeSpec[] | null {
   const parent = itemStartingAt(state, state.doc.lineAt(parentItem.from))
   const amount = item.parts.indent.length - (parent?.parts.indent.length ?? 0)
   const width = amount > 0 ? amount : item.parts.indent.length
-  const changes: ChangeSpec[] = []
+  const changes: ChangeSpec[] = matchBullet(item, bulletOf(state, parentItem))
   for (const line of itemLines(state, item.node)) {
     const parts = parseLine(line.text)
     const remove = Math.min(width, parts.indent.length)

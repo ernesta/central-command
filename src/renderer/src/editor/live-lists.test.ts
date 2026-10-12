@@ -111,8 +111,13 @@ describe('Tab and Mod-]', () => {
       expect(after('- a\n- |b\n- c|', chord)).toBe('- a\n  - |b\n  - c|')
     })
     it(`${chord} nests the first item of a list started by another bullet character`, () => {
-      expect(after('* a\n  * b\n- |c', chord)).toBe('* a\n  * b\n  - |c')
+      expect(after('* a\n  * b\n- |c', chord)).toBe('* a\n  * b\n  * |c')
       expect(after('* a\n- |b\n- c', chord)).toBe('* a\n  - |b\n- c')
+    })
+    it(`${chord} takes the bullet character of the list it joins`, () => {
+      expect(after('* a\n  * b\n- |c', chord)).toBe('* a\n  * b\n  * |c')
+      expect(after('- a\n  - b\n* |c', chord)).toBe('- a\n  - b\n  - |c')
+      expect(after('- a\n- |b', chord)).toBe('- a\n  - |b')
     })
     it(`${chord} does nothing on the first item, yet keeps the key`, () => {
       const { view } = openView('- |a')
@@ -131,6 +136,10 @@ describe('Shift-Tab and Mod-[', () => {
       expect(after('- a\n  - |b', chord)).toBe('- a\n- |b')
       expect(after('- a\n    - |b', chord)).toBe('- a\n- |b')
       expect(after('- a\n  - |b\n    - c', chord)).toBe('- a\n- |b\n  - c')
+    })
+    it(`${chord} takes the bullet character of the list it joins`, () => {
+      expect(after('* a\n  - |b', chord)).toBe('* a\n* |b')
+      expect(after('- [ ] a\n  * [ ] |b', chord)).toBe('- [ ] a\n- [ ] |b')
     })
     it(`${chord} leaves a top-level item where it is`, () => {
       const { view } = openView('- |a')
