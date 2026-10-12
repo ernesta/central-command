@@ -1,4 +1,3 @@
-import { BackLink } from '@renderer/components/BackLink'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { modulePath } from '@modules/types'
@@ -137,7 +136,6 @@ export function ReadingsPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <BackLink to="/research" label="Research" />
       <header className={styles.header}>
         <div className={styles.headingRow}>
           <h1 className={styles.heading}>Readings</h1>

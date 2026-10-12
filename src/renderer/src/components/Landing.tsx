@@ -1,6 +1,5 @@
 import { Pin } from 'lucide-react'
 import { Link } from 'react-router'
-import { BackLink } from './BackLink'
 import styles from './Landing.module.css'
 
 /** A module's landing page: a page wrapper so every module's landing looks and behaves alike. */
@@ -8,24 +7,16 @@ export function LandingPage({ children }: { children: React.ReactNode }): React.
   return <div className={styles.page}>{children}</div>
 }
 
-/** Back link, title and the actions at the right (a link to the full list, a "New …" button). */
+/** Title and the actions at the right (a link to the full list, a "New …" button). */
 export function LandingHeader({
-  backTo,
-  backLabel,
-  history,
   title,
   actions
 }: {
-  backTo: string
-  backLabel: string
-  /** A page opened from many places (a person): back goes to where the visitor came from. */
-  history?: boolean
   title: string
   actions: React.ReactNode
 }): React.JSX.Element {
   return (
     <div className={styles.top}>
-      <BackLink to={backTo} label={backLabel} history={history} />
       <header className={styles.header}>
         <h1 className={styles.heading}>{title}</h1>
         <div className={styles.actions}>{actions}</div>

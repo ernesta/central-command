@@ -1,6 +1,5 @@
 import { YearSelect } from '@renderer/components/YearSelect'
 import { LandingHeader, LandingPage } from '@renderer/components/Landing'
-import { WORKSPACE_LABELS } from '@renderer/shell/workspaces'
 import { useNow } from '@renderer/state/use-now'
 import { useRunningTimer } from '@renderer/state/use-running-timer'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
@@ -28,8 +27,6 @@ export function HoursPage(): React.JSX.Element {
   return (
     <LandingPage>
       <LandingHeader
-        backTo={`/${workspace}`}
-        backLabel={WORKSPACE_LABELS[workspace]}
         title="Hours"
         actions={<YearSelect year={year} years={years} onChange={setYear} workspace={workspace} />}
       />

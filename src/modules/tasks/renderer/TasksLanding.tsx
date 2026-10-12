@@ -104,8 +104,6 @@ export function TasksLanding(): React.JSX.Element {
   return (
     <LandingPage>
       <LandingHeader
-        backTo={workspace === 'research' ? '/research' : '/work'}
-        backLabel={workspace === 'research' ? 'Research' : 'Work'}
         title="Tasks"
         actions={
           <>

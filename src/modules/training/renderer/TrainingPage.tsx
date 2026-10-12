@@ -1,4 +1,3 @@
-import { BackLink } from '@renderer/components/BackLink'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { YearSelect } from '@renderer/components/YearSelect'
@@ -32,7 +31,7 @@ import {
 import { TRAINING_TYPES } from '../shared/types'
 import { NewTrainingButton } from './NewTrainingButton'
 import { TrainingTable } from './TrainingTable'
-import { todayIso, trainingBase } from './training-paths'
+import { todayIso } from './training-paths'
 import { useSelfStudy } from './useSelfStudy'
 import { useTrainingList } from './useTrainingList'
 import { useTrainingView } from './useTrainingView'
@@ -124,7 +123,6 @@ export function TrainingPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <BackLink to={trainingBase} label="Training" />
       <header className={styles.header}>
         <h1 className={styles.heading}>All training</h1>
         <div className={styles.actions}>

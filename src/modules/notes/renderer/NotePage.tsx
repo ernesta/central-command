@@ -1,4 +1,3 @@
-import { BackLink } from '@renderer/components/BackLink'
 import { Pin } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
@@ -133,13 +132,10 @@ function NoteView({
     }
   }
 
-  const back = <BackLink history to={notesBase(noteRef.workspace)} label="Notes" />
-
   if (snapshot.status === 'loading') return <div className={styles.page} />
   if (snapshot.status === 'missing') {
     return (
       <div className={styles.page}>
-        {back}
         <EmptyState
           heading="Note not found"
           message={`There is no note “${noteRef.id}”. It may have been moved or deleted.`}
@@ -153,7 +149,6 @@ function NoteView({
 
   return (
     <div className={styles.page}>
-      {back}
       <div className={styles.head}>
         <input
           ref={titleRef}

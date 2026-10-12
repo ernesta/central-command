@@ -3028,12 +3028,6 @@ Same day, two follow-ups the user asked for: a person rename now rewrites the la
 - **Change:** `useLectureTask` creates the lecture task with `status: 'doing'`. The tasks `create` IPC (`CreateTaskInput`, `register.ts`) now accepts an optional `status`, validated against `TASK_STATUSES`. The series task, when the page makes one, is left to do: only the lecture's own task starts in progress.
 - **Not driven in the app** (typecheck, lint and tests pass); the hook reads `window.api`, so it has no unit test.
 
-## Back links: one component, history first, always in view (12 Oct 2026)
+## Back is one icon in the top bar (12 Oct 2026)
 
-Audit: a dozen pages each drew their own back link. Training → its task → Back landed on the Tasks landing (the task page knew only a `from` state that a lecture's link never set), and a reading always went back to the Readings list. All are now `BackLink` (`src/renderer/src/components/BackLink.tsx`):
-
-- **Detail pages** (note, meeting, training entry, reading, reading list, task, person, search): `history` — Back goes to exactly where the visitor came from (`navigate(-1)`, the same as Cmd-[ and the mouse's back button) and reads "Back"; with no history (first page of the window) it goes to the parent, named. The task page's `from` state is gone.
-- **Landing and list pages** keep a plain link up to their parent (the parent never changes).
-- **Sticky** (`position: sticky; top: 8px`, page background behind it) so a long page never needs a scroll to the top. Chromium keeps a sticky grid item in view, so it must be a direct child of the page grid (the task page's Delete button no longer wraps it).
-- Deleting a page replaces its history entry, so Back never returns to a deleted page; deleting a task leaves like Back does.
-- Checked in the built app: training entry → its task → Back returns to the entry; Back stays 8px below the top after scrolling 1500px.
+First attempt (commit `521f548`) made one sticky `BackLink` per page; the user did not want a floating element and asked for Back in the top bar, icon only. Now there is exactly one Back: an `IconButton` (arrow, tooltip "Back (⌘[)") at the left of the top bar, before the workspace pills (`TopBar`, `Shell`). It goes through history (`navigate(-1)`, same as Cmd-[ and the mouse's back button), so a task opened from a training goes back to the training, a reading to wherever it was opened from. It is disabled when the window has no history yet. Every per-page back link and the landing header's `backTo`/`backLabel` are gone; the fallback to a named parent is gone too (the router is a memory router starting at the workspace, so a page with no history never occurs in practice). Deleting a page replaces its history entry so Back never returns to a deleted page.

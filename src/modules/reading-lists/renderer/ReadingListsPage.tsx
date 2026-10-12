@@ -1,4 +1,3 @@
-import { BackLink } from '@renderer/components/BackLink'
 import { useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
@@ -6,7 +5,6 @@ import { FilterRow } from '@renderer/components/FilterRow'
 import { SearchInput } from '@renderer/components/SearchInput'
 import { queryLists } from '@modules/reading-lists/shared/query'
 import { NewListButton } from './NewListButton'
-import { readingListsBase } from './reading-lists-paths'
 import { ReadingListsTable } from './ReadingListsTable'
 import { useReadingListsList } from './useReadingListsList'
 import styles from './ReadingListsPage.module.css'
@@ -33,7 +31,6 @@ export function ReadingListsPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <BackLink to={readingListsBase} label="Reading lists" />
       <header className={styles.header}>
         <h1 className={styles.heading}>All reading lists</h1>
         <NewListButton />

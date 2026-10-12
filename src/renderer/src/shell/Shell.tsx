@@ -105,6 +105,8 @@ export function Shell(): React.JSX.Element {
       <TopBar
         workspace={workspace}
         onWorkspaceChange={switchWorkspace}
+        canGoBack={location.key !== 'default'}
+        onBack={() => void navigate(-1)}
         onBuild={() => void openBuild()}
         onOpenSettings={() => navigate('/settings')}
         onOpenSearch={() => setSearchOpen(true)}

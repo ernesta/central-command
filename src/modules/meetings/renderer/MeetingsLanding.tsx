@@ -80,12 +80,7 @@ export function MeetingsLanding(): React.JSX.Element {
 
   return (
     <LandingPage>
-      <LandingHeader
-        backTo={workspace === 'research' ? '/research' : '/work'}
-        backLabel={workspace === 'research' ? 'Research' : 'Work'}
-        title="Meetings"
-        actions={<NewMeetingButton />}
-      />
+      <LandingHeader title="Meetings" actions={<NewMeetingButton />} />
 
       {rows === null ? null : (
         <>

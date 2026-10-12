@@ -1,4 +1,3 @@
-import { BackLink } from '@renderer/components/BackLink'
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router'
@@ -47,7 +46,6 @@ export function TaskPage(): React.JSX.Element {
   if (!task) {
     return (
       <div className={styles.page}>
-        <BackLink history to={tasksBase(workspace)} label="Tasks" />
         <EmptyState heading="Task not found" message="It may have been deleted." />
       </div>
     )
@@ -162,17 +160,14 @@ function TaskView({
   return (
     <div className={styles.page}>
       <div className={styles.top}>
-        <BackLink history to={tasksBase(workspace)} label="Tasks" />
-        <div className={styles.delete}>
-          <Button
-            size="small"
-            variant="danger-outline"
-            disabled={busy}
-            onClick={() => (untouchedNow ? void remove() : setConfirmDelete(true))}
-          >
-            Delete task
-          </Button>
-        </div>
+        <Button
+          size="small"
+          variant="danger-outline"
+          disabled={busy}
+          onClick={() => (untouchedNow ? void remove() : setConfirmDelete(true))}
+        >
+          Delete task
+        </Button>
       </div>
 
       {error && (

@@ -42,8 +42,6 @@ export function PeoplePage(): React.JSX.Element {
   return (
     <LandingPage>
       <LandingHeader
-        backTo="/research"
-        backLabel="Research"
         title="People"
         actions={
           <Button

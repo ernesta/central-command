@@ -1,8 +1,6 @@
-import { BackLink } from '@renderer/components/BackLink'
 import { Check, Copy } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router'
-import { modulePath } from '@modules/types'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
@@ -17,8 +15,6 @@ import { NotesSection } from './NotesSection'
 import { ReferenceBlock } from './ReferenceBlock'
 import { StatusPill } from './StatusPill'
 import styles from './ReadingDetailPage.module.css'
-
-const readingsBase = modulePath({ workspace: 'research', id: 'readings' })
 
 type Loaded = { citekey: string; reading: Reading | null }
 
@@ -38,15 +34,12 @@ export function ReadingDetailPage(): React.JSX.Element {
 
   useDocumentTitle(loaded && loaded.citekey === citekey ? loaded.reading?.shortCitation : null)
 
-  const back = <BackLink history to={readingsBase} label="Readings" />
-
   // Wait for the reading that matches the URL (not a stale one from the previous page).
   if (!loaded || loaded.citekey !== citekey) return <div className={styles.page} />
   const { reading } = loaded
   if (!reading) {
     return (
       <div className={styles.page}>
-        {back}
         <EmptyState
           heading="Reading not found"
           message={`There is no reading with the citekey “${citekey}”.`}
@@ -56,7 +49,7 @@ export function ReadingDetailPage(): React.JSX.Element {
   }
 
   // Each reading gets its own notes session, disposed (saving anything pending) when you leave it.
-  return <ReadingView key={reading.citekey} reading={reading} back={back} />
+  return <ReadingView key={reading.citekey} reading={reading} />
 }
 
 /**
@@ -64,13 +57,7 @@ export function ReadingDetailPage(): React.JSX.Element {
  * abstract, your notes), with the ways in and out of it — your notes' outline, the lists it is in,
  * where it is mentioned — in the side column, as a note, a meeting and a training entry have.
  */
-function ReadingView({
-  reading,
-  back
-}: {
-  reading: Reading
-  back: React.JSX.Element
-}): React.JSX.Element {
+function ReadingView({ reading }: { reading: Reading }): React.JSX.Element {
   const [copied, setCopied] = useState(false)
   const docRef = useRef<HTMLDivElement>(null)
   const { session, snapshot } = useNotesSession(reading.citekey, window.api.readings.notes)
@@ -83,7 +70,6 @@ function ReadingView({
 
   return (
     <div className={styles.page}>
-      {back}
       <header className={styles.head}>
         <div className={styles.citekeyRow}>
           <span className={styles.citekey}>{reading.citekey}</span>

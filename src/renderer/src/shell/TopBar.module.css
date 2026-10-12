@@ -29,6 +29,7 @@
 .bar:has(.topSentinel:hover) {
   padding-left: 84px;
 }
+.lead,
 .pills,
 .actions {
   display: flex;

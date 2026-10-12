@@ -11,7 +11,7 @@ import {
 import { formatDate } from '@shared/time'
 import { PersonTasks } from '@modules/tasks/renderer/PersonTasks'
 import { entryRoute } from '@modules/training/renderer/training-paths'
-import { meetingRoute, peopleRoute } from './meetings-paths'
+import { meetingRoute } from './meetings-paths'
 import { PersonLinks } from './PersonLinks'
 import { usePersonProfile } from './usePersonProfile'
 import styles from './PersonPage.module.css'
@@ -28,13 +28,7 @@ export function PersonPage(): React.JSX.Element {
   if (!loading && !person) {
     return (
       <LandingPage>
-        <LandingHeader
-          backTo={peopleRoute}
-          backLabel="People"
-          history
-          title="Person not found"
-          actions={null}
-        />
+        <LandingHeader title="Person not found" actions={null} />
         <EmptyState
           heading="Person not found"
           message={`There is nobody called “${decodeURIComponent(name)}” in your people list.`}
@@ -64,9 +58,6 @@ export function PersonPage(): React.JSX.Element {
   return (
     <LandingPage>
       <LandingHeader
-        backTo={peopleRoute}
-        backLabel="People"
-        history
         title={person ? (person.me ? `${person.name} (you)` : person.name) : ''}
         actions={null}
       />

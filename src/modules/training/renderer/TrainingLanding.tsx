@@ -90,8 +90,6 @@ export function TrainingLanding(): React.JSX.Element {
   return (
     <LandingPage>
       <LandingHeader
-        backTo="/research"
-        backLabel="Research"
         title="Training"
         actions={
           <>

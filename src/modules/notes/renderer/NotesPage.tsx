@@ -1,4 +1,3 @@
-import { BackLink } from '@renderer/components/BackLink'
 import { useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
@@ -16,7 +15,7 @@ import {
 import { DEFAULT_NOTES_QUERY, queryNotes, reconcileQuery, type NotesQuery } from '../shared/query'
 import { setCaptureGroup } from './capture-group'
 import { NewNoteButton } from './NewNoteButton'
-import { notesBase, useNotesWorkspace } from './notes-paths'
+import { useNotesWorkspace } from './notes-paths'
 import { NotesTable } from './NotesTable'
 import { useNotesList } from './useNotesList'
 import { useNotesView } from './useNotesView'
@@ -87,7 +86,6 @@ export function NotesPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <BackLink to={notesBase(workspace)} label="Notes" />
       <header className={styles.header}>
         <h1 className={styles.heading}>{title ?? 'All notes'}</h1>
         <div className={styles.actions}>

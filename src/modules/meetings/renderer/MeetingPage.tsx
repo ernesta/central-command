@@ -1,4 +1,3 @@
-import { BackLink } from '@renderer/components/BackLink'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
@@ -172,13 +171,10 @@ function MeetingView({
     }
   }
 
-  const back = <BackLink history to={meetingsBase(meetingRef.workspace)} label="Meetings" />
-
   if (snapshot.status === 'loading') return <div className={styles.page} />
   if (snapshot.status === 'missing') {
     return (
       <div className={styles.page}>
-        {back}
         <EmptyState
           heading="Meeting not found"
           message={`There is no meeting “${meetingRef.id}”. It may have been moved or deleted.`}
@@ -191,7 +187,6 @@ function MeetingView({
 
   return (
     <div className={styles.page}>
-      {back}
       <div className={styles.head}>
         <h1 className={styles.title}>{heading}</h1>
         <div className={styles.actions}>

@@ -1,4 +1,3 @@
-import { BackLink } from '@renderer/components/BackLink'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
@@ -142,13 +141,10 @@ function EntryView({
     }
   }
 
-  const back = <BackLink history to={trainingBase} label="Training" />
-
   if (snapshot.status === 'loading') return <div className={styles.page} />
   if (snapshot.status === 'missing') {
     return (
       <div className={styles.page}>
-        {back}
         <EmptyState
           heading="Training entry not found"
           message={`There is no training entry “${entryRef.id}”. It may have been moved or deleted.`}
@@ -161,7 +157,6 @@ function EntryView({
 
   return (
     <div className={styles.page}>
-      {back}
       <div className={styles.head}>
         <input
           ref={titleRef}

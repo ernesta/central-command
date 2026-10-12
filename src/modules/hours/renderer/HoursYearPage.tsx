@@ -8,7 +8,7 @@ import { WeeksChart } from './WeeksChart'
 import { YearsTable } from './YearsTable'
 import { YearHeatMap } from './YearHeatMap'
 import { AllWeeks } from './AllWeeks'
-import { hoursBase, useHoursWorkspace } from './hours-paths'
+import { useHoursWorkspace } from './hours-paths'
 import { useShownYear } from './useMeetingHours'
 import styles from './HoursYearPage.module.css'
 
@@ -23,8 +23,6 @@ export function HoursYearPage(): React.JSX.Element {
   return (
     <LandingPage>
       <LandingHeader
-        backTo={hoursBase(workspace)}
-        backLabel="Hours"
         title="Charts and weeks"
         actions={<YearSelect year={year} years={years} onChange={setYear} workspace={workspace} />}
       />

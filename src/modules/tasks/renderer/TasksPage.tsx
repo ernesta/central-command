@@ -1,4 +1,3 @@
-import { BackLink } from '@renderer/components/BackLink'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
@@ -28,7 +27,7 @@ import { NewTaskButton } from './NewTaskButton'
 import { PRIORITY_LABELS } from './task-labels'
 import { useWorkClients } from './useWorkClients'
 import { TasksTable } from './TasksTable'
-import { tasksBase, todayIso, useTasksWorkspace } from './tasks-paths'
+import { todayIso, useTasksWorkspace } from './tasks-paths'
 import { useTaskTime } from './useTaskTime'
 import { useTasksList } from './useTasksList'
 import { useTasksView } from './useTasksView'
@@ -150,7 +149,6 @@ export function TasksPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <BackLink to={tasksBase(workspace)} label="Tasks" />
       <header className={styles.header}>
         <h1 className={styles.heading}>{heading}</h1>
         <div className={styles.actions}>

@@ -3,7 +3,6 @@ import { Plus } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
 import { LandingHeader, LandingPage } from '@renderer/components/Landing'
 import { YearSelect } from '@renderer/components/YearSelect'
-import { WORKSPACE_LABELS } from '@renderer/shell/workspaces'
 import { useNow } from '@renderer/state/use-now'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { useHoursWorkspace } from '../../hours/renderer/hours-paths'
@@ -22,8 +21,6 @@ export function TimeOffPage(): React.JSX.Element {
   return (
     <LandingPage>
       <LandingHeader
-        backTo={`/${workspace}`}
-        backLabel={WORKSPACE_LABELS[workspace]}
         title="Time off"
         actions={
           <div className={styles.actions}>

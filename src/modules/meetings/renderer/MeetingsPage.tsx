@@ -1,4 +1,3 @@
-import { BackLink } from '@renderer/components/BackLink'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
@@ -28,7 +27,7 @@ import { MeetingsHours } from './MeetingsHours'
 import { fixedSeries, tracksSkills } from '../shared/types'
 import { MeetingsTable } from './MeetingsTable'
 import { NewMeetingButton } from './NewMeetingButton'
-import { meetingsBase, todayIso, useMeetingsWorkspace } from './meetings-paths'
+import { todayIso, useMeetingsWorkspace } from './meetings-paths'
 import { useMeetingsList } from './useMeetingsList'
 import { useMeetingsView } from './useMeetingsView'
 import styles from './MeetingsPage.module.css'
@@ -128,7 +127,6 @@ export function MeetingsPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <BackLink to={meetingsBase(workspace)} label="Meetings" />
       <header className={styles.header}>
         <h1 className={styles.heading}>All meetings</h1>
         <div className={styles.actions}>

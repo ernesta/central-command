@@ -45,3 +45,8 @@
   opacity: 1;
   transition-delay: 350ms;
 }
+.iconButton:disabled {
+  opacity: 0.35;
+  background: transparent;
+  color: var(--text-secondary);
+}

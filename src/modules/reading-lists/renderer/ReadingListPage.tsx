@@ -1,4 +1,3 @@
-import { BackLink } from '@renderer/components/BackLink'
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
@@ -85,13 +84,10 @@ function ListView({
     }
   }
 
-  const back = <BackLink history to={readingListsBase} label="Reading lists" />
-
   if (snapshot.status === 'loading') return <div className={styles.page} />
   if (snapshot.status === 'missing') {
     return (
       <div className={styles.page}>
-        {back}
         <EmptyState
           heading="Reading list not found"
           message={`There is no reading list “${listRef.id}”. It may have been moved or deleted.`}
@@ -104,7 +100,6 @@ function ListView({
 
   return (
     <div className={styles.page}>
-      {back}
       <div className={styles.head}>
         <input
           ref={titleRef}

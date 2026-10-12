@@ -1,4 +1,3 @@
-import { BackLink } from '@renderer/components/BackLink'
 import { FolderOpen } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { YearSelect } from '@renderer/components/YearSelect'
@@ -15,7 +14,7 @@ import { useYear } from '@renderer/state/use-year'
 import { nextYearStart, yearLabel } from '@shared/year'
 import { useSettings } from '@renderer/state/settings-context'
 import { planKey } from '../shared/plan'
-import { todayIso, trainingBase } from './training-paths'
+import { todayIso } from './training-paths'
 import { useTrainingList } from './useTrainingList'
 import styles from './TrainingPlanPage.module.css'
 
@@ -42,7 +41,6 @@ export function TrainingPlanPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <BackLink to={trainingBase} label="Training" />
       <header className={styles.header}>
         <h1 className={styles.heading}>Training plan</h1>
         <div className={styles.actions}>

@@ -1,4 +1,3 @@
-import { BackLink } from '../components/BackLink'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { moduleSearches } from '@modules/index'
@@ -84,7 +83,6 @@ export function SearchResultsPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <BackLink history to="/research" label="Research" />
       <h1 className={styles.heading}>Search</h1>
       <SearchInput
         label="Search"
