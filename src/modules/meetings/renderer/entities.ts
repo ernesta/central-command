@@ -36,7 +36,7 @@ export const personEntities: EntityProvider = {
   async search(query, limit) {
     const people = await window.api.meetings.people.list()
     const terms = searchTerms(query)
-    return people
+    const found = people
       .filter((p) => !p.archived)
       .filter((p) => terms.every((t) => fold(`${p.name} ${p.initials}`).includes(t)))
       .sort((a, b) => a.name.localeCompare(b.name))
@@ -48,6 +48,21 @@ export const personEntities: EntityProvider = {
         label: person.name,
         prepare: async () => ({ kind: 'person' as const, key: person.name })
       }))
+    const name = query.trim().replace(/\s+/g, ' ')
+    // A full name nobody has yet can be added from here; one word is more likely a search than a new person.
+    if (name.split(' ').length >= 2 && !findByName(people, name)) {
+      found.push({
+        id: `new:${name}`,
+        title: `Add ${name}`,
+        detail: 'New person',
+        label: name,
+        prepare: async () => {
+          await window.api.meetings.people.add({ name })
+          return { kind: 'person' as const, key: name }
+        }
+      })
+    }
+    return found
   },
   async copy(key) {
     return { text: key }
