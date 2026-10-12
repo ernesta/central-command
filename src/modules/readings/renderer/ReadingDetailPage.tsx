@@ -1,6 +1,7 @@
-import { ArrowLeft, Check, Copy } from 'lucide-react'
+import { BackLink } from '@renderer/components/BackLink'
+import { Check, Copy } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useParams } from 'react-router'
 import { modulePath } from '@modules/types'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EmptyState } from '@renderer/components/EmptyState'
@@ -23,7 +24,6 @@ type Loaded = { citekey: string; reading: Reading | null }
 
 export function ReadingDetailPage(): React.JSX.Element {
   const { citekey = '' } = useParams()
-  const navigate = useNavigate()
   const [loaded, setLoaded] = useState<Loaded | null>(null)
 
   useEffect(() => {
@@ -38,15 +38,7 @@ export function ReadingDetailPage(): React.JSX.Element {
 
   useDocumentTitle(loaded && loaded.citekey === citekey ? loaded.reading?.shortCitation : null)
 
-  const backToList = (): void => {
-    void navigate(readingsBase)
-  }
-  const back = (
-    <button type="button" className={styles.back} onClick={backToList}>
-      <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-      Readings
-    </button>
-  )
+  const back = <BackLink history to={readingsBase} label="Readings" />
 
   // Wait for the reading that matches the URL (not a stale one from the previous page).
   if (!loaded || loaded.citekey !== citekey) return <div className={styles.page} />

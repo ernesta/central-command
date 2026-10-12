@@ -1,6 +1,6 @@
-import { ArrowLeft } from 'lucide-react'
+import { BackLink } from '@renderer/components/BackLink'
 import { useEffect, useMemo } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { FilterRow } from '@renderer/components/FilterRow'
@@ -87,10 +87,7 @@ export function NotesPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <Link className={styles.back} to={notesBase(workspace)}>
-        <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-        Notes
-      </Link>
+      <BackLink to={notesBase(workspace)} label="Notes" />
       <header className={styles.header}>
         <h1 className={styles.heading}>{title ?? 'All notes'}</h1>
         <div className={styles.actions}>

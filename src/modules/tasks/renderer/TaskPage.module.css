@@ -4,27 +4,13 @@
   align-content: start;
   padding: 36px 48px 48px;
 }
+/* The back link is a grid item of the page so it can stay in view; Delete shares its row. */
 .top {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  display: contents;
 }
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  max-width: 60ch;
-  overflow: hidden;
-  color: var(--text-muted);
-  font-size: var(--text-13);
-  text-decoration: none;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.back:hover {
-  color: var(--ink);
+.delete {
+  grid-row: 1;
+  justify-self: end;
 }
 .cols {
   display: grid;

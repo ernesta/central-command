@@ -32,24 +32,4 @@ export function useTasksWorkspace(): TaskWorkspace {
     : 'research'
 }
 
-/** Where a task page's back link goes: the page the task was opened from, else the Tasks landing. */
-export interface TaskBack {
-  to: string
-  label: string
-}
-
-/** Router state for a link to a task page, remembering the page it is opened from. */
-export function useTaskLinkState(): { from: TaskBack } {
-  const { pathname, search } = useLocation()
-  return {
-    from: { to: pathname + search, label: pathname.endsWith('/all') ? 'All tasks' : 'Tasks' }
-  }
-}
-
-export function useTaskBack(workspace: TaskWorkspace): TaskBack {
-  const { state } = useLocation()
-  const from = (state as { from?: TaskBack } | null)?.from
-  return from ?? { to: tasksBase(workspace), label: 'Tasks' }
-}
-
 export { todayIso } from '@shared/time'

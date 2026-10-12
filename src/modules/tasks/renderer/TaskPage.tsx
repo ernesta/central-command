@@ -1,6 +1,7 @@
-import { ArrowLeft, ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
+import { BackLink } from '@renderer/components/BackLink'
+import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useState, useSyncExternalStore } from 'react'
-import { Link, Navigate, useNavigate, useParams } from 'react-router'
+import { Navigate, useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { Dialog } from '@renderer/components/Dialog'
 import { EmptyState } from '@renderer/components/EmptyState'
@@ -31,7 +32,7 @@ import { StatusIcon } from './TaskIcons'
 import { RecurrenceField } from './RecurrenceField'
 import { TagsField } from './TagsField'
 import { TaskTimeCard } from './TaskTimeCard'
-import { taskRoute, todayIso, useTaskBack, useTasksWorkspace } from './tasks-paths'
+import { taskRoute, tasksBase, todayIso, useTasksWorkspace } from './tasks-paths'
 import { useTaskTime } from './useTaskTime'
 import { useTasksList } from './useTasksList'
 import styles from './TaskPage.module.css'
@@ -40,25 +41,20 @@ import styles from './TaskPage.module.css'
 export function TaskPage(): React.JSX.Element {
   const workspace = useTasksWorkspace()
   const { uid = '' } = useParams()
-  const back = useTaskBack(workspace)
   const { tasks, rows } = useTasksList(workspace)
   if (tasks === null || rows === null) return <div className={styles.page} />
   const task = tasks.find((t) => t.uid === uid)
   if (!task) {
     return (
       <div className={styles.page}>
-        <Link className={styles.back} to={back.to}>
-          <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-          {back.label}
-        </Link>
+        <BackLink history to={tasksBase(workspace)} label="Tasks" />
         <EmptyState heading="Task not found" message="It may have been deleted." />
       </div>
     )
   }
   // A subtask has no page of its own: everything about it is set on its parent's page.
   const parent = task.parentUid ? tasks.find((t) => t.uid === task.parentUid) : undefined
-  if (parent)
-    return <Navigate replace state={{ from: back }} to={taskRoute(workspace, parent.uid)} />
+  if (parent) return <Navigate replace to={taskRoute(workspace, parent.uid)} />
   const row = rows.find((r) => r.task.uid === task.uid)
   return (
     <TaskView
@@ -100,6 +96,7 @@ function TaskView({
   workspace: TaskWorkspace
 }): React.JSX.Element {
   const navigate = useNavigate()
+  const location = useLocation()
   const today = todayIso()
   const { tracked, running, yearFor, clientFor, months } = useTaskTime(workspace)
   const [error, setError] = useState<string | null>(null)
@@ -128,7 +125,11 @@ function TaskView({
   const time = taskTime(row, tracked)
   const own = taskTime({ task, kids: [] }, tracked)
   const progress = subtaskProgress(row.kids)
-  const { to: backTo, label: backLabel } = useTaskBack(workspace)
+  // Leaving after a delete goes where the visitor came from, as Back does.
+  const leave = (): void =>
+    void (location.key !== 'default'
+      ? navigate(-1)
+      : navigate(tasksBase(workspace), { replace: true }))
 
   const remove = async (): Promise<void> => {
     setBusy(true)
@@ -137,11 +138,11 @@ function TaskView({
       const untouched =
         title.current === '' && description.current.trim() === '' && row.kids.length === 0
       if (untouched && (await window.api.tasks.discardIfEmpty(task.uid))) {
-        void navigate(backTo, { replace: true })
+        leave()
         return
       }
       await window.api.tasks.delete(task.uid)
-      void navigate(backTo, { replace: true })
+      leave()
       showToast(`Deleted “${title.current || 'Untitled'}”.`, {
         label: 'Undo',
         run: () =>
@@ -161,18 +162,17 @@ function TaskView({
   return (
     <div className={styles.page}>
       <div className={styles.top}>
-        <Link className={styles.back} to={backTo}>
-          <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-          {backLabel}
-        </Link>
-        <Button
-          size="small"
-          variant="danger-outline"
-          disabled={busy}
-          onClick={() => (untouchedNow ? void remove() : setConfirmDelete(true))}
-        >
-          Delete task
-        </Button>
+        <BackLink history to={tasksBase(workspace)} label="Tasks" />
+        <div className={styles.delete}>
+          <Button
+            size="small"
+            variant="danger-outline"
+            disabled={busy}
+            onClick={() => (untouchedNow ? void remove() : setConfirmDelete(true))}
+          >
+            Delete task
+          </Button>
+        </div>
       </div>
 
       {error && (

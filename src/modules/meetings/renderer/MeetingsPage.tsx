@@ -1,6 +1,6 @@
-import { ArrowLeft } from 'lucide-react'
+import { BackLink } from '@renderer/components/BackLink'
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { ExportButton } from '@renderer/components/ExportButton'
@@ -128,10 +128,7 @@ export function MeetingsPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <Link className={styles.back} to={meetingsBase(workspace)}>
-        <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-        Meetings
-      </Link>
+      <BackLink to={meetingsBase(workspace)} label="Meetings" />
       <header className={styles.header}>
         <h1 className={styles.heading}>All meetings</h1>
         <div className={styles.actions}>

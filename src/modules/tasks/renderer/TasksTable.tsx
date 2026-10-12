@@ -29,7 +29,7 @@ import { ListField } from './ListField'
 import { TagsField } from './TagsField'
 import { useTasksList } from './useTasksList'
 import { TaskMenu, type MenuGroup } from './TaskMenu'
-import { taskRoute, useTaskLinkState } from './tasks-paths'
+import { taskRoute } from './tasks-paths'
 import styles from './TasksTable.module.css'
 
 type Item =
@@ -105,7 +105,6 @@ export function TasksTable({
   sort?: { key: SortKey; dir: 'asc' | 'desc'; onSort: (key: SortKey) => void }
 }): React.JSX.Element {
   const navigate = useNavigate()
-  const linkState = useTaskLinkState()
   const { rows: allRows } = useTasksList(workspace)
   const [open, setOpen] = useState<ReadonlySet<string>>(new Set())
   const [adding, setAdding] = useState<string | null>(null)
@@ -132,7 +131,7 @@ export function TasksTable({
   const { tableProps, rowProps } = useRowNavigation(items.length, (index) => {
     const item = items[index]
     if (item.type === 'add') startAdding(item.parent.uid)
-    else void navigate(taskRoute(workspace, item.task.uid), { state: linkState })
+    else void navigate(taskRoute(workspace, item.task.uid))
   })
 
   const menuGroups = (state: MenuState): MenuGroup[] => {
@@ -296,9 +295,7 @@ export function TasksTable({
                 isOpen={open.has(item.task.uid)}
                 rowProps={rowProps(index)}
                 onKeyDown={(e) => onRowKeyDown(e, index)}
-                onOpen={() =>
-                  void navigate(taskRoute(workspace, item.task.uid), { state: linkState })
-                }
+                onOpen={() => void navigate(taskRoute(workspace, item.task.uid))}
                 onToggle={() => toggle(item.task.uid)}
                 onAddSubtask={() => startAdding(item.task.uid)}
                 onPriorityMenu={(x, y) => setMenu({ task: item.task, x, y, kind: 'priority' })}

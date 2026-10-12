@@ -1,6 +1,6 @@
+import { BackLink } from '@renderer/components/BackLink'
 import { useEffect, useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
-import { Link, useNavigate } from 'react-router'
+import { useNavigate } from 'react-router'
 import { modulePath } from '@modules/types'
 import { AllLink } from '@renderer/components/Landing'
 import { Button } from '@renderer/components/Button'
@@ -137,10 +137,7 @@ export function ReadingsPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <Link className={styles.back} to="/research">
-        <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-        Research
-      </Link>
+      <BackLink to="/research" label="Research" />
       <header className={styles.header}>
         <div className={styles.headingRow}>
           <h1 className={styles.heading}>Readings</h1>

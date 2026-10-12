@@ -1,6 +1,5 @@
-import { ArrowLeft } from 'lucide-react'
+import { BackLink } from '@renderer/components/BackLink'
 import { useState } from 'react'
-import { Link } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { FilterRow } from '@renderer/components/FilterRow'
@@ -34,10 +33,7 @@ export function ReadingListsPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <Link className={styles.back} to={readingListsBase}>
-        <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-        Reading lists
-      </Link>
+      <BackLink to={readingListsBase} label="Reading lists" />
       <header className={styles.header}>
         <h1 className={styles.heading}>All reading lists</h1>
         <NewListButton />

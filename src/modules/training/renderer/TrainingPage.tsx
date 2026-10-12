@@ -1,6 +1,6 @@
-import { ArrowLeft } from 'lucide-react'
+import { BackLink } from '@renderer/components/BackLink'
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 import { YearSelect } from '@renderer/components/YearSelect'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
@@ -124,10 +124,7 @@ export function TrainingPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <Link className={styles.back} to={trainingBase}>
-        <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-        Training
-      </Link>
+      <BackLink to={trainingBase} label="Training" />
       <header className={styles.header}>
         <h1 className={styles.heading}>All training</h1>
         <div className={styles.actions}>

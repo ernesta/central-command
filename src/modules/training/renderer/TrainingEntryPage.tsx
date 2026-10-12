@@ -1,4 +1,4 @@
-import { ArrowLeft } from 'lucide-react'
+import { BackLink } from '@renderer/components/BackLink'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
@@ -104,8 +104,6 @@ function EntryView({
   useDocumentTitle(meta.title)
 
   // Back goes to wherever the user came from (the list); with no history, the list.
-  const goBack = (): void =>
-    void (location.key !== 'default' ? navigate(-1) : navigate(trainingBase))
 
   const addPerson = useCallback(async (name: string): Promise<Person> => {
     const list = await window.api.meetings.people.add({ name })
@@ -135,7 +133,7 @@ function EntryView({
           console.error('Could not delete the lecture task:', e)
         }
       }
-      void navigate(trainingBase)
+      void navigate(trainingBase, { replace: true })
     } catch (e) {
       setDeleteError(ipcErrorMessage(e))
       setDeleting(false)
@@ -144,12 +142,7 @@ function EntryView({
     }
   }
 
-  const back = (
-    <button type="button" className={styles.back} onClick={goBack}>
-      <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-      Training
-    </button>
-  )
+  const back = <BackLink history to={trainingBase} label="Training" />
 
   if (snapshot.status === 'loading') return <div className={styles.page} />
   if (snapshot.status === 'missing') {

@@ -1,6 +1,6 @@
-import { ArrowLeft } from 'lucide-react'
+import { BackLink } from '@renderer/components/BackLink'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { DeleteDialog } from '@renderer/components/DeleteDialog'
 import { isUntouchedBody } from '@renderer/components/untouched'
@@ -64,7 +64,6 @@ function MeetingView({
   onRenamed: (id: string) => void
 }): React.JSX.Element {
   const navigate = useNavigate()
-  const location = useLocation()
   const { session, snapshot } = useMeetingSession(meetingRef, onRenamed)
   const { rows: meetingRows } = useMeetingsList(meetingRef.workspace)
   const [people, setPeople] = useState<Person[]>([])
@@ -89,8 +88,6 @@ function MeetingView({
   const topics = useMemo(() => parseTopics(body, meta.discussed), [body, meta.discussed])
 
   // Back goes to wherever the user came from (the landing page or the list); with no history, the landing page.
-  const goBack = (): void =>
-    void (location.key !== 'default' ? navigate(-1) : navigate(meetingsBase(meetingRef.workspace)))
 
   const addPerson = useCallback(async (name: string): Promise<Person> => {
     const list = await window.api.meetings.people.add({ name })
@@ -166,7 +163,7 @@ function MeetingView({
     try {
       await session.dispose() // saves anything pending first
       await window.api.meetings.delete(session.getRef())
-      void navigate(meetingsBase(meetingRef.workspace))
+      void navigate(meetingsBase(meetingRef.workspace), { replace: true })
     } catch (e) {
       setDeleteError(ipcErrorMessage(e))
       setDeleting(false)
@@ -175,12 +172,7 @@ function MeetingView({
     }
   }
 
-  const back = (
-    <button type="button" className={styles.back} onClick={goBack}>
-      <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-      Meetings
-    </button>
-  )
+  const back = <BackLink history to={meetingsBase(meetingRef.workspace)} label="Meetings" />
 
   if (snapshot.status === 'loading') return <div className={styles.page} />
   if (snapshot.status === 'missing') {

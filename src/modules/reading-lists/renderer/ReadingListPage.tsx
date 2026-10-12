@@ -1,4 +1,4 @@
-import { ArrowLeft } from 'lucide-react'
+import { BackLink } from '@renderer/components/BackLink'
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
@@ -67,9 +67,6 @@ function ListView({
     titleRef.current?.select()
   }, [ready])
 
-  const goBack = (): void =>
-    void (location.key !== 'default' ? navigate(-1) : navigate(readingListsBase))
-
   // A page nothing was typed into goes without asking.
   const untouched = !meta.title && isUntouchedBody(body, NEW_LIST_BODY)
 
@@ -79,7 +76,7 @@ function ListView({
     try {
       await session.dispose()
       await window.api.readingLists.delete(session.getRef())
-      void navigate(readingListsBase)
+      void navigate(readingListsBase, { replace: true })
     } catch (e) {
       setDeleteError(ipcErrorMessage(e))
       setDeleting(false)
@@ -88,12 +85,7 @@ function ListView({
     }
   }
 
-  const back = (
-    <button type="button" className={styles.back} onClick={goBack}>
-      <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-      Reading lists
-    </button>
-  )
+  const back = <BackLink history to={readingListsBase} label="Reading lists" />
 
   if (snapshot.status === 'loading') return <div className={styles.page} />
   if (snapshot.status === 'missing') {

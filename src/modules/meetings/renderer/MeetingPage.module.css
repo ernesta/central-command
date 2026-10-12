@@ -4,20 +4,6 @@
   padding: 36px 64px 48px;
   align-content: start;
 }
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  justify-self: start;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--text-muted);
-  font-size: var(--text-13);
-}
-.back:hover {
-  color: var(--ink);
-}
 .head {
   display: flex;
   flex-wrap: wrap;

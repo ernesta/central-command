@@ -1,6 +1,6 @@
-import { ArrowLeft } from 'lucide-react'
+import { BackLink } from '../components/BackLink'
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import { moduleSearches } from '@modules/index'
 import { searchPeople } from '@modules/meetings/renderer/people-search'
 import type { SearchHit } from '@shared/search'
@@ -42,7 +42,6 @@ function Hit({ hit, onRun }: { hit: SearchHit; onRun: () => void }): React.JSX.E
 export function SearchResultsPage(): React.JSX.Element {
   const navigate = useNavigate()
   const workspace = useQuickActionWorkspace()
-  const location = useLocation()
   const [params, setParams] = useSearchParams()
   const [query, setQuery] = useState(params.get('q') ?? '')
   const [result, setResult] = useState<{ query: string; groups: SearchGroup[] }>({
@@ -81,16 +80,11 @@ export function SearchResultsPage(): React.JSX.Element {
   const searched = query.trim() !== ''
   const groups = searched ? result.groups : []
   const answered = searched && result.query === query
-  const goBack = (): void =>
-    void (location.key !== 'default' ? navigate(-1) : navigate('/research'))
   const total = groups.reduce((n, g) => n + g.hits.length, 0)
 
   return (
     <div className={styles.page}>
-      <button type="button" className={styles.back} onClick={goBack}>
-        <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-        Back
-      </button>
+      <BackLink history to="/research" label="Research" />
       <h1 className={styles.heading}>Search</h1>
       <SearchInput
         label="Search"

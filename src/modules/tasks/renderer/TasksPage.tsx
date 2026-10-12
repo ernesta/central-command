@@ -1,6 +1,6 @@
-import { ArrowLeft } from 'lucide-react'
+import { BackLink } from '@renderer/components/BackLink'
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { FilterRow } from '@renderer/components/FilterRow'
@@ -150,10 +150,7 @@ export function TasksPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <Link className={styles.back} to={tasksBase(workspace)}>
-        <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-        Tasks
-      </Link>
+      <BackLink to={tasksBase(workspace)} label="Tasks" />
       <header className={styles.header}>
         <h1 className={styles.heading}>{heading}</h1>
         <div className={styles.actions}>

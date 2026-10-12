@@ -31,6 +31,7 @@ export function PersonPage(): React.JSX.Element {
         <LandingHeader
           backTo={peopleRoute}
           backLabel="People"
+          history
           title="Person not found"
           actions={null}
         />
@@ -65,6 +66,7 @@ export function PersonPage(): React.JSX.Element {
       <LandingHeader
         backTo={peopleRoute}
         backLabel="People"
+        history
         title={person ? (person.me ? `${person.name} (you)` : person.name) : ''}
         actions={null}
       />

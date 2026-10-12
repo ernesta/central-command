@@ -1,6 +1,6 @@
-import { ArrowLeft, FolderOpen } from 'lucide-react'
+import { BackLink } from '@renderer/components/BackLink'
+import { FolderOpen } from 'lucide-react'
 import { useRef, useState } from 'react'
-import { Link } from 'react-router'
 import { YearSelect } from '@renderer/components/YearSelect'
 import { Button } from '@renderer/components/Button'
 import { IconButton } from '@renderer/components/IconButton'
@@ -42,10 +42,7 @@ export function TrainingPlanPage(): React.JSX.Element {
 
   return (
     <div className={styles.page}>
-      <Link className={styles.back} to={trainingBase}>
-        <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-        Training
-      </Link>
+      <BackLink to={trainingBase} label="Training" />
       <header className={styles.header}>
         <h1 className={styles.heading}>Training plan</h1>
         <div className={styles.actions}>

@@ -1,4 +1,5 @@
-import { ArrowLeft, Pin } from 'lucide-react'
+import { BackLink } from '@renderer/components/BackLink'
+import { Pin } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
@@ -114,9 +115,6 @@ function NoteView({
     }
   }
 
-  const goBack = (): void =>
-    void (location.key !== 'default' ? navigate(-1) : navigate(notesBase(noteRef.workspace)))
-
   // A page nothing was typed into goes without asking.
   const untouched = !meta.title && !meta.pinned && isUntouchedBody(body, NEW_NOTE_BODY)
 
@@ -126,7 +124,7 @@ function NoteView({
     try {
       await session.dispose() // saves anything pending first
       await window.api.notes.delete(session.getRef())
-      void navigate(notesBase(noteRef.workspace))
+      void navigate(notesBase(noteRef.workspace), { replace: true })
     } catch (e) {
       setDeleteError(ipcErrorMessage(e))
       setDeleting(false)
@@ -135,12 +133,7 @@ function NoteView({
     }
   }
 
-  const back = (
-    <button type="button" className={styles.back} onClick={goBack}>
-      <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-      Notes
-    </button>
-  )
+  const back = <BackLink history to={notesBase(noteRef.workspace)} label="Notes" />
 
   if (snapshot.status === 'loading') return <div className={styles.page} />
   if (snapshot.status === 'missing') {
