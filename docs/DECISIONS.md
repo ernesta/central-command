@@ -3006,3 +3006,9 @@ Same day, two follow-ups the user asked for: a person rename now rewrites the la
 - **Looked up:** Bear dropped the strikethrough on checked items for lighter grey so done items fade; Day One did the same and users asked for the line back to keep reading them; Fibery, Notejoy, ClickUp, Trello and Dynalist all have requests to drop it or make it optional. A line can also read as "cancelled", and dimming that is too faint fails in some themes.
 - **Change:** `.live-done` (`LiveEditor.module.css`) is only `var(--text-muted)`, no line; `.live-done .live-chip` has `opacity: 0.7`, so a chip dims by the same rule as the text. The ticked box already says done. Real `~~strikethrough~~` and the red strike on a chip whose target is gone are unchanged.
 - **Not driven in the app** at the time of writing (typecheck, lint and tests pass); if the dimmed text is too faint in either theme, adjust the colour and the chip's opacity.
+
+## Add a person from the `@` picker (12 Oct 2026)
+
+- **Why (the user):** typing `@Greg Veramendi` for someone not in the people list showed only "Nothing found."
+- **Change:** the person provider (`personEntities`, `src/modules/meetings/renderer/entities.ts`) appends an "Add <name> · New person" row when the typed query is at least two words and is not an existing person's full name. Choosing it calls `window.api.meetings.people.add({ name })` (initials worked out and made unique as on the People page), then links the new person like any other. One word never offers it: it is more likely a search. No way to choose initials in the picker; change them on the People page.
+- **Not driven in the app** (typecheck, lint and tests pass); no test of the provider itself, which reads `window.api`.
