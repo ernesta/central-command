@@ -2961,3 +2961,10 @@ Closes the first two bullets of the deferred list in `docs/CONTRACTS_PLAN.md`.
 - **Grid:** `SeriesCards` (`Landing.module.css`, `.cards`) is `repeat(auto-fill, minmax(max(290px, calc((100% - 49px) / 4)), 1fr))`: a column is at least a quarter of the width (so never more than four on a line) and at least 290px (so fewer on a narrow window). Four cards fill the row exactly; fewer keep the size of a card in a full row instead of stretching (a first try with `auto-fit` made a lone card full width). The 49px is the three 16px gaps plus 1px against rounding, which would otherwise drop to three columns. Shared, so Tasks, Training and Notes landings get it too.
 - **Empty series:** `MeetingsLanding` leaves out a series with no meetings in the year and none planned (`count === 0 && !next`). A planned meeting keeps its card. Training's cards are unchanged. `seriesLine` still has its "No meetings yet" text (other pages use it).
 - **Not driven in the app**; typecheck, lint and tests pass.
+
+## Skill and aim hours as h:mm (12 Oct 2026)
+
+- **Why (the user):** "everywhere where we have time reported, I want h:mm, not fractions": Meetings' "Hours of meetings" card showed "2.8 h" and a skill chip "2.3 h".
+- **Change:** `formatHours` in `@shared/skills` (Meetings, Training, the hours strip, both PDF reports, the training meetings line) is now the Hours pages' `formatHours` (`@shared/tracking/format`): "2:48", "36:30", "0:00", no unit. Aims are formatted the same way ("of 200:00" in `TrainingCard`, `HoursStrip` and the Training report). Tests updated.
+- **Left as it was:** the length of one meeting or training (`formatDuration`: "1 h 30 min"), which never had fractions. Ask if those should be h:mm too.
+- **Not driven in the app**; typecheck, lint and tests pass.
