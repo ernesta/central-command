@@ -14,13 +14,16 @@ export function ListField({
   list,
   sublist,
   rows,
-  onChange
+  onChange,
+  plain = false
 }: {
   workspace: TaskWorkspace
   list: string
   sublist: string
   rows: readonly TaskRow[]
   onChange: (value: { list: string; sublist: string }) => void
+  /** In a table cell: text until hovered. */
+  plain?: boolean
 }): React.JSX.Element {
   const clients = useWorkClients(workspace)
   // The groups the notes use are derived the same way: a "group" here is a list, a "subgroup" a sublist.
@@ -33,6 +36,7 @@ export function ListField({
   return (
     <GroupField
       noun="list"
+      plain={plain}
       allowNone={false}
       allowNewTop={clients === null}
       group={list}

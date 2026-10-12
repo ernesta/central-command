@@ -142,3 +142,26 @@
     max-width: calc(100vw - 48px);
   }
 }
+
+.plain {
+  height: 24px;
+  margin: 0 -8px;
+  padding: 0 8px;
+  border-color: transparent;
+  background: transparent;
+  font-size: inherit;
+}
+.plain svg {
+  opacity: 0;
+}
+.plain:hover,
+.plain:focus-visible,
+.plain[aria-expanded='true'] {
+  border-color: var(--border-strong);
+  background: var(--hover-tint);
+}
+.plain:hover svg,
+.plain:focus-visible svg,
+.plain[aria-expanded='true'] svg {
+  opacity: 1;
+}

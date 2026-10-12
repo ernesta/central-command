@@ -488,6 +488,7 @@ function TaskRowView({
         {!isKid && (
           <span {...stopRow}>
             <ListField
+              plain
               workspace={workspace}
               list={task.list}
               sublist={task.sublist}

@@ -111,8 +111,8 @@
   font-variant-numeric: tabular-nums;
 }
 .list {
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Not clipped: the list menu opens from this cell. */
+  overflow: visible;
 }
 .title {
   margin-right: 8px;

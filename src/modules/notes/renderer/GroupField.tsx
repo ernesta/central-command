@@ -27,6 +27,8 @@ interface GroupFieldProps {
    * sublist and must say what it sits inside.
    */
   allowNewTop?: boolean
+  /** For a table cell: reads as plain text, the box and arrow appear on hover, focus or while open. */
+  plain?: boolean
 }
 
 /**
@@ -41,13 +43,15 @@ export function GroupField({
   onChange,
   noun = 'group',
   allowNone = true,
-  allowNewTop = true
+  allowNewTop = true,
+  plain = false
 }: GroupFieldProps): React.JSX.Element {
   const [open, setOpen] = useState(false)
   const [filter, setFilter] = useState('')
   const [name, setName] = useState('')
   const [inside, setInside] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [place, setPlace] = useState<React.CSSProperties | undefined>(undefined)
   const Noun = noun.charAt(0).toUpperCase() + noun.slice(1)
   const wrapRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -71,8 +75,18 @@ export function GroupField({
       if (!wrapRef.current?.contains(event.target as Node)) reset()
     }
     document.addEventListener('mousedown', onDown)
-    return () => document.removeEventListener('mousedown', onDown)
-  }, [open])
+    // A fixed menu would be left behind by a scroll or resize.
+    const onMove = (event: Event): void => {
+      if (plain && !wrapRef.current?.contains(event.target as Node)) reset()
+    }
+    window.addEventListener('scroll', onMove, true)
+    window.addEventListener('resize', onMove)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      window.removeEventListener('scroll', onMove, true)
+      window.removeEventListener('resize', onMove)
+    }
+  }, [open, plain])
 
   const choose = (value: { group: string; subgroup: string }): void => {
     // Only the two names go on: an option carries more than that.
@@ -111,12 +125,27 @@ export function GroupField({
       <button
         ref={triggerRef}
         type="button"
-        className={[styles.trigger, !current && styles.none].filter(Boolean).join(' ')}
+        className={[styles.trigger, plain && styles.plain, !current && styles.none]
+          .filter(Boolean)
+          .join(' ')}
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-label={`${Noun}: ${current || 'none'}`}
         onClick={() => {
           if (open) return close()
+          // In a table the menu is fixed to the window, so the table's scrolling box cannot cut it off.
+          const rect = triggerRef.current?.getBoundingClientRect()
+          if (plain && rect) {
+            const below = window.innerHeight - rect.bottom > 340
+            setPlace({
+              position: 'fixed',
+              right: 'auto',
+              left: Math.max(8, rect.right - 320),
+              ...(below
+                ? { top: rect.bottom + 4 }
+                : { top: 'auto', bottom: window.innerHeight - rect.top + 4 })
+            })
+          }
           setOpen(true)
           setTimeout(() => filterRef.current?.focus(), 0)
         }}
@@ -129,6 +158,7 @@ export function GroupField({
       {open && (
         <div
           className={styles.popover}
+          style={plain ? place : undefined}
           role="dialog"
           aria-label={`Choose a ${noun}`}
           onKeyDown={(event) => {
