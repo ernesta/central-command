@@ -169,7 +169,8 @@ export class TasksStore {
       }
       if (changes.due !== undefined) next.due = checkDue(changes.due)
       if (changes.tags !== undefined) next.tags = cleanTags(changes.tags)
-      if (changes.list !== undefined || changes.sublist !== undefined) {
+      const promoting = changes.parentUid === null && task.parentUid !== null
+      if (!promoting && (changes.list !== undefined || changes.sublist !== undefined)) {
         if (task.parentUid) throw new Error('A subtask has no list of its own')
         const list = (changes.list ?? task.list).trim()
         if (!list) throw new Error('A task needs a list')
@@ -182,12 +183,30 @@ export class TasksStore {
             ? ''
             : (changes.sublist ?? task.sublist).trim()
       }
-      if (changes.parentUid !== undefined && changes.parentUid !== task.parentUid) {
-        if (!task.parentUid) throw new Error('Only a subtask can move under another task')
+      if (promoting) {
+        const list = (changes.list ?? '').trim()
+        if (!list) throw new Error('A task needs a list')
+        next.parentUid = null
+        next.list = this.checkedList(task.workspace, list)
+        next.sublist = (changes.sublist ?? '').trim()
+        next.position = 0
+      } else if (
+        changes.parentUid !== undefined &&
+        changes.parentUid !== null &&
+        changes.parentUid !== task.parentUid
+      ) {
         const parent = getTask(this.db, changes.parentUid)
-        if (!parent) throw new Error('No such task')
+        if (!parent || parent.uid === uid) throw new Error('No such task')
         if (parent.parentUid) throw new Error('A subtask cannot have subtasks')
         if (parent.workspace !== task.workspace) throw new Error('A task stays in its workspace')
+        if (!task.parentUid) {
+          if (task.recurrence) throw new Error('A repeating task cannot become a subtask')
+          if (listSubtasks(this.db, uid).length > 0) {
+            throw new Error('A task with subtasks cannot become a subtask')
+          }
+          next.list = ''
+          next.sublist = ''
+        }
         next.parentUid = parent.uid
         next.position = maxPosition(this.db, parent.uid) + 1
       }

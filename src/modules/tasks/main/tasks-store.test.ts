@@ -329,15 +329,29 @@ describe('moving a subtask under another task', () => {
     expect(listSubtasks(db, b.uid).map((t) => t.title)).toEqual(['existing', 'Lecture'])
   })
 
-  it('refuses a top-level task, a subtask as the parent and another workspace', () => {
+  it('refuses a subtask as the parent and another workspace', () => {
     const a = make('A')
     const b = make('B')
     const other = store.create({ workspace: 'work', title: 'W', list: 'Impact' })
     const sub = store.create({ workspace: 'research', title: 'Lecture', parentUid: a.uid })
     const sub2 = store.create({ workspace: 'research', title: 'Two', parentUid: b.uid })
-    expect(() => store.update(a.uid, { parentUid: b.uid })).toThrow('Only a subtask')
     expect(() => store.update(sub.uid, { parentUid: sub2.uid })).toThrow('cannot have subtasks')
     expect(() => store.update(sub.uid, { parentUid: other.uid })).toThrow('workspace')
     expect(store.get(sub.uid)?.parentUid).toBe(a.uid)
+  })
+
+  it('turns a top-level task into a subtask and back, only when nothing is in the way', () => {
+    const a = make('A')
+    const b = make('B')
+    const c = make('C')
+    store.create({ workspace: 'research', title: 'Kid', parentUid: c.uid })
+    const down = store.update(a.uid, { parentUid: b.uid })
+    expect(down).toMatchObject({ parentUid: b.uid, list: '', sublist: '' })
+    expect(() => store.update(c.uid, { parentUid: b.uid })).toThrow('with subtasks')
+    expect(() => store.update(b.uid, { parentUid: b.uid })).toThrow('No such task')
+    expect(() => store.update(a.uid, { parentUid: null })).toThrow('needs a list')
+    const up = store.update(a.uid, { parentUid: null, list: 'Training' })
+    expect(up).toMatchObject({ parentUid: null, list: 'Training' })
+    expect(listSubtasks(db, b.uid)).toHaveLength(0)
   })
 })

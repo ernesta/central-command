@@ -82,6 +82,9 @@ export interface TaskChanges {
   sublist?: string
   recurrence?: Recurrence | null
   tags?: string[]
-  /** Move a subtask under another top-level task of the same workspace. */
-  parentUid?: string
+  /**
+   * Move a subtask under another top-level task of the same workspace; make a top-level task with no subtasks a subtask; or, with
+   * `null` (and a `list`), make a subtask a top-level task.
+   */
+  parentUid?: string | null
 }
