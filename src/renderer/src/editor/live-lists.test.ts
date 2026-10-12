@@ -110,6 +110,10 @@ describe('Tab and Mod-]', () => {
       expect(after('- a\n- |b\n  - c', chord)).toBe('- a\n  - |b\n    - c')
       expect(after('- a\n- |b\n- c|', chord)).toBe('- a\n  - |b\n  - c|')
     })
+    it(`${chord} nests the first item of a list started by another bullet character`, () => {
+      expect(after('* a\n  * b\n- |c', chord)).toBe('* a\n  * b\n  - |c')
+      expect(after('* a\n- |b\n- c', chord)).toBe('* a\n  - |b\n- c')
+    })
     it(`${chord} does nothing on the first item, yet keeps the key`, () => {
       const { view } = openView('- |a')
       expect(press(view, chord)).toBe(true)

@@ -106,14 +106,34 @@ function apply(
   )
 }
 
+/**
+ * The item before `node` in its list. A different bullet character (`-` after `*`) starts a new list in Markdown, so the
+ * first item of such a list takes the last item of the list right above it, the way it looks.
+ */
+function previousItem(state: EditorState, node: SyntaxNode): SyntaxNode | null {
+  const before = node.prevSibling
+  if (before?.name === 'ListItem') return before
+  if (before) return null
+  const list = node.parent
+  const above = list?.prevSibling
+  if (
+    !list ||
+    !above ||
+    above.name !== list.name ||
+    state.doc.lineAt(above.to).number + 1 !== state.doc.lineAt(list.from).number
+  )
+    return null
+  return above.lastChild?.name === 'ListItem' ? above.lastChild : null
+}
+
 /** Indent each selected item under the item before it. The first item of a list cannot nest, and does nothing. */
 export const indentItem: StateCommand = ({ state, dispatch }) => {
   const items = selectedItems(state)
   if (items.length === 0) return false
   const changes: ChangeSpec[] = []
   for (const item of items) {
-    const before = item.node.prevSibling
-    if (before?.name !== 'ListItem') continue
+    const before = previousItem(state, item.node)
+    if (!before) continue
     const previous = itemStartingAt(state, state.doc.lineAt(before.from))
     if (!previous) continue
     const pad = ' '.repeat(childIndent(previous.parts))
