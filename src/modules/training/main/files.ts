@@ -4,6 +4,9 @@ import { isAbsolute, join, relative, sep } from 'path'
 /** A refused request: a path outside the Trainings folder, an unsafe name, a file that will not be opened. */
 export class FilesError extends Error {}
 
+/** The folder or file is not there (moved, renamed or deleted); the message is fit to show. */
+export class NotThereError extends FilesError {}
+
 /** A relative path inside the Trainings folder: no leading slash, no `..` and no control characters. */
 export function isSafeRelativeFolder(folder: string): boolean {
   return (
@@ -75,7 +78,17 @@ export async function resolveInside(
   } catch {
     throw new FilesError('The Trainings folder is not there')
   }
-  const real = await realpath(join(rootReal, ...parts))
+  let real: string
+  try {
+    real = await realpath(join(rootReal, ...parts))
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      throw new NotThereError(
+        `“${parts.join('/').split('/').at(-1)}” is not there. It may have been moved or renamed.`
+      )
+    }
+    throw error
+  }
   if (!inside(rootReal, real)) throw new FilesError('That path is outside the Trainings folder')
   return real
 }
@@ -93,7 +106,7 @@ export async function listFolder(root: string, folder: string, sub = ''): Promis
     dir = await resolveInside(root, folder, sub)
     if (!(await stat(dir)).isDirectory()) return { status: 'missing' }
   } catch (error) {
-    if (error instanceof FilesError) throw error
+    if (error instanceof FilesError && !(error instanceof NotThereError)) throw error
     return { status: 'missing' }
   }
   const rootReal = await realpath(root)
