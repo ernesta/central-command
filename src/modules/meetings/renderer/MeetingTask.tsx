@@ -70,6 +70,25 @@ export function MeetingTask({
     }
   }
 
+  // A meeting made in the app: its task is made by itself once it has a date.
+  if (task === 'auto' && !choosing) {
+    return (
+      <div className={styles.row}>
+        <span className={styles.list}>
+          {proposal ? 'Making the task…' : 'The task is made when the series names one.'}
+        </span>
+        <button
+          ref={opener}
+          type="button"
+          className={styles.link}
+          onClick={() => setChoosing(true)}
+        >
+          Other
+        </button>
+      </div>
+    )
+  }
+
   if (choosing) {
     return (
       <div

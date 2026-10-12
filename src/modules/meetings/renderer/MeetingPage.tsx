@@ -22,7 +22,9 @@ import { MeetingHoursNote } from './MeetingHoursNote'
 import { MetaFields } from './MetaFields'
 import { MentionedIn } from '@renderer/entities/MentionedIn'
 import { TopicsPanel } from './TopicsPanel'
+import { isOwnMeetingTask } from '../shared/meeting-task'
 import { useMeetingsList } from './useMeetingsList'
+import { useMeetingTask } from './useMeetingTask'
 import { useMeetingSession } from './useMeetingSession'
 import styles from './MeetingPage.module.css'
 
@@ -83,6 +85,12 @@ function MeetingView({
   }, [])
 
   const { meta, body, save, error, conflict, reloadedFromDisk, problems, updatedAt } = snapshot
+  const { tasks } = useMeetingTask(
+    meetingRef.workspace,
+    meta,
+    snapshot.status === 'ready',
+    (task) => session.setMeta({ task })
+  )
   useDocumentTitle(meta.series || meta.date ? meetingHeading(meta.series, meta.date) : null)
   const topics = useMemo(() => parseTopics(body, meta.discussed), [body, meta.discussed])
 
@@ -144,6 +152,15 @@ function MeetingView({
     setMoveError(null)
     try {
       await session.dispose() // saves anything pending first
+      // The meeting's own subtask goes with it (to the Tasks trash); the hours tracked on it stay in Hours.
+      const own = tasks?.find((t) => t.uid === meta.task)
+      if (own && isOwnMeetingTask(own)) {
+        try {
+          await window.api.tasks.delete(own.uid)
+        } catch (e) {
+          console.error('Could not delete the meeting task:', e)
+        }
+      }
       const moved = await window.api.meetings.move(session.getRef(), target)
       void navigate(meetingRoute(moved.ref.workspace, moved.ref.id), { replace: true })
     } catch (e) {

@@ -604,6 +604,24 @@ describe('tickTodo', () => {
 })
 
 describe('a meeting task', () => {
+  it('a meeting made with the marker is saved with `task: auto`, one made without has no task line', async () => {
+    const marked = await store.create({
+      workspace: 'research',
+      series: 'Supervision',
+      date: '2026-10-12',
+      task: 'auto'
+    })
+    expect(marked.meta.task).toBe('auto')
+    expect(disk(marked.ref.id)).toContain('task: auto')
+    expect(getMeetingRow(db, 'research', marked.ref.id)?.task).toBe('auto')
+    const plain = await store.create({
+      workspace: 'research',
+      series: 'Supervision',
+      date: '2026-10-13'
+    })
+    expect(disk(plain.ref.id)).not.toContain('task:')
+  })
+
   it('is written to the front matter and the index only when set, and the body stays as it was', async () => {
     const made = await store.create({
       workspace: 'research',

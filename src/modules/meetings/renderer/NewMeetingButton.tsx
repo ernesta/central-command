@@ -17,7 +17,8 @@ export function NewMeetingButton(): React.JSX.Element {
         const file = await window.api.meetings.create({
           workspace,
           series: defaultSeries(workspace),
-          date: todayIso()
+          date: todayIso(),
+          task: 'auto'
         })
         void navigate(meetingRoute(workspace, file.ref.id))
       }}

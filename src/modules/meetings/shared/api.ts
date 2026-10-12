@@ -22,6 +22,8 @@ export interface CreateMeetingInput {
   end?: string | null
   mode?: MeetingMode | null
   attendees?: string[]
+  /** `auto` for a meeting made in the app (it gets its own subtask once it has a date); leave out otherwise. */
+  task?: string
   /** The note body; a new meeting gets the standard template when omitted. */
   body?: string
 }

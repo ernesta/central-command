@@ -75,6 +75,11 @@ export function meetingTaskTitle(parentTitle: string, date: string): string {
 /** A title this module made: it ends in " · Oct 12, 2026". Anything else on a meeting is a task the user chose, never renamed. */
 const DATED_TITLE = / · [A-Z][a-z]{2} \d{1,2}, \d{4}$/
 
+/** A subtask this module made for a meeting (so it may follow the note, and goes to the trash with it). */
+export function isOwnMeetingTask(task: Task): boolean {
+  return !!task.parentUid && DATED_TITLE.test(task.title)
+}
+
 function target(proposal: TaskProposal): MeetingParent {
   return proposal.existing
     ? { uid: proposal.existing.uid }
@@ -112,7 +117,7 @@ export function planMeetingTask(
       : { kind: 'none' }
   }
   const own = tasks.find((t) => t.uid === note.task)
-  if (!own || !own.parentUid || !DATED_TITLE.test(own.title) || !proposal) return { kind: 'none' }
+  if (!own || !isOwnMeetingTask(own) || !proposal) return { kind: 'none' }
   const parent = tasks.find((t) => t.uid === own.parentUid)
   const parentOk = !!parent && fold(parent.title.trim()) === fold(proposal.title)
   const plan: { kind: 'sync'; uid: string; title?: string; parent?: MeetingParent } = {

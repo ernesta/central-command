@@ -61,7 +61,8 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
       const file = await window.api.meetings.create({
         workspace,
         series: defaultSeries(workspace),
-        date: todayIso()
+        date: todayIso(),
+        task: 'auto'
       })
       navigate(meetingRoute(workspace, file.ref.id))
     }

@@ -118,7 +118,8 @@ export class MeetingsStore {
       start: input.start ?? null,
       end: input.end ?? null,
       mode: input.mode ?? null,
-      attendees: input.attendees ?? []
+      attendees: input.attendees ?? [],
+      ...(input.task ? { task: input.task } : {})
     }
     checkPatch(patch)
     const head = updateHead('', patch)
