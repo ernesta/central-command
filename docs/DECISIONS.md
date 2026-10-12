@@ -3021,3 +3021,9 @@ Same day, two follow-ups the user asked for: a person rename now rewrites the la
 - **Title:** a click on the title text edits it in place (selected; Return or leaving saves, Escape cancels, empty is not saved). Clicking elsewhere on the row still opens the task.
 - **Tags:** the shared `TagsField` (new `inline` option) in the title cell: × removes, "+ Tag" shows on row hover. **List:** the shared `ListField` in the List cell (top-level tasks only; Work offers only client lists). Controls inside a row stop click and key events so they never open the task.
 - Driven in the built app on a scratch library (rename, remove and add a tag, due placeholder, back link); the list picker's change and the due calendar were not exercised. The list picker first looked heavy as a bordered button on every row, so it is now plain text until hover, focus or open (`plain` on `GroupField` and `ListField`: no box, arrow hidden). Opening it showed the menu clipped by the table's scrolling box, so a plain picker's menu is `position: fixed` from the trigger's rectangle (above it when there is no room below) and closes on a scroll or resize outside it; the List cell no longer clips. Driven in the built app: idle, open, and the menu in full.
+
+## A lecture's task starts in progress (12 Oct 2026)
+
+- **Why (the user):** creating a training entry makes its lecture task; that task should be in progress from the start, like a task whose timer has started (`putStartedTaskInProgress`).
+- **Change:** `useLectureTask` creates the lecture task with `status: 'doing'`. The tasks `create` IPC (`CreateTaskInput`, `register.ts`) now accepts an optional `status`, validated against `TASK_STATUSES`. The series task, when the page makes one, is left to do: only the lecture's own task starts in progress.
+- **Not driven in the app** (typecheck, lint and tests pass); the hook reads `window.api`, so it has no unit test.
