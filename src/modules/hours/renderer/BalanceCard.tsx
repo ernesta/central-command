@@ -7,8 +7,8 @@ import { yearRoute } from './hours-paths'
 import styles from './BalanceCard.module.css'
 
 /**
- * The year so far: the balance against the plan up to today, the average week, the hours and the whole year's plan.
- * A contract with no aim shows only the average week and the hours.
+ * The whole contract (Work) or year (Research) as one quiet line under the cards: the hours of the whole plan, the balance
+ * against the plan up to today, the average week, and the link to the charts. With no aim: the hours and the average week.
  */
 export function BalanceCard({
   workspace,
@@ -20,42 +20,23 @@ export function BalanceCard({
   now: Moment
 }): React.JSX.Element {
   const totals = yearTotals(data, now.date, now)
-  const perDay =
-    data.plan.workDays.length > 0 ? data.plan.hoursPerWeek / data.plan.workDays.length : 0
-  const days = perDay > 0 ? Math.round(totals.wholePlan / perDay) : 0
   const balance = Math.round(totals.balance)
   const aim = hasAim(data)
+  const average = totals.averageWeek === null ? '–' : formatHours(totals.averageWeek)
 
   return (
-    <section className={styles.card} aria-label="Balance">
-      <dl className={styles.stats}>
+    <footer className={styles.line} aria-label="Balance">
+      <span>
+        Whole {workspace === 'work' ? 'contract' : 'year'}: <b>{formatHours(totals.minutes)}</b>
         {aim && (
-          <div className={styles.stat}>
-            <dt className={styles.label}>Balance</dt>
-            <dd className={styles.value}>
-              {formatSignedHours(balance)}
-              {balance === 0 && <small> on plan</small>}
-            </dd>
-          </div>
-        )}
-        <div className={styles.stat}>
-          <dt className={styles.label}>Average week</dt>
-          <dd className={styles.value}>
-            {totals.averageWeek === null ? '–' : formatHours(totals.averageWeek)}
-          </dd>
-        </div>
-        <div className={styles.stat}>
-          <dt className={styles.label}>Hours so far</dt>
-          <dd className={styles.value}>{formatHours(totals.minutes)}</dd>
-        </div>
-        {aim && (
-          <div className={styles.stat}>
-            <dt className={styles.label}>Planned, {days} days</dt>
-            <dd className={styles.value}>{formatHours(totals.wholePlan)}</dd>
-          </div>
-        )}
-      </dl>
+          <>
+            {' '}
+            of <b>{formatHours(totals.wholePlan)}</b> · balance <b>{formatSignedHours(balance)}</b>
+          </>
+        )}{' '}
+        · average week <b>{average}</b>
+      </span>
       <AllLink to={yearRoute(workspace, data.start)}>Charts and weeks</AllLink>
-    </section>
+    </footer>
   )
 }

@@ -14,7 +14,7 @@ import { InvoiceCard } from './InvoiceCard'
 import { WeekCard } from './WeekCard'
 import styles from './HoursPage.module.css'
 
-/** The Hours page: the year selector in the header, then Today, the week and the balance. */
+/** The Hours page: the year selector in the header, then Today, the Week and invoice cards side by side, and the whole contract as one line. */
 export function HoursPage(): React.JSX.Element {
   const workspace = useHoursWorkspace()
   const { year, years, loaded, setYear, data: stored } = useTrackingYear(workspace)
@@ -36,11 +36,11 @@ export function HoursPage(): React.JSX.Element {
         </div>
       )}
       {data && (
-        <div className={styles.cols}>
-          <div className={styles.stack}>
-            {inYear(now.date, data.start, data.weeks) && (
-              <TodayCard workspace={workspace} data={data} running={running} now={now} />
-            )}
+        <div className={styles.stack}>
+          {inYear(now.date, data.start, data.weeks) && (
+            <TodayCard workspace={workspace} data={data} running={running} now={now} />
+          )}
+          <div className={styles.cards} data-pair={data.plan.weekAim || undefined}>
             <WeekCard
               workspace={workspace}
               data={data}
@@ -52,9 +52,7 @@ export function HoursPage(): React.JSX.Element {
               <InvoiceCard data={data} week={week} onWeekChange={setWeek} now={now} />
             )}
           </div>
-          <div className={styles.stack}>
-            <BalanceCard workspace={workspace} data={data} now={now} />
-          </div>
+          <BalanceCard workspace={workspace} data={data} now={now} />
         </div>
       )}
     </LandingPage>

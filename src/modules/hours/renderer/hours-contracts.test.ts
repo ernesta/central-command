@@ -142,7 +142,7 @@ describe('the no-aim branches of the Hours cards', () => {
     expect(headers(host)).toHaveLength(3)
   })
 
-  it('BalanceCard without an aim has only the average week and the hours', () => {
+  it('the contract line without an aim has only the hours and the average week', () => {
     const host = mount(
       createElement(BalanceCard, {
         workspace: 'work',
@@ -150,11 +150,14 @@ describe('the no-aim branches of the Hours cards', () => {
         now: NOW
       })
     )
-    const labels = [...host.querySelectorAll('dt')].map((d) => d.textContent)
-    expect(labels).toEqual(['Average week', 'Hours so far'])
+    const text = host.querySelector('footer')?.textContent ?? ''
+    expect(text).toContain('Whole contract:')
+    expect(text).toContain('average week')
+    expect(text).not.toContain('balance')
+    expect(text).not.toContain(' of ')
   })
 
-  it('BalanceCard with an aim also has the balance and the plan', () => {
+  it('the contract line with an aim also has the plan and the balance', () => {
     const host = mount(
       createElement(BalanceCard, {
         workspace: 'work',
@@ -162,9 +165,9 @@ describe('the no-aim branches of the Hours cards', () => {
         now: NOW
       })
     )
-    const labels = [...host.querySelectorAll('dt')].map((d) => d.textContent)
-    expect(labels).toHaveLength(4)
-    expect(labels[0]).toBe('Balance')
+    const text = host.querySelector('footer')?.textContent ?? ''
+    expect(text).toMatch(/Whole contract: .* of .* · balance .* · average week/)
+    expect(host.querySelector('footer a')?.textContent).toBe('Charts and weeks')
   })
 
   it('WeeksChart draws no plan line and no balance text without an aim', () => {
