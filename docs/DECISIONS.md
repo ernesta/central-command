@@ -3058,3 +3058,13 @@ The user's request: task tags need to autofill and show a list. `TagsField` take
 
 - A datalist, not a custom dropdown: least code, matches the filter's tag set. A dropdown that opens on focus is the alternative if the native list proves too quiet.
 - Not driven in the built app (typecheck, lint and tests only).
+
+## Adding a task: priority, tags, and #tags in the title (13 Oct 2026)
+
+The user's request, after looking at the add bar: the bar's "Return" hint was unhelpful (Enter only works while typing), priority and tags were missing, and the New task popup needed tags too.
+
+- **Tasks page: no add bar.** "New task" (button and shortcut) covers it. `AddBar` stays, used by the Tasks landing only, in case another view wants a one-line add.
+- **AddBar:** the "Return" hint is an **Add** primary button (disabled until there is a title; Enter still submits). It gained the shared priority `Segmented` and `TagsField`; priority and tags reset after each add, due and list stay.
+- **New task popup:** a Tags row (`TagsField`, suggestions from `tagsIn(rows)`) under Priority. `tasks.create` already took `tags`; no store or IPC change.
+- **`#tag` in the title** (`splitTitleTags`, `shared/title-tags.ts`, pure and tested): a `#` at the start or after a space, followed by a letter, up to the next space, is a tag (lower case, once each) and leaves the title. "Fix issue #12", "C#" and "a#b" are left as written. Tags typed this way merge with ones picked in the field. The `#tag` text stays visible in the field until the task is added; no chip is drawn while typing (a possible later step).
+- Checked by unit tests, lint and typecheck only; not driven in the built app.
