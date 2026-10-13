@@ -3201,3 +3201,9 @@ The user's rule: a training's task, series task and lecture subtask alike, is ti
 - **Why (the user):** on the Training landing page, the initials chip (KI) in "Recent and upcoming" sat lower than the entry's text.
 - **Cause:** `Landing.module.css` defined `.chips` and `.chip` twice, once for the recent rows and once for the series cards. CSS Modules merge them, so the later series-card rules (`margin: 8px 0 0`, a border, more padding) also applied to the row chips and pushed them down.
 - **Now:** the recent rows use their own `.people` and `.person` classes. `RecentList` is shared, so Meetings and the other landings get the fix. Not driven in the app.
+
+## A renamed meeting no longer overlaps itself (13 Oct 2026)
+
+- **Why (the user):** on a new meeting, while filling in its details, the page warned "Overlaps Meetings · Oct 13, 2026 13:00–14:00", which was the meeting itself.
+- **Cause:** changing the series or date renames the file, and `MeetingPageIn` keeps the page mounted under the name it opened with (to keep the cursor). `MeetingHoursNote` was given that old name as the meeting's own, so its entry under the new name looked like another meeting. The 14:00 end was the default, before the user set 13:05.
+- **Now:** `MeetingView` takes `currentId` (the name in the address) and passes it to `MeetingHoursNote`. File operations still use the name the page opened with. Not driven in the app; no test for the rename case.
