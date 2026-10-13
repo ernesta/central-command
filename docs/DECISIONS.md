@@ -3290,3 +3290,10 @@ The user's rule: a training's task, series task and lecture subtask alike, is ti
 - **Now:** today's cell has a small triangle in its top-right corner (`notch` in `YearHeatMap.tsx`, following the cell's rounded corner, size about 36% of the cell): accent on a pale cell, the contrast colour on a filled one (level 2 and up). The "Today" legend key and the dot are gone. A day off keeps its grey outline and the hover/keyboard ring stays ink, so the three read apart.
 - **The chart "settling" (the user's suspicion, not proved):** Year, Weeks and Days each measure their plot with `useElementWidth`, whose ref callback read the border box (`getBoundingClientRect`) while `ResizeObserver` reports the content box; the plots have 4px side padding, so the first draw was 8px too wide and the observer then redrew narrower. The hook now reads the content width from the start (`clientWidth` minus padding). Whether anything else also moves was not checked; if it still does, drive the app and look.
 - Typecheck, lint and tests only for the code; the mockup was looked at in headless Chrome. The notch was not driven in the app before this write-up.
+
+## Hours: a finished year puts the Week card beside Patterns and opens on its first week (13 Oct 2026)
+
+- **Why (the user):** in a completed year or contract there is no Today card, so Patterns sat alone in a half-width row with the Week card below it, and the Week card opened on the last (empty) week.
+- **Layout:** when today is outside the year (finished, or not begun), the first row is the Week card on the left and Patterns on the right; the invoice card, if the contract has one, gets its own row below. A current year is unchanged: Today and Patterns, then Week and invoice (`HoursPage.tsx`).
+- **Default week:** `defaultWeek` returns the year's first week when today is after the year's end (before the start it already did). A `?week=` in the URL still wins.
+- Typecheck, lint and tests only (`week.test.ts` updated); not driven in the app.
