@@ -1,11 +1,9 @@
 import { addDays, daysBetween, inYear, yearEnd } from '@shared/year'
 
-/** The week a year's page opens on: this week, or the nearest one when today is outside the year (its first or last). */
+/** The week a year's page opens on: this week, or the first one when today is outside the year (a finished year reads from its start). */
 export function defaultWeek(yearStart: string, today: string, weeks?: number): string {
-  if (today < yearStart) return yearStart
-  const last = yearEnd(yearStart, weeks)
-  const day = today > last ? last : today
-  return addDays(yearStart, Math.floor(daysBetween(yearStart, day) / 7) * 7)
+  if (today < yearStart || today > yearEnd(yearStart, weeks)) return yearStart
+  return addDays(yearStart, Math.floor(daysBetween(yearStart, today) / 7) * 7)
 }
 
 /** The week asked for (the first day of one of the year's weeks), else the default one. */

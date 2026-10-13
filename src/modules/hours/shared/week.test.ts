@@ -12,8 +12,8 @@ describe('defaultWeek', () => {
   it('is the first week before the year begins', () => {
     expect(defaultWeek(START, '2026-09-01')).toBe(START)
   })
-  it('is the last week once the year is over', () => {
-    expect(defaultWeek(START, '2028-01-01')).toBe('2027-09-13')
+  it('is the first week once the year is over', () => {
+    expect(defaultWeek(START, '2028-01-01')).toBe(START)
   })
 })
 

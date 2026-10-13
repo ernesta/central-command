@@ -25,6 +25,16 @@ export function HoursPage(): React.JSX.Element {
   const data = useShownYear(workspace, stored, now.date)
   const { week, setWeek } = useWeek(stored?.start ?? year, now.date, stored?.weeks)
 
+  // A finished (or not yet begun) year has no Today card: the week and Patterns share the first row.
+  const current = data !== null && inYear(now.date, data.start, data.weeks)
+  const charts = data && <ChartsCard workspace={workspace} data={data} now={now} />
+  const weekCard = data && (
+    <WeekCard workspace={workspace} data={data} week={week} onWeekChange={setWeek} now={now} />
+  )
+  const invoiceCard = data?.plan.weekAim && (
+    <InvoiceCard data={data} week={week} onWeekChange={setWeek} now={now} />
+  )
+
   return (
     <LandingPage>
       <LandingHeader
@@ -38,24 +48,26 @@ export function HoursPage(): React.JSX.Element {
       )}
       {data && (
         <div className={styles.stack}>
-          <div className={styles.cards}>
-            {inYear(now.date, data.start, data.weeks) && (
-              <TodayCard workspace={workspace} data={data} running={running} now={now} />
-            )}
-            <ChartsCard workspace={workspace} data={data} now={now} />
-          </div>
-          <div className={styles.cards}>
-            <WeekCard
-              workspace={workspace}
-              data={data}
-              week={week}
-              onWeekChange={setWeek}
-              now={now}
-            />
-            {data.plan.weekAim && (
-              <InvoiceCard data={data} week={week} onWeekChange={setWeek} now={now} />
-            )}
-          </div>
+          {current ? (
+            <>
+              <div className={styles.cards}>
+                <TodayCard workspace={workspace} data={data} running={running} now={now} />
+                {charts}
+              </div>
+              <div className={styles.cards}>
+                {weekCard}
+                {invoiceCard}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className={styles.cards}>
+                {weekCard}
+                {charts}
+              </div>
+              {invoiceCard && <div className={styles.cards}>{invoiceCard}</div>}
+            </>
+          )}
           <BalanceCard workspace={workspace} data={data} now={now} />
         </div>
       )}
