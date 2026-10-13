@@ -5,7 +5,10 @@ export function useElementWidth(): { ref: (el: HTMLElement | null) => void; widt
   const [width, setWidth] = useState(0)
   const ref = useCallback((el: HTMLElement | null) => {
     if (!el) return
-    setWidth(el.getBoundingClientRect().width)
+    // The content width, as the observer reports it: the border box includes padding, and measuring it first drew the chart
+    // 8px too wide for one frame before the observer corrected it.
+    const style = getComputedStyle(el)
+    setWidth(el.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight))
     const observer = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width))
     observer.observe(el)
     return () => observer.disconnect()
