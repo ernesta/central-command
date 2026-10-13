@@ -2091,6 +2091,16 @@ After the fixes: **32 to fill in, 25 of them a bare link and 7 holding text too*
 
 **Applied to the real library the same day** (the user's go-ahead, app closed, backup `backups/clickup-links-2026-10-06T14-00-12-630Z`, readable copy `backups/tasks/tasks-2026-10-06T14-00-12-657Z-clickup-links.json`): 32 descriptions written and read back, 89 -> 121 tasks with a description. Checked in the database independently of the script's own report: the eleven Kathy tasks hold the Google Docs link, "Check new placement options" holds its four URLs on separate lines, and "Publish Study 1: Luminos data code" is still empty. A second dry run reports nothing left to fill. Not confirmed by eye in the app: the live editor's drawing of a plain URL as a link is an existing, tested feature, so the task pages were not driven.
 
+### Descriptions kept as plain text lost their links (13 Oct 2026)
+
+Found by the user: "Check upcoming external trainings" had about ten links in ClickUp and none in Tasks.
+
+- **Cause.** The 6 Oct backfill never overwrites a description we hold, and this task held ClickUp's plain-text rendering (`(or consider  and )`), which drops every link. The CSV had carried it, the importer copied it faithfully, and the backfill treated it as typed text. The same applied to any of the 89 CSV descriptions with inline links.
+- **`npm run backfill:clickup-links -- --repair [--apply]`** (`planDescriptionRepair`, `clickup-descriptions.ts`). A task is repaired only when what we hold equals ClickUp's plain `description` (whitespace squashed), so anything typed here since is never touched, and only when the Markdown adds a URL the held text lacks. Bullet-only differences (about 60 tasks) are left alone, since no link was lost. Dry run by default; `--apply` backs up first and reads every change back.
+- **Two faults the real dry run showed**, both now tests: ClickUp writes a URL that ends in a bracket as `…\)` (a stray `)` after the link), and a strikethrough URL counted as new.
+- **Applied 13 Oct 2026** (app closed): 11 tasks, backup `backups/clickup-repair-2026-10-13T12-38-18-114Z`, readable copy `backups/tasks/tasks-2026-10-13T12-38-18-143Z-clickup-repair.json`. A re-run finds nothing. "Check upcoming external trainings" regained 7 links (the closing `)` of "(or consider … and …)" sits on its own line; left as is).
+- **Not pursued.** ClickUp's comments, checklists and attachments were empty in the CSV too and have not been checked against the API.
+
 ## The Royal Holloway contract, and the kick-off meeting (6 Oct 2026)
 
 The user's own data, changed by hand with a backup before each step; no app code changed. The one-off scripts stayed in
