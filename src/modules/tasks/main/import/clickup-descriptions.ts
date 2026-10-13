@@ -73,7 +73,7 @@ function labelIsJustTheUrl(label: string, url: string): boolean {
   return leftover.length === 0
 }
 
-const LINK = /(?<!!)\[([^\][]*)\]\(([^()\s]+)\)/g
+const LINK = /(?<!!)\[([^\][]*)\]\(((?:[^()\s\\]|\\.)+)\)/g
 
 /**
  * Every link whose label only repeats its URL becomes the bare URL (the editor draws a plain URL as a link). Two
@@ -89,7 +89,9 @@ function bareTheLinks(text: string): string {
     const between = text.slice(last, at)
     if (afterUrl && between !== '' && !/^\s/.test(between)) out += '\n'
     out += between
-    const [whole, label, url] = match
+    const [whole, label, rawUrl] = match
+    // ClickUp writes a URL that ends in a bracket as `…\)`; the bracket is not part of the address.
+    const url = rawUrl.replace(/\\\)$/, '')
     const isBare = labelIsJustTheUrl(label, url)
     if (isBare && out !== '' && !/\s$/.test(out)) out += '\n'
     out += isBare ? url : `[${label.replace(/\s+/g, ' ').trim()}](${url})`
@@ -153,4 +155,49 @@ export function planDescriptionBackfill(
     })
   }
   return plan
+}
+
+export interface RepairChange {
+  uid: string
+  sourceId: string
+  title: string
+  before: string
+  /** The tidied Markdown to write, holding the links the plain text lost. */
+  description: string
+}
+
+const squash = (text: string): string => text.replace(/\s+/g, ' ').trim()
+
+/**
+ * Descriptions the CSV did carry, but as ClickUp's plain text, which drops every link. A task is repaired only when
+ * what we hold is still exactly that plain text (so anything typed here since is never touched) and the Markdown
+ * from the API says more.
+ */
+export function planDescriptionRepair(
+  tasks: StoredTask[],
+  markdown: FetchedDescriptions,
+  plain: FetchedDescriptions
+): RepairChange[] {
+  const changes: RepairChange[] = []
+  for (const task of tasks) {
+    const held = squash(task.description)
+    if (held === '') continue
+    const rawMarkdown = markdown.get(task.sourceId)
+    const rawPlain = plain.get(task.sourceId)
+    if (rawMarkdown === undefined || rawPlain === undefined) continue
+    if (squash(rawPlain) !== held) continue
+    const description = tidyClickupMarkdown(rawMarkdown)
+    if (description === '' || squash(description) === held) continue
+    // Only a description that gains a link is worth touching: list and bullet layout alone is not the loss.
+    const urls = description.match(/https?:\/\/[^\s)\]~]+/g) ?? []
+    if (!urls.some((url) => !held.includes(url.replace(/\\$/, '').replace(/\/$/, '')))) continue
+    changes.push({
+      uid: task.uid,
+      sourceId: task.sourceId,
+      title: task.title,
+      before: task.description,
+      description
+    })
+  }
+  return changes
 }

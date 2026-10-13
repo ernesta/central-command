@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   planDescriptionBackfill,
+  planDescriptionRepair,
   tidyClickupMarkdown,
+  type RepairChange,
   type StoredTask
 } from './clickup-descriptions'
 
@@ -167,5 +169,35 @@ describe('planDescriptionBackfill', () => {
     expect(plan.kept).toBe(1)
     expect(plan.empty).toBe(1)
     expect(plan.missing).toEqual(['d'])
+  })
+})
+
+describe('planDescriptionRepair', () => {
+  const task = (description: string): StoredTask => ({
+    uid: 'u',
+    sourceId: 'c1',
+    title: 'T',
+    description
+  })
+  const run = (held: string, markdown: string, plain: string): RepairChange[] =>
+    planDescriptionRepair([task(held)], new Map([['c1', markdown]]), new Map([['c1', plain]]))
+
+  it('puts back the links the plain text lost', () => {
+    const [change] = run(
+      'An issue on power',
+      'An [issue](https://a.org/x) on power',
+      'An issue on power'
+    )
+    expect(change.description).toBe('An [issue](https://a.org/x) on power')
+  })
+  it('never touches a description that was edited here', () => {
+    expect(run('My own words', 'An [issue](https://a.org/x)', 'An issue')).toEqual([])
+  })
+  it('ignores a difference that is only list layout', () => {
+    expect(run('One / Two', '- One\n- Two', 'One\nTwo')).toEqual([])
+  })
+  it('drops the escaped bracket ClickUp leaves on a URL', () => {
+    const [change] = run('See paper', 'See [paper](https://osf.io/45q36/\\))', 'See paper')
+    expect(change.description).toBe('See [paper](https://osf.io/45q36/)')
   })
 })

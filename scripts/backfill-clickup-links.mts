@@ -19,6 +19,7 @@ import { assertAbsoluteHome } from '../src/main/home-dir'
 import { openDatabase } from '../src/main/db/connection'
 import {
   planDescriptionBackfill,
+  planDescriptionRepair,
   type FetchedDescriptions,
   type StoredTask
 } from '../src/modules/tasks/main/import/clickup-descriptions'
@@ -35,6 +36,8 @@ function arg(name: string): string | undefined {
   return i >= 0 ? process.argv[i + 1] : undefined
 }
 const apply = process.argv.includes('--apply')
+/** --repair: fix descriptions the CSV carried as plain text (links lost) instead of filling empty ones. */
+const repair = process.argv.includes('--repair')
 const fail = (message: string): never => {
   console.error(message)
   process.exit(1)
@@ -99,6 +102,8 @@ async function teamId(): Promise<string> {
 }
 
 /** Every task in the workspace, 100 a page, descriptions included. Archived tasks are a second pass. */
+const plainText: FetchedDescriptions = new Map()
+
 async function fetchDescriptions(team: string): Promise<FetchedDescriptions> {
   const found: FetchedDescriptions = new Map()
   for (const archived of [false, true]) {
@@ -112,7 +117,10 @@ async function fetchDescriptions(team: string): Promise<FetchedDescriptions> {
       })
       const body = await get(`/team/${team}/task?${query.toString()}`)
       const tasks = (body.tasks ?? []) as ApiTask[]
-      for (const t of tasks) found.set(t.id, t.markdown_description ?? t.description ?? '')
+      for (const t of tasks) {
+        found.set(t.id, t.markdown_description ?? t.description ?? '')
+        plainText.set(t.id, t.description ?? '')
+      }
       process.stdout.write(
         `\r  ${archived ? 'archived' : 'tasks'}: page ${page + 1}, ${nf(found.size)} tasks so far   `
       )
@@ -138,6 +146,39 @@ const team = await teamId()
 console.log('\nFetching descriptions (100 a page):')
 const fetched = await fetchDescriptions(team)
 console.log(`ClickUp returned ${nf(fetched.size)} tasks in ${requests} requests.`)
+
+if (repair) {
+  const fixes = planDescriptionRepair(held, fetched, plainText)
+  console.log(`\nHeld as ClickUp's plain text, with more in ClickUp: ${nf(fixes.length)}`)
+  for (const c of fixes) {
+    console.log(`\n  ${c.title}  [${c.sourceId}]`)
+    console.log(`    now : ${c.before.replace(/\n/g, ' / ')}`)
+    for (const line of c.description.split('\n')) console.log(`    new : ${line}`)
+  }
+  if (!apply || fixes.length === 0) {
+    db.close()
+    console.log('\nDry run: nothing was written. Add --apply (app closed).')
+    process.exit(0)
+  }
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-')
+  const backup = join(root, 'backups', `clickup-repair-${stamp}`)
+  mkdirSync(backup, { recursive: true })
+  db.prepare('VACUUM INTO ?').run(join(backup, 'central-command.sqlite'))
+  console.log(`\nBacked up to ${backup}`)
+  const repairStore = new TasksStore(db)
+  db.transaction(() => {
+    for (const c of fixes) repairStore.update(c.uid, { description: c.description })
+  })()
+  const bad = fixes.filter((c) => repairStore.get(c.uid)?.description !== c.description)
+  const copy = writeTasksSnapshot(db, join(root, 'backups', 'tasks'), new Date(), 'clickup-repair')
+  db.close()
+  if (bad.length > 0) {
+    console.log(`\nPROBLEM: ${bad.length} did not read back; restore from ${backup}`)
+    process.exit(1)
+  }
+  console.log(`\nApplied: ${nf(fixes.length)} written and read back. Readable copy: ${copy}`)
+  process.exit(0)
+}
 
 const plan = planDescriptionBackfill(held, fetched)
 const links = plan.changes.filter((c) => c.kind === 'link')
