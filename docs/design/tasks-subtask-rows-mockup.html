@@ -1,0 +1,100 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Subtask rows mockup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@600;700&display=swap" />
+<style>
+  /* Layout: the same three tasks from the user's screenshot, five ways to show the subtasks. Tokens as in tasks-mockup.html. */
+  :root {
+    --bg: #edeff2; --surface: #ffffff; --ink: #1b222b; --text-muted: #5c6672;
+    --border-soft: #d3d8de; --border-faint: #e6e9ed; --hover-tint: #f4f6f8;
+    --accent: #35577a; --selected-bg: #dce6ee;
+    --font-display: 'Newsreader', Georgia, serif; --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg: #14181d; --surface: #1f262e; --ink: #e6eaee; --text-muted: #98a3af;
+      --border-soft: #2f3843; --border-faint: #262e37; --hover-tint: #262e37;
+      --accent: #86aad0; --selected-bg: #2a3b4d; color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font: 14px/1.5 var(--font-body); margin: 0; padding: 24px 16px 56px; }
+  .page { max-width: 1100px; margin: 0 auto; display: grid; gap: 44px; }
+  h1, h2 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
+  h1 { font-size: 26px; } h2 { font-size: 20px; }
+  p { margin: 0; } .note { font-size: 13px; color: var(--text-muted); max-width: 72ch; }
+  .label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); }
+  .opt { display: grid; gap: 12px; }
+  .tree { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 8px; overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 900px; table-layout: fixed; }
+  col.c-s { width: 56px; } col.c-l { width: 190px; } col.c-p { width: 100px; } col.c-t { width: 80px; } col.c-d { width: 110px; }
+  th { text-align: left; font-weight: 500; font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+       color: var(--text-muted); padding: 8px 12px; border-bottom: 1px solid var(--border-soft); }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border-faint); vertical-align: middle; font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: 0; }
+  .circ { width: 18px; height: 18px; border: 1.5px solid var(--text-muted); border-radius: 50%; display: inline-block; vertical-align: middle; }
+  .kid .circ { width: 14px; height: 14px; }
+  .pill { white-space: nowrap; display: inline-block; font-size: 12px; padding: 0 8px; border: 1px solid var(--border-soft); border-radius: 999px; color: var(--text-muted); margin-left: 8px; }
+  .p { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 6px; background: var(--selected-bg); }
+  .p.p3 { background: var(--hover-tint); color: var(--text-muted); }
+  .kid td { font-size: 13px; background: color-mix(in srgb, var(--hover-tint) 55%, transparent); border-bottom-color: transparent; }
+  .kid td:first-child { text-align: right; padding-right: 8px; }
+  .kid.last td { border-bottom-color: var(--border-faint); }
+  .muted { color: var(--text-muted); }
+  .faint { color: var(--text-muted); opacity: .6; }
+  .thread { border-left: 2px solid var(--border-soft); padding-left: 12px; margin-left: 6px; }
+  .mini { display: grid; gap: 4px; margin-top: 6px; font-size: 13px; color: var(--text-muted); }
+  .mini div { display: flex; justify-content: space-between; gap: 12px; }
+  .mini .circ { width: 12px; height: 12px; margin-right: 8px; }
+  .inline { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+</style>
+<div class="page">
+<header class="opt"><h1>Subtask rows</h1>
+<p class="note">Same three tasks as your screenshot. The ugly part is that a subtask row is mostly empty cells (List, Priority and Time are blank) in a table built for full tasks. The options differ in what a subtask row says and whether it keeps the columns. In all of them a subtask has no priority of its own: it takes its parent's (as a due date is copied when a subtask is made), so the Priority control and the stored value go away.</p></header>
+
+<section class="opt"><div><span class="label">Option A</span><h2>Today, for reference</h2></div>
+<div class="tree"><table><colgroup><col class="c-s"><col><col class="c-l"><col class="c-p"><col class="c-t"><col class="c-d"></colgroup>
+<thead><tr><th></th><th>Task</th><th>List</th><th>Priority</th><th>Time</th><th>Due</th></tr></thead><tbody>
+<tr><td><span class="circ"></span></td><td>Prepare for the upcoming supervision meeting <span class="pill">0/2 ›</span></td><td>Meetings</td><td><span class="p">P2</span></td><td></td><td>Oct 23</td></tr>
+<tr class="kid"><td><span class="circ"></span></td><td>Prepare a notes document with previous action items and agenda</td><td></td><td></td><td></td><td>Oct 20</td></tr>
+<tr class="kid last"><td><span class="circ"></span></td><td>Prepare a presentation or another deliverable</td><td></td><td></td><td></td><td>Oct 20</td></tr>
+<tr><td><span class="circ"></span></td><td>Back up RHUL folder to OneDrive and Dropbox</td><td>Admin &amp; Logistics</td><td><span class="p p3">P3</span></td><td></td><td>Oct 20</td></tr>
+</tbody></table></div></section>
+
+<section class="opt"><div><span class="label">Option B</span><h2>Inherited values, shown faint</h2></div>
+<p class="note">Keeps the grid, so everything lines up. The subtask repeats the parent's List and Priority in a quiet tone (not clickable, no hover state). Honest about inheritance, but it is the most text on screen: the same word three times in a row.</p>
+<div class="tree"><table><colgroup><col class="c-s"><col><col class="c-l"><col class="c-p"><col class="c-t"><col class="c-d"></colgroup>
+<thead><tr><th></th><th>Task</th><th>List</th><th>Priority</th><th>Time</th><th>Due</th></tr></thead><tbody>
+<tr><td><span class="circ"></span></td><td>Prepare for the upcoming supervision meeting <span class="pill">0/2 ›</span></td><td>Meetings</td><td><span class="p">P2</span></td><td></td><td>Oct 23</td></tr>
+<tr class="kid"><td><span class="circ"></span></td><td>Prepare a notes document with previous action items and agenda</td><td class="faint">Meetings</td><td class="faint">P2</td><td></td><td>Oct 20</td></tr>
+<tr class="kid last"><td><span class="circ"></span></td><td>Prepare a presentation or another deliverable</td><td class="faint">Meetings</td><td class="faint">P2</td><td></td><td>Oct 20</td></tr>
+<tr><td><span class="circ"></span></td><td>Back up RHUL folder to OneDrive and Dropbox</td><td>Admin &amp; Logistics</td><td><span class="p p3">P3</span></td><td></td><td>Oct 20</td></tr>
+</tbody></table></div></section>
+
+<section class="opt"><div><span class="label">Option C</span><h2>Subtasks are a thread, only title and date</h2></div>
+<p class="note">The subtask drops the columns it cannot use: its title runs across List, Priority and Time, and only the date stays in the Due column. A thread line ties it to the parent. Nothing blank, nothing repeated. List and priority are read from the parent row directly above.</p>
+<div class="tree"><table><colgroup><col class="c-s"><col><col class="c-l"><col class="c-p"><col class="c-t"><col class="c-d"></colgroup>
+<thead><tr><th></th><th>Task</th><th>List</th><th>Priority</th><th>Time</th><th>Due</th></tr></thead><tbody>
+<tr><td><span class="circ"></span></td><td>Prepare for the upcoming supervision meeting <span class="pill">0/2 ›</span></td><td>Meetings</td><td><span class="p">P2</span></td><td></td><td>Oct 23</td></tr>
+<tr class="kid"><td><span class="circ"></span></td><td colspan="4"><span class="thread">Prepare a notes document with previous action items and agenda</span></td><td>Oct 20</td></tr>
+<tr class="kid last"><td><span class="circ"></span></td><td colspan="4"><span class="thread">Prepare a presentation or another deliverable</span></td><td>Oct 20</td></tr>
+<tr><td><span class="circ"></span></td><td>Back up RHUL folder to OneDrive and Dropbox</td><td>Admin &amp; Logistics</td><td><span class="p p3">P3</span></td><td></td><td>Oct 20</td></tr>
+</tbody></table></div></section>
+
+<section class="opt"><div><span class="label">Option D</span><h2>Subtasks inside the parent's row</h2></div>
+<p class="note">No rows of their own: the pill opens a small checklist inside the parent's Task cell, each line with its date at the right edge. The parent row just grows. Compact and clearly one unit, but you can no longer tab or right-click a subtask as a row, and long lists make one tall row.</p>
+<div class="tree"><table><colgroup><col class="c-s"><col><col class="c-l"><col class="c-p"><col class="c-t"><col class="c-d"></colgroup>
+<thead><tr><th></th><th>Task</th><th>List</th><th>Priority</th><th>Time</th><th>Due</th></tr></thead><tbody>
+<tr><td style="vertical-align:top"><span class="circ"></span></td><td>Prepare for the upcoming supervision meeting <span class="pill">0/2 ⌄</span>
+<div class="mini"><div><span><span class="circ"></span>Prepare a notes document with previous action items and agenda</span><span>Oct 20</span></div>
+<div><span><span class="circ"></span>Prepare a presentation or another deliverable</span><span>Oct 20</span></div></div></td><td style="vertical-align:top">Meetings</td><td style="vertical-align:top"><span class="p">P2</span></td><td></td><td style="vertical-align:top">Oct 23</td></tr>
+<tr><td><span class="circ"></span></td><td>Back up RHUL folder to OneDrive and Dropbox</td><td>Admin &amp; Logistics</td><td><span class="p p3">P3</span></td><td></td><td>Oct 20</td></tr>
+</tbody></table></div></section>
+
+<section class="opt"><div><span class="label">Option E</span><h2>Closed pill says more, rows stay quiet</h2></div>
+<p class="note">The closed row already shows the pill; here it also carries the earliest subtask date when it differs from the parent's ("0/2 · Oct 20"). Opened, subtasks are as in C. A small addition to what you have, and it makes the subtask dates visible without opening anything.</p>
+<div class="tree"><table><colgroup><col class="c-s"><col><col class="c-l"><col class="c-p"><col class="c-t"><col class="c-d"></colgroup>
+<thead><tr><th></th><th>Task</th><th>List</th><th>Priority</th><th>Time</th><th>Due</th></tr></thead><tbody>
+<tr><td><span class="circ"></span></td><td>Prepare for the upcoming supervision meeting <span class="pill">0/2 · from Oct 20 ›</span></td><td>Meetings</td><td><span class="p">P2</span></td><td></td><td>Oct 23</td></tr>
+<tr><td><span class="circ"></span></td><td>Back up RHUL folder to OneDrive and Dropbox</td><td>Admin &amp; Logistics</td><td><span class="p p3">P3</span></td><td></td><td>Oct 20</td></tr>
+</tbody></table></div></section>
+</div></html>

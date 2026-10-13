@@ -290,6 +290,16 @@
 .kid.end td:first-child::after {
   display: none;
 }
+/* A parent with subtasks under it has no line below it; the group's last row has, so the line marks where one task ends. */
+.row:has(+ .kid) td {
+  border-bottom: 0;
+}
+.kid.end td {
+  border-bottom: 1px solid var(--border-faint);
+}
+.kid.end:last-child td {
+  border-bottom: 0;
+}
 .addRow td {
   color: var(--text-muted);
   font-size: var(--text-13);

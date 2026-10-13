@@ -3322,3 +3322,11 @@ The user's rule: a training's task, series task and lecture subtask alike, is ti
 - **Why (the user):** the landing should lead with what is due now, split today from tomorrow, and not show empty blocks.
 - **Now:** sections run Overdue, Due today, Due tomorrow, Soon, In progress (`LANDING_SECTIONS`, `landingSections` in `shared/views.ts`). Soon is the old Upcoming without today and tomorrow (days 2 to 7). A section with no rows is not drawn at all (no empty table, no "Nothing is overdue"), so Overdue's Move buttons only exist when something is overdue. Subtask nesting and date ordering are unchanged.
 - Typecheck, lint and tests only; not driven in the app.
+
+## Tasks table: the line marks where a task ends (13 Oct 2026)
+
+- **Why (the user):** with subtasks open it was not clear where one task stopped and the next began.
+- **Cause:** a parent row kept its bottom line, so the line sat between the parent and its own subtasks, while the subtasks and the add row had none, so nothing closed the group.
+- **Now:** a row directly followed by a subtask has no bottom line (`.row:has(+ .kid)`); the group's last row (`.kid.end`: the add row when open, the last nested subtask when closed) has it. Layout, columns and the thread are unchanged.
+- **Considered and dropped:** the subtask-row layouts in `docs/design/tasks-subtask-rows-mockup.html` (inherited values shown faint, a title-and-date thread, subtasks inside the parent's row, a richer pill). The user kept the current layout. Subtask priority is untouched: a subtask still stores one and shows none; making it read the parent's is open.
+- Not driven in the app (CSS only); typecheck, lint and tests pass.
