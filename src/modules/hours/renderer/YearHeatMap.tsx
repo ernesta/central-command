@@ -5,6 +5,7 @@ import { formatDay, formatHours } from '@shared/tracking/format'
 import { TIME_OFF_TYPES, type Moment, type TrackingYear } from '@shared/tracking/types'
 import { addDays, weekdayOf, YEAR_WEEKS } from '@shared/year'
 import { heatDays, monthColumns } from '../shared/heat'
+import { CHART_HEIGHT } from './charts-size'
 import { weekRoute } from './hours-paths'
 import styles from './YearHeatMap.module.css'
 
@@ -54,26 +55,24 @@ export function YearHeatMap({
   const tipLeft = active === null ? 0 : Math.min(Math.max(cx(active) + cell / 2, 90), width - 90)
 
   return (
-    <section className={styles.card} aria-label="The year, day by day">
-      <header className={styles.head}>
-        <h2 className={styles.title}>Year</h2>
-        <ul className={styles.legend}>
-          <li>
-            Less
-            {[0, 1, 2, 3].map((l) => (
-              <i key={l} className={styles[`level${l}`]} />
-            ))}
-            More
-          </li>
-          <li>
-            <i className={`${styles.level0} ${styles.offKey}`} />
-            Day off
-          </li>
-        </ul>
-      </header>
+    <>
+      <ul className={styles.legend}>
+        <li>
+          Less
+          {[0, 1, 2, 3].map((l) => (
+            <i key={l} className={styles[`level${l}`]} />
+          ))}
+          More
+        </li>
+        <li>
+          <i className={`${styles.level0} ${styles.offKey}`} />
+          Day off
+        </li>
+      </ul>
       <div
         ref={ref}
         className={styles.plot}
+        style={{ marginTop: 8 + Math.max((CHART_HEIGHT - height) / 2, 0) }}
         tabIndex={0}
         role="group"
         aria-label="Hours on each day of the year; arrow keys move between days, Enter opens the week"
@@ -124,7 +123,7 @@ export function YearHeatMap({
                 y={cy(i)}
                 width={cell}
                 height={cell}
-                rx={3}
+                rx={Math.min(3, cell / 4)}
                 onPointerEnter={() => setActive(i)}
                 onClick={() => open(i)}
               />
@@ -143,6 +142,6 @@ export function YearHeatMap({
           </div>
         )}
       </div>
-    </section>
+    </>
   )
 }

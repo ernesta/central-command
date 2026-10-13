@@ -4,9 +4,10 @@ import { formatHours, formatRange, formatSignedHours } from '@shared/tracking/fo
 import { hasAim, weekPlan, weekTotals } from '@shared/tracking/plan'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
 import { columnPath, niceAxis, slotAt } from '../shared/chart'
+import { CHART_HEIGHT } from './charts-size'
 import styles from './WeeksChart.module.css'
 
-const HEIGHT = 240
+const HEIGHT = CHART_HEIGHT
 const PAD = { top: 12, right: 8, bottom: 26, left: 52 }
 const MAX_BAR = 24
 const GAP = 2
@@ -38,13 +39,6 @@ export function WeeksChart({ data, now }: { data: TrackingYear; now: Moment }): 
   const y = (minutes: number): number => PAD.top + plotH - (minutes / top) * plotH
   const begun = (i: number): boolean => weeks[i].from <= now.date
 
-  const planPath = weeks
-    .map(
-      (w, i) =>
-        `${i === 0 ? 'M' : 'L'}${PAD.left + i * slot} ${y(w.fullPlan)}L${PAD.left + (i + 1) * slot} ${y(w.fullPlan)}`
-    )
-    .join('')
-
   const move = (delta: number): void => {
     const shown = weeks.map((_, i) => i).filter(begun)
     if (shown.length === 0) return
@@ -58,40 +52,31 @@ export function WeeksChart({ data, now }: { data: TrackingYear; now: Moment }): 
     active === null ? 0 : Math.min(Math.max(PAD.left + (active + 0.5) * slot, 100), width - 100)
 
   return (
-    <section className={styles.card} aria-label={aimed ? 'Weeks against the plan' : 'Weeks'}>
-      <header className={styles.head}>
-        <h2 className={styles.title}>Weeks</h2>
-        <ul className={styles.legend}>
-          {!aimed && (
+    <>
+      <ul className={styles.legend}>
+        {!aimed && (
+          <li>
+            <i className={styles.met} />
+            Hours
+          </li>
+        )}
+        {aimed && (
+          <>
             <li>
               <i className={styles.met} />
-              Hours
+              Plan met
             </li>
-          )}
-          {aimed && (
-            <>
-              <li>
-                <i className={styles.met} />
-                Plan met
-              </li>
-              <li>
-                <i className={styles.under} />
-                Under plan
-              </li>
-            </>
-          )}
-          <li>
-            <i className={styles.now} />
-            This week
-          </li>
-          {aimed && (
             <li>
-              <b className={styles.planKey} />
-              Plan
+              <i className={styles.under} />
+              Under plan
             </li>
-          )}
-        </ul>
-      </header>
+          </>
+        )}
+        <li>
+          <i className={styles.now} />
+          This week
+        </li>
+      </ul>
       <div
         ref={ref}
         className={styles.plot}
@@ -154,7 +139,6 @@ export function WeeksChart({ data, now }: { data: TrackingYear; now: Moment }): 
                 />
               )
             })}
-            {aimed && <path className={styles.plan} d={planPath} />}
             {weeks.map((w, i) =>
               begun(i) ? (
                 <rect
@@ -198,6 +182,6 @@ export function WeeksChart({ data, now }: { data: TrackingYear; now: Moment }): 
           </div>
         )}
       </div>
-    </section>
+    </>
   )
 }

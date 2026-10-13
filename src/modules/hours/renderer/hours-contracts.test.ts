@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { createElement } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { AllWeeks } from './AllWeeks'
 import { BalanceCard } from './BalanceCard'
 import { InvoiceCard } from './InvoiceCard'
 import { WeekCard } from './WeekCard'
@@ -167,41 +166,24 @@ describe('the no-aim branches of the Hours cards', () => {
     )
     const text = host.querySelector('footer')?.textContent ?? ''
     expect(text).toMatch(/Whole contract: .* of .* · balance .* · average week/)
-    expect(host.querySelector('footer a')?.textContent).toBe('Charts and weeks')
+    expect(host.querySelector('footer a')).toBeNull()
   })
 
-  it('WeeksChart draws no plan line and no balance text without an aim', () => {
+  it('WeeksChart has no plan line, and its legend names the plan only with an aim', () => {
     const without = mount(
       createElement(WeeksChart, { data: contract({ aim: false, invoice: 'week' }), now: NOW })
     )
-    const paths = without.querySelectorAll('path').length
+    expect(without.querySelector('ul')?.textContent).toContain('Hours')
     unmount()
     const withAim = mount(
       createElement(WeeksChart, { data: contract({ aim: true, invoice: 'week' }), now: NOW })
     )
-    expect(withAim.querySelectorAll('path').length).toBeGreaterThan(paths)
-  })
-
-  it('AllWeeks has Week, Dates and Hours only without an aim', () => {
-    const host = mount(
-      createElement(AllWeeks, {
-        workspace: 'work',
-        data: contract({ aim: false, invoice: 'week' }),
-        now: NOW
-      })
-    )
-    expect(headers(host)).toEqual(['Week', 'Dates', 'Hours'])
-    expect(host.querySelectorAll('tbody tr')).toHaveLength(2)
-  })
-
-  it('AllWeeks adds Plan, Balance and Year with an aim', () => {
-    const host = mount(
-      createElement(AllWeeks, {
-        workspace: 'work',
-        data: contract({ aim: true, invoice: 'week' }),
-        now: NOW
-      })
-    )
-    expect(headers(host)).toEqual(['Week', 'Dates', 'Hours', 'Plan', 'Balance', 'Year'])
+    const legend = withAim.querySelector('ul')?.textContent ?? ''
+    expect(legend).toContain('Under plan')
+    expect(legend).not.toMatch(/Plan$/)
+    // Columns only: no path is a line across the weeks.
+    expect(
+      [...withAim.querySelectorAll('path')].every((p) => p.getAttribute('fill') !== 'none')
+    ).toBe(true)
   })
 })

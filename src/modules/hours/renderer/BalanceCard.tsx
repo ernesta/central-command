@@ -1,14 +1,12 @@
-import { AllLink } from '@renderer/components/Landing'
 import { formatHours, formatSignedHours } from '@shared/tracking/format'
 import { hasAim, yearTotals } from '@shared/tracking/plan'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
 import type { HoursWorkspace } from '../shared/workspaces'
-import { yearRoute } from './hours-paths'
 import styles from './BalanceCard.module.css'
 
 /**
  * The whole contract (Work) or year (Research) as one quiet line under the cards: the hours of the whole plan, the balance
- * against the plan up to today, the average week, and the link to the charts. With no aim: the hours and the average week.
+ * against the plan up to today and the average week. With no aim: the hours and the average week.
  */
 export function BalanceCard({
   workspace,
@@ -36,7 +34,6 @@ export function BalanceCard({
         )}{' '}
         · average week <b>{average}</b>
       </span>
-      <AllLink to={yearRoute(workspace, data.start)}>Charts and weeks</AllLink>
     </footer>
   )
 }

@@ -19,7 +19,3 @@ export function useHoursWorkspace(): HoursWorkspace {
 export function weekRoute(workspace: string, yearStart: string, week: string): string {
   return `${hoursBase(workspace as HoursWorkspace)}?year=${yearStart}&week=${week}`
 }
-
-export function yearRoute(workspace: HoursWorkspace, yearStart: string): string {
-  return `${hoursBase(workspace)}/year?year=${yearStart}`
-}

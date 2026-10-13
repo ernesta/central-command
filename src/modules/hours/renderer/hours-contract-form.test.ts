@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { createElement } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { contract, headers, mount, NOW, type, unmount } from './hours-ui-test-utils'
+import { contract, mount, type, unmount } from './hours-ui-test-utils'
 
 const files = vi.hoisted(() => ({ value: [] as unknown[] }))
 const year = vi.hoisted(() => ({ value: null as unknown }))
@@ -13,7 +13,6 @@ vi.mock('@renderer/state/use-tracking-year', () => ({
 }))
 
 import { ContractFields } from './ContractFields'
-import { YearsTable } from './YearsTable'
 
 const createContract = vi.fn()
 beforeEach(() => {
@@ -24,39 +23,6 @@ beforeEach(() => {
   year.value = contract({ aim: true, invoice: 'month' })
 })
 afterEach(unmount)
-
-describe('YearsTable', () => {
-  it('shows a dash for plan and balance of a contract with no aim, and numbers for one with an aim', () => {
-    files.value = [contract({ aim: false, invoice: 'week' })]
-    const host = mount(
-      createElement(YearsTable, {
-        workspace: 'work',
-        years: ['2026-09-28'],
-        selected: '2026-09-28',
-        onSelect: () => {},
-        now: NOW
-      })
-    )
-    expect(headers(host)).toEqual(['Contract', 'Hours', 'Plan', 'Balance', 'Average week'])
-    const cells = [...host.querySelectorAll('tbody td')].map((td) => td.textContent)
-    expect(cells[2]).toBe('–')
-    expect(cells[3]).toBe('–')
-    unmount()
-    files.value = [contract({ aim: true, invoice: 'week' })]
-    const aimed = mount(
-      createElement(YearsTable, {
-        workspace: 'work',
-        years: ['2026-09-28'],
-        selected: '2026-09-28',
-        onSelect: () => {},
-        now: NOW
-      })
-    )
-    const aimedCells = [...aimed.querySelectorAll('tbody td')].map((td) => td.textContent)
-    expect(aimedCells[2]).not.toBe('–')
-    expect(aimedCells[3]).not.toBe('–')
-  })
-})
 
 describe('the new-contract form', () => {
   const add = (host: HTMLElement): HTMLButtonElement =>

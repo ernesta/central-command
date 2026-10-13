@@ -2,7 +2,6 @@ import { createElement } from 'react'
 import type { LiveModuleManifest } from '../types'
 import { HoursCard } from './renderer/HoursCard'
 import { HoursPage } from './renderer/HoursPage'
-import { HoursYearPage } from './renderer/HoursYearPage'
 import { HoursSettings } from './renderer/HoursSettings'
 import { TimerChip } from './renderer/TimerChip'
 import type { HoursWorkspace } from './shared/workspaces'
@@ -17,10 +16,7 @@ export function createHoursModule(workspace: HoursWorkspace): LiveModuleManifest
     workspace,
     label: 'Hours',
     status: 'live',
-    routes: [
-      { path: '', element: createElement(HoursPage) },
-      { path: 'year', element: createElement(HoursYearPage) }
-    ],
+    routes: [{ path: '', element: createElement(HoursPage) }],
     landingCard: HoursCard,
     // One Hours tab for the whole app (tabs are keyed by module id): Research's instance draws it, with a block per workspace.
     settingsSection: workspace === 'research' ? HoursSettings : undefined,

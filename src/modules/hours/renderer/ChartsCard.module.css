@@ -1,0 +1,25 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+.title {
+  margin: 0;
+  font-size: var(--text-20);
+}
+/* A legend row and the plot: the same height whichever chart is shown. */
+.body {
+  height: 240px;
+  margin-top: 12px;
+  overflow: hidden;
+}

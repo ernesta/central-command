@@ -4,9 +4,10 @@ import { formatHours } from '@shared/tracking/format'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
 import { columnPath, niceAxis, slotAt } from '../shared/chart'
 import { typicalWeek } from '../shared/typical'
+import { CHART_HEIGHT } from './charts-size'
 import styles from './TypicalWeek.module.css'
 
-const HEIGHT = 200
+const HEIGHT = CHART_HEIGHT
 const PAD = { top: 22, right: 8, bottom: 26, left: 52 }
 const MAX_BAR = 56
 const RADIUS = 4
@@ -34,18 +35,15 @@ export function TypicalWeek({ data, now }: { data: TrackingYear; now: Moment }):
   const tipLeft = active === null ? 0 : Math.min(Math.max(centre(active), 80), width - 80)
 
   return (
-    <section className={styles.card} aria-label="The typical week">
-      <header className={styles.head}>
-        <h2 className={styles.title}>Typical week</h2>
-        {week.some((d) => d.aim !== null) && (
-          <ul className={styles.legend}>
-            <li>
-              <b className={styles.aimKey} />
-              Daily aim
-            </li>
-          </ul>
-        )}
-      </header>
+    <>
+      {week.some((d) => d.aim !== null) && (
+        <ul className={styles.legend}>
+          <li>
+            <b className={styles.aimKey} />
+            Daily aim
+          </li>
+        </ul>
+      )}
       <div
         ref={ref}
         className={styles.plot}
@@ -147,6 +145,6 @@ export function TypicalWeek({ data, now }: { data: TrackingYear; now: Moment }):
           </div>
         )}
       </div>
-    </section>
+    </>
   )
 }
