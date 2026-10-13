@@ -488,14 +488,6 @@ function TaskRowView({
       <td>
         <div className={styles.titleLine}>
           <TitleCell task={task} />
-          <span className={styles.tags} {...stopRow}>
-            <TagsField
-              inline
-              tags={task.tags}
-              suggestions={tagsIn(allRows)}
-              onChange={(tags) => void updateTask(task, { tags }, 'change the tags')}
-            />
-          </span>
           {task.recurrence && (
             <span className={styles.repeat} title={describeRecurrence(task.recurrence)}>
               <Repeat
@@ -505,6 +497,14 @@ function TaskRowView({
               />
             </span>
           )}
+          <span className={styles.tags} {...stopRow}>
+            <TagsField
+              inline
+              tags={task.tags}
+              suggestions={tagsIn(allRows)}
+              onChange={(tags) => void updateTask(task, { tags }, 'change the tags')}
+            />
+          </span>
           {!isKid && (
             <SubtaskPill kids={kids} open={isOpen} onToggle={onToggle} onAdd={onAddSubtask} />
           )}

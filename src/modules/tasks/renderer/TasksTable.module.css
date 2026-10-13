@@ -148,7 +148,8 @@
 }
 .repeat {
   display: inline-flex;
-  margin-left: 4px;
+  order: 2;
+  margin-left: 6px;
   color: var(--text-muted);
   vertical-align: middle;
 }
@@ -208,6 +209,7 @@
 /* The one control for subtasks: a pill with the count and a fill showing progress. */
 .pill {
   position: relative;
+  order: 3;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -237,6 +239,7 @@
   position: relative;
 }
 .ghost {
+  order: 4;
   padding: 0 9px;
   border-style: dashed;
   color: var(--text-muted);
@@ -347,8 +350,20 @@
 .titleInput:focus-visible {
   outline: none;
 }
-.tags {
-  display: inline-block;
+/* The row's own items sit in the title line in a fixed order (tags, repeat, subtasks) and the hover-only
+   "+ Tag" and "+ Subtask" come last, so nothing real ever follows an invisible gap. */
+.tags,
+.tags > div {
+  display: contents;
+}
+.tags > div > span,
+.tags input {
+  order: 1;
+  margin-left: 6px;
+}
+.tags [data-tag-add] {
+  order: 4;
+  margin-left: 6px;
 }
 .tags [data-tag-add] {
   opacity: 0;

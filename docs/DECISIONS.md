@@ -3309,3 +3309,10 @@ The user's rule: a training's task, series task and lecture subtask alike, is ti
 
 - **Why (the user):** files added to or renamed in a linked folder did not show until the page was reopened.
 - **What:** `FilesPanel` listed the folder only when the page opened. It now lists again when the window regains focus or becomes visible, and every 4 seconds while visible. The listing is replaced under the same key, so nothing flashes. Not driven in the app; check: open an entry, add and rename a file in Finder, come back.
+
+## Tasks table: one fixed order in a row's title line (13 Oct 2026)
+
+- **Why (the user):** the repeat icon "hung nowhere" in a row at rest, while the hover pills ("+ Tag", "+ Subtask") with the icon beside them looked right.
+- **Cause:** the hover pills are `opacity: 0`, not removed, so they keep their width. Anything placed after one (the repeat icon, or a real subtask pill after an invisible "+ Tag") sat after an empty gap. Moving the icon alone could not fix it for every combination of tags, repeat and subtasks (seven combinations were mocked at rest and on hover; the user chose the one below).
+- **Now:** the title line orders its items with CSS `order`: tags (1), repeat icon (2), subtask pill (3), then the hover-only ghosts "+ Tag" and "+ Subtask" (4). `.tags` and the `TagsField` root are `display: contents` so the chips and the add button take part in the title line's flex. Every item has a 6px left margin. Real items never follow an invisible gap, and hovering adds the ghosts at the end without moving anything.
+- Checked in the built app on a scratch copy of the library, light mode: tags with repeat and subtasks, a subtask pill without tags, a plain row, at rest and on hover. Dark mode and dev mode were not driven.
