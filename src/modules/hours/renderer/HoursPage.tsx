@@ -40,7 +40,7 @@ export function HoursPage(): React.JSX.Element {
           {inYear(now.date, data.start, data.weeks) && (
             <TodayCard workspace={workspace} data={data} running={running} now={now} />
           )}
-          <div className={styles.cards} data-pair={data.plan.weekAim || undefined}>
+          <div className={styles.cards}>
             <WeekCard
               workspace={workspace}
               data={data}
