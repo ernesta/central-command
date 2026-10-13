@@ -105,6 +105,18 @@ describe('setStatus and recurrence', () => {
     expect(store.setStatus(t.uid, 'todo').task.completedAt).toBeNull()
   })
 
+  it('marks open subtasks done with their parent, and leaves them alone when a subtask is done', () => {
+    const t = make('Parent')
+    const a = store.create({ workspace: 'research', title: 'A', parentUid: t.uid })
+    const b = store.create({ workspace: 'research', title: 'B', parentUid: t.uid })
+    store.setStatus(a.uid, 'done')
+    expect(store.get(t.uid)?.status).toBe('todo')
+    store.setStatus(t.uid, 'done')
+    expect(store.get(a.uid)?.status).toBe('done')
+    expect(store.get(b.uid)).toMatchObject({ status: 'done' })
+    expect(store.get(b.uid)?.completedAt).not.toBeNull()
+  })
+
   it('starts the next occurrence from the completion date, with the subtasks copied', () => {
     const t = make('Weekly', {
       due: '2026-09-20',
@@ -129,12 +141,8 @@ describe('setStatus and recurrence', () => {
       ['One', 'todo'],
       ['Two', 'todo']
     ])
-    // The finished one keeps its own subtasks as they were.
-    expect(
-      listSubtasks(db, t.uid)
-        .map((k) => k.status)
-        .sort()
-    ).toEqual(['done', 'todo'])
+    // The finished one has all its subtasks done too.
+    expect(listSubtasks(db, t.uid).map((k) => k.status)).toEqual(['done', 'done'])
   })
 
   it('drifts: handled late, the next is counted from that day', () => {

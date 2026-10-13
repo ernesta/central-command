@@ -227,7 +227,8 @@ export class TasksStore {
   /**
    * Change a task's status. Marking a recurring task done starts its next occurrence, due the interval after today
    * and with its subtasks copied, unless another instance of the series is already open (a series never has two).
-   * Marking anything done sets `completedAt`; moving it back clears it.
+   * Marking anything done sets `completedAt`; moving it back clears it. Marking a task done also marks its open
+   * subtasks done (after the next occurrence is copied, so that one starts open).
    */
   setStatus(uid: string, status: TaskStatus): StatusResult {
     if (!(TASK_STATUSES as readonly string[]).includes(status)) throw new Error('Invalid status')
@@ -255,6 +256,13 @@ export class TasksStore {
               .run(seriesUid, next.uid)
             next = { ...next, seriesUid }
             for (const sub of made.subtasks) this.insert({ ...sub, parentUid: next.uid }, false)
+          }
+        }
+      }
+      if (status === 'done' && !wasDone && !task.parentUid) {
+        for (const sub of listSubtasks(this.db, task.uid)) {
+          if (sub.status !== 'done') {
+            writeTask(this.db, { ...sub, status: 'done', completedAt: now, updatedAt: now })
           }
         }
       }
