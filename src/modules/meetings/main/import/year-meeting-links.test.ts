@@ -96,10 +96,12 @@ describe('linkYearMeetings', () => {
     const tasks = listTasks(db, 'research')
     const series = tasks.filter((t) => !t.parentUid)
     expect(series.map((t) => [t.title, t.list])).toEqual([['Supervision', 'Meetings']])
-    expect(tasks.filter((t) => t.parentUid).map((t) => t.title)).toEqual([
-      'Supervision · Sep 24, 2026',
-      'Supervision · Oct 12, 2026'
-    ])
+    expect(
+      tasks
+        .filter((t) => t.parentUid)
+        .map((t) => t.title)
+        .sort()
+    ).toEqual(['Supervision · Oct 12, 2026', 'Supervision · Sep 24, 2026'])
     const sub = tasks.find((t) => t.title === 'Supervision · Sep 24, 2026')!
     expect(readFileSync(join(dir(), '2026-09-24 Supervision.md'), 'utf8')).toContain(
       `task: ${sub.uid}`
@@ -123,6 +125,20 @@ describe('linkYearMeetings', () => {
     const again = linkYearMeetings(root, db, true, '2026-10-12', 't')
     expect(again.lines[0]).toMatch(/nothing to link/)
     expect(again.backup).toBeNull()
+  })
+
+  it('gives a note that points at its series task a subtask, and leaves the day totals alone', () => {
+    db.prepare(
+      "INSERT INTO tasks (uid, workspace, title, list, status, position, created_at, updated_at) VALUES ('abcd1234', 'research', 'Rastle Lab', 'Meetings', 'doing', 0, 'x', 'x')"
+    ).run()
+    expect(linkYearMeetings(root, db, true, '2026-10-12', 's').ok).toBe(true)
+    const sub = listTasks(db, 'research').find((t) => t.title === 'Rastle Lab · Oct 8, 2026')!
+    expect(sub.parentUid).toBe('abcd1234')
+    expect(readFileSync(join(dir(), '2026-10-08 Rastle Lab.md'), 'utf8')).toContain(
+      `task: ${sub.uid}`
+    )
+    const year = JSON.parse(readFileSync(join(root, 'time', 'research', '2026-27.json'), 'utf8'))
+    expect(year.days['2026-09-23'].minutes).toBe(255)
   })
 
   it('stops before writing anything when a day holds less than its meeting', () => {

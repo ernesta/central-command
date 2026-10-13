@@ -36,25 +36,34 @@ interface Candidate {
   text: string
   series: string
   date: string
+  /** It pointed at the series task itself: its hours already come from the note, so no day total is touched. */
+  onSeriesTask: boolean
   /** What it reports on Hours (quarter hours), 0 with no times. */
   minutes: number
 }
 
-/** The notes to link: dated in the year (up to `today`), with a series and no task. */
+/**
+ * The notes to link: dated in the year (up to `today`), with a series and no task, or with the series task itself (13 Oct 2026:
+ * "Rastle Lab" held its meeting's hours directly, with no subtask like Supervision's).
+ */
 export function candidates(
   notes: readonly { file: string; text: string }[],
-  today: string
+  today: string,
+  isSeriesTask: (task: string, series: string) => boolean = () => false
 ): Candidate[] {
   const found: Candidate[] = []
   for (const { file, text } of notes) {
     const { meta } = parseMeta(splitNote(text).head)
     if (!meta.date || meta.date < YEAR_START || meta.date > today) continue
-    if (meta.task !== '' || !meta.series) continue
+    if (!meta.series) continue
+    const onSeriesTask = meta.task !== '' && isSeriesTask(meta.task, meta.series)
+    if (meta.task !== '' && !onSeriesTask) continue
     const length = durationMinutes(meta.start, meta.end)
     found.push({
       file,
       text,
       series: meta.series,
+      onSeriesTask,
       date: meta.date,
       minutes: length === null ? 0 : roundToQuarter(length * 60)
     })
@@ -118,10 +127,15 @@ export function linkYearMeetings(
   const notes = readdirSync(notesDir)
     .filter((f) => f.endsWith('.md'))
     .map((file) => ({ file, text: readFileSync(join(notesDir, file), 'utf8') }))
-  const todo = candidates(notes, today)
+  const existing: Task[] = listTasks(db, 'research')
+  const todo = candidates(notes, today, (uid, seriesName) => {
+    const task = existing.find((t) => t.uid === uid)
+    if (!task || task.parentUid) return false
+    const proposal = proposeMeetingTask('research', seriesName, null, existing)
+    return !!proposal && proposal.title.toLowerCase() === task.title.toLowerCase()
+  })
   if (todo.length === 0) report.lines.push('nothing to link: every meeting of the year has a task')
 
-  const existing: Task[] = listTasks(db, 'research')
   // Each series task is found once, or made once, however many meetings sit under it.
   const series = new Map<string, { title: string; list: string; uid: string | null }>()
   const plans = todo.map((c) => {
@@ -159,7 +173,7 @@ export function linkYearMeetings(
   let yearText = ''
   let split: ReturnType<typeof planDaySplits> | null = null
   const splits = plans
-    .filter((p) => p.c.minutes > 0 && !p.reuse)
+    .filter((p) => p.c.minutes > 0 && !p.reuse && !p.c.onSeriesTask)
     .map((p) => ({ date: p.c.date, minutes: p.c.minutes }))
   if (splits.length > 0) {
     if (!existsSync(yearPath)) bad(`${YEAR_FILE}: no such year file`)
