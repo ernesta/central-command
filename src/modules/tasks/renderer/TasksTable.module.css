@@ -4,6 +4,17 @@
   padding: 4px;
   scroll-padding: 4px;
 }
+.wrapFlat {
+  padding: 4px 0 0;
+  scroll-padding: 4px;
+}
+/* On a task's own page the card around it is the panel, so the table adds no frame of its own. */
+.tableFlat {
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
 .table {
   width: 100%;
   min-width: 720px;

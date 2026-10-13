@@ -1,4 +1,3 @@
-import { Plus, Trash2 } from 'lucide-react'
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
@@ -13,11 +12,10 @@ import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { registerFlushable } from '@renderer/lib/flush-registry'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
-import { dueTone, formatTaskTime, tagsIn } from '../shared/query'
+import { tagsIn } from '../shared/query'
 import { TASK_STATUSES, type Task, type TaskChanges, type TaskWorkspace } from '../shared/types'
 import { subtaskProgress, taskTime, type TaskRow } from '../shared/views'
 import { DebouncedSaver } from './debounced-saver'
-import { DatePicker } from '@renderer/components/DatePicker'
 import { DueField } from './DueField'
 import { ListField } from './ListField'
 import { setTaskStatus, STATUS_LABELS } from './task-actions'
@@ -25,6 +23,7 @@ import { PRIORITY_OPTIONS } from './task-labels'
 import { StatusIcon } from './TaskIcons'
 import { RecurrenceField } from './RecurrenceField'
 import { TagsField } from './TagsField'
+import { TasksTable } from './TasksTable'
 import { TaskTimeCard } from './TaskTimeCard'
 import { taskRoute, todayIso, useTasksWorkspace } from './tasks-paths'
 import { useTaskTime } from './useTaskTime'
@@ -257,9 +256,7 @@ function TaskView({
           </section>
 
           <Subtasks
-            task={task}
-            tags={tagsIn(rows)}
-            kids={row.kids}
+            row={row}
             workspace={workspace}
             today={today}
             done={progress.done}
@@ -340,211 +337,40 @@ function TaskView({
 }
 
 function Subtasks({
-  task,
-  kids,
+  row,
   workspace,
   today,
   done,
   total,
-  tracked,
-  tags
+  tracked
 }: {
-  task: Task
-  kids: readonly Task[]
+  row: TaskRow
   workspace: TaskWorkspace
   today: string
   done: number
   total: number
-  tags: readonly string[]
   tracked: ReadonlyMap<string, number>
 }): React.JSX.Element {
-  const [adding, setAdding] = useState(false)
-  const [text, setText] = useState('')
-  const [error, setError] = useState<string | null>(null)
-
-  const add = async (): Promise<void> => {
-    const title = text.trim()
-    if (!title) return
-    try {
-      await window.api.tasks.create({ workspace, title, parentUid: task.uid })
-      setText('')
-      setError(null)
-    } catch (e) {
-      setError(ipcErrorMessage(e))
-    }
-  }
-
   return (
     <section className={styles.box} aria-label="Subtasks">
-      <div className={styles.subHead}>
-        <span className={styles.label}>
-          Subtasks · {done} of {total} done
-          {total > 0 && (
-            <span className={styles.bar} aria-hidden>
-              <i style={{ width: `${(done / total) * 100}%` }} />
-            </span>
-          )}
-        </span>
-        <button type="button" className={styles.quiet} onClick={() => setAdding(true)}>
-          <Plus size={14} strokeWidth={1.75} aria-hidden />
-          Add subtask
-        </button>
-      </div>
-      {kids.map((kid) => (
-        <SubtaskRow
-          key={kid.uid}
-          kid={kid}
-          today={today}
-          minutes={kid.earlierMinutes + (tracked.get(kid.uid) ?? 0)}
-          tags={tags}
-          onError={setError}
-        />
-      ))}
-      {adding && (
-        <div className={styles.subAdd}>
-          <span />
-          <input
-            autoFocus
-            className={styles.subInput}
-            aria-label={`New subtask of ${task.title}`}
-            placeholder="Subtask title"
-            value={text}
-            onChange={(event) => setText(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault()
-                void add()
-              } else if (event.key === 'Escape') {
-                event.preventDefault()
-                setText('')
-                setAdding(false)
-              }
-            }}
-            onBlur={() => {
-              if (text.trim() === '') setAdding(false)
-            }}
-          />
-          <span />
-        </div>
-      )}
-      {error && (
-        <p role="alert" className={styles.error}>
-          {error}
-        </p>
-      )}
+      <span className={styles.label}>
+        Subtasks · {done} of {total} done
+        {total > 0 && (
+          <span className={styles.bar} aria-hidden>
+            <i style={{ width: `${(done / total) * 100}%` }} />
+          </span>
+        )}
+      </span>
+      {/* The same rows as the Tasks table, so a subtask looks and behaves the same everywhere. */}
+      <TasksTable
+        flat
+        rows={[{ ...row, nested: [] }]}
+        workspace={workspace}
+        today={today}
+        label="Subtasks"
+        tracked={tracked}
+        running={new Set()}
+      />
     </section>
-  )
-}
-
-/** One subtask, all of it editable in place: status, title, due date and tags. */
-function SubtaskRow({
-  kid,
-  today,
-  minutes,
-  tags,
-  onError
-}: {
-  kid: Task
-  tags: readonly string[]
-  today: string
-  minutes: number
-  onError: (message: string | null) => void
-}): React.JSX.Element {
-  const [title, setTitle] = useState(kid.title)
-
-  const update = (changes: TaskChanges): void => {
-    onError(null)
-    window.api.tasks.update(kid.uid, changes).catch((e: unknown) => onError(ipcErrorMessage(e)))
-  }
-  const saveTitle = (): void => {
-    const text = title.trim()
-    if (text === kid.title) return
-    if (text === '') setTitle(kid.title)
-    else update({ title: text })
-  }
-  const remove = (): void => {
-    window.api.tasks
-      .delete(kid.uid)
-      .then(() =>
-        showToast(`Deleted “${kid.title || 'Untitled'}”.`, {
-          label: 'Undo',
-          run: () =>
-            void window.api.tasks
-              .restore(kid.uid)
-              .catch((e: unknown) => showToast(`Couldn’t bring it back: ${ipcErrorMessage(e)}`))
-        })
-      )
-      .catch((e: unknown) => onError(ipcErrorMessage(e)))
-  }
-
-  return (
-    <div className={styles.subItem}>
-      <div className={styles.subRow}>
-        <button
-          type="button"
-          className={styles.iconButton}
-          aria-label={`Status: ${STATUS_LABELS[kid.status]}`}
-          title={`${STATUS_LABELS[kid.status]}`}
-          onClick={() =>
-            void setTaskStatus(
-              kid,
-              kid.status === 'done' ? 'todo' : kid.status === 'todo' ? 'doing' : 'done'
-            )
-          }
-        >
-          <StatusIcon status={kid.status} size={20} />
-        </button>
-        <div className={styles.subTitle}>
-          <input
-            className={styles.subTitleInput}
-            aria-label="Subtask title"
-            placeholder="Untitled"
-            value={title}
-            onChange={(event) => setTitle(event.target.value.replace(/[\r\n]/g, ' '))}
-            onBlur={saveTitle}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault()
-                event.currentTarget.blur()
-              }
-            }}
-          />
-          <TagsField
-            inline
-            tags={kid.tags}
-            suggestions={tags}
-            onChange={(tags) => update({ tags })}
-          />
-        </div>
-        <span
-          className={[
-            styles.subDue,
-            kid.due
-              ? styles[`due_${kid.status === 'done' ? 'normal' : dueTone(kid.due, today)}`]
-              : undefined
-          ]
-            .filter(Boolean)
-            .join(' ')}
-        >
-          <DatePicker
-            plain
-            label="Subtask due"
-            placeholder="Add date"
-            value={kid.due}
-            today={today}
-            onChange={(due) => update({ due })}
-          />
-        </span>
-        <span className={styles.subTime}>{formatTaskTime(minutes)}</span>
-        <button
-          type="button"
-          className={[styles.iconButton, styles.subDelete].join(' ')}
-          aria-label="Delete subtask"
-          onClick={remove}
-        >
-          <Trash2 size={16} strokeWidth={1.75} aria-hidden />
-        </button>
-      </div>
-    </div>
   )
 }

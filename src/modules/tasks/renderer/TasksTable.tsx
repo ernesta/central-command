@@ -34,10 +34,24 @@ import styles from './TasksTable.module.css'
 
 type Item =
   | { type: 'task'; key: string; task: Task; kids: Task[] }
-  | { type: 'kid'; key: string; task: Task; last: boolean }
+  | { type: 'kid'; key: string; task: Task; last: boolean; flat?: boolean }
   | { type: 'add'; key: string; parent: Task }
 
 /** The rows that are on screen: each task, then (open) all its subtasks and a line to add one, or (closed) only the subtasks that put it here. */
+function buildFlatItems(row: SectionRow | undefined): Item[] {
+  if (!row) return []
+  return [
+    ...row.kids.map((kid): Item => ({
+      type: 'kid',
+      key: kid.uid,
+      task: kid,
+      last: false,
+      flat: true
+    })),
+    { type: 'add', key: `add-${row.task.uid}`, parent: row.task }
+  ]
+}
+
 function buildItems(rows: readonly SectionRow[], open: ReadonlySet<string>): Item[] {
   const items: Item[] = []
   for (const row of rows) {
@@ -90,7 +104,8 @@ export function TasksTable({
   empty,
   tracked,
   running,
-  sort
+  sort,
+  flat = false
 }: {
   rows: readonly SectionRow[]
   workspace: TaskWorkspace
@@ -103,6 +118,8 @@ export function TasksTable({
   running: ReadonlySet<string>
   /** Column sorting, only on the All tasks page. */
   sort?: { key: SortKey; dir: 'asc' | 'desc'; onSort: (key: SortKey) => void }
+  /** One task's subtasks on its own page (`rows` is that task alone): no header, no parent row, no List or Priority, always open. */
+  flat?: boolean
 }): React.JSX.Element {
   const navigate = useNavigate()
   const { rows: allRows } = useTasksList(workspace)
@@ -110,7 +127,11 @@ export function TasksTable({
   const [adding, setAdding] = useState<string | null>(null)
   const [menu, setMenu] = useState<MenuState | null>(null)
   const tableRef = useRef<HTMLTableElement>(null)
-  const items = useMemo(() => buildItems(rows, open), [rows, open])
+  const items = useMemo(
+    () => (flat ? buildFlatItems(rows[0]) : buildItems(rows, open)),
+    [rows, open, flat]
+  )
+  const span = flat ? 3 : 6
 
   const toggle = (uid: string, to?: boolean): void =>
     setOpen((current) => {
@@ -131,6 +152,7 @@ export function TasksTable({
   const { tableProps, rowProps } = useRowNavigation(items.length, (index) => {
     const item = items[index]
     if (item.type === 'add') startAdding(item.parent.uid)
+    else if (flat) return
     else void navigate(taskRoute(workspace, item.task.uid))
   })
 
@@ -231,41 +253,48 @@ export function TasksTable({
   }
 
   return (
-    <div className={styles.wrap}>
-      <table ref={tableRef} className={styles.table} aria-label={label} {...tableProps}>
+    <div className={flat ? styles.wrapFlat : styles.wrap}>
+      <table
+        ref={tableRef}
+        className={[styles.table, flat && styles.tableFlat].filter(Boolean).join(' ')}
+        aria-label={label}
+        {...tableProps}
+      >
         <colgroup>
           <col className={styles.colStatus} />
           <col />
-          <col className={styles.colList} />
-          <col className={styles.colPriority} />
+          {!flat && <col className={styles.colList} />}
+          {!flat && <col className={styles.colPriority} />}
           <col className={styles.colTime} />
           <col className={styles.colDue} />
         </colgroup>
-        <thead>
-          <tr>
-            {COLUMNS.map((c) => (
-              <th
-                key={c.label}
-                className={styles.th}
-                scope="col"
-                aria-sort={
-                  sort && sort.key === c.key
-                    ? sort.dir === 'asc'
-                      ? 'ascending'
-                      : 'descending'
-                    : undefined
-                }
-              >
-                {sortHeader(c)}
-              </th>
-            ))}
-          </tr>
-        </thead>
+        {!flat && (
+          <thead>
+            <tr>
+              {COLUMNS.map((c) => (
+                <th
+                  key={c.label}
+                  className={styles.th}
+                  scope="col"
+                  aria-sort={
+                    sort && sort.key === c.key
+                      ? sort.dir === 'asc'
+                        ? 'ascending'
+                        : 'descending'
+                      : undefined
+                  }
+                >
+                  {sortHeader(c)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+        )}
         <tbody>
           {items.length === 0 && (
             <tr className={styles.emptyRow}>
               <td />
-              <td colSpan={5}>{empty ?? 'Nothing here.'}</td>
+              <td colSpan={span - 1}>{empty ?? 'Nothing here.'}</td>
             </tr>
           )}
           {items.map((item, index) =>
@@ -274,6 +303,7 @@ export function TasksTable({
                 key={item.key}
                 parent={item.parent}
                 workspace={workspace}
+                span={span}
                 adding={adding === item.parent.uid}
                 rowProps={rowProps(index)}
                 onKeyDown={(e) => onRowKeyDown(e, index)}
@@ -292,10 +322,13 @@ export function TasksTable({
                 today={today}
                 tracked={tracked}
                 isRunning={running.has(item.task.uid)}
+                flat={flat}
                 isOpen={open.has(item.task.uid)}
                 rowProps={rowProps(index)}
                 onKeyDown={(e) => onRowKeyDown(e, index)}
-                onOpen={() => void navigate(taskRoute(workspace, item.task.uid))}
+                onOpen={() => {
+                  if (!flat) void navigate(taskRoute(workspace, item.task.uid))
+                }}
                 onToggle={() => toggle(item.task.uid)}
                 onAddSubtask={() => startAdding(item.task.uid)}
                 onPriorityMenu={(x, y) =>
@@ -418,6 +451,7 @@ function TaskRowView({
   tracked,
   isRunning,
   isOpen,
+  flat,
   rowProps,
   onKeyDown,
   onOpen,
@@ -433,6 +467,7 @@ function TaskRowView({
   tracked: ReadonlyMap<string, number>
   isRunning: boolean
   isOpen: boolean
+  flat: boolean
   rowProps: RowProps
   onKeyDown: (event: React.KeyboardEvent) => void
   onOpen: () => void
@@ -448,8 +483,8 @@ function TaskRowView({
   const minutes = taskTime({ task, kids }, tracked).total
   const classes = [
     styles.row,
-    isKid && styles.kid,
-    isKid && item.last && styles.end,
+    isKid && !flat && styles.kid,
+    isKid && !flat && item.last && styles.end,
     isRunning && styles.running
   ]
   return (
@@ -482,7 +517,7 @@ function TaskRowView({
             void setTaskStatus(task, nextStatus(task.status, event.shiftKey))
           }}
         >
-          <StatusIcon status={task.status} size={isKid ? 18 : 22} />
+          <StatusIcon status={task.status} size={isKid && !flat ? 18 : 22} />
         </button>
       </td>
       <td>
@@ -510,41 +545,45 @@ function TaskRowView({
           )}
         </div>
       </td>
-      <td className={[styles.nowrap, styles.list].join(' ')}>
-        {!isKid && (
-          <span {...stopRow}>
-            <ListField
-              plain
-              workspace={workspace}
-              list={task.list}
-              sublist={task.sublist}
-              rows={allRows}
-              onChange={({ list, sublist }) =>
-                void updateTask(task, { list, sublist }, 'change the list')
-              }
-            />
-          </span>
-        )}
-      </td>
-      <td>
-        {!isKid && (
-          <button
-            type="button"
-            tabIndex={-1}
-            data-menu-trigger
-            className={styles.iconButton}
-            aria-label={`Priority: ${PRIORITY_LABELS[task.priority]}`}
-            title={`Priority: ${PRIORITY_LABELS[task.priority]}`}
-            onClick={(event) => {
-              event.stopPropagation()
-              const rect = event.currentTarget.getBoundingClientRect()
-              onPriorityMenu(rect.left, rect.bottom + 4)
-            }}
-          >
-            <PriorityBadge priority={task.priority} />
-          </button>
-        )}
-      </td>
+      {!flat && (
+        <td className={[styles.nowrap, styles.list].join(' ')}>
+          {!isKid && (
+            <span {...stopRow}>
+              <ListField
+                plain
+                workspace={workspace}
+                list={task.list}
+                sublist={task.sublist}
+                rows={allRows}
+                onChange={({ list, sublist }) =>
+                  void updateTask(task, { list, sublist }, 'change the list')
+                }
+              />
+            </span>
+          )}
+        </td>
+      )}
+      {!flat && (
+        <td>
+          {!isKid && (
+            <button
+              type="button"
+              tabIndex={-1}
+              data-menu-trigger
+              className={styles.iconButton}
+              aria-label={`Priority: ${PRIORITY_LABELS[task.priority]}`}
+              title={`Priority: ${PRIORITY_LABELS[task.priority]}`}
+              onClick={(event) => {
+                event.stopPropagation()
+                const rect = event.currentTarget.getBoundingClientRect()
+                onPriorityMenu(rect.left, rect.bottom + 4)
+              }}
+            >
+              <PriorityBadge priority={task.priority} />
+            </button>
+          )}
+        </td>
+      )}
       <td className={styles.nowrap}>{formatTaskTime(minutes)}</td>
       <td className={styles.nowrap} onClick={(event) => event.stopPropagation()}>
         <span className={styles.dueCell}>
@@ -642,6 +681,7 @@ function SubtaskPill({
 function AddSubtaskRow({
   parent,
   workspace,
+  span,
   adding,
   rowProps,
   onKeyDown,
@@ -650,6 +690,7 @@ function AddSubtaskRow({
 }: {
   parent: Task
   workspace: TaskWorkspace
+  span: number
   adding: boolean
   rowProps: RowProps
   onKeyDown: (event: React.KeyboardEvent) => void
@@ -673,13 +714,15 @@ function AddSubtaskRow({
 
   return (
     <tr
-      className={[styles.row, styles.kid, styles.end, styles.addRow].join(' ')}
+      className={[styles.row, span === 6 && styles.kid, span === 6 && styles.end, styles.addRow]
+        .filter(Boolean)
+        .join(' ')}
       {...rowProps}
       onKeyDown={onKeyDown}
       onClick={onStart}
     >
       <td />
-      <td colSpan={5}>
+      <td colSpan={span - 1}>
         {adding ? (
           <span className={styles.addInput}>
             <input
