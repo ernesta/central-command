@@ -3077,3 +3077,11 @@ The user's report: the landing's Lists section did not show all lists, and the u
 - **Now:** `listSummaries` (`shared/views.ts`) keeps every list and every sublist. A list has `open` and `total` (done tasks included); a sublist is `{ name, open }`, most open first. Cards show lists with something open, or a Work client with no tasks at all; a list with `open: 0` and `total > 0` goes to a **Nothing open** line under the cards, each name a link with its sublist count.
 - **Sublists** are chips on the card (`chips` on `SeriesCard`, shared `Landing`), dimmed when none is open. The chips are not links: the whole card opens the list, as before. Overdue keeps its own line.
 - Unit-tested (`views.test.ts`); not driven in the built app, so how the chips and the line look is unchecked.
+
+## Subtasks are ordered by date (13 Oct 2026)
+
+The user's request, looking at a task's Subtasks card: always order subtasks by date, soonest at the top, undated at the bottom.
+
+- `orderSubtasks` (`shared/views.ts`) sorts by `due`, `null` last; ties keep the old order (position, then when added). Every place that lists subtasks (the task page, table rows) goes through it via `groupTasks`.
+- Position is no longer what the user sees; nothing was dropped (the field and any reordering code stay).
+- Unit-tested (`views.test.ts`); not driven in the built app.
