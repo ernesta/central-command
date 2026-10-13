@@ -15,8 +15,8 @@
   color: var(--ink);
   font-size: var(--text-13);
   white-space: nowrap;
-  /* wide enough for the widest short date, so choosing one never resizes the chip */
-  min-width: 112px;
+  /* wide enough for the widest date with a year ("Sep 30, 2027"), so choosing one never resizes the chip */
+  min-width: 132px;
 }
 .button:hover {
   background: var(--hover-tint);

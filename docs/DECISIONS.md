@@ -3151,6 +3151,12 @@ The user: tasks are made another way (the Add bar on the Tasks landing and the S
 - **Why (the user):** the Due chip in the task page's fields row was only as wide as its text, so choosing a date ("Oct 30" after "No date") changed its width and moved the fields beside it.
 - **Now:** `.button` in `DatePicker.module.css` has `min-width: 112px`, enough for the icon, the gap, padding and the widest short date ("May 28"); the inline `plain` variant (table cells) keeps `min-width: 0`. A date in another year ("Oct 30, 2027") is longer and still widens the chip; left as is, being rare.
 - Not driven in the app; the 112px is estimated, not measured.
+- **Update (13 Oct 2026, the user):** 112px was too narrow for a date with a year, so `min-width` is now 132px ("Sep 30, 2027").
+
+## Subtask rows on the task page look like the table's (13 Oct 2026)
+
+- **Why (the user):** a subtask's date was a boxed chip and it had a caret, while the same subtask in a task list has a plain date and its tags under the title.
+- **Now:** `SubtaskRow` uses the table's pieces: a `plain` `DatePicker` coloured by `dueTone` (overdue, today), the tags inline under the title, no caret (the tags were all it opened). Same date text as the table (`DatePicker` and `formatDue` give the same words). Not driven in the app.
 
 ## Training tasks are called "Complete <name>" (13 Oct 2026)
 

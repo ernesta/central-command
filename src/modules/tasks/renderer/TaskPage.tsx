@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
@@ -13,10 +13,11 @@ import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { registerFlushable } from '@renderer/lib/flush-registry'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
-import { formatTaskTime, tagsIn } from '../shared/query'
+import { dueTone, formatTaskTime, tagsIn } from '../shared/query'
 import { TASK_STATUSES, type Task, type TaskChanges, type TaskWorkspace } from '../shared/types'
 import { subtaskProgress, taskTime, type TaskRow } from '../shared/views'
 import { DebouncedSaver } from './debounced-saver'
+import { DatePicker } from '@renderer/components/DatePicker'
 import { DueField } from './DueField'
 import { ListField } from './ListField'
 import { setTaskStatus, STATUS_LABELS } from './task-actions'
@@ -449,7 +450,6 @@ function SubtaskRow({
   minutes: number
   onError: (message: string | null) => void
 }): React.JSX.Element {
-  const [open, setOpen] = useState(false)
   const [title, setTitle] = useState(kid.title)
 
   const update = (changes: TaskChanges): void => {
@@ -494,40 +494,48 @@ function SubtaskRow({
         >
           <StatusIcon status={kid.status} size={20} />
         </button>
-        <input
-          className={styles.subTitleInput}
-          aria-label="Subtask title"
-          placeholder="Untitled"
-          value={title}
-          onChange={(event) => setTitle(event.target.value.replace(/[\r\n]/g, ' '))}
-          onBlur={saveTitle}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              event.preventDefault()
-              event.currentTarget.blur()
-            }
-          }}
-        />
-        <DueField
-          label="Subtask due"
-          value={kid.due}
-          today={today}
-          onChange={(due) => update({ due })}
-        />
-        <span className={styles.subTime}>{formatTaskTime(minutes)}</span>
-        <button
-          type="button"
-          className={styles.iconButton}
-          aria-label={open ? 'Hide details' : 'Show details'}
-          aria-expanded={open}
-          onClick={() => setOpen((o) => !o)}
+        <div className={styles.subTitle}>
+          <input
+            className={styles.subTitleInput}
+            aria-label="Subtask title"
+            placeholder="Untitled"
+            value={title}
+            onChange={(event) => setTitle(event.target.value.replace(/[\r\n]/g, ' '))}
+            onBlur={saveTitle}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault()
+                event.currentTarget.blur()
+              }
+            }}
+          />
+          <TagsField
+            inline
+            tags={kid.tags}
+            suggestions={tags}
+            onChange={(tags) => update({ tags })}
+          />
+        </div>
+        <span
+          className={[
+            styles.subDue,
+            kid.due
+              ? styles[`due_${kid.status === 'done' ? 'normal' : dueTone(kid.due, today)}`]
+              : undefined
+          ]
+            .filter(Boolean)
+            .join(' ')}
         >
-          {open ? (
-            <ChevronUp size={16} strokeWidth={1.75} aria-hidden />
-          ) : (
-            <ChevronDown size={16} strokeWidth={1.75} aria-hidden />
-          )}
-        </button>
+          <DatePicker
+            plain
+            label="Subtask due"
+            placeholder="Add date"
+            value={kid.due}
+            today={today}
+            onChange={(due) => update({ due })}
+          />
+        </span>
+        <span className={styles.subTime}>{formatTaskTime(minutes)}</span>
         <button
           type="button"
           className={styles.iconButton}
@@ -537,11 +545,6 @@ function SubtaskRow({
           <Trash2 size={16} strokeWidth={1.75} aria-hidden />
         </button>
       </div>
-      {open && (
-        <div className={styles.subDetails}>
-          <TagsField tags={kid.tags} suggestions={tags} onChange={(tags) => update({ tags })} />
-        </div>
-      )}
     </div>
   )
 }
