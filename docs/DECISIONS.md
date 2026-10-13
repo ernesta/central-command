@@ -3275,3 +3275,11 @@ The user's rule: a training's task, series task and lecture subtask alike, is ti
 - **Now:** in the shared `Segmented`, each label sits in a span whose `::after` is a hidden copy of the label in bold (`data-label`, zero height), so the segment is always as wide as its bold text. Every segmented control in the app gets it; nothing is set per page.
 - Alternative not taken: keeping the weight the same and marking selection by colour only (the bold is part of the selected look).
 - Not driven in the app (typecheck, lint and tests only).
+
+## Hours: Patterns views renamed, Calendar shows today, Weeks and Days line up (13 Oct 2026)
+
+- **Why (the user):** the Calendar did not show which day is today; switching between Weeks and Weekdays made the plot move; the three views should be called Year, Weeks and Days.
+- **Names:** the segments are now Year, Weeks and Days (stored values `year`, `weeks`, `typical` unchanged, so a remembered choice still works).
+- **Today:** in Year, today's cell has a small dot under its number (the contrast colour on a filled cell, secondary text otherwise), and the legend has a "Today" key with the same dot. A day off keeps its grey outline, so the two read apart.
+- **The movement:** Weeks used a top padding of 12px and Days 22px, so the plot area, gridlines and value axis sat in different places. Both now use `top: 22` (Days needed the room for its value labels), so the frame is the same; the axis labels still differ because each chart scales to its own data.
+- Typecheck, lint and tests only; not driven in the app.

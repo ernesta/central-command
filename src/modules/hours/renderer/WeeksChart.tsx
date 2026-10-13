@@ -8,7 +8,8 @@ import { CHART_HEIGHT } from './charts-size'
 import styles from './WeeksChart.module.css'
 
 const HEIGHT = CHART_HEIGHT
-const PAD = { top: 12, right: 8, bottom: 26, left: 52 }
+// The same padding as TypicalWeek, so switching views leaves the axis and gridlines where they are.
+const PAD = { top: 22, right: 8, bottom: 26, left: 52 }
 const MAX_BAR = 24
 const GAP = 2
 const RADIUS = 4

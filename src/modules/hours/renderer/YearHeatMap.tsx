@@ -81,6 +81,10 @@ export function YearHeatMap({
           <i className={`${styles.level0} ${styles.offKey}`} />
           Day off
         </li>
+        <li>
+          <i className={`${styles.level0} ${styles.todayKey}`} />
+          Today
+        </li>
       </ul>
       <div
         ref={ref}
@@ -139,6 +143,14 @@ export function YearHeatMap({
                     height={cellH}
                     rx={Math.min(3, cell / 4)}
                   />
+                  {d.date === now.date && (
+                    <circle
+                      className={`${styles.todayDot} ${d.level >= 2 ? styles.dayOnFill : ''}`}
+                      cx={cx(i) + cell / 2}
+                      cy={cy(i) + cell - Math.max(3, cell / 8)}
+                      r={Math.max(1.5, cell / 14)}
+                    />
+                  )}
                   {labelled && (
                     <text
                       className={`${styles.day} ${d.level >= 2 && !d.future ? styles.dayOnFill : ''}`}

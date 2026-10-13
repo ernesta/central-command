@@ -7,9 +7,9 @@ import { YearHeatMap } from './YearHeatMap'
 import styles from './ChartsCard.module.css'
 
 const VIEWS = [
-  { value: 'year', label: 'Calendar' },
+  { value: 'year', label: 'Year' },
   { value: 'weeks', label: 'Weeks' },
-  { value: 'typical', label: 'Weekdays' }
+  { value: 'typical', label: 'Days' }
 ] as const
 type View = (typeof VIEWS)[number]['value']
 
