@@ -1,9 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest'
-import { openNewTask } from '@modules/tasks/renderer/new-task-store'
 import { quickActionWorkspace, runQuickAction } from './quick-actions'
-
-vi.mock('@modules/tasks/renderer/new-task-store', () => ({ openNewTask: vi.fn() }))
 
 describe('runQuickAction', () => {
   it('creates a note and goes to it', async () => {
@@ -33,11 +30,6 @@ describe('runQuickAction', () => {
     expect(create).toHaveBeenCalledWith({ workspace: 'life' })
   })
 
-  it('starts a task in Research from Life, which has no tasks', async () => {
-    await runQuickAction('new-task', vi.fn(), 'life')
-    expect(openNewTask).toHaveBeenCalledWith({ workspace: 'research' })
-  })
-
   it('starts a meeting in Work with the series Other', async () => {
     const create = vi.fn(async () => ({ ref: { id: 'm1' } }))
     ;(window as unknown as { api: unknown }).api = { meetings: { create } }
@@ -45,11 +37,6 @@ describe('runQuickAction', () => {
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({ workspace: 'work', series: 'Other' })
     )
-  })
-
-  it('opens the New task dialog for the workspace it is given', async () => {
-    await runQuickAction('new-task', vi.fn(), 'work')
-    expect(openNewTask).toHaveBeenCalledWith({ workspace: 'work' })
   })
 
   it('does nothing for an id it does not know', async () => {

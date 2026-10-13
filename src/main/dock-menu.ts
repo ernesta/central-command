@@ -4,8 +4,7 @@ import { IPC, type DockActionId } from '@shared/api'
 const ACTIONS: { id: DockActionId; label: string }[] = [
   { id: 'new-note', label: 'New Note' },
   { id: 'new-meeting', label: 'New Meeting' },
-  { id: 'new-training', label: 'New Training Entry' },
-  { id: 'new-task', label: 'New Task' }
+  { id: 'new-training', label: 'New Training Entry' }
 ]
 
 const STOP_TIMER = { id: 'stop-timer', label: 'Stop Timer' } as const

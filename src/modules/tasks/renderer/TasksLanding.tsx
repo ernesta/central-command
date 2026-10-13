@@ -16,7 +16,6 @@ import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { listValue } from '../shared/query'
 import { landingSections, listSummaries, type SectionRow } from '../shared/views'
 import { AddBar } from './AddBar'
-import { NewTaskButton } from './NewTaskButton'
 import { TasksTable } from './TasksTable'
 import { tasksAllRoute, todayIso, useTasksWorkspace } from './tasks-paths'
 import { useWorkClients } from './useWorkClients'
@@ -112,7 +111,6 @@ export function TasksLanding(): React.JSX.Element {
               All tasks
               <ArrowRight size={14} strokeWidth={1.75} aria-hidden style={{ marginLeft: 6 }} />
             </AllLink>
-            <NewTaskButton />
           </>
         }
       />

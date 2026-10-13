@@ -1,17 +1,12 @@
 import type { ShortcutGroup } from '@shared/shortcuts'
 
-/** Starts a new task from anywhere in the app. */
+/** Opens the New task dialog from anywhere (not listed or mounted while the dialog is off; see `TaskGlobals`). */
 export const NEW_TASK_SHORTCUT = 'Mod-Shift-a'
 
 export const TASKS_SHORTCUTS: ShortcutGroup[] = [
   {
     title: 'Tasks',
     shortcuts: [
-      {
-        action: 'Add a task',
-        keys: [NEW_TASK_SHORTCUT],
-        note: 'From anywhere in the app. The task starts in the workspace and list you are looking at.'
-      },
       {
         action: 'Move a task on to the next status',
         keys: ['Space'],

@@ -2,7 +2,6 @@ import type { NavigateFunction } from 'react-router'
 import { meetingRoute } from '@modules/meetings/renderer/meetings-paths'
 import { defaultSeries } from '@modules/meetings/shared/types'
 import { stopTimer } from '@modules/hours/renderer/start-request'
-import { openNewTask } from '@modules/tasks/renderer/new-task-store'
 import { noteRoute } from '@modules/notes/renderer/notes-paths'
 import { entryRoute } from '@modules/training/renderer/training-paths'
 import type { DockActionId } from '@shared/api'
@@ -66,12 +65,6 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
       })
       navigate(meetingRoute(workspace, file.ref.id))
     }
-  },
-  {
-    id: 'new-task',
-    title: 'New task',
-    detail: 'Opens the task form, in the list you are looking at.',
-    go: (_navigate, workspace) => openNewTask({ workspace: researchOrWork(workspace) })
   },
   {
     id: 'stop-timer',

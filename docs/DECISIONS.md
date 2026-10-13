@@ -3137,3 +3137,11 @@ The user's request, looking at a task's Subtasks card: always order subtasks by 
 - **Why (the user):** the add bar showed priority as High / Normal / Low while the table showed P1 / P2 / P3; consistency matters more than either wording, and the user kept the P marks.
 - **Now:** the three `Segmented` priority choosers (`AddBar`, `NewTaskDialog`, `TaskPage`) use `PRIORITY_OPTIONS` (`task-labels.ts`): label `P1`/`P2`/`P3`, hover title the word. `Segmented` options take an optional `title`. The "Filter by priority" dropdown and the row menu (badge plus word) still use words.
 - Not driven in the app.
+
+## The New task dialog is switched off (13 Oct 2026)
+
+The user: tasks are made another way (the Add bar on the Tasks landing and the Start picker's Create), so the New task dialog goes, but its code stays in case task creation is wanted from another place.
+
+- **Removed from the UI:** the "New task" buttons (landing and Tasks page), the Mod-Shift-A shortcut (`TaskGlobals` is no longer in the manifest, and its Settings entry is gone), the palette's "New task" and the Dock's "New Task" (`DockActionId` lost `new-task`).
+- **Kept, unmounted:** `NewTaskDialog`, `NewTaskButton`, `TaskGlobals`, `new-task-store`, `NEW_TASK_SHORTCUT`. To bring it back: mount `TaskGlobals` in the manifest, add the shortcut entry, the buttons and the quick action again.
+- Checked by tests, lint and typecheck only; not driven in the app.

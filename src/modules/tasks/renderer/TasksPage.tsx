@@ -23,7 +23,6 @@ import {
 } from '../shared/query'
 import { TASK_PRIORITIES } from '../shared/types'
 import type { TaskView } from '../shared/views'
-import { NewTaskButton } from './NewTaskButton'
 import { PRIORITY_LABELS } from './task-labels'
 import { useWorkClients } from './useWorkClients'
 import { TasksTable } from './TasksTable'
@@ -173,9 +172,6 @@ export function TasksPage(): React.JSX.Element {
     <div className={styles.page}>
       <header className={styles.header}>
         <h1 className={styles.heading}>{heading}</h1>
-        <div className={styles.actions}>
-          <NewTaskButton list={query.list} />
-        </div>
       </header>
 
       <FilterRow>
