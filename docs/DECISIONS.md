@@ -3123,3 +3123,11 @@ The user's request, looking at a task's Subtasks card: always order subtasks by 
 - **Why (the user):** after three tries the trash still floated next to the date with 71px of empty space after it, and the user wanted it right-aligned with the row's usual padding, the empty space narrower, and the date zone as wide as the widest date so nothing jumps. Chosen from a to-scale mockup (the user picked "right aligned").
 - **Now:** the Due column is 133px (`.colDue`): 12 padding, an 81px date zone (`.dueDate`; the widest date, "May 28, 2027" in 13px IBM Plex Sans, measures 80.4px), a 12px gap, the 16px icon, 12 padding. `.remove` has margin `0 -4px 0 8px`, so the icon (not its 24px button) sits 12px from the cell's right edge, like every other cell's padding. The column was 160px; Title takes the 27px.
 - Driven in the built app on a scratch library: the cell is 133px, the icon's right edge is 12px from the cell's, its centre is on the row's centre line, and it is 12px from the date zone.
+
+## Tasks landing: order, Upcoming window, and every section that fits (13 Oct 2026)
+
+- **Why (the user):** the sections should run Due today, Overdue, Upcoming (next 7 days), In progress; and a task that fits several (due today and in progress) should show in all of them, not only the first. Their CastlesFest task (in progress, due tomorrow) had only appeared under In progress.
+- **Now:** `LANDING_SECTIONS` is `today, overdue, upcoming, doing` and `TasksLanding` renders in that order; `UPCOMING_DAYS` is 7 (label "Next 7 days"). `landingSections` (`tasks/shared/views.ts`) no longer stops at the first match: a task is listed under every section whose own date or status fits, or where an open subtask's own date fits (that subtask nested under it, only in the section it fits). Done tasks are never listed.
+- **Consequences:** Overdue's "Move to Today" / "Move to Backlog" act on the whole Overdue section, so an in-progress, overdue task moves and stays in In progress. A task with a date in the next 7 days and a subtask due today shows in Today (subtask nested) and Upcoming (nothing nested).
+- **To go back** to "once, under the first heading that fits": restore the `break` after the push in `landingSections` (commit `bf03a73` is the one to revert; the order and window are in `5ba3af8`).
+- Unit-tested (`views.test.ts`); not driven in the app.
