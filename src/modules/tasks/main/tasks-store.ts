@@ -102,12 +102,14 @@ export class TasksStore {
     let sublist = list ? (input.sublist ?? '').trim() : ''
     let position = input.position ?? 0
     const parentUid = input.parentUid ?? null
+    let due = input.due
     if (parentUid) {
       const parent = getTask(this.db, parentUid)
       if (!parent) throw new Error('The parent task does not exist')
       if (parent.parentUid) throw new Error('A subtask cannot have subtasks')
       if (input.recurrence) throw new Error('A subtask cannot repeat')
       workspace = parent.workspace
+      if (due === undefined && ruled) due = parent.due
       list = ''
       sublist = ''
       if (input.position === undefined) position = maxPosition(this.db, parentUid) + 1
@@ -131,7 +133,7 @@ export class TasksStore {
       description: input.description ?? '',
       status,
       priority,
-      due: checkDue(input.due),
+      due: checkDue(due),
       completedAt:
         status === 'done' ? (input.completedAt !== undefined ? input.completedAt : now) : null,
       list,
@@ -220,8 +222,17 @@ export class TasksStore {
         else if (!task.seriesUid) next.seriesUid = task.uid
       }
       writeTask(this.db, next)
+      if (!task.parentUid) this.passDown(task, next.due)
       return next
     })()
+  }
+
+  /** A parent that gets a due date where it had none gives it to the subtasks that have none; once dates are set, nothing follows. */
+  private passDown(before: Task, due: string | null): void {
+    if (before.due !== null || due === null) return
+    for (const sub of listSubtasks(this.db, before.uid)) {
+      if (sub.due === null) writeTask(this.db, { ...sub, due, updatedAt: this.clock.now() })
+    }
   }
 
   /**
@@ -282,6 +293,7 @@ export class TasksStore {
       for (const uid of uids) {
         const task = this.require(uid)
         writeTask(this.db, { ...task, due: value, updatedAt: this.clock.now() })
+        if (!task.parentUid) this.passDown(task, value)
       }
     })()
   }

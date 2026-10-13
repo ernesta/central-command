@@ -363,3 +363,35 @@ describe('moving a subtask under another task', () => {
     expect(listSubtasks(db, b.uid)).toHaveLength(0)
   })
 })
+
+describe('subtask due dates follow the parent only until dates are set', () => {
+  const sub = (parentUid: string, over = {}): ReturnType<TasksStore['create']> =>
+    store.create({ workspace: 'research', title: 's', parentUid, ...over })
+
+  it('a new subtask takes its parent’s due date unless it is given one', () => {
+    const p = make('P', { due: '2026-10-09' })
+    expect(sub(p.uid).due).toBe('2026-10-09')
+    expect(sub(p.uid, { due: '2026-10-12' }).due).toBe('2026-10-12')
+    expect(sub(p.uid, { due: null }).due).toBeNull()
+  })
+
+  it('a parent that gets a first due date gives it to the subtasks without one', () => {
+    const p = make('P')
+    const a = sub(p.uid)
+    const b = sub(p.uid, { due: '2026-10-12' })
+    store.update(p.uid, { due: '2026-10-20' })
+    expect(store.get(a.uid)?.due).toBe('2026-10-20')
+    expect(store.get(b.uid)?.due).toBe('2026-10-12')
+  })
+
+  it('setDue does the same, and later changes leave subtasks alone', () => {
+    const p = make('P')
+    const a = sub(p.uid)
+    store.setDue([p.uid], '2026-10-20')
+    expect(store.get(a.uid)?.due).toBe('2026-10-20')
+    store.update(p.uid, { due: '2026-10-25' })
+    store.update(p.uid, { due: null })
+    store.update(p.uid, { due: '2026-11-01' })
+    expect(store.get(a.uid)?.due).toBe('2026-10-20')
+  })
+})
