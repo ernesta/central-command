@@ -3226,3 +3226,7 @@ The user's rule: a training's task, series task and lecture subtask alike, is ti
 - **Now:** the right-hand column is gone. `BalanceCard` is one quiet line under the cards: "Whole contract: 121:15 of 208:00 · balance -70:45 · average week 5:03" with "Charts and weeks" beside it ("Whole year" in Research; with no aim: hours and average week only). The balance there is still against the plan up to today (`yearTotals`, unchanged). The link sits next to the text, not at the far right, where the floating Ask button covered it. Today stays full width; the Week and invoice cards sit side by side and stack below 1100px (at about 975px they were cramped: week labels wrapped). Research has no invoice card, so its Week card takes the full width.
 - **Research follows (the user, 13 Oct 2026):** the same Week card, summary and line, so Research's week reads "10:06 of 37:30" with its per-day bars and aim ticks unchanged.
 - **Driven:** scratch library, production build, light and dark, Work wide, Work stacked, Research. Dev mode was driven for stage 1 only (the same CSS and components).
+
+## Hours layout: the "today" tag and the day bars (13 Oct 2026, the user's feedback)
+
+- **Now:** the Week card's day rows no longer carry a "today" tag (the accent stripe already says it; `AllWeeks`' "now" tag is a different thing and stays). The bar column is 21% of the card, half of the 42% it had, so a day's bar is half as wide; the summary bar is unchanged.
