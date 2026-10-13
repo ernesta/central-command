@@ -54,7 +54,7 @@ describe('views', () => {
 })
 
 describe('groupTasks', () => {
-  it('makes rows of top-level tasks only, subtasks in position order', () => {
+  it('makes rows of top-level tasks only, subtasks by date, undated last', () => {
     const all = [
       task({ uid: 'p' }),
       task({ uid: 'k2', parentUid: 'p', position: 2 }),
@@ -64,6 +64,15 @@ describe('groupTasks', () => {
     const rows = groupTasks(all)
     expect(rows.map((r) => r.task.uid)).toEqual(['p'])
     expect(rows[0].kids.map((k) => k.uid)).toEqual(['k1', 'k2'])
+  })
+  it('orders subtasks by date, soonest first, undated last', () => {
+    const all = [
+      task({ uid: 'p' }),
+      task({ uid: 'none', parentUid: 'p', position: 1, due: null }),
+      task({ uid: 'late', parentUid: 'p', position: 2, due: '2026-11-30' }),
+      task({ uid: 'soon', parentUid: 'p', position: 3, due: '2026-10-23' })
+    ]
+    expect(groupTasks(all)[0].kids.map((k) => k.uid)).toEqual(['soon', 'late', 'none'])
   })
 })
 

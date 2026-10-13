@@ -12,9 +12,20 @@ export const UPCOMING_DAYS = 14
 
 const PRIORITY_ORDER: Record<TaskPriority, number> = { high: 0, normal: 1, low: 2 }
 
-/** Subtasks in the order the user keeps them: by position, then by when they were added. */
+/** Subtasks by date, soonest first and undated last; ties keep their position, then when they were added. */
 export function orderSubtasks(kids: readonly Task[]): Task[] {
-  return [...kids].sort((a, b) => a.position - b.position || a.createdAt.localeCompare(b.createdAt))
+  return [...kids].sort(
+    (a, b) =>
+      (a.due === b.due
+        ? 0
+        : a.due === null
+          ? 1
+          : b.due === null
+            ? -1
+            : a.due.localeCompare(b.due)) ||
+      a.position - b.position ||
+      a.createdAt.localeCompare(b.createdAt)
+  )
 }
 
 /** Top-level tasks, each with its subtasks. A subtask whose parent is missing is left out (it cannot be a row). */
