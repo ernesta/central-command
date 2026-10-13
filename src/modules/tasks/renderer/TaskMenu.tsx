@@ -50,7 +50,9 @@ export function TaskMenu({
 
   useEffect(() => {
     const away = (event: MouseEvent): void => {
-      if (!ref.current?.contains(event.target as Node)) onClose()
+      const target = event.target as Element
+      // The button that opened the menu toggles it on click, so it is not "outside".
+      if (!ref.current?.contains(target) && !target.closest('[data-menu-trigger]')) onClose()
     }
     document.addEventListener('mousedown', away)
     const back = returnTo.current

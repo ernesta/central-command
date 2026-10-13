@@ -3167,3 +3167,9 @@ The user's rule: a training's task, series task and lecture subtask alike, is ti
 - **Why (the user):** the task lists on the Tasks landing page must read sensibly: by date, then priority within a date; Overdue starts with the most overdue, Upcoming with the soonest (tomorrow).
 - **Cause:** `landingSections` sorted every section with `compareRows`, i.e. by the task's `effectiveDue` (its own date, else its earliest open subtask's). A task listed in Upcoming or Overdue only because of a nested subtask was placed by its own, unrelated date.
 - **Now:** each section is sorted by the earliest date of the row (its own or a nested subtask's) that falls in that section (`sectionDate` in `src/modules/tasks/shared/views.ts`), then priority (P1 first), then title. Both Overdue (oldest first) and Upcoming (soonest first) are ascending. "In progress" still uses `effectiveDue`. `compareRows` and the All tasks table are unchanged. Test in `views.test.ts`; not driven in the app.
+
+## The priority popup closes when its badge is clicked again (13 Oct 2026)
+
+- **Why (the user):** with the Priority popup open, clicking the row's P-badge again left it open.
+- **Cause:** `TaskMenu` closes on any mousedown outside it, which includes the badge that opened it; the badge's click then opened the menu again.
+- **Now:** `TaskMenu` ignores mousedowns on an element marked `data-menu-trigger`, and the table's `onPriorityMenu` toggles (the same task's open priority menu closes). Not driven in the app.

@@ -298,7 +298,13 @@ export function TasksTable({
                 onOpen={() => void navigate(taskRoute(workspace, item.task.uid))}
                 onToggle={() => toggle(item.task.uid)}
                 onAddSubtask={() => startAdding(item.task.uid)}
-                onPriorityMenu={(x, y) => setMenu({ task: item.task, x, y, kind: 'priority' })}
+                onPriorityMenu={(x, y) =>
+                  setMenu((open) =>
+                    open?.kind === 'priority' && open.task.uid === item.task.uid
+                      ? null
+                      : { task: item.task, x, y, kind: 'priority' }
+                  )
+                }
                 onContextMenu={(x, y) => setMenu({ task: item.task, x, y, kind: 'row' })}
               />
             )
@@ -525,6 +531,7 @@ function TaskRowView({
           <button
             type="button"
             tabIndex={-1}
+            data-menu-trigger
             className={styles.iconButton}
             aria-label={`Priority: ${PRIORITY_LABELS[task.priority]}`}
             title={`Priority: ${PRIORITY_LABELS[task.priority]}`}
