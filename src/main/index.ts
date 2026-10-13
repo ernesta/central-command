@@ -192,7 +192,7 @@ app.whenReady().then(async () => {
       }
     })
   )
-  // A timer started on a task marks it in progress (a task still to do) and moves a past due date to today; done ones stay as they are.
+  // A timer started on a task marks it in progress (a task still to do) and sets a missing or past due date to today; done ones stay as they are.
   const startedTasks = new TasksStore(db)
   tracking.setTaskStarted((key) => {
     const task = putStartedTaskInProgress(startedTasks, key)

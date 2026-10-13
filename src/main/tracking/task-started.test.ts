@@ -66,7 +66,7 @@ describe('starting a timer on a task', () => {
     expect(fixed.get(late.uid)?.due).toBe('2026-09-29')
     expect(fixed.get(late.uid)?.status).toBe('doing')
   })
-  it('moves it even when the task is already in progress, and leaves later and missing dates alone', () => {
+  it('moves it even when the task is already in progress, and leaves a later date alone', () => {
     const fixed = new TasksStore(db, {
       today: () => '2026-09-29',
       now: () => '2026-09-29T10:00:00Z'
@@ -89,7 +89,7 @@ describe('starting a timer on a task', () => {
     for (const t of [doing, future, none]) tracking.start('research', t.title, taskKey(t.uid))
     expect(fixed.get(doing.uid)?.due).toBe('2026-09-29')
     expect(fixed.get(future.uid)?.due).toBe('2026-10-05')
-    expect(fixed.get(none.uid)?.due).toBeNull()
+    expect(fixed.get(none.uid)?.due).toBe('2026-09-29')
   })
   it('leaves the due date of a done task alone', () => {
     const fixed = new TasksStore(db, {
