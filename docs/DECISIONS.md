@@ -3085,3 +3085,8 @@ The user's request, looking at a task's Subtasks card: always order subtasks by 
 - `orderSubtasks` (`shared/views.ts`) sorts by `due`, `null` last; ties keep the old order (position, then when added). Every place that lists subtasks (the task page, table rows) goes through it via `groupTasks`.
 - Position is no longer what the user sees; nothing was dropped (the field and any reordering code stay).
 - Unit-tested (`views.test.ts`); not driven in the built app.
+
+## A top-level list's page groups by sublist (13 Oct 2026)
+
+- **Why (the user):** opening a top-level list should show the tasks of all its sublists; of four mockups (`docs/design/tasks-list-page-mockup.html`) they chose B, a section per sublist.
+- **Now:** the filter already matched a list's sublists; `groupBySublist` (`shared/query.ts`) splits the rows into one section per sublist (heading and count, each section in the page's sort), tasks directly in the list last as "No sublist". Only for a whole-list filter where some task has a sublist; a sublist's own page, All lists and Backlog stay flat. Grouped sections are not cut at 50 rows. Not yet driven in the app.
