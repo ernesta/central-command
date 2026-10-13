@@ -540,33 +540,35 @@ function TaskRowView({
       </td>
       <td className={styles.nowrap}>{formatTaskTime(minutes)}</td>
       <td className={styles.nowrap} onClick={(event) => event.stopPropagation()}>
-        <span
-          className={
-            due
-              ? styles[`due_${task.status === 'done' ? 'normal' : dueTone(due, today)}`]
-              : undefined
-          }
-        >
-          <DatePicker
-            label="Due"
-            plain
-            value={task.due}
-            // A parent with subtasks and no date of its own shows the earliest of theirs, as a placeholder.
-            placeholder={due ? formatDue(due, today) : 'Add date'}
-            today={today}
-            onChange={(next) => void setDue(task, next)}
-          />
+        <span className={styles.dueCell}>
+          <span
+            className={
+              due
+                ? styles[`due_${task.status === 'done' ? 'normal' : dueTone(due, today)}`]
+                : undefined
+            }
+          >
+            <DatePicker
+              label="Due"
+              plain
+              value={task.due}
+              // A parent with subtasks and no date of its own shows the earliest of theirs, as a placeholder.
+              placeholder={due ? formatDue(due, today) : 'Add date'}
+              today={today}
+              onChange={(next) => void setDue(task, next)}
+            />
+          </span>
+          <button
+            type="button"
+            tabIndex={-1}
+            className={[styles.iconButton, styles.remove].join(' ')}
+            aria-label={`Delete ${task.title || 'Untitled'}`}
+            title="Delete"
+            onClick={() => void removeTask(task)}
+          >
+            <Trash2 size={16} strokeWidth={1.75} aria-hidden />
+          </button>
         </span>
-        <button
-          type="button"
-          tabIndex={-1}
-          className={[styles.iconButton, styles.remove].join(' ')}
-          aria-label={`Delete ${task.title || 'Untitled'}`}
-          title="Delete"
-          onClick={() => void removeTask(task)}
-        >
-          <Trash2 size={16} strokeWidth={1.75} aria-hidden />
-        </button>
       </td>
     </tr>
   )

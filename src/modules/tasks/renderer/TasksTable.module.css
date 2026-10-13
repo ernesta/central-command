@@ -163,6 +163,10 @@
 .iconButton:hover {
   background: var(--selected-bg);
 }
+.dueCell {
+  display: inline-flex;
+  align-items: center;
+}
 /* The delete button shows on hover or focus, like the ghost pill. */
 .remove {
   margin-left: 8px;
@@ -173,9 +177,6 @@
 .row:focus-visible .remove,
 .remove:focus-visible {
   opacity: 1;
-}
-.remove:hover {
-  color: var(--danger);
 }
 .due_overdue {
   color: var(--danger);
