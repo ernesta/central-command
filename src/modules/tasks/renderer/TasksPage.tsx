@@ -22,7 +22,6 @@ import {
 } from '../shared/query'
 import { TASK_PRIORITIES } from '../shared/types'
 import type { TaskView } from '../shared/views'
-import { AddBar } from './AddBar'
 import { NewTaskButton } from './NewTaskButton'
 import { PRIORITY_LABELS } from './task-labels'
 import { useWorkClients } from './useWorkClients'
@@ -203,10 +202,6 @@ export function TasksPage(): React.JSX.Element {
           onChange={(view) => set({ view })}
         />
       </FilterRow>
-
-      {rows !== null && (
-        <AddBar workspace={workspace} rows={all} today={today} listFilter={query.list} />
-      )}
 
       <div className={styles.content}>{content}</div>
     </div>

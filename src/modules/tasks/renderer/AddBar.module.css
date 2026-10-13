@@ -28,14 +28,6 @@
 .input::placeholder {
   color: var(--text-muted);
 }
-.kbd {
-  padding: 0 6px;
-  border: 1px solid var(--border-soft);
-  border-radius: 6px;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-  font-size: var(--text-12);
-}
 .error {
   flex-basis: 100%;
   color: var(--danger);

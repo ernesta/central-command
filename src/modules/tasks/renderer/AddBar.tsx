@@ -1,19 +1,23 @@
 import { Plus } from 'lucide-react'
 import { useRef, useState } from 'react'
+import { Button } from '@renderer/components/Button'
+import { Segmented } from '@renderer/components/Segmented'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
-import { defaultList } from '../shared/query'
+import { defaultList, tagsIn } from '../shared/query'
 import { canUseList } from '../shared/work-lists'
-import type { TaskWorkspace } from '../shared/types'
+import { TASK_PRIORITIES, type TaskPriority, type TaskWorkspace } from '../shared/types'
 import type { TaskRow } from '../shared/views'
 import { DueField } from './DueField'
 import { ListField } from './ListField'
+import { TagsField } from './TagsField'
+import { PRIORITY_LABELS } from './task-labels'
 import { useWorkClients } from './useWorkClients'
 import { useTaskDefaults } from './useTaskDefaults'
 import styles from './AddBar.module.css'
 
 /**
- * The bar above every list of tasks: type a title and press Enter. The due date starts as Today and the list as the one
- * being looked at, else the one used last. Priority is Normal; open the task, or use New task, to say more.
+ * A bar for adding a task in one line: type a title, set what matters, press Add (or Enter). The due date starts as Today and the list as the one
+ * being looked at, else the one used last; priority starts Normal and tags empty.
  */
 export function AddBar({
   workspace,
@@ -30,6 +34,8 @@ export function AddBar({
   const { last, remember } = useTaskDefaults(workspace)
   const [title, setTitle] = useState('')
   const [due, setDue] = useState<string | null>(today)
+  const [priority, setPriority] = useState<TaskPriority>('normal')
+  const [tags, setTags] = useState<string[]>([])
   // The person's own choice; until then the default follows the page and the tasks.
   const [chosen, setChosen] = useState<{ list: string; sublist: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -50,10 +56,14 @@ export function AddBar({
         title: title.trim(),
         list: list.list,
         sublist: list.sublist,
-        due
+        due,
+        priority,
+        tags
       })
       remember(list.list, list.sublist)
       setTitle('')
+      setPriority('normal')
+      setTags([])
       inputRef.current?.focus()
     } catch (e) {
       setError(ipcErrorMessage(e))
@@ -88,7 +98,16 @@ export function AddBar({
         rows={rows}
         onChange={(value) => setChosen(value)}
       />
-      <kbd className={styles.kbd}>Return</kbd>
+      <Segmented<TaskPriority>
+        label="Priority"
+        value={priority}
+        options={TASK_PRIORITIES.map((p) => ({ value: p, label: PRIORITY_LABELS[p] }))}
+        onChange={setPriority}
+      />
+      <TagsField tags={tags} suggestions={tagsIn(rows)} onChange={setTags} />
+      <Button type="submit" variant="primary" disabled={busy || title.trim() === ''}>
+        Add
+      </Button>
       {error && (
         <span role="alert" className={styles.error}>
           {error}

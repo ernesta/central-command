@@ -3,18 +3,19 @@ import { Button } from '@renderer/components/Button'
 import { Dialog } from '@renderer/components/Dialog'
 import { Segmented } from '@renderer/components/Segmented'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
-import { defaultList } from '../shared/query'
+import { defaultList, tagsIn } from '../shared/query'
 import { canUseList } from '../shared/work-lists'
 import { TASK_PRIORITIES, type TaskPriority, type TaskWorkspace } from '../shared/types'
 import type { TaskRow } from '../shared/views'
 import { DueField } from './DueField'
 import { ListField } from './ListField'
+import { TagsField } from './TagsField'
 import { useWorkClients } from './useWorkClients'
 import { PRIORITY_LABELS } from './task-labels'
 import { useTaskDefaults } from './useTaskDefaults'
 import styles from './NewTaskDialog.module.css'
 
-/** The small dialog behind every "New task" button and the shortcut: title, due, list and priority. */
+/** The small dialog behind every "New task" button and the shortcut: title, due, list, priority and tags. */
 export function NewTaskDialog({
   workspace,
   rows,
@@ -32,6 +33,7 @@ export function NewTaskDialog({
   const [title, setTitle] = useState('')
   const [due, setDue] = useState<string | null>(today)
   const [priority, setPriority] = useState<TaskPriority>('normal')
+  const [tags, setTags] = useState<string[]>([])
   const [chosen, setChosen] = useState<{ list: string; sublist: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -51,7 +53,8 @@ export function NewTaskDialog({
         list: list.list,
         sublist: list.sublist,
         due,
-        priority
+        priority,
+        tags
       })
       remember(list.list, list.sublist)
       onClose()
@@ -122,6 +125,10 @@ export function NewTaskDialog({
             options={TASK_PRIORITIES.map((p) => ({ value: p, label: PRIORITY_LABELS[p] }))}
             onChange={setPriority}
           />
+        </div>
+        <div className={styles.field}>
+          <span className={styles.label}>Tags</span>
+          <TagsField tags={tags} suggestions={tagsIn(rows)} onChange={setTags} />
         </div>
         {error && (
           <p role="alert" className={styles.error}>
