@@ -94,7 +94,8 @@ describe('landingSections', () => {
     expect(ids('today')).toEqual(['a'])
     expect(ids('doing')).toEqual(['i', 'a', 'b'])
     expect(ids('overdue')).toEqual(['c', 'i'])
-    expect(ids('upcoming')).toEqual(['f', 'd'])
+    expect(ids('tomorrow')).toEqual(['f'])
+    expect(ids('upcoming')).toEqual(['d'])
   })
 
   it('lists a task for a subtask’s own date, with that subtask nested', () => {
@@ -120,7 +121,8 @@ describe('landingSections', () => {
       ],
       TODAY
     )
-    expect(s.upcoming.map((r) => r.task.uid)).toEqual(['p', 'y', 'x'])
+    expect(s.tomorrow.map((r) => r.task.uid)).toEqual(['p'])
+    expect(s.upcoming.map((r) => r.task.uid)).toEqual(['y', 'x'])
   })
 
   it('ignores a done subtask’s date', () => {

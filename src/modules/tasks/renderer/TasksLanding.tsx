@@ -66,7 +66,7 @@ export function TasksLanding(): React.JSX.Element {
     )
 
   const section = (
-    id: 'today' | 'doing' | 'overdue' | 'upcoming',
+    id: 'today' | 'tomorrow' | 'doing' | 'overdue' | 'upcoming',
     label: string,
     empty: string,
     aside?: React.ReactNode,
@@ -119,6 +119,13 @@ export function TasksLanding(): React.JSX.Element {
         <>
           <AddBar workspace={workspace} rows={all} today={today} />
           {section('today', 'Due today', 'Nothing is due today.')}
+          {section('tomorrow', 'Due tomorrow', 'Nothing is due tomorrow.')}
+          {section(
+            'upcoming',
+            'Soon',
+            'Nothing in the next 7 days.',
+            <span className={styles.muted}>Next 7 days</span>
+          )}
           {section(
             'overdue',
             'Overdue',
@@ -134,12 +141,6 @@ export function TasksLanding(): React.JSX.Element {
               </span>
             ),
             true
-          )}
-          {section(
-            'upcoming',
-            'Upcoming',
-            'Nothing in the next 7 days.',
-            <span className={styles.muted}>Next 7 days</span>
           )}
           {section('doing', 'In progress', 'Nothing in progress.', undefined, true)}
 
