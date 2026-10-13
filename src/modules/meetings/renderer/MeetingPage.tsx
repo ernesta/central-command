@@ -47,6 +47,7 @@ function MeetingPageIn({ workspace }: { workspace: MeetingWorkspace }): React.JS
     <MeetingView
       key={`${workspace}/${key}`}
       meetingRef={{ workspace, id: key }}
+      currentId={id}
       onRenamed={(newId) => {
         setKnown((prev) =>
           prev.key === key ? { key, ids: [...prev.ids, newId] } : { key, ids: [key, newId] }
@@ -59,9 +60,12 @@ function MeetingPageIn({ workspace }: { workspace: MeetingWorkspace }): React.JS
 
 function MeetingView({
   meetingRef,
+  currentId,
   onRenamed
 }: {
   meetingRef: MeetingRef
+  /** The name the meeting has now (the page keeps the one it opened under, see `MeetingPageIn`). */
+  currentId: string
   onRenamed: (id: string) => void
 }): React.JSX.Element {
   const navigate = useNavigate()
@@ -280,7 +284,7 @@ function MeetingView({
         onChange={(patch) => session.setMeta(patch)}
         onAddPerson={addPerson}
       />
-      <MeetingHoursNote workspace={meetingRef.workspace} id={meetingRef.id} meta={meta} />
+      <MeetingHoursNote workspace={meetingRef.workspace} id={currentId} meta={meta} />
 
       <DocSplit
         docRef={editorRef}
