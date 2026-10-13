@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Patterns Card: Empty Space</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@500;600&display=swap">
+<style>
+/* Mockup: the Patterns card at its real size (697px wide, half of the Hours page, body 232px high), five ways to use the space under the Calendar. Tokens mirror tokens.css. */
+:root { --bg:#edeff2; --surface:#fff; --ink:#1b222b; --text-secondary:#3a4652; --text-muted:#5c6672; --border:#d3d8de; --faint:#e6e9ed; --accent:#35577a; --accent-contrast:#fff; --under:#b8741a; --selected:#dce6ee;
+  --h0:#e3e8ee; --h1:#b9cadb; --h2:#7f9fbe; --h3:#35577a; --font-display:'Newsreader',Georgia,serif; --font-body:'IBM Plex Sans',system-ui,sans-serif; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#14181d; --surface:#1f262e; --ink:#e6eaee; --text-secondary:#c2cad2; --text-muted:#98a3af; --border:#2f3843; --faint:#262e37; --accent:#86aad0; --accent-contrast:#0f1620; --under:#d9a05a; --selected:#2a3b4d; --h0:#2a333d; --h1:#3a5069; --h2:#5f84a8; --h3:#86aad0; color-scheme:dark; } }
+*{box-sizing:border-box} body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--font-body);margin:0;padding:24px 16px 80px}
+.app{max-width:1500px;margin:0 auto;display:grid;gap:26px}
+h1,h2,h3{font-family:var(--font-display);font-weight:600;margin:0} h1{font-size:32px}
+.note{color:var(--text-muted);font-size:13px;max-width:78ch;margin:0}
+.grid{display:flex;flex-wrap:wrap;gap:28px 24px;align-items:flex-start}
+figure{margin:0;width:697px;max-width:100%} figcaption{margin:0 0 8px;max-width:697px} figcaption b{font:600 18px var(--font-display);display:block;margin-bottom:2px} figcaption span{color:var(--text-muted);font-size:13px}
+/* The real card: padding 20 24 16, border 1, title 20px, body 232px high, 12px under the head. */
+.card{width:697px;max-width:100%;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px 16px}
+.head{display:flex;justify-content:space-between;align-items:baseline;gap:8px 16px}
+.card h3{font-size:20px}
+.tabs{display:inline-flex;border:1px solid var(--border);border-radius:8px;padding:2px;gap:2px}
+.tabs span{font-size:13px;color:var(--text-secondary);padding:4px 12px;border-radius:6px}
+.tabs span.on{background:var(--selected);color:var(--ink);font-weight:600}
+.body{height:232px;margin-top:12px}.hug{height:auto}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--text-secondary);align-items:center;min-height:18px;margin:0;padding:0;list-style:none}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin:0 2px;vertical-align:-2px}
+.legend i.off{background:var(--h0);outline:2px solid var(--text-muted);outline-offset:-2px}
+.legend .sp{margin-left:auto}.legend .nav{display:inline-flex;gap:6px;align-items:center;color:var(--ink);font-weight:600}.legend .nav b{width:22px;height:22px;border:1px solid var(--border);border-radius:6px;display:grid;place-items:center;font-weight:400;color:var(--text-secondary)}
+.plot{margin-top:8px}
+svg{display:block;overflow:visible} svg text{font:11px var(--font-body);fill:var(--text-muted)} svg text.n{fill:var(--text-secondary)} svg text.nf{fill:var(--accent-contrast)} svg text.tot{fill:var(--text-secondary);font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);margin-top:14px;border-top:1px solid var(--faint)}
+.stats div{padding:10px 12px 0;border-left:1px solid var(--faint)}.stats div:first-child{border-left:0;padding-left:0}
+.stats b{display:block;font:600 22px/1.15 var(--font-display);font-variant-numeric:tabular-nums}.stats small{color:var(--text-muted);font-size:12px}
+</style></head><body><div class="app">
+<div><h1>Patterns: the empty space under the Calendar</h1>
+<p class="note">Mockup, not the app. Every card is drawn at its real size: 697px wide, body 232px (the page's half-width card, the same height in all three views). The squares are 8–9px because 52 weeks across about 650px leaves only about 12px a week, so the grid is about 100px tall in a 200px plot. Research's figures, Tue 13 Oct 2026; the year runs from Mon 21 Sep 2026. Options A to D keep the card's height; E shortens it.</p></div>
+<div class="grid">
+<figure><figcaption><b>Now</b></figcaption><div class="card" id="N"></div></figure>
+<figure><figcaption><b>A. Half a year at a time</b><span>Sep–Mar or Mar–Sep with ‹ ›, opening on the half that holds today. 26 weeks across the same width make the squares 21px, so they fill the plot and the day numbers show. Cost: one control, and the whole year is no longer in view.</span></figcaption><div class="card" id="A"></div></figure>
+<figure><figcaption><b>B. A row per month</b><span>The whole year, one row a month and a column a day, with the month's hours at the end of each row. It fills the height and the width (the totals are new). Cost: weekends no longer line up in columns, so the weekday rhythm is only in Weekdays.</span></figcaption><div class="card" id="B"></div></figure>
+<figure><figcaption><b>C. A few facts under the grid</b><span>The grid as it is, with four numbers pinned under it. Cost: new numbers to compute, and Weeks and Weekdays would want a strip of their own to match.</span></figcaption><div class="card" id="C"></div></figure>
+<figure><figcaption><b>D. Each week's hours under its column</b><span>A bar per week directly beneath that week's squares (blue met the plan, amber under, as in Weeks). Fills the height with data that already exists. Cost: a small copy of the Weeks view.</span></figcaption><div class="card" id="D"></div></figure>
+<figure><figcaption><b>E. Shorten the card</b><span>Nothing is added: the body is only as tall as the Calendar needs (about 130px). Cost: Weeks and Weekdays get a 100px plot, too little for bars and a scale, so they would keep 200px and the card would grow when they are shown, which breaks "switching views never moves the page".</span></figcaption><div class="card" id="E"></div></figure>
+</div>
+</div>
+<script>
+// Fake but plausible data: 364 days from Mon 21 Sep 2026; today is Tue 13 Oct (index 22).
+const START=Date.UTC(2026,8,21), TODAY=22, DAYS=364, W=647
+const past=[2,3,3,2,3,0,1, 3,3,0,3,3,0,0, 2,2,3,3,3,0,0, 3,2,0,0,0,0,0]
+const offIdx=new Set([95,96,98,99,100,191,192,193,266,267,268,271,330])
+const days=Array.from({length:DAYS},(_,i)=>({i,d:new Date(START+i*864e5),lv:i<=TODAY?past[i]||0:0,fut:i>TODAY,off:offIdx.has(i)}))
+const hrs=[0,2.5,5.5,8], MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], DN=['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+const lg=(extra='')=>`<ul class="legend"><li>Less <i style="background:var(--h0)"></i><i style="background:var(--h1)"></i><i style="background:var(--h2)"></i><i style="background:var(--h3)"></i> More</li><li><i class="off"></i> Day off</li>${extra}</ul>`
+const head=b=>`<div class="head"><h3>Patterns</h3><div class="tabs"><span class="on">Calendar</span><span>Weeks</span><span>Weekdays</span></div></div><div class="body${b||''}">`
+function cell(d,x,y,c,num){const r=Math.min(3,c/4),fill=d.fut?'transparent':`var(--h${d.lv})`
+  const st=d.off?' stroke="var(--text-muted)" stroke-width="2"':d.fut?' stroke="var(--faint)"':''
+  return `<rect x="${x}" y="${y}" width="${c}" height="${c}" rx="${r}" fill="${fill}"${st}/>`+(num&&c>=15?`<text class="${d.lv>=2&&!d.fut?'nf':'n'}" x="${x+c/2}" y="${y+c/2+4}" text-anchor="middle">${d.d.getUTCDate()}</text>`:'')}
+function grid(from,to,step){const L=32,T=20;let s='';DN.forEach((n,r)=>s+=`<text x="${L-8}" y="${T+r*step+(step-3)/2+4}" text-anchor="end">${n}</text>`)
+  let last=-1;for(let w=from;w<to;w++){const m=days[w*7+6].d.getUTCMonth();const f=days.slice(w*7,w*7+7).find(d=>d.d.getUTCDate()===1);if(w===from||f){const mm=f?f.d.getUTCMonth():days[w*7].d.getUTCMonth();if(mm!==last){s+=`<text x="${L+(w-from)*step}" y="12">${MON[mm]}</text>`;last=mm}}}
+  for(let w=from;w<to;w++)for(let r=0;r<7;r++)s+=cell(days[w*7+r],L+(w-from)*step,T+r*step,step-3,true)
+  return s}
+const full=(W-32-4)/52   // 11.75: what the app computes
+const fmt=h=>`${Math.floor(h)}:${String(Math.round(h%1*60)).padStart(2,'0')}`
+// Now
+document.getElementById('N').innerHTML=head()+lg()+`<div class="plot"><svg width="${W}" height="${20+7*full}">${grid(0,52,full)}</svg></div></div>`
+// A: today is in week 3, so the first half
+document.getElementById('A').innerHTML=head()+lg(`<li class="sp nav"><b>‹</b>Sep 2026 – Mar 2027<b>›</b></li>`)+`<div class="plot"><svg width="${W}" height="${20+7*((W-36)/26)}">${grid(0,26,(W-36)/26)}</svg></div></div>`
+// B
+{const step=14.3,L=46,T=14,rows=[];for(let y=2026*12+8;y<=2027*12+8;y++)rows.push([Math.floor(y/12),y%12])
+ let s='';[1,5,10,15,20,25,30].forEach(d=>s+=`<text x="${L+(d-1)*step+(step-3)/2}" y="8" text-anchor="middle">${d}</text>`)
+ rows.forEach(([Y,M],r)=>{const n=new Date(Date.UTC(Y,M+1,0)).getUTCDate();let tot=0,any=false
+  s+=`<text x="${L-8}" y="${T+r*step+(step-3)/2+4}" text-anchor="end">${MON[M]} ’${String(Y).slice(2)}</text>`
+  for(let d=1;d<=n;d++){const idx=Math.round((Date.UTC(Y,M,d)-START)/864e5);if(idx<0||idx>=DAYS)continue;const o=days[idx];if(!o.fut){tot+=hrs[o.lv];any=true}s+=cell(o,L+(d-1)*step,T+r*step,step-3,false)}
+  s+=`<text class="tot" x="${L+31*step+8}" y="${T+r*step+(step-3)/2+4}">${any?fmt(tot):''}</text>`})
+ s+=`<text x="${L+31*step+8}" y="8">Hours</text>`
+ document.getElementById('B').innerHTML=head()+lg()+`<div class="plot"><svg width="${W}" height="${T+13*step}">${s}</svg></div></div>`}
+// C
+document.getElementById('C').innerHTML=head()+lg()+`<div class="plot"><svg width="${W}" height="${20+7*full}">${grid(0,52,full)}</svg></div>
+ <div class="stats"><div><b>19</b><small>days worked</small></div><div><b>126:30</b><small>hours so far</small></div><div><b>9 days</b><small>longest run</small></div><div><b>3 of 25</b><small>days off used</small></div></div></div>`
+// D
+{const bh=82,wk=[];for(let w=0;w<52;w++)wk.push(days.slice(w*7,w*7+7).reduce((a,d)=>a+(d.fut?0:hrs[d.lv]),0))
+ const y=h=>bh-4-(bh-14)*h/45;let b=`<text x="24" y="${y(40)+4}" text-anchor="end">40h</text><line x1="32" x2="${W}" y1="${y(0)}" y2="${y(0)}" stroke="var(--faint)"/>`
+ wk.forEach((h,w)=>{const x=32+w*full,c=full-3;b+=w>3?`<rect x="${x}" y="${y(0)-2}" width="${c}" height="2" rx="1" fill="var(--faint)"/>`:`<rect x="${x}" y="${y(h)}" width="${c}" height="${Math.max(y(0)-y(h),2)}" rx="2" fill="${h>=37.5?'var(--accent)':'var(--under)'}"/>`})
+ document.getElementById('D').innerHTML=head()+lg()+`<div class="plot"><svg width="${W}" height="${20+7*full}">${grid(0,52,full)}</svg><svg width="${W}" height="${bh}" style="margin-top:2px">${b}</svg></div></div>`}
+// E
+document.getElementById('E').innerHTML=head(' hug')+lg()+`<div class="plot"><svg width="${W}" height="${20+7*full}">${grid(0,52,full)}</svg></div></div>`
+</script></body></html>
