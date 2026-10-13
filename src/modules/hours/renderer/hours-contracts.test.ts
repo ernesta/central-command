@@ -38,31 +38,32 @@ describe('InvoiceCard', () => {
       })
     )
 
-  it('a month with an aim: weeks with their plan, the month against its plan, and a balance', () => {
+  it('a month with an aim: weeks with a bar, the month against its whole plan, and a balance against it', () => {
     const host = show(true, 'month')
-    expect(headers(host)).toEqual(['Week', 'Hours', 'Plan'])
-    expect(host.textContent).toContain('2:00 of ')
-    expect(host.textContent).toContain('to go')
-    expect(host.textContent).toContain('Balance')
+    expect(headers(host)).toEqual(['Week', 'Hours', ''])
+    expect(host.textContent).toContain('2:00of ')
+    expect(host.textContent).toMatch(/[−-]\d+:\d\d/)
+    expect(host.textContent).not.toContain('Plan')
+    expect(host.textContent).not.toContain('to go')
     expect(host.querySelector('button[aria-label="Previous month"]')).not.toBeNull()
   })
 
   it('a month without an aim: hours only, no plan column, no "to go", no balance', () => {
     const host = show(false, 'month')
     expect(headers(host)).toEqual(['Week', 'Hours'])
-    expect(host.querySelector('header')?.textContent).toContain('2:00')
+    expect(host.querySelector('section > p')?.textContent).toBe('2:00')
     expect(host.textContent).not.toContain(' of ')
     expect(host.textContent).not.toContain('to go')
     expect(host.textContent).not.toContain('Balance')
   })
 
-  it('a week with an aim: no week table, hours per client with the week total and its plan', () => {
+  it('a week with an aim: no week table, the summary and hours per client', () => {
     const host = show(true, 'week')
     expect(headers(host)).toEqual([])
     expect(host.querySelector('button[aria-label="Previous week"]')).not.toBeNull()
     expect(host.textContent).toContain('Royal Holloway – Total')
-    expect(host.textContent).toContain('to go')
-    expect(host.textContent).not.toContain('Balance')
+    expect(host.textContent).toMatch(/of 8:00/)
+    expect(host.textContent).not.toContain('to go')
   })
 
   it('a week without an aim: hours only, no plan cell', () => {
@@ -70,6 +71,7 @@ describe('InvoiceCard', () => {
     expect(host.textContent).toContain('Royal Holloway – Total')
     expect(host.textContent).not.toContain('to go')
     expect(host.querySelectorAll('tfoot tr:first-child td')).toHaveLength(1)
+    expect(host.textContent).not.toMatch(/of 8:00/)
   })
 
   it('moves to the neighbouring period with the arrows', () => {

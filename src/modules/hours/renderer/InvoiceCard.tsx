@@ -1,9 +1,10 @@
 import { useMemo } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { formatHours, formatRange, formatSignedHours } from '@shared/tracking/format'
+import { formatHours, formatRange } from '@shared/tracking/format'
 import { hasAim } from '@shared/tracking/plan'
 import { invoiceOf, type Moment, type TrackingYear } from '@shared/tracking/types'
-import { periodOfWeek, periodPlanSoFar, periodsOf } from '../shared/periods'
+import { periodOfWeek, periodsOf } from '../shared/periods'
+import { PeriodSummary } from './PeriodSummary'
 import styles from './InvoiceCard.module.css'
 
 interface InvoiceCardProps {
@@ -15,9 +16,10 @@ interface InvoiceCardProps {
 }
 
 /**
- * One invoice period at a time, with arrows between them. A contract invoiced by month shows the month: its weeks (whole
- * weeks) with their hours, the month against its plan, and the balance against what the weeks begun so far expect. One
- * invoiced by week shows the week: its hours per client. Where there is no aim there is no plan, balance or "to go".
+ * One invoice period at a time, with arrows between them. The summary (hours of the period's whole aim, the balance against it
+ * and one bar) is the Week card's. A contract invoiced by month lists its weeks (whole weeks) with their hours and a bar, the
+ * current one bold with the accent stripe; one invoiced by week lists its hours per client. Where there is no aim there is
+ * only the hours.
  */
 export function InvoiceCard({
   data,
@@ -32,9 +34,7 @@ export function InvoiceCard({
   const aimed = hasAim(data)
   const unit = byWeek ? 'week' : 'month'
   const index = periods.indexOf(month)
-  const left = month.plan - month.minutes
   const begun = month.from <= now.date
-  const balance = month.minutes - periodPlanSoFar(month, now.date)
 
   return (
     <section className={styles.card} aria-label="Invoice">
@@ -62,22 +62,13 @@ export function InvoiceCard({
             <ChevronRight size={16} strokeWidth={1.75} aria-hidden />
           </button>
         </div>
-        {begun && (
-          <span className={styles.summary}>
-            {aimed
-              ? `${formatHours(month.minutes)} of ${formatHours(month.plan)} · ${
-                  left > 0 ? `${formatHours(left)} to go` : `${formatHours(-left)} over`
-                }`
-              : formatHours(month.minutes)}
-          </span>
-        )}
       </header>
-      {begun && aimed && !byWeek && (
-        <p className={styles.note}>
-          Balance {formatSignedHours(balance)} against{' '}
-          {formatHours(periodPlanSoFar(month, now.date))} expected so far
-        </p>
-      )}
+      {begun &&
+        (aimed ? (
+          <PeriodSummary minutes={month.minutes} aim={month.plan} />
+        ) : (
+          <p className={styles.total}>{formatHours(month.minutes)}</p>
+        ))}
       <table className={styles.table}>
         {!byWeek && (
           <>
@@ -87,11 +78,7 @@ export function InvoiceCard({
                 <th scope="col" className={styles.right}>
                   Hours
                 </th>
-                {aimed && (
-                  <th scope="col" className={styles.right}>
-                    Plan
-                  </th>
-                )}
+                {aimed && <th scope="col" />}
               </tr>
             </thead>
             <tbody>
@@ -116,7 +103,20 @@ export function InvoiceCard({
                         <span className={styles.muted}>—</span>
                       )}
                     </td>
-                    {aimed && <td className={styles.right}>{formatHours(w.plan)}</td>}
+                    {aimed && (
+                      <td>
+                        {w.from <= now.date && (
+                          <div className={styles.track} aria-hidden>
+                            <i
+                              className={styles.fill}
+                              style={{
+                                width: `${w.plan > 0 ? Math.min(w.minutes / w.plan, 1) * 100 : 0}%`
+                              }}
+                            />
+                          </div>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 )
               })}
@@ -129,14 +129,9 @@ export function InvoiceCard({
               <tr key={c.client ?? ''} className={styles.clientRow}>
                 <th scope="row">{c.client ?? 'No client'} – Total</th>
                 <td className={styles.right}>{formatHours(c.minutes)}</td>
-                {aimed && <td />}
+                {aimed && !byWeek && <td />}
               </tr>
             ))}
-          <tr>
-            <th scope="row">{month.name} – Total</th>
-            <td className={styles.right}>{begun ? formatHours(month.minutes) : '—'}</td>
-            {aimed && <td className={styles.right}>{formatHours(month.plan)}</td>}
-          </tr>
         </tfoot>
       </table>
     </section>
