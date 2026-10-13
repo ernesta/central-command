@@ -3131,3 +3131,9 @@ The user's request, looking at a task's Subtasks card: always order subtasks by 
 - **Consequences:** Overdue's "Move to Today" / "Move to Backlog" act on the whole Overdue section, so an in-progress, overdue task moves and stays in In progress. A task with a date in the next 7 days and a subtask due today shows in Today (subtask nested) and Upcoming (nothing nested).
 - **To go back** to "once, under the first heading that fits": restore the `break` after the push in `landingSections` (commit `bf03a73` is the one to revert; the order and window are in `5ba3af8`).
 - Unit-tested (`views.test.ts`); not driven in the app.
+
+## Priority choosers show P1, P2, P3 (13 Oct 2026)
+
+- **Why (the user):** the add bar showed priority as High / Normal / Low while the table showed P1 / P2 / P3; consistency matters more than either wording, and the user kept the P marks.
+- **Now:** the three `Segmented` priority choosers (`AddBar`, `NewTaskDialog`, `TaskPage`) use `PRIORITY_OPTIONS` (`task-labels.ts`): label `P1`/`P2`/`P3`, hover title the word. `Segmented` options take an optional `title`. The "Filter by priority" dropdown and the row menu (badge plus word) still use words.
+- Not driven in the app.
