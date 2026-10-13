@@ -14,7 +14,7 @@ const RADIUS = 4
 const STEP = 120 // a tick every 2 hours
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-/** The typical week: the average hours on each weekday so far, weekends kept, against the daily aim. */
+/** The average hours on each weekday so far, weekends kept: met in the accent, under the daily aim in `--chart-under`, like the weeks. */
 export function TypicalWeek({ data, now }: { data: TrackingYear; now: Moment }): React.JSX.Element {
   const { ref, width } = useElementWidth()
   const [active, setActive] = useState<number | null>(null)
@@ -24,10 +24,7 @@ export function TypicalWeek({ data, now }: { data: TrackingYear; now: Moment }):
   const plotH = HEIGHT - PAD.top - PAD.bottom
   const slot = plotW / 7
   const barW = Math.min(MAX_BAR, Math.max(slot - 16, 1))
-  const { top, ticks } = niceAxis(
-    Math.max(...week.map((d) => Math.max(d.average, d.aim ?? 0)), 0),
-    STEP
-  )
+  const { top, ticks } = niceAxis(Math.max(...week.map((d) => d.average), 0), STEP)
   const y = (minutes: number): number => PAD.top + plotH - (minutes / top) * plotH
   const centre = (i: number): number => PAD.left + (i + 0.5) * slot
 
@@ -36,14 +33,20 @@ export function TypicalWeek({ data, now }: { data: TrackingYear; now: Moment }):
 
   return (
     <>
-      {week.some((d) => d.aim !== null) && (
-        <ul className={styles.legend}>
-          <li>
-            <b className={styles.aimKey} />
-            Daily aim
-          </li>
-        </ul>
-      )}
+      <ul className={styles.legend}>
+        {week.some((d) => d.aim !== null) && (
+          <>
+            <li>
+              <i className={styles.met} />
+              Plan met
+            </li>
+            <li>
+              <i className={styles.under} />
+              Under plan
+            </li>
+          </>
+        )}
+      </ul>
       <div
         ref={ref}
         className={styles.plot}
@@ -81,7 +84,7 @@ export function TypicalWeek({ data, now }: { data: TrackingYear; now: Moment }):
             {week.map((d, i) => (
               <g key={d.weekday}>
                 <path
-                  className={`${styles.bar} ${active === i ? styles.lift : ''}`}
+                  className={`${d.aim !== null && d.average < d.aim ? styles.under : styles.met} ${active === i ? styles.lift : ''}`}
                   d={columnPath(
                     centre(i) - barW / 2,
                     y(d.average),
@@ -90,15 +93,6 @@ export function TypicalWeek({ data, now }: { data: TrackingYear; now: Moment }):
                     RADIUS
                   )}
                 />
-                {d.aim !== null && (
-                  <line
-                    className={styles.aim}
-                    x1={centre(i) - slot / 2 + 6}
-                    x2={centre(i) + slot / 2 - 6}
-                    y1={y(d.aim)}
-                    y2={y(d.aim)}
-                  />
-                )}
                 <text
                   className={styles.value}
                   x={centre(i)}
@@ -134,7 +128,7 @@ export function TypicalWeek({ data, now }: { data: TrackingYear; now: Moment }):
         {tip && active !== null && (
           <div
             className={styles.tip}
-            style={{ left: tipLeft, top: Math.max(y(Math.max(tip.average, tip.aim ?? 0)) - 28, 8) }}
+            style={{ left: tipLeft, top: Math.max(y(tip.average) - 28, 8) }}
             role="status"
           >
             <strong className={styles.tipValue}>{formatHours(tip.average)}</strong>

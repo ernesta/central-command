@@ -17,9 +17,8 @@
   margin: 0;
   font-size: var(--text-20);
 }
-/* A legend row and the plot: the same height whichever chart is shown. */
+/* A legend row and the plot: the same height whichever chart is shown. Not clipped, so a tooltip is never cut off. */
 .body {
-  height: 240px;
+  height: 232px;
   margin-top: 12px;
-  overflow: hidden;
 }

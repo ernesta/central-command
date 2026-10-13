@@ -38,7 +38,7 @@ export function HoursPage(): React.JSX.Element {
       )}
       {data && (
         <div className={styles.stack}>
-          <div className={`${styles.cards} ${styles.top}`}>
+          <div className={styles.cards}>
             {inYear(now.date, data.start, data.weeks) && (
               <TodayCard workspace={workspace} data={data} running={running} now={now} />
             )}

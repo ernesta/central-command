@@ -7,15 +7,15 @@ import { YearHeatMap } from './YearHeatMap'
 import styles from './ChartsCard.module.css'
 
 const VIEWS = [
-  { value: 'year', label: 'Year' },
+  { value: 'year', label: 'Calendar' },
   { value: 'weeks', label: 'Weeks' },
-  { value: 'typical', label: 'Typical week' }
+  { value: 'typical', label: 'Weekdays' }
 ] as const
 type View = (typeof VIEWS)[number]['value']
 
 /**
- * Charts: the year as a heat map, its weeks as columns, or the typical week, one at a time. The body has a fixed height, so
- * switching views never moves the page.
+ * Patterns: the year as a calendar heat map, its weeks as columns, or the average of each weekday, one at a time. The body has a
+ * fixed height (a legend row and a plot of `CHART_HEIGHT`), so switching views never moves the page.
  */
 export function ChartsCard({
   workspace,
@@ -32,11 +32,11 @@ export function ChartsCard({
       : 'year') as View
   }))
   return (
-    <section className={styles.card} aria-label="Charts">
+    <section className={styles.card} aria-label="Patterns">
       <header className={styles.head}>
-        <h2 className={styles.title}>Charts</h2>
+        <h2 className={styles.title}>Patterns</h2>
         <Segmented
-          label="Chart"
+          label="Pattern"
           value={value.view}
           options={VIEWS}
           onChange={(view) => update({ view })}
