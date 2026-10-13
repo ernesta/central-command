@@ -16,8 +16,8 @@ interface ComboFieldProps {
 }
 
 /**
- * A text field with a drop-down of the values already used: pick one, or type a new one. Unlike a native
- * `<datalist>`, the list always shows every option, however much is typed.
+ * A text field with a drop-down of the values already used: pick one, or type a new one. Typing narrows the list to
+ * the options containing what was typed; opening it without typing shows every option.
  */
 export function ComboField({
   value,
@@ -31,6 +31,7 @@ export function ComboField({
   const listId = useId()
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(-1)
+  const [filtering, setFiltering] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -49,12 +50,19 @@ export function ComboField({
       listRef.current?.querySelector('[data-active="true"]')?.scrollIntoView({ block: 'nearest' })
   }, [open, active])
 
+  const needle = value.trim().toLowerCase()
+  const shown =
+    filtering && needle
+      ? options.filter((option) => option.toLowerCase().includes(needle))
+      : options
+
   const show = (): void => {
+    setFiltering(false)
     setActive(options.indexOf(value))
     setOpen(true)
   }
   const choose = (index: number): void => {
-    onChange(options[index])
+    onChange(shown[index])
     setOpen(false)
     inputRef.current?.focus()
   }
@@ -64,7 +72,7 @@ export function ComboField({
       event.preventDefault()
       if (!open) return show()
       const step = event.key === 'ArrowDown' ? 1 : -1
-      setActive((a) => Math.min(options.length - 1, Math.max(0, a + step)))
+      setActive((a) => Math.min(shown.length - 1, Math.max(0, a + step)))
     } else if (event.key === 'Enter' && open && active >= 0) {
       event.preventDefault()
       choose(active)
@@ -84,13 +92,18 @@ export function ComboField({
         className={styles.input}
         role="combobox"
         aria-label={label}
-        aria-expanded={open}
+        aria-expanded={open && shown.length > 0}
         aria-controls={open ? listId : undefined}
         aria-activedescendant={open && active >= 0 ? `${listId}-${active}` : undefined}
         aria-autocomplete="none"
         placeholder={placeholder}
         value={value}
-        onChange={(event) => onChange(event.target.value.replace(/[\r\n]/g, ''))}
+        onChange={(event) => {
+          onChange(event.target.value.replace(/[\r\n]/g, ''))
+          setFiltering(true)
+          setActive(-1)
+          setOpen(true)
+        }}
         onKeyDown={keys}
         onBlur={onBlur}
       />
@@ -110,9 +123,9 @@ export function ComboField({
           <ChevronDown size={12} strokeWidth={2} aria-hidden />
         </button>
       )}
-      {open && (
+      {open && shown.length > 0 && (
         <div ref={listRef} id={listId} className={styles.list} role="listbox" aria-label={label}>
-          {options.map((option, index) => (
+          {shown.map((option, index) => (
             <div
               key={option}
               id={`${listId}-${index}`}
