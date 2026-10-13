@@ -73,6 +73,7 @@ export function TasksLanding(): React.JSX.Element {
     limit = false
   ): React.JSX.Element => {
     const list = sections[id]
+    if (list.length === 0) return <></>
     const shown = limit ? limited(id, list) : list
     return (
       <LandingSection id={`tasks-${id}`} label={`${label} · ${list.length}`} aside={aside}>
@@ -118,6 +119,20 @@ export function TasksLanding(): React.JSX.Element {
       {rows !== null && (
         <>
           <AddBar workspace={workspace} rows={all} today={today} />
+          {section(
+            'overdue',
+            'Overdue',
+            'Nothing is overdue.',
+            <span className={styles.asideButtons}>
+              <button type="button" className={styles.quiet} onClick={() => setMoving('today')}>
+                Move to Today
+              </button>
+              <button type="button" className={styles.quiet} onClick={() => setMoving('backlog')}>
+                Move to Backlog
+              </button>
+            </span>,
+            true
+          )}
           {section('today', 'Due today', 'Nothing is due today.')}
           {section('tomorrow', 'Due tomorrow', 'Nothing is due tomorrow.')}
           {section(
@@ -125,22 +140,6 @@ export function TasksLanding(): React.JSX.Element {
             'Soon',
             'Nothing in the next 7 days.',
             <span className={styles.muted}>Next 7 days</span>
-          )}
-          {section(
-            'overdue',
-            'Overdue',
-            'Nothing is overdue.',
-            sections.overdue.length > 0 && (
-              <span className={styles.asideButtons}>
-                <button type="button" className={styles.quiet} onClick={() => setMoving('today')}>
-                  Move to Today
-                </button>
-                <button type="button" className={styles.quiet} onClick={() => setMoving('backlog')}>
-                  Move to Backlog
-                </button>
-              </span>
-            ),
-            true
           )}
           {section('doing', 'In progress', 'Nothing in progress.', undefined, true)}
 

@@ -82,7 +82,7 @@ function compareByDate(da: string | null, db: string | null, a: TaskRow, b: Task
   )
 }
 
-export const LANDING_SECTIONS = ['today', 'tomorrow', 'upcoming', 'overdue', 'doing'] as const
+export const LANDING_SECTIONS = ['overdue', 'today', 'tomorrow', 'upcoming', 'doing'] as const
 export type LandingSection = (typeof LANDING_SECTIONS)[number]
 
 /** A row in a landing section, with the subtasks that put it there (those with their own date), shown under it. */
@@ -109,7 +109,7 @@ function sectionDate(section: LandingSection, row: SectionRow, today: string): s
 }
 
 /**
- * Today's sections, in the order Due today, Due tomorrow, Soon (day 2 to 7), Overdue, In progress. A task appears under every heading that
+ * Today's sections, in the order Overdue, Due today, Due tomorrow, Soon (day 2 to 7), In progress. A task appears under every heading that
  * fits: by its own date or status, or because an open subtask of it has its own date that fits (then it appears with
  * that subtask nested under it). Done tasks are never listed.
  */
