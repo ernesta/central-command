@@ -4,6 +4,20 @@ import type { Task } from '../../tasks/shared/types'
 /** Research keeps its series tasks together in one list of its own. */
 export const TRAINING_LIST = 'Training'
 
+const COMPLETE = 'Complete '
+
+/** What a training's task is called: "Complete <name>", for a series and a lecture alike (the user's rule, 13 Oct 2026). */
+export const completeTitle = (name: string): string => {
+  const bare = name.trim()
+  return fold(bare).startsWith(fold(COMPLETE)) ? bare : `${COMPLETE}${bare}`
+}
+
+/** A task's name without its "Complete " prefix, so a series matches its task either way. */
+export const bareTitle = (title: string): string => {
+  const trimmed = title.trim()
+  return fold(trimmed).startsWith(fold(COMPLETE)) ? trimmed.slice(COMPLETE.length).trim() : trimmed
+}
+
 /** The series task a lecture sits under: one that exists, or the one to create. */
 export type ParentTarget = { uid: string } | { title: string; list: string }
 
@@ -26,10 +40,10 @@ export interface LectureNote {
 export function parentFor(series: string, tasks: readonly Task[]): ParentTarget {
   const name = series.trim()
   const same = tasks.filter(
-    (t) => !t.parentUid && t.status !== 'done' && fold(t.title.trim()) === fold(name)
+    (t) => !t.parentUid && t.status !== 'done' && fold(bareTitle(t.title)) === fold(bareTitle(name))
   )
   const found = same.find((t) => fold(t.list) === fold(TRAINING_LIST)) ?? same[0]
-  return found ? { uid: found.uid } : { title: name, list: TRAINING_LIST }
+  return found ? { uid: found.uid } : { title: completeTitle(name), list: TRAINING_LIST }
 }
 
 /** A title that names a lecture: not empty, not the placeholder. */
@@ -53,9 +67,15 @@ export function planLectureTask(note: LectureNote, tasks: readonly Task[]): Lect
   const title = note.title.trim()
   if (note.task === 'auto') {
     if (series) {
-      return { kind: 'create', title: title || 'Untitled', parent: parentFor(series, tasks) }
+      return {
+        kind: 'create',
+        title: completeTitle(title || 'Untitled'),
+        parent: parentFor(series, tasks)
+      }
     }
-    return named(title) ? { kind: 'create', title, parent: null } : { kind: 'none' }
+    return named(title)
+      ? { kind: 'create', title: completeTitle(title), parent: null }
+      : { kind: 'none' }
   }
   if (!note.task) return { kind: 'none' }
   const own = tasks.find((t) => t.uid === note.task)
@@ -64,11 +84,12 @@ export function planLectureTask(note: LectureNote, tasks: readonly Task[]): Lect
     kind: 'sync',
     uid: own.uid
   }
-  if (title && title !== own.title && (own.parentUid || named(title))) plan.title = title
+  const wanted = completeTitle(title)
+  if (title && wanted !== own.title && (own.parentUid || named(title))) plan.title = wanted
   if (own.parentUid) {
     const parent = tasks.find((t) => t.uid === own.parentUid)
     if (!series) plan.parent = null
-    else if (fold(series) !== fold((parent?.title ?? '').trim())) {
+    else if (fold(bareTitle(series)) !== fold(bareTitle(parent?.title ?? ''))) {
       plan.parent = parentFor(series, tasks)
     }
   } else {

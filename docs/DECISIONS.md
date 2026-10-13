@@ -3151,3 +3151,7 @@ The user: tasks are made another way (the Add bar on the Tasks landing and the S
 - **Why (the user):** the Due chip in the task page's fields row was only as wide as its text, so choosing a date ("Oct 30" after "No date") changed its width and moved the fields beside it.
 - **Now:** `.button` in `DatePicker.module.css` has `min-width: 112px`, enough for the icon, the gap, padding and the widest short date ("May 28"); the inline `plain` variant (table cells) keeps `min-width: 0`. A date in another year ("Oct 30, 2027") is longer and still widens the chip; left as is, being rare.
 - Not driven in the app; the 112px is estimated, not measured.
+
+## Training tasks are called "Complete <name>" (13 Oct 2026)
+
+The user's rule: a training's task, series task and lecture subtask alike, is titled "Complete <name>" (`completeTitle` in `src/modules/training/shared/lecture-task.ts`). The series is found by its name with or without the prefix (`bareTitle`), so an old ClickUp "Complete <course>" task is reused; a title already starting with "Complete" is not doubled. The page keeps the task in step, so a lecture renamed in the note renames its task to "Complete <new title>". The five tasks made so far (PS5210 and its three lectures, Response Surface Analysis Workshop) are renamed with the app closed.
