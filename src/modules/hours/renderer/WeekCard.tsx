@@ -224,7 +224,6 @@ function DayRows({
           ) : (
             <span className={styles.dayName}>{formatDay(date)}</span>
           )}
-          {today && <span className={styles.tag}>today</span>}
         </td>
         <td className={styles.right}>
           {past ? formatHours(minutes) : <span className={styles.muted}>—</span>}

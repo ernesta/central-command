@@ -57,7 +57,7 @@
   width: 90px;
 }
 .table th:nth-child(3) {
-  width: 42%;
+  width: 21%;
 }
 .table th {
   padding: 12px 16px;
@@ -113,15 +113,6 @@
 }
 .dayButton:focus-visible {
   outline-offset: 4px;
-}
-.tag {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 1px 10px;
-  border-radius: var(--radius-pill);
-  background: var(--panel);
-  color: var(--text-secondary);
-  font-size: var(--text-12);
 }
 .muted {
   color: var(--text-muted);
