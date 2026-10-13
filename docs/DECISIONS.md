@@ -3195,3 +3195,9 @@ The user's rule: a training's task, series task and lecture subtask alike, is ti
 - **Why (the user):** on a meetings landing page, "Before next meeting" should have the most recent TODOs on top.
 - **Cause:** `openTodos` ordered series by the fixed `SERIES` order, so a series with an older meeting (Luminos, May 21) sat above a newer one (Other, Oct 13).
 - **Now:** series are ordered by the date of the meeting their TODOs come from, newest first; the same date falls back to the fixed series order, then by name; within a meeting the note's order stands. Test in `open-todos.test.ts`; not driven in the app.
+
+## Recent rows' people chips sit level with the title (13 Oct 2026)
+
+- **Why (the user):** on the Training landing page, the initials chip (KI) in "Recent and upcoming" sat lower than the entry's text.
+- **Cause:** `Landing.module.css` defined `.chips` and `.chip` twice, once for the recent rows and once for the series cards. CSS Modules merge them, so the later series-card rules (`margin: 8px 0 0`, a border, more padding) also applied to the row chips and pushed them down.
+- **Now:** the recent rows use their own `.people` and `.person` classes. `RecentList` is shared, so Meetings and the other landings get the fix. Not driven in the app.
