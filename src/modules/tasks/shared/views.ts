@@ -119,15 +119,26 @@ export function landingSections(
   return out
 }
 
-/** A list as a card: how many top-level tasks are not done, how many of those are overdue, and the sublists in use. */
+/** A sublist of a list, with how many of its top-level tasks are not done. */
+export interface SublistSummary {
+  name: string
+  open: number
+}
+
+/**
+ * A list as a card: how many top-level tasks are not done, how many of those are overdue, and its sublists
+ * (every one in use, an empty one too). `total` counts done tasks as well, so a list with `open: 0` and
+ * `total > 0` is finished, while a client with no tasks at all is not.
+ */
 export interface ListSummary {
   list: string
   open: number
   overdue: number
-  sublists: string[]
+  total: number
+  sublists: SublistSummary[]
 }
 
-/** In Work (`clients` given) every client is a list, so one with nothing open is a card with none. */
+/** In Work (`clients` given) every client is a list, so one with no tasks is a card with none. */
 export function listSummaries(
   rows: readonly TaskRow[],
   today: string,
@@ -135,27 +146,35 @@ export function listSummaries(
 ): ListSummary[] {
   const byList = new Map<string, ListSummary>()
   for (const row of rows) {
-    if (row.task.status === 'done') continue
     const summary = byList.get(row.task.list) ?? {
       list: row.task.list,
       open: 0,
       overdue: 0,
+      total: 0,
       sublists: []
     }
-    summary.open += 1
-    const due = effectiveDue(row.task, row.kids)
-    if (due !== null && due < today) summary.overdue += 1
-    if (row.task.sublist && !summary.sublists.includes(row.task.sublist)) {
-      summary.sublists.push(row.task.sublist)
+    summary.total += 1
+    const sublist = row.task.sublist
+      ? (summary.sublists.find((s) => s.name === row.task.sublist) ??
+        summary.sublists[summary.sublists.push({ name: row.task.sublist, open: 0 }) - 1])
+      : null
+    if (row.task.status !== 'done') {
+      summary.open += 1
+      if (sublist) sublist.open += 1
+      const due = effectiveDue(row.task, row.kids)
+      if (due !== null && due < today) summary.overdue += 1
     }
     byList.set(row.task.list, summary)
   }
   for (const client of clients ?? []) {
     const held = [...byList.keys()].some((l) => l.toLowerCase() === client.toLowerCase())
-    if (!held) byList.set(client, { list: client, open: 0, overdue: 0, sublists: [] })
+    if (!held) byList.set(client, { list: client, open: 0, overdue: 0, total: 0, sublists: [] })
   }
   return [...byList.values()]
-    .map((s) => ({ ...s, sublists: s.sublists.sort((a, b) => a.localeCompare(b)) }))
+    .map((s) => ({
+      ...s,
+      sublists: s.sublists.sort((a, b) => b.open - a.open || a.name.localeCompare(b.name))
+    }))
     .sort((a, b) => b.open - a.open || a.list.localeCompare(b.list))
 }
 

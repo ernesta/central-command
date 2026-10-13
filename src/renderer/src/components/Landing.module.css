@@ -221,3 +221,34 @@ li:only-child .recent {
     gap: 2px;
   }
 }
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.chip,
+.chipZero {
+  max-width: 100%;
+  padding: 2px 10px;
+  border: 1px solid var(--border-faint);
+  border-radius: 999px;
+  background: var(--hover-tint);
+  font-size: var(--text-13);
+  overflow-wrap: anywhere;
+}
+.chipZero {
+  color: var(--text-muted);
+}
+.chip b,
+.chipZero b {
+  margin-left: 6px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.chip b {
+  color: var(--accent);
+}

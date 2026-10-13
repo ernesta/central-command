@@ -90,6 +90,8 @@ export interface SeriesCard {
   line: string
   /** A second line under the first (the subgroups of a group). */
   extra?: string
+  /** Small labelled counts under the lines (the sublists of a list). */
+  chips?: readonly { label: string; count: number }[]
   /** A card for a pinned note: the title carries a pin. */
   pinned?: boolean
   /** A card for what has no group: drawn with a dashed border. */
@@ -124,6 +126,16 @@ export function SeriesCards({ cards }: { cards: readonly SeriesCard[] }): React.
             <p className={styles.line} title={c.extra}>
               {c.extra}
             </p>
+          )}
+          {c.chips && c.chips.length > 0 && (
+            <ul className={styles.chips}>
+              {c.chips.map((chip) => (
+                <li key={chip.label} className={chip.count === 0 ? styles.chipZero : styles.chip}>
+                  {chip.label}
+                  <b>{chip.count}</b>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       ))}

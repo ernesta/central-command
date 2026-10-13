@@ -127,8 +127,44 @@ describe('listSummaries', () => {
       row({ uid: 'd', list: 'Admin' })
     ]
     expect(listSummaries(rows, TODAY)).toEqual([
-      { list: 'Study 2', open: 2, overdue: 1, sublists: ['Data', 'Scoping'] },
-      { list: 'Admin', open: 1, overdue: 0, sublists: [] }
+      {
+        list: 'Study 2',
+        open: 2,
+        overdue: 1,
+        total: 2,
+        sublists: [
+          { name: 'Data', open: 1 },
+          { name: 'Scoping', open: 1 }
+        ]
+      },
+      { list: 'Admin', open: 1, overdue: 0, total: 1, sublists: [] },
+      { list: 'Reading', open: 0, overdue: 0, total: 1, sublists: [] }
+    ])
+  })
+  it('keeps a list with nothing open and its sublists, empty ones last', () => {
+    const rows = [
+      row({ uid: 'a', list: 'Scoping', sublist: 'Review', status: 'done' }),
+      row({ uid: 'b', list: 'Study', sublist: 'Acquisition', status: 'done' }),
+      row({ uid: 'c', list: 'Study', sublist: 'Cleaning' })
+    ]
+    expect(listSummaries(rows, TODAY)).toEqual([
+      {
+        list: 'Study',
+        open: 1,
+        overdue: 0,
+        total: 2,
+        sublists: [
+          { name: 'Cleaning', open: 1 },
+          { name: 'Acquisition', open: 0 }
+        ]
+      },
+      {
+        list: 'Scoping',
+        open: 0,
+        overdue: 0,
+        total: 1,
+        sublists: [{ name: 'Review', open: 0 }]
+      }
     ])
   })
   it('in Work shows every client, one with nothing open as a card with none', () => {
@@ -137,9 +173,9 @@ describe('listSummaries', () => {
       row({ uid: 'b', list: 'Teaching', status: 'done' })
     ]
     expect(listSummaries(rows, TODAY, ['impact', 'Teaching', 'Royal Holloway'])).toEqual([
-      { list: 'Impact', open: 1, overdue: 0, sublists: [] },
-      { list: 'Royal Holloway', open: 0, overdue: 0, sublists: [] },
-      { list: 'Teaching', open: 0, overdue: 0, sublists: [] }
+      { list: 'Impact', open: 1, overdue: 0, total: 1, sublists: [] },
+      { list: 'Royal Holloway', open: 0, overdue: 0, total: 0, sublists: [] },
+      { list: 'Teaching', open: 0, overdue: 0, total: 1, sublists: [] }
     ])
   })
 })

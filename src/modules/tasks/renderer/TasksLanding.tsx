@@ -11,6 +11,7 @@ import {
 } from '@renderer/components/Landing'
 import { showToast } from '@renderer/components/toast-store'
 import { ArrowRight } from 'lucide-react'
+import { Link } from 'react-router'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { listValue } from '../shared/query'
 import { landingSections, listSummaries, type SectionRow } from '../shared/views'
@@ -38,7 +39,9 @@ export function TasksLanding(): React.JSX.Element {
   const all = rows ?? []
   const sections = landingSections(all, today)
   const clients = useWorkClients(workspace)
-  const lists = listSummaries(all, today, clients)
+  const summaries = listSummaries(all, today, clients)
+  const lists = summaries.filter((l) => l.open > 0 || l.total === 0)
+  const finished = summaries.filter((l) => l.open === 0 && l.total > 0)
 
   const limited = (id: string, list: SectionRow[]): SectionRow[] =>
     expanded.has(id) ? list : list.slice(0, SECTION_LIMIT)
@@ -143,21 +146,41 @@ export function TasksLanding(): React.JSX.Element {
           )}
 
           <LandingSection id="tasks-lists" label="Lists">
-            {lists.length === 0 ? (
+            {summaries.length === 0 ? (
               <EmptyState heading="No tasks yet" message="Add one above." />
             ) : (
-              <SeriesCards
-                cards={lists.map((l) => ({
-                  key: l.list,
-                  to: tasksAllRoute(workspace, { list: listValue(l.list) }),
-                  title: l.list,
-                  line: `${l.open} open`,
-                  extra:
-                    [l.overdue > 0 ? `${l.overdue} overdue` : '', l.sublists.join(', ')]
-                      .filter(Boolean)
-                      .join(' · ') || undefined
-                }))}
-              />
+              <>
+                <SeriesCards
+                  cards={lists.map((l) => ({
+                    key: l.list,
+                    to: tasksAllRoute(workspace, { list: listValue(l.list) }),
+                    title: l.list,
+                    line: `${l.open} open`,
+                    extra: l.overdue > 0 ? `${l.overdue} overdue` : undefined,
+                    chips: l.sublists.map((s) => ({ label: s.name, count: s.open }))
+                  }))}
+                />
+                {finished.length > 0 && (
+                  <p className={styles.finished}>
+                    <span className={styles.finishedLabel}>Nothing open</span>
+                    {finished.map((l) => (
+                      <Link
+                        key={l.list}
+                        className={styles.finishedLink}
+                        to={tasksAllRoute(workspace, { list: listValue(l.list) })}
+                      >
+                        {l.list}
+                        {l.sublists.length > 0 && (
+                          <span className={styles.muted}>
+                            {' '}
+                            {l.sublists.length} {l.sublists.length === 1 ? 'sublist' : 'sublists'}
+                          </span>
+                        )}
+                      </Link>
+                    ))}
+                  </p>
+                )}
+              </>
             )}
           </LandingSection>
         </>

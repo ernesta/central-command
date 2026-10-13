@@ -33,3 +33,26 @@
   color: var(--text-muted);
   font-size: var(--text-13);
 }
+.finished {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 16px;
+  margin: 0;
+  padding: 12px 4px 0;
+  font-size: var(--text-14);
+}
+.finishedLabel {
+  color: var(--text-muted);
+  font-size: var(--text-13);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.finishedLink {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-soft);
+}
+.finishedLink:hover {
+  background: var(--hover-tint);
+}
