@@ -262,6 +262,11 @@ export class TasksStore {
     })()
   }
 
+  /** Today in local time, YYYY-MM-DD. */
+  today(): string {
+    return this.clock.today()
+  }
+
   /** Set (or clear, with null) the due date of several tasks at once: "Move to Today" and "Move to Backlog". */
   setDue(uids: string[], due: string | null): void {
     const value = checkDue(due)

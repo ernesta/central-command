@@ -50,4 +50,61 @@ describe('starting a timer on a task', () => {
     tracking.assignTask('research', running.year, running.session.id, 'Write', taskKey(t.uid))
     expect(tasks.get(t.uid)?.status).toBe('doing')
   })
+  it('moves a due date in the past to today', () => {
+    const fixed = new TasksStore(db, {
+      today: () => '2026-09-29',
+      now: () => '2026-09-29T10:00:00Z'
+    })
+    tracking.setTaskStarted((key) => putStartedTaskInProgress(fixed, key))
+    const late = fixed.create({
+      workspace: 'research',
+      title: 'Late',
+      list: 'Papers',
+      due: '2026-09-20'
+    })
+    tracking.start('research', 'Late', taskKey(late.uid))
+    expect(fixed.get(late.uid)?.due).toBe('2026-09-29')
+    expect(fixed.get(late.uid)?.status).toBe('doing')
+  })
+  it('moves it even when the task is already in progress, and leaves later and missing dates alone', () => {
+    const fixed = new TasksStore(db, {
+      today: () => '2026-09-29',
+      now: () => '2026-09-29T10:00:00Z'
+    })
+    tracking.setTaskStarted((key) => putStartedTaskInProgress(fixed, key))
+    const doing = fixed.create({
+      workspace: 'research',
+      title: 'A',
+      list: 'Papers',
+      due: '2026-09-01'
+    })
+    fixed.setStatus(doing.uid, 'doing')
+    const future = fixed.create({
+      workspace: 'research',
+      title: 'B',
+      list: 'Papers',
+      due: '2026-10-05'
+    })
+    const none = fixed.create({ workspace: 'research', title: 'C', list: 'Papers' })
+    for (const t of [doing, future, none]) tracking.start('research', t.title, taskKey(t.uid))
+    expect(fixed.get(doing.uid)?.due).toBe('2026-09-29')
+    expect(fixed.get(future.uid)?.due).toBe('2026-10-05')
+    expect(fixed.get(none.uid)?.due).toBeNull()
+  })
+  it('leaves the due date of a done task alone', () => {
+    const fixed = new TasksStore(db, {
+      today: () => '2026-09-29',
+      now: () => '2026-09-29T10:00:00Z'
+    })
+    tracking.setTaskStarted((key) => putStartedTaskInProgress(fixed, key))
+    const t = fixed.create({
+      workspace: 'research',
+      title: 'Old',
+      list: 'Papers',
+      due: '2026-09-01'
+    })
+    fixed.setStatus(t.uid, 'done')
+    tracking.start('research', 'Old', taskKey(t.uid))
+    expect(fixed.get(t.uid)?.due).toBe('2026-09-01')
+  })
 })
