@@ -29,7 +29,9 @@ export function Segmented<T extends string>({
           onClick={() => onChange(o.value)}
         >
           {o.icon}
-          {o.label}
+          <span className={styles.label} data-label={o.label}>
+            {o.label}
+          </span>
         </button>
       ))}
     </div>

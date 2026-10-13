@@ -34,3 +34,16 @@
   color: var(--selected-text);
   font-weight: 600;
 }
+/* The bold label's width is reserved by a hidden copy, so choosing a segment never resizes it. */
+.label {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+.label::after {
+  content: attr(data-label);
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  font-weight: 600;
+}
