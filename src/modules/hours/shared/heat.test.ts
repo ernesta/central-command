@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { emptyYear } from '@shared/tracking/types'
-import { heatDays, heatLevel, monthColumns } from './heat'
+import { heatDays, heatLevel, heatWindow, monthColumns } from './heat'
 
 const START = '2026-09-21'
 const NOW = { date: '2026-09-25', time: '12:00:00' }
@@ -54,6 +54,37 @@ describe('monthColumns', () => {
     expect(cols[11].month).toBe(8)
     for (let i = 1; i < cols.length; i++)
       expect(cols[i].column - cols[i - 1].column).toBeGreaterThanOrEqual(3)
+  })
+})
+
+describe('monthColumns in a window', () => {
+  const year = emptyYear(START)
+  it('counts columns from the window and always labels its first week', () => {
+    const cols = monthColumns(year, 20, 12)
+    expect(cols[0].column).toBe(0)
+    expect(cols.every((c) => c.column < 12)).toBe(true)
+    // Week 20 starts on 8 Feb 2027 (Thursday 11 Feb), so February is labelled first.
+    expect(cols[0].month).toBe(1)
+  })
+})
+
+describe('heatWindow', () => {
+  it("ends with today's week once there are enough weeks behind it", () => {
+    expect(heatWindow(52, 30, 24)).toEqual({ first: 7, count: 24 })
+  })
+  it('starts at the first week early in the year and fills on into the weeks to come', () => {
+    expect(heatWindow(52, 3, 24)).toEqual({ first: 0, count: 24 })
+    expect(heatWindow(52, 23, 24)).toEqual({ first: 0, count: 24 })
+    expect(heatWindow(52, 24, 24)).toEqual({ first: 1, count: 24 })
+  })
+  it('never runs past the last week, and treats a day outside the year as its edge', () => {
+    expect(heatWindow(52, 51, 24)).toEqual({ first: 28, count: 24 })
+    expect(heatWindow(52, 80, 24)).toEqual({ first: 28, count: 24 })
+    expect(heatWindow(52, -4, 24)).toEqual({ first: 0, count: 24 })
+  })
+  it('shows a short year whole, and at least one week when there is no room', () => {
+    expect(heatWindow(20, 5, 24)).toEqual({ first: 0, count: 20 })
+    expect(heatWindow(52, 10, 0)).toEqual({ first: 10, count: 1 })
   })
 })
 

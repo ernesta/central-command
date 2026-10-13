@@ -49,13 +49,37 @@ export function heatDays(year: TrackingYear, now: Moment): HeatDay[] {
   })
 }
 
-/** The first column (week) each month starts in, for the labels above the grid: `[{ column: 0, month: 8 }, …]`. */
-export function monthColumns(year: TrackingYear): { column: number; month: number }[] {
+/**
+ * The weeks of the year to draw when only `capacity` fit across: as many as fit, ending with the week that holds `todayWeek`, so the
+ * window slides with the date and shows as much of the past as there is room for. Early in the year, before there are that many
+ * weeks behind today, it starts at the first week and runs on into the weeks to come to fill the width; it never runs past the
+ * year's last week. A day outside the year counts as its first or last week.
+ */
+export function heatWindow(
+  totalWeeks: number,
+  todayWeek: number,
+  capacity: number
+): { first: number; count: number } {
+  const count = Math.max(1, Math.min(Math.floor(capacity), totalWeeks))
+  const today = Math.max(0, Math.min(todayWeek, totalWeeks - 1))
+  return { first: Math.max(0, Math.min(today + 1 - count, totalWeeks - count)), count }
+}
+
+/**
+ * The first column (week) each month starts in, for the labels above the grid: `[{ column: 0, month: 8 }, …]`. With `first` and
+ * `count` only that window of weeks is labelled, and `column` counts from its first week (which is always labelled, even when its
+ * month began before it).
+ */
+export function monthColumns(
+  year: TrackingYear,
+  first = 0,
+  count = (year.weeks ?? YEAR_WEEKS) - first
+): { column: number; month: number }[] {
   const out: { column: number; month: number }[] = []
-  for (let week = 0; week < (year.weeks ?? YEAR_WEEKS); week++) {
+  for (let column = 0; column < count; column++) {
     // A week belongs to the month its Thursday is in, so a label never sits on a week that is mostly the month before.
-    const month = Number(addDays(year.start, week * 7 + 3).slice(5, 7)) - 1
-    if (out.length === 0 || out[out.length - 1].month !== month) out.push({ column: week, month })
+    const month = Number(addDays(year.start, (first + column) * 7 + 3).slice(5, 7)) - 1
+    if (out.length === 0 || out[out.length - 1].month !== month) out.push({ column, month })
   }
   // A month that lasts under three columns before the next begins is left unlabelled, or its name would sit on the next one's.
   return out.filter((m, i) => i === out.length - 1 || out[i + 1].column - m.column >= 3)
