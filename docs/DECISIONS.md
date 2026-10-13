@@ -3336,3 +3336,10 @@ The user's rule: a training's task, series task and lecture subtask alike, is ti
 - **Why (the user):** after the line moved to the end of a group, they wanted a subtle sign that a task is "opened". Mockups: `docs/design/tasks-group-expansion-mockup.html`, `docs/design/tasks-group-band-mockup.html`. A left rail was ruled out because it already means "the running task"; a very dark recessed area was too heavy.
 - **Now:** the subtask rows and the add row have a background slightly darker than the table (`color-mix(in srgb, var(--bg) 35%, var(--surface))`, so it follows light and dark); the parent row is untouched. Hover and keyboard focus still win over it. No shadow (the user chose the plain band, option A).
 - Not driven in the app (CSS only); typecheck, lint and tests pass.
+
+## Task page: subtasks are the Tasks table's own rows (13 Oct 2026)
+
+- **Why (the user):** the task page's subtask list looked and behaved unlike the Tasks table (tags on their own line, an always-visible "+ Tag" and trash icon). "I want everything to be consistent."
+- **Cause:** `TaskPage.tsx` had its own `SubtaskRow` and CSS, a second copy of what `TaskRowView` draws.
+- **Now:** the Subtasks panel renders `TasksTable` with a new `flat` prop. Rows are the same component, so status, title, tags on the title line, time, due date, hover-only delete and "+ Tag", right-click menu, Space to change status and the "+ Add a subtask" row are shared. Flat leaves out the header, the parent row, the List and Priority columns, the table's own frame and the thread/band; Enter or a click on a subtask does nothing (a subtask has no page). The old `SubtaskRow`, its add field, "Add subtask" header button and about 140 lines of CSS are gone. A change to the table's rows now reaches the page too.
+- Typecheck, lint and tests pass. Not driven in the app: check a task with subtasks in light and dark mode.
