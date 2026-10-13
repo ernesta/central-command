@@ -92,6 +92,7 @@
 .card {
   position: relative;
   display: grid;
+  align-content: start;
   gap: 4px;
   padding: 16px 20px;
   background: var(--surface);
@@ -251,4 +252,10 @@ li:only-child .recent {
 }
 .chip b {
   color: var(--accent);
+}
+
+/* Chips on a card use the body font, zero or not, so they read as one set. */
+.cardChips .chip,
+.cardChips .chipZero {
+  font-family: inherit;
 }

@@ -128,7 +128,7 @@ export function SeriesCards({ cards }: { cards: readonly SeriesCard[] }): React.
             </p>
           )}
           {c.chips && c.chips.length > 0 && (
-            <ul className={styles.chips}>
+            <ul className={`${styles.chips} ${styles.cardChips}`}>
               {c.chips.map((chip) => (
                 <li key={chip.label} className={chip.count === 0 ? styles.chipZero : styles.chip}>
                   {chip.label}

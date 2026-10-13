@@ -3173,3 +3173,9 @@ The user's rule: a training's task, series task and lecture subtask alike, is ti
 - **Why (the user):** with the Priority popup open, clicking the row's P-badge again left it open.
 - **Cause:** `TaskMenu` closes on any mousedown outside it, which includes the badge that opened it; the badge's click then opened the menu again.
 - **Now:** `TaskMenu` ignores mousedowns on an element marked `data-menu-trigger`, and the table's `onPriorityMenu` toggles (the same task's open priority menu closes). Not driven in the app.
+
+## Series cards: even spacing and one chip font (13 Oct 2026)
+
+- **Why (the user):** the list cards on the Tasks landing page were poorly spaced: "9 open" and "8 overdue" sat far apart in one card and close together in its neighbour, and the chips mixed fonts.
+- **Cause:** `.card` is a grid, and its auto rows stretched to fill a card made taller by a neighbour in the same row. Chips with a count were monospace (`.chip`), zero-count chips were sans (`.chipZero`).
+- **Now:** `.card` has `align-content: start`, so rows keep the 4px gap whatever the neighbour's height; chips inside a card (`.cardChips`) use the body font. The change is in the shared `SeriesCards`, so Notes and Training group cards get it too. Not driven in the app.
