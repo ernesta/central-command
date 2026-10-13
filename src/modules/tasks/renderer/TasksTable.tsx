@@ -480,23 +480,29 @@ function TaskRowView({
         </button>
       </td>
       <td>
-        <TitleCell task={task} />
-        <span className={styles.tags} {...stopRow}>
-          <TagsField
-            inline
-            tags={task.tags}
-            suggestions={tagsIn(allRows)}
-            onChange={(tags) => void updateTask(task, { tags }, 'change the tags')}
-          />
-        </span>
-        {task.recurrence && (
-          <span className={styles.repeat} title={describeRecurrence(task.recurrence)}>
-            <Repeat size={14} strokeWidth={1.75} aria-label={describeRecurrence(task.recurrence)} />
+        <div className={styles.titleLine}>
+          <TitleCell task={task} />
+          <span className={styles.tags} {...stopRow}>
+            <TagsField
+              inline
+              tags={task.tags}
+              suggestions={tagsIn(allRows)}
+              onChange={(tags) => void updateTask(task, { tags }, 'change the tags')}
+            />
           </span>
-        )}
-        {!isKid && (
-          <SubtaskPill kids={kids} open={isOpen} onToggle={onToggle} onAdd={onAddSubtask} />
-        )}
+          {task.recurrence && (
+            <span className={styles.repeat} title={describeRecurrence(task.recurrence)}>
+              <Repeat
+                size={14}
+                strokeWidth={1.75}
+                aria-label={describeRecurrence(task.recurrence)}
+              />
+            </span>
+          )}
+          {!isKid && (
+            <SubtaskPill kids={kids} open={isOpen} onToggle={onToggle} onAdd={onAddSubtask} />
+          )}
+        </div>
       </td>
       <td className={[styles.nowrap, styles.list].join(' ')}>
         {!isKid && (
