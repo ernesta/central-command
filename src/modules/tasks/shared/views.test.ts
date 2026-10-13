@@ -110,6 +110,19 @@ describe('landingSections', () => {
     expect(s.upcoming[0].nested).toEqual([])
   })
 
+  it('orders a section by the date that put the row there, not the task’s own', () => {
+    const kid = (uid: string, parentUid: string, due: string): Task => task({ uid, parentUid, due })
+    const s = landingSections(
+      [
+        row({ uid: 'x', due: '2026-10-11' }),
+        { task: task({ uid: 'p', due: '2026-11-30' }), kids: [kid('k', 'p', '2026-10-06')] },
+        row({ uid: 'y', due: '2026-10-08' })
+      ],
+      TODAY
+    )
+    expect(s.upcoming.map((r) => r.task.uid)).toEqual(['p', 'y', 'x'])
+  })
+
   it('ignores a done subtask’s date', () => {
     const kid = task({ uid: 'k', parentUid: 'p', due: TODAY, status: 'done' })
     const s = landingSections([{ task: task({ uid: 'p' }), kids: [kid] }], TODAY)

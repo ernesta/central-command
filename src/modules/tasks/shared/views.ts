@@ -71,8 +71,10 @@ export function inView(row: TaskRow, view: TaskView): boolean {
 
 /** Due soonest first (no date last), then High before Low, then by title. */
 export function compareRows(a: TaskRow, b: TaskRow): number {
-  const da = effectiveDue(a.task, a.kids)
-  const db = effectiveDue(b.task, b.kids)
+  return compareByDate(effectiveDue(a.task, a.kids), effectiveDue(b.task, b.kids), a, b)
+}
+
+function compareByDate(da: string | null, db: string | null, a: TaskRow, b: TaskRow): number {
   if (da !== db) return da === null ? 1 : db === null ? -1 : da.localeCompare(db)
   return (
     PRIORITY_ORDER[a.task.priority] - PRIORITY_ORDER[b.task.priority] ||
@@ -94,6 +96,14 @@ function dateMatches(section: LandingSection, date: string | null, today: string
   if (section === 'overdue') return date < today
   if (section === 'upcoming') return date > today && date <= addDays(today, UPCOMING_DAYS)
   return false
+}
+
+/** The earliest date of a row (its own, or a nested subtask's) that falls in the section. */
+function sectionDate(section: LandingSection, row: SectionRow, today: string): string | null {
+  const dates = [row.task.due, ...row.nested.map((k) => k.due)].filter(
+    (d): d is string => d !== null && dateMatches(section, d, today)
+  )
+  return dates.length > 0 ? dates.sort()[0] : null
 }
 
 /**
@@ -125,7 +135,12 @@ export function landingSections(
       }
     }
   }
-  for (const section of LANDING_SECTIONS) out[section].sort(compareRows)
+  for (const section of LANDING_SECTIONS) {
+    // Oldest first in Overdue, soonest first in Upcoming: by the date that put the row in the section
+    const key = (r: SectionRow): string | null =>
+      section === 'doing' ? effectiveDue(r.task, r.kids) : sectionDate(section, r, today)
+    out[section].sort((a, b) => compareByDate(key(a), key(b), a, b))
+  }
   return out
 }
 
