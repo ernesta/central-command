@@ -4,6 +4,7 @@ import { Button } from '@renderer/components/Button'
 import { Segmented } from '@renderer/components/Segmented'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { defaultList, tagsIn } from '../shared/query'
+import { splitTitleTags } from '../shared/title-tags'
 import { canUseList } from '../shared/work-lists'
 import { TASK_PRIORITIES, type TaskPriority, type TaskWorkspace } from '../shared/types'
 import type { TaskRow } from '../shared/views'
@@ -47,18 +48,19 @@ export function AddBar({
   const list = picked ?? defaultList(rows, { filter: listFilter, last, clients })
 
   const submit = async (): Promise<void> => {
-    if (title.trim() === '' || busy) return
+    const typed = splitTitleTags(title)
+    if (typed.title === '' || busy) return
     setBusy(true)
     setError(null)
     try {
       await window.api.tasks.create({
         workspace,
-        title: title.trim(),
+        title: typed.title,
         list: list.list,
         sublist: list.sublist,
         due,
         priority,
-        tags
+        tags: [...new Set([...tags, ...typed.tags])]
       })
       remember(list.list, list.sublist)
       setTitle('')
@@ -85,7 +87,7 @@ export function AddBar({
       <input
         ref={inputRef}
         className={styles.input}
-        placeholder="Add a task"
+        placeholder="Add a task (#tag to tag it)"
         aria-label="Task title"
         value={title}
         onChange={(event) => setTitle(event.target.value)}
@@ -105,7 +107,7 @@ export function AddBar({
         onChange={setPriority}
       />
       <TagsField tags={tags} suggestions={tagsIn(rows)} onChange={setTags} />
-      <Button type="submit" variant="primary" disabled={busy || title.trim() === ''}>
+      <Button type="submit" variant="primary" disabled={busy || splitTitleTags(title).title === ''}>
         Add
       </Button>
       {error && (

@@ -4,6 +4,7 @@ import { Dialog } from '@renderer/components/Dialog'
 import { Segmented } from '@renderer/components/Segmented'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { defaultList, tagsIn } from '../shared/query'
+import { splitTitleTags } from '../shared/title-tags'
 import { canUseList } from '../shared/work-lists'
 import { TASK_PRIORITIES, type TaskPriority, type TaskWorkspace } from '../shared/types'
 import type { TaskRow } from '../shared/views'
@@ -43,18 +44,19 @@ export function NewTaskDialog({
   const list = picked ?? defaultList(rows, { filter: listFilter, last, clients })
 
   const add = async (): Promise<void> => {
-    if (title.trim() === '' || busy) return
+    const typed = splitTitleTags(title)
+    if (typed.title === '' || busy) return
     setBusy(true)
     setError(null)
     try {
       await window.api.tasks.create({
         workspace,
-        title: title.trim(),
+        title: typed.title,
         list: list.list,
         sublist: list.sublist,
         due,
         priority,
-        tags
+        tags: [...new Set([...tags, ...typed.tags])]
       })
       remember(list.list, list.sublist)
       onClose()
@@ -77,7 +79,7 @@ export function NewTaskDialog({
           <Button
             variant="primary"
             onClick={() => void add()}
-            disabled={busy || title.trim() === ''}
+            disabled={busy || splitTitleTags(title).title === ''}
           >
             Add
           </Button>
@@ -96,7 +98,7 @@ export function NewTaskDialog({
           <input
             className={styles.title}
             autoFocus
-            placeholder="What needs doing?"
+            placeholder="What needs doing? Add #tags in the title"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
           />
