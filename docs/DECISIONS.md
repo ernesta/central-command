@@ -3145,3 +3145,9 @@ The user: tasks are made another way (the Add bar on the Tasks landing and the S
 - **Removed from the UI:** the "New task" buttons (landing and Tasks page), the Mod-Shift-A shortcut (`TaskGlobals` is no longer in the manifest, and its Settings entry is gone), the palette's "New task" and the Dock's "New Task" (`DockActionId` lost `new-task`).
 - **Kept, unmounted:** `NewTaskDialog`, `NewTaskButton`, `TaskGlobals`, `new-task-store`, `NEW_TASK_SHORTCUT`. To bring it back: mount `TaskGlobals` in the manifest, add the shortcut entry, the buttons and the quick action again.
 - Checked by tests, lint and typecheck only; not driven in the app.
+
+## The date chip has a minimum width (13 Oct 2026)
+
+- **Why (the user):** the Due chip in the task page's fields row was only as wide as its text, so choosing a date ("Oct 30" after "No date") changed its width and moved the fields beside it.
+- **Now:** `.button` in `DatePicker.module.css` has `min-width: 112px`, enough for the icon, the gap, padding and the widest short date ("May 28"); the inline `plain` variant (table cells) keeps `min-width: 0`. A date in another year ("Oct 30, 2027") is longer and still widens the chip; left as is, being rare.
+- Not driven in the app; the 112px is estimated, not measured.
