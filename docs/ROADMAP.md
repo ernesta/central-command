@@ -1,6 +1,6 @@
 # Roadmap
 
-**Hours: Today beside a Charts card (13 Oct 2026): built, pushed and installed** (`docs/DECISIONS.md`, "Hours: Today beside a Charts card, no Charts page"). The Charts and weeks page, All weeks and the Years table are gone. For the user: look at Charts in the app; say if Today should scroll when its list grows, and if the heat map should be larger.
+**Hours: Today beside a Patterns card (13 Oct 2026; named Charts until the review fixes, `docs/DECISIONS.md`, "Hours: Patterns card, review fixes"): built, pushed and installed** (`docs/DECISIONS.md`, "Hours: Today beside a Charts card, no Charts page"). The Charts and weeks page, All weeks and the Years table are gone. For the user: look at Charts in the app; say if Today should scroll when its list grows, and if the heat map should be larger.
 
 **Hours layout (13 Oct 2026, `docs/HOURS_LAYOUT_PLAN.md`): all three stages done and pushed, not installed until the end of this session: the Week card summary, the invoice card, the contract line and the side-by-side layout (hours of the aim, the balance against the whole aim, one bar, today's stripe) and the meeting-row icon alignment** (`docs/DECISIONS.md`, "Hours layout, stage 1"). Applies to Work and Research. Not driven: the user should look at the day rows of an open week with a meeting (the icon alignment) in the installed app.
 
