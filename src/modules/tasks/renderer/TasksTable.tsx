@@ -542,11 +542,14 @@ function TaskRowView({
       <td className={styles.nowrap} onClick={(event) => event.stopPropagation()}>
         <span className={styles.dueCell}>
           <span
-            className={
+            className={[
+              styles.dueDate,
               due
                 ? styles[`due_${task.status === 'done' ? 'normal' : dueTone(due, today)}`]
                 : undefined
-            }
+            ]
+              .filter(Boolean)
+              .join(' ')}
           >
             <DatePicker
               label="Due"

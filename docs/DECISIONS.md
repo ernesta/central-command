@@ -3117,3 +3117,9 @@ The user's request, looking at a task's Subtasks card: always order subtasks by 
 - **Cause:** `.remove` kept the shared `.iconButton` padding and negative margin plus an 8px left margin, on top of the 8px the plain date button already pads on its right, so the hover box was loose and the gap wide.
 - **Now:** `.remove` (`TasksTable.module.css`) is a 24px square with no padding, the icon centred, 4px from the date button.
 - Not driven in the app.
+
+## The task row's trash is right-aligned in a fixed Due column (13 Oct 2026)
+
+- **Why (the user):** after three tries the trash still floated next to the date with 71px of empty space after it, and the user wanted it right-aligned with the row's usual padding, the empty space narrower, and the date zone as wide as the widest date so nothing jumps. Chosen from a to-scale mockup (the user picked "right aligned").
+- **Now:** the Due column is 133px (`.colDue`): 12 padding, an 81px date zone (`.dueDate`; the widest date, "May 28, 2027" in 13px IBM Plex Sans, measures 80.4px), a 12px gap, the 16px icon, 12 padding. `.remove` has margin `0 -4px 0 8px`, so the icon (not its 24px button) sits 12px from the cell's right edge, like every other cell's padding. The column was 160px; Title takes the 27px.
+- Driven in the built app on a scratch library: the cell is 133px, the icon's right edge is 12px from the cell's, its centre is on the row's centre line, and it is 12px from the date zone.

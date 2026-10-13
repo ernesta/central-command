@@ -26,8 +26,10 @@
 .colTime {
   width: 76px;
 }
+/* 12 padding + 81 date + 12 gap + 16 icon + 12 padding. The date is 81px so the widest ("May 28, 2027" in 13px Plex Sans, 80.4px)
+   fits and the trash never moves. */
 .colDue {
-  width: 160px;
+  width: 133px;
 }
 .th {
   padding: 11px 12px;
@@ -164,15 +166,20 @@
   background: var(--selected-bg);
 }
 .dueCell {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+}
+.dueDate {
+  flex: none;
+  width: 81px;
 }
 /* The delete button shows on hover or focus, like the ghost pill. */
 .remove {
   box-sizing: border-box;
   width: 24px;
   height: 24px;
-  margin: 0 0 0 4px;
+  /* The 16px icon, not the 24px button, sits 12px from the cell's right edge, like the padding of every other cell. */
+  margin: 0 -4px 0 8px;
   padding: 0;
   color: var(--text-muted);
   opacity: 0;
