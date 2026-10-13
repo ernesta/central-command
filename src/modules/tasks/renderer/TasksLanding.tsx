@@ -7,14 +7,13 @@ import {
   LandingHeader,
   LandingPage,
   LandingSection,
-  SeeAllLink,
   SeriesCards
 } from '@renderer/components/Landing'
 import { showToast } from '@renderer/components/toast-store'
 import { ArrowRight } from 'lucide-react'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { listValue } from '../shared/query'
-import { isBacklog, landingSections, listSummaries, type SectionRow } from '../shared/views'
+import { landingSections, listSummaries, type SectionRow } from '../shared/views'
 import { AddBar } from './AddBar'
 import { NewTaskButton } from './NewTaskButton'
 import { TasksTable } from './TasksTable'
@@ -40,7 +39,6 @@ export function TasksLanding(): React.JSX.Element {
   const sections = landingSections(all, today)
   const clients = useWorkClients(workspace)
   const lists = listSummaries(all, today, clients)
-  const backlog = all.filter(isBacklog).length
 
   const limited = (id: string, list: SectionRow[]): SectionRow[] =>
     expanded.has(id) ? list : list.slice(0, SECTION_LIMIT)
@@ -144,16 +142,7 @@ export function TasksLanding(): React.JSX.Element {
             <span className={styles.muted}>Next 14 days</span>
           )}
 
-          <LandingSection
-            id="tasks-lists"
-            label="Lists"
-            aside={
-              <SeeAllLink to={tasksAllRoute(workspace, { view: 'backlog' })}>
-                Backlog {backlog}
-                <ArrowRight size={14} strokeWidth={1.75} aria-hidden />
-              </SeeAllLink>
-            }
-          >
+          <LandingSection id="tasks-lists" label="Lists">
             {lists.length === 0 ? (
               <EmptyState heading="No tasks yet" message="Add one above." />
             ) : (
