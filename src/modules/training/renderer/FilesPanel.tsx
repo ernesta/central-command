@@ -28,6 +28,23 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
   const [loaded, setLoaded] = useState<{ key: string; listing: TrainingFolderListing } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const key = `${root}|${folder}|${sub}`
+  // The folder is changed in Finder, not here: look again when the window regains focus and every few seconds.
+  const [refresh, setRefresh] = useState(0)
+
+  useEffect(() => {
+    if (!folder || !root) return
+    const again = (): void => setRefresh((n) => n + 1)
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === 'visible') again()
+    }, 4000)
+    window.addEventListener('focus', again)
+    document.addEventListener('visibilitychange', again)
+    return () => {
+      window.clearInterval(timer)
+      window.removeEventListener('focus', again)
+      document.removeEventListener('visibilitychange', again)
+    }
+  }, [folder, root])
 
   useEffect(() => {
     if (!folder || !root) return
@@ -48,7 +65,7 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
       cancelled = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [folder, root, sub, key])
+  }, [folder, root, sub, key, refresh])
 
   const listing = loaded?.key === key ? loaded.listing : null
 

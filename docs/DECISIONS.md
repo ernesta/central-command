@@ -3304,3 +3304,8 @@ The user's rule: a training's task, series task and lecture subtask alike, is ti
 - **Before:** `ComboField` showed every option whatever was typed (a deliberate contrast with a native `<datalist>`). That made a long list impossible to search.
 - **Now:** typing opens the list narrowed to the options containing the text (case-insensitive, trimmed); an empty result hides the list, and the typed value is still accepted as new. Opening it with the chevron or the arrow keys, without typing, shows every option, so the full list stays reachable. Enter picks from what is shown. Applies to every `ComboField` (Institution, Training series, Meetings series).
 - Typecheck, lint and tests only; not driven in the app.
+
+## Training: the Files panel looks again (13 Oct 2026)
+
+- **Why (the user):** files added to or renamed in a linked folder did not show until the page was reopened.
+- **What:** `FilesPanel` listed the folder only when the page opened. It now lists again when the window regains focus or becomes visible, and every 4 seconds while visible. The listing is replaced under the same key, so nothing flashes. Not driven in the app; check: open an entry, add and rename a file in Finder, come back.
