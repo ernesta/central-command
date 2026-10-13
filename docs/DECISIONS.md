@@ -3316,3 +3316,9 @@ The user's rule: a training's task, series task and lecture subtask alike, is ti
 - **Cause:** the hover pills are `opacity: 0`, not removed, so they keep their width. Anything placed after one (the repeat icon, or a real subtask pill after an invisible "+ Tag") sat after an empty gap. Moving the icon alone could not fix it for every combination of tags, repeat and subtasks (seven combinations were mocked at rest and on hover; the user chose the one below).
 - **Now:** the title line orders its items with CSS `order`: tags (1), repeat icon (2), subtask pill (3), then the hover-only ghosts "+ Tag" and "+ Subtask" (4). `.tags` and the `TagsField` root are `display: contents` so the chips and the add button take part in the title line's flex. Every item has a 6px left margin. Real items never follow an invisible gap, and hovering adds the ghosts at the end without moving anything.
 - Checked in the built app on a scratch copy of the library, light mode: tags with repeat and subtasks, a subtask pill without tags, a plain row, at rest and on hover. Dark mode and dev mode were not driven.
+
+## Tasks landing: Overdue, Today, Tomorrow, Soon, In progress (13 Oct 2026)
+
+- **Why (the user):** the landing should lead with what is due now, split today from tomorrow, and not show empty blocks.
+- **Now:** sections run Overdue, Due today, Due tomorrow, Soon, In progress (`LANDING_SECTIONS`, `landingSections` in `shared/views.ts`). Soon is the old Upcoming without today and tomorrow (days 2 to 7). A section with no rows is not drawn at all (no empty table, no "Nothing is overdue"), so Overdue's Move buttons only exist when something is overdue. Subtask nesting and date ordering are unchanged.
+- Typecheck, lint and tests only; not driven in the app.
