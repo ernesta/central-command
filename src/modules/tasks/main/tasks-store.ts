@@ -23,6 +23,7 @@ import {
   writeTask
 } from './repository'
 import { listFor } from '../shared/work-lists'
+import { normaliseTag } from '../shared/tag'
 
 export interface Clock {
   /** Today in local time, YYYY-MM-DD. */
@@ -47,7 +48,7 @@ export interface StatusResult {
 }
 
 function cleanTags(tags: readonly string[] | undefined): string[] {
-  return [...new Set((tags ?? []).map((t) => t.trim()).filter(Boolean))]
+  return [...new Set((tags ?? []).map(normaliseTag).filter(Boolean))]
 }
 
 function checkDue(due: string | null | undefined): string | null {

@@ -1,5 +1,6 @@
 import { X } from 'lucide-react'
 import { useId, useState } from 'react'
+import { normaliseTag } from '../shared/tag'
 import styles from './TagsField.module.css'
 
 /** A task's tags as chips you can remove, and a small field to add one. */
@@ -21,7 +22,7 @@ export function TagsField({
   const listId = useId()
 
   const add = (): void => {
-    const tag = text.trim().toLowerCase()
+    const tag = normaliseTag(text)
     setText('')
     setAdding(false)
     if (tag && !tags.includes(tag)) onChange([...tags, tag])
@@ -51,7 +52,7 @@ export function TagsField({
             placeholder="Tag"
             list={listId}
             value={text}
-            onChange={(event) => setText(event.target.value)}
+            onChange={(event) => setText(event.target.value.replace(/\s/gu, ''))}
             onBlur={add}
             onKeyDown={(event) => {
               if (event.key === 'Enter') {

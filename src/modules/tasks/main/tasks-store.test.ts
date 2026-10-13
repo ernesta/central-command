@@ -27,6 +27,12 @@ const make = (title: string, over = {}): ReturnType<TasksStore['create']> =>
   store.create({ workspace: 'research', title, list: 'Reading', ...over })
 
 describe('create', () => {
+  it('keeps tags lower-case and one word', () => {
+    const t = make('Tags', { tags: ['Study-1', 'study 2', 'R'] })
+    expect(t.tags).toEqual(['study-1', 'r'])
+    expect(store.update(t.uid, { tags: ['Two Words', 'ML'] }).tags).toEqual(['ml'])
+  })
+
   it('stores a task with its tags and defaults', () => {
     const t = make('  Read it  ', { tags: ['r', 'r', ' ', 'stats'], due: '2026-10-09' })
     expect(store.get(t.uid)).toMatchObject({
