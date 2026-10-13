@@ -97,9 +97,9 @@ function dateMatches(section: LandingSection, date: string | null, today: string
 }
 
 /**
- * Today's sections. A task appears once, under the first heading that fits, in the order Due today, Overdue,
- * Upcoming, In progress. It fits by its own date or status, or because an open subtask of it has its own date that fits
- * (then it appears with that subtask nested under it). Done tasks are never listed.
+ * Today's sections, in the order Due today, Overdue, Upcoming, In progress. A task appears under every heading that
+ * fits: by its own date or status, or because an open subtask of it has its own date that fits (then it appears with
+ * that subtask nested under it). Done tasks are never listed.
  */
 export function landingSections(
   rows: readonly TaskRow[],
@@ -122,7 +122,6 @@ export function landingSections(
       const nested = dated.filter((k) => dateMatches(section, k.due, today))
       if (own || nested.length > 0) {
         out[section].push({ ...row, nested })
-        break
       }
     }
   }
