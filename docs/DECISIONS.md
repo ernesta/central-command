@@ -3161,3 +3161,9 @@ The user: tasks are made another way (the Add bar on the Tasks landing and the S
 ## Training tasks are called "Complete <name>" (13 Oct 2026)
 
 The user's rule: a training's task, series task and lecture subtask alike, is titled "Complete <name>" (`completeTitle` in `src/modules/training/shared/lecture-task.ts`). The series is found by its name with or without the prefix (`bareTitle`), so an old ClickUp "Complete <course>" task is reused; a title already starting with "Complete" is not doubled. The page keeps the task in step, so a lecture renamed in the note renames its task to "Complete <new title>". The five tasks made so far (PS5210 and its three lectures, Response Surface Analysis Workshop) were renamed on 13 Oct 2026 with the app closed (backup `~/CentralCommand/backups/complete-titles-1791885353`, read back). Installed the same day (`npm run build:mac`).
+
+## Landing sections are ordered by the date that put the row there (13 Oct 2026)
+
+- **Why (the user):** the task lists on the Tasks landing page must read sensibly: by date, then priority within a date; Overdue starts with the most overdue, Upcoming with the soonest (tomorrow).
+- **Cause:** `landingSections` sorted every section with `compareRows`, i.e. by the task's `effectiveDue` (its own date, else its earliest open subtask's). A task listed in Upcoming or Overdue only because of a nested subtask was placed by its own, unrelated date.
+- **Now:** each section is sorted by the earliest date of the row (its own or a nested subtask's) that falls in that section (`sectionDate` in `src/modules/tasks/shared/views.ts`), then priority (P1 first), then title. Both Overdue (oldest first) and Upcoming (soonest first) are ascending. "In progress" still uses `effectiveDue`. `compareRows` and the All tasks table are unchanged. Test in `views.test.ts`; not driven in the app.
