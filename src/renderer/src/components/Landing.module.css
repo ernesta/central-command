@@ -188,12 +188,12 @@ li:only-child .recent {
   font-size: var(--text-12);
   font-weight: 500;
 }
-.chips {
+.people {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
-.chip {
+.person {
   padding: 2px 9px;
   border-radius: var(--radius-pill);
   background: var(--panel);

@@ -167,9 +167,9 @@ export function RecentList({ rows }: { rows: readonly RecentRow[] }): React.JSX.
               {row.title}
               {row.badge && <span className={styles.upcoming}>{row.badge}</span>}
             </span>
-            <span className={styles.chips}>
+            <span className={styles.people}>
               {row.people.slice(0, 3).map((p) => (
-                <span key={p.name} className={styles.chip} title={p.name}>
+                <span key={p.name} className={styles.person} title={p.name}>
                   {p.initials}
                 </span>
               ))}
