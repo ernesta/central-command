@@ -3051,3 +3051,10 @@ The user's request. `TasksStore.setStatus` (`main/tasks-store.ts`): when a top-l
 - **One way only:** moving the parent back does not reopen its subtasks, and finishing the last subtask does not finish the parent.
 - **Repeating tasks:** the next occurrence is copied before the subtasks are marked, so it starts with open subtasks. The finished occurrence keeps all its subtasks done; the test that expected an open one to stay open was changed to match.
 - Not driven in the built app (store rule, covered by unit tests only).
+
+## Task tags suggest the tags already in use (13 Oct 2026)
+
+The user's request: task tags need to autofill and show a list. `TagsField` takes `suggestions` and offers them in a native `<datalist>` on its "+ Tag" input, so the browser filters as you type; tags the task already has are left out. Hosts pass `tagsIn(rows)` (`shared/query.ts`, the same set the Tasks filter uses) from rows they already hold: the table row (`allRows`), the task page and its subtask rows. No extra load per field. A typed tag is still lowercased and added as before.
+
+- A datalist, not a custom dropdown: least code, matches the filter's tag set. A dropdown that opens on focus is the alternative if the native list proves too quiet.
+- Not driven in the built app (typecheck, lint and tests only).

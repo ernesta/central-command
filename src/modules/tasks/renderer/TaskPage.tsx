@@ -13,7 +13,7 @@ import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { registerFlushable } from '@renderer/lib/flush-registry'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
-import { formatTaskTime } from '../shared/query'
+import { formatTaskTime, tagsIn } from '../shared/query'
 import {
   TASK_PRIORITIES,
   TASK_STATUSES,
@@ -213,7 +213,11 @@ function TaskView({
                 }
               }}
             />
-            <TagsField tags={task.tags} onChange={(tags) => update({ tags })} />
+            <TagsField
+              tags={task.tags}
+              suggestions={tagsIn(rows)}
+              onChange={(tags) => update({ tags })}
+            />
             <div className={styles.metaRow}>
               <Segmented
                 label="Status"
@@ -259,6 +263,7 @@ function TaskView({
 
           <Subtasks
             task={task}
+            tags={tagsIn(rows)}
             kids={row.kids}
             workspace={workspace}
             today={today}
@@ -346,7 +351,8 @@ function Subtasks({
   today,
   done,
   total,
-  tracked
+  tracked,
+  tags
 }: {
   task: Task
   kids: readonly Task[]
@@ -354,6 +360,7 @@ function Subtasks({
   today: string
   done: number
   total: number
+  tags: readonly string[]
   tracked: ReadonlyMap<string, number>
 }): React.JSX.Element {
   const [adding, setAdding] = useState(false)
@@ -394,6 +401,7 @@ function Subtasks({
           kid={kid}
           today={today}
           minutes={kid.earlierMinutes + (tracked.get(kid.uid) ?? 0)}
+          tags={tags}
           onError={setError}
         />
       ))}
@@ -438,9 +446,11 @@ function SubtaskRow({
   kid,
   today,
   minutes,
+  tags,
   onError
 }: {
   kid: Task
+  tags: readonly string[]
   today: string
   minutes: number
   onError: (message: string | null) => void
@@ -535,7 +545,7 @@ function SubtaskRow({
       </div>
       {open && (
         <div className={styles.subDetails}>
-          <TagsField tags={kid.tags} onChange={(tags) => update({ tags })} />
+          <TagsField tags={kid.tags} suggestions={tags} onChange={(tags) => update({ tags })} />
         </div>
       )}
     </div>

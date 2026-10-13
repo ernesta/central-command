@@ -6,7 +6,7 @@ import { showToast } from '@renderer/components/toast-store'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { describeRecurrence } from '../shared/recurrence'
-import { dueTone, formatDue, formatTaskTime, type SortKey } from '../shared/query'
+import { dueTone, formatDue, formatTaskTime, tagsIn, type SortKey } from '../shared/query'
 import {
   TASK_PRIORITIES,
   TASK_STATUSES,
@@ -469,6 +469,7 @@ function TaskRowView({
           <TagsField
             inline
             tags={task.tags}
+            suggestions={tagsIn(allRows)}
             onChange={(tags) => void updateTask(task, { tags }, 'change the tags')}
           />
         </span>
