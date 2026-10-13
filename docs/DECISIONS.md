@@ -3090,3 +3090,9 @@ The user's request, looking at a task's Subtasks card: always order subtasks by 
 
 - **Why (the user):** opening a top-level list should show the tasks of all its sublists; of four mockups (`docs/design/tasks-list-page-mockup.html`) they chose B, a section per sublist.
 - **Now:** the filter already matched a list's sublists; `groupBySublist` (`shared/query.ts`) splits the rows into one section per sublist (heading and count, each section in the page's sort), tasks directly in the list last as "No sublist". Only for a whole-list filter where some task has a sublist; a sublist's own page, All lists and Backlog stay flat. Grouped sections are not cut at 50 rows. Not yet driven in the app.
+
+## A subtask's due date follows its parent only until dates are set (13 Oct 2026)
+
+- **Why (the user):** a new subtask should start with its parent's due date, and a parent that gets its first date should not leave undated subtasks behind; once dates exist, nothing should move on its own.
+- **Now (`TasksStore`):** a new subtask with no `due` given takes its parent's (an explicit `null` stays undated; the repeat copy, `ruled = false`, keeps the dates it was given). When a parent's `due` goes from none to a date (`update` or `setDue`), `passDown` gives it to the subtasks that have none. Every other change to a parent's date, and a subtask's own date, leave the others alone.
+- Unit-tested (`tasks-store.test.ts`); not driven in the built app.
