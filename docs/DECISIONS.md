@@ -3068,3 +3068,12 @@ The user's request, after looking at the add bar: the bar's "Return" hint was un
 - **New task popup:** a Tags row (`TagsField`, suggestions from `tagsIn(rows)`) under Priority. `tasks.create` already took `tags`; no store or IPC change.
 - **`#tag` in the title** (`splitTitleTags`, `shared/title-tags.ts`, pure and tested): a `#` at the start or after a space, followed by a letter, up to the next space, is a tag (lower case, once each) and leaves the title. "Fix issue #12", "C#" and "a#b" are left as written. Tags typed this way merge with ones picked in the field. The `#tag` text stays visible in the field until the task is added; no chip is drawn while typing (a possible later step).
 - Checked by unit tests, lint and typecheck only; not driven in the built app.
+
+## Tasks landing: every list, with its sublists (13 Oct 2026)
+
+The user's report: the landing's Lists section did not show all lists, and the user's lists are nested while the cards were flat. Three layouts were mocked up (`docs/design/tasks-lists-mockup.html`); the user chose C.
+
+- **Cause:** `listSummaries` skipped done tasks before it counted anything, so a list whose tasks were all done had no card (Research Scoping, Study 1: Luminos Analysis in the real library). Only Work clients were forced in. Sublists were listed only if they had an open task, as one line of text.
+- **Now:** `listSummaries` (`shared/views.ts`) keeps every list and every sublist. A list has `open` and `total` (done tasks included); a sublist is `{ name, open }`, most open first. Cards show lists with something open, or a Work client with no tasks at all; a list with `open: 0` and `total > 0` goes to a **Nothing open** line under the cards, each name a link with its sublist count.
+- **Sublists** are chips on the card (`chips` on `SeriesCard`, shared `Landing`), dimmed when none is open. The chips are not links: the whole card opens the list, as before. Overdue keeps its own line.
+- Unit-tested (`views.test.ts`); not driven in the built app, so how the chips and the line look is unchecked.
