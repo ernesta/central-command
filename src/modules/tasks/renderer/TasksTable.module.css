@@ -27,7 +27,7 @@
   width: 76px;
 }
 .colDue {
-  width: 124px;
+  width: 160px;
 }
 .th {
   padding: 11px 12px;
@@ -150,6 +150,20 @@
 }
 .iconButton:hover {
   background: var(--selected-bg);
+}
+/* The delete button shows on hover or focus, like the ghost pill. */
+.remove {
+  margin-left: 8px;
+  color: var(--text-muted);
+  opacity: 0;
+}
+.row:hover .remove,
+.row:focus-visible .remove,
+.remove:focus-visible {
+  opacity: 1;
+}
+.remove:hover {
+  color: var(--danger);
 }
 .due_overdue {
   color: var(--danger);

@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, Plus, Repeat } from 'lucide-react'
+import { ChevronDown, ChevronRight, Plus, Repeat, Trash2 } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { DatePicker } from '@renderer/components/DatePicker'
@@ -329,6 +329,22 @@ async function updateTask(task: Task, changes: TaskChanges, what: string): Promi
 const setDue = (task: Task, due: string | null): Promise<void> =>
   updateTask(task, { due }, 'change the due date')
 
+/** To the trash, with an Undo in the toast (a task's subtasks go with it and come back with it). */
+async function removeTask(task: Task): Promise<void> {
+  try {
+    await window.api.tasks.delete(task.uid)
+    showToast(`Deleted “${task.title || 'Untitled'}”.`, {
+      label: 'Undo',
+      run: () =>
+        void window.api.tasks
+          .restore(task.uid)
+          .catch((e: unknown) => showToast(`Couldn’t bring it back: ${ipcErrorMessage(e)}`))
+    })
+  } catch (error) {
+    showToast(`Couldn’t delete it: ${ipcErrorMessage(error)}`)
+  }
+}
+
 /** Spread on a wrapper so clicks and keys inside a control never reach the row (which opens the task or moves the selection). */
 const stopRow = {
   onClick: (event: React.MouseEvent) => event.stopPropagation(),
@@ -535,6 +551,16 @@ function TaskRowView({
             onChange={(next) => void setDue(task, next)}
           />
         </span>
+        <button
+          type="button"
+          tabIndex={-1}
+          className={[styles.iconButton, styles.remove].join(' ')}
+          aria-label={`Delete ${task.title || 'Untitled'}`}
+          title="Delete"
+          onClick={() => void removeTask(task)}
+        >
+          <Trash2 size={16} strokeWidth={1.75} aria-hidden />
+        </button>
       </td>
     </tr>
   )
