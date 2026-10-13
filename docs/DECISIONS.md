@@ -3179,3 +3179,9 @@ The user's rule: a training's task, series task and lecture subtask alike, is ti
 - **Why (the user):** the list cards on the Tasks landing page were poorly spaced: "9 open" and "8 overdue" sat far apart in one card and close together in its neighbour, and the chips mixed fonts.
 - **Cause:** `.card` is a grid, and its auto rows stretched to fill a card made taller by a neighbour in the same row. Chips with a count were monospace (`.chip`), zero-count chips were sans (`.chipZero`).
 - **Now:** `.card` has `align-content: start`, so rows keep the 4px gap whatever the neighbour's height; chips inside a card (`.cardChips`) use the body font. The change is in the shared `SeriesCards`, so Notes and Training group cards get it too. Not driven in the app.
+
+## Open TODOs list the most recent meeting first (13 Oct 2026)
+
+- **Why (the user):** on a meetings landing page, "Before next meeting" should have the most recent TODOs on top.
+- **Cause:** `openTodos` ordered series by the fixed `SERIES` order, so a series with an older meeting (Luminos, May 21) sat above a newer one (Other, Oct 13).
+- **Now:** series are ordered by the date of the meeting their TODOs come from, newest first; the same date falls back to the fixed series order, then by name; within a meeting the note's order stands. Test in `open-todos.test.ts`; not driven in the app.
