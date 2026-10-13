@@ -3268,3 +3268,10 @@ The user's rule: a training's task, series task and lecture subtask alike, is ti
 - Day numbers now always show (the cell is never under 15px). Hover, keyboard (arrows stay inside the window) and click-to-open-week are as before; the key is still the day's index in the year.
 - **Not built:** the ‹ › control to look at earlier or later weeks. Until then the earlier weeks of a year are reachable only in Weeks and the week pages.
 - Driven in the built app on a scratch library (light mode; keyboard tooltip). Dark mode and dev mode not looked at.
+
+## Segmented control: a segment keeps its width when selected (13 Oct 2026)
+
+- **Why (the user):** on the Hours view choice (Calendar / Weeks / Weekdays) a chip changed width on selection, which was "disturbing". The selected segment is bold (600), which is wider than the regular text, so it grew and pushed its neighbours.
+- **Now:** in the shared `Segmented`, each label sits in a span whose `::after` is a hidden copy of the label in bold (`data-label`, zero height), so the segment is always as wide as its bold text. Every segmented control in the app gets it; nothing is set per page.
+- Alternative not taken: keeping the weight the same and marking selection by colour only (the bold is part of the selected look).
+- Not driven in the app (typecheck, lint and tests only).
