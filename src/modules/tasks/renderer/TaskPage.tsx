@@ -538,7 +538,7 @@ function SubtaskRow({
         <span className={styles.subTime}>{formatTaskTime(minutes)}</span>
         <button
           type="button"
-          className={styles.iconButton}
+          className={[styles.iconButton, styles.subDelete].join(' ')}
           aria-label="Delete subtask"
           onClick={remove}
         >
