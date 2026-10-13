@@ -1,0 +1,174 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Top-level list page mockup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@600;700&display=swap" />
+<style>
+  /* Layout: the three candidate "Lists" sections stacked, each on the app's own tokens (tasks-mockup.html), Research data from the real library. */
+  :root {
+    --bg: #edeff2;
+    --surface: #ffffff;
+    --ink: #1b222b;
+    --text-muted: #5c6672;
+    --border-soft: #d3d8de;
+    --border-faint: #e6e9ed;
+    --hover-tint: #f4f6f8;
+    --accent: #35577a;
+    --selected-bg: #dce6ee;
+    --danger: #a8433f;
+    --font-display: 'Newsreader', Georgia, serif;
+    --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg: #14181d;
+      --surface: #1f262e;
+      --ink: #e6eaee;
+      --text-muted: #98a3af;
+      --border-soft: #2f3843;
+      --border-faint: #262e37;
+      --hover-tint: #262e37;
+      --accent: #86aad0;
+      --selected-bg: #2a3b4d;
+      --danger: #dc7c77;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg: #14181d;
+    --surface: #1f262e;
+    --ink: #e6eaee;
+    --text-muted: #98a3af;
+    --border-soft: #2f3843;
+    --border-faint: #262e37;
+    --hover-tint: #262e37;
+    --accent: #86aad0;
+    --selected-bg: #2a3b4d;
+    --danger: #dc7c77;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.5 var(--font-body);
+    margin: 0;
+    padding-inline: 16px;
+    padding-block: 24px 56px;
+  }
+  .page { max-width: 1100px; margin: 0 auto; display: grid; gap: 48px; }
+  h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
+  h1 { font-size: 26px; }
+  p { margin: 0; }
+  .muted { color: var(--text-muted); }
+  .over { color: var(--danger); }
+  .opt { display: grid; gap: 14px; }
+  .opt-head { display: grid; gap: 4px; }
+  .opt-head h2 { font-size: 20px; }
+  .label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 1px 8px;
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    color: var(--text-muted);
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 16px;
+    min-width: 0;
+  }
+  .card h3 { font-size: 18px; }
+  .card.done { background: transparent; border-style: dashed; }
+  .card.done h3 { color: var(--text-muted); }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+  .stats { display: flex; gap: 12px; margin-top: 2px; }
+
+  /* A: nested rows inside each card */
+  .subs { list-style: none; margin: 12px 0 0; padding: 0; border-top: 1px solid var(--border-faint); }
+  .subs li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 5px 0 5px 12px;
+    border-bottom: 1px solid var(--border-faint);
+    font-size: 13px;
+  }
+  .subs li:last-child { border-bottom: 0; }
+  .subs li span:first-child { min-width: 0; overflow-wrap: anywhere; }
+  .subs .zero { color: var(--text-muted); }
+  .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* B: outline table */
+  .tree { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 8px; overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 480px; }
+  th {
+    text-align: right;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  th:first-child { text-align: left; }
+  td { padding: 7px 14px; border-bottom: 1px solid var(--border-faint); text-align: right; font-variant-numeric: tabular-nums; }
+  td:first-child { text-align: left; }
+  tr.top td { background: var(--hover-tint); font-weight: 600; }
+  tr.sub td:first-child { padding-left: 38px; font-weight: 400; }
+  tr.sub td:first-child::before { content: '›'; color: var(--text-muted); margin-right: 8px; }
+  tr:last-child td { border-bottom: 0; }
+  tr.dim td { color: var(--text-muted); }
+  tr.group td {
+    background: transparent;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 500;
+    padding-top: 14px;
+  }
+
+  /* C: chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .chip {
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--hover-tint);
+    border: 1px solid var(--border-faint);
+    max-width: 100%;
+  }
+  .chip b { font-weight: 500; margin-left: 4px; color: var(--accent); }
+  .chip.zero { color: var(--text-muted); }
+  .chip.zero b { color: var(--text-muted); }
+  .finished { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; padding: 12px 4px 0; }
+  .finished a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--border-soft); }
+  .finished a span { color: var(--text-muted); }
+  .note { font-size: 13px; color: var(--text-muted); max-width: 70ch; }
+
+  .bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px; }
+  .field { border:1px solid var(--border-soft); background:var(--surface); border-radius:6px; padding:4px 10px; font-size:13px; }
+  .seg { display:inline-flex; border:1px solid var(--border-soft); border-radius:6px; overflow:hidden; background:var(--surface); }
+  .seg span { padding:4px 10px; font-size:13px; color:var(--text-muted); }
+  .seg span.on { background:var(--selected-bg); color:var(--ink); }
+  .tree td:nth-child(n+2), .tree th:nth-child(n+2) { text-align:left; }
+  td.pri { width: 90px; }
+  .gh td { background:transparent !important; padding:16px 14px 6px; font-weight:500; border-bottom:1px solid var(--border-soft); }
+  .gh td .n { color:var(--text-muted); font-weight:400; margin-left:6px; }
+  .gh td .car { color:var(--text-muted); margin-right:8px; display:inline-block; width:10px; }
+  .chipbar { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .chipbar .chip { background:var(--surface); }
+  .chipbar .chip.on { background:var(--selected-bg); border-color:var(--accent); }
+  td.sub-col { color:var(--text-muted); font-size:13px; }
+  .box { width:14px; height:14px; border:1.5px solid var(--text-muted); border-radius:50%; display:inline-block; vertical-align:-2px; margin-right:10px; }
+</style>
+<div class="page"><header class="opt-head"><h1>Opening a top-level list: its sublists' tasks</h1><p class="note">Opening a list (a landing card) shows every open task in it and in all its sublists. Four ways to lay that out, on the same invented Study 2 tasks. Opening a sublist chip still shows just that sublist, in every option.</p></header>
+<section class="opt"><div class="opt-head"><span class="label">Option A</span><h2>One flat table, a Sublist column</h2><p class="note">Simplest. Same table and sorting as All tasks; each row says which sublist it is in (blank for tasks directly in the list). Sort by Sublist if you want them together. Nothing new to learn.</p></div><h3 style="margin-bottom:-6px">Study 2: USAID Analysis</h3><div class="bar"><span class="field">Search</span><span class="field">Study 2: USAID Analysis ▾</span><span class="field">Any priority ▾</span><span class="seg"><span class="on">Open 7</span><span>Backlog 0</span><span>Done 3</span></span></div><div class="tree"><table><thead><tr><th>Task</th><th>Sublist</th><th>Priority</th><th>Due</th></tr></thead><tbody><tr><td><span class="box"></span>Recode district names</td><td class="sub-col">Data Cleaning & Analysis</td><td class="pri">High</td><td><span class="over">Oct 9</span></td></tr><tr><td><span class="box"></span>Request 2024 survey round</td><td class="sub-col">Data Acquisition</td><td class="pri">High</td><td>Oct 14</td></tr><tr><td><span class="box"></span>Merge wave 2 files</td><td class="sub-col">Data Cleaning & Analysis</td><td class="pri">Normal</td><td>Oct 15</td></tr><tr><td><span class="box"></span>Plan Study 2 timeline</td><td class="sub-col">—</td><td class="pri">Normal</td><td>Oct 20</td></tr><tr><td><span class="box"></span>Weighting check</td><td class="sub-col">Data Cleaning & Analysis</td><td class="pri">Normal</td><td>Oct 22</td></tr><tr><td><span class="box"></span>Chase codebook from USAID</td><td class="sub-col">Data Acquisition</td><td class="pri">Low</td><td>Oct 28</td></tr><tr><td><span class="box"></span>Draft regression tables</td><td class="sub-col">Data Cleaning & Analysis</td><td class="pri">Normal</td><td>Nov 3</td></tr></tbody></table></div></section><section class="opt"><div class="opt-head"><span class="label">Option B</span><h2>Grouped under a heading per sublist</h2><p class="note">Each sublist is a section with its count, tasks inside sorted as usual. Reads like an outline and matches how Backlog already sits under Open. Gives up one global order by due date: the overdue Data Acquisition task is below the Data Cleaning ones.</p></div><h3 style="margin-bottom:-6px">Study 2: USAID Analysis</h3><div class="bar"><span class="field">Search</span><span class="field">Study 2: USAID Analysis ▾</span><span class="field">Any priority ▾</span><span class="seg"><span class="on">Open 7</span><span>Backlog 0</span><span>Done 3</span></span></div><div class="tree"><table><thead><tr><th>Task</th><th>Priority</th><th>Due</th></tr></thead><tbody><tr class="gh"><td colspan="3">Data Cleaning & Analysis<span class="n">4</span></td></tr><tr><td><span class="box"></span>Recode district names</td><td class="pri">High</td><td><span class="over">Oct 9</span></td></tr><tr><td><span class="box"></span>Merge wave 2 files</td><td class="pri">Normal</td><td>Oct 15</td></tr><tr><td><span class="box"></span>Weighting check</td><td class="pri">Normal</td><td>Oct 22</td></tr><tr><td><span class="box"></span>Draft regression tables</td><td class="pri">Normal</td><td>Nov 3</td></tr><tr class="gh"><td colspan="3">Data Acquisition<span class="n">2</span></td></tr><tr><td><span class="box"></span>Request 2024 survey round</td><td class="pri">High</td><td>Oct 14</td></tr><tr><td><span class="box"></span>Chase codebook from USAID</td><td class="pri">Low</td><td>Oct 28</td></tr><tr class="gh"><td colspan="3">No sublist<span class="n">1</span></td></tr><tr><td><span class="box"></span>Plan Study 2 timeline</td><td class="pri">Normal</td><td>Oct 20</td></tr></tbody></table></div></section><section class="opt"><div class="opt-head"><span class="label">Option C</span><h2>Flat table, sublist chips to narrow it</h2><p class="note">Opens on All (every task in every sublist, one order by due date, Sublist column as in A). The chips, same look as on the landing cards, narrow to one sublist with a click, which is what the existing "List › Sublist" filter does but without opening a menu.</p></div><h3 style="margin-bottom:-6px">Study 2: USAID Analysis</h3><div class="bar"><span class="field">Search</span><span class="field">Study 2: USAID Analysis ▾</span><span class="field">Any priority ▾</span><span class="seg"><span class="on">Open 7</span><span>Backlog 0</span><span>Done 3</span></span></div><div class="chipbar"><span class="chip on">All <b>7</b></span><span class="chip">Data Cleaning &amp; Analysis <b>4</b></span><span class="chip">Data Acquisition <b>2</b></span><span class="chip">No sublist <b>1</b></span></div><div class="tree"><table><thead><tr><th>Task</th><th>Sublist</th><th>Priority</th><th>Due</th></tr></thead><tbody><tr><td><span class="box"></span>Recode district names</td><td class="sub-col">Data Cleaning & Analysis</td><td class="pri">High</td><td><span class="over">Oct 9</span></td></tr><tr><td><span class="box"></span>Request 2024 survey round</td><td class="sub-col">Data Acquisition</td><td class="pri">High</td><td>Oct 14</td></tr><tr><td><span class="box"></span>Merge wave 2 files</td><td class="sub-col">Data Cleaning & Analysis</td><td class="pri">Normal</td><td>Oct 15</td></tr><tr><td><span class="box"></span>Plan Study 2 timeline</td><td class="sub-col">—</td><td class="pri">Normal</td><td>Oct 20</td></tr><tr><td><span class="box"></span>Weighting check</td><td class="sub-col">Data Cleaning & Analysis</td><td class="pri">Normal</td><td>Oct 22</td></tr><tr><td><span class="box"></span>Chase codebook from USAID</td><td class="sub-col">Data Acquisition</td><td class="pri">Low</td><td>Oct 28</td></tr><tr><td><span class="box"></span>Draft regression tables</td><td class="sub-col">Data Cleaning & Analysis</td><td class="pri">Normal</td><td>Nov 3</td></tr></tbody></table></div></section><section class="opt"><div class="opt-head"><span class="label">Option D</span><h2>Flat by default, "Group by sublist" switch</h2><p class="note">Both of the above: opens flat (A), and a Group toggle in the filter row switches to sections (B), remembered per page like the other view settings. One more control in the filter row, which goes against keeping the UI minimal, so only worth it if you will really use both.</p></div><h3 style="margin-bottom:-6px">Study 2: USAID Analysis</h3><div class="bar"><span class="field">Search</span><span class="field">Study 2: USAID Analysis ▾</span><span class="field">Any priority ▾</span><span class="seg"><span class="on">Open 7</span><span>Backlog 0</span><span>Done 3</span></span><span class="seg"><span>Flat</span><span class="on">Grouped</span></span></div><div class="tree"><table><thead><tr><th>Task</th><th>Priority</th><th>Due</th></tr></thead><tbody><tr class="gh"><td colspan="3"><span class="car">▾</span>Data Cleaning & Analysis<span class="n">4</span></td></tr><tr><td><span class="box"></span>Recode district names</td><td class="pri">High</td><td><span class="over">Oct 9</span></td></tr><tr><td><span class="box"></span>Merge wave 2 files</td><td class="pri">Normal</td><td>Oct 15</td></tr><tr><td><span class="box"></span>Weighting check</td><td class="pri">Normal</td><td>Oct 22</td></tr><tr><td><span class="box"></span>Draft regression tables</td><td class="pri">Normal</td><td>Nov 3</td></tr><tr class="gh"><td colspan="3"><span class="car">▾</span>Data Acquisition<span class="n">2</span></td></tr><tr><td><span class="box"></span>Request 2024 survey round</td><td class="pri">High</td><td>Oct 14</td></tr><tr><td><span class="box"></span>Chase codebook from USAID</td><td class="pri">Low</td><td>Oct 28</td></tr><tr class="gh"><td colspan="3"><span class="car">▾</span>No sublist<span class="n">1</span></td></tr><tr><td><span class="box"></span>Plan Study 2 timeline</td><td class="pri">Normal</td><td>Oct 20</td></tr></tbody></table></div></section></div></html>
