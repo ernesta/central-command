@@ -3104,3 +3104,9 @@ The user's request, looking at a task's Subtasks card: always order subtasks by 
 - **Data:** the only offenders were `study 1` and `study 2`; renamed `study-1` (40 tasks) and `study-2` (7), the user's names, applied 13 Oct 2026 with `update task_tags` (backup: `~/CentralCommand/backups/tags-before-rename/`; no script kept).
 - **Not touched:** a reading's tags are Zotero keywords, which the app never writes (about 29 have spaces, 28 capitals); renaming them here would be undone by the next sync. Only if the user asks (e.g. normalising at sync time).
 - Unit-tested (`tag.test.ts`, `tasks-store.test.ts`); installed in `/Applications`, not driven in the app.
+
+## The task row's trash icon stays muted and lines up (13 Oct 2026)
+
+- **Why (the user):** the trash icon in the Tasks table turned red on hover, unlike every other delete control, and sat off the due date's line.
+- **Now:** the red hover is gone (hover is the light background only, as for the subtask trash icon on the task page); the due date and the icon share an `inline-flex` row (`.dueCell`, `TasksTable.module.css`) so they centre together.
+- Not driven in the app.
