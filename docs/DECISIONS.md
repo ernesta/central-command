@@ -3243,3 +3243,12 @@ The user's rule: a training's task, series task and lecture subtask alike, is ti
 - **Weeks has no plan line** (the user: colour already says over and under; the legend lost its "Plan" key). Typical week keeps its daily-aim ticks.
 - **Removed:** the Charts and weeks page, `AllWeeks` (every week as a table) and `YearsTable` (contracts table) with their tests; the contract line under the cards no longer has a link. The year/contract select in the header still switches contract. Their rules in `src/shared/tracking/` stay (unused by any page now: `weekTotals` still feeds the chart).
 - **Looked at** in the built app on a scratch copy of the library (Research and Work, all three views): the card is 355px (Research) and 329px (Work) in every view. Light mode only; dev mode and dark were not driven. The user did not answer whether Today should scroll when its list is long, so the Charts card simply stretches.
+
+## Hours: Patterns card, review fixes (13 Oct 2026)
+
+- **Names (the user asked for one word each; mine, change freely):** the card is **Patterns**; its views are **Calendar** (the year heat map), **Weeks** and **Weekdays** (the average of each weekday, was "Typical week"). The stored view ids (`year`, `weeks`, `typical`) are unchanged, so a remembered choice survives.
+- **Height:** the card is as tall as it needs, not stretched to Today (`.top` no longer stretches the first row). It never changes with the view: a body of 232px, a legend row (18px minimum, also when Weekdays has no aim) and a plot of `CHART_HEIGHT` for all three. The heat map used to be centred in the space; its cells are now as tall as the plot allows (wider than the weeks need, so not square) and the grid fills it like the other two.
+- **Tooltips are not cut off:** the body no longer clips (`overflow: hidden` removed), which was cutting the Weekdays bubble at the top.
+- **Weekdays has no aim lines.** A bar is blue when the weekday's average meets the daily aim (or the day has none, such as a weekend) and amber (`--chart-under`) under it, as in Weeks; the legend says Plan met / Under plan, the tooltip still gives the aim. The axis is scaled to the averages only.
+- **Day off in the Calendar** is outlined in `--text-muted`, not amber, which means under plan everywhere else.
+- Not driven in the app beyond the build (dark mode and dev mode unlooked at).
