@@ -3096,3 +3096,11 @@ The user's request, looking at a task's Subtasks card: always order subtasks by 
 - **Why (the user):** a new subtask should start with its parent's due date, and a parent that gets its first date should not leave undated subtasks behind; once dates exist, nothing should move on its own.
 - **Now (`TasksStore`):** a new subtask with no `due` given takes its parent's (an explicit `null` stays undated; the repeat copy, `ruled = false`, keeps the dates it was given). When a parent's `due` goes from none to a date (`update` or `setDue`), `passDown` gives it to the subtasks that have none. Every other change to a parent's date, and a subtask's own date, leave the others alone.
 - Unit-tested (`tasks-store.test.ts`); not driven in the built app.
+
+## Task tags are one lower-case word (13 Oct 2026)
+
+- **Why (the user):** every tag one word, always lower case, and nothing else allowed from then on.
+- **Now:** `normaliseTag` (`tasks/shared/tag.ts`) trims, lower-cases and refuses (empty) a tag that still holds whitespace. `TasksStore` runs every tag through it on create and update; the tag field strips spaces as you type. `#tag` in a new task's title already took one word only.
+- **Data:** the only offenders were `study 1` and `study 2`; renamed `study-1` (40 tasks) and `study-2` (7), the user's names, applied 13 Oct 2026 with `update task_tags` (backup: `~/CentralCommand/backups/tags-before-rename/`; no script kept).
+- **Not touched:** a reading's tags are Zotero keywords, which the app never writes (about 29 have spaces, 28 capitals); renaming them here would be undone by the next sync. Only if the user asks (e.g. normalising at sync time).
+- Unit-tested (`tag.test.ts`, `tasks-store.test.ts`); installed in `/Applications`, not driven in the app.
