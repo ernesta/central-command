@@ -6,12 +6,12 @@ import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { defaultList, tagsIn } from '../shared/query'
 import { splitTitleTags } from '../shared/title-tags'
 import { canUseList } from '../shared/work-lists'
-import { TASK_PRIORITIES, type TaskPriority, type TaskWorkspace } from '../shared/types'
+import { type TaskPriority, type TaskWorkspace } from '../shared/types'
 import type { TaskRow } from '../shared/views'
 import { DueField } from './DueField'
 import { ListField } from './ListField'
 import { TagsField } from './TagsField'
-import { PRIORITY_LABELS } from './task-labels'
+import { PRIORITY_OPTIONS } from './task-labels'
 import { useWorkClients } from './useWorkClients'
 import { useTaskDefaults } from './useTaskDefaults'
 import styles from './AddBar.module.css'
@@ -103,7 +103,7 @@ export function AddBar({
       <Segmented<TaskPriority>
         label="Priority"
         value={priority}
-        options={TASK_PRIORITIES.map((p) => ({ value: p, label: PRIORITY_LABELS[p] }))}
+        options={PRIORITY_OPTIONS}
         onChange={setPriority}
       />
       <TagsField tags={tags} suggestions={tagsIn(rows)} onChange={setTags} />

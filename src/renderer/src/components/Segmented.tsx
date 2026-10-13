@@ -5,7 +5,7 @@ import styles from './Segmented.module.css'
 interface SegmentedProps<T extends string> {
   value: T
   /** An option may carry an icon, drawn before its label. */
-  options: readonly (SelectOption<T> & { icon?: ReactNode })[]
+  options: readonly (SelectOption<T> & { icon?: ReactNode; title?: string })[]
   onChange: (value: T) => void
   label: string
 }
@@ -24,6 +24,7 @@ export function Segmented<T extends string>({
           key={o.value}
           type="button"
           aria-pressed={o.value === value}
+          title={o.title}
           className={[styles.segment, o.value === value && styles.active].filter(Boolean).join(' ')}
           onClick={() => onChange(o.value)}
         >

@@ -14,19 +14,13 @@ import { registerFlushable } from '@renderer/lib/flush-registry'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { formatTaskTime, tagsIn } from '../shared/query'
-import {
-  TASK_PRIORITIES,
-  TASK_STATUSES,
-  type Task,
-  type TaskChanges,
-  type TaskWorkspace
-} from '../shared/types'
+import { TASK_STATUSES, type Task, type TaskChanges, type TaskWorkspace } from '../shared/types'
 import { subtaskProgress, taskTime, type TaskRow } from '../shared/views'
 import { DebouncedSaver } from './debounced-saver'
 import { DueField } from './DueField'
 import { ListField } from './ListField'
 import { setTaskStatus, STATUS_LABELS } from './task-actions'
-import { PRIORITY_LABELS } from './task-labels'
+import { PRIORITY_OPTIONS } from './task-labels'
 import { StatusIcon } from './TaskIcons'
 import { RecurrenceField } from './RecurrenceField'
 import { TagsField } from './TagsField'
@@ -232,7 +226,7 @@ function TaskView({
               <Segmented
                 label="Priority"
                 value={task.priority}
-                options={TASK_PRIORITIES.map((p) => ({ value: p, label: PRIORITY_LABELS[p] }))}
+                options={PRIORITY_OPTIONS}
                 onChange={(priority) => update({ priority })}
               />
             </div>

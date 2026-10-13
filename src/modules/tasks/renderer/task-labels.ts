@@ -6,3 +6,10 @@ export const PRIORITY_LABELS: Record<TaskPriority, string> = {
   normal: 'Normal',
   low: 'Low'
 }
+
+/** The priority choosers' options: the mark the table shows, the word on hover. */
+export const PRIORITY_OPTIONS = (['high', 'normal', 'low'] as const).map((p) => ({
+  value: p,
+  label: PRIORITY_MARKS[p],
+  title: PRIORITY_LABELS[p]
+}))
