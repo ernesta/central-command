@@ -64,8 +64,19 @@
   stroke: var(--ink);
   stroke-width: 2;
 }
-rect {
+rect,
+.day {
   cursor: pointer;
+}
+/* A day number sits on the cell and never takes the pointer from it. */
+.day {
+  fill: var(--text-secondary);
+  font-size: var(--text-11);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.dayOnFill {
+  fill: var(--accent-contrast);
 }
 .axis {
   fill: var(--text-muted);

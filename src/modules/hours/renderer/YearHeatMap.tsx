@@ -10,13 +10,13 @@ import { weekRoute } from './hours-paths'
 import styles from './YearHeatMap.module.css'
 
 const PAD = { top: 20, left: 32, right: 4, bottom: 4 }
-const MAX_STEP = 22
+const MAX_STEP = 26
 const GAP = 3
 const HEIGHT = CHART_HEIGHT
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-/** Rows run from the weekday the year starts on: the first, third and fifth are named. */
-const LABELLED_ROWS = [0, 2, 4]
+/** Below this cell size a day number no longer fits. */
+const MIN_LABEL_CELL = 15
 const OFF_LABELS = Object.fromEntries(TIME_OFF_TYPES.map((t) => [t.id, t.label]))
 
 /** The year as a calendar grid: a column a week, a row a weekday, shaded by how much of the day's aim was done; days off are outlined. A day opens its week. */
@@ -35,14 +35,16 @@ export function YearHeatMap({
   const days = heatDays(data, now)
   const months = monthColumns(data)
 
+  // Cells are square: as large as both the year's weeks across and the plot's seven rows down allow.
   const step = Math.min(
     MAX_STEP,
-    Math.max((width - PAD.left - PAD.right) / (data.weeks ?? YEAR_WEEKS), 4)
+    Math.max((width - PAD.left - PAD.right) / (data.weeks ?? YEAR_WEEKS), 4),
+    (HEIGHT - PAD.top - PAD.bottom) / 7
   )
-  // Cells are as wide as the year's weeks allow and as tall as the plot: the grid fills the same height as the other charts.
-  const stepY = (HEIGHT - PAD.top - PAD.bottom) / 7
+  const stepY = step
   const cell = step - GAP
-  const cellH = stepY - GAP
+  const cellH = cell
+  const labelled = cell >= MIN_LABEL_CELL
   const cx = (i: number): number => PAD.left + Math.floor(i / 7) * step
   const cy = (i: number): number => PAD.top + (i % 7) * stepY
   const open = (i: number): void =>
@@ -101,7 +103,7 @@ export function YearHeatMap({
                 {MONTHS[m.month]}
               </text>
             ))}
-            {LABELLED_ROWS.map((row) => (
+            {DAY_NAMES.map((_, row) => (
               <text
                 key={row}
                 className={styles.axis}
@@ -113,22 +115,31 @@ export function YearHeatMap({
               </text>
             ))}
             {days.map((d, i) => (
-              <rect
-                key={d.date}
-                className={[
-                  styles[`level${d.level}`],
-                  d.future ? styles.future : '',
-                  d.off ? styles.off : '',
-                  active === i ? styles.active : ''
-                ].join(' ')}
-                x={cx(i)}
-                y={cy(i)}
-                width={cell}
-                height={cellH}
-                rx={Math.min(3, cell / 4)}
-                onPointerEnter={() => setActive(i)}
-                onClick={() => open(i)}
-              />
+              <g key={d.date} onPointerEnter={() => setActive(i)} onClick={() => open(i)}>
+                <rect
+                  className={[
+                    styles[`level${d.level}`],
+                    d.future ? styles.future : '',
+                    d.off ? styles.off : '',
+                    active === i ? styles.active : ''
+                  ].join(' ')}
+                  x={cx(i)}
+                  y={cy(i)}
+                  width={cell}
+                  height={cellH}
+                  rx={Math.min(3, cell / 4)}
+                />
+                {labelled && (
+                  <text
+                    className={`${styles.day} ${d.level >= 2 && !d.future ? styles.dayOnFill : ''}`}
+                    x={cx(i) + cell / 2}
+                    y={cy(i) + cell / 2 + 4}
+                    textAnchor="middle"
+                  >
+                    {Number(d.date.slice(8, 10))}
+                  </text>
+                )}
+              </g>
             ))}
           </svg>
         )}

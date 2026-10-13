@@ -3252,3 +3252,10 @@ The user's rule: a training's task, series task and lecture subtask alike, is ti
 - **Weekdays has no aim lines.** A bar is blue when the weekday's average meets the daily aim (or the day has none, such as a weekend) and amber (`--chart-under`) under it, as in Weeks; the legend says Plan met / Under plan, the tooltip still gives the aim. The axis is scaled to the averages only.
 - **Day off in the Calendar** is outlined in `--text-muted`, not amber, which means under plan everywhere else.
 - Not driven in the app beyond the build (dark mode and dev mode unlooked at).
+
+## Hours: the Calendar's days are square and numbered (13 Oct 2026)
+
+- **Why (the user):** the cells were tall bars ("the squares must be square") and only Mon, Wed and Fri were named ("label every day").
+- **Now:** a cell is a square, as large as both the weeks across and the plot's seven rows down allow (at most 26px), so the grid is left-aligned and the card keeps its fixed height. Each cell shows its day of the month (11px; dark on pale cells, `--accent-contrast` on the two darker levels, so it reads in both themes) and all seven weekday names run down the side. Under 15px a cell is too small for a number, so a narrow window shows squares only. The number never takes the pointer from its cell: hover, tooltip and click-to-open-week are unchanged. Replaces the "wider than the weeks need, so not square" line above.
+- Alternatives not taken: numbering only the 1st of each month, or only Mondays.
+- Not driven in the app (typecheck, lint and tests only).
