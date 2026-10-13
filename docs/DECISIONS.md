@@ -3110,3 +3110,10 @@ The user's request, looking at a task's Subtasks card: always order subtasks by 
 - **Why (the user):** the trash icon in the Tasks table turned red on hover, unlike every other delete control, and sat off the due date's line.
 - **Now:** the red hover is gone (hover is the light background only, as for the subtask trash icon on the task page); the due date and the icon share an `inline-flex` row (`.dueCell`, `TasksTable.module.css`) so they centre together.
 - Not driven in the app.
+
+## The task row's trash button is a tight square (13 Oct 2026)
+
+- **Why (the user):** the trash icon in the Tasks table looked off-centre with a lot of empty space around it.
+- **Cause:** `.remove` kept the shared `.iconButton` padding and negative margin plus an 8px left margin, on top of the 8px the plain date button already pads on its right, so the hover box was loose and the gap wide.
+- **Now:** `.remove` (`TasksTable.module.css`) is a 24px square with no padding, the icon centred, 4px from the date button.
+- Not driven in the app.
