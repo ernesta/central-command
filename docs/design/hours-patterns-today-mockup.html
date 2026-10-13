@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Patterns: marking today</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@500;600&display=swap">
+<style>
+/* Mockup, not the app: six ways to mark today in the Patterns calendar, in light and dark. Tokens mirror tokens.css. Cells are 22px with a 3px gap, as in the app. */
+:root{--bg:#edeff2;--surface:#fff;--ink:#1b222b;--text-secondary:#3a4652;--text-muted:#5c6672;--border:#d3d8de;--faint:#e6e9ed;--accent:#35577a;--accent-contrast:#fff;--selected-bg:#dce6ee;--selected-text:#1f3a52;
+ --h0:#e6e9ed;--h1:color-mix(in srgb,var(--accent) 30%,var(--surface));--h2:color-mix(in srgb,var(--accent) 60%,var(--surface));--h3:var(--accent);--font-display:'Newsreader',Georgia,serif;--font-body:'IBM Plex Sans',system-ui,sans-serif}
+.dark{--bg:#14181d;--surface:#1f262e;--ink:#e6eaee;--text-secondary:#c2cad2;--text-muted:#98a3af;--border:#2f3843;--faint:#262e37;--accent:#86aad0;--accent-contrast:#0f1620;--selected-bg:#2a3b4d;--selected-text:#d3e3f2;--h0:#262e37}
+*{box-sizing:border-box}body{margin:0;padding:24px 16px 60px;background:#edeff2;font:14px/1.45 var(--font-body);color:#1b222b}
+h1{font:600 30px var(--font-display);margin:0 0 6px}.note{max-width:80ch;color:#5c6672;font-size:13px;margin:0 0 20px}
+.opt{margin-bottom:26px}.opt h2{font:600 18px var(--font-display);margin:0}.opt p{margin:2px 0 10px;color:#5c6672;font-size:13px;max-width:90ch}
+.pair{display:flex;flex-wrap:wrap;gap:16px}
+.theme{--h1:color-mix(in srgb,var(--accent) 30%,var(--surface));--h2:color-mix(in srgb,var(--accent) 60%,var(--surface));--h3:var(--accent);background:var(--bg);color:var(--ink);padding:12px;border-radius:12px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--text-secondary);align-items:center;margin:0 0 10px;padding:0;list-style:none}
+.legend li{display:inline-flex;align-items:center;gap:4px}.legend i{width:12px;height:12px;border-radius:3px;display:inline-block;position:relative}
+.cal{display:grid;grid-template-columns:30px repeat(8,22px);grid-template-rows:14px repeat(7,22px);gap:3px;font-size:11px;color:var(--text-muted);font-variant-numeric:tabular-nums}
+.cal .ax{display:flex;align-items:center;justify-content:flex-end;padding-right:5px}
+.cal .mo{grid-column:2;color:var(--text-muted)}
+.c{position:relative;border-radius:3px;display:grid;place-items:center;color:var(--text-secondary);background:var(--h0)}
+.c.l1{background:var(--h1)}.c.l2{background:var(--h2);color:var(--accent-contrast)}.c.l3{background:var(--h3);color:var(--accent-contrast)}
+.c.fut{background:transparent;box-shadow:inset 0 0 0 1px var(--faint)}.c.off{box-shadow:inset 0 0 0 2px var(--text-muted)}
+/* A: accent ring set off from the cell */
+.A .today{outline:2px solid var(--accent);outline-offset:1px}.A .today.l3{outline-color:var(--ink)}
+.A .k{outline:2px solid var(--accent);outline-offset:1px;background:var(--h0)}
+/* B: bold number only */
+.B .today{font-weight:700;color:var(--ink)}.B .today.l2,.B .today.l3{color:var(--accent-contrast)}
+.B .k{display:grid;place-items:center;font:700 9px var(--font-body);color:var(--ink);background:var(--h0)}
+/* C: accent bar under the number (the Week table marks its today row with an accent bar) */
+.C .today::after{content:'';position:absolute;left:5px;right:5px;bottom:2px;height:2px;border-radius:1px;background:var(--accent)}
+.C .today.l2::after,.C .today.l3::after{background:var(--accent-contrast)}
+.C .k::after{content:'';position:absolute;left:2px;right:2px;bottom:2px;height:2px;border-radius:1px;background:var(--accent)}
+/* D: a filled badge behind the number (the date picker's selected day: accent fill, contrast text) */
+.D .today span{display:grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--ink);color:var(--surface);font-weight:600}
+.D .k{background:var(--h0);display:grid;place-items:center}.D .k::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--ink)}
+/* E: the weekday label and the week's column are tinted (the select tint of a Segmented option) */
+.E .today{font-weight:600;color:var(--selected-text);background:var(--selected-bg);box-shadow:inset 0 0 0 1px var(--accent)}.E .today.l2,.E .today.l3{color:var(--accent-contrast)}
+.E .ax.now{color:var(--ink);font-weight:600}.E .col{background:var(--selected-bg);opacity:.55;border-radius:3px}
+.E .k{background:var(--selected-bg);box-shadow:inset 0 0 0 1px var(--accent)}
+/* F: corner notch */
+.F .today::before{content:'';position:absolute;top:0;right:0;border-style:solid;border-width:0 8px 8px 0;border-color:transparent var(--accent) transparent transparent;border-top-right-radius:3px}
+.F .today.l3::before{border-right-color:var(--accent-contrast)}
+.F .k::before{content:'';position:absolute;top:0;right:0;border-style:solid;border-width:0 7px 7px 0;border-color:transparent var(--accent) transparent transparent;border-top-right-radius:3px}
+/* G: accent bar on the cell's left edge (today's row in the Week table and the current task use an inset accent bar) */
+.G .today::before,.G .k::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:3px 0 0 3px;background:var(--accent)}
+.G .today.l2::before,.G .today.l3::before{background:var(--accent-contrast)}
+</style></head><body>
+<h1>Patterns: marking today</h1>
+<p class="note">Mockup, not the app. Today is Tue 13 Oct 2026 in a middle-level cell (level 1), as in your screenshot; the app's Day off outline (2px, muted) and the hover/keyboard ring (2px, ink) must stay distinguishable from whatever marks today, so none of these is a plain 2px ring. The marker also appears in the legend. Each option is shown in light and dark, with today on a level 1 cell (left calendar column Tue) and on a level 3 cell (Tue, first week) so it is checked on both fills.</p>
+<div id="root"></div>
+<script>
+const LV=[[3,3,2,3,3,2,1],[3,3,0,2,3,0,0],[2,1,3,2,1,0,0]] // unused placeholder
+// 8 weeks (columns) x 7 days. week index 3 (4th) holds today on Tue (row 1). Levels from your screenshot.
+const lv=[[3,3,2,3,3,2,1],[3,3,0,2,2,0,0],[0,0,3,0,3,0,3],[3,1,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0]]
+lv[3][1]=1
+const fut=(w,r)=>w>3||(w===3&&r>1), off=(w,r)=>w===6&&r<2
+// a second today on a dark fill: week 0 Tue for the level-3 check
+const opts=[
+['A','Ring set off from the cell','Matches the date picker (accent border on today). A 2px accent ring one pixel outside the cell; on a level 3 cell (accent fill) it turns ink so it still shows. Risk: closest to the hover ring and the day-off outline.'],
+['B','Bold number','No shape at all: today’s number is bold, as the selected Segmented option is. Quietest; easy to miss on a pale cell, and hard to see at a glance in a legend.'],
+['C','Accent bar under the number','Echoes the accent bar on today’s row in the Week table. Short bar under the number; contrast-coloured on filled cells.'],
+['D','Badge behind the number','A solid circle behind the number, like the date picker’s selected day. Loudest and most readable; the legend key is a plain dot.'],
+['E','Tint with a thin accent edge','Uses the selected-tint of Segmented plus a 1px accent edge; the Tue label turns bold. Reads as “selected” rather than “now”, and is hardest to see on level 1.'],
+['F','Corner notch','A small accent triangle in the top-right corner, like a folded corner. Clear on every fill, takes nothing from the number. New to the app.'],
+['G','Accent bar on the left','The same inset accent bar the Week table puts on today’s row and the task lists put on the current task, drawn down the cell’s left edge (contrast-coloured on filled cells). Keeps the number untouched and is not confusable with the Day off outline or the hover ring.']]
+function cal(k,mark){let h='<div class="cal">';h+='<div class="ax"></div>';
+ for(let w=0;w<8;w++)h+=`<div class="ax" style="justify-content:flex-start;padding:0">${w===0?'Oct':''}</div>`
+ const names=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];const base=[21,28,5,12,19,26,2,9]
+ for(let r=0;r<7;r++){h+=`<div class="ax${k==='E'&&r===1?' now':''}">${names[r]}</div>`
+  for(let w=0;w<8;w++){const f=fut(w,r),d=(base[w]+r-1)%31+1+ (0),t=(w===3&&r===1)||(w===0&&r===1)&&false
+   const today=w===3&&r===1, first=w===0&&r===1 // first = today-style shown on a level 3 cell too
+   const cls=['c',f?'fut':'l'+lv[w][r],off(w,r)?'off':'',(today||first)?'today':''].join(' ')
+   const n=(w===0&&r===1)?22:null
+   h+=`<div class="${cls}"><span>${(base[w]+r>31?base[w]+r-31:base[w]+r)}</span></div>`}}
+ return h+'</div>'}
+function keyrow(k){return `<ul class="legend"><li>Less <i style="background:var(--h0)"></i><i style="background:var(--h1)"></i><i style="background:var(--h2)"></i><i style="background:var(--h3)"></i> More</li><li><i style="background:var(--h0);box-shadow:inset 0 0 0 2px var(--text-muted)"></i> Day off</li><li><i class="k" style="background:var(--h0)"></i> Today</li></ul>`}
+let out=''
+for(const [k,t,d] of opts){out+=`<div class="opt"><h2>${k}. ${t}</h2><p>${d}</p><div class="pair">`
+ for(const th of ['','dark']) out+=`<div class="theme ${th}"><div class="card ${k}">${keyrow(k)}${cal(k)}</div></div>`
+ out+='</div></div>'}
+document.getElementById('root').innerHTML=out
+// the week-0 Tue cell is level 3: mark it today as well, so every option is checked on an accent fill
+document.querySelectorAll('.cal').forEach(c=>{const cells=c.querySelectorAll('.c');cells[1*8+0].classList.add('today')})
+// badge option wraps the number
+document.querySelectorAll('.D .today span').forEach(s=>{})
+</script></body></html>

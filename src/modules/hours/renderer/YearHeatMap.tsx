@@ -17,6 +17,12 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 /** Below this cell size a day number no longer fits. */
 const MIN_LABEL_CELL = 15
+/** Today's mark: a small triangle in the cell's top-right corner, following the cell's rounded corner. */
+function notch(x: number, y: number, cell: number): string {
+  const size = Math.max(5, cell * 0.36)
+  const r = Math.min(3, cell / 4)
+  return `M${x + cell - size} ${y}H${x + cell - r}Q${x + cell} ${y} ${x + cell} ${y + r}V${y + size}Z`
+}
 const OFF_LABELS = Object.fromEntries(TIME_OFF_TYPES.map((t) => [t.id, t.label]))
 
 /**
@@ -81,10 +87,6 @@ export function YearHeatMap({
           <i className={`${styles.level0} ${styles.offKey}`} />
           Day off
         </li>
-        <li>
-          <i className={`${styles.level0} ${styles.todayKey}`} />
-          Today
-        </li>
       </ul>
       <div
         ref={ref}
@@ -144,11 +146,9 @@ export function YearHeatMap({
                     rx={Math.min(3, cell / 4)}
                   />
                   {d.date === now.date && (
-                    <circle
-                      className={`${styles.todayDot} ${d.level >= 2 ? styles.dayOnFill : ''}`}
-                      cx={cx(i) + cell / 2}
-                      cy={cy(i) + cell - Math.max(3, cell / 8)}
-                      r={Math.max(1.5, cell / 14)}
+                    <path
+                      className={`${styles.todayNotch} ${d.level >= 2 ? styles.dayOnFill : ''}`}
+                      d={notch(cx(i), cy(i), cell)}
                     />
                   )}
                   {labelled && (
