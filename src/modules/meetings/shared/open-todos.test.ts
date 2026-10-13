@@ -56,7 +56,7 @@ describe('openTodos', () => {
     expect(out.map((t) => t.meetingId)).toEqual(['2099-01-01 Supervision'])
   })
 
-  it('ignores meetings without a date, shows a repeated item once, and orders series in the fixed order', () => {
+  it('ignores meetings without a date, shows a repeated item once, and lists the most recent meeting first', () => {
     const undated = meeting('x', 'Supervision', '', '- **TODO(EO)**: hidden\n')
     const dup = meeting(
       '2026-03-01 Other',
@@ -67,11 +67,11 @@ describe('openTodos', () => {
     const luminos = meeting('2026-03-02 Luminos', 'Luminos', '2026-03-02', '- **TODO(MJ)**: l\n')
     const out = openTodos([dup, undated, luminos, sup2, lab])
     expect(out.map((t) => t.series)).toEqual([
-      'Supervision',
-      'Supervision',
-      'Rastle Lab',
       'Luminos',
-      'Other'
+      'Other',
+      'Supervision',
+      'Supervision',
+      'Rastle Lab'
     ])
     expect(out.filter((t) => t.series === 'Other')).toHaveLength(1)
     expect(out.some((t) => t.text === 'hidden')).toBe(false)

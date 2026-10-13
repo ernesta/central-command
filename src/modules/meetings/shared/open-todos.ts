@@ -19,7 +19,8 @@ export interface OpenTodo {
 /**
  * The open TODOs for the landing page: for each series, take its latest meeting (upcoming ones
  * included) and list its unticked Previous TODOs plus its inline TODOs. Repeats within a meeting are
- * shown once. Series come in the fixed order, then any other by name; within a series, the note's order.
+ * shown once. Most recent meeting first; the same date falls back to the fixed series order, then
+ * any other series by name; within a meeting, the note's order.
  */
 export function openTodos(meetings: readonly MeetingTodos[]): OpenTodo[] {
   const latest = new Map<string, MeetingTodos>()
@@ -33,7 +34,12 @@ export function openTodos(meetings: readonly MeetingTodos[]): OpenTodo[] {
     const i = (SERIES as readonly string[]).indexOf(s)
     return i === -1 ? SERIES.length : i
   }
-  const series = [...latest.keys()].sort((a, b) => order(a) - order(b) || a.localeCompare(b))
+  const series = [...latest.keys()].sort(
+    (a, b) =>
+      latest.get(b)!.date.localeCompare(latest.get(a)!.date) ||
+      order(a) - order(b) ||
+      a.localeCompare(b)
+  )
 
   const out: OpenTodo[] = []
   for (const s of series) {
