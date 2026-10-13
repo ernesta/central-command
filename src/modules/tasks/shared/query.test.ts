@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  groupBySublist,
   DEFAULT_TASKS_QUERY,
   defaultList,
   dueTone,
@@ -170,6 +171,28 @@ describe('defaultList', () => {
       expect(defaultList([], { clients })).toEqual({ list: 'Impact', sublist: '' })
       expect(defaultList(work, { clients: [] })).toEqual({ list: '', sublist: '' })
     })
+  })
+})
+
+describe('groupBySublist', () => {
+  const rows = [
+    row({ uid: 'a', list: 'S', sublist: 'B' }),
+    row({ uid: 'b', list: 'S' }),
+    row({ uid: 'c', list: 'S', sublist: 'A' }),
+    row({ uid: 'd', list: 'S', sublist: 'B' })
+  ]
+  it('groups a whole list by sublist, no sublist last', () => {
+    const g = groupBySublist(rows, 'S')
+    expect(g?.map((x) => [x.sublist, x.rows.map((r) => r.task.uid)])).toEqual([
+      ['B', ['a', 'd']],
+      ['A', ['c']],
+      ['', ['b']]
+    ])
+  })
+  it('does not group all lists, one sublist, or a list with no sublists', () => {
+    expect(groupBySublist(rows, '')).toBeNull()
+    expect(groupBySublist(rows, listValue('S', 'A'))).toBeNull()
+    expect(groupBySublist([rows[1]!], 'S')).toBeNull()
   })
 })
 

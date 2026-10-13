@@ -231,6 +231,26 @@ export function queryTasks(
   })
 }
 
+/**
+ * The rows of a whole list split by sublist, in the order the rows come (so each group keeps the sort), tasks directly in the
+ * list last as "No sublist". Null when the filter is not a whole list or no row is in a sublist: nothing to group.
+ */
+export function groupBySublist(
+  rows: readonly TaskRow[],
+  listFilter: string
+): { sublist: string; rows: TaskRow[] }[] | null {
+  const { list, sublist } = parseListValue(listFilter)
+  if (list === '' || sublist !== '' || !rows.some((r) => r.task.sublist !== '')) return null
+  const groups = new Map<string, TaskRow[]>()
+  for (const r of rows) groups.set(r.task.sublist, [...(groups.get(r.task.sublist) ?? []), r])
+  const named = [...groups.entries()].filter(([name]) => name !== '')
+  const none = groups.get('')
+  return [
+    ...named.map(([name, rs]) => ({ sublist: name, rows: rs })),
+    ...(none ? [{ sublist: '', rows: none }] : [])
+  ]
+}
+
 /** How many rows are in each view for the current list, priority, tag and search (the numbers on the segmented control). */
 export function viewCounts(rows: readonly TaskRow[], query: TasksQuery): Record<TaskView, number> {
   const counts = { open: 0, backlog: 0, done: 0 }

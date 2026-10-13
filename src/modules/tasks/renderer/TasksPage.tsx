@@ -10,6 +10,7 @@ import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import {
   DEFAULT_TASKS_QUERY,
   listChoices,
+  groupBySublist,
   listLabel,
   listValue,
   parseListValue,
@@ -72,6 +73,7 @@ export function TasksPage(): React.JSX.Element {
   // Open also shows its undated to-dos under it, in a section of their own, so they are not missed.
   const backlog =
     query.view === 'open' ? queryTasks(all, { ...query, view: 'backlog' }, tracked) : []
+  const groups = groupBySublist(visible, query.list)
   const shown = showAll ? visible : visible.slice(0, PAGE_ROWS)
   const filtersActive =
     query.search.trim() !== '' || query.list !== '' || query.priority !== 'all' || query.tag !== ''
@@ -105,7 +107,28 @@ export function TasksPage(): React.JSX.Element {
   } else {
     content = (
       <>
-        {visible.length > 0 && (
+        {groups &&
+          groups.map((g) => (
+            <section
+              key={g.sublist}
+              className={styles.group}
+              aria-label={g.sublist || 'No sublist'}
+            >
+              <h2 className={styles.sectionHeading}>
+                {g.sublist || 'No sublist'} <span className={styles.count}>{g.rows.length}</span>
+              </h2>
+              <TasksTable
+                rows={g.rows.map((r) => ({ ...r, nested: [] }))}
+                workspace={workspace}
+                today={today}
+                label={g.sublist || 'No sublist'}
+                tracked={tracked}
+                running={running}
+                sort={{ key: query.sort, dir: query.dir, onSort }}
+              />
+            </section>
+          ))}
+        {!groups && visible.length > 0 && (
           <TasksTable
             rows={shown.map((r) => ({ ...r, nested: [] }))}
             workspace={workspace}
@@ -116,7 +139,7 @@ export function TasksPage(): React.JSX.Element {
             sort={{ key: query.sort, dir: query.dir, onSort }}
           />
         )}
-        {visible.length > shown.length && (
+        {!groups && visible.length > shown.length && (
           <p className={styles.more}>
             <span>
               Showing {shown.length} of {visible.length}

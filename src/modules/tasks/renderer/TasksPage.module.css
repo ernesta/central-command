@@ -30,6 +30,15 @@
   gap: 8px;
   margin-top: 16px;
 }
+.group {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+.count {
+  color: var(--text-muted);
+  font-weight: 400;
+}
 .sectionHeading {
   margin: 0;
   font-size: var(--text-16);
