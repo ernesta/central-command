@@ -3297,3 +3297,10 @@ The user's rule: a training's task, series task and lecture subtask alike, is ti
 - **Layout:** when today is outside the year (finished, or not begun), the first row is the Week card on the left and Patterns on the right; the invoice card, if the contract has one, gets its own row below. A current year is unchanged: Today and Patterns, then Week and invoice (`HoursPage.tsx`).
 - **Default week:** `defaultWeek` returns the year's first week when today is after the year's end (before the start it already did). A `?week=` in the URL still wins.
 - Typecheck, lint and tests only (`week.test.ts` updated); not driven in the app.
+
+## ComboField: typing narrows the list (13 Oct 2026)
+
+- **Why (the user):** the Training entry's Institution field "doesn't allow searching": typing "royal" left the whole list showing.
+- **Before:** `ComboField` showed every option whatever was typed (a deliberate contrast with a native `<datalist>`). That made a long list impossible to search.
+- **Now:** typing opens the list narrowed to the options containing the text (case-insensitive, trimmed); an empty result hides the list, and the typed value is still accepted as new. Opening it with the chevron or the arrow keys, without typing, shows every option, so the full list stays reachable. Enter picks from what is shown. Applies to every `ComboField` (Institution, Training series, Meetings series).
+- Typecheck, lint and tests only; not driven in the app.
