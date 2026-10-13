@@ -8,7 +8,7 @@ export interface TaskRow {
 }
 
 /** How many days ahead Upcoming looks. */
-export const UPCOMING_DAYS = 14
+export const UPCOMING_DAYS = 7
 
 const PRIORITY_ORDER: Record<TaskPriority, number> = { high: 0, normal: 1, low: 2 }
 
@@ -80,7 +80,7 @@ export function compareRows(a: TaskRow, b: TaskRow): number {
   )
 }
 
-export const LANDING_SECTIONS = ['today', 'doing', 'overdue', 'upcoming'] as const
+export const LANDING_SECTIONS = ['today', 'overdue', 'upcoming', 'doing'] as const
 export type LandingSection = (typeof LANDING_SECTIONS)[number]
 
 /** A row in a landing section, with the subtasks that put it there (those with their own date), shown under it. */
@@ -97,8 +97,8 @@ function dateMatches(section: LandingSection, date: string | null, today: string
 }
 
 /**
- * Today's sections. A task appears once, under the first heading that fits, in the order Due today, In progress,
- * Overdue, Upcoming. It fits by its own date or status, or because an open subtask of it has its own date that fits
+ * Today's sections. A task appears once, under the first heading that fits, in the order Due today, Overdue,
+ * Upcoming, In progress. It fits by its own date or status, or because an open subtask of it has its own date that fits
  * (then it appears with that subtask nested under it). Done tasks are never listed.
  */
 export function landingSections(
@@ -107,9 +107,9 @@ export function landingSections(
 ): Record<LandingSection, SectionRow[]> {
   const out: Record<LandingSection, SectionRow[]> = {
     today: [],
-    doing: [],
     overdue: [],
-    upcoming: []
+    upcoming: [],
+    doing: []
   }
   for (const row of rows) {
     if (row.task.status === 'done') continue

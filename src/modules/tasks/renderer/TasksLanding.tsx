@@ -27,7 +27,7 @@ import styles from './TasksLanding.module.css'
 /** How many rows a long section shows before "Show all". */
 const SECTION_LIMIT = 5
 
-/** The Tasks landing page: what is due today, in progress, overdue and coming up, then the lists. */
+/** The Tasks landing page: what is due today, overdue, coming up and in progress, then the lists. */
 export function TasksLanding(): React.JSX.Element {
   const workspace = useTasksWorkspace()
   const { rows } = useTasksList(workspace)
@@ -121,7 +121,6 @@ export function TasksLanding(): React.JSX.Element {
         <>
           <AddBar workspace={workspace} rows={all} today={today} />
           {section('today', 'Due today', 'Nothing is due today.')}
-          {section('doing', 'In progress', 'Nothing in progress.', undefined, true)}
           {section(
             'overdue',
             'Overdue',
@@ -141,9 +140,10 @@ export function TasksLanding(): React.JSX.Element {
           {section(
             'upcoming',
             'Upcoming',
-            'Nothing in the next 14 days.',
-            <span className={styles.muted}>Next 14 days</span>
+            'Nothing in the next 7 days.',
+            <span className={styles.muted}>Next 7 days</span>
           )}
+          {section('doing', 'In progress', 'Nothing in progress.', undefined, true)}
 
           <LandingSection id="tasks-lists" label="Lists">
             {summaries.length === 0 ? (

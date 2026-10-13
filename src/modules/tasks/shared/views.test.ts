@@ -80,10 +80,11 @@ describe('landingSections', () => {
   it('puts a task once, under the first heading that fits', () => {
     const rows = [
       row({ uid: 'a', due: TODAY, status: 'doing' }),
-      row({ uid: 'b', due: '2026-10-01', status: 'doing' }),
+      row({ uid: 'b', due: null, status: 'doing' }),
+      row({ uid: 'i', due: '2026-10-02', status: 'doing' }),
       row({ uid: 'c', due: '2026-10-01' }),
-      row({ uid: 'd', due: '2026-10-19' }),
-      row({ uid: 'e', due: '2026-10-20' }),
+      row({ uid: 'd', due: '2026-10-12' }),
+      row({ uid: 'e', due: '2026-10-13' }),
       row({ uid: 'f', due: '2026-10-06' }),
       row({ uid: 'g' }),
       row({ uid: 'h', due: TODAY, status: 'done' })
@@ -92,7 +93,7 @@ describe('landingSections', () => {
     const ids = (k: keyof typeof s): string[] => s[k].map((r) => r.task.uid)
     expect(ids('today')).toEqual(['a'])
     expect(ids('doing')).toEqual(['b'])
-    expect(ids('overdue')).toEqual(['c'])
+    expect(ids('overdue')).toEqual(['c', 'i'])
     expect(ids('upcoming')).toEqual(['f', 'd'])
   })
 
