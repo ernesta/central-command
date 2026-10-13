@@ -1,5 +1,7 @@
 # Roadmap
 
+**Hours layout (13 Oct 2026, `docs/HOURS_LAYOUT_PLAN.md`): stage 1 done, Week card summary (hours of the aim, the balance against the whole aim, one bar, today's stripe) and the meeting-row icon alignment** (`docs/DECISIONS.md`, "Hours layout, stage 1"). Applies to Work and Research. Stages 2 and 3 follow without asking (the user is away); push and install at the end.
+
 **Odd prose around chips (11 Oct 2026): DONE; nothing left to decide.** The five spots found while linking citekeys were settled one by one by the user. Changed: "offers" to "offer" (`notes/research/Study 1 Model.md`, line 29) and "Kathy Rastle research" to "Kathy Rastle's research" (`meetings/research/2025-12-17 Rastle Lab.md`, line 13). Left as written: lines 23 and 33 of Study 1 Model (a possessive "'s" after a chip was tried and reverted, the user dislikes it) and line 34 of `2025-10-22 Supervision.md`. Backups: `backups/prose-chips-2026-10-11/`, `backups/prose-chips-2-2026-10-11/`. Rule for the future: do not add apostrophe-s after a chip; offer a reworded sentence instead.
 
 **CLAUDE.md pruned (11 Oct 2026): DONE.** The Commands section no longer lists the applied one-off scripts (27 bullets; `link:people` shortened); the record of what was applied is in `docs/DECISIONS.md`, "One-off scripts applied to the real library". The scripts themselves stay. Stale "not pushed" lines were fixed in CLAUDE.md and here ("not installed" left as it was, not checkable from git).
@@ -315,7 +317,6 @@ Order agreed: A, B, D, E, then C. For each: do it on a scratch library (never th
 - [x] **DONE 11 Oct 2026 — C. Tasks at phone width** (`docs/DECISIONS.md`, "Tasks at narrow widths"; the window cannot go below 960 px; two clips at 960 fixed: the table's Due column and a long task title) ("Tasks: review the build", "Not tested").
 - Skipped on purpose, they need the user: "Say when a filter is applied" (wording), and the 14 live editor questions.
 - Done in this round: Previous TODOs no longer come back (carry-over is off since 11 Oct 2026; roadmap line corrected).
-
 
 - [x] **DONE 11 Oct 2026: only "offer" (`Study 1 Model.md`, line 29) and "Rastle's" (`2025-12-17 Rastle Lab.md`, line 13) changed, the other three left as written at the user's word; backups `backups/prose-chips-2026-10-11/` and `prose-chips-2-2026-10-11/`.** (Original item: five spots where the prose reads oddly around a new entity chip.) Found while turning `[@Harm2004]` markers into reading chips: the marker hid the problem, the chip shows it. All five are your own wording, so nothing was changed — read each and tell Claude the fix, or edit in the app. `docs/DECISIONS.md`, "Citekey markers to reading entities".
   - [ ] `notes/research/Study 1 Model.md` line 23 — "connects with Pretorius (2019) two main linguistic features"; wants "Pretorius's".

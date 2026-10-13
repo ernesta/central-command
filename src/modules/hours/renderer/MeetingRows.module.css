@@ -1,17 +1,16 @@
 .row {
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) auto auto;
-  gap: 14px;
+  grid-template-columns: 16px minmax(0, 1fr) auto auto;
+  gap: 8px;
   grid-auto-rows: minmax(32px, auto);
   align-items: center;
   padding: 10px 12px;
   border-radius: var(--radius-card);
 }
 .row:not(:has(.warn)) {
-  grid-template-columns: 32px minmax(0, 1fr) auto;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
 }
 .icon {
-  justify-self: center;
   color: var(--text-muted);
 }
 .name {

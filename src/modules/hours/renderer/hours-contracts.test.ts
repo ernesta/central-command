@@ -99,7 +99,7 @@ describe('the no-aim branches of the Hours cards', () => {
         now: NOW
       })
     )
-    expect(host.querySelector('header span:last-child')?.textContent).toBe('2:00')
+    expect(host.querySelector('section > p')?.textContent).toBe('2:00')
     expect(headers(host)).toEqual(['Day', 'Hours'])
     expect(host.querySelectorAll('[aria-hidden]').length).toBe(host.querySelectorAll('svg').length)
   })
@@ -134,7 +134,9 @@ describe('the no-aim branches of the Hours cards', () => {
         now: NOW
       })
     )
-    expect(host.querySelector('header')?.textContent).toMatch(/of 8:00/)
+    expect(host.querySelector('section')?.textContent).toMatch(/of 8:00/)
+    // The balance is against the whole week's aim, not what is expected so far: 2:00 worked of 8:00 is -6:00.
+    expect(host.querySelector('section')?.textContent).toMatch(/[−-]6:00/)
     expect(headers(host)).toHaveLength(3)
   })
 

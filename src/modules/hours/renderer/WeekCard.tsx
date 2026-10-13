@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { formatDay, formatHours, formatRange, formatSignedHours } from '@shared/tracking/format'
+import { formatDay, formatHours, formatRange } from '@shared/tracking/format'
 import { dailyAim, hasAim, weekTotals } from '@shared/tracking/plan'
 import { dayRows, weekDaysMinutes, weekMinutes } from '@shared/tracking/totals'
 import { invoiceOf, type Moment, type TrackingYear } from '@shared/tracking/types'
@@ -9,6 +9,7 @@ import { periodOfWeek, periodsOf } from '../shared/periods'
 import { barFill, BAR_SCALE } from '../shared/week'
 import type { HoursWorkspace } from '../shared/workspaces'
 import { AddTime } from './AddTime'
+import { PeriodSummary } from './PeriodSummary'
 import { MeetingRows } from './MeetingRows'
 import { TaskList } from './TaskList'
 import { renameRow } from './rename-row'
@@ -42,13 +43,10 @@ export function WeekCard({
     : data.plan.workDays.length > 0
       ? data.plan.hoursPerWeek / data.plan.workDays.length
       : 0
-  // The plan up to today and the balance come from the rules, so this agrees with the balance and the year.
-  const totals = weekTotals(data, now.date, now).find((w) => w.from === week)
-  const plan = totals?.plan ?? 0
-  const through = plan + (totals?.balance ?? 0)
+  // The summary is against the whole week's aim (the rules' plan for the week's last day), not what is expected so far.
+  const aim = weekTotals(data, addDays(week, 6), now).find((w) => w.from === week)?.plan ?? 0
   const begun = week <= now.date
   const aimed = hasAim(data)
-  const over = addDays(week, 6) < now.date
   const first = week <= data.start
   const last = addDays(week, 7) > yearEnd(data.start, data.weeks)
   // Where weeks belong to invoice months they are numbered within the month.
@@ -83,14 +81,13 @@ export function WeekCard({
             <ChevronRight size={16} strokeWidth={1.75} aria-hidden />
           </button>
         </div>
-        {begun && (
-          <span className={styles.summary}>
-            {aimed
-              ? `${formatHours(through)} of ${formatHours(plan)}${over ? '' : ' so far'} · ${formatSignedHours(through - plan)}`
-              : formatHours(weekMinutes(data, week, now))}
-          </span>
-        )}
       </header>
+      {begun &&
+        (aimed ? (
+          <PeriodSummary minutes={weekMinutes(data, week, now)} aim={aim} />
+        ) : (
+          <p className={styles.total}>{formatHours(weekMinutes(data, week, now))}</p>
+        ))}
       <table className={styles.table}>
         <thead>
           <tr>
@@ -216,6 +213,7 @@ function DayRows({
         className={styles.day}
         data-off={aim === null}
         data-open={expanded}
+        data-today={today || undefined}
         onClick={past ? onToggle : undefined}
       >
         <td>

@@ -1,0 +1,201 @@
+<title>Hours Option A Full Screen</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@500;600&display=swap">
+<style>
+/* Layout: the full Work Hours screen for option A. Today on top; the Week card and the October card side by side, each with its summary above its own detail. Tokens mirror the app's tokens.css. */
+:root {
+  --bg: #edeff2; --panel: #e1e5ea; --surface: #ffffff; --ink: #1b222b;
+  --text-secondary: #3a4652; --text-muted: #5c6672; --border: #d3d8de; --faint: #e6e9ed; --hover: #f4f6f8;
+  --accent: #35577a; --accent-contrast: #ffffff; --warn: #b8741a; --track: #dfe4ea; --selected: #dce6ee;
+  --font-display: 'Newsreader', Georgia, serif;
+  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14181d; --panel: #1b2128; --surface: #1f262e; --ink: #e6eaee;
+    --text-secondary: #c2cad2; --text-muted: #98a3af; --border: #2f3843; --faint: #262e37; --hover: #262e37;
+    --accent: #86aad0; --accent-contrast: #0f1620; --warn: #d9a05a; --track: #2a333d; --selected: #2a3b4d; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14181d; --panel: #1b2128; --surface: #1f262e; --ink: #e6eaee;
+  --text-secondary: #c2cad2; --text-muted: #98a3af; --border: #2f3843; --faint: #262e37; --hover: #262e37;
+  --accent: #86aad0; --accent-contrast: #0f1620; --warn: #d9a05a; --track: #2a333d; --selected: #2a3b4d; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.45 var(--font-body); margin: 0; padding-inline: 16px; padding-block: 24px 64px; }
+.app { max-width: 1180px; margin: 0 auto; display: grid; gap: 18px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--text-muted); }
+.label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; min-width: 0; }
+.big { font-family: var(--font-display); font-weight: 600; font-size: 32px; line-height: 1.1; }
+.behind { color: var(--warn); font-weight: 600; }
+
+.page-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.page-head h1 { font-size: 32px; }
+.select { border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: 8px 12px; display: flex; gap: 10px; align-items: center; }
+.select::after { content: ""; width: 7px; height: 7px; border-right: 1.5px solid var(--text-muted); border-bottom: 1.5px solid var(--text-muted); transform: rotate(45deg) translate(-2px, -2px); }
+
+/* Today */
+.today h2 { font-size: 22px; display: inline; }
+.timer { display: flex; align-items: center; gap: 12px; background: var(--panel); border-radius: 10px; padding: 10px 12px; flex-wrap: wrap; margin-top: 14px; }
+.stop { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); display: grid; place-items: center; flex: none; }
+.stop i { width: 10px; height: 10px; background: var(--accent-contrast); border-radius: 2px; }
+.timer .t { flex: 1; min-width: 180px; }
+.chip { border: 1px solid var(--border); border-radius: 8px; padding: 4px 10px; font-size: 13px; background: var(--surface); }
+.start { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.field { flex: 1; min-width: 200px; border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; color: var(--text-muted); background: var(--surface); }
+.dur { border: 1px solid var(--border); border-radius: 8px; padding: 9px 14px; color: var(--text-muted); }
+.btn { background: var(--accent); color: var(--accent-contrast); border-radius: 8px; padding: 9px 18px; font-weight: 600; }
+
+/* Two detail cards */
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; }
+@media (max-width: 860px) { .two { grid-template-columns: minmax(0, 1fr); } }
+.nav { display: flex; align-items: center; gap: 10px; }
+.arrow { width: 30px; height: 30px; border: 1px solid var(--border); border-radius: 8px; display: grid; place-items: center; color: var(--text-secondary); }
+.arrow.off { opacity: .4; }
+.scopename { font-weight: 600; }
+.summary { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 16px 0 10px; }
+.summary .worked { font-family: var(--font-display); font-weight: 600; font-size: 32px; line-height: 1.1; }
+.summary .worked small { font: 400 14px var(--font-body); color: var(--text-muted); margin-left: 6px; }
+.summary .bal { font-size: 20px; font-weight: 600; }
+.summary .bal small { font: 400 12px var(--font-body); color: var(--text-muted); margin-left: 6px; }
+.bar { position: relative; height: 12px; border-radius: 999px; background: var(--track); }
+.bar .fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: var(--accent); }
+.scale { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-top: 6px; gap: 8px; flex-wrap: wrap; }
+
+.table-wrap { overflow-x: auto; margin: 16px -18px 0; border-top: 1px solid var(--faint); }
+th:first-child, td:first-child { padding-left: 18px; }
+th:last-child, td:last-child { padding-right: 18px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); padding: 10px 0 6px; font-weight: 600; }
+td { padding: 11px 0; border-top: 1px solid var(--faint); }
+th.r, td.r { text-align: right; padding-left: 12px; white-space: nowrap; }
+.mini { width: 100%; min-width: 90px; height: 8px; border-radius: 999px; background: var(--track); position: relative; }
+.mini i { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 999px; }
+.bcol { width: 38%; padding-left: 16px; }
+.today-tag { font-size: 11px; background: var(--panel); border-radius: 999px; padding: 2px 8px; margin-left: 8px; color: var(--text-secondary); }
+tr.open td { background: var(--hover); border-top-color: var(--border); }
+tr.detail td { padding: 0; border-top: 0; }
+.tasks { display: grid; gap: 4px; padding: 2px 12px 12px 18px; }
+.mid-gap { height: 0; }
+.task { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.task .name { flex: 1; min-width: 0; }
+.task { padding: 10px 12px 10px 4px; }
+.task .tm { font-weight: 600; font-size: 16px; min-width: 44px; text-align: right; }
+.task .bin { width: 18px; height: 18px; color: var(--text-muted); flex: none; }
+.add { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); padding: 8px 4px 4px; }
+.add svg { width: 16px; height: 16px; }
+.mini .tick { position: absolute; top: -4px; bottom: -4px; left: 72%; width: 2px; background: var(--text-muted); border-radius: 2px; }
+tr.cur td { font-weight: 600; }
+tr.cur td:first-child, tr.open td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
+tr:not(.cur):not(.open):not(.detail) td:first-child { color: var(--text-secondary); }
+tr.fut td { color: var(--text-muted); }
+
+.contract { display: flex; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; color: var(--text-secondary); font-size: 13px; padding: 2px 4px; align-items: center; }
+.contract b { color: var(--ink); font-weight: 600; }
+.contract a { color: var(--accent); }
+.hint { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+</style>
+
+<div class="app">
+  <header class="page-head">
+    <h1>Hours</h1>
+    <div class="select"><span>Luminos · May 1, 2026 – Oct 29, 2026</span></div>
+  </header>
+
+  <!-- TODAY -->
+  <section class="card today" aria-label="Today">
+    <div class="row">
+      <div><h2>Today</h2> <span class="muted">Tue, Oct 13</span></div>
+      <div class="big num">0:50</div>
+    </div>
+    <div class="timer">
+      <span class="stop"><i></i></span>
+      <span class="t">Document automation: developer contract preparation</span>
+      <span class="chip">Teaching &amp; Learning</span>
+      <span class="num">0:50</span>
+    </div>
+    <div class="start">
+      <span class="field">What are you working on?</span>
+      <span class="dur num">0 : 00</span>
+      <span class="btn">Start</span>
+    </div>
+  </section>
+
+  <div class="two">
+    <!-- WEEK -->
+    <section class="card" aria-label="This week">
+      <div class="row">
+        <div class="nav">
+          <span class="arrow">‹</span>
+          <span class="scopename">Week 2 · Oct 9 – Oct 15</span>
+          <span class="arrow off">›</span>
+        </div>
+              </div>
+      <div class="summary">
+        <div class="worked num">0:50<small>of 8:00</small></div>
+        <div class="bal behind num">−7:10</div>
+      </div>
+      <div class="bar"><div class="fill" style="width:10.4%"></div></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Day</th><th class="r">Hours</th><th class="bcol"></th></tr></thead>
+          <tbody>
+            <tr><td>Fri, Oct 9</td><td class="r num">0:00</td><td class="bcol"><div class="mini"><b class="tick"></b></div></td></tr>
+            <tr><td>Sat, Oct 10</td><td class="r num">0:00</td><td class="bcol"><div class="mini"><b class="tick"></b></div></td></tr>
+            <tr><td>Sun, Oct 11</td><td class="r num">0:00</td><td class="bcol"><div class="mini"><b class="tick"></b></div></td></tr>
+            <tr><td>Mon, Oct 12</td><td class="r num">0:00</td><td class="bcol"><div class="mini"><b class="tick"></b></div></td></tr>
+            <tr class="open"><td>Tue, Oct 13 <span class="today-tag">today</span></td><td class="r num">0:50</td><td class="bcol"><div class="mini"><i style="width:10%"></i><b class="tick"></b></div></td></tr>
+            <tr class="detail"><td colspan="3">
+              <div class="tasks">
+                <div class="task"><span class="name">Document automation: developer contract preparation</span><span class="chip">Teaching &amp; Learning</span><span class="tm num">0:50</span><svg class="bin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-label="Delete"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v5M14 11v5"/></svg></div>
+                <div class="add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add</div>
+              </div>
+            </td></tr>
+            <tr class="fut"><td>Wed, Oct 14</td><td class="r">–</td><td class="bcol"></td></tr>
+            <tr class="fut"><td>Thu, Oct 15</td><td class="r">–</td><td class="bcol"></td></tr>
+          </tbody>
+        </table>
+      </div>
+      
+    </section>
+
+    <!-- MONTH -->
+    <section class="card" aria-label="October">
+      <div class="row">
+        <div class="nav">
+          <span class="arrow">‹</span>
+          <span class="scopename">October · Oct 2 – Oct 29</span>
+          <span class="arrow off">›</span>
+        </div>
+              </div>
+      <div class="summary">
+        <div class="worked num">14:05<small>of 32:00</small></div>
+        <div class="bal behind num">−1:55</div>
+      </div>
+      <div class="bar"><div class="fill" style="width:44%"></div></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Week</th><th class="r">Hours</th><th class="bcol"></th></tr></thead>
+          <tbody>
+            <tr><td>Week 1 · Oct 2 – Oct 8</td><td class="r num">13:15</td><td class="bcol"><div class="mini"><i style="width:100%"></i></div></td></tr>
+            <tr class="cur"><td>Week 2 · Oct 9 – Oct 15</td><td class="r num">0:50</td><td class="bcol"><div class="mini"><i style="width:10%"></i></div></td></tr>
+            <tr class="fut"><td>Week 3 · Oct 16 – Oct 22</td><td class="r">–</td><td class="bcol"></td></tr>
+            <tr class="fut"><td>Week 4 · Oct 23 – Oct 29</td><td class="r">–</td><td class="bcol"></td></tr>
+          </tbody>
+        </table>
+      </div>
+      
+    </section>
+  </div>
+
+  <footer class="contract">
+    <span>Whole contract: <b class="num">119:05</b> of <b class="num">208:00</b> · balance <b class="num">−72:55</b> · average week <b class="num">4:58</b></span>
+    <a href="#">Charts and weeks</a>
+  </footer>
+</div>
