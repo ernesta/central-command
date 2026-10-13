@@ -1,0 +1,114 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Task group band mockup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@600;700&display=swap" />
+<style>
+  /* Layout: one open task with subtasks among plain rows, five ways to show that the group is expanded. Tokens as in tasks-mockup.html. */
+  :root {
+    --bg: #edeff2; --surface: #ffffff; --ink: #1b222b; --text-muted: #5c6672;
+    --border-soft: #d3d8de; --border-faint: #e6e9ed; --border-strong: #aab3bd; --hover-tint: #f4f6f8;
+    --accent: #35577a; --selected-bg: #dce6ee; --shade: rgba(20, 30, 45, .22);
+    --font-display: 'Newsreader', Georgia, serif; --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg: #14181d; --surface: #1f262e; --ink: #e6eaee; --text-muted: #98a3af;
+      --border-soft: #2f3843; --border-faint: #262e37; --border-strong: #46515e; --hover-tint: #262e37;
+      --accent: #86aad0; --selected-bg: #2a3b4d; --shade: rgba(0, 0, 0, .5); color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font: 14px/1.5 var(--font-body); margin: 0; padding: 24px 16px 56px; }
+  .page { max-width: 1100px; margin: 0 auto; display: grid; gap: 40px; }
+  h1, h2 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
+  h1 { font-size: 26px; } h2 { font-size: 20px; }
+  p { margin: 0; } .note { font-size: 13px; color: var(--text-muted); max-width: 75ch; }
+  .label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); }
+  .opt { display: grid; gap: 10px; }
+  .tree { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 8px; overflow-x: auto; --sunk: color-mix(in srgb, var(--bg) 65%, var(--surface)); }
+  table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 900px; table-layout: fixed; }
+  col.c-s { width: 56px; } col.c-l { width: 190px; } col.c-p { width: 100px; } col.c-t { width: 80px; } col.c-d { width: 110px; }
+  th { text-align: left; font-weight: 500; font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+       color: var(--text-muted); padding: 8px 12px; border-bottom: 1px solid var(--border-soft); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border-faint); vertical-align: middle; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  tr:last-child td { border-bottom: 0; }
+  .circ { width: 20px; height: 20px; border: 1.5px solid var(--text-muted); border-radius: 50%; display: inline-block; vertical-align: middle; }
+  .pill { display: inline-block; white-space: nowrap; font-size: 12px; padding: 0 8px; border: 1px solid var(--border-soft); border-radius: 999px; color: var(--text-muted); margin-left: 8px; }
+  .open .pill { border-color: var(--accent); color: var(--ink); }
+  .pr { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 6px; background: var(--selected-bg); }
+  .pr.p3 { background: var(--hover-tint); color: var(--text-muted); }
+  /* the group: .g1 parent, .gk kids, .ge last row; no line inside the group, one at its end */
+  tr.g1 td, tr.gk td { border-bottom-color: transparent; }
+  tr.gk td { font-size: 13px; padding-block: 6px; }
+  tr.gk td:first-child { padding-left: 36px; }
+  tr.ge td { border-bottom: 1px solid var(--border-faint); }
+  tr.add td { color: var(--text-muted); }
+  tr.last td { border-bottom: 0; }
+
+  /* A: a darker band behind the whole group */
+  .A tr.g1 td, .A tr.gk td, .A tr.ge td { background: var(--sunk); }
+
+  /* B: an accent rail down the group's left edge, with a faint tint */
+
+  /* C: the subtasks sit recessed: darker, with a soft inner shadow top and bottom; the parent stays flat */
+  .C tr.gk td, .C tr.ge td { background: var(--sunk); }
+  .C tr.gk.first td { box-shadow: inset 0 7px 6px -6px var(--shade); }
+  .C tr.ge td { box-shadow: inset 0 -7px 6px -6px var(--shade); }
+  .C tr.gk.first.ge td { box-shadow: inset 0 7px 6px -6px var(--shade), inset 0 -7px 6px -6px var(--shade); }
+
+  /* D: the group is outlined as one rounded box */
+  .D tr.g1 td, .D tr.gk td, .D tr.ge td { background: color-mix(in srgb, var(--sunk) 50%, transparent); border-color: var(--border-strong); border-style: solid; border-width: 0; }
+  .D tr.g1 td { border-top-width: 1px; }
+  .D tr.ge td { border-bottom-width: 1px; }
+  .D tr.g1 td:first-child, .D tr.gk td:first-child, .D tr.ge td:first-child { border-left-width: 1px; }
+  .D tr.g1 td:last-child, .D tr.gk td:last-child, .D tr.ge td:last-child { border-right-width: 1px; }
+  .D tr.g1 td:first-child { border-top-left-radius: 8px; } .D tr.g1 td:last-child { border-top-right-radius: 8px; }
+  .D tr.ge td:first-child { border-bottom-left-radius: 8px; } .D tr.ge td:last-child { border-bottom-right-radius: 8px; }
+
+  /* E: the parent row itself is the header: stronger title and a hairline under it; subtasks plain, indented */
+  .E tr.g1 td { background: var(--hover-tint); border-bottom-color: var(--border-soft); font-weight: 500; }
+  .E tr.ge td { border-bottom-color: var(--border-soft); }
+
+  /* the band covers only the subtasks and the add row; strength differs per option. The thread line stays as it is in the app. */
+  .tree.A tr.gk td, .tree.B tr.gk td, .tree.C tr.gk td { box-shadow: none; }
+  .A tr.gk td { background: color-mix(in srgb, var(--bg) 35%, var(--surface)); }
+  .B tr.gk td { background: color-mix(in srgb, var(--bg) 60%, var(--surface)); }
+  .C tr.gk td { background: color-mix(in srgb, var(--bg) 35%, var(--surface)); }
+  .C tr.gk.first td { box-shadow: inset 0 5px 4px -4px var(--shade); }
+  .C tr.ge td { box-shadow: inset 0 -5px 4px -4px var(--shade); }
+  .tree tr.g1 td, .tree tr.g1 td:first-child { background: transparent; box-shadow: none; }
+  .tree tr.gk td:first-child { position: relative; }
+  .tree tr.gk td:first-child::before { content: ''; position: absolute; top: 0; bottom: 0; left: 21px; border-left: 2px solid var(--border-strong); }
+  .tree tr.gk.ge td:first-child::before { bottom: 50%; width: 14px; border-bottom: 2px solid var(--border-strong); border-bottom-left-radius: 8px; }
+</style>
+<div class="page"><header class="opt"><h1>Subtasks-only band</h1><p class="note">The earlier recessed option was too dark, so these are lighter. Only the subtasks and the add row are tinted; the parent is untouched and no rail is used.</p></header>
+<section class="opt"><div><span class="label">Option A</span><h2>Light band</h2></div><p class="note">Subtasks and the add row on a barely darker background. The parent stays exactly as it is now.</p><div class="tree A"><table><colgroup><col class="c-s"><col><col class="c-l"><col class="c-p"><col class="c-t"><col class="c-d"></colgroup>
+<thead><tr><th></th><th>Task</th><th>List</th><th>Priority</th><th>Time</th><th>Due</th></tr></thead><tbody>
+<tr><td><span class="circ"></span></td><td>Download training slides and materials</td><td>Training</td><td><span class="pr p3">P3</span></td><td>0:15</td><td>Oct 20</td></tr>
+<tr class="g1 open"><td><span class="circ"></span></td><td>Prepare for the upcoming supervision meeting <span class="pill">0/2 ⌄</span></td><td>Meetings</td><td><span class="pr">P2</span></td><td></td><td>Oct 23</td></tr>
+<tr class="gk first"><td><span class="circ" style="width:16px;height:16px"></span></td><td>Prepare a notes document with previous action items and agenda</td><td></td><td></td><td></td><td>Oct 20</td></tr>
+<tr class="gk"><td><span class="circ" style="width:16px;height:16px"></span></td><td>Prepare a presentation or another deliverable</td><td></td><td></td><td></td><td>Oct 20</td></tr>
+<tr class="gk ge add"><td></td><td>+ Add a subtask</td><td></td><td></td><td></td><td></td></tr>
+<tr><td><span class="circ"></span></td><td>Back up RHUL folder to OneDrive and Dropbox</td><td>Admin &amp; Logistics</td><td><span class="pr p3">P3</span></td><td></td><td>Oct 20</td></tr>
+<tr class="last"><td><span class="circ"></span></td><td>Move the in-progress DataCamp course to next year</td><td>Training</td><td><span class="pr">P2</span></td><td></td><td>Oct 20</td></tr>
+</tbody></table></div></section>
+<section class="opt"><div><span class="label">Option B</span><h2>Medium band</h2></div><p class="note">The same, one step darker.</p><div class="tree B"><table><colgroup><col class="c-s"><col><col class="c-l"><col class="c-p"><col class="c-t"><col class="c-d"></colgroup>
+<thead><tr><th></th><th>Task</th><th>List</th><th>Priority</th><th>Time</th><th>Due</th></tr></thead><tbody>
+<tr><td><span class="circ"></span></td><td>Download training slides and materials</td><td>Training</td><td><span class="pr p3">P3</span></td><td>0:15</td><td>Oct 20</td></tr>
+<tr class="g1 open"><td><span class="circ"></span></td><td>Prepare for the upcoming supervision meeting <span class="pill">0/2 ⌄</span></td><td>Meetings</td><td><span class="pr">P2</span></td><td></td><td>Oct 23</td></tr>
+<tr class="gk first"><td><span class="circ" style="width:16px;height:16px"></span></td><td>Prepare a notes document with previous action items and agenda</td><td></td><td></td><td></td><td>Oct 20</td></tr>
+<tr class="gk"><td><span class="circ" style="width:16px;height:16px"></span></td><td>Prepare a presentation or another deliverable</td><td></td><td></td><td></td><td>Oct 20</td></tr>
+<tr class="gk ge add"><td></td><td>+ Add a subtask</td><td></td><td></td><td></td><td></td></tr>
+<tr><td><span class="circ"></span></td><td>Back up RHUL folder to OneDrive and Dropbox</td><td>Admin &amp; Logistics</td><td><span class="pr p3">P3</span></td><td></td><td>Oct 20</td></tr>
+<tr class="last"><td><span class="circ"></span></td><td>Move the in-progress DataCamp course to next year</td><td>Training</td><td><span class="pr">P2</span></td><td></td><td>Oct 20</td></tr>
+</tbody></table></div></section>
+<section class="opt"><div><span class="label">Option C</span><h2>Light band, faint inner shadow</h2></div><p class="note">The light band plus a very soft shadow along its top and bottom edges, so it reads as opened rather than just tinted.</p><div class="tree C"><table><colgroup><col class="c-s"><col><col class="c-l"><col class="c-p"><col class="c-t"><col class="c-d"></colgroup>
+<thead><tr><th></th><th>Task</th><th>List</th><th>Priority</th><th>Time</th><th>Due</th></tr></thead><tbody>
+<tr><td><span class="circ"></span></td><td>Download training slides and materials</td><td>Training</td><td><span class="pr p3">P3</span></td><td>0:15</td><td>Oct 20</td></tr>
+<tr class="g1 open"><td><span class="circ"></span></td><td>Prepare for the upcoming supervision meeting <span class="pill">0/2 ⌄</span></td><td>Meetings</td><td><span class="pr">P2</span></td><td></td><td>Oct 23</td></tr>
+<tr class="gk first"><td><span class="circ" style="width:16px;height:16px"></span></td><td>Prepare a notes document with previous action items and agenda</td><td></td><td></td><td></td><td>Oct 20</td></tr>
+<tr class="gk"><td><span class="circ" style="width:16px;height:16px"></span></td><td>Prepare a presentation or another deliverable</td><td></td><td></td><td></td><td>Oct 20</td></tr>
+<tr class="gk ge add"><td></td><td>+ Add a subtask</td><td></td><td></td><td></td><td></td></tr>
+<tr><td><span class="circ"></span></td><td>Back up RHUL folder to OneDrive and Dropbox</td><td>Admin &amp; Logistics</td><td><span class="pr p3">P3</span></td><td></td><td>Oct 20</td></tr>
+<tr class="last"><td><span class="circ"></span></td><td>Move the in-progress DataCamp course to next year</td><td>Training</td><td><span class="pr">P2</span></td><td></td><td>Oct 20</td></tr>
+</tbody></table></div></section>
+</div></html>

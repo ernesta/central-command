@@ -3330,3 +3330,9 @@ The user's rule: a training's task, series task and lecture subtask alike, is ti
 - **Now:** a row directly followed by a subtask has no bottom line (`.row:has(+ .kid)`); the group's last row (`.kid.end`: the add row when open, the last nested subtask when closed) has it. Layout, columns and the thread are unchanged.
 - **Considered and dropped:** the subtask-row layouts in `docs/design/tasks-subtask-rows-mockup.html` (inherited values shown faint, a title-and-date thread, subtasks inside the parent's row, a richer pill). The user kept the current layout. Subtask priority is untouched: a subtask still stores one and shows none; making it read the parent's is open.
 - Not driven in the app (CSS only); typecheck, lint and tests pass.
+
+## Tasks table: a band behind the subtasks (13 Oct 2026)
+
+- **Why (the user):** after the line moved to the end of a group, they wanted a subtle sign that a task is "opened". Mockups: `docs/design/tasks-group-expansion-mockup.html`, `docs/design/tasks-group-band-mockup.html`. A left rail was ruled out because it already means "the running task"; a very dark recessed area was too heavy.
+- **Now:** the subtask rows and the add row have a background slightly darker than the table (`color-mix(in srgb, var(--bg) 35%, var(--surface))`, so it follows light and dark); the parent row is untouched. Hover and keyboard focus still win over it. No shadow (the user chose the plain band, option A).
+- Not driven in the app (CSS only); typecheck, lint and tests pass.

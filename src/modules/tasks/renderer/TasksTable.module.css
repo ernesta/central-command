@@ -254,8 +254,10 @@
   color: var(--accent);
 }
 
-/* Subtasks hang off a thread: a rail from the parent's status icon, an elbow into each. */
+/* Subtasks hang off a thread: a rail from the parent's status icon, an elbow into each. A slightly darker band behind them
+   (and the add row) shows the parent as opened; hover and focus rules above win over it. */
 .kid td {
+  background: color-mix(in srgb, var(--bg) 35%, var(--surface));
   padding-top: 6px;
   padding-bottom: 6px;
   border-bottom: 0;
