@@ -1,5 +1,5 @@
-/** Workspaces that can hold tasks (Research and Work each have their own list). */
-export const TASK_WORKSPACES = ['research', 'work'] as const
+/** Workspaces that can hold tasks (Life, Research and Work each have their own list). */
+export const TASK_WORKSPACES = ['life', 'research', 'work'] as const
 export type TaskWorkspace = (typeof TASK_WORKSPACES)[number]
 
 export const TASK_STATUSES = ['todo', 'doing', 'done'] as const

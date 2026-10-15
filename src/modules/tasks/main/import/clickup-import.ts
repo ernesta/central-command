@@ -448,7 +448,7 @@ export function planImport(data: Deduplicated): ImportPlan {
     }
   }
 
-  const byWorkspace = { research: 0, work: 0 }
+  const byWorkspace = { life: 0, research: 0, work: 0 }
   const byStatus = { todo: 0, doing: 0, done: 0 }
   const byPriority = { high: 0, normal: 0, low: 0 }
   let topLevel = 0
