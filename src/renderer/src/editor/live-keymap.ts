@@ -17,6 +17,7 @@ import {
   backspaceInItem,
   deleteBeforeItem,
   deleteBlankRun,
+  backspaceBlankRun,
   enter,
   hardBreak,
   indentItem,
@@ -64,6 +65,7 @@ export const tableBindings: KeyBinding[] = [
 export const listBindings: KeyBinding[] = [
   { key: 'Enter', run: enter },
   { key: 'Shift-Enter', run: hardBreak },
+  { key: 'Backspace', run: backspaceBlankRun },
   { key: 'Backspace', run: backspaceInItem },
   { key: 'Delete', run: deleteBlankRun },
   { key: 'Delete', run: deleteBeforeItem },

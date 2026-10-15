@@ -194,6 +194,16 @@ describe('Backspace', () => {
   })
 })
 
+describe('Backspace on empty lines', () => {
+  it('takes the empty lines above in one go, keeping one', () => {
+    expect(after('a\n\n\n|\nb', 'Backspace')).toBe('a\n|\nb')
+    expect(after('a\n\n|\n\nb', 'Backspace')).toBe('a\n|\n\nb')
+  })
+  it('is the ordinary Backspace under text', () => {
+    expect(after('a\n|', 'Backspace')).toBe('a|')
+  })
+})
+
 describe('Delete', () => {
   it('takes a whole run of empty lines at once, since they draw no height', () => {
     expect(after('a\n\n|\n\nb', 'Delete')).toBe('a\n\n|b')

@@ -279,6 +279,34 @@ export const deleteBlankRun: StateCommand = ({ state, dispatch }) => {
   return true
 }
 
+/**
+ * Backspace on an empty line below other empty lines: they draw no height, so take the ones above in one go (one is kept,
+ * and the cursor lands on it), instead of removing a line nobody can see.
+ */
+export const backspaceBlankRun: StateCommand = ({ state, dispatch }) => {
+  const range = state.selection.main
+  if (!range.empty || state.selection.ranges.length > 1) return false
+  const line = state.doc.lineAt(range.head)
+  if (range.head !== line.from || !blankLine(parseLine(line.text)) || inCode(state, line.from))
+    return false
+  let first = line
+  while (first.number > 1) {
+    const above = state.doc.line(first.number - 1)
+    if (!blankLine(parseLine(above.text))) break
+    first = above
+  }
+  if (first.number === line.number) return false
+  dispatch(
+    state.update({
+      changes: { from: first.to, to: line.to },
+      selection: EditorSelection.cursor(first.to),
+      scrollIntoView: true,
+      userEvent: 'delete.blank'
+    })
+  )
+  return true
+}
+
 /** Delete at the end of a line, when the next line is a list item: join its text on, without its marker. */
 export const deleteBeforeItem: StateCommand = ({ state, dispatch }) => {
   const range = state.selection.main
