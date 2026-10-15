@@ -13,6 +13,8 @@ import type { TrainingChangedEvent } from '@modules/training/shared/api'
 import type { NoteChangedEvent } from '@shared/notes'
 import { TRACKING_IPC, type TrackingChangedEvent } from '@shared/tracking/api'
 import type { SyncStatus } from '@modules/readings/shared/types'
+import { WATCH_IPC } from '@modules/watch/shared/api'
+import type { WatchCounts } from '@modules/watch/shared/types'
 
 const api: Api = {
   settings: {
@@ -249,6 +251,33 @@ const api: Api = {
         listener(change)
       ipcRenderer.on(TRACKING_IPC.changed, handler)
       return () => ipcRenderer.removeListener(TRACKING_IPC.changed, handler)
+    }
+  },
+  watch: {
+    sources: {
+      list: () => ipcRenderer.invoke(WATCH_IPC.sourcesList),
+      add: (input) => ipcRenderer.invoke(WATCH_IPC.sourcesAdd, input),
+      update: (id, changes) => ipcRenderer.invoke(WATCH_IPC.sourcesUpdate, id, changes),
+      remove: (id) => ipcRenderer.invoke(WATCH_IPC.sourcesRemove, id),
+      suggestions: () => ipcRenderer.invoke(WATCH_IPC.sourcesSuggestions)
+    },
+    items: {
+      list: (query) => ipcRenderer.invoke(WATCH_IPC.itemsList, query),
+      setState: (id, state) => ipcRenderer.invoke(WATCH_IPC.itemsSetState, id, state),
+      markAllSeen: (sourceId) => ipcRenderer.invoke(WATCH_IPC.itemsMarkAllSeen, sourceId),
+      upcoming: (days) => ipcRenderer.invoke(WATCH_IPC.itemsUpcoming, days)
+    },
+    checkNow: (sourceId) => ipcRenderer.invoke(WATCH_IPC.checkNow, sourceId),
+    counts: () => ipcRenderer.invoke(WATCH_IPC.counts),
+    keywords: {
+      get: () => ipcRenderer.invoke(WATCH_IPC.keywordsGet),
+      set: (terms) => ipcRenderer.invoke(WATCH_IPC.keywordsSet, terms)
+    },
+    onChanged: (listener) => {
+      const handler = (_event: Electron.IpcRendererEvent, counts: WatchCounts): void =>
+        listener(counts)
+      ipcRenderer.on(WATCH_IPC.changed, handler)
+      return () => ipcRenderer.removeListener(WATCH_IPC.changed, handler)
     }
   },
   lifecycle: {

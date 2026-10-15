@@ -8,6 +8,7 @@ import { readingListsMainModule } from './reading-lists/main/register'
 import { readingsMainModule } from './readings/main/register'
 import { tasksMainModule } from './tasks/main/register'
 import { trainingMainModule } from './training/main/register'
+import { watchMainModule } from './watch/main/register'
 
 /** What a module's main-process code may depend on. */
 export interface MainContext {
@@ -30,5 +31,6 @@ export const mainModules: MainModule[] = [
   trainingMainModule,
   notesMainModule,
   readingListsMainModule,
-  tasksMainModule
+  tasksMainModule,
+  watchMainModule
 ]

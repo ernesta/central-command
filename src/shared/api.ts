@@ -6,6 +6,7 @@ import type { TasksApi } from '../modules/tasks/shared/api'
 import type { ReadingListsApi } from '../modules/reading-lists/shared/api'
 import type { ReadingsApi } from '../modules/readings/shared/api'
 import type { TrainingApi } from '../modules/training/shared/api'
+import type { WatchApi } from '../modules/watch/shared/api'
 import type { Settings } from './settings'
 import type { TrackingApi } from './tracking/api'
 
@@ -76,6 +77,7 @@ export interface Api {
   readingLists: ReadingListsApi
   tasks: TasksApi
   tracking: TrackingApi
+  watch: WatchApi
   lifecycle: {
     /**
      * Register work to finish before the window closes (e.g. saving notes). The window waits for
