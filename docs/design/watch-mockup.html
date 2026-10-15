@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Watch mockup</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@600;700&display=swap" />
+    <style>
+:root {
+  color-scheme: light dark;
+  --bg: light-dark(#edeff2, #14181d);
+  --panel: light-dark(#e1e5ea, #1b2128);
+  --surface: light-dark(#ffffff, #1f262e);
+  --ink: light-dark(#1b222b, #e6eaee);
+  --text-secondary: light-dark(#3a4652, #c2cad2);
+  --text-muted: light-dark(#5c6672, #98a3af);
+  --border-soft: light-dark(#d3d8de, #2f3843);
+  --border-strong: light-dark(#c3cad2, #3d4855);
+  --border-faint: light-dark(#e6e9ed, #262e37);
+  --hover-tint: light-dark(#f4f6f8, #262e37);
+  --accent: light-dark(#35577a, #86aad0);
+  --accent-contrast: light-dark(#ffffff, #0f1620);
+  --chart-under: light-dark(#b8741a, #d9a05a);
+  --chart-now: light-dark(#9db3c9, #4a6784);
+  --selected-bg: light-dark(#dce6ee, #2a3b4d);
+  --selected-text: light-dark(#1f3a52, #d3e3f2);
+  --danger: light-dark(#a8433f, #dc7c77);
+  --danger-bg: light-dark(#f3dcda, #3d2524);
+  --ok: light-dark(#2f6b4a, #7fc3a0);
+  --ok-bg: light-dark(#dcefe4, #1f3329);
+  --warn-bg: light-dark(#f6e8d2, #3a2e1c);
+  --shadow-color: light-dark(rgba(27, 34, 43, 0.18), rgba(0, 0, 0, 0.55));
+  --font-display: 'Newsreader', Georgia, serif;
+  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+:root[data-theme='light'] { color-scheme: light; }
+:root[data-theme='dark'] { color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--font-body); padding: 20px 16px 64px; }
+h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; font-weight: 700; }
+p { margin: 0; }
+a { color: var(--accent); text-decoration: none; }
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 44px; }
+.intro { display: grid; gap: 6px; }
+.intro h1 { font-size: 32px; }
+.intro p { color: var(--text-secondary); max-width: 760px; }
+.theme { justify-self: start; border: 1px solid var(--border-soft); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 4px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+.label { color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.screen { background: var(--bg); border: 1px dashed var(--border-strong); border-radius: 14px; padding: 18px; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; color: var(--text-muted); font-size: 12px; margin-top: 4px; }
+.tag { display: inline-block; font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 999px; padding: 1px 8px; vertical-align: middle; }
+.tag.built { background: var(--ok-bg); color: var(--ok); }
+.tag.new { background: var(--selected-bg); color: var(--selected-text); }
+.tag.later { background: var(--warn-bg); color: var(--chart-under); }
+.card { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; }
+.card > header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 16px 6px; }
+.card > header h3 { font-size: 17px; }
+.card .body { padding: 4px 16px 14px; }
+.muted { color: var(--text-muted); }
+.small { font-size: 12.5px; }
+.btn { border: 1px solid var(--border-soft); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 6px 12px; font: inherit; cursor: default; }
+.btn.primary { background: var(--accent); color: var(--accent-contrast); border-color: var(--accent); }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--accent); padding: 4px 8px; }
+.chip { display: inline-block; background: var(--selected-bg); color: var(--selected-text); border-radius: 999px; padding: 1px 10px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+.chip.warn { background: var(--danger-bg); color: var(--danger); }
+.chip.amber { background: var(--warn-bg); color: var(--chart-under); }
+.chip.ok { background: var(--ok-bg); color: var(--ok); }
+.chip.plain { background: var(--hover-tint); color: var(--text-secondary); border: 1px solid var(--border-faint); }
+.row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border-faint); }
+.row:last-child { border-bottom: 0; }
+.row .grow { flex: 1; min-width: 0; }
+.row .title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.circle { width: 17px; height: 17px; border-radius: 50%; border: 1.6px solid var(--border-strong); flex: none; }
+.circle.late { border-color: var(--danger); }
+.ico { width: 18px; height: 18px; flex: none; stroke: var(--text-muted); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.bar { height: 8px; border-radius: 999px; background: var(--border-faint); overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--chart-now); }
+.bar.under > i { background: var(--chart-under); }
+.kbd { font-family: var(--font-mono); font-size: 11.5px; border: 1px solid var(--border-soft); border-radius: 5px; padding: 0 5px; background: var(--hover-tint); }
+.note { color: var(--text-muted); font-size: 13px; margin-top: 10px; max-width: 820px; }
+.topbar { display: flex; align-items: center; gap: 14px; background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; padding: 10px 16px; margin-bottom: 16px; }
+.topbar .brand { font-family: var(--font-display); font-weight: 700; font-size: 18px; }
+.topbar .ws { display: flex; gap: 4px; }
+.topbar .ws span { padding: 3px 10px; border-radius: 999px; color: var(--text-secondary); }
+.topbar .ws .on { background: var(--selected-bg); color: var(--selected-text); font-weight: 600; }
+.topbar .sp { flex: 1; }
+.timer { display: inline-flex; gap: 8px; align-items: center; border-radius: 999px; border: 1px solid var(--border-soft); padding: 2px 12px; background: var(--hover-tint); font-variant-numeric: tabular-nums; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); }
+.switch { width: 34px; height: 20px; border-radius: 999px; background: var(--border-strong); position: relative; flex: none; }
+.switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; }
+.switch.on { background: var(--accent); }
+.switch.on::after { left: 16px; }
+.field { border: 1px solid var(--border-soft); border-radius: 8px; padding: 6px 10px; background: var(--surface); color: var(--ink); font: inherit; min-width: 0; }
+.field.sm { width: 74px; }
+.dialog { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 14px; padding: 18px 20px; box-shadow: 0 8px 24px var(--shadow-color); display: grid; gap: 12px; }
+.dialog h3 { font-size: 20px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
+@media (max-width: 760px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+
+
+.head { display: flex; justify-content: space-between; align-items: end; gap: 12px; flex-wrap: wrap; margin: 4px 0 16px; }
+.head h2 { font-size: 30px; }
+.filters { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; } .filters .sp { flex: 1; }
+.grp { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); padding: 12px 0 2px; font-weight: 500; }
+.grp:first-child { padding-top: 4px; }
+.dotn { width: 8px; height: 8px; border-radius: 50%; flex: none; background: transparent; }
+.dotn.on { background: var(--accent); }
+.when { color: var(--text-secondary); font-size: 12.5px; white-space: nowrap; min-width: 70px; text-align: right; }
+.acts { display: flex; gap: 6px; opacity: .8; }
+.seg { display: flex; gap: 6px; }
+
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="intro">
+        <h1>Watch mockup</h1>
+        <p>Keeping on top of conferences, trainings, summer schools and journals without opening each page by hand. The app checks the pages and feeds you list once a day, and shows only what is new. Public pages only; nothing about you is sent.</p>
+        <button class="theme" type="button">Theme: system</button>
+      </div>
+
+      <section>
+        <div class="label">1 · Watch, the inbox <span class="tag new">new</span></div>
+        <div class="screen">
+          <div class="topbar"><span class="brand">Central Command</span><div class="ws"><span class="">Life</span><span class="on">Research</span><span class="">Work</span></div><span class="sp"></span><span class="timer muted"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg> Search <span class="kbd">⌘K</span></span><span class="timer"><i class="dot"></i>Reading · 1:30<span class="muted small">Stop</span></span></div>
+          <div class="head"><div><div class="muted small">Research</div><h2>Watch</h2></div><div style="display:flex;gap:8px"><span class="btn">Check now</span><span class="btn">Sources</span></div></div>
+          <div class="filters">
+            <span class="chip">New 22</span><span class="chip plain">Saved 3</span><span class="chip plain">Seen</span><span class="chip plain">Dismissed</span>
+            <span class="sp"></span>
+            <span class="chip plain">All kinds ▾</span><span class="chip ok">Matches my keywords</span>
+          </div>
+          <div class="card"><div class="body">
+            <div class="grp">Deadlines soon</div>
+            <div class="row item">
+      <span class="dotn on"></span>
+      <div class="grow"><div class="title"><b>Workshop at SLE 2027: To P(reposition) or Not to P(reposition)</b></div>
+        <div class="muted small">LINGUIST List: conferences · Conference</div></div>
+      <span class="chip amber">Deadline</span><span class="when">10 Nov</span>
+      <span class="acts"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></span></div>
+            <div class="row item">
+      <span class="dotn on"></span>
+      <div class="grow"><div class="title"><b>Telling the Truth? Authorship, audiences and authenticity</b></div>
+        <div class="muted small">LINGUIST List: conferences · Conference</div></div>
+      <span class="chip amber">Deadline</span><span class="when">5 Nov</span>
+      <span class="acts"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></span></div>
+            <div class="grp">Matches your keywords</div>
+            <div class="row item">
+      <span class="dotn on"></span>
+      <div class="grow"><div class="title"><b>Workshop on multilingual literacy in Sub-Saharan Africa</b></div>
+        <div class="muted small">LINGUIST List: conferences · Conference</div></div>
+      <span class="chip">literacy, multilingual</span><span class="when">Today</span>
+      <span class="acts"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></span></div>
+            <div class="row item">
+      <span class="dotn on"></span>
+      <div class="grow"><div class="title"><b>Word reading in Arabic diglossia: a new analysis</b></div>
+        <div class="muted small">Scientific Studies of Reading · Journal</div></div>
+      <span class="chip">diglossia</span><span class="when">5 Oct</span>
+      <span class="acts"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></span></div>
+            <div class="grp">Everything else <span class="muted small">18</span></div>
+            <div class="row item">
+      <span class="dotn on"></span>
+      <div class="grow"><div class="title"><b>Summer school: mixed models for linguistics</b></div>
+        <div class="muted small">LINGUIST List: summer schools · Summer school</div></div>
+      <span class="when">Yesterday</span>
+      <span class="acts"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></span></div>
+            <div class="row item" style="opacity:.62">
+      <span class="dotn "></span>
+      <div class="grow"><div class="title"><b>MY580 methods short courses, new date added</b></div>
+        <div class="muted small">lse.ac.uk · Training</div></div>
+      <span class="chip amber">Page changed</span><span class="when">2 days ago</span>
+      <span class="acts"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></span></div>
+          </div></div>
+          <p class="note">New items are bold with a blue dot. Bookmark keeps one (it stays after you look); the cross dismisses it for good. "Mark all seen" clears the blue dots. Deadlines come from dates written in the text ("by 10 November 2026"), never guessed from numeric dates.</p>
+        </div>
+      </section>
+
+      <section>
+        <div class="label">2 · Sources, grouped by the reminder they replace <span class="tag new">new</span></div>
+        <div class="screen">
+          <div class="head"><div><div class="muted small">Watch</div><h2>Sources</h2></div><div style="display:flex;gap:8px"><span class="btn">Keywords</span><span class="btn primary">Add</span></div></div>
+          <div class="card"><div class="body">
+            <div class="grp">Check upcoming conferences <span class="muted small">reminder, monthly · due 30 Oct</span></div>
+            <div class="row"><div class="grow"><div class="title"><b>eps.ac.uk · future meetings</b></div><div class="muted small">https://eps.ac.uk/future-meetings/</div></div><span class="chip plain">Page</span><span class="chip amber">Page changed</span><span class="when">Today 08:41</span></div>
+            <div class="row"><div class="grow"><div class="title"><b>researched.org.uk</b></div><div class="muted small">https://researched.org.uk/</div></div><span class="chip plain">Page</span><span class="chip ok">Working</span><span class="when">Today 08:41</span></div>
+            <div class="row"><div class="grow"><div class="title"><b>triplesr.org</b></div><div class="muted small">https://www.triplesr.org/</div></div><span class="chip plain">Page</span><span class="chip ok">Working</span><span class="when">Today 08:41</span></div>
+            <div class="row"><div class="grow"><div class="title"><b>wwhge.org · 2026 conference</b></div><div class="muted small">https://www.wwhge.org/events/2026-…</div></div><span class="chip plain">Page</span><span class="chip ok">Working</span><span class="when">Today 08:41</span></div>
+            <div class="grp">Check upcoming external trainings <span class="muted small">reminder, monthly · due 30 Oct</span></div>
+            <div class="row"><div class="grow"><div class="title"><b>wrdtp.ac.uk · training calendar</b></div><div class="muted small">https://wrdtp.ac.uk/training/…</div></div><span class="chip">2 new</span><span class="chip plain">Page</span><span class="chip ok">Working</span><span class="when">Today 08:42</span></div>
+            <div class="row"><div class="grow"><div class="title"><b>ukdataservice.ac.uk · training events</b></div><div class="muted small">https://ukdataservice.ac.uk/training-events/</div></div><span class="chip plain">Page</span><span class="chip ok">Working</span><span class="when">Today 08:42</span></div>
+            <div class="row"><div class="grow"><div class="title"><b>idre.ucla.edu · calendar</b></div><div class="muted small">https://idre.ucla.edu/calendar</div></div><span class="chip plain">Page</span><span class="chip warn">Failed</span><span class="when">3 failed tries</span></div>
+            <div class="grp">LINGUIST List</div>
+            <div class="row"><div class="grow"><div class="title"><b>LINGUIST List: conferences</b></div><div class="muted small">https://linguistlist.org/issues/rss/confs</div></div><span class="chip">20 new</span><span class="chip plain">Feed</span><span class="chip ok">Working</span><span class="when">Today 08:40</span></div>
+            <div class="row"><div class="grow"><div class="title"><b>LINGUIST List: calls for papers</b></div><div class="muted small">https://linguistlist.org/issues/rss/calls</div></div><span class="chip plain">Feed</span><span class="chip ok">Working</span><span class="when">Today 08:40</span></div>
+            <div class="grp">Journals</div>
+            <div class="row"><div class="grow"><div class="title"><b>Scientific Studies of Reading</b></div><div class="muted small">ISSN 1088-8438 · via Crossref</div></div><span class="chip">2 new</span><span class="chip plain">Journal</span><span class="chip ok">Working</span><span class="when">Today 08:43</span></div>
+          </div></div>
+          <div class="card" style="margin-top:12px"><div class="body">
+            <div class="grp">Keep checking by hand <span class="muted small">the app cannot open these</span></div>
+            <div class="row"><div class="grow">Researcher Development Programme, SEDarc (Inkpath)<div class="muted small">No address given. Add one to watch it.</div></div><span class="btn">Add address</span></div>
+            <div class="row"><div class="grow">intranet.royalholloway.ac.uk · doctoral school events<div class="muted small">Needs your sign-in.</div></div></div>
+            <div class="row"><div class="grow">essexuniversity.app.box.com · shared folder<div class="muted small">Needs the browser.</div></div></div>
+          </div></div>
+          <p class="note">The three "Check upcoming …" reminders become groups here. Proposal: when every source in a group has been looked at (nothing new left), the app offers to tick the monthly reminder off, so the reminder stops being a chore and becomes a result.</p>
+        </div>
+      </section>
+
+      <section class="grid2">
+        <div>
+          <div class="label">3 · Add a source <span class="tag new">new</span></div>
+          <div class="dialog">
+            <h3>Add a source</h3>
+            <div class="seg"><span class="chip plain">Web page</span><span class="chip">Feed</span><span class="chip plain">Journal</span></div>
+            <input class="field" value="https://linguistlist.org/issues/rss/confs" />
+            <input class="field" value="LINGUIST List: conferences" />
+            <div style="display:flex;gap:8px;align-items:center"><span class="chip">Conference</span><span class="muted small">Check every</span><input class="field sm" value="24" /><span class="muted small">hours</span></div>
+            <p class="muted small">A feed is read as it is. A web page: new links, and a note when its text changes. A journal needs its ISSN; new articles come from Crossref.</p>
+            <div style="display:flex;gap:8px;justify-content:flex-end"><span class="btn">Cancel</span><span class="btn primary">Add</span></div>
+          </div>
+          <p class="note">Suggested sources (LINGUIST List's feeds, the journals in your Journals note) are one click each.</p>
+        </div>
+        <div>
+          <div class="label">4 · Keywords <span class="tag new">new</span></div>
+          <div class="dialog">
+            <h3>Keywords</h3>
+            <p class="muted small">Items that mention one are marked and listed first. A title match counts more than a mention in the text.</p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="chip">reading acquisition ×</span><span class="chip">literacy ×</span><span class="chip">language of instruction ×</span><span class="chip">multilingual ×</span><span class="chip">diglossia ×</span><span class="chip">early grade reading ×</span><span class="chip">sub-saharan africa ×</span><span class="chip">orthography ×</span></div>
+            <input class="field" placeholder="Add a word or phrase" />
+            <div style="display:flex;gap:8px;justify-content:flex-end"><span class="btn">Done</span></div>
+          </div>
+          <p class="note">Changing them scores everything already collected again.</p>
+        </div>
+      </section>
+
+      <section>
+        <div class="label">5 · On other pages <span class="tag new">new</span></div>
+        <div class="grid3">
+          <div class="card"><header><h3>Home · Watch</h3></header><div class="body small">The best new matches and how many more there are. Deadlines also appear in "Coming up".</div></div>
+          <div class="card"><header><h3>Search (⌘K)</h3></header><div class="body small">"in:watch literacy" would search collected items (proposal, not built).</div></div>
+          <div class="card"><header><h3>Notifications</h3></header><div class="body small">One grouped notice for new matches; a notice N days before a deadline. Off until turned on.</div></div>
+        </div>
+      </section>
+
+    </div>
+
+<script>
+  const b = document.querySelector('.theme');
+  b.addEventListener('click', () => {
+    const r = document.documentElement;
+    const now = r.dataset.theme === 'dark' ? 'light' : r.dataset.theme === 'light' ? '' : 'dark';
+    if (now) r.dataset.theme = now; else delete r.dataset.theme;
+    b.textContent = 'Theme: ' + (now || 'system');
+  });
+</script>
+  </body>
+</html>

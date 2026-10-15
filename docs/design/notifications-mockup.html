@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Notifications mockup</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@600;700&display=swap" />
+    <style>
+:root {
+  color-scheme: light dark;
+  --bg: light-dark(#edeff2, #14181d);
+  --panel: light-dark(#e1e5ea, #1b2128);
+  --surface: light-dark(#ffffff, #1f262e);
+  --ink: light-dark(#1b222b, #e6eaee);
+  --text-secondary: light-dark(#3a4652, #c2cad2);
+  --text-muted: light-dark(#5c6672, #98a3af);
+  --border-soft: light-dark(#d3d8de, #2f3843);
+  --border-strong: light-dark(#c3cad2, #3d4855);
+  --border-faint: light-dark(#e6e9ed, #262e37);
+  --hover-tint: light-dark(#f4f6f8, #262e37);
+  --accent: light-dark(#35577a, #86aad0);
+  --accent-contrast: light-dark(#ffffff, #0f1620);
+  --chart-under: light-dark(#b8741a, #d9a05a);
+  --chart-now: light-dark(#9db3c9, #4a6784);
+  --selected-bg: light-dark(#dce6ee, #2a3b4d);
+  --selected-text: light-dark(#1f3a52, #d3e3f2);
+  --danger: light-dark(#a8433f, #dc7c77);
+  --danger-bg: light-dark(#f3dcda, #3d2524);
+  --ok: light-dark(#2f6b4a, #7fc3a0);
+  --ok-bg: light-dark(#dcefe4, #1f3329);
+  --warn-bg: light-dark(#f6e8d2, #3a2e1c);
+  --shadow-color: light-dark(rgba(27, 34, 43, 0.18), rgba(0, 0, 0, 0.55));
+  --font-display: 'Newsreader', Georgia, serif;
+  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+:root[data-theme='light'] { color-scheme: light; }
+:root[data-theme='dark'] { color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--font-body); padding: 20px 16px 64px; }
+h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; font-weight: 700; }
+p { margin: 0; }
+a { color: var(--accent); text-decoration: none; }
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 44px; }
+.intro { display: grid; gap: 6px; }
+.intro h1 { font-size: 32px; }
+.intro p { color: var(--text-secondary); max-width: 760px; }
+.theme { justify-self: start; border: 1px solid var(--border-soft); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 4px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+.label { color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.screen { background: var(--bg); border: 1px dashed var(--border-strong); border-radius: 14px; padding: 18px; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; color: var(--text-muted); font-size: 12px; margin-top: 4px; }
+.tag { display: inline-block; font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 999px; padding: 1px 8px; vertical-align: middle; }
+.tag.built { background: var(--ok-bg); color: var(--ok); }
+.tag.new { background: var(--selected-bg); color: var(--selected-text); }
+.tag.later { background: var(--warn-bg); color: var(--chart-under); }
+.card { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; }
+.card > header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 16px 6px; }
+.card > header h3 { font-size: 17px; }
+.card .body { padding: 4px 16px 14px; }
+.muted { color: var(--text-muted); }
+.small { font-size: 12.5px; }
+.btn { border: 1px solid var(--border-soft); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 6px 12px; font: inherit; cursor: default; }
+.btn.primary { background: var(--accent); color: var(--accent-contrast); border-color: var(--accent); }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--accent); padding: 4px 8px; }
+.chip { display: inline-block; background: var(--selected-bg); color: var(--selected-text); border-radius: 999px; padding: 1px 10px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+.chip.warn { background: var(--danger-bg); color: var(--danger); }
+.chip.amber { background: var(--warn-bg); color: var(--chart-under); }
+.chip.ok { background: var(--ok-bg); color: var(--ok); }
+.chip.plain { background: var(--hover-tint); color: var(--text-secondary); border: 1px solid var(--border-faint); }
+.row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border-faint); }
+.row:last-child { border-bottom: 0; }
+.row .grow { flex: 1; min-width: 0; }
+.row .title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.circle { width: 17px; height: 17px; border-radius: 50%; border: 1.6px solid var(--border-strong); flex: none; }
+.circle.late { border-color: var(--danger); }
+.ico { width: 18px; height: 18px; flex: none; stroke: var(--text-muted); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.bar { height: 8px; border-radius: 999px; background: var(--border-faint); overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--chart-now); }
+.bar.under > i { background: var(--chart-under); }
+.kbd { font-family: var(--font-mono); font-size: 11.5px; border: 1px solid var(--border-soft); border-radius: 5px; padding: 0 5px; background: var(--hover-tint); }
+.note { color: var(--text-muted); font-size: 13px; margin-top: 10px; max-width: 820px; }
+.topbar { display: flex; align-items: center; gap: 14px; background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; padding: 10px 16px; margin-bottom: 16px; }
+.topbar .brand { font-family: var(--font-display); font-weight: 700; font-size: 18px; }
+.topbar .ws { display: flex; gap: 4px; }
+.topbar .ws span { padding: 3px 10px; border-radius: 999px; color: var(--text-secondary); }
+.topbar .ws .on { background: var(--selected-bg); color: var(--selected-text); font-weight: 600; }
+.topbar .sp { flex: 1; }
+.timer { display: inline-flex; gap: 8px; align-items: center; border-radius: 999px; border: 1px solid var(--border-soft); padding: 2px 12px; background: var(--hover-tint); font-variant-numeric: tabular-nums; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); }
+.switch { width: 34px; height: 20px; border-radius: 999px; background: var(--border-strong); position: relative; flex: none; }
+.switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; }
+.switch.on { background: var(--accent); }
+.switch.on::after { left: 16px; }
+.field { border: 1px solid var(--border-soft); border-radius: 8px; padding: 6px 10px; background: var(--surface); color: var(--ink); font: inherit; min-width: 0; }
+.field.sm { width: 74px; }
+.dialog { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 14px; padding: 18px 20px; box-shadow: 0 8px 24px var(--shadow-color); display: grid; gap: 12px; }
+.dialog h3 { font-size: 20px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
+@media (max-width: 760px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+
+
+.desk { display: grid; gap: 10px; max-width: 420px; margin-left: auto; padding: 18px; border-radius: 14px; background: linear-gradient(0deg, var(--panel), var(--panel)); border: 1px dashed var(--border-strong); }
+.banner { display: flex; gap: 10px; background: var(--surface); border: 1px solid var(--border-soft); border-radius: 14px; padding: 10px 12px; box-shadow: 0 6px 18px var(--shadow-color); }
+.banner .bt { display: flex; justify-content: space-between; gap: 8px; }
+.appico { width: 36px; height: 36px; border-radius: 9px; background: var(--accent); color: var(--accent-contrast); display: grid; place-items: center; font-weight: 700; font-size: 13px; flex: none; }
+.set-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-faint); }
+.set-row:last-child { border-bottom: 0; }
+.tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+.tabs span { padding: 4px 12px; border-radius: 999px; color: var(--text-secondary); }
+.tabs .on { background: var(--selected-bg); color: var(--selected-text); font-weight: 600; }
+
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="intro">
+        <h1>Notifications mockup</h1>
+        <p>Mac notifications for the few things worth interrupting you for: the day in one line, a meeting about to start, new matches from Watch, a deadline coming. Everything is off until you turn it on.</p>
+        <button class="theme" type="button">Theme: system</button>
+      </div>
+
+      <section>
+        <div class="label">1 · What arrives <span class="tag new">new</span></div>
+        <div class="desk">
+          <div class="banner"><div class="appico">CC</div><div class="grow"><div class="bt"><b>Today</b><span class="muted small">08:30</span></div><div class="small">2 tasks due, 1 overdue · Supervision at 14:00</div><div class="muted small">Central Command</div></div></div>
+          <div class="banner"><div class="appico">CC</div><div class="grow"><div class="bt"><b>Supervision</b><span class="muted small">13:50</span></div><div class="small">Starts in 10 minutes (14:00)</div><div class="muted small">Central Command</div></div></div>
+          <div class="banner"><div class="appico">CC</div><div class="grow"><div class="bt"><b>3 new in Watch</b><span class="muted small">09:12</span></div><div class="small">Workshop on multilingual literacy in Sub-Saharan Africa, and 2 more</div><div class="muted small">Central Command</div></div></div>
+          <div class="banner"><div class="appico">CC</div><div class="grow"><div class="bt"><b>Deadline in 7 days</b><span class="muted small">09:00</span></div><div class="small">Workshop at SLE 2027: To P(reposition) or Not to P(reposition)</div><div class="muted small">Central Command</div></div></div>
+          <div class="banner"><div class="appico">CC</div><div class="grow"><div class="bt"><b>Timer still running</b><span class="muted small">13:05</span></div><div class="small">Reading has run for 4h 05m</div><div class="muted small">Central Command</div></div></div>
+        </div>
+        <p class="note">Silent banners (no sound). A click opens the page they are about: the task list, the meeting, Watch, or the web page of a deadline. Each thing is announced once; the app remembers what it has said, also across restarts.</p>
+      </section>
+
+      <section class="grid2">
+        <div>
+          <div class="label">2 · Settings → Notifications <span class="tag new">new</span></div>
+          <div class="card"><div class="body">
+            <div class="tabs"><span>General</span><span>Home</span><span class="on">Notifications</span><span>Shortcuts</span><span>About</span></div>
+            <div class="set-row"><div class="grow"><b>Notifications</b><div class="muted small">Off until you turn them on. Turning them on does not announce what already exists.</div></div><span class="switch on"></span></div>
+            <div class="set-row"><div class="grow"><b>Daily digest</b><div class="muted small">The day in one line.</div></div><input class="field sm" value="08:30" /><span class="switch on"></span></div>
+            <div class="set-row"><div class="grow"><b>Before a meeting</b><div class="muted small">For meetings with a start time.</div></div><input class="field sm" value="10" /><span class="muted small">min</span><span class="switch on"></span></div>
+            <div class="set-row"><div class="grow"><b>Timer left running</b><div class="muted small">After this many hours without a stop.</div></div><input class="field sm" value="4" /><span class="muted small">h</span><span class="switch "></span></div>
+            <div class="set-row"><div class="grow"><b>New in Watch</b><div class="muted small">Only items that mention a keyword. One notice for the lot.</div></div><span class="switch on"></span></div>
+            <div class="set-row"><div class="grow"><b>Deadlines</b><div class="muted small">Found by Watch, this many days before.</div></div><input class="field sm" value="7" /><span class="muted small">days</span><span class="switch on"></span></div>
+          </div></div>
+        </div>
+        <div>
+          <div class="label">3 · Rules the backend already follows</div>
+          <div class="card"><div class="body small" style="display:grid;gap:8px">
+            <div>Nothing is shown while the master switch is off.</div>
+            <div>The digest waits for its time and is skipped on an empty day.</div>
+            <div>A meeting reminder comes once, between "N minutes before" and the start.</div>
+            <div>A grouped Watch notice covers every item in it, so the next one is only about newer items.</div>
+            <div>A deadline notice comes once per deadline, from N days before.</div>
+            <div>"Already told" is kept in a small file in the data folder and forgotten after 30 days.</div>
+          </div></div>
+          <p class="note">Open question for you: quiet hours (nothing between 18:00 and 08:00, or at weekends). Not built; the digest time covers mornings only.</p>
+        </div>
+      </section>
+
+    </div>
+
+<script>
+  const b = document.querySelector('.theme');
+  b.addEventListener('click', () => {
+    const r = document.documentElement;
+    const now = r.dataset.theme === 'dark' ? 'light' : r.dataset.theme === 'light' ? '' : 'dark';
+    if (now) r.dataset.theme = now; else delete r.dataset.theme;
+    b.textContent = 'Theme: ' + (now || 'system');
+  });
+</script>
+  </body>
+</html>
