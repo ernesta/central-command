@@ -3386,3 +3386,11 @@ progress that are worked on every day (Daily admin).
 - **Not done:** the ROADMAP question on how far back it reaches is still open (a task not timed for a week and not due today is not suggested).
 - Not driven in the app; unit tests only.
 
+
+## Group picker: one field to find or create (15 Oct 2026)
+
+The user's review of the Group menu: a "New group" form under the list (name, "Inside", Add) beside the search field was convoluted when other places (the timer's task picker) use one field for both.
+
+- **One field.** `GroupField` (`src/modules/notes/renderer/`) has the search input only. A name that is not there yet ends the list with **Create “name”** and an **Inside** menu (nothing, or an existing group) for a sub-group, as the task picker does with its list.
+- **Enter** picks the only match, else creates the typed name; it never reaches a form around the field. The Create row is left out when the name already exists at that level or contains `/` or `›` (so the old inline error is gone). Where new top-level groups are not allowed (Work's lists), Inside starts at the current group and has no "nothing".
+- Unit tests and lint pass; not driven in the app yet.
