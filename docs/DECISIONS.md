@@ -3486,3 +3486,7 @@ The user: "I kept pressing enter but nothing was happening" with the cursor at t
 - **Cause:** Enter put the new line above and the cursor went down with the text; a blank line is drawn with no height unless the cursor is on it ("Spacing between blocks"), so nothing showed.
 - **Fix** (`enterAt`, `live-lists.ts`): at the very start of a plain, non-empty paragraph line the empty line goes above and the cursor stays on it, so the text moves down by the cursor line. Headings, items, quotes and code keep their rules.
 - Still true by the earlier decision: a second, third… blank line is not drawn, so repeated Enter on empty lines shows only the one with the cursor.
+
+## Library gate and empty table cells (15 Oct 2026)
+
+`live-library` "draws every list marker…" failed on `POST Placement Interview Application.md`, also on the commit before the day's editor changes. Cause: the check counted every widget as a list marker, and a table row ending in `||` has the table's zero-width empty-cell widget (`EmptyCell`, `live-tables.ts`). The check now skips widgets over no text. Not an editor bug; the whole gate passes on a copy of the real library.
