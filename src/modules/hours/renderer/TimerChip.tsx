@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
 import { Play } from 'lucide-react'
 import { Select } from '@renderer/components/Select'
-import { researchOrWork } from '@renderer/shell/quick-actions'
 import { TopBarPortal } from '@renderer/shell/top-bar-slot'
 import { useQuickActionWorkspace } from '@renderer/shell/useQuickActionWorkspace'
 import { WORKSPACE_LABELS } from '@renderer/shell/workspaces'
@@ -278,11 +277,7 @@ function IdleChip(): React.JSX.Element {
   return (
     <div className={styles.root}>
       <div className={styles.chip}>
-        <button
-          type="button"
-          className={styles.main}
-          onClick={() => void startUnnamed(researchOrWork(workspace))}
-        >
+        <button type="button" className={styles.main} onClick={() => void startUnnamed(workspace)}>
           <Play size={12} strokeWidth={1.75} fill="currentColor" aria-hidden />
           Start
         </button>

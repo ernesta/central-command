@@ -29,13 +29,15 @@ interface MeetingRowsProps {
  * is where they are changed. A line that overlaps a timer block or another meeting says so and changes nothing.
  */
 export function MeetingRows({
-  workspace,
+  workspace: shown,
   data,
   date,
   now
 }: MeetingRowsProps): React.JSX.Element | null {
   const rows = derivedRows(data, date)
-  if (rows.length === 0) return null
+  // Life has no meetings or lectures: nothing is derived there.
+  if (rows.length === 0 || shown === 'life') return null
+  const workspace = shown
   const sessions = occupiedBySessions(data.sessions, date)
   const meetings = occupiedByMeetings(
     rows.map((r) => ({ ...r, date })),

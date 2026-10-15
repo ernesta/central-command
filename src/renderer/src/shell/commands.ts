@@ -3,7 +3,7 @@ import { startUnnamed } from '@modules/hours/renderer/start-request'
 import { peopleRoute } from '@modules/meetings/renderer/meetings-paths'
 import { fold } from '@shared/text'
 import { searchTerms, type SearchHit } from '@shared/search'
-import { QUICK_ACTIONS, researchOrWork, type QuickActionWorkspace } from './quick-actions'
+import { QUICK_ACTIONS, type QuickActionWorkspace } from './quick-actions'
 
 const DEFAULT_LIMIT = 6
 
@@ -25,7 +25,7 @@ const COMMANDS: Command[] = [
     title: 'Start timer',
     detail: 'Starts now, then asks which task.',
     // The same Start as the top bar's: a timer at once, with the picker open for it.
-    go: (_navigate, workspace) => startUnnamed(researchOrWork(workspace)),
+    go: (_navigate, workspace) => startUnnamed(workspace),
     whileRunning: false
   },
   {

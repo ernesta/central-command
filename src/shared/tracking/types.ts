@@ -140,9 +140,18 @@ export const WORK_PLAN: Plan = {
   clients: ['Impact', 'Teaching & Learning']
 }
 
+/** Life: time tracked on personal tasks with no fixed hours (a week aim of 0 is none), any day, and no time off. */
+export const LIFE_PLAN: Plan = {
+  hoursPerWeek: 0,
+  workDays: [1, 2, 3, 4, 5, 6, 7],
+  allowanceDays: 0,
+  weekAim: true
+}
+
 /** The plan a workspace's first year starts from. */
 export function defaultPlan(workspace: string): Plan {
-  return workspace === 'work' ? WORK_PLAN : DEFAULT_PLAN
+  if (workspace === 'work') return WORK_PLAN
+  return workspace === 'life' ? LIFE_PLAN : DEFAULT_PLAN
 }
 
 export function emptyYear(start: string, plan: Plan = DEFAULT_PLAN, carryIn = 0): TrackingYear {

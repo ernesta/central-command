@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { dailyAim, plannedDays, weekPlan, weekTotals, yearTotals } from './plan'
+import { dailyAim, hasAim, plannedDays, weekPlan, weekTotals, yearTotals } from './plan'
+import { parsePlan } from './parse'
+import { defaultPlan, emptyYear } from './types'
 import { formatHours, formatSignedHours } from './format'
 import { addDays, weeksOf } from '../year'
 import { year } from './test-utils'
@@ -181,5 +183,16 @@ describe('allowance days not listed as days off', () => {
     expect(weekTotals(y, addDays(lastDay, -1))[51].yearBalance).toBe(
       yearTotals(y, addDays(lastDay, -1)).balance
     )
+  })
+})
+
+describe("Life's plan", () => {
+  it('has no fixed hours, so no aim, and is a plan a file can hold', () => {
+    const plan = defaultPlan('life')
+    expect(plan).toMatchObject({ hoursPerWeek: 0, weekAim: true, allowanceDays: 0 })
+    expect(parsePlan(plan)).toEqual(plan)
+    expect(hasAim(emptyYear(W1, plan))).toBe(false)
+    expect(defaultPlan('research').hoursPerWeek).toBe(2250)
+    expect(defaultPlan('work').hoursPerWeek).toBe(480)
   })
 })

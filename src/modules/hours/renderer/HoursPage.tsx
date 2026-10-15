@@ -3,6 +3,7 @@ import { LandingHeader, LandingPage } from '@renderer/components/Landing'
 import { useNow } from '@renderer/state/use-now'
 import { useRunningTimer } from '@renderer/state/use-running-timer'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
+import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { inYear } from '@shared/year'
 import { useHoursWorkspace } from './hours-paths'
 import { BalanceCard } from './BalanceCard'
@@ -31,7 +32,8 @@ export function HoursPage(): React.JSX.Element {
   const weekCard = data && (
     <WeekCard workspace={workspace} data={data} week={week} onWeekChange={setWeek} now={now} />
   )
-  const invoiceCard = data?.plan.weekAim && (
+  // Only a contract is invoiced; Life aims by the week too, but has nothing to invoice.
+  const invoiceCard = data?.plan.weekAim && hasContracts(workspace) && (
     <InvoiceCard data={data} week={week} onWeekChange={setWeek} now={now} />
   )
 

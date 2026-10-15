@@ -68,11 +68,11 @@ describe('searchCommands', () => {
       expect(currentPickerRequest()).toMatchObject({ stopAfter: false })
     })
 
-    it('Start timer in Life starts in Research', async () => {
+    it('Start timer in Life starts in Life', async () => {
       withTimer(null)
       const [hit] = await searchCommands('start timer', vi.fn(), 6, 'life')
       await hit.run?.()
-      expect(window.api.tracking.start).toHaveBeenCalledWith('research', '', undefined, undefined)
+      expect(window.api.tracking.start).toHaveBeenCalledWith('life', '', undefined, undefined)
     })
   })
 })

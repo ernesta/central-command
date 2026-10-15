@@ -27,7 +27,8 @@ export function useMeetingEntries(workspace: HoursWorkspace, today: string): Der
     let cancelled = false
     const load = (): void => {
       void Promise.all([
-        window.api.meetings.list(workspace),
+        // Life has no meetings.
+        workspace === 'life' ? Promise.resolve([]) : window.api.meetings.list(workspace),
         workspace === 'research' ? window.api.training.list('research') : Promise.resolve([]),
         window.api.tasks.list(workspace)
       ]).then(([rows, lectures, tasks]) => {
