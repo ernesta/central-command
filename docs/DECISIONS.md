@@ -3451,3 +3451,13 @@ The user: after deleting a paragraph, Delete on the empty line it left "does not
 ## Home shows every task's priority as P1/P2/P3 (15 Oct 2026)
 
 The user: Home's Today card labelled a task "High", a word nowhere else in the app, and showed nothing for Normal and Low. Tasks calls them P1, P2 and P3 (`PRIORITY_MARKS`; the word is only the hover title). Fix: `TaskRow` in `HomePage.tsx` renders the Tasks module's `PriorityBadge` for every task, so the mark, colours and the show-all rule match the Tasks table. The old `.chip` is still used for "N days late". Not yet driven in the app.
+
+## A loosely typed checkbox becomes a task (15 Oct 2026)
+
+The user: a line starting `[ ] text` stayed plain text (a checkbox needs `- [ ] ` in Markdown), and typing the dash first drew a bullet before the brackets were written, so it was unclear what would work. They asked for `[]` at the start of a line to become a checkbox, and for the exact form to be fixed up once written.
+
+- **Trigger:** typing a space right after `[]`, `[ ]` or `[x]` at the start of a line (after any quote and indent). `looseTask` in `live-lists.ts`, an `EditorView.inputHandler` added in `live-state.ts`. Only the space triggers it, so nothing changes while the brackets are being typed.
+- **Result:** `- [ ] ` or `- [x] `. A bullet or number already typed is kept (`- []` becomes `- [ ]`, `1. []` becomes `1. [ ]`), so the order of dash and brackets does not matter. If the cursor sat inside `[ ]` on a line that goes on, the space after it is reused, not doubled.
+- **Left alone:** `[]` after other text, and in code (fenced, indented or inline).
+- **Undo:** its own step (`input.task`, listed in `live-history.ts`); undoing gives back what was typed.
+- Tests in `live-lists.test.ts`. Driven in the built app with real keystrokes on a scratch library; not checked in dev mode.
