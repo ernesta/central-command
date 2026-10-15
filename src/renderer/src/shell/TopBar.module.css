@@ -8,7 +8,12 @@
   border-bottom: 1px solid var(--border-soft);
   /* The window's own drag handle, since the traffic lights are inset into it rather than a native title-bar row. */
   -webkit-app-region: drag;
+  --fullscreen-strip-shift: 28px;
   transition: padding-left 220ms ease;
+}
+.lead,
+.actions {
+  transition: transform 220ms ease;
 }
 /* Room for the inset traffic lights (main/index.ts sets trafficLightPosition), macOS only. Fixed in a
    normal window (matches where the dots always sit); in full screen the dots (and the system menu bar)
@@ -28,6 +33,12 @@
 }
 .bar:has(.topSentinel:hover) {
   padding-left: 94px;
+}
+/* The revealed system strip (menu bar and title bar) is opaque and sits over the top of the window,
+   so besides making room beside the dots the content drops below it. */
+.bar:has(.topSentinel:hover) .lead,
+.bar:has(.topSentinel:hover) .actions {
+  transform: translateY(var(--fullscreen-strip-shift));
 }
 .lead,
 .pills,
