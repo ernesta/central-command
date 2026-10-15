@@ -3394,3 +3394,11 @@ The user's review of the Group menu: a "New group" form under the list (name, "I
 - **One field.** `GroupField` (`src/modules/notes/renderer/`) has the search input only. A name that is not there yet ends the list with **Create “name”** and an **Inside** menu (nothing, or an existing group) for a sub-group, as the task picker does with its list.
 - **Enter** picks the only match, else creates the typed name; it never reaches a form around the field. The Create row is left out when the name already exists at that level or contains `/` or `›` (so the old inline error is gone). Where new top-level groups are not allowed (Work's lists), Inside starts at the current group and has no "nothing".
 - Unit tests and lint pass; not driven in the app yet.
+
+## Icon button tooltip: hover or keyboard focus, not any focus (15 Oct 2026)
+
+The user saw the "Back (⌘[)" label appear without the pointer on it and stay for a long time.
+
+- **Cause:** `IconButton`'s tooltip showed on `:focus-within`. Clicking the button leaves focus on it, and Back then disables itself at the first page and keeps focus, so the label stayed until the user clicked elsewhere.
+- **Fix:** the tooltip shows on hover or `:has(:focus-visible)` (keyboard focus only). A mouse click no longer pins it; tabbing to the button still shows it. Applies to every icon button.
+- Not driven in the app; unit tests and lint pass (no unit test covers the CSS).
