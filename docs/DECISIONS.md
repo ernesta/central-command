@@ -3428,3 +3428,13 @@ The user: a table could not be edited by clicking in it; the cursor had to come 
 - **Fix:** the handler checks `event.composedPath()` (taken when the event was dispatched) instead of `contains`.
 - Any element the editor replaces on mousedown would have hit the same handler.
 - Driven in the built app on a scratch library: click a cell, the table shows as text, typing lands in the cell. Not checked in dev mode; no unit test (it needs a real mousedown and layout).
+
+## Spacing between blocks (15 Oct 2026)
+
+The user: notes were crammed (no room between text and a table), and "no new line and 5 new lines should look the same". Audit of every block type in the built app, then `live-spacing.ts`.
+
+- **The gap depends on the two blocks, not on blank lines.** A blank line is drawn with no height (`live-void`) except while the cursor is on it (otherwise the caret has nowhere to be; that line takes its full height, one line of movement below it) and inside fenced code. The first line after a block boundary carries the gap: `--block-gap` 16px between blocks and between paragraph lines (each line of text is its own paragraph, as the notes are written), `--item-gap` 4px between list items, none inside a quote, table or code block, none next to a heading (a heading pads itself).
+- **Padding, not margin.** A vertical margin on `.cm-line` is invisible to CodeMirror's height map: with margins, a click below the first gap landed one to three lines too high. The gap is `padding-top`, clipped away with `clip-path` so a quote's rule and a code band start after it. Lines that set `padding` (table rows, code) now set `padding-inline`, or they would wipe it. A drawn rule line has its own `min-height` (it holds no text).
+- Quote and code blocks get 6px inside at their first and last line (`live-pad-first`/`live-pad-last`).
+- **Line length:** each line is at most `--measure` (60ch, about 70 characters); tables and code use the whole width.
+- Replaces the 0.9-line blank line and the table margin of earlier the same day. Checked in the built app on a scratch library (light mode, clicks and typing on each block type land on the right line); not checked in dev mode or dark mode (no colour changed).
