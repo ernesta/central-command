@@ -307,6 +307,44 @@ export const backspaceBlankRun: StateCommand = ({ state, dispatch }) => {
   return true
 }
 
+/** The empty lines directly above (`dir` -1) or below (`dir` 1) a line of text, first and last in document order; null when fewer than two. */
+function blankRunBeside(state: EditorState, line: Line, dir: 1 | -1): [Line, Line] | null {
+  const found: Line[] = []
+  for (let n = line.number + dir; n >= 1 && n <= state.doc.lines; n += dir) {
+    const next = state.doc.line(n)
+    if (!blankLine(parseLine(next.text))) break
+    found.push(next)
+  }
+  if (found.length < 2) return null
+  return dir === 1 ? [found[0], found[found.length - 1]] : [found[found.length - 1], found[0]]
+}
+
+/**
+ * Backspace at the start of text, or Delete at the end of it, beside two or more empty lines: they draw no height, so
+ * removing one changes nothing anyone can see. Collapse the run to one empty line instead.
+ */
+const collapseBlankRun =
+  (forward: boolean): StateCommand =>
+  ({ state, dispatch }) => {
+    const range = state.selection.main
+    if (!range.empty || state.selection.ranges.length > 1) return false
+    const line = state.doc.lineAt(range.head)
+    if (range.head !== (forward ? line.to : line.from)) return false
+    if (blankLine(parseLine(line.text)) || inCode(state, range.head)) return false
+    const run = blankRunBeside(state, line, forward ? 1 : -1)
+    if (!run) return false
+    dispatch(
+      state.update({
+        changes: { from: run[0].to, to: run[1].to },
+        scrollIntoView: true,
+        userEvent: 'delete.blank'
+      })
+    )
+    return true
+  }
+export const backspaceAboveBlankRun = collapseBlankRun(false)
+export const deleteBelowBlankRun = collapseBlankRun(true)
+
 /** Delete at the end of a line, when the next line is a list item: join its text on, without its marker. */
 export const deleteBeforeItem: StateCommand = ({ state, dispatch }) => {
   const range = state.selection.main

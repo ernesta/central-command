@@ -204,6 +204,20 @@ describe('Backspace on empty lines', () => {
   })
 })
 
+describe('text beside a run of empty lines', () => {
+  it('Backspace at the start of text collapses the run above to one empty line', () => {
+    expect(after('a\n\n\n|b', 'Backspace')).toBe('a\n\n|b')
+    expect(after('a\n\n\n\n|- b', 'Backspace')).toBe('a\n\n|- b')
+  })
+  it('Delete at the end of text collapses the run below to one empty line', () => {
+    expect(after('a|\n\n\nb', 'Delete')).toBe('a|\n\nb')
+  })
+  it('leaves a single empty line to the ordinary key', () => {
+    expect(after('a\n\n|b', 'Backspace')).toBe('a\n|b')
+    expect(after('a|\n\nb', 'Delete')).toBe('a|\nb')
+  })
+})
+
 describe('Delete', () => {
   it('takes a whole run of empty lines at once, since they draw no height', () => {
     expect(after('a\n\n|\n\nb', 'Delete')).toBe('a\n\n|b')
