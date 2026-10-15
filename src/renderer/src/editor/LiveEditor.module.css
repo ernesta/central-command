@@ -267,6 +267,13 @@
   font-size: 0;
   line-height: 0;
 }
+/* Room between a table and the text above and below it; margins, so the same in the grid and in text. */
+.wrap :global(.cm-editor) :global(.cm-line.live-table-first) {
+  margin-top: 0.9em;
+}
+.wrap :global(.cm-editor) :global(.cm-line.live-table-last) {
+  margin-bottom: 0.9em;
+}
 /* Each hidden range is an empty element in the line (with CodeMirror's spacers beside it), and each would be a cell of the grid. */
 .wrap
   :global(.cm-editor)
