@@ -48,6 +48,10 @@
 .wrap :global(.cm-editor) :global(.cm-cursor) {
   border-left-color: var(--ink);
 }
+/* The selection is drawn by `live-selection.ts`; the default layer stays only for the cursor. */
+.wrap :global(.cm-editor) :global(.cm-selectionLayer) {
+  display: none;
+}
 .wrap :global(.cm-editor) :global(.cm-selectionBackground),
 .wrap
   :global(.cm-editor.cm-focused)
