@@ -9,6 +9,9 @@
   gap: 12px 24px;
   margin-bottom: 32px;
 }
+.headerTight {
+  margin-bottom: 4px;
+}
 .heading {
   margin: 0;
   font-size: var(--text-32);
