@@ -16,6 +16,7 @@ ask the user.
 - `npm run people:from-notes [-- --apply]`: list people named in meeting attendees and training leads who are not in the people list, with
   proposed initials (dry run by default; apply only with the app closed)
 - `npm run tidy:reading-lists [-- --apply]`: bring reading list entries to reading entities (shorten linked ones, link typed citations that match exactly one reading); dry run by default, applied 2 Oct 2026; re-run after adding readings to Zotero
+- `npm run watch:from-tasks [-- --apply]`: the addresses in the "Check upcoming …" reminders as Watch sources, plus what must be checked by hand (dry run by default, read-only; `--apply` only when the user says so, app closed, backs the database up first)
 - `npm run link:citations [-- --apply]`: turn plain-text citations ("Kim et al. (2020)") into reading entities; only an exact single match is linked, the rest are listed (dry run by
   default; applied 2 Oct 2026, re-run when new readings exist)
 - `npm run link:people [-- --apply [--first-names-off]]`: people named in prose to person entities. Rules (the user's, 11 Oct 2026; code in `src/shared/people-mentions.ts`): **never the user themselves** (the person flagged `me` in `people.json`), **never someone the note says was in the meeting** (`attendees`, or a training's `lead`/`leads`), **only the first mention of a person per note**; a first name two people share is listed, never guessed. Authoritative (it also removes chips that break the rules, so a second run changes nothing) and refuses to write unless un-chipping the result gives back the original. Dry run by default, backs each note up first, `--apply` only when the user says so, app closed. Applied 11 Oct 2026 (`docs/DECISIONS.md`); a dry run now finds nothing.
@@ -45,7 +46,7 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   remembered-UI-state hook is `useModuleState`. A page with a note has one shape, and it is not re-specified per page:
   `DocSplit` (`renderer/src/notes/`) is the text-and-panels grid, `Panel` (`renderer/src/components/`) is the labelled
   card each panel (and each body block, such as a reading's reference) sits in, and the side column — not the panel —
-  is what stays in view and scrolls. What goes in the side column is what the app knows *about* a thing, not part of
+  is what stays in view and scrolls. What goes in the side column is what the app knows _about_ a thing, not part of
   the thing itself (`docs/DECISIONS.md`, "A reading's metadata belongs in the side column", "Which side of 'about it'
   the APA reference falls on").
 - `src/renderer/src/editor/`: the one editor, `LiveEditor` (CodeMirror 6; the Markdown text is the document and everything drawn is a decoration
@@ -87,82 +88,39 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
 
 ## Where things stand and where to look
 
-- **Tasks is built and pushed; the ClickUp import was applied to the real library on 6 Oct 2026 (so a dry run now reports it already holds tasks)** (5 Oct 2026, an unattended run): stages 1 to 7 and the buildable part of 9 of `docs/TASKS_PLAN.md` (SQLite, `src/modules/tasks/`, `npm run import:clickup`, the user's review list is at the top of "For the user" in `docs/ROADMAP.md`). Stage 8 (Work hours become tasks) waits for the user's answer. Decisions: `docs/DECISIONS.md`, "Tasks: plan and mockup" and the stage write-ups. The ClickUp export: `~/CentralCommand/imports/clickup/` (a CSV that lists most tasks twice; de-duplicate by Task ID). Do not re-run the import with `--apply` (it refuses anyway). **The export dropped most descriptions** (it carries only ClickUp's plain-text rendering, so a description that was nothing but a link embed arrived empty); `npm run backfill:clickup-links` read them from the API and was applied on 6 Oct 2026 (32 written, 89 -> 121 tasks with a description; a re-run finds nothing). `-- --repair` (applied 13 Oct 2026, 11 tasks) restored links in descriptions the CSV held as plain text; a re-run finds nothing. `docs/DECISIONS.md`, "The descriptions the ClickUp CSV export dropped" and "The real dry run".
+Detail lives in `docs/DECISIONS.md` (why things are as they are, including bugs found by using the app: read it before changing sync, notes, the editor or
+the module structure), `docs/ROADMAP.md` (the user's review list and the TODOs for Claude: keep them current) and one `docs/*_PLAN.md` per feature. The brief
+(`central-command-mvp-phase1-brief.md`) is authoritative for the visual design (section 9) and the stage plan (section 12); the app is "Central Command", the
+workspaces are Life, Research and Work, data lives in `~/CentralCommand/`, and the app name lives in one place (`src/shared/app-info.ts`).
 
-- **Tasks stage 8, Work hours linked to tasks, is done and applied to the real library (6 Oct 2026)**: all 213 Work hours entries (326:15) have a task, ClickUp time equals the hours task by task (326:15), tasks were renamed, merged, split and made, task dates follow the hours, the Month card has a balance, the task page lists hours by month. **Work is billable work only (6 Oct 2026, the user's decision): there is no billable / non-billable distinction in the app** (no Billable choice, no billable-only Month card, no filter); the 74 non-billable Work tasks (5:30) were saved to `~/CentralCommand/exports/work-non-billable-tasks.csv`, put in the trash and the `billable` tag removed from every task (applied 6 Oct 2026; the one-off script is gone). Write-ups: `docs/DECISIONS.md`, "Stage 8 …" (several). Backups: `~/CentralCommand/backups/work-final-*`, `work-match-*`. The user accepted the names and merges as they are (no open items) (top of `docs/ROADMAP.md`).
-- Phase 1 stages 1 to 6 are done (foundations, shell, Readings sync, Readings UI, detail page with
-  notes editor and APA copy, polish pass). What is left is the user's review and the push.
-  `docs/ROADMAP.md` is the checklist; `docs/DECISIONS.md` records what the polish pass changed.
-- Meetings is done (all nine stages of `docs/MEETINGS_PLAN.md`) and awaits the user's review and the push. The user's
-  real meetings were imported. `docs/ROADMAP.md` lists the follow-ups. What to build next is the user's call; do not
-  start a new feature without their go-ahead.
-- `docs/DECISIONS.md` explains why things are the way they are, including bugs found by using the
-  app. Read it before changing sync, notes, the editor or the module structure.
-- The brief (`central-command-mvp-phase1-brief.md`) is authoritative for the visual design
-  (section 9) and the stage plan (section 12). It has been updated for the renames: the app is
-  "Central Command", the third workspace is "Work" (`work`), and data lives in `~/CentralCommand/`.
-- Training is done (all ten stages of `docs/TRAINING_PLAN.md`) and has had two review rounds; Meetings gained an academic-year
-  selector, skills and an hours counter. Both importers have been applied to the real library (129 training entries, 35 meeting
-  files updated). Everything up to the second review round is pushed. The two TODO lists (for the user and for Claude) are at the
-  top of `docs/ROADMAP.md`; keep them current. Push only when the user says so.
-- Reuse patterns: landings, filter rows, export buttons, people and skills fields are shared components; use them rather than
-  building a variant, and ask if a module needs something different. Keep UI text short: one-sentence help, one-word buttons, no
-  optional extra choices unless asked.
-- Since the second Training review: Meetings' Export (the Supervision log as a PDF; printing and page shell shared with Training) and the
-  Training plan (one Markdown file per academic year, `notes/training-plans/`, the user's 2026–27 draft copied in) are built. The
-  People page is built (`docs/DECISIONS.md`, "People page"; mockup `docs/design/people-and-plan-mockup.html`) and awaits the user's review.
-- **Notes** is built (all nine stages of `docs/NOTES_PLAN.md`; `docs/DECISIONS.md`, "Notes") and awaits the user's review: one flat folder of
-  notes, a group and optional subgroup per note shown as `Thesis › Methods`, up to four pinned notes, quick capture with Mod-Shift-n, and
-  `npm run import:notes`, applied to the real library on 25 Sep 2026 (12 notes, ungrouped, wiki links stripped). Notes is pushed. Studies stays "Coming
-  soon"; Ideas, Data Sources, Inbox and Thesis are not modules.
-- Since the Notes review: every editor sits in the shared `EditorCard` (`src/renderer/src/notes/`): a white window with a quiet line
-  "Created · Edited · N words" under the text (`docs/DECISIONS.md`, "Editor card"), and a live outline of its own headings beside it
-  (`NoteOutline`, in `src/renderer/src/notes/` since 11 Oct 2026; Notes, Training entries, the Training plan and Readings).
-  Meetings' and Training's tables use the shared `useRowNavigation`. All importers and the topic
-  conversion are applied to the real library (dry runs find nothing left). Everything up to 6 Oct 2026 is pushed. Dark mode is built (Settings → Theme; `docs/DECISIONS.md`, "Dark mode"): colours are `light-dark()` pairs in `tokens.css`, so
-  a new colour needs both values. Settings is categorised into tabs (General, one per module, Shortcuts, About; `docs/DECISIONS.md`,
-  "Settings").
-- **Global search (Mod-K)** is built and since extended at the user's request: People, Notes, Meetings, Training and Readings, in that
-  fixed order; `in:meetings` (or any source, singular or plural) restricts to it; a small command palette (New note/meeting/training,
-  Settings, People, the data folder) shares the same window; "See all results" opens a full page. A module offers `search` in its
-  manifest and the shell asks them all (`docs/DECISIONS.md`, "Global search", including how results are ranked). **Find within a note**
-  (Cmd-F) is separate and built into the shared editor itself (`editor/live-find.ts`; `docs/DECISIONS.md`, "Find in the note" is the original, now historical, and stage 5 of the live markup work). The ideas list (People pages, Home,
-  writing) is at the top of "Later" in `docs/ROADMAP.md`; none is started.
-- The app name lives in one place (`src/shared/app-info.ts`); it may be renamed again. A few Mac conventions were added (proper name
-  in the Dock, an About panel, a Dock menu with quick actions; `docs/DECISIONS.md`, "Mac conventions sweep").
-- **27 Sep 2026, six things worked through while the user was away, all now pushed**: Training's entry page gained a side
-  panel like Meetings' (Files above Outline); Find in the note was redesigned as an inline bar in `EditorCard`'s own footer
-  with Cmd-Option-F replace (Cmd-Return / Cmd-Shift-Return); **Reading lists** is a new module (a list is sections of
-  entries, each linked to a reading or held as a placeholder citation, since reshaped to reading entities; see the Stage 4 write-up in `docs/DECISIONS.md`); a page per
-  person is built (their meetings, trainings, open TODOs, last-met/next-meeting, and links); and a Work meetings importer
-  was built and dry-run against the real vault (since then Work got its own Meetings module, `createMeetingsModule('work')`,
-  and the import was applied; `docs/DECISIONS.md`, "Work meetings import"). Two real bugs were found only by driving the built app, not by reading code
-  (a citekey marker that the old Milkdown editor's serialiser would have silently corrupted; a person's links silently failing to
-  save because the IPC handler had never heard of the field) — both fixed. Full write-up in `docs/DECISIONS.md`; immediate
-  TODOs for the user are at the top of `docs/ROADMAP.md`'s "For the user" list.
+**Standing rules about the work**
 
-- **29 Sep 2026, a long round of feedback and features, all pushed** (details in `docs/DECISIONS.md`, from "Editor feedback round" on): editor
-  fixes (links: `[text](url)`, paste a URL over selected text, plain URLs always links, Cmd-hover pointer; Cmd-Shift-V plain paste, caught in
-  the main process because Electron's menu owns that chord; even bullet spacing; "Saved" in the card's facts line, which no longer shows
-  Created); the Training plan laid out like a note; **Notes for Work** (`createNotesModule(workspace)`, like Meetings) with the Work notes
-  imported; the palette and Dock "New note/meeting" follow the current workspace; a **Workspace menu on note and meeting pages** moves the
-  item (`moveNoteFile`: copy first, Trash the original after, never overwrite, keeps the modified time); `created` removed from notes
-  entirely (`npm run strip:created`, applied); and **entities**: `@` in any editor mentions a person, reading, meeting or note as a
-  `[label](cc://kind/key)` link drawn as a chip (registry of providers in module manifests, `src/renderer/src/entities/`, format in
-  `src/shared/entities.ts`; notes and meetings get a `uid` in their front matter when first linked; person renames rewrite mentions;
-  "Mentioned in" panels read the note folders on request). Tasks, when built, add one provider and one kind.
+- Do not start a new feature without the user's go-ahead; push only when they say so; never re-ask a decision a plan records ("agreed with the user").
+- Decisions the user has not answered (the live editor questions, the stage 5 Research linking, the Watch/Home open questions) are listed in `docs/ROADMAP.md`;
+  do not act on them until they answer. Never write scratch files (logs, screenshots) outside the session scratchpad.
+- Reuse patterns: landings, filter rows, export buttons, people and skills fields are shared components; keep UI text short (one-sentence help, one-word buttons,
+  no optional extra choices unless asked), and ask if a module needs something different.
+- Everything applied to the real library is recorded in `docs/DECISIONS.md`, "One-off scripts applied to the real library" and the per-script write-ups; a dry
+  run of an applied script finds nothing. Do not re-run an import with `--apply` (the ClickUp import refuses anyway).
 
-- **Timer and tasks plan (7 Oct 2026, `docs/TIMER_TASKS_PLAN.md`, agreed with the user; do not re-ask its decisions)**: every hour gets a task, meetings and trainings own their time, historical data is a separate later conversation. Stage 1 is done: the running timer's Started time is a `TimeInput` in the popover (`StartedAt.tsx`; rules `setStartAt` and `overlapsFor` in `src/shared/tracking/timer.ts`; an overlapped earlier entry is trimmed, one that would vanish is refused). **Stage 2 is done (7 Oct 2026)**: one Start picker (`TaskPicker.tsx`, rules in `src/modules/hours/shared/start-picker.ts`, "start now, ask later" helpers in `start-request.ts`) for the top-bar Start, the Today form, Add time, row play, Switch to and the palette; every new session and typed entry has a task; `assignTask` (`timer.ts`, `store.ts`) gives a running timer its task and moves it to the task's contract; Stop on a timer with no task asks for one first. Old label-only data is untouched. **Stage 3 (Meetings) is done (7 Oct 2026, not installed)**: a note may carry `task: <uid>` in its front matter (also an index column, migration `meetings/0005_task`); the Task field on the meeting page proposes the series' generic task (Research: the series in list "Meetings", "Other" is "Meetings"; Work: "<Client> meetings" in the client's list; rules in `src/modules/meetings/shared/meeting-task.ts`), one click takes or creates it, Other/Change opens the shared `TaskPicker`; hours are derived at read time from the note's date, start and end (`meeting-entries.ts`, `src/shared/tracking/derived.ts`: `withDerived` adds in-memory sessions marked `derived`, never saved; `useShownYear` in the Hours renderer), shown as read-only rows (`MeetingRows`) and counted in every total; overlap warns on the note and the row, changes nothing. A note with no task, no date or no both times has no hours; a future-dated one adds nothing. Existing notes and the Supervision log are untouched. **Stage 4 (Trainings) is done (7 Oct 2026, not installed; `docs/DECISIONS.md`, "Timer and tasks, stage 4")**: a training note made in the app is saved with `task: auto` (also an index column, migration `training/0004_task`); once it has a series the page makes the lecture subtask under the series task (list "Training"), automatically, and keeps it in step (title and series; `planLectureTask`, `useLectureTask`, `src/modules/training/shared/lecture-task.ts`); deleting the entry trashes the subtask and keeps tracked time; **older notes have no marker and are never touched until stage 5 (then drop the marker; `docs/ROADMAP.md`)**. A lecture's hours are one total (`entryMinutes`: the note's session plus everything on its subtask) in the counter, per-skill totals, table, landing and PDF; its session derives into Hours (`lectureEntries`, `kind: 'training'`); the note has Start and Add time (`TaskTimeActions`, shared with the task page, whose Add time gets a **For** choice when a task has subtasks); the Time card and Tasks table now count derived meeting and lecture hours. **Stage 5 (historical data) has begun with Work only (7 Oct 2026, `docs/DECISIONS.md`, "Linking Work's meetings")**: Work's meetings and the 0-minute timers are linked and applied; Research was looked at read-only on 7 Oct 2026 (nothing written, no script; `docs/DECISIONS.md`, "Linking Research's historical data"; table: https://claude.ai/artifact/8bbh2gsUXqPrxL44FL2uum): 67 of 132 trainings and 34 of 36 supervision meetings have a task by title or date, and six decisions wait for the user (the main one: notes dated before 1 Oct 2026 derive no hours, so nothing counts twice). Do not write the script before they answer; keep reports short.
+**What is built** (all pushed unless the ROADMAP says otherwise)
 
-- **One top-level list per client in Work (7 Oct 2026, `docs/CLIENT_LISTS_PLAN.md`, agreed with the user; do not re-ask its decisions)**: Work's top-level lists are exactly its clients, Research is free, sublists are free text. **Stage 1 is done**: `TasksStore` refuses a Work list that is not a client (provider injected in `register.ts`; rule in `src/modules/tasks/shared/work-lists.ts`; `docs/DECISIONS.md`, "Client lists, stage 1"). The UI still offers "new list" in Work until stage 3, so choosing it now fails with the store's message. **Stage 2 is done**: lists follow clients (`docs/DECISIONS.md`, "Client lists, stage 2"): a client in a plan is its list (derived, nothing written), renaming a client (click its chip in Settings -> Hours) renames the list, tasks, plans and hours (`TrackingStore.renameClient`), removing a client whose list holds tasks is refused. **Stage 3 is done (not installed)**: the UI offers only client lists in Work (`tasks.clients`, `useWorkClients`, `offeredLists`; the Tasks page and landing show empty client lists; the Start picker's Create and a move use client lists; the task page's Start asks "Which client?" when the list names none; `docs/DECISIONS.md`, "Client lists, stage 3"). The plan is finished; what is left is the user's review and the push.
-
-- **Meetings get their tasks by themselves (12 Oct 2026, `docs/DECISIONS.md`, "Meetings get their tasks by themselves")**: a new meeting is saved with `task: auto` and its own subtask "<series task> · <date>" is made and kept in step (`planMeetingTask`, `useMeetingTask`); `npm run link:year-meetings [-- --apply]` does the same for this year's existing Research meetings and takes them out of the imported daily totals (applied 12 Oct 2026; a dry run now finds nothing).
-
-- **Notes in Life (7 Oct 2026, driven in the app 9 Oct 2026)**: Notes is registered for Life too (`createNotesModule('life')`, files in `notes/life/`); a note's Workspace menu offers all three, new notes start in the workspace you are in, search heads them "Life notes" (`docs/DECISIONS.md`, "Notes in Life"). `/life` now shows the Notes card on its own landing page (`LifeLanding.tsx`, same `WorkspaceLanding` as Research and Work), not the old "Nothing here yet" placeholder; a back-label bug this surfaced is fixed (`docs/DECISIONS.md`, "Notes in Life, driven in the app"). Life has nothing else yet.
-
-- **Live markup editor (30 Sep 2026, all nine stages done; all pushed)**: `LiveEditor` replaced
-  Milkdown everywhere and Milkdown is gone (architecture above). The user's open questions about it (live editor questions 1 to 14, the stage 7 and 8 review
-  items) are in `docs/ROADMAP.md`, "For the user"; do not act on them until they answer. Never write scratch files (logs, screenshots) outside the session scratchpad.
+- Readings (Zotero sync, notes, APA copy), Reading lists, Meetings (Research and Work), Training (entries, the plan, Export), Notes (Research, Work, Life), People
+  (a page per person), global search (Mod-K, `in:<source>`) and Find in a note (Cmd-F, inside the editor).
+- Tasks (`docs/TASKS_PLAN.md`): SQLite, ClickUp import applied 6 Oct 2026, Work hours linked to tasks (Work is billable work only: no billable / non-billable
+  distinction anywhere). The ClickUp export is in `~/CentralCommand/imports/clickup/`; it dropped most descriptions, restored by `backfill:clickup-links`.
+- Hours and Time off (`docs/TIME_PLAN.md`), Work's contracts (`docs/CONTRACTS_PLAN.md`: overlapping contracts, a client belongs to one) and the shared year (52
+  weeks from a Monday, `useYear`); one top-level Tasks list per Work client (`docs/CLIENT_LISTS_PLAN.md`); the timer and tasks rule, "every hour has a task"
+  (`docs/TIMER_TASKS_PLAN.md`, stages 1 to 4 done; stage 5, Research's historical data, waits for the user's answers); meetings and trainings make their own
+  subtasks by themselves (`task: auto`).
+- The editor: `LiveEditor` (CodeMirror 6) replaced Milkdown everywhere; every editor sits in `EditorCard`; panels use `DocSplit` and `Panel` (architecture above).
+- Dark mode (colours are `light-dark()` pairs in `tokens.css`: a new colour needs both), Settings in tabs, a few Mac conventions, entities (`@` mentions as
+  `[label](cc://kind/key)` chips), packaging (`npm run build:mac`, installed in `/Applications`; quit it before replacing it).
+- **Watch, Home, notifications and the widget file (15 Oct 2026, `docs/WATCH_HOME_PLAN.md`)**: backends only, built unattended, driven in the built app, **no
+  renderer page yet**; mockups in `docs/design/`. `src/modules/watch/` checks the public pages, feeds and journals the user lists (nothing is requested while
+  no source exists; `npm run watch:from-tasks [-- --apply]` lists the addresses in the "Check upcoming …" reminders); `src/modules/home/` builds the Home summary,
+  the weather (Open-Meteo, **off by default, sends only a town's rounded coordinates**), Mac notifications (**off by default**) and `data/widget/snapshot.json`
+  (the Swift widget is not built). Settings has a `home` slice for them. Not installed, not pushed.
 
 ## Testing the app for real (unit tests are not enough)
 
@@ -253,16 +211,5 @@ to do next, short>. Next meeting <Mon D, YYYY>.` Example: "Key topics: Study 1 p
   explicit user action with a confirmation, and it goes to the macOS Trash (`shell.trashItem`),
   never removed outright. Meeting notes are still never overwritten: saves check the file's
   content hash, and a new meeting never replaces an existing file.
-- Never send user data over the network.
+- Never send user data over the network. (Watch requests only public pages the user listed, with no identifiers; the weather sends only a town's rounded position and is off until chosen.)
 - Never commit secrets or user data; user data lives in `~/CentralCommand/`.
-
-- **Overlapping Work contracts (6 Oct 2026, `docs/CONTRACTS_PLAN.md`, stages 1 to 4 built and pushed)**: a Work contract has a name, an invoice period (`week` or `month`) and may have no weekly aim (`hoursPerWeek: 0`); contracts may overlap, a client belongs to one contract at a time and the timer finds its contract by client; the Hours page has one invoice card over weeks or months and a selector that opens on the contract holding today. The two existing contracts are named Luminos (applied 6 Oct 2026), and a third, **Royal Holloway** (client Royal Holloway, 28 Sep 2026 to 28 Mar 2027, invoiced Week, no fixed hours), was created by hand on 6 Oct 2026 (`docs/DECISIONS.md`, "The Royal Holloway contract, and the kick-off meeting"). Left, the user's own entry in Settings -> Hours: a new Luminos, once they have the dates. Deferred tests and checks are the TODO list at the end of the plan.
-
-- **Hours and Time off (1 to 2 Oct 2026, stages 1 to 9 of `docs/TIME_PLAN.md`, all built)**: the rules (`src/shared/year.ts`, `src/shared/tracking/`), the store, the importer
-  (applied to the real library on 1 Oct 2026), the Hours page for Research (Today, the top-bar timer chip, the week, the balance card, Settings -> Hours), Dock and palette
-  items, an idle Start chip in the top bar, Charts and weeks (`/hours/year`: weeks, running balance, year heat map, typical week, All weeks, Years;
-  `docs/DECISIONS.md`, "Charts and weeks"), and **Time off** (`src/modules/time-off/`, its own module; "Time off page"). The 1 Oct feedback round is built
-  (`docs/DECISIONS.md`, "Hours feedback round"); a running task counts whole minutes everywhere (2 Oct). **Meetings, Training, the Training plan and the search use the shared
-  year** (52 weeks from a Monday, a start date such as `2026-09-21`, `useYear`); the old academic year is gone ("Training and Meetings use the shared year"). The Mac app is
-  packaged (`npm run build:mac`) and installed in `/Applications`; it reads `~/CentralCommand` (`docs/DECISIONS.md`, "Packaging and installing the Mac app"); quit it before
-  replacing it. Allowance days not listed as time off come off the plan on the year's last day (`docs/DECISIONS.md`, "Unlisted allowance days"). **Work's Hours (5 Oct 2026) is built** (`docs/DECISIONS.md`, "Work's Hours: weeks, contracts and months"): Work has contracts instead of the shared year (whole weeks, Friday to Thursday, `src/shared/tracking/workspace-weeks.ts`), a whole-week aim (`plan.weekAim`) and a Month card for invoicing; it has no Time off. A contract's weeks begin on its own first day, any weekday (5 Oct 2026; the past contract is Wed to Tue). Work entries and the timer carry a client (Impact, Teaching & Learning; `plan.clients`, `docs/DECISIONS.md`, "Work history import", stage 2); Research has none. Left: importing the past Work data from the user's Google Sheet (stages 3 and 4 of 4, `docs/ROADMAP.md`), and Tasks. The user's review items are at the top of `docs/ROADMAP.md`.
