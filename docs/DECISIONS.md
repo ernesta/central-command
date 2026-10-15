@@ -3402,3 +3402,12 @@ The user saw the "Back (⌘[)" label appear without the pointer on it and stay f
 - **Cause:** `IconButton`'s tooltip showed on `:focus-within`. Clicking the button leaves focus on it, and Back then disables itself at the first page and keeps focus, so the label stayed until the user clicked elsewhere.
 - **Fix:** the tooltip shows on hover or `:has(:focus-visible)` (keyboard focus only). A mouse click no longer pins it; tabbing to the button still shows it. Applies to every icon button.
 - Not driven in the app; unit tests and lint pass (no unit test covers the CSS).
+
+## Top bar in full screen: content drops below the revealed system strip (15 Oct 2026)
+
+The user saw the arrow and workspaces slide right at the top edge in full screen (room for the traffic lights), and then the system strip (menu bar and title bar) come down and hide them.
+
+- **Cause:** the revealed strip is opaque and overlays the top of the window, covering the top of our 64px bar (and the Build button on the right). Only the dots were assumed to slide in over the content.
+- **Fix:** while the pointer is on the top sentinel (`.topSentinel:hover`), `.lead` and `.actions` in `TopBar.module.css` also move down by `--fullscreen-strip-shift` (28px), with a 220ms transition, besides the existing left padding.
+- **The 28px is a guess**: the strip's height could not be read from the user's screenshots and Playwright cannot capture the native strip. If the controls still touch the strip or sit too low, change that one value.
+- Not driven in the app; typecheck, lint and Prettier pass.
