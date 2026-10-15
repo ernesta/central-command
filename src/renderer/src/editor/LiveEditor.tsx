@@ -132,7 +132,12 @@ export function LiveEditor({
   useEffect(() => {
     const press = (event: MouseEvent): void => {
       const target = event.target
-      if (!(target instanceof HTMLElement) || wrapRef.current?.contains(target)) return
+      // The path, not `contains`: the editor may already have replaced the clicked element (a table cell turns into text).
+      if (
+        !(target instanceof HTMLElement) ||
+        event.composedPath().includes(wrapRef.current as EventTarget)
+      )
+        return
       if (
         target.closest('input, textarea, select, button, a, label, [contenteditable], [tabindex]')
       )
