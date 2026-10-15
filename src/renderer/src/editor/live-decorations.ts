@@ -12,6 +12,7 @@ import { chipOf, chipText, ChipWidget, entitiesFacet, refreshMentions } from './
 import { isListKind, parseLine } from './live-lines'
 import { blockRevealed, computeReveal, spanRevealed, type Extent, type Reveal } from './live-reveal'
 import { drawFence } from './live-fences'
+import { drawSpacing } from './live-spacing'
 import { drawTable } from './live-tables'
 import { BulletWidget, CheckboxWidget, NumberWidget, ORDERED_BOX } from './live-widgets'
 
@@ -108,13 +109,8 @@ export function buildDecorations(
     let chipEnd = -1
     let depth = 0
 
-    // Blank lines are shorter than text lines, so the gap between paragraphs is a paragraph gap.
-    for (let pos = range.from; pos <= range.to;) {
-      const line = doc.lineAt(pos)
-      // A line of only spaces (the real notes have them between list items) is as blank as an empty one.
-      if (/^[ \t]*$/.test(line.text)) add('blank', line.from, line.from, lineDeco('live-blank'))
-      pos = line.to + 1
-    }
+    // The space between blocks, and blank lines drawn with no height (`live-spacing.ts`).
+    drawSpacing(state, range, add)
 
     // A note ends with one line break, which leaves an empty last line. It is the end of the file, not a blank line
     // of the note, so it is drawn with no height, until the cursor goes there (nothing in the file changes).

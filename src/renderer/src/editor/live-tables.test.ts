@@ -1,13 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { alignmentsOf, splitRow } from './live-tables'
-import { decorationsOf as seenIn, hiddenText, stateFor } from './live-test-utils'
-
-// The first and last line of a table also carry its edge-space classes; these tests are about the rest.
-const decorationsOf = (state: Parameters<typeof seenIn>[0]): ReturnType<typeof seenIn> =>
-  seenIn(state).map((seen) => ({
-    ...seen,
-    kind: seen.kind.replace(/ live-table-(first|last)/g, '')
-  }))
+import { decorationsOf, hiddenText, stateFor } from './live-test-utils'
 
 const cellsOf = (line: string): string[] =>
   splitRow(line).cells.map((cell) => line.slice(cell.from, cell.to))
@@ -77,13 +70,6 @@ describe('a table away from the cursor', () => {
       '**',
       ' |'
     ])
-  })
-
-  it('gives the table room above its first line and below its last', () => {
-    const kinds = seenIn(state).map((seen) => seen.kind)
-    expect(kinds.filter((kind) => kind.includes('live-table-first'))).toHaveLength(1)
-    expect(kinds.filter((kind) => kind.includes('live-table-last'))).toHaveLength(1)
-    expect(kinds.find((kind) => kind.includes('live-table-first'))).toContain('live-table-head')
   })
 
   it('draws each line as a row, the first as the header, with one set of column widths', () => {

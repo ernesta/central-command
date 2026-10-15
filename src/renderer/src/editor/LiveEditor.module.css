@@ -78,9 +78,52 @@
   font-size: max(0.6em, 13px);
 }
 
-/* Blank lines are the gap between paragraphs, so they are shorter than a line of text. */
+/* A setext heading's hidden underline. */
 .wrap :global(.live-blank) {
   line-height: 0.9;
+}
+
+/* Space between blocks (`live-spacing.ts`): a blank line has no height unless the cursor is on it, and the line after a block boundary carries the gap,
+   so one blank line and five look the same. Spelled out to outrank the `.cm-line` padding reset. */
+.wrap :global(.cm-editor) :global(.cm-line.live-void) {
+  height: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  line-height: 0;
+}
+.wrap {
+  --block-gap: 16px;
+  --item-gap: 4px;
+  --pad: 6px;
+}
+/* The gap is padding, not margin: CodeMirror's height map knows padding, and a margin put every click below it on the wrong line.
+   The padding is clipped away (`clip-path`), so a quote's rule and a code block's band start after the gap. */
+.wrap :global(.cm-editor) :global(.cm-line.live-gap) {
+  --lead: var(--block-gap);
+}
+.wrap :global(.cm-editor) :global(.cm-line.live-gap-item) {
+  --lead: var(--item-gap);
+}
+.wrap :global(.cm-editor) :global(.cm-line.live-pad-first) {
+  --inner-top: var(--pad);
+}
+.wrap :global(.cm-editor) :global(.cm-line.live-pad-last) {
+  padding-bottom: var(--pad);
+}
+.wrap :global(.cm-editor) :global(.cm-line:is(.live-gap, .live-gap-item, .live-pad-first)) {
+  padding-top: calc(var(--lead, 0px) + var(--inner-top, 0px));
+  clip-path: inset(var(--lead, 0px) 0 0 0);
+}
+
+/* A comfortable line length (about 70 characters); tables and code use the width they are given. */
+.wrap :global(.cm-editor) :global(.cm-line) {
+  max-width: var(--measure, 60ch);
+}
+.wrap
+  :global(.cm-editor)
+  :global(.cm-line:is(.live-table, .live-table-row, .live-table-rule, .live-codeblock)) {
+  max-width: none;
 }
 
 /* The empty line a final line break leaves at the end of a note: no height, until the cursor is on it (spelled out to outrank the `.cm-line` padding reset). */
@@ -195,8 +238,12 @@
   left: 0;
   border-top: 1px solid var(--border-soft);
 }
+/* The line holds no text while the rule is drawn, so it has its own height; the gap above it (padding) is not part of the line. */
+.wrap :global(.live-hr) {
+  min-height: calc(1.8em + var(--lead, 0px));
+}
 .wrap :global(.live-hr)::after {
-  top: 50%;
+  top: calc(var(--lead, 0px) + 0.9em);
 }
 .wrap :global(.live-hr-open)::after {
   bottom: 0;
@@ -218,7 +265,7 @@
   line-height: calc(var(--table-row) / 2);
 }
 .wrap :global(.cm-editor) :global(.cm-line.live-codeblock) {
-  padding: 0 12px;
+  padding-inline: 12px;
   background: var(--panel);
 }
 /* Fence lines away from the cursor keep their height (their text is hidden), so the block does not move when the cursor enters it. */
@@ -236,7 +283,7 @@
 .wrap :global(.cm-editor) :global(.cm-line.live-table-row) {
   display: grid;
   column-gap: 16px;
-  padding: 0 4px;
+  padding-inline: 4px;
   border-bottom: 1px solid var(--border-soft);
   line-height: calc(var(--table-row) - 1px);
   /* A table wider than the page scrolls sideways, every row together (`tableScroll`); the bar is not drawn. */
@@ -266,13 +313,6 @@
   padding: 0;
   font-size: 0;
   line-height: 0;
-}
-/* Room between a table and the text above and below it; margins, so the same in the grid and in text. */
-.wrap :global(.cm-editor) :global(.cm-line.live-table-first) {
-  margin-top: 0.9em;
-}
-.wrap :global(.cm-editor) :global(.cm-line.live-table-last) {
-  margin-bottom: 0.9em;
 }
 /* Each hidden range is an empty element in the line (with CodeMirror's spacers beside it), and each would be a cell of the grid. */
 .wrap

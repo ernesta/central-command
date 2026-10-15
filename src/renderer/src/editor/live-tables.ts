@@ -165,10 +165,6 @@ class EmptyCell extends WidgetType {
 }
 
 const hidden = Decoration.replace({})
-/** The classes that give a table room from the text above and below it, the same as grid and as text so nothing moves when the cursor enters. */
-const edge = (index: number, n: number, last: number): string =>
-  `${index === 0 ? ' live-table-first' : ''}${n === last ? ' live-table-last' : ''}`
-
 const pipeMark = Decoration.mark({ class: 'live-tablemark' })
 const cellMarks: Record<Align, Decoration> = {
   left: Decoration.mark({ class: 'live-cell' }),
@@ -206,9 +202,7 @@ export function drawTable(
         'tline',
         line.from,
         line.from,
-        Decoration.line({
-          class: `${index === 1 ? 'live-table live-table-delim' : 'live-table'}${edge(index, n, last)}`
-        })
+        Decoration.line({ class: index === 1 ? 'live-table live-table-delim' : 'live-table' })
       )
       if (index === 1) {
         if (row.end > row.start) add('tpipe', line.from + row.start, line.from + row.end, pipeMark)
@@ -219,12 +213,7 @@ export function drawTable(
     }
 
     if (index === 1) {
-      add(
-        'tline',
-        line.from,
-        line.from,
-        Decoration.line({ class: `live-table-rule${edge(index, n, last)}` })
-      )
+      add('tline', line.from, line.from, Decoration.line({ class: 'live-table-rule' }))
       if (line.length > 0) add('thide', line.from, line.to, hidden)
       continue
     }
@@ -233,7 +222,7 @@ export function drawTable(
       line.from,
       line.from,
       Decoration.line({
-        class: `${index === 0 ? 'live-table-row live-table-head' : 'live-table-row'}${edge(index, n, last)}`,
+        class: index === 0 ? 'live-table-row live-table-head' : 'live-table-row',
         attributes: { style: `grid-template-columns: ${template}` }
       })
     )
