@@ -10,7 +10,7 @@ import { addDays, inYear, weekStartOf } from '@shared/year'
 import { hoursBase } from '../../hours/renderer/hours-paths'
 import { PeriodSummary } from '../../hours/renderer/PeriodSummary'
 import { useShownYear } from '../../hours/renderer/useMeetingHours'
-import { periodOfWeek, periodsOf } from '../../hours/shared/periods'
+import { periodsOf } from '../../hours/shared/periods'
 import type { HomeWorkspace } from '../shared/types'
 import { StyledLink } from './HomeParts'
 import styles from './Home.module.css'
@@ -31,7 +31,11 @@ export function HomeHours({ workspace }: { workspace: HomeWorkspace }): React.JS
   )
   if (!data || !inYear(now.date, data.start, data.weeks)) return null
 
-  const period = workspace === 'work' ? periodOfWeek(periods, week) : null
+  // A contract's weeks start on its own first day, not on a Monday, so the period is found by the date.
+  const period =
+    workspace === 'work'
+      ? (periods.find((p) => p.from <= now.date && now.date <= p.to) ?? null)
+      : null
   const byMonth = invoiceOf(data) === 'month'
   const label = workspace === 'work' && byMonth ? 'This month' : 'This week'
   const minutes = period ? period.minutes : weekMinutes(data, week, now)
@@ -41,7 +45,7 @@ export function HomeHours({ workspace }: { workspace: HomeWorkspace }): React.JS
 
   return (
     <Panel label={label} actions={<StyledLink to={hoursBase(workspace)}>Hours</StyledLink>}>
-      {hasAim(data) ? (
+      {hasAim(data) && aim > 0 ? (
         <div className={styles.hours}>
           <PeriodSummary minutes={minutes} aim={aim} />
         </div>

@@ -74,3 +74,26 @@ export function homeView(summary: HomeSummary, workspace: HomeWorkspace): HomeVi
     openTodos: workspace === 'research' ? summary.meetings.openTodos : null
   }
 }
+
+const SHORT_MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec'
+]
+
+/** The line under an item; a run of days off ends "to 2026-10-21" in the summary, which reads better as "to 21 Oct". */
+export function detailText(detail: string): string {
+  return detail.replace(
+    /\b(\d{4})-(\d{2})-(\d{2})\b/,
+    (_, _y: string, m: string, d: string) => `${Number(d)} ${SHORT_MONTHS[Number(m) - 1]}`
+  )
+}

@@ -3,7 +3,7 @@ import { Check, Circle, GraduationCap, Plane, Users } from 'lucide-react'
 import { Panel } from '@renderer/components/Panel'
 import { tasksAllRoute } from '../../tasks/renderer/tasks-paths'
 import type { HomeEvent, HomeTask, HomeWorkspace } from '../shared/types'
-import { COMING_UP_DAYS, homeView, whenLabel, type HomeView } from './home-model'
+import { COMING_UP_DAYS, detailText, homeView, whenLabel, type HomeView } from './home-model'
 import { HomeHours } from './HomeHours'
 import { None, StyledLink } from './HomeParts'
 import { useHomeSummary } from './useHomeSummary'
@@ -75,12 +75,12 @@ function TodayCard({
     <Panel
       label="Today"
       actions={
-        <>
-          <span className={styles.small}>{cut ? '' : count}</span>
+        <span className={styles.actions}>
+          {!cut && <span className={styles.small}>{count}</span>}
           {(cut || rows.length > 0) && (
             <StyledLink to={tasksAllRoute(workspace)}>See all</StyledLink>
           )}
-        </>
+        </span>
       }
     >
       {rows.length === 0 ? (
@@ -104,7 +104,7 @@ function EventRow({ event }: { event: HomeEvent }): React.JSX.Element {
         <Icon size={16} strokeWidth={1.75} className={styles.icon} aria-hidden />
         <span className={styles.grow}>
           <span className={styles.title}>{event.title}</span>
-          {event.detail && <span className={styles.small}>{event.detail}</span>}
+          {event.detail && <span className={styles.small}>{detailText(event.detail)}</span>}
         </span>
         <span className={styles.when}>{whenLabel(event.inDays, event.time)}</span>
       </Link>

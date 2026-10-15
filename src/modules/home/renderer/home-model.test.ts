@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { HomeEvent, HomeSummary, HomeTask } from '../shared/types'
-import { homeView, whenLabel } from './home-model'
+import { detailText, homeView, whenLabel } from './home-model'
 
 const task = (uid: string, workspace: 'research' | 'work', daysLate = 0): HomeTask => ({
   uid,
@@ -104,5 +104,12 @@ describe('whenLabel', () => {
     expect(whenLabel(0, '14:00')).toBe('Today 14:00')
     expect(whenLabel(1, null)).toBe('Tomorrow')
     expect(whenLabel(4, '11:00')).toBe('In 4 days 11:00')
+  })
+})
+
+describe('detailText', () => {
+  it('writes the end of a run of days off as a day and month', () => {
+    expect(detailText('3 days, to 2026-10-21')).toBe('3 days, to 21 Oct')
+    expect(detailText('Admin')).toBe('Admin')
   })
 })

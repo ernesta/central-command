@@ -128,3 +128,8 @@
 .num {
   font-variant-numeric: tabular-nums;
 }
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
