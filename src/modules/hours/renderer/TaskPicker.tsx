@@ -269,7 +269,7 @@ export function TaskPicker({
       )}
       {!asking && value.trim() === '' && recent.length > 0 && (
         <div className={styles.group}>
-          <span className={styles.heading}>Recent</span>
+          <span className={styles.heading}>Suggested</span>
           <ul className={styles.choices}>
             {recent.map((task) => (
               <li key={task.uid}>

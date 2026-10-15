@@ -31,14 +31,15 @@ export function pickerOptions(tasks: readonly Task[], typed: string, limit = 8):
 }
 
 /**
- * The open tasks the timer was on in the last week up to `today`, the most recently used first, each once, at most
- * `limit`: what the picker offers before anything is typed.
+ * What the picker offers before anything is typed, at most `limit`, each task once: the open tasks due `today` first;
+ * then the ones the timer was on in the last week, those in progress before the rest, and within each the ones used on
+ * the most days first (daily work such as admin rises), then the most recently used.
  */
-export function recentTasks(
+export function suggestedTasks(
   year: TrackingYear,
   open: readonly Task[],
   today: string,
-  limit = 5
+  limit = 6
 ): Task[] {
   const from = addDays(today, 1 - RECENT_DAYS)
   const used = [
@@ -47,13 +48,22 @@ export function recentTasks(
   ]
     .filter((e) => e.date >= from && e.date <= today)
     .sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0))
-  const found: Task[] = []
-  for (const { key } of used) {
+  const recent: { task: Task; days: Set<string> }[] = []
+  for (const { key, date } of used) {
     const uid = taskUidOf(key)
     const task = uid ? open.find((t) => t.uid === uid) : undefined
-    if (task && !found.includes(task)) found.push(task)
+    if (!task) continue
+    const entry = recent.find((r) => r.task === task)
+    if (entry) entry.days.add(date)
+    else recent.push({ task, days: new Set([date]) })
   }
-  return found.slice(0, limit)
+  const rank = (r: { task: Task; days: Set<string> }): number => (r.task.status === 'doing' ? 1 : 0)
+  // Array.sort is stable: equal ranks keep the most recently used first.
+  const ordered = [...recent]
+    .sort((a, b) => rank(b) - rank(a) || b.days.size - a.days.size)
+    .map((r) => r.task)
+  const due = open.filter((t) => t.due === today)
+  return [...new Set([...due, ...ordered])].slice(0, limit)
 }
 
 /** The client a task's list stands for: the list's name when it is one of the open contracts' clients (ignoring case). */

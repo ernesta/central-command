@@ -7,7 +7,7 @@ import {
   detailOfTask,
   listOfTask,
   pickerOptions,
-  recentTasks
+  suggestedTasks
 } from './start-picker'
 import type { Task } from '../../tasks/shared/types'
 
@@ -45,7 +45,7 @@ describe('pickerOptions', () => {
   })
 })
 
-describe('recentTasks', () => {
+describe('suggestedTasks', () => {
   const year = {
     ...emptyYear('2026-09-21'),
     sessions: [
@@ -86,11 +86,25 @@ describe('recentTasks', () => {
   }
 
   it('is the open tasks of the last week, latest first, each once; none for label-only or old time', () => {
-    expect(recentTasks(year, tasks, '2026-10-07').map((t) => t.uid)).toEqual(['1', '3'])
+    expect(suggestedTasks(year, tasks, '2026-10-07').map((t) => t.uid)).toEqual(['1', '3'])
   })
 
   it('leaves out a task that is no longer open', () => {
-    expect(recentTasks(year, tasks.slice(2), '2026-10-07').map((t) => t.uid)).toEqual(['3'])
+    expect(suggestedTasks(year, tasks.slice(2), '2026-10-07').map((t) => t.uid)).toEqual(['3'])
+  })
+
+  it('puts tasks due today first, then in-progress ones, then those used on the most days; each once', () => {
+    const open = [
+      task('1', 'Report', { due: '2026-10-07' }),
+      task('3', 'Marking', { status: 'doing' }),
+      task('2', 'Board'),
+      task('9', 'Due today, never timed', { due: '2026-10-07' })
+    ]
+    expect(suggestedTasks(year, open, '2026-10-07').map((t) => t.uid)).toEqual(['1', '9', '3'])
+  })
+
+  it('is limited', () => {
+    expect(suggestedTasks(year, tasks, '2026-10-07', 1)).toHaveLength(1)
   })
 })
 

@@ -18,7 +18,7 @@ import { useOpenTasks } from '../../tasks/renderer/useOpenTasks'
 import { useTasksList } from '../../tasks/renderer/useTasksList'
 import { taskKey } from '../../tasks/shared/tracked'
 import type { TaskWorkspace } from '../../tasks/shared/types'
-import { recentTasks } from '../shared/start-picker'
+import { suggestedTasks } from '../shared/start-picker'
 import { popoverHead, STOP_NEEDS_TASK } from '../shared/timer-popover'
 import { elapsedMinutes } from '../shared/timer'
 import type { HoursWorkspace } from '../shared/workspaces'
@@ -63,7 +63,9 @@ function TimerPopover({
   const [name, setName] = useState(query)
   const recent = useMemo(
     () =>
-      data ? recentTasks(data, open, now.date).filter((t) => taskKey(t.uid) !== session.task) : [],
+      data
+        ? suggestedTasks(data, open, now.date).filter((t) => taskKey(t.uid) !== session.task)
+        : [],
     [data, open, now.date, session.task]
   )
   const head = popoverHead(session, all ?? open, stopAfter)
