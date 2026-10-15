@@ -171,7 +171,8 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
         title: t.title,
         detail: t.list,
         route: t.route,
-        inDays
+        inDays,
+        task: { uid: t.uid, status: t.status, priority: t.priority }
       })
   }
   for (const m of meetings) {

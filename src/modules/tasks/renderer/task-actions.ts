@@ -27,7 +27,10 @@ export function nextStatus(status: TaskStatus, shift: boolean): TaskStatus {
  * Change a task's status. Finishing a recurring task starts the next one in the main process; this says so, since the finished
  * one leaves the list. Failures show the same way.
  */
-export async function setTaskStatus(task: Task, status: TaskStatus): Promise<void> {
+export async function setTaskStatus(
+  task: Pick<Task, 'uid'> & { recurrence?: Task['recurrence'] },
+  status: TaskStatus
+): Promise<void> {
   try {
     const { next } = await window.api.tasks.setStatus(task.uid, status)
     if (next?.due) {

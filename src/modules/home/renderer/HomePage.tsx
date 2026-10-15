@@ -1,12 +1,12 @@
 import { Link } from 'react-router'
-import { Check, Circle, GraduationCap, Plane, Users } from 'lucide-react'
+import { Check, GraduationCap, Plane, Users } from 'lucide-react'
 import { Panel } from '@renderer/components/Panel'
 import { PriorityBadge } from '../../tasks/renderer/TaskIcons'
 import { tasksAllRoute } from '../../tasks/renderer/tasks-paths'
 import type { HomeEvent, HomeTask, HomeWorkspace } from '../shared/types'
 import { COMING_UP_DAYS, detailText, homeView, whenLabel, type HomeView } from './home-model'
 import { HomeHours } from './HomeHours'
-import { None, StyledLink } from './HomeParts'
+import { None, StatusButton, StyledLink } from './HomeParts'
 import { useHomeSummary } from './useHomeSummary'
 import styles from './Home.module.css'
 
@@ -24,31 +24,21 @@ const dayName = (date: string): string =>
     month: 'long'
   })
 
-function taskNote(t: HomeTask): string {
-  return t.daysLate > 0 ? t.list : `${t.list} · due today`
-}
-
 function TaskRow({ task }: { task: HomeTask }): React.JSX.Element {
-  const late = task.daysLate > 0
   return (
     <li>
       <Link className={styles.row} to={task.route}>
-        <Circle
-          size={16}
-          strokeWidth={1.75}
-          className={late ? styles.late : styles.icon}
-          aria-hidden
-        />
+        <StatusButton uid={task.uid} status={task.status} />
         <span className={styles.grow}>
           <span className={styles.title}>{task.title}</span>
-          <span className={styles.small}>{taskNote(task)}</span>
+          <span className={styles.small}>{task.list}</span>
         </span>
-        <PriorityBadge priority={task.priority} />
-        {late && (
+        {task.daysLate > 0 && (
           <span className={`${styles.chip} ${styles.warn}`}>
             {task.daysLate === 1 ? '1 day late' : `${task.daysLate} days late`}
           </span>
         )}
+        <PriorityBadge priority={task.priority} />
       </Link>
     </li>
   )
@@ -98,16 +88,30 @@ function TodayCard({
 }
 
 function EventRow({ event }: { event: HomeEvent }): React.JSX.Element {
+  const { task } = event
   const Icon = KIND_ICON[event.kind as keyof typeof KIND_ICON] ?? Check
+  const when = whenLabel(event.inDays, event.time)
   return (
     <li>
       <Link className={styles.row} to={event.route}>
-        <Icon size={16} strokeWidth={1.75} className={styles.icon} aria-hidden />
+        {task ? (
+          <StatusButton uid={task.uid} status={task.status} />
+        ) : (
+          <Icon size={16} strokeWidth={1.75} className={styles.icon} aria-hidden />
+        )}
         <span className={styles.grow}>
           <span className={styles.title}>{event.title}</span>
-          {event.detail && <span className={styles.small}>{detailText(event.detail)}</span>}
+          {task ? (
+            <span className={styles.small}>{`${event.detail} · due ${when.toLowerCase()}`}</span>
+          ) : (
+            event.detail && <span className={styles.small}>{detailText(event.detail)}</span>
+          )}
         </span>
-        <span className={styles.when}>{whenLabel(event.inDays, event.time)}</span>
+        {task ? (
+          <PriorityBadge priority={task.priority} />
+        ) : (
+          <span className={styles.when}>{when}</span>
+        )}
       </Link>
     </li>
   )

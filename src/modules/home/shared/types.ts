@@ -42,6 +42,8 @@ export interface HomeEvent {
   route: string
   /** Days from today (0 = today). */
   inDays: number
+  /** Set on a task: what its status circle and priority mark show. */
+  task?: { uid: string; status: 'todo' | 'doing'; priority: 'high' | 'normal' | 'low' }
 }
 
 export interface HomeTimer {
