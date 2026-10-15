@@ -3461,3 +3461,12 @@ The user: a line starting `[ ] text` stayed plain text (a checkbox needs `- [ ] 
 - **Left alone:** `[]` after other text, and in code (fenced, indented or inline).
 - **Undo:** its own step (`input.task`, listed in `live-history.ts`); undoing gives back what was typed.
 - Tests in `live-lists.test.ts`. Driven in the built app with real keystrokes on a scratch library; not checked in dev mode.
+
+## Home's task rows work like Tasks' rows; the date sits beside the workspace name (15 Oct 2026)
+
+The user, on the Research Home: the date should be next to the workspace name; "due today" is redundant in a card called Today; the circle should be the task's real status and change it, as elsewhere; Coming up's tasks should follow the same layout.
+
+- **Date:** `HomeDate` (`HomePage.tsx`) renders in `WorkspaceLanding`'s heading line, baseline-aligned beside the `h1`. It reads the system clock, not the summary, so a window left open past midnight keeps the old day until the page re-renders.
+- **Today card:** the circle is `StatusButton` (`HomeParts.tsx`): `StatusIcon` with the same click rules as the Tasks table (click moves on, Shift-click goes to done, via `setTaskStatus`, which now takes just `{ uid, recurrence? }`). The note line is the list only. Priority is on the far right, with "N days late" before it. A done task leaves the list when the summary reloads. The red circle for late tasks is gone: the chip says it.
+- **Coming up:** a task event carries `task: { uid, status, priority }` (`HomeEvent`, `buildHomeSummary`), so it gets the same circle and a priority badge on the right, and its due date moves into the note line ("Writing · due tomorrow"). Meetings, trainings, time off and Watch items keep their icon and the right-hand "Tomorrow" label.
+- Typecheck, lint and tests pass. Not yet driven in the app.
