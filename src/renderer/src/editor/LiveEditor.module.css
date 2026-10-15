@@ -105,6 +105,10 @@
 .wrap :global(.cm-editor) :global(.cm-line.live-gap-item) {
   --lead: var(--item-gap);
 }
+/* Inside a quote the gap is not clipped, so the quote's rule runs on through it. */
+.wrap :global(.cm-editor) :global(.cm-line.live-gap-quote) {
+  padding-top: var(--block-gap);
+}
 .wrap :global(.cm-editor) :global(.cm-line.live-pad-first) {
   --inner-top: var(--pad);
 }

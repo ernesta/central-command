@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { decorationsOf, stateFor } from './live-test-utils'
 
-/** For each line of the note, the spacing classes it has (`void`, `gap`, `item`, `first`, `last`). */
+/** For each line of the note, the spacing classes it has (`void`, `gap`, `gap-item`, `gap-quote`, `pad-first`, `pad-last`). */
 function spacing(doc: string, at = doc.length): string[][] {
   const state = stateFor(doc, at)
   const found = decorationsOf(state)
@@ -13,7 +13,7 @@ function spacing(doc: string, at = doc.length): string[][] {
       return found
         .filter((seen) => seen.from === from)
         .flatMap((seen) => seen.kind.split(' '))
-        .filter((name) => /^live-(void|gap|gap-item|pad-first|pad-last)$/.test(name))
+        .filter((name) => /^live-(void|gap|gap-item|gap-quote|pad-first|pad-last)$/.test(name))
         .map((name) => name.replace('live-', ''))
     })
 }
@@ -56,7 +56,7 @@ describe('the space between blocks', () => {
     expect(rows[1]).toEqual(['gap', 'pad-first'])
     expect(rows[5]).toEqual(['pad-last'])
     expect(rows[6]).toEqual(['gap', 'pad-first'])
-    expect(rows[7]).toEqual(['pad-last'])
+    expect(rows[7]).toEqual(['gap-quote', 'pad-last'])
   })
 
   it('has no gap between the rows of a table, and one on each side', () => {

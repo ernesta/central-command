@@ -12,7 +12,7 @@ import type { Extent } from './live-reveal'
  *
  * Each line that holds text is one of: a heading (which pads itself), a list item, a quote line, a code line, a table row,
  * a rule, or a paragraph line (each line of paragraph text is its own paragraph, as the notes are written). Between two
- * lines of one block there is no gap (a list: a small one); between blocks, and between paragraph lines, there is a gap.
+ * lines of one block there is no gap (a list: a small one; a quote: a full one, as each of its lines is a paragraph); between blocks, and between paragraph lines, there is a gap.
  */
 
 type Add = (kind: string, from: number, to: number, deco: Decoration) => void
@@ -29,6 +29,7 @@ const isBlank = (text: string): boolean => /^[ \t]*$/.test(text)
 const voidLine = Decoration.line({ class: 'live-void' })
 const gapLine = Decoration.line({ class: 'live-gap' })
 const itemGapLine = Decoration.line({ class: 'live-gap-item' })
+const quoteGapLine = Decoration.line({ class: 'live-gap-quote' })
 const padFirst = Decoration.line({ class: 'live-pad-first' })
 const padLast = Decoration.line({ class: 'live-pad-last' })
 
@@ -107,6 +108,7 @@ export function drawSpacing(state: EditorState, range: Extent, add: Add): void {
     if (prev && here.kind !== 'heading' && prev.kind !== 'heading') {
       if (!same(prev, here)) add('gap', line.from, line.from, gapLine)
       else if (here.kind === 'list') add('gap', line.from, line.from, itemGapLine)
+      else if (here.kind === 'quote') add('gap', line.from, line.from, quoteGapLine)
     }
     if (here.kind === 'quote' || here.kind === 'code') {
       if (!prev || !same(prev, here)) add('padfirst', line.from, line.from, padFirst)
