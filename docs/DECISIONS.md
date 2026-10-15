@@ -3372,3 +3372,17 @@ The user asked, before going away, for: a Watch module that checks conferences, 
 - **Hours are not read from `summary.hours`.** That field is Research-only and leaves out meeting-derived hours, which are worked out in the renderer, so it would disagree with Hours. The card uses the Hours page's own code, `hours/shared/so-far.ts` (`weekFigures`, `thisWeek`, `thisPeriod`), which the Week card now calls too. Like the Hours page, it shows the invoice period when the plan has a whole-week aim (`plan.weekAim`), the week otherwise. A contract's weeks start on its own first day, not on a Monday, so the period is found from `defaultWeek`, not `weekStartOf`: that was a bug the first run showed (7:00 of 0:00 with no clients). Driven in the built app: Home and Hours agree in both workspaces (Research 8:11 of 37:30; Work 7:00 of 67:30, Luminos 5:00, Impact 2:00).
 - **Gaps in the summary (a backend change, the user's call):** `meetings.next` is either workspace's and `openTodos` counts Research's only, so Work's next meeting is taken from `upcoming` (21 days) and Work shows no Open TODOs count; `upcoming` is capped at 12 before one workspace's 7 days are kept, and Watch items count towards it; Today's "N more" is unknown per workspace when the summary cut a list at 8 (the count is then left out and "See all" stays).
 - **Driven** on a scratch library in the built app and in dev mode, light and dark, focus rings checked while tabbing (none clipped): tasks, a meeting, a training entry, a day off, a running timer, a Work contract with two clients. No shortcut was added.
+
+## Timer picker: Suggested replaces Recent (15 Oct 2026)
+
+The user's review of the picker before anything is typed: it should not list done tasks and should lead with what is due today, then the tasks in
+progress that are worked on every day (Daily admin).
+
+- **Done tasks** were already left out (`useOpenTasks` drops `done`); nothing changed.
+- **`suggestedTasks`** (`src/modules/hours/shared/start-picker.ts`, replaces `recentTasks`, heading "Suggested", at most six, each once): open tasks due
+  today first; then the tasks the timer was on in the last `RECENT_DAYS` (7) days, those with status "doing" before the rest, and within each the ones
+  used on the most distinct days first (daily work rises), then the most recently used.
+- **Overdue** tasks are not suggested, only those due today (the user said "today"); adding them after today's is a small change if wanted.
+- **Not done:** the ROADMAP question on how far back it reaches is still open (a task not timed for a week and not due today is not suggested).
+- Not driven in the app; unit tests only.
+
