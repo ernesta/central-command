@@ -1,5 +1,6 @@
 import type { Backlink, EntityRef } from './entities'
 import type { EntityFile } from './entity-files'
+import type { HomeApi } from '../modules/home/shared/types'
 import type { MeetingsApi } from '../modules/meetings/shared/api'
 import type { NotesApi } from '../modules/notes/shared/api'
 import type { TasksApi } from '../modules/tasks/shared/api'
@@ -61,6 +62,8 @@ export interface Api {
     onDockAction(listener: (action: DockActionId) => void): () => void
     /** The window entered or left full screen (macOS). Returns an unsubscribe function. */
     onFullScreenChange(listener: (isFullScreen: boolean) => void): () => void
+    /** The main process asks to open a page (a clicked notification): an in-app route such as `/research/tasks`. Returns an unsubscribe function. */
+    onOpenRoute(listener: (route: string) => void): () => void
     /** Cmd-Shift-V was pressed: the clipboard's text, to paste without formatting. Returns an unsubscribe function. */
     onPastePlain(listener: (text: string) => void): () => void
   }
@@ -82,6 +85,7 @@ export interface Api {
   tasks: TasksApi
   tracking: TrackingApi
   watch: WatchApi
+  home: HomeApi
   lifecycle: {
     /**
      * Register work to finish before the window closes (e.g. saving notes). The window waits for
@@ -106,6 +110,7 @@ export const IPC = {
   appDockAction: 'app:dock-action',
   appFullScreenChange: 'app:full-screen-change',
   appPastePlain: 'app:paste-plain',
+  appOpenRoute: 'app:open-route',
   appBeforeClose: 'app:before-close',
   appCloseReady: 'app:close-ready',
   entitiesBacklinks: 'entities:backlinks',

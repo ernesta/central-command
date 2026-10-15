@@ -13,6 +13,7 @@ import type { TrainingChangedEvent } from '@modules/training/shared/api'
 import type { NoteChangedEvent } from '@shared/notes'
 import { TRACKING_IPC, type TrackingChangedEvent } from '@shared/tracking/api'
 import type { SyncStatus } from '@modules/readings/shared/types'
+import { HOME_IPC } from '@modules/home/shared/types'
 import { WATCH_IPC } from '@modules/watch/shared/api'
 import type { WatchCounts } from '@modules/watch/shared/types'
 
@@ -39,6 +40,11 @@ const api: Api = {
         listener(isFullScreen)
       ipcRenderer.on(IPC.appFullScreenChange, handler)
       return () => ipcRenderer.removeListener(IPC.appFullScreenChange, handler)
+    },
+    onOpenRoute: (listener) => {
+      const handler = (_event: Electron.IpcRendererEvent, route: string): void => listener(route)
+      ipcRenderer.on(IPC.appOpenRoute, handler)
+      return () => ipcRenderer.removeListener(IPC.appOpenRoute, handler)
     },
     onPastePlain: (listener) => {
       const handler = (_event: Electron.IpcRendererEvent, text: string): void => listener(text)
@@ -279,6 +285,11 @@ const api: Api = {
       ipcRenderer.on(WATCH_IPC.changed, handler)
       return () => ipcRenderer.removeListener(WATCH_IPC.changed, handler)
     }
+  },
+  home: {
+    summary: () => ipcRenderer.invoke(HOME_IPC.summary),
+    weather: () => ipcRenderer.invoke(HOME_IPC.weather),
+    findPlace: (name) => ipcRenderer.invoke(HOME_IPC.findPlace, name)
   },
   lifecycle: {
     onBeforeClose: (handler) => {

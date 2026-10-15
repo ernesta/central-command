@@ -16,6 +16,7 @@ import { Notice } from '../components/Notice'
 import { Toast } from '../components/Toast'
 import { useSettings } from '../state/settings-context'
 import { DockActions } from './DockActions'
+import { RouteOpener } from './RouteOpener'
 import { usePastePlain } from './usePastePlain'
 import { useEscapeFullScreen } from './useEscapeFullScreen'
 import { GlobalSearch } from './GlobalSearch'
@@ -122,6 +123,7 @@ export function Shell(): React.JSX.Element {
       )}
       {searchOpen && <GlobalSearch onClose={() => setSearchOpen(false)} />}
       <DockActions />
+      <RouteOpener />
       <Toast />
       {moduleGlobals().map(({ id, Global }) => (
         <Global key={id} />

@@ -12,6 +12,7 @@ import { SettingsStore } from './settings'
 import { registerSettingsIpc } from './ipc/settings'
 import { broadcastTrackingChange, registerTrackingIpc } from './ipc/tracking'
 import { TrackingStore } from './tracking/store'
+import { registerHome } from '../modules/home/main/register'
 import { registerDialogIpc } from './ipc/dialog'
 import { registerAppIpc } from './ipc/app'
 import { registerBuildIpc } from './ipc/build'
@@ -208,6 +209,7 @@ app.whenReady().then(async () => {
   const disposers = mainModules
     .map((m) => m.register({ db, paths, settings }))
     .filter((d): d is () => void => typeof d === 'function')
+  disposers.push(registerHome({ db, paths, settings, tracking }))
   app.on('will-quit', () => {
     disposers.forEach((dispose) => dispose())
     db.close()
