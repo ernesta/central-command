@@ -7,7 +7,7 @@ Built backend-only on 15 Oct 2026 (an unattended run; `docs/DECISIONS.md`, "Watc
 | Piece                                                                | Backend     | Tests | Driven in built app                               | Mockup                      | UI in the app                                                  | Needs the user                                     |
 | -------------------------------------------------------------------- | ----------- | ----- | ------------------------------------------------- | --------------------------- | -------------------------------------------------------------- | -------------------------------------------------- |
 | Watch: sources, items, keywords, checker, scheduler, IPC             | done        | yes   | yes (feed, page, Crossref)                        | `watch-mockup.html`         | **not started**                                                | feedback on the mockup; `watch:from-tasks --apply` |
-| Home summary (tasks, meetings, hours, timer, coming up, Watch brief) | done        | yes   | yes                                               | `home-mockup.html`          | **not started**                                                | feedback on the mockup                             |
+| Home summary (tasks, meetings, hours, timer, coming up, Watch brief) | done        | yes   | yes                                               | `home-mockup.html`          | **built** (Research and Work; no weather or Watch card)        | the backend gaps below                             |
 | Weather (Open-Meteo, opt-in)                                         | done        | yes   | yes (London as a test place)                      | in `home-mockup.html`       | **not started**                                                | whether to have it; the place                      |
 | Notifications (rules, notifier, click opens a page)                  | done        | yes   | yes (digest recorded; the banner itself not seen) | `notifications-mockup.html` | settings tab **not started**; click handler `RouteOpener` done | quiet hours?                                       |
 | Widget file (`data/widget/snapshot.json`)                            | done        | yes   | yes                                               | `widgets-mockup.html`       | switch **not started**                                         | decide on the native Swift widget and signing      |
@@ -20,8 +20,8 @@ Not applied to the real library: `npm run watch:from-tasks -- --apply`. Not push
 
 ## What to work on next (ranked; the user picks)
 
-1. Apply the user's feedback to the four mockups (they will give it first).
-2. **Home page** (stage 2): a renderer page from `window.api.home.summary()`, opened by each workspace's landing. It can ship before Watch, since the Watch and weather cards hide when not set up.
+1. Feedback on the Watch, notifications and widgets mockups (Home's is applied: one "Next meeting" card in both workspaces, "Coming up" is the next 7 days, no running timer in This week/This month).
+2. ~~Home page~~ built 15 Oct 2026 (`src/modules/home/renderer/`), on Research's and Work's landing above the module cards; Life has none. Not installed, not pushed. Weather and Watch cards still to add (stages 1 and 3).
 3. **Watch page** (stage 1), after `watch:from-tasks -- --apply` on the real library (app closed).
 4. **Settings → Home and Notifications** (stage 3), so weather, notifications and the widget switch can be turned on.
 5. `in:watch` search (stage 4, optional).
@@ -43,6 +43,13 @@ Not applied to the real library: `npm run watch:from-tasks -- --apply`. Not push
 - Widget: build the native extension, and sign the app with an Apple developer account?
 - Weather: the place (Egham?), and whether it should exist at all (it is the one thing that tells a service roughly where you are).
 - Journals: which of the suggested ones to keep (14 are offered: LINGUIST List's four feeds and ten journals).
+
+## Home page: what the summary does not carry (a backend change, the user's call)
+
+- The summary's `hours` is Research-only and leaves out meeting-derived hours, so the page reads the tracking files in the renderer (as the Hours page does) for "This week" and Work's "This month".
+- `meetings.next` is the next meeting of either workspace and `openTodos` counts Research's only. The page takes Work's next meeting from `upcoming` (21 days, shared 12-item cap), and shows no Open TODOs count in Work.
+- `upcoming` is capped at 12 before the page keeps one workspace's 7 days, and Watch items count towards the cap; a very full week in one workspace could hide the other's items.
+- The "N more" count of Today is not known per workspace when the summary cut a list at 8; the header count is then left out and "See all" stays.
 
 ## Known limits
 
