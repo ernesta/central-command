@@ -648,6 +648,6 @@ the note".
   `docs/NOTES_PLAN.md` and mockup `docs/design/notes-mockup.html` are approved; built (nine stages), see the Notes section above and `docs/DECISIONS.md`. Studies stays "Coming soon".
 - Global dashboard (priorities, calendar, weather, unread email count)
 - World news tab, Research Digest, Focus/Writing space
-- Life and Work workspaces
+- Life and Work workspaces (Life has Notes, Hours, Tasks and Training since 15 Oct 2026)
 - Books module (following the Readings pattern)
 - Dark mode: **built** (Settings → Theme). Packaging and public release
