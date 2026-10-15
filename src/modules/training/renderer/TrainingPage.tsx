@@ -31,7 +31,7 @@ import {
 import { TRAINING_TYPES } from '../shared/types'
 import { NewTrainingButton } from './NewTrainingButton'
 import { TrainingTable } from './TrainingTable'
-import { todayIso } from './training-paths'
+import { todayIso, useTrainingWorkspace } from './training-paths'
 import { useSelfStudy } from './useSelfStudy'
 import { useTrainingList } from './useTrainingList'
 import { useTrainingView } from './useTrainingView'
@@ -39,7 +39,10 @@ import styles from './TrainingPage.module.css'
 
 /** The training log: the totals for an academic year, filters and the list of entries. */
 export function TrainingPage(): React.JSX.Element {
-  const { rows, meetings, people } = useTrainingList()
+  const workspace = useTrainingWorkspace()
+  // Life keeps a plain log: no yearly aim, no hours of meetings, no skills or types and no PDF for Inkpath.
+  const research = workspace === 'research'
+  const { rows, meetings, people } = useTrainingList(workspace)
   const selfStudy = useSelfStudy()
   const { settings } = useSettings()
   // A series card on the landing page opens the list already filtered to that series (for this visit only).
@@ -114,7 +117,15 @@ export function TrainingPage(): React.JSX.Element {
       </EmptyState>
     )
   } else
-    content = <TrainingTable rows={visible} people={people} today={today} selfStudy={selfStudy} />
+    content = (
+      <TrainingTable
+        rows={visible}
+        people={people}
+        today={today}
+        selfStudy={selfStudy}
+        workspace={workspace}
+      />
+    )
 
   const noteParts = [
     `${hours.entries} ${hours.entries === 1 ? 'entry' : 'entries'}`,
@@ -126,13 +137,15 @@ export function TrainingPage(): React.JSX.Element {
       <header className={styles.header}>
         <h1 className={styles.heading}>All training</h1>
         <div className={styles.actions}>
-          <ExportButton
-            busy={exporting}
-            disabled={rows === null}
-            title={`Exports ${yearLabel(year)} as a PDF, oldest first, without upcoming entries`}
-            onClick={() => void exportPdf()}
-          />
-          <NewTrainingButton />
+          {research && (
+            <ExportButton
+              busy={exporting}
+              disabled={rows === null}
+              title={`Exports ${yearLabel(year)} as a PDF, oldest first, without upcoming entries`}
+              onClick={() => void exportPdf()}
+            />
+          )}
+          <NewTrainingButton workspace={workspace} />
         </div>
       </header>
 
@@ -141,9 +154,9 @@ export function TrainingPage(): React.JSX.Element {
           title={yearHoursTitle(year)}
           minutes={hours.minutes}
           note={noteParts.join(' · ')}
-          aim={{ hours: aim, progress: hours.progress }}
-          extra={meetingMinutes > 0 ? meetingsLine(meetingMinutes) : undefined}
-          perSkill={hours.perSkill}
+          aim={research ? { hours: aim, progress: hours.progress } : undefined}
+          extra={research && meetingMinutes > 0 ? meetingsLine(meetingMinutes) : undefined}
+          perSkill={research ? hours.perSkill : []}
         />
       )}
 
@@ -163,24 +176,28 @@ export function TrainingPage(): React.JSX.Element {
           ]}
           onChange={(series) => setQuery({ series })}
         />
-        <Select
-          label="Filter by type"
-          value={query.type}
-          options={[
-            { value: 'all', label: 'Any type' },
-            ...TRAINING_TYPES.map((t) => ({ value: t.name, label: t.name, group: t.group }))
-          ]}
-          onChange={(type) => setQuery({ type })}
-        />
-        <Select
-          label="Filter by skill"
-          value={query.skill}
-          options={[
-            { value: 'all', label: 'Any skill' },
-            ...skillFilterOptions(skillsIn(everything))
-          ]}
-          onChange={(skill) => setQuery({ skill })}
-        />
+        {research && (
+          <>
+            <Select
+              label="Filter by type"
+              value={query.type}
+              options={[
+                { value: 'all', label: 'Any type' },
+                ...TRAINING_TYPES.map((t) => ({ value: t.name, label: t.name, group: t.group }))
+              ]}
+              onChange={(type) => setQuery({ type })}
+            />
+            <Select
+              label="Filter by skill"
+              value={query.skill}
+              options={[
+                { value: 'all', label: 'Any skill' },
+                ...skillFilterOptions(skillsIn(everything))
+              ]}
+              onChange={(skill) => setQuery({ skill })}
+            />
+          </>
+        )}
         <Select
           label="Filter by people"
           value={query.lead}

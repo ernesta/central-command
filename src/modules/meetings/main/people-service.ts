@@ -13,6 +13,7 @@ import type { PeopleResult, RemoveHow } from '../shared/api'
 import { rewriteMeetingPeople } from '../shared/people-rewrite'
 import type { PersonPatch } from '../shared/people'
 import { personUsage, type PersonUsage } from '../shared/people-usage'
+import { TRAINING_WORKSPACES, type TrainingWorkspace } from '../../training/shared/types'
 import { MEETING_WORKSPACES, type MeetingWorkspace } from '../shared/types'
 import type { PeopleStore } from './people-store'
 
@@ -20,7 +21,8 @@ interface PeopleServiceOptions {
   store: PeopleStore
   /** The folder holding one workspace's meeting notes. People are shared, so every workspace is rewritten. */
   meetingsDirFor: (workspace: MeetingWorkspace) => string
-  trainingDir: string
+  /** The folder holding one workspace's training entries. Every workspace is rewritten too. */
+  trainingDirFor: (workspace: TrainingWorkspace) => string
   /**
    * Every other folder of notes, where a person may be mentioned (`[Name](cc://person/Name)`, see `@shared/entities`): a rename
    * or merge rewrites those mentions too. Optional: none when omitted.
@@ -35,9 +37,7 @@ interface PeopleServiceOptions {
   }
   /** Bring the index up to date for a note this service just rewrote, so counts are right straight away. */
   reindex: (
-    kind: 'meetings' | 'training',
-    fileName: string,
-    workspace?: MeetingWorkspace
+    ...note: ['meetings', string, MeetingWorkspace] | ['training', string, TrainingWorkspace]
   ) => Promise<void>
   now?: () => Date
 }
@@ -91,7 +91,7 @@ export class PeopleService {
 
   private async rewrite(change: PersonChange): Promise<RewriteReport> {
     if (isNoChange(change)) return NOTHING
-    const { meetingsDirFor, trainingDir, backupsDir, now = () => new Date() } = this.options
+    const { meetingsDirFor, trainingDirFor, backupsDir, now = () => new Date() } = this.options
     const backup = join(backupsDir, `people-${now().toISOString().replace(/[:.]/g, '-')}`)
     let meetingsChanged = 0
     let meetingsSkipped: string[] = []
@@ -106,13 +106,20 @@ export class PeopleService {
       meetingsSkipped = [...meetingsSkipped, ...result.skipped]
       for (const name of result.changed) await this.options.reindex('meetings', name, workspace)
     }
-    const trainings = await rewriteNoteFiles({
-      dir: trainingDir,
-      backupDir: join(backup, 'training'),
-      transform: (content) =>
-        renamePersonMentions(rewriteTrainingPeople(content, change), change.names)
-    })
-    for (const name of trainings.changed) await this.options.reindex('training', name)
+    let trainingsChanged = 0
+    let trainingsSkipped: string[] = []
+    for (const workspace of TRAINING_WORKSPACES) {
+      const result = await rewriteNoteFiles({
+        dir: trainingDirFor(workspace),
+        // Research's keeps the folder it always had.
+        backupDir: join(backup, workspace === 'research' ? 'training' : `training-${workspace}`),
+        transform: (content) =>
+          renamePersonMentions(rewriteTrainingPeople(content, change), change.names)
+      })
+      trainingsChanged += result.changed.length
+      trainingsSkipped = [...trainingsSkipped, ...result.skipped]
+      for (const name of result.changed) await this.options.reindex('training', name, workspace)
+    }
     let linkedChanged = 0
     let linkedSkipped: string[] = []
     for (const [i, dir] of (this.options.linkDirs ?? []).entries()) {
@@ -126,8 +133,8 @@ export class PeopleService {
       linkedSkipped = [...linkedSkipped, ...linked.skipped]
     }
     return {
-      changed: meetingsChanged + trainings.changed.length + linkedChanged,
-      skipped: [...meetingsSkipped, ...trainings.skipped, ...linkedSkipped]
+      changed: meetingsChanged + trainingsChanged + linkedChanged,
+      skipped: [...meetingsSkipped, ...trainingsSkipped, ...linkedSkipped]
     }
   }
 }

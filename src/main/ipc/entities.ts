@@ -18,6 +18,7 @@ export function backlinkFolders(paths: AppPaths): BacklinkFolder[] {
       { kind: 'note', workspace, dir: join(paths.noteFiles, workspace) },
       { kind: 'meeting', workspace, dir: join(paths.meetingsNotes, workspace) }
     ]),
+    { kind: 'training', workspace: 'life', dir: join(paths.trainingNotes, 'life') },
     { kind: 'training', workspace: 'research', dir: join(paths.trainingNotes, 'research') },
     { kind: 'reading-list', workspace: 'research', dir: join(paths.readingListFiles, 'research') },
     { kind: 'reading-notes', workspace: 'research', dir: paths.readingsNotes },

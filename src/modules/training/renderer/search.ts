@@ -5,7 +5,7 @@ import { fold, markdownToExcerpt } from '@shared/text'
 import { formatShortDate, todayIso } from '@shared/time'
 import { DEFAULT_TRAINING_QUERY, queryTraining } from '../shared/rules'
 import { planKey } from '../shared/plan'
-import type { TrainingIndexRow } from '../shared/types'
+import type { TrainingIndexRow, TrainingWorkspace } from '../shared/types'
 import { lectureLabel } from '../shared/lecture-entries'
 import { entryRoute, trainingPlanRoute } from './training-paths'
 
@@ -28,7 +28,7 @@ export function trainingHits(
         key: row.id,
         title: lectureLabel(row.series, row.title || 'Untitled'),
         detail: (!inTitle && snippet(row.excerpt, terms)) || details,
-        route: entryRoute(row.id)
+        route: entryRoute(row.id, row.workspace)
       }
     })
 }
@@ -69,7 +69,23 @@ export function planYears(
   return yearsPresent([...dates, nextYearStart(today, starts)], today, starts)
 }
 
-export async function searchTraining(query: string, limit = DEFAULT_LIMIT): Promise<SearchHit[]> {
+/** One workspace's training for the search. Only Research has plans. */
+export function searchTraining(
+  workspace: TrainingWorkspace
+): (query: string, limit?: number) => Promise<SearchHit[]> {
+  return (query, limit = DEFAULT_LIMIT) =>
+    workspace === 'research' ? searchResearch(query, limit) : searchLife(query, limit)
+}
+
+async function searchLife(query: string, limit: number): Promise<SearchHit[]> {
+  const [rows, people] = await Promise.all([
+    window.api.training.list('life'),
+    window.api.meetings.people.list()
+  ])
+  return trainingHits(rows, people, query, limit)
+}
+
+async function searchResearch(query: string, limit: number): Promise<SearchHit[]> {
   const [rows, people, settings] = await Promise.all([
     window.api.training.list('research'),
     window.api.meetings.people.list(),

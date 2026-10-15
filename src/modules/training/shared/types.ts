@@ -1,5 +1,5 @@
-/** Workspaces that can hold training entries. Research now. */
-export const TRAINING_WORKSPACES = ['research'] as const
+/** Workspaces that can hold training entries (Life keeps a plain log; the Inkpath log, aim and plan are Research's). */
+export const TRAINING_WORKSPACES = ['life', 'research'] as const
 export type TrainingWorkspace = (typeof TRAINING_WORKSPACES)[number]
 
 export interface TrainingType {

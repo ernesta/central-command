@@ -17,10 +17,10 @@ export interface QuickAction {
   go: (navigate: NavigateFunction, workspace: QuickActionWorkspace) => void | Promise<void>
 }
 
-/** Where a quick action starts things: the workspace being looked at, Research anywhere else. Only notes exist in Life. */
+/** Where a quick action starts things: the workspace being looked at, Research anywhere else. */
 export type QuickActionWorkspace = 'life' | 'research' | 'work'
 
-/** Meetings, tasks and training have no Life: they start in Work when looking at Work, else in Research. */
+/** Meetings have no Life: they start in Work when looking at Work, else in Research. */
 export function researchOrWork(workspace: QuickActionWorkspace): 'research' | 'work' {
   return workspace === 'work' ? 'work' : 'research'
 }
@@ -75,16 +75,18 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
   {
     id: 'new-training',
     title: 'New training entry',
-    // Training exists only in Research, so this starts there from anywhere.
+    // Training has no Work: it starts in Life when looking at Life, else in Research.
     detail: 'Starts today, filled in at leisure.',
-    go: async (navigate) => {
+    go: async (navigate, current) => {
+      const workspace = current === 'life' ? 'life' : 'research'
       const file = await window.api.training.create({
-        workspace: 'research',
+        workspace,
         title: 'Untitled',
         date: todayIso(),
-        task: 'auto'
+        // Research's entries make their own subtask for the lecture's hours; Life has none.
+        ...(workspace === 'research' ? { task: 'auto' as const } : {})
       })
-      navigate(entryRoute(file.ref.id), { state: { isNew: true } })
+      navigate(entryRoute(file.ref.id, workspace), { state: { isNew: true } })
     }
   }
 ]

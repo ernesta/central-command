@@ -29,7 +29,7 @@ import { trainingMigrations } from './migrations'
 import { TrainingStore } from './training-store'
 
 /** Workspaces whose training folder is created and watched. */
-const ACTIVE_WORKSPACES: readonly TrainingWorkspace[] = ['research']
+const ACTIVE_WORKSPACES: readonly TrainingWorkspace[] = ['life', 'research']
 
 function asObject(value: unknown, what: string): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value))

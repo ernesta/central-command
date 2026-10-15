@@ -77,7 +77,8 @@ beforeEach(async () => {
     // meetings yet (the store's own ENOENT handling), leaving the existing assertions unchanged.
     meetingsDirFor: (workspace) =>
       workspace === 'work' ? join(root, 'meetings-work') : meetingsDir,
-    trainingDir,
+    trainingDirFor: (workspace) =>
+      workspace === 'research' ? trainingDir : join(root, 'training-life'),
     backupsDir,
     indexed: () => ({
       meetings: [
@@ -86,7 +87,7 @@ beforeEach(async () => {
       ],
       trainings: [{ leads: ['Kathy Rastle'] }]
     }),
-    reindex: async (kind, fileName) => {
+    reindex: async (...[kind, fileName]) => {
       reindexed.push(`${kind}:${fileName}`)
     },
     now: () => new Date('2026-09-25T10:00:00Z')
@@ -121,6 +122,19 @@ describe('PeopleService.update', () => {
       read(join(backupsDir, backup, 'meetings', 'research'), '2026-01-01 Supervision.md')
     ).toBe(MEETING)
     expect(read(join(backupsDir, backup, 'training'), '2026-01-03 Stats.md')).toBe(TRAINING)
+  })
+
+  it("rewrites Life's training entries too, and reindexes them in Life", async () => {
+    mkdirSync(join(root, 'training-life'))
+    writeFileSync(join(root, 'training-life', '2026-02-01 Pottery.md'), TRAINING)
+    const { report } = await service.update('Kathy Rastle', { name: 'Katherine Rastle' })
+    expect(report.changed).toBe(3)
+    expect(read(join(root, 'training-life'), '2026-02-01 Pottery.md')).toBe(
+      TRAINING.replace('leads: [Kathy Rastle]', 'leads: [Katherine Rastle]')
+    )
+    expect(reindexed).toContain('training:2026-02-01 Pottery.md')
+    const [backup] = readdirSync(backupsDir)
+    expect(read(join(backupsDir, backup, 'training-life'), '2026-02-01 Pottery.md')).toBe(TRAINING)
   })
 
   it('leaves notes that do not mention the person exactly as they were', async () => {
@@ -162,7 +176,7 @@ describe('PeopleService and mentions in other notes', () => {
     service = new PeopleService({
       store,
       meetingsDirFor: () => join(root, 'nowhere'),
-      trainingDir: join(root, 'nowhere-either'),
+      trainingDirFor: () => join(root, 'nowhere-either'),
       linkDirs: [notesDir, join(root, 'missing-folder')],
       backupsDir,
       indexed: () => ({ meetings: [], trainings: [] }),

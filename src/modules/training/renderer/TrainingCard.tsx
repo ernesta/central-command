@@ -1,5 +1,4 @@
 import { Link } from 'react-router'
-import { modulePath } from '@modules/types'
 import { formatDate } from '@shared/time'
 import { useSettings } from '@renderer/state/settings-context'
 import { formatHours } from '@shared/skills'
@@ -7,13 +6,14 @@ import { currentYear, yearLabel } from '@shared/year'
 import { lectureLabel } from '../shared/lecture-entries'
 import { compareNewestFirst, isUpcoming, trainingHours } from '../shared/rules'
 import { useSelfStudy } from './useSelfStudy'
-import { todayIso } from './training-paths'
+import { todayIso, trainingBase, useTrainingWorkspace } from './training-paths'
 import { useTrainingList } from './useTrainingList'
 import styles from './TrainingCard.module.css'
 
-/** The Training entry on the Research landing page: hours this year and the latest entry. */
+/** The Training entry on a workspace's landing page: hours this year (of the aim, in Research) and the latest entry. */
 export function TrainingCard(): React.JSX.Element {
-  const { rows } = useTrainingList()
+  const workspace = useTrainingWorkspace()
+  const { rows } = useTrainingList(workspace)
   const selfStudy = useSelfStudy()
   const { settings } = useSettings()
   const today = todayIso()
@@ -27,7 +27,7 @@ export function TrainingCard(): React.JSX.Element {
   return (
     <div className={styles.card}>
       <h2 className={styles.title}>
-        <Link className={styles.link} to={modulePath({ workspace: 'research', id: 'training' })}>
+        <Link className={styles.link} to={trainingBase(workspace)}>
           Training
         </Link>
       </h2>
@@ -36,8 +36,10 @@ export function TrainingCard(): React.JSX.Element {
       ) : (
         <>
           <p className={styles.line}>
-            {formatHours(hours.minutes)} of {formatHours(settings.trainingAimHours * 60)} ·{' '}
-            {yearLabel(year)}
+            {formatHours(hours.minutes)}
+            {workspace === 'research'
+              ? ` of ${formatHours(settings.trainingAimHours * 60)}`
+              : ''} · {yearLabel(year)}
           </p>
           {latest && (
             <p className={styles.line}>

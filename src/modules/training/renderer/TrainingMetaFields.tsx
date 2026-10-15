@@ -13,7 +13,8 @@ import {
   TRAINING_MODES,
   TRAINING_TYPES,
   type TrainingMeta,
-  type TrainingMode
+  type TrainingMode,
+  type TrainingWorkspace
 } from '../shared/types'
 import styles from './TrainingMetaFields.module.css'
 
@@ -25,6 +26,8 @@ interface TrainingMetaFieldsProps {
   institutionSuggestions: string[]
   onChange: (patch: TrainingPatch) => void
   onAddPerson: (name: string) => Promise<Person>
+  /** Life's entries have no type or skills (they are Inkpath's). */
+  workspace?: TrainingWorkspace
 }
 
 const MODE_OPTIONS = TRAINING_MODES.map((value) => ({
@@ -39,8 +42,10 @@ export function TrainingMetaFields({
   seriesSuggestions,
   institutionSuggestions,
   onChange,
-  onAddPerson
+  onAddPerson,
+  workspace = 'research'
 }: TrainingMetaFieldsProps): React.JSX.Element {
+  const research = workspace === 'research'
   const duration = durationMinutes(meta.start, meta.end)
   const knownType = meta.type === null || TRAINING_TYPES.some((t) => t.name === meta.type)
   const typeOptions = [
@@ -118,18 +123,20 @@ export function TrainingMetaFields({
           onChange={(series) => onChange({ series: series || null })}
         />
       </div>
-      <div className={styles.field}>
-        <label className={styles.label} htmlFor="training-type">
-          Type
-        </label>
-        <DescribedSelect
-          id="training-type"
-          label="Type"
-          value={meta.type ?? ''}
-          options={typeOptions}
-          onChange={(type) => onChange({ type: type || null })}
-        />
-      </div>
+      {research && (
+        <div className={styles.field}>
+          <label className={styles.label} htmlFor="training-type">
+            Type
+          </label>
+          <DescribedSelect
+            id="training-type"
+            label="Type"
+            value={meta.type ?? ''}
+            options={typeOptions}
+            onChange={(type) => onChange({ type: type || null })}
+          />
+        </div>
+      )}
       <div className={styles.field}>
         <span className={styles.label}>Format</span>
         <Segmented<TrainingMode | ''>
@@ -164,10 +171,12 @@ export function TrainingMetaFields({
           onAddPerson={onAddPerson}
         />
       </div>
-      <div className={styles.field}>
-        <span className={styles.label}>Skills</span>
-        <SkillsField skills={meta.skills} onChange={(skills) => onChange({ skills })} />
-      </div>
+      {research && (
+        <div className={styles.field}>
+          <span className={styles.label}>Skills</span>
+          <SkillsField skills={meta.skills} onChange={(skills) => onChange({ skills })} />
+        </div>
+      )}
     </div>
   )
 }

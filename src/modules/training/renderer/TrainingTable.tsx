@@ -6,7 +6,7 @@ import type { Person } from '@shared/people'
 import { formatDate, formatDuration } from '@shared/time'
 import { formatTimeRange, initialsFor } from '@modules/meetings/shared/query'
 import { entryMinutes, isUpcoming, type SelfStudy } from '../shared/rules'
-import { typeLabel, type TrainingIndexRow } from '../shared/types'
+import { typeLabel, type TrainingIndexRow, type TrainingWorkspace } from '../shared/types'
 import { entryRoute } from './training-paths'
 import styles from './TrainingTable.module.css'
 
@@ -21,18 +21,22 @@ export function TrainingTable({
   rows,
   people,
   today,
-  selfStudy
+  selfStudy,
+  workspace = 'research'
 }: {
   rows: TrainingIndexRow[]
   people: Person[]
   today: string
   /** Minutes tracked on each lecture's task, so a duration is the lecture's total. */
   selfStudy?: SelfStudy
+  /** Life's log has no type or skills columns (they are Inkpath's). */
+  workspace?: TrainingWorkspace
 }): React.JSX.Element {
+  const research = workspace === 'research'
   const navigate = useNavigate()
   const { tableProps, rowProps } = useRowNavigation(
     rows.length,
-    (index) => void navigate(entryRoute(rows[index].id))
+    (index) => void navigate(entryRoute(rows[index].id, workspace))
   )
 
   return (
@@ -40,16 +44,19 @@ export function TrainingTable({
       <table className={styles.table} aria-label="Training" {...tableProps}>
         <thead>
           <tr>
-            {[
-              'Date',
-              'Time',
-              'Duration',
-              'Type',
-              'Series',
-              'Title and summary',
-              'Skills',
-              'Leads'
-            ].map((label) => (
+            {(research
+              ? [
+                  'Date',
+                  'Time',
+                  'Duration',
+                  'Type',
+                  'Series',
+                  'Title and summary',
+                  'Skills',
+                  'Leads'
+                ]
+              : ['Date', 'Time', 'Duration', 'Series', 'Title and summary', 'Leads']
+            ).map((label) => (
               <th key={label} className={styles.th} scope="col">
                 {label}
               </th>
@@ -66,13 +73,13 @@ export function TrainingTable({
                 key={`${row.workspace}/${row.id}`}
                 className={styles.row}
                 {...rowProps(index)}
-                onClick={() => void navigate(entryRoute(row.id))}
+                onClick={() => void navigate(entryRoute(row.id, workspace))}
               >
                 <td className={styles.nowrap}>
                   <Link
                     className={styles.link}
                     tabIndex={-1}
-                    to={entryRoute(row.id)}
+                    to={entryRoute(row.id, workspace)}
                     // The row handles the click; the link is for the keyboard and for assistive technology.
                     onClick={(event) => event.stopPropagation()}
                   >
@@ -86,13 +93,15 @@ export function TrainingTable({
                 <td className={styles.nowrap}>
                   {duration === null ? '—' : formatDuration(duration)}
                 </td>
-                <td className={styles.nowrap}>
-                  {row.type ? (
-                    typeLabel(row.type)
-                  ) : (
-                    <span className={styles.noType}>No type yet</span>
-                  )}
-                </td>
+                {research && (
+                  <td className={styles.nowrap}>
+                    {row.type ? (
+                      typeLabel(row.type)
+                    ) : (
+                      <span className={styles.noType}>No type yet</span>
+                    )}
+                  </td>
+                )}
                 <td className={styles.nowrap}>{row.series || '—'}</td>
                 <td className={styles.titleCell}>
                   {(row.hasNotes || row.folder) && (
@@ -108,9 +117,11 @@ export function TrainingTable({
                   <span className={styles.titleText}>{row.title || 'Untitled'}</span>
                   {row.summary && <span className={styles.summaryText}>{row.summary}</span>}
                 </td>
-                <td className={styles.skills}>
-                  <SkillChips skills={row.skills} stacked />
-                </td>
+                {research && (
+                  <td className={styles.skills}>
+                    <SkillChips skills={row.skills} stacked />
+                  </td>
+                )}
                 <td className={styles.attendees}>
                   <span className={styles.chips}>
                     {shown.map((name) => (

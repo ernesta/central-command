@@ -17,6 +17,7 @@ import { taskRoute } from '@modules/tasks/renderer/tasks-paths'
 import type { TaskWorkspace } from '@modules/tasks/shared/types'
 import { modulePath } from '@modules/types'
 import { entryRoute, trainingPlanRoute } from '@modules/training/renderer/training-paths'
+import type { TrainingWorkspace } from '@modules/training/shared/types'
 import type { BacklinkSource } from '@shared/entities'
 
 /** Where a place that mentions something is opened, and the icon that says what kind of place it is. */
@@ -30,7 +31,10 @@ export function sourceTarget(source: BacklinkSource): { route: string; icon: Luc
         icon: CalendarDays
       }
     case 'training':
-      return { route: entryRoute(source.id), icon: GraduationCap }
+      return {
+        route: entryRoute(source.id, source.workspace as TrainingWorkspace),
+        icon: GraduationCap
+      }
     case 'reading-list':
       return { route: readingListRoute(source.id), icon: ListChecks }
     case 'reading-notes':

@@ -21,7 +21,7 @@ import { lectureLabel, lectureTaskUid } from '../shared/lecture-entries'
 import { FilesPanel } from './FilesPanel'
 import { LectureHours } from './LectureHours'
 import { LectureTask } from './LectureTask'
-import { entryRoute, trainingBase } from './training-paths'
+import { entryRoute, trainingBase, useTrainingWorkspace } from './training-paths'
 import { TrainingMetaFields } from './TrainingMetaFields'
 import { useLectureTask } from './useLectureTask'
 import { useSelfStudy } from './useSelfStudy'
@@ -31,6 +31,7 @@ import styles from './TrainingEntryPage.module.css'
 /** One training entry: its details and its note (Summary and Notes). */
 export function TrainingEntryPage(): React.JSX.Element {
   const { id = '' } = useParams()
+  const workspace = useTrainingWorkspace()
   const navigate = useNavigate()
   // Changing the date or title renames the file, and so changes the id in the address. The page keeps
   // its state (and the cursor) by staying mounted under the id it opened with: `ids` are the names this
@@ -40,12 +41,12 @@ export function TrainingEntryPage(): React.JSX.Element {
   return (
     <EntryView
       key={key}
-      entryRef={{ workspace: 'research', id: key }}
+      entryRef={{ workspace, id: key }}
       onRenamed={(newId) => {
         setKnown((prev) =>
           prev.key === key ? { key, ids: [...prev.ids, newId] } : { key, ids: [key, newId] }
         )
-        void navigate(entryRoute(newId), { replace: true })
+        void navigate(entryRoute(newId, workspace), { replace: true })
       }}
     />
   )
@@ -60,6 +61,9 @@ function EntryView({
 }): React.JSX.Element {
   const navigate = useNavigate()
   const location = useLocation()
+  const { workspace } = entryRef
+  // Life has no lecture task (an hours subtask in Tasks), no type and no skills.
+  const research = workspace === 'research'
   const { session, snapshot } = useTrainingSession(entryRef, onRenamed)
   const [people, setPeople] = useState<Person[]>([])
   const [seriesUsed, setSeriesUsed] = useState<string[]>([])
@@ -76,7 +80,7 @@ function EntryView({
     void window.api.meetings.people.list().then((list) => {
       if (!cancelled) setPeople(list)
     })
-    void window.api.training.list('research').then((rows) => {
+    void window.api.training.list(workspace).then((rows) => {
       if (cancelled) return
       setSeriesUsed(seriesOptions(rows))
       setInstitutionsUsed(institutionOptions(rows))
@@ -84,7 +88,7 @@ function EntryView({
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [workspace])
 
   // A brand-new entry opens with its title selected, so typing replaces "Untitled".
   const ready = snapshot.status === 'ready'
@@ -132,7 +136,7 @@ function EntryView({
           console.error('Could not delete the lecture task:', e)
         }
       }
-      void navigate(trainingBase, { replace: true })
+      void navigate(trainingBase(workspace), { replace: true })
     } catch (e) {
       setDeleteError(ipcErrorMessage(e))
       setDeleting(false)
@@ -230,9 +234,10 @@ function EntryView({
         institutionSuggestions={institutionsUsed}
         onChange={(patch) => session.setMeta(patch)}
         onAddPerson={addPerson}
+        workspace={workspace}
       />
 
-      {meta.task && (
+      {research && meta.task && (
         <LectureTask
           task={meta.task}
           series={meta.series}

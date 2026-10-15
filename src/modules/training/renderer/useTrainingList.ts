@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 import type { Person } from '@shared/people'
 import type { MeetingIndexRow } from '@modules/meetings/shared/types'
-import type { TrainingIndexRow } from '../shared/types'
+import type { TrainingIndexRow, TrainingWorkspace } from '../shared/types'
 
 /**
- * Every training entry in the Research workspace from the index, the meetings (for the hours of
+ * Every training entry in a workspace from the index, Research's meetings (for the hours of
  * meetings beside the total) and the people list. Refreshed when an entry file changes. `rows` is null
  * until the first load.
  */
-export function useTrainingList(): {
+export function useTrainingList(workspace: TrainingWorkspace = 'research'): {
   rows: TrainingIndexRow[] | null
   meetings: MeetingIndexRow[]
   people: Person[]
@@ -21,14 +21,17 @@ export function useTrainingList(): {
     let cancelled = false
     let timer: ReturnType<typeof setTimeout> | null = null
     const load = (): void => {
-      void window.api.training.list('research').then((list) => {
+      void window.api.training.list(workspace).then((list) => {
         if (!cancelled) setRows(list)
       })
     }
     load()
-    void window.api.meetings.list('research').then((list) => {
-      if (!cancelled) setMeetings(list)
-    })
+    // Meetings' hours are shown beside Research's total only.
+    if (workspace === 'research') {
+      void window.api.meetings.list('research').then((list) => {
+        if (!cancelled) setMeetings(list)
+      })
+    }
     void window.api.meetings.people.list().then((list) => {
       if (!cancelled) setPeople(list)
     })
@@ -42,7 +45,7 @@ export function useTrainingList(): {
       if (timer) clearTimeout(timer)
       off()
     }
-  }, [])
+  }, [workspace])
 
   return { rows, meetings, people }
 }

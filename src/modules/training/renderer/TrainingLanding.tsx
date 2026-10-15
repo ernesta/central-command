@@ -37,7 +37,8 @@ import {
   seriesRoute,
   todayIso,
   trainingListRoute,
-  trainingPlanRoute
+  trainingPlanRoute,
+  useTrainingWorkspace
 } from './training-paths'
 import { lectureLabel } from '../shared/lecture-entries'
 import { useSelfStudy } from './useSelfStudy'
@@ -57,7 +58,10 @@ function noteFor(row: TrainingIndexRow, today: string, selfStudy: SelfStudy): st
 
 /** The Training landing page: the year's hours, a card per series, and the recent and upcoming entries. */
 export function TrainingLanding(): React.JSX.Element {
-  const { rows, meetings, people } = useTrainingList()
+  const workspace = useTrainingWorkspace()
+  // Life keeps a plain log: no yearly aim, no hours of meetings, no skills and no plan.
+  const research = workspace === 'research'
+  const { rows, meetings, people } = useTrainingList(workspace)
   const selfStudy = useSelfStudy()
   const { settings } = useSettings()
   const today = todayIso()
@@ -79,7 +83,7 @@ export function TrainingLanding(): React.JSX.Element {
 
   const recentRows: RecentRow[] = [...[...upcoming].reverse(), ...recent].map((row) => ({
     key: row.id,
-    to: entryRoute(row.id),
+    to: entryRoute(row.id, workspace),
     date: row.date ? formatDate(row.date) : 'No date yet',
     badge: isUpcoming(row, today) ? (row.date ? 'Upcoming' : 'Planned') : undefined,
     title: lectureLabel(row.series, row.title || 'Untitled'),
@@ -93,8 +97,8 @@ export function TrainingLanding(): React.JSX.Element {
         title="Training"
         actions={
           <>
-            <AllLink to={`${trainingPlanRoute}?year=${year}`}>Training plan</AllLink>
-            <NewTrainingButton />
+            {research && <AllLink to={`${trainingPlanRoute}?year=${year}`}>Training plan</AllLink>}
+            <NewTrainingButton workspace={workspace} />
           </>
         }
       />
@@ -110,14 +114,14 @@ export function TrainingLanding(): React.JSX.Element {
               title={yearHoursTitle(year)}
               minutes={hours.minutes}
               note={noteParts.join(' · ')}
-              aim={{ hours: aim, progress: hours.progress }}
-              extra={meetingMinutes > 0 ? meetingsLine(meetingMinutes) : undefined}
-              perSkill={hours.perSkill}
+              aim={research ? { hours: aim, progress: hours.progress } : undefined}
+              extra={research && meetingMinutes > 0 ? meetingsLine(meetingMinutes) : undefined}
+              perSkill={research ? hours.perSkill : []}
             />
             <SeriesCards
               cards={summaries.map((s) => ({
                 key: s.series,
-                to: seriesRoute(s.series, year),
+                to: seriesRoute(s.series, year, workspace),
                 title: s.series,
                 line:
                   s.count === 0
@@ -131,7 +135,7 @@ export function TrainingLanding(): React.JSX.Element {
             id="recent"
             label="Recent and upcoming"
             aside={
-              <SeeAllLink to={`${trainingListRoute}?year=${year}`}>
+              <SeeAllLink to={`${trainingListRoute(workspace)}?year=${year}`}>
                 See all training
                 <ArrowRight size={14} strokeWidth={1.75} aria-hidden />
               </SeeAllLink>

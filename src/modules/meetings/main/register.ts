@@ -22,6 +22,7 @@ import { MeetingsStore } from './meetings-store'
 import { listMeetingRows } from './repository'
 import { TrainingStore } from '../../training/main/training-store'
 import { listTrainingRows } from '../../training/main/repository'
+import { TRAINING_WORKSPACES } from '../../training/shared/types'
 import { PeopleService } from './people-service'
 import { PeopleStore } from './people-store'
 import type { RemoveHow } from '../shared/api'
@@ -69,15 +70,16 @@ function register({ db, paths }: MainContext): () => void {
   // Only used to bring the index up to date for entries whose leads were just rewritten.
   const trainingStore = new TrainingStore({
     db,
-    dirFor: () => join(paths.trainingNotes, 'research'),
+    dirFor: (workspace) => join(paths.trainingNotes, workspace),
     trash: (path) => shell.trashItem(path)
   })
   const peopleService = new PeopleService({
     store: people,
     meetingsDirFor: dirFor,
-    trainingDir: join(paths.trainingNotes, 'research'),
-    // Where else a note can mention a person: free notes (both workspaces), readings' notes, reading lists, the training plans.
+    trainingDirFor: (workspace) => join(paths.trainingNotes, workspace),
+    // Where else a note can mention a person: free notes (every workspace), readings' notes, reading lists, the training plans.
     linkDirs: [
+      join(paths.noteFiles, 'life'),
       join(paths.noteFiles, 'research'),
       join(paths.noteFiles, 'work'),
       paths.readingsNotes,
@@ -86,12 +88,12 @@ function register({ db, paths }: MainContext): () => void {
     ],
     backupsDir: join(paths.root, 'backups'),
     reindex: async (kind, fileName, workspace) => {
-      if (kind === 'meetings') await store.reindexFile(workspace ?? 'research', fileName)
-      else await trainingStore.reindexFile('research', fileName)
+      if (kind === 'meetings') await store.reindexFile(workspace, fileName)
+      else await trainingStore.reindexFile(workspace, fileName)
     },
     indexed: () => ({
       meetings: ACTIVE_WORKSPACES.flatMap((workspace) => listMeetingRows(db, workspace)),
-      trainings: listTrainingRows(db, 'research')
+      trainings: TRAINING_WORKSPACES.flatMap((workspace) => listTrainingRows(db, workspace))
     })
   })
 
