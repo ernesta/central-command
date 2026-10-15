@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { Check, Circle, GraduationCap, Plane, Users } from 'lucide-react'
 import { Panel } from '@renderer/components/Panel'
+import { PriorityBadge } from '../../tasks/renderer/TaskIcons'
 import { tasksAllRoute } from '../../tasks/renderer/tasks-paths'
 import type { HomeEvent, HomeTask, HomeWorkspace } from '../shared/types'
 import { COMING_UP_DAYS, detailText, homeView, whenLabel, type HomeView } from './home-model'
@@ -42,7 +43,7 @@ function TaskRow({ task }: { task: HomeTask }): React.JSX.Element {
           <span className={styles.title}>{task.title}</span>
           <span className={styles.small}>{taskNote(task)}</span>
         </span>
-        {task.priority === 'high' && <span className={styles.chip}>High</span>}
+        <PriorityBadge priority={task.priority} />
         {late && (
           <span className={`${styles.chip} ${styles.warn}`}>
             {task.daysLate === 1 ? '1 day late' : `${task.daysLate} days late`}
