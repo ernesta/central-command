@@ -1,5 +1,6 @@
 import { readFile, rename } from 'fs/promises'
 import { TERMINALS, THEMES, WORKSPACES, type Settings } from '@shared/settings'
+import { applyHomePatch, normaliseHome, type HomePatch } from '@shared/home-settings'
 import { normaliseYearStarts, rolloverStarts } from '@shared/year'
 import { writeFileAtomic } from './atomic-write'
 
@@ -48,6 +49,7 @@ export function normaliseSettings(raw: unknown, defaults: Settings): Settings {
     trainingsFolder:
       typeof obj.trainingsFolder === 'string' ? obj.trainingsFolder : defaults.trainingsFolder,
     yearStarts: yearStarts.length > 0 ? yearStarts : defaults.yearStarts,
+    home: normaliseHome(obj.home, defaults.home),
     ui: { workspace, window, moduleState }
   }
 }
@@ -100,11 +102,19 @@ export class SettingsStore {
   }
 
   async update(
-    patch: Partial<Omit<Settings, 'ui'>> & { ui?: Partial<Settings['ui']> }
+    patch: Partial<Omit<Settings, 'ui' | 'home'>> & {
+      ui?: Partial<Settings['ui']>
+      home?: HomePatch
+    }
   ): Promise<Settings> {
     const previous = this.current
     this.current = normaliseSettings(
-      { ...this.current, ...patch, ui: { ...this.current.ui, ...patch.ui } },
+      {
+        ...this.current,
+        ...patch,
+        ui: { ...this.current.ui, ...patch.ui },
+        home: applyHomePatch(this.current.home, patch.home)
+      },
       this.defaults
     )
     await writeFileAtomic(this.file, JSON.stringify(this.current, null, 2) + '\n')

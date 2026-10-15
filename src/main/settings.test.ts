@@ -151,4 +151,20 @@ describe('year starts', () => {
       '2026-09-21'
     ])
   })
+
+  it('keeps the home settings through a save and a load, and starts with everything off', async () => {
+    const file = join(dir, 'settings.json')
+    const store = new SettingsStore(file, defaults)
+    expect(store.get().home.notifications.enabled).toBe(false)
+    await store.update({
+      home: {
+        notifications: { enabled: true },
+        weather: { latitude: 51.4, longitude: -0.5, place: 'Egham', enabled: true }
+      }
+    })
+    const loaded = await new SettingsStore(file, defaults).load()
+    expect(loaded.home.notifications).toMatchObject({ enabled: true, meetingMinutesBefore: 10 })
+    expect(loaded.home.weather).toMatchObject({ enabled: true, place: 'Egham' })
+    expect(loaded.home.widget.enabled).toBe(false)
+  })
 })

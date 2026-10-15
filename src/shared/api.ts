@@ -7,6 +7,7 @@ import type { ReadingListsApi } from '../modules/reading-lists/shared/api'
 import type { ReadingsApi } from '../modules/readings/shared/api'
 import type { TrainingApi } from '../modules/training/shared/api'
 import type { WatchApi } from '../modules/watch/shared/api'
+import type { HomePatch } from './home-settings'
 import type { Settings } from './settings'
 import type { TrackingApi } from './tracking/api'
 
@@ -21,7 +22,10 @@ export interface PickPathOptions {
 
 export type BuildResult = { ok: true } | { ok: false; message: string }
 
-export type SettingsPatch = Partial<Omit<Settings, 'ui'>> & { ui?: Partial<Settings['ui']> }
+export type SettingsPatch = Partial<Omit<Settings, 'ui' | 'home'>> & {
+  ui?: Partial<Settings['ui']>
+  home?: HomePatch
+}
 
 /**
  * The complete surface the renderer may use to reach the main process.

@@ -1,3 +1,5 @@
+import { DEFAULT_HOME_SETTINGS, type HomeSettings } from './home-settings'
+
 export type Workspace = 'life' | 'research' | 'work'
 
 /** Terminal apps the Build button can open a Claude Code session in (macOS). */
@@ -42,6 +44,8 @@ export interface Settings {
    * Meetings alike. See `year.ts`. The next one is added by the app when a year ends.
    */
   yearStarts: string[]
+  /** The Home page's weather, notifications and the Mac widget: all off until turned on. */
+  home: HomeSettings
   /** Remembered UI state. */
   ui: {
     workspace: Workspace
@@ -71,6 +75,7 @@ export function defaultSettings(defaultZoteroExportPath: string): Settings {
     trainingAimHours: DEFAULT_TRAINING_AIM_HOURS,
     trainingsFolder: '',
     yearStarts: [...DEFAULT_YEAR_STARTS],
+    home: structuredClone(DEFAULT_HOME_SETTINGS),
     ui: { workspace: 'research', window: null, moduleState: {} }
   }
 }
