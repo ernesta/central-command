@@ -3447,3 +3447,7 @@ The user: after deleting a paragraph, Delete on the empty line it left "does not
 - **Backspace on an empty line below other empty lines** (`backspaceBlankRun`): removes the ones above, keeps one, the cursor lands on it.
 - **Backspace at the start of text, Delete at the end of text, beside two or more empty lines** (`backspaceAboveBlankRun`, `deleteBelowBlankRun`): collapses the run to one empty line, the cursor stays. With a single empty line the ordinary key runs (it joins the paragraphs, which is visible).
 - Not in code blocks, not with a selection or several cursors. Not yet driven in the app.
+
+## Home shows every task's priority as P1/P2/P3 (15 Oct 2026)
+
+The user: Home's Today card labelled a task "High", a word nowhere else in the app, and showed nothing for Normal and Low. Tasks calls them P1, P2 and P3 (`PRIORITY_MARKS`; the word is only the hover title). Fix: `TaskRow` in `HomePage.tsx` renders the Tasks module's `PriorityBadge` for every task, so the mark, colours and the show-all rule match the Tasks table. The old `.chip` is still used for "N days late". Not yet driven in the app.
