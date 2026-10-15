@@ -16,6 +16,7 @@ import { tableTab } from './live-tables'
 import {
   backspaceInItem,
   deleteBeforeItem,
+  deleteBlankRun,
   enter,
   hardBreak,
   indentItem,
@@ -64,6 +65,7 @@ export const listBindings: KeyBinding[] = [
   { key: 'Enter', run: enter },
   { key: 'Shift-Enter', run: hardBreak },
   { key: 'Backspace', run: backspaceInItem },
+  { key: 'Delete', run: deleteBlankRun },
   { key: 'Delete', run: deleteBeforeItem },
   { key: 'Tab', run: indentItem },
   { key: 'Shift-Tab', run: outdentItem },

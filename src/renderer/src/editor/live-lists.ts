@@ -250,6 +250,35 @@ export const backspaceInItem: StateCommand = ({ state, dispatch }) => {
   return false
 }
 
+/**
+ * Delete on an empty line followed by more empty lines: take the whole run, so the cursor lands on the next text. Blank lines draw
+ * no height away from the cursor (`live-spacing.ts`), so deleting one at a time looks like nothing happened.
+ */
+export const deleteBlankRun: StateCommand = ({ state, dispatch }) => {
+  const range = state.selection.main
+  if (!range.empty || state.selection.ranges.length > 1) return false
+  const line = state.doc.lineAt(range.head)
+  if (range.head !== line.to || line.number === state.doc.lines) return false
+  if (!blankLine(parseLine(line.text)) || inCode(state, line.to)) return false
+  let last = line
+  while (last.number < state.doc.lines) {
+    const next = state.doc.line(last.number + 1)
+    if (!blankLine(parseLine(next.text))) break
+    last = next
+  }
+  if (last.number === line.number) return false
+  const to = last.number < state.doc.lines ? state.doc.line(last.number + 1).from : last.to
+  dispatch(
+    state.update({
+      changes: { from: line.from, to },
+      selection: EditorSelection.cursor(line.from),
+      scrollIntoView: true,
+      userEvent: 'delete.blank'
+    })
+  )
+  return true
+}
+
 /** Delete at the end of a line, when the next line is a list item: join its text on, without its marker. */
 export const deleteBeforeItem: StateCommand = ({ state, dispatch }) => {
   const range = state.selection.main

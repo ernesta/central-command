@@ -195,6 +195,11 @@ describe('Backspace', () => {
 })
 
 describe('Delete', () => {
+  it('takes a whole run of empty lines at once, since they draw no height', () => {
+    expect(after('a\n\n|\n\nb', 'Delete')).toBe('a\n\n|b')
+    expect(after('a\n|\n \n\n- b', 'Delete')).toBe('a\n|- b')
+    expect(after('a\n|\n\n', 'Delete')).toBe('a\n|')
+  })
   it('at the end of a line joins the next item on without its marker', () => {
     expect(after('a|\n- b', 'Delete')).toBe('a|b')
     expect(after('- a|\n- b', 'Delete')).toBe('- a|b')
