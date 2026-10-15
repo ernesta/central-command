@@ -12,6 +12,7 @@ import { motionKeymap } from './live-motion'
 import { linkTargetAt } from './live-links'
 import { liveCopy } from './live-copy'
 import { livePaste } from './live-paste'
+import { tableScroll } from './live-tables'
 
 export interface LiveOptions {
   /** The note's Markdown, exactly as it is in the file. */
@@ -54,6 +55,7 @@ export function liveExtensions(options: LiveOptions): Extension[] {
     liveKeymap,
     keymap.of([...keys, ...historyKeymap]),
     liveLayer,
+    tableScroll,
     entityExtensions(options.entities),
     findExtension(options.find),
     ...(options.extensions ?? []),

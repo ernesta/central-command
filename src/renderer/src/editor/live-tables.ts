@@ -1,5 +1,5 @@
 import { EditorSelection, type EditorState, type StateCommand } from '@codemirror/state'
-import { Decoration, WidgetType } from '@codemirror/view'
+import { Decoration, ViewPlugin, WidgetType } from '@codemirror/view'
 import type { SyntaxNode } from '@lezer/common'
 import { enclosing, withBreaks } from './live-lines'
 import type { Extent } from './live-reveal'
@@ -98,17 +98,55 @@ export function renderable(state: EditorState, table: SyntaxNode): boolean {
   return true
 }
 
-/** The grid's column widths: proportional to the longest text in each column, never tiny and never all the width. */
+/**
+ * The grid's column widths: proportional to the longest text in each column, but never narrower than the column's
+ * longest word (or 16 characters of its longest cell), so a word is never broken. A table that needs more than the page
+ * is wider than it and scrolls sideways (`tableScroll`).
+ */
 function columns(lines: string[]): string {
   const widths: number[] = []
+  const words: number[] = []
   lines.forEach((text, index) => {
     if (index === 1) return
     splitRow(text).cells.forEach((cell, i) => {
-      widths[i] = Math.max(widths[i] ?? 0, cell.to - cell.from)
+      const length = cell.to - cell.from
+      widths[i] = Math.max(widths[i] ?? 0, length)
+      const longest = Math.max(
+        0,
+        ...text
+          .slice(cell.from, cell.to)
+          .split(/\s+/)
+          .map((w) => w.length)
+      )
+      words[i] = Math.max(words[i] ?? 0, Math.min(longest, 40), Math.min(length, 16))
     })
   })
-  return widths.map((w) => `minmax(0, ${Math.min(48, Math.max(6, w))}fr)`).join(' ')
+  return widths
+    .map((w, i) => `minmax(${Math.max(4, words[i] ?? 0)}ch, ${Math.min(48, Math.max(6, w))}fr)`)
+    .join(' ')
 }
+
+/** Is this line part of a drawn table: a row, or the rule under the header. */
+const inTable = (el: Element | null): el is HTMLElement =>
+  !!el && (el.classList.contains('live-table-row') || el.classList.contains('live-table-rule'))
+
+/**
+ * A wide table scrolls sideways, and every row of it together: each row is its own scrolling line (`LiveEditor.module.css`),
+ * so a scroll in one is copied to the others in the same table. (A scroll event does not bubble: listen while it is captured.)
+ */
+export const tableScroll = ViewPlugin.define((view) => {
+  const onScroll = (event: Event): void => {
+    const row = event.target
+    if (!(row instanceof HTMLElement) || !row.classList.contains('live-table-row')) return
+    const left = row.scrollLeft
+    for (const step of ['previousElementSibling', 'nextElementSibling'] as const) {
+      for (let el = row[step]; inTable(el); el = el[step])
+        if (el.scrollLeft !== left) el.scrollLeft = left
+    }
+  }
+  view.dom.addEventListener('scroll', onScroll, true)
+  return { destroy: () => view.dom.removeEventListener('scroll', onScroll, true) }
+})
 
 /** Holds the place of an empty cell that has no character at all between its pipes (`||`). */
 class EmptyCell extends WidgetType {

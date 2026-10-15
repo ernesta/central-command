@@ -3386,7 +3386,6 @@ progress that are worked on every day (Daily admin).
 - **Not done:** the ROADMAP question on how far back it reaches is still open (a task not timed for a week and not due today is not suggested).
 - Not driven in the app; unit tests only.
 
-
 ## Group picker: one field to find or create (15 Oct 2026)
 
 The user's review of the Group menu: a "New group" form under the list (name, "Inside", Add) beside the search field was convoluted when other places (the timer's task picker) use one field for both.
@@ -3411,3 +3410,12 @@ The user saw the arrow and workspaces slide right at the top edge in full screen
 - **Fix:** while the pointer is on the top sentinel (`.topSentinel:hover`), `.lead` and `.actions` in `TopBar.module.css` also move down by `--fullscreen-strip-shift` (28px), with a 220ms transition, besides the existing left padding.
 - **The 28px is a guess**: the strip's height could not be read from the user's screenshots and Playwright cannot capture the native strip. If the controls still touch the strip or sit too low, change that one value.
 - Not driven in the app; typecheck, lint and Prettier pass.
+
+## Wide tables scroll sideways (15 Oct 2026)
+
+The user's screenshot: a four-column table in a narrow note broke words mid-word ("Memb ers"). Wanted: scroll horizontally, as Claude desktop does.
+
+- Each drawn table row is its own grid line, so each line has `overflow-x: auto` (bar hidden) and `tableScroll` (`live-tables.ts`) copies a row's `scrollLeft` to the other rows of the same table (a scroll event does not bubble, so it listens while capturing).
+- Column minimums (`columns`): the longest word in the column (at most 40 characters) or 16 characters of its longest cell, in `ch`; the `fr` share is as before. A table that fits looks as before; one that does not is wider than the page.
+- `.cm-content { min-width: 0 }` is required: without it the whole editor grew to the table's width instead of the rows scrolling.
+- Driven in the built app on a scratch library (seven columns: rows scroll together). Not checked in dev mode; no unit test covers the scrolling.

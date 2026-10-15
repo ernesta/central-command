@@ -227,6 +227,11 @@
   color: var(--marker);
 }
 
+/* The text may be narrower than a table's minimum width (the table scrolls); without this the whole editor grows to fit it. */
+.wrap :global(.cm-editor) :global(.cm-content) {
+  min-width: 0;
+}
+
 /* A table away from the cursor: every line a row of a grid (`live-tables.ts`); the widths come with the line. */
 .wrap :global(.cm-editor) :global(.cm-line.live-table-row) {
   display: grid;
@@ -234,6 +239,10 @@
   padding: 0 4px;
   border-bottom: 1px solid var(--border-soft);
   line-height: calc(var(--table-row) - 1px);
+  /* A table wider than the page scrolls sideways, every row together (`tableScroll`); the bar is not drawn. */
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
 }
 .wrap :global(.cm-editor) :global(.cm-line.live-table-head) {
   border-bottom-color: var(--border-strong);
