@@ -3470,3 +3470,19 @@ The user, on the Research Home: the date should be next to the workspace name; "
 - **Today card:** the circle is `StatusButton` (`HomeParts.tsx`): `StatusIcon` with the same click rules as the Tasks table (click moves on, Shift-click goes to done, via `setTaskStatus`, which now takes just `{ uid, recurrence? }`). The note line is the list only. Priority is on the far right, with "N days late" before it. A done task leaves the list when the summary reloads. The red circle for late tasks is gone: the chip says it.
 - **Coming up:** a task event carries `task: { uid, status, priority }` (`HomeEvent`, `buildHomeSummary`), so it gets the same circle and a priority badge on the right, and its due date moves into the note line ("Writing · due tomorrow"). Meetings, trainings, time off and Watch items keep their icon and the right-hand "Tomorrow" label.
 - Typecheck, lint and tests pass. Not yet driven in the app.
+
+## Selecting down to a heading (15 Oct 2026)
+
+The user: selecting from one block down to the next heading and pressing Delete also took the heading's `## `; and the highlight was "ragged and unequal in height".
+
+- **Cause (delete):** a drag that ends at a heading's left edge lands after the hidden `## ` (the replaced range has the same x before and after). `live-selection.ts` (`snapSelectionToLineStart`, a transaction filter) ends such a selection at the line's start, only when it starts on an earlier line and ends exactly after the `#`s; a selection starting inside the heading is left alone.
+- **Cause (highlight):** CodeMirror's `drawSelection` runs a selection that ends at a line's start down through that line's top padding (a heading's gap), and takes the bands' left edge from the first line's padding. The same file draws the selection layer instead (`RectangleMarker.forRange`): a selection ending at a line's start stops at the end of the line before, bands start at the content's edge, each piece runs a pixel into the next (no hairline). The default selection layer is hidden in `LiveEditor.module.css`; `drawSelection` stays for the cursor.
+- Reproduced and checked in the built app on a scratch library, dark mode. Unit tests in `live-selection.test.ts` (mutation-checked). The left-edge shift in the user's screenshot was not reproduced (the scratch note's first line has no padding); fixed by construction only. Not checked in dev mode.
+
+## Enter at the start of a paragraph (15 Oct 2026)
+
+The user: "I kept pressing enter but nothing was happening" with the cursor at the start of a paragraph under a heading.
+
+- **Cause:** Enter put the new line above and the cursor went down with the text; a blank line is drawn with no height unless the cursor is on it ("Spacing between blocks"), so nothing showed.
+- **Fix** (`enterAt`, `live-lists.ts`): at the very start of a plain, non-empty paragraph line the empty line goes above and the cursor stays on it, so the text moves down by the cursor line. Headings, items, quotes and code keep their rules.
+- Still true by the earlier decision: a second, third… blank line is not drawn, so repeated Enter on empty lines shows only the one with the cursor.
