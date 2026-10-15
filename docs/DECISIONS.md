@@ -3419,3 +3419,12 @@ The user's screenshot: a four-column table in a narrow note broke words mid-word
 - Column minimums (`columns`): the longest word in the column (at most 40 characters) or 16 characters of its longest cell, in `ch`; the `fr` share is as before. A table that fits looks as before; one that does not is wider than the page.
 - `.cm-content { min-width: 0 }` is required: without it the whole editor grew to the table's width instead of the rows scrolling.
 - Driven in the built app on a scratch library (seven columns: rows scroll together). Not checked in dev mode; no unit test covers the scrolling.
+
+## A click in a table placed no cursor (15 Oct 2026)
+
+The user: a table could not be edited by clicking in it; the cursor had to come in from above or below.
+
+- **Cause:** `LiveEditor.tsx` has a document-level mousedown that blurs the editor when the click lands on blank page outside it (`wrapRef.current.contains(target)`). A click on a drawn cell moves the cursor into the table, the table turns into text and CodeMirror replaces the clicked cell before that handler runs; the detached cell is no longer "inside", so the editor was blurred, and a table is only text while the editor has focus. Found by logging `focusout` with a stack trace; not a CSS or `live-tables.ts` problem (reverting the sideways-scroll commit changed nothing).
+- **Fix:** the handler checks `event.composedPath()` (taken when the event was dispatched) instead of `contains`.
+- Any element the editor replaces on mousedown would have hit the same handler.
+- Driven in the built app on a scratch library: click a cell, the table shows as text, typing lands in the cell. Not checked in dev mode; no unit test (it needs a real mousedown and layout).
