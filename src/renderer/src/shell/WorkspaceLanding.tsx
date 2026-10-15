@@ -1,4 +1,4 @@
-import { HomePage } from '@modules/home/renderer/HomePage'
+import { HomeDate, HomePage } from '@modules/home/renderer/HomePage'
 import { liveModules, plannedModulesFor } from '@modules/index'
 import type { Workspace } from '@shared/settings'
 import { WORKSPACE_LABELS } from './workspaces'
@@ -18,8 +18,11 @@ export function WorkspaceLanding({
 
   return (
     <div className={styles.page}>
-      <header className={[styles.header, hasHome && styles.headerTight].filter(Boolean).join(' ')}>
-        <h1 className={styles.heading}>{WORKSPACE_LABELS[workspace]}</h1>
+      <header className={styles.header}>
+        <div className={styles.title}>
+          <h1 className={styles.heading}>{WORKSPACE_LABELS[workspace]}</h1>
+          {hasHome && <HomeDate />}
+        </div>
         {actions}
       </header>
       {hasHome && <HomePage workspace={workspace} />}

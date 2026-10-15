@@ -17,12 +17,14 @@ const KIND_ICON = {
   'time-off': Plane
 } as const
 
-const dayName = (date: string): string =>
-  new Date(`${date}T12:00:00`).toLocaleDateString('en-GB', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long'
-  })
+/** Today's date, for the page heading ("Thursday 15 October"). */
+export function HomeDate(): React.JSX.Element {
+  return (
+    <span className={styles.date}>
+      {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
+    </span>
+  )
+}
 
 function TaskRow({ task }: { task: HomeTask }): React.JSX.Element {
   return (
@@ -169,7 +171,6 @@ export function HomePage({ workspace }: { workspace: HomeWorkspace }): React.JSX
   const view = homeView(summary, workspace)
   return (
     <section className={styles.home} aria-label="Home">
-      <p className={styles.date}>{dayName(summary.today)}</p>
       <div className={styles.cols}>
         <div className={styles.stack}>
           <TodayCard view={view} workspace={workspace} />

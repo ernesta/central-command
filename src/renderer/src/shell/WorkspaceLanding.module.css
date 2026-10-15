@@ -9,8 +9,11 @@
   gap: 12px 24px;
   margin-bottom: 32px;
 }
-.headerTight {
-  margin-bottom: 4px;
+.title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
 }
 .heading {
   margin: 0;
