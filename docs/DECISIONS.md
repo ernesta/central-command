@@ -3438,3 +3438,12 @@ The user: notes were crammed (no room between text and a table), and "no new lin
 - Quote and code blocks get 6px inside at their first and last line (`live-pad-first`/`live-pad-last`).
 - **Line length:** each line is at most `--measure` (60ch, about 70 characters); tables and code use the whole width.
 - Replaces the 0.9-line blank line and the table margin of earlier the same day. Checked in the built app on a scratch library (light mode, clicks and typing on each block type land on the right line); not checked in dev mode or dark mode (no colour changed).
+
+## Delete and Backspace beside empty lines (15 Oct 2026)
+
+The user: after deleting a paragraph, Delete on the empty line it left "does nothing", and a second press removes the line. Cause: a blank line is drawn with no height unless the cursor is on it (see "Spacing between blocks"), so the first press removed a line nobody could see. Fix: a key press beside empty lines always changes something visible. All in `live-lists.ts`, bound before the list keys in `live-keymap.ts`, tests in `live-lists.test.ts`.
+
+- **Delete on an empty line followed by more empty lines** (`deleteBlankRun`): removes the whole run; the cursor lands at the start of the next text.
+- **Backspace on an empty line below other empty lines** (`backspaceBlankRun`): removes the ones above, keeps one, the cursor lands on it.
+- **Backspace at the start of text, Delete at the end of text, beside two or more empty lines** (`backspaceAboveBlankRun`, `deleteBelowBlankRun`): collapses the run to one empty line, the cursor stays. With a single empty line the ordinary key runs (it joins the paragraphs, which is visible).
+- Not in code blocks, not with a selection or several cursors. Not yet driven in the app.
