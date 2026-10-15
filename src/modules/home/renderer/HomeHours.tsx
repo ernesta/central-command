@@ -1,16 +1,15 @@
-import { useMemo } from 'react'
 import { Panel } from '@renderer/components/Panel'
 import { useNow } from '@renderer/state/use-now'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { formatHours } from '@shared/tracking/format'
-import { hasAim, weekTotals } from '@shared/tracking/plan'
-import { dayMinutes, weekMinutes } from '@shared/tracking/totals'
+import { hasAim } from '@shared/tracking/plan'
+import { dayMinutes } from '@shared/tracking/totals'
 import { invoiceOf } from '@shared/tracking/types'
-import { addDays, inYear, weekStartOf } from '@shared/year'
+import { inYear } from '@shared/year'
 import { hoursBase } from '../../hours/renderer/hours-paths'
 import { PeriodSummary } from '../../hours/renderer/PeriodSummary'
 import { useShownYear } from '../../hours/renderer/useMeetingHours'
-import { periodsOf } from '../../hours/shared/periods'
+import { thisPeriod, thisWeek, weekFigures } from '../../hours/shared/so-far'
 import type { HomeWorkspace } from '../shared/types'
 import { StyledLink } from './HomeParts'
 import styles from './Home.module.css'
@@ -24,24 +23,14 @@ export function HomeHours({ workspace }: { workspace: HomeWorkspace }): React.JS
   const { data: stored } = useTrackingYear(workspace)
   const now = useNow(false)
   const data = useShownYear(workspace, stored, now.date)
-  const week = weekStartOf(now.date)
-  const periods = useMemo(
-    () => (data && workspace === 'work' ? periodsOf(data, now) : []),
-    [data, workspace, now]
-  )
   if (!data || !inYear(now.date, data.start, data.weeks)) return null
 
-  // A contract's weeks start on its own first day, not on a Monday, so the period is found by the date.
-  const period =
-    workspace === 'work'
-      ? (periods.find((p) => p.from <= now.date && now.date <= p.to) ?? null)
-      : null
-  const byMonth = invoiceOf(data) === 'month'
-  const label = workspace === 'work' && byMonth ? 'This month' : 'This week'
-  const minutes = period ? period.minutes : weekMinutes(data, week, now)
-  const aim = period
-    ? period.plan
-    : (weekTotals(data, addDays(week, 6), now).find((w) => w.from === week)?.plan ?? 0)
+  // The same choice the Hours page makes: a plan with a whole-week aim is shown by invoice period, any other by week.
+  const period = data.plan.weekAim ? thisPeriod(data, now) : null
+  const label = period && invoiceOf(data) === 'month' ? 'This month' : 'This week'
+  const week = weekFigures(data, thisWeek(data, now), now)
+  const minutes = period ? period.minutes : week.minutes
+  const aim = period ? period.plan : week.aim
 
   return (
     <Panel label={label} actions={<StyledLink to={hoursBase(workspace)}>Hours</StyledLink>}>

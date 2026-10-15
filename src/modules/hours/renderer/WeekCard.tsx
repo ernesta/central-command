@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { formatDay, formatHours, formatRange } from '@shared/tracking/format'
-import { dailyAim, hasAim, weekTotals } from '@shared/tracking/plan'
-import { dayRows, weekDaysMinutes, weekMinutes } from '@shared/tracking/totals'
+import { dailyAim, hasAim } from '@shared/tracking/plan'
+import { dayRows, weekDaysMinutes } from '@shared/tracking/totals'
 import { invoiceOf, type Moment, type TrackingYear } from '@shared/tracking/types'
 import { addDays, weekNumberOf, yearEnd } from '@shared/year'
 import { periodOfWeek, periodsOf } from '../shared/periods'
+import { weekFigures } from '../shared/so-far'
 import { barFill, BAR_SCALE } from '../shared/week'
 import type { HoursWorkspace } from '../shared/workspaces'
 import { AddTime } from './AddTime'
@@ -44,7 +45,7 @@ export function WeekCard({
       ? data.plan.hoursPerWeek / data.plan.workDays.length
       : 0
   // The summary is against the whole week's aim (the rules' plan for the week's last day), not what is expected so far.
-  const aim = weekTotals(data, addDays(week, 6), now).find((w) => w.from === week)?.plan ?? 0
+  const { aim, minutes: worked } = weekFigures(data, week, now)
   const begun = week <= now.date
   const aimed = hasAim(data)
   const first = week <= data.start
@@ -84,9 +85,9 @@ export function WeekCard({
       </header>
       {begun &&
         (aimed ? (
-          <PeriodSummary minutes={weekMinutes(data, week, now)} aim={aim} />
+          <PeriodSummary minutes={worked} aim={aim} />
         ) : (
-          <p className={styles.total}>{formatHours(weekMinutes(data, week, now))}</p>
+          <p className={styles.total}>{formatHours(worked)}</p>
         ))}
       <table className={styles.table}>
         <thead>
