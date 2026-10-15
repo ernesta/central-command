@@ -1,4 +1,4 @@
-import { Check, ChevronDown } from 'lucide-react'
+import { Check, ChevronDown, Plus } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Select } from '@renderer/components/Select'
 import { fold } from '@shared/text'
@@ -32,8 +32,8 @@ interface GroupFieldProps {
 }
 
 /**
- * A note's group: a menu of the groups that exist (two levels, type to narrow it) and a small form to make a
- * new one. A new group is a name and what it sits inside (nothing, or an existing group), so nobody types a
+ * A note's group: a menu of the groups that exist (two levels). One field: typing narrows the menu, and a name that
+ * is not there yet ends it with Create "…" and what it sits inside (nothing, or an existing group), so nobody types a
  * separator.
  */
 export function GroupField({
@@ -48,9 +48,7 @@ export function GroupField({
 }: GroupFieldProps): React.JSX.Element {
   const [open, setOpen] = useState(false)
   const [filter, setFilter] = useState('')
-  const [name, setName] = useState('')
   const [inside, setInside] = useState('')
-  const [error, setError] = useState<string | null>(null)
   const [place, setPlace] = useState<React.CSSProperties | undefined>(undefined)
   const Noun = noun.charAt(0).toUpperCase() + noun.slice(1)
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -60,9 +58,7 @@ export function GroupField({
   const reset = (): void => {
     setOpen(false)
     setFilter('')
-    setName('')
     setInside('')
-    setError(null)
   }
   const close = (): void => {
     reset()
@@ -108,16 +104,13 @@ export function GroupField({
     inside ||
     (allowNewTop ? '' : groups.some((g) => g.name === group) ? group : (groups[0]?.name ?? ''))
 
+  const typed = cleanName(filter)
+  const exists = (groups.find((g) => g.name === target)?.subgroups ?? groups).some(
+    (g) => nameKey(g.name) === nameKey(typed)
+  )
+  const canCreate = typed !== '' && isValidName(typed) && !exists && (allowNewTop || target !== '')
   const addNew = (): void => {
-    if (!isValidName(name)) {
-      setError('A name cannot be empty or contain / or ›.')
-      return
-    }
-    choose(
-      target
-        ? { group: target, subgroup: cleanName(name) }
-        : { group: cleanName(name), subgroup: '' }
-    )
+    choose(target ? { group: target, subgroup: typed } : { group: typed, subgroup: '' })
   }
 
   return (
@@ -179,10 +172,12 @@ export function GroupField({
             onChange={(event) => setFilter(event.target.value)}
             onKeyDown={(event) => {
               // Enter picks the only match, so the menu can be used without the mouse.
-              if (event.key === 'Enter' && options.length === 1) {
-                event.preventDefault()
-                choose(options[0])
-              }
+              if (event.key !== 'Enter') return
+              // Enter must not reach a form around the field (it would add a task).
+              event.preventDefault()
+              event.stopPropagation()
+              if (options.length === 1) choose(options[0])
+              else if (canCreate) addNew()
             }}
           />
           <ul className={styles.list} aria-label={`${Noun}s`}>
@@ -214,57 +209,30 @@ export function GroupField({
                 </button>
               </li>
             ))}
-            {terms.length > 0 && options.length === 0 && (
+            {terms.length > 0 && options.length === 0 && !canCreate && (
               <li className={styles.empty}>No {noun} matches.</li>
             )}
           </ul>
-          {(allowNewTop || groups.length > 0) && (
-            // Not a <form>: this field sits inside other forms (the Add bar, New task), and a form inside a form never submits.
-            <div className={styles.new} role="group">
-              <label className={styles.newLabel} htmlFor="new-group">
-                New {allowNewTop ? noun : `sub${noun}`}
-              </label>
-              <div className={styles.newRow}>
-                <input
-                  id="new-group"
-                  className={styles.input}
-                  placeholder="Name"
-                  value={name}
-                  onChange={(event) => {
-                    setName(event.target.value)
-                    setError(null)
-                  }}
-                  onKeyDown={(event) => {
-                    // Enter adds the name here and must not reach the form around the field (it would add a task).
-                    if (event.key !== 'Enter') return
-                    event.preventDefault()
-                    event.stopPropagation()
-                    if (name.trim() !== '') addNew()
-                  }}
-                />
-                <Select
-                  label="Inside"
-                  value={target}
-                  options={[
-                    ...(allowNewTop ? [{ value: '', label: 'Inside nothing' }] : []),
-                    ...groups.map((g) => ({ value: g.name, label: `Inside ${g.name}` }))
-                  ]}
-                  onChange={setInside}
-                />
-                <button
-                  type="button"
-                  className={styles.submit}
-                  disabled={name.trim() === ''}
-                  onClick={addNew}
-                >
-                  Add
-                </button>
-              </div>
-              {error && (
-                <p className={styles.error} role="alert">
-                  {error}
-                </p>
-              )}
+          {canCreate && (
+            <div className={styles.new} role="group" aria-label={`New ${noun}`}>
+              <button
+                type="button"
+                className={styles.create}
+                title={`Create “${typed}”`}
+                onClick={addNew}
+              >
+                <Plus size={14} strokeWidth={1.75} aria-hidden />
+                <span className={styles.createTitle}>Create “{typed}”</span>
+              </button>
+              <Select
+                label="Inside"
+                value={target}
+                options={[
+                  ...(allowNewTop ? [{ value: '', label: 'Inside nothing' }] : []),
+                  ...groups.map((g) => ({ value: g.name, label: `Inside ${g.name}` }))
+                ]}
+                onChange={setInside}
+              />
             </div>
           )}
         </div>

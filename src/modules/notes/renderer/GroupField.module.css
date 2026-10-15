@@ -97,41 +97,29 @@
   padding: 8px 4px 4px;
   border-top: 1px solid var(--border-soft);
 }
-.newLabel {
-  color: var(--text-muted);
-  font-size: var(--text-11);
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.newRow {
-  display: grid;
-  grid-template-columns: 1fr auto;
+.create {
+  display: flex;
+  align-items: center;
   gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font-size: var(--text-14);
+  text-align: left;
 }
-.newRow select {
-  grid-column: 1;
+.create:hover {
+  background: var(--hover-tint);
+}
+.create svg {
+  flex: none;
+}
+.createTitle {
   min-width: 0;
-}
-.submit {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  align-self: end;
-  padding: 7px 14px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-control);
-  background: var(--accent);
-  color: var(--accent-contrast);
-  font-size: var(--text-13);
-  font-weight: 500;
-}
-.submit:disabled {
-  opacity: 0.55;
-}
-.error {
-  margin: 0;
-  color: var(--danger);
-  font-size: var(--text-13);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Narrow windows: the field wraps under the title at the left edge, so open the menu to the right of it. */
