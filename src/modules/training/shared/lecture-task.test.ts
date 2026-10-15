@@ -25,31 +25,31 @@ const task = (uid: string, title: string, over: Partial<Task> = {}): Task => ({
   ...over
 })
 
-const parent = task('p1', 'Complete Intro to Python')
-const lecture = task('s1', 'Complete Session 3: Plotly', { list: '', parentUid: 'p1' })
+const parent = task('p1', 'Intro to Python')
+const lecture = task('s1', 'Session 3: Plotly', { list: '', parentUid: 'p1' })
 
 describe('parentFor', () => {
   it('finds the open top-level task called the series, ignoring case, else says what to create', () => {
     expect(parentFor('intro to python ', [parent])).toEqual({ uid: 'p1' })
     expect(parentFor('Intro to Python', [])).toEqual({
-      title: 'Complete Intro to Python',
+      title: 'Intro to Python',
       list: 'Training'
     })
   })
   it('prefers the Training list, skips done tasks and subtasks', () => {
-    const other = task('p2', 'Complete Intro to Python', { list: 'Reading' })
+    const other = task('p2', 'Intro to Python', { list: 'Reading' })
     expect(parentFor('Intro to Python', [other, parent])).toEqual({ uid: 'p1' })
     expect(parentFor('Intro to Python', [other])).toEqual({ uid: 'p2' })
     expect(parentFor('Intro to Python', [{ ...parent, status: 'done' }])).toEqual({
-      title: 'Complete Intro to Python',
+      title: 'Intro to Python',
       list: 'Training'
     })
     expect(parentFor('Session 3: Plotly', [lecture])).toEqual({
-      title: 'Complete Session 3: Plotly',
+      title: 'Session 3: Plotly',
       list: 'Training'
     })
   })
-  it('matches a series task with or without Complete', () => {
+  it('still matches an older "Complete <course>" series task', () => {
     expect(parentFor('Complete Intro to Python', [task('p3', 'Intro to Python')])).toEqual({
       uid: 'p3'
     })
@@ -71,13 +71,13 @@ describe('planLectureTask', () => {
       planLectureTask({ task: 'auto', series: 'Intro to Python', title: ' Plotly ' }, [parent])
     ).toEqual({
       kind: 'create',
-      title: 'Complete Plotly',
+      title: 'Plotly',
       parent: { uid: 'p1' }
     })
     expect(planLectureTask({ task: 'auto', series: 'Intro to Python', title: '' }, [])).toEqual({
       kind: 'create',
-      title: 'Complete Untitled',
-      parent: { title: 'Complete Intro to Python', list: 'Training' }
+      title: 'Untitled',
+      parent: { title: 'Intro to Python', list: 'Training' }
     })
   })
 
@@ -87,7 +87,7 @@ describe('planLectureTask', () => {
         parent,
         lecture
       ])
-    ).toEqual({ kind: 'sync', uid: 's1', title: 'Complete Plotly styling' })
+    ).toEqual({ kind: 'sync', uid: 's1', title: 'Plotly styling' })
   })
 
   it('moves it when the series changes, and ignores case', () => {
@@ -99,7 +99,7 @@ describe('planLectureTask', () => {
     ).toEqual({
       kind: 'sync',
       uid: 's1',
-      parent: { title: 'Complete Statistics', list: 'Training' }
+      parent: { title: 'Statistics', list: 'Training' }
     })
     expect(
       planLectureTask({ task: 's1', series: 'INTRO TO PYTHON', title: 'Session 3: Plotly' }, [
@@ -129,11 +129,11 @@ describe('planLectureTask', () => {
 })
 
 describe('a lecture with no series', () => {
-  const alone = task('a1', 'Complete Workshop')
+  const alone = task('a1', 'Workshop')
   it('gets a task of its own once it has a title', () => {
     expect(planLectureTask({ task: 'auto', series: null, title: ' Workshop ' }, [])).toEqual({
       kind: 'create',
-      title: 'Complete Workshop',
+      title: 'Workshop',
       parent: null
     })
     expect(planLectureTask({ task: 'auto', series: null, title: 'Untitled' }, [])).toEqual({
@@ -143,7 +143,7 @@ describe('a lecture with no series', () => {
   it('lets the title follow', () => {
     expect(
       planLectureTask({ task: 'a1', series: null, title: 'Plotly workshop' }, [alone])
-    ).toEqual({ kind: 'sync', uid: 'a1', title: 'Complete Plotly workshop' })
+    ).toEqual({ kind: 'sync', uid: 'a1', title: 'Plotly workshop' })
     expect(planLectureTask({ task: 'a1', series: null, title: 'Untitled' }, [alone])).toEqual({
       kind: 'none'
     })
@@ -153,7 +153,7 @@ describe('a lecture with no series', () => {
       planLectureTask({ task: 'a1', series: 'Intro to Python', title: 'Workshop' }, [alone, parent])
     ).toEqual({ kind: 'sync', uid: 'a1', parent: { uid: 'p1' } })
     expect(planLectureTask({ task: 'a1', series: 'Workshop', title: 'Workshop' }, [alone])).toEqual(
-      { kind: 'sync', uid: 'a1', parent: { title: 'Complete Workshop', list: 'Training' } }
+      { kind: 'sync', uid: 'a1', parent: { title: 'Workshop', list: 'Training' } }
     )
   })
   it('comes out again when the series is cleared', () => {
@@ -166,7 +166,7 @@ describe('a lecture with no series', () => {
     })
   })
   it('never renames or moves a series task or a task in another list', () => {
-    const kid = task('k', 'Complete Part', { list: '', parentUid: 'p1' })
+    const kid = task('k', 'Part', { list: '', parentUid: 'p1' })
     expect(planLectureTask({ task: 'p1', series: null, title: 'New' }, [parent, kid])).toEqual({
       kind: 'none'
     })

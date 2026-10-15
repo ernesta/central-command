@@ -6,13 +6,7 @@ export const TRAINING_LIST = 'Training'
 
 const COMPLETE = 'Complete '
 
-/** What a training's task is called: "Complete <name>", for a series and a lecture alike (the user's rule, 13 Oct 2026). */
-export const completeTitle = (name: string): string => {
-  const bare = name.trim()
-  return fold(bare).startsWith(fold(COMPLETE)) ? bare : `${COMPLETE}${bare}`
-}
-
-/** A task's name without its "Complete " prefix, so a series matches its task either way. */
+/** A task's name without a "Complete " prefix: an older ClickUp "Complete <course>" task still matches its series. */
 export const bareTitle = (title: string): string => {
   const trimmed = title.trim()
   return fold(trimmed).startsWith(fold(COMPLETE)) ? trimmed.slice(COMPLETE.length).trim() : trimmed
@@ -43,7 +37,7 @@ export function parentFor(series: string, tasks: readonly Task[]): ParentTarget 
     (t) => !t.parentUid && t.status !== 'done' && fold(bareTitle(t.title)) === fold(bareTitle(name))
   )
   const found = same.find((t) => fold(t.list) === fold(TRAINING_LIST)) ?? same[0]
-  return found ? { uid: found.uid } : { title: completeTitle(name), list: TRAINING_LIST }
+  return found ? { uid: found.uid } : { title: name, list: TRAINING_LIST }
 }
 
 /** A title that names a lecture: not empty, not the placeholder. */
@@ -69,13 +63,11 @@ export function planLectureTask(note: LectureNote, tasks: readonly Task[]): Lect
     if (series) {
       return {
         kind: 'create',
-        title: completeTitle(title || 'Untitled'),
+        title: title || 'Untitled',
         parent: parentFor(series, tasks)
       }
     }
-    return named(title)
-      ? { kind: 'create', title: completeTitle(title), parent: null }
-      : { kind: 'none' }
+    return named(title) ? { kind: 'create', title: title, parent: null } : { kind: 'none' }
   }
   if (!note.task) return { kind: 'none' }
   const own = tasks.find((t) => t.uid === note.task)
@@ -84,8 +76,7 @@ export function planLectureTask(note: LectureNote, tasks: readonly Task[]): Lect
     kind: 'sync',
     uid: own.uid
   }
-  const wanted = completeTitle(title)
-  if (title && wanted !== own.title && (own.parentUid || named(title))) plan.title = wanted
+  if (title && title !== own.title && (own.parentUid || named(title))) plan.title = title
   if (own.parentUid) {
     const parent = tasks.find((t) => t.uid === own.parentUid)
     if (!series) plan.parent = null

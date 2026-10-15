@@ -3343,3 +3343,7 @@ The user's rule: a training's task, series task and lecture subtask alike, is ti
 - **Cause:** `TaskPage.tsx` had its own `SubtaskRow` and CSS, a second copy of what `TaskRowView` draws.
 - **Now:** the Subtasks panel renders `TasksTable` with a new `flat` prop. Rows are the same component, so status, title, tags on the title line, time, due date, hover-only delete and "+ Tag", right-click menu, Space to change status and the "+ Add a subtask" row are shared. Flat leaves out the header, the parent row, the List and Priority columns, the table's own frame and the thread/band; Enter or a click on a subtask does nothing (a subtask has no page). The old `SubtaskRow`, its add field, "Add subtask" header button and about 140 lines of CSS are gone. A change to the table's rows now reaches the page too.
 - Typecheck, lint and tests pass. Not driven in the app: check a task with subtasks in light and dark mode.
+
+## Training tasks are named after the training again (15 Oct 2026)
+
+The user changed their mind about "Complete <name>" (13 Oct 2026, above): a training's task, series task and lecture subtask alike is now just "<name>". `completeTitle` is gone from `src/modules/training/shared/lecture-task.ts`; `bareTitle` stays so an older ClickUp "Complete <course>" series task is still found. Meeting tasks never had the prefix ("<series task> · <date>"). Tasks already made keep their titles until the page next syncs them; the five renamed on 13 Oct 2026 are not renamed back by this change.
