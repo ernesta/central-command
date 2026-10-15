@@ -1,9 +1,10 @@
+import { HomePage } from '@modules/home/renderer/HomePage'
 import { liveModules, plannedModulesFor } from '@modules/index'
 import type { Workspace } from '@shared/settings'
 import { WORKSPACE_LABELS } from './workspaces'
 import styles from './WorkspaceLanding.module.css'
 
-/** A workspace's landing page: a card per live module that wants one, then "Coming soon" for the rest. */
+/** A workspace's landing page: Home (Research and Work), then a card per live module that wants one, then "Coming soon" for the rest. */
 export function WorkspaceLanding({
   workspace,
   actions
@@ -20,6 +21,7 @@ export function WorkspaceLanding({
         <h1 className={styles.heading}>{WORKSPACE_LABELS[workspace]}</h1>
         {actions}
       </header>
+      {(workspace === 'research' || workspace === 'work') && <HomePage workspace={workspace} />}
       {live.length > 0 && (
         <div className={styles.live}>
           {live.map(({ id, landingCard: Card }) => (Card ? <Card key={id} /> : null))}
