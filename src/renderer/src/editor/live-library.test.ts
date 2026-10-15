@@ -149,7 +149,9 @@ function checkKeys(file: string, text: string): void {
 function checkList(file: string, text: string): void {
   const state = stateFor(text)
   for (const seen of decorationsOf(state)) {
-    if (seen.kind !== 'widget' || state.sliceDoc(seen.from, seen.to).includes('](cc://')) continue
+    // A widget over no text is a table's empty cell (`||`), not a marker.
+    if (seen.kind !== 'widget' || seen.from === seen.to) continue
+    if (state.sliceDoc(seen.from, seen.to).includes('](cc://')) continue
     const line = state.doc.lineAt(seen.from)
     const parts = parseLine(line.text)
     expect(seen.from, `${file} widget start`).toBe(line.from + parts.quote.length)
