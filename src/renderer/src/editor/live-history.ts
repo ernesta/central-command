@@ -9,7 +9,7 @@ import { EditorState, Transaction, type Extension } from '@codemirror/state'
  * Plain typing, and the Backspace that corrects it, keep the library's grouping.
  */
 const COMMANDS =
-  /^(format($|\.)|delete\.(list|chip)$|input$|input\.(table|replace|complete|paste)$)/
+  /^(format($|\.)|delete\.(list|chip)$|input$|input\.(table|replace|complete|paste|task)$)/
 
 export const liveHistory: Extension = EditorState.transactionExtender.of((tr) => {
   if (!tr.docChanged) return null

@@ -1,3 +1,4 @@
+import { EditorView } from '@codemirror/view'
 import {
   EditorSelection,
   type ChangeSpec,
@@ -497,3 +498,34 @@ export const hardBreak: StateCommand = ({ state, dispatch }) => {
   dispatch(state.update(result, { scrollIntoView: true, userEvent: 'input' }))
   return true
 }
+
+/** What leads up to the typed space: an optional bullet or number, then a box written loosely (`[]`, `[ ]`, `[x]`). */
+const LOOSE_BOX = /^((?:[-*+]|\d{1,9}[.)]) )?\[([ xX]?)\]$/
+
+/**
+ * Typing a space right after `[]` (or `[ ]`, `[x]`) at the start of a line makes it a checkbox: `- [ ] `, or `- [x] `. A bullet
+ * or number already there is kept (`- []` becomes `- [ ]`, `1. []` becomes `1. [ ]`). Only the space triggers it, so a `[]`
+ * inside a sentence, in code or with text before it is left alone; it is one undo step, and undo gives back what was typed.
+ */
+export const looseTask = EditorView.inputHandler.of((view, from, to, text) => {
+  const { state } = view
+  if (text !== ' ' || from !== to || !state.selection.main.empty) return false
+  const line = state.doc.lineAt(from)
+  const before = line.text.slice(0, from - line.from)
+  const lead = parseLine(before)
+  const start = line.from + lead.quote.length + lead.indent.length
+  const match = LOOSE_BOX.exec(before.slice(lead.quote.length + lead.indent.length))
+  if (!match) return false
+  if (enclosing(state, from, from, ['FencedCode', 'CodeBlock', 'InlineCode'])) return false
+  const ticked = match[2] !== '' && match[2] !== ' '
+  const insert = `${match[1] ?? '- '}[${ticked ? match[2] : ' '}] `
+  // The space typed is already there when the cursor sat inside `[ ]` of a line that goes on: do not make it two.
+  const end = state.sliceDoc(from, from + 1) === ' ' ? from + 1 : from
+  view.dispatch({
+    changes: { from: start, to: end, insert },
+    selection: { anchor: start + insert.length },
+    userEvent: 'input.task',
+    scrollIntoView: true
+  })
+  return true
+})

@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest'
+import { EditorView } from '@codemirror/view'
 import { openView, press, show } from './live-key-utils'
 
 /** Open `before`, press `chord`, and return the text with the selection written in. */
@@ -267,5 +268,44 @@ describe('in a note with Windows line ends', () => {
     view.dispatch({ selection: { anchor: view.state.doc.line(2).from + 2 } })
     press(view, 'Backspace')
     expect(view.state.sliceDoc()).toBe(crlf('text\n\nb'))
+  })
+})
+
+describe('a loosely typed checkbox', () => {
+  /** Type a space where the cursor is, the way the browser does: through the editor's input handlers. */
+  function typeSpace(before: string): string {
+    const { view } = openView(before)
+    const pos = view.state.selection.main.head
+    const handled = view.state
+      .facet(EditorView.inputHandler)
+      .some((f) =>
+        f(view, pos, pos, ' ', () => view.state.update({ changes: { from: pos, insert: ' ' } }))
+      )
+    if (!handled)
+      view.dispatch({ changes: { from: pos, insert: ' ' }, selection: { anchor: pos + 1 } })
+    return show(view)
+  }
+
+  it('turns [] at the start of a line into a checkbox', () => {
+    expect(typeSpace('[]|')).toBe('- [ ] |')
+    expect(typeSpace('[ ]|')).toBe('- [ ] |')
+    expect(typeSpace('[x]|')).toBe('- [x] |')
+    expect(typeSpace('  []|')).toBe('  - [ ] |')
+    expect(typeSpace('> []|')).toBe('> - [ ] |')
+  })
+
+  it('keeps a bullet or number already typed', () => {
+    expect(typeSpace('- []|')).toBe('- [ ] |')
+    expect(typeSpace('* [x]|')).toBe('* [x] |')
+    expect(typeSpace('1. []|')).toBe('1. [ ] |')
+  })
+
+  it('does not double the space of a line that goes on', () => {
+    expect(typeSpace('[ ]| Prepare')).toBe('- [ ] |Prepare')
+  })
+
+  it('leaves [] elsewhere alone', () => {
+    expect(typeSpace('see []|')).toBe('see [] |')
+    expect(typeSpace('```\n[]|\n```')).toBe('```\n[] |\n```')
   })
 })

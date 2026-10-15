@@ -8,6 +8,7 @@ import { findExtension } from './live-find'
 import type { FindBridge } from '../notes/find-types'
 import { liveHistory } from './live-history'
 import { liveKeymap } from './live-keymap'
+import { looseTask } from './live-lists'
 import { motionKeymap } from './live-motion'
 import { linkTargetAt } from './live-links'
 import { liveCopy } from './live-copy'
@@ -53,6 +54,7 @@ export function liveExtensions(options: LiveOptions): Extension[] {
     // (which knows a made-up paste, Cmd-Shift-V, must not link).
     markdown({ base: markdownLanguage, addKeymap: false, pasteURLAsLink: false }),
     liveKeymap,
+    looseTask,
     keymap.of([...keys, ...historyKeymap]),
     liveLayer,
     tableScroll,
