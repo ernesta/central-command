@@ -124,16 +124,6 @@
   clip-path: inset(var(--lead, 0px) 0 0 0);
 }
 
-/* A comfortable line length (about 70 characters); tables and code use the width they are given. */
-.wrap :global(.cm-editor) :global(.cm-line) {
-  max-width: var(--measure, 60ch);
-}
-.wrap
-  :global(.cm-editor)
-  :global(.cm-line:is(.live-table, .live-table-row, .live-table-rule, .live-codeblock)) {
-  max-width: none;
-}
-
 /* The empty line a final line break leaves at the end of a note: no height, until the cursor is on it (spelled out to outrank the `.cm-line` padding reset). */
 .wrap :global(.cm-editor) :global(.cm-line.live-endbreak) {
   height: 0;
