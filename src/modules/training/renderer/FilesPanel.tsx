@@ -156,23 +156,25 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
 
       {root && folder && (
         <>
-          <nav className={styles.crumbs} aria-label="Folder path">
-            <button type="button" className={styles.crumb} onClick={() => go('')}>
-              {folder.split('/').at(-1)}
-            </button>
-            {crumbs.map((name, i) => (
-              <span key={crumbs.slice(0, i + 1).join('/')} className={styles.crumbGroup}>
-                <ChevronRight size={12} strokeWidth={1.75} aria-hidden />
-                <button
-                  type="button"
-                  className={styles.crumb}
-                  onClick={() => go(crumbs.slice(0, i + 1).join('/'))}
-                >
-                  {name}
-                </button>
-              </span>
-            ))}
-          </nav>
+          {crumbs.length > 0 && (
+            <nav className={styles.crumbs} aria-label="Folder path">
+              <button type="button" className={styles.crumb} onClick={() => go('')}>
+                {folder.split('/').at(-1)}
+              </button>
+              {crumbs.map((name, i) => (
+                <span key={crumbs.slice(0, i + 1).join('/')} className={styles.crumbGroup}>
+                  <ChevronRight size={12} strokeWidth={1.75} aria-hidden />
+                  <button
+                    type="button"
+                    className={styles.crumb}
+                    onClick={() => go(crumbs.slice(0, i + 1).join('/'))}
+                  >
+                    {name}
+                  </button>
+                </span>
+              ))}
+            </nav>
+          )}
           {listing?.status === 'missing' && (
             <p className={styles.quiet}>
               The folder “{folder}” is not there. It may have been moved or renamed; the link is
