@@ -143,6 +143,13 @@ export function buildDecorations(
         const setext = /^SetextHeading([12])$/.exec(name)
         if (setext) {
           const underline = node.node.getChild('HeaderMark')
+          // A lone `-` under a line is a bullet just started, not an underline: leave the text a paragraph.
+          if (
+            underline &&
+            underline.to - underline.from === 1 &&
+            doc.sliceString(underline.from, underline.to) === '-'
+          )
+            return
           const textEnd = underline ? doc.lineAt(underline.from).from - 1 : node.to
           lineClass(node.from, textEnd, range, `live-h${setext[1]}`)
           if (underline) {

@@ -140,6 +140,13 @@ describe('quotes and rules', () => {
     expect(decorationsOf(away).some((seen) => seen.kind === 'live-h2')).toBe(true)
     expect(shownMarkers(stateFor(doc, 2))).toEqual(['-----'])
   })
+
+  it('leaves a line a paragraph while a lone `-` below it is a bullet just started', () => {
+    const doc = 'Relevant papers:\n-'
+    const state = stateFor(doc, doc.length)
+    expect(decorationsOf(state).some((seen) => seen.kind === 'live-h2')).toBe(false)
+    expect(hiddenText(state)).toEqual([])
+  })
 })
 
 describe('a selection across blocks', () => {
