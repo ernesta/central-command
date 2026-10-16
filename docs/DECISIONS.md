@@ -3504,3 +3504,7 @@ Life had only Notes (7 and 9 Oct). It now has the other three, from the same mod
 ## A lone `-` under a line is not a heading (16 Oct 2026)
 
 Found by using the app: typing a paragraph, Enter, then `-` to start a list turned the paragraph into a heading. In Markdown a text line directly above a line of only `-` is a setext level-2 heading, and `- ` (with the trailing space the list key adds) still counts as an underline until something follows it. `live-decorations.ts` now skips the heading class and the hidden-underline treatment when the setext underline is exactly one `-`, so the text stays a paragraph and the dash shows as plain text; once the item has text the parser reads a list. Longer underlines (`---`) and `=` underlines still make headings (existing test). The spacing and HTML copy code still read the tree as a heading for that one moment; not changed. Unit-tested; not driven in the app.
+
+## Files panel: no folder name at the top level (16 Oct 2026)
+
+The Training Files panel opened with a crumb repeating the linked folder's name above its contents. The panel's header already has an open-folder button, so at the top level the crumb is gone. Inside a subfolder the path still shows, with the linked folder's name as its first link, because that is the way back up. Not driven in the app.
