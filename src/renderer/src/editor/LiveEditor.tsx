@@ -138,8 +138,11 @@ export function LiveEditor({
         event.composedPath().includes(wrapRef.current as EventTarget)
       )
         return
+      // The `@` picker is drawn outside the editor but is part of it: a press on its padding or icon must not close it.
       if (
-        target.closest('input, textarea, select, button, a, label, [contenteditable], [tabindex]')
+        target.closest(
+          'input, textarea, select, button, a, label, [contenteditable], [tabindex], [role="listbox"]'
+        )
       )
         return
       const hasText = Array.from(target.childNodes).some(
