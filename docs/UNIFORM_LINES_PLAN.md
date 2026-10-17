@@ -17,7 +17,7 @@ would get, so typing moves nothing); the `live-void` and `live-gap-cursor` CSS r
 the cursor on the new empty line (`live-lists.ts`); a selection ends on blank lines like on any line (`live-selection.ts`). Driven in the
 built app on a scratch library. Until stage 2, notes with a blank line between paragraphs look loose (90px between the text).
 
-## Stage 2: the old notes (not started; wait for the user)
+## Stage 2: the old notes (script written 17 Oct 2026, dry run waiting for the user)
 
 `npm run tidy:paragraph-blanks [-- --apply]`: remove a single blank line between two blocks where that does not change how this app reads the
 note. Counted read-only on a copy of the library: 287 single blank lines in 50 of 263 notes (98 between paragraphs, 90 between a list and a
@@ -25,3 +25,8 @@ paragraph, 41 around headings, 38 around tables, 20 other). Like `tidy:blank-run
 closed, refuses a note where any non-blank line would change, never touches code. Open questions for the user: which of those pairs to
 remove (outside this app, two paragraph lines with no blank line between them are one paragraph, and a paragraph under a list item joins
 that item).
+
+**Built (17 Oct 2026):** `scripts/tidy-paragraph-blanks.mts` with the planner in `src/renderer/src/editor/paragraph-blanks.ts`. It removes only a single
+blank line between two paragraph lines (the editor's own block kind of both neighbours), outside code fences and the front matter, and only when the editor
+reads the note the same afterwards (see `docs/DECISIONS.md`, "tidy:paragraph-blanks"). Every other single blank line is listed by kind, untouched.
+Dry run on a library copy, 17 Oct: 371 single blank lines in 51 of 263 notes; 133 paragraph + paragraph in 18 notes would go. Not applied.
