@@ -8,10 +8,10 @@ import { meetingRoute } from './meetings-paths'
 import styles from './MeetingsTable.module.css'
 
 const VISIBLE_ATTENDEES = 3
-const COLUMNS = ['Date', 'Time', 'Duration', 'Type', 'Series', 'Summary', 'Skills', 'Attendees']
+const COLUMNS = ['Date', 'Time', 'Duration', 'Format', 'Series', 'Summary', 'Skills', 'Attendees']
 
 /**
- * Date, Time, Duration, Type, Series, Summary, Skills, Attendees. Clicking anywhere on a row opens the meeting.
+ * Date, Time, Duration, Format, Series, Summary, Skills, Attendees. Clicking anywhere on a row opens the meeting.
  * Like the Notes table, it is one tab stop: arrow keys, Home/End and PageUp/PageDown move between
  * rows (the whole row is highlighted) and Enter opens the meeting.
  */

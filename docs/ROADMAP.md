@@ -415,8 +415,7 @@ Order agreed: A, B, D, E, then C. For each: do it on a scratch library (never th
       now all read `09:30–15:00 · 5 h 30 min · In person` (a row with no times says "No time yet"; a start with no end shows the start); (2) the new **Format** column in the
       Training table (Research and Life, after Duration); (3) the overlap warning on a training entry page ("Overlaps <label> <start>–<end>."), which now needs only a
       date and both times (no task, no series, upcoming dates too) and also appears on a meeting without a task; it is drawn under the details, not in the Task card.
-- [ ] **Training audit: left for you to decide (17 Oct 2026).** None of these was changed: (a) the Meetings table calls attendance "Type" while Training calls it
-      "Format" (Training already has a "Type"); one word for both? (b) the PDF export has no Format column, shows no "No time yet", lists hours as `1:30` where the
+- [ ] **Training audit: left for you to decide (17 Oct 2026).** None of these was changed: (a) ~~Meetings' "Type" against Training's "Format"~~ decided 17 Oct: "Format" in both (done, Meetings' table and field; the Meetings PDF still says Type); (b) the PDF export has no Format column, shows no "No time yet", lists hours as `1:30` where the
       table and landing say `1 h 30 min`, and puts the series after the title instead of "Series: title"; should the PDF follow the screens (it mirrors Inkpath's log)?
       (c) hours of a training note derive into the Hours page only when it has a task, while the Training counters count every note's session; the 129 older notes are in
       the counters but not in Hours (documented, to avoid double counting; a cut-off rule is still open). (d) A warning on the Training table, landing or card for an

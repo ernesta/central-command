@@ -131,13 +131,13 @@ export function MetaFields({
       </div>
       <div className={styles.field}>
         <span className={styles.label} id="meeting-type-label">
-          Type
+          Format
         </span>
         <Segmented<MeetingMode | ''>
-          label="Type"
+          label="Format"
           value={meta.mode ?? ''}
           options={MODE_OPTIONS}
-          // Choosing the selected type again clears it.
+          // Choosing the selected format again clears it.
           onChange={(mode) => onChange({ mode: mode === meta.mode || mode === '' ? null : mode })}
         />
       </div>
