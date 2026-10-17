@@ -16,7 +16,8 @@ import styles from './TaskPage.module.css'
  * The two ways to put time on a task: Start a timer on it, or Add time that was not tracked, on a day. One component for every
  * place that offers them (the task page's Time card, a training note), so a task is the same everywhere. Time lives in Hours; a
  * task only names it (`cc://task/<uid>`). When the task has subtasks (`parts`), Add time can go to one of them instead: a
- * series' lectures keep their own time.
+ * series' lectures keep their own time. A task that does not exist yet (`uid` ''; a lecture's self-study) is made by `ensure` the
+ * moment Start or Add time is pressed, and the time goes to the task it returns.
  */
 export function TaskTimeActions({
   task,
@@ -26,7 +27,8 @@ export function TaskTimeActions({
   isRunning,
   today,
   yearFor,
-  clientFor
+  clientFor,
+  ensure
 }: {
   task: Task
   /** The list that names the client: the task's own, or its parent's for a subtask. */
@@ -38,6 +40,8 @@ export function TaskTimeActions({
   today: string
   yearFor: (date: string, client?: string) => string | null
   clientFor: (list: string, date: string) => string | undefined
+  /** Makes the task when `task.uid` is ''; resolves with the task that exists. */
+  ensure?: () => Promise<Task>
 }): React.JSX.Element {
   const [adding, setAdding] = useState(false)
   const [date, setDate] = useState(today)
@@ -49,11 +53,23 @@ export function TaskTimeActions({
   const startRef = useRef<HTMLButtonElement>(null)
   const { contracts } = useOpenContracts(workspace)
 
+  const real = async (): Promise<Task> => (task.uid === '' && ensure ? await ensure() : task)
+
   const begin = async (client: string | undefined): Promise<void> => {
     setError(null)
     setAsking(null)
-    const result = await window.api.tracking.start(workspace, task.title, taskKey(task.uid), client)
-    if (!result.ok) setError(`Couldn’t start the timer (${result.reason}).`)
+    try {
+      const made = await real()
+      const result = await window.api.tracking.start(
+        workspace,
+        made.title,
+        taskKey(made.uid),
+        client
+      )
+      if (!result.ok) setError(`Couldn’t start the timer (${result.reason}).`)
+    } catch (e) {
+      setError(ipcErrorMessage(e))
+    }
   }
   const start = (): void => {
     const found = clientForTask(contracts, list)
@@ -64,7 +80,6 @@ export function TaskTimeActions({
     await stopTimer()
   }
   const add = async (): Promise<void> => {
-    const goes = parts.find((p) => p.uid === target) ?? task
     const client = clientFor(list, date)
     const year = yearFor(date, client)
     if (year === null) {
@@ -73,6 +88,7 @@ export function TaskTimeActions({
     }
     const quarter = Math.max(QUARTER, Math.round(minutes / QUARTER) * QUARTER)
     try {
+      const goes = parts.find((p) => p.uid === target) ?? (await real())
       const result = await window.api.tracking.addTime(
         workspace,
         year,
