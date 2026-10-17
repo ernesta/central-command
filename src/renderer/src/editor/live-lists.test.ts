@@ -11,9 +11,9 @@ function after(before: string, chord: string): string {
 }
 
 describe('Enter', () => {
-  it('at the start of a paragraph puts an empty line above and stays on it, so each press shows', () => {
-    expect(after('## H\n|text', 'Enter')).toBe('## H\n|\ntext')
-    expect(after('## H\n|\ntext', 'Enter')).toBe('## H\n\n|\ntext')
+  it('at the start of a paragraph puts an empty line above and the cursor goes down with the text', () => {
+    expect(after('## H\n|text', 'Enter')).toBe('## H\n\n|text')
+    expect(after('## H\n\n|text', 'Enter')).toBe('## H\n\n\n|text')
   })
 
   it('starts the next bullet, of the kind in use', () => {

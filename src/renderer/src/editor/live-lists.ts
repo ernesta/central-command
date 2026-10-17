@@ -334,20 +334,6 @@ function enterAt(state: EditorState, range: SelectionRange): Edit {
   // In the marker itself, or in code, Enter is a plain new line.
   if (range.from < start) return newline('\n')
   if (inCode(state, range.from)) return keepIndent()
-  // Enter at the very start of a plain paragraph: the empty line goes above and the cursor stays on it. A blank line is
-  // drawn with no height unless the cursor is on it, so with the cursor moving down with the text nothing would show.
-  if (
-    range.empty &&
-    range.from === line.from &&
-    line.text.trim() !== '' &&
-    parts.kind === 'none' &&
-    parts.quote === '' &&
-    parts.indent === ''
-  ) {
-    const insert = withBreaks(state, '\n')
-    return { changes: { from: range.from, insert }, range: EditorSelection.cursor(range.from) }
-  }
-
   const item = isListKind(parts.kind) ? itemStartingAt(state, line) : null
   const rest = state.doc.sliceString(range.to, line.to)
   const empty = range.empty && parts.content.trim() === '' && rest.trim() === ''
