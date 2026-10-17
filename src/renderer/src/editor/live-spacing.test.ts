@@ -101,6 +101,10 @@ describe('the space between lines', () => {
     expect(spacing('text\n- a\n- b\n\nafter')).toEqual([[], ['gap'], ['gap-item'], ['sep'], []])
   })
 
+  it('gives a line under a list item, not indented with it, the paragraph gap', () => {
+    expect(spacing('- a\nafter\n  inner\n- b')).toEqual([[], ['gap'], ['gap-item'], ['gap-item']])
+  })
+
   it('leaves a heading to pad itself', () => {
     expect(spacing('text\n## Head\nmore')).toEqual([[], [], []])
   })

@@ -69,6 +69,24 @@ function inCode(state: EditorState, lineFrom: number): boolean {
   return false
 }
 
+/**
+ * A line of a list item's paragraph that is not indented under the item (Markdown's lazy continuation, no blank line
+ * above it): it is drawn at the page's margin like a paragraph, so it takes the paragraph gap, not the list's small one.
+ */
+function lazy(state: EditorState, lineFrom: number, text: string): boolean {
+  const indent = text.length - text.trimStart().length
+  for (
+    let n: SyntaxNode | null = syntaxTree(state).resolveInner(lineFrom + indent, 1);
+    n;
+    n = n.parent
+  ) {
+    if (n.name !== 'ListItem') continue
+    const itemLine = state.doc.lineAt(n.from)
+    return itemLine.from !== lineFrom && indent <= n.from - itemLine.from
+  }
+  return false
+}
+
 const same = (a: Info, b: Info): boolean => a.kind === b.kind && a.id === b.id
 
 export function drawSpacing(state: EditorState, range: Extent, add: Add): void {
@@ -103,13 +121,15 @@ export function drawSpacing(state: EditorState, range: Extent, add: Add): void {
     if (blank) {
       // Blank lines after the first of a run start a paragraph; the first continues what is above it.
       if (before < n - 1) return 'gap'
-      return prev.kind === 'list' ? 'item' : prev.kind === 'quote' ? 'quote' : 'gap'
+      // Text typed on it would be a lazy line (not indented under the item), a paragraph.
+      return prev.kind === 'quote' ? 'quote' : 'gap'
     }
     const here = info(n)
     if (here.kind === 'heading') return null
     // Text after a blank line is a new paragraph, except inside code (a blank line there is code).
     if (before < n - 1 && !(same(prev, here) && here.kind === 'code')) return 'gap'
     if (!same(prev, here)) return 'gap'
+    if (here.kind === 'list' && lazy(state, line.from, line.text)) return 'gap'
     return here.kind === 'list' ? 'item' : here.kind === 'quote' ? 'quote' : null
   }
 
