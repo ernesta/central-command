@@ -80,20 +80,38 @@ export function alignmentsOf(delimiterLine: string): Align[] {
   })
 }
 
+/** How many list items a table sits in: the grid is indented to the text of the innermost one. */
+export function listDepthOf(table: SyntaxNode): number {
+  let depth = 0
+  for (let parent = table.parent; parent; parent = parent.parent)
+    if (parent.name === 'ListItem') depth += 1
+  return depth
+}
+
 /**
- * Can this table be drawn as a grid? Only a table in the page itself: one inside a quote or a list item keeps its text
- * (its lines start with something that is not the table's).
+ * Can this table be drawn as a grid? A table in the page itself, or indented under a list item (the grid is indented
+ * with it); one inside a quote keeps its text (its lines start with something that is not the table's).
  */
 export function renderable(state: EditorState, table: SyntaxNode): boolean {
-  for (let parent = table.parent; parent; parent = parent.parent)
-    if (parent.name === 'Blockquote' || parent.name === 'ListItem') return false
+  let listed = false
+  for (let parent = table.parent; parent; parent = parent.parent) {
+    if (parent.name === 'Blockquote') return false
+    if (parent.name === 'ListItem') listed = true
+  }
   const first = state.doc.lineAt(table.from).number
   const last = state.doc.lineAt(table.to).number
   if (last - first < 1) return false
   for (let n = first; n <= last; n++) {
-    const text = state.doc.line(n).text
-    const row = splitRow(text)
-    if (!/^ {0,3}$/.test(text.slice(0, row.start)) || row.cells.length === 0) return false
+    const line = state.doc.line(n)
+    const row = splitRow(line.text)
+    // Only white space may come before the row: not a list marker (`- | a | b |`), and in the page at most 3 spaces.
+    const before = line.text.slice(0, row.start)
+    const clean = listed ? before.trim() === '' : /^ {0,3}$/.test(before)
+    if (!clean || row.cells.length === 0) return false
+  }
+  if (listed) {
+    const firstLine = state.doc.lineAt(table.from)
+    if (firstLine.text.slice(0, table.from - firstLine.from).trim() !== '') return false
   }
   return true
 }
@@ -190,6 +208,8 @@ export function drawTable(
   for (let n = first; n <= last; n++) texts.push(doc.line(n).text)
   const aligns = alignmentsOf(texts[1] ?? '')
   const template = grid ? columns(texts) : ''
+  const depth = listDepthOf(table)
+  const indent = depth > 0 ? `; padding-left: calc(${depth} * 1.6em)` : ''
 
   for (let n = first; n <= last; n++) {
     const line = doc.line(n)
@@ -223,7 +243,7 @@ export function drawTable(
       line.from,
       Decoration.line({
         class: index === 0 ? 'live-table-row live-table-head' : 'live-table-row',
-        attributes: { style: `grid-template-columns: ${template}` }
+        attributes: { style: `grid-template-columns: ${template}${indent}` }
       })
     )
     // What stays drawn in each cell; everything between is hidden.

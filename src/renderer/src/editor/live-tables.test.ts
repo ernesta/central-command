@@ -167,11 +167,24 @@ describe('the parts of a table', () => {
     expect(seen.filter((s) => s.kind.startsWith('live-cell'))).toHaveLength(2 + 1 + 3)
   })
 
-  it('keeps the text of a table inside a quote or a list', () => {
-    for (const nested of [
-      '> | a | b |\n> |---|---|\n> | 1 | 2 |\n\nend',
-      '- item\n\n  | a | b |\n  |---|---|\n  | 1 | 2 |\n\nend'
-    ]) {
+  it('draws a table indented under a list item as a grid, indented with the item', () => {
+    const nested = '- item\n\n  | a | b |\n  |---|---|\n  | 1 | 2 |\n\nend'
+    const state = stateFor(nested, nested.length)
+    expect(hiddenText(state).filter((text) => text.includes('|'))).not.toEqual([])
+    const rows = decorationsOf(state).filter((s) => s.kind.includes('live-table-row'))
+    expect(rows).toHaveLength(2)
+    expect(decorationsOf(state).some((s) => s.kind === 'live-table')).toBe(false)
+  })
+
+  it('keeps the text of a table that starts on the list marker line', () => {
+    const nested = '- | a | b |\n  |---|---|\n  | 1 | 2 |\n\nend'
+    expect(
+      decorationsOf(stateFor(nested, nested.length)).some((s) => s.kind === 'live-table-row')
+    ).toBe(false)
+  })
+
+  it('keeps the text of a table inside a quote', () => {
+    for (const nested of ['> | a | b |\n> |---|---|\n> | 1 | 2 |\n\nend']) {
       const state = stateFor(nested, nested.length)
       expect(hiddenText(state).filter((text) => text.includes('|'))).toEqual([])
       expect(decorationsOf(state).some((s) => s.kind === 'live-table-row')).toBe(false)
