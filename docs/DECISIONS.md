@@ -3565,3 +3565,18 @@ The user's screenshots: Enter at the end of a paragraph put the cursor on a very
 - **Caret on an empty bullet, number, checkbox or quote line** (`live-caret.ts`): CodeMirror sized it from the whole line (29px on a bullet against 21px for text, off-centre on checkboxes and quotes), so it changed at the first letter. A zero-width space widget at the caret, in the line's own font, gives it the text's box; it is not in the document and not an atomic range. Driven: the caret's top, height and centre are identical empty and typed in each context.
 - **Not changed, by the user's rule:** the caret on a single blank line between paragraphs still moves about 19px at the first letter, the paragraph below a longer run still moves 16px (a blank line becomes a paragraph), and ArrowDown skips a lone blank line (it has no height, so `a\n\nb` navigates like `a\nb`). Each follows from "none or one blank line look the same, and the cursor does not change the space".
 - **Checks:** driven in the production build on a scratch library: Enter then a letter at the end of a heading, paragraph, bullet, checkbox, quote, code line and last paragraph, and in the user's case (no caret movement). Not driven in dev mode.
+
+## Research: how other editors treat blank lines (17 Oct 2026)
+
+The user asked whether this was already solved elsewhere. Obsidian (a blank line is a real, full-height line), Typora (one Return is a new paragraph), Bear (Return twice, plus a spacing setting) and Notion/Logseq/Roam (Enter makes a block) all draw the line you type on as it is and never change the layout with the cursor. None hides the first blank line. Sources are in the mockup session; the hidden-first-blank-line rule ("none or one blank line look the same") was the cause of every cursor and new-line problem of that day.
+
+## Every line takes the same space (17 Oct 2026, stage 1 of `docs/UNIFORM_LINES_PLAN.md`)
+
+The user compared three options in `docs/design/editor-blank-lines-mockup.html` and chose C ("I think I want C?"; earlier "Fix old notes for C"): every line, a blank line included, is one unit, and one Enter already looks like a new paragraph.
+
+- **The rule** (`live-spacing.ts`): a line of text carries the block gap above it, so a unit is 45px (16px gap plus the 29px line); a blank line carries the gap a typed paragraph there would (none under a heading, the list's small gap under a list item, a quote's under a quote, none inside code or on the note's first line), so typing moves nothing and the cursor never changes the layout. n blank lines are n units. The note's empty last line stays hidden until the cursor is on it.
+- **Removed:** the hidden first blank line (`live-void`), the stand-in `live-gap-cursor`, the swapped blank line, and the 3px caret lift. `live-caret.ts` stays (the caret on empty list and quote lines).
+- **Enter at the start of a paragraph** pushes the text down and the cursor goes with it (the 15 Oct rule that kept the cursor on the new empty line existed only because that line was invisible). Backspace and Delete already took one blank line per press.
+- **Selections** end on blank lines like on any line (`live-selection.ts` no longer steps back over them).
+- **Checks:** typecheck, lint and tests pass, and the real-library gate; driven in the built app on a scratch library (heights 29 / 45 per line; Enter, a letter, a second Enter, Up and Down onto blank lines, Backspace twice, Enter at a paragraph's start; a selection over blank lines). Not driven in dev mode or dark mode (no colour changed).
+- **Until stage 2** notes with one blank line between paragraphs look loose (90px between the text). Stage 2, the old notes, waits for the user (`docs/UNIFORM_LINES_PLAN.md`).

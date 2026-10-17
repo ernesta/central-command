@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editor blank lines: A, B, C</title>
+<style>
+  :root {
+    --bg: #eceef2; --surface: #ffffff; --text: #1c242c; --muted: #5c6672; --border: #d5dae0;
+    --accent: #2f4a6b; --marker: #8a95a1; --band: #eef2f7; --line: 29px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #161a1f; --surface: #1f262e; --text: #e6eaee; --muted: #98a3af; --border: #333c46;
+      --accent: #8fb0d6; --marker: #6f7b87; --band: #262f39; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 32px 16px 64px; background: var(--bg); color: var(--text);
+    font: 15px/1.5 'IBM Plex Sans', system-ui, sans-serif; }
+  main { max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  p.lede { color: var(--muted); margin: 0 0 16px; max-width: 80ch; }
+  .grid { display: grid; grid-template-columns: 170px repeat(3, 1fr); gap: 0; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .head { position: sticky; top: 0; z-index: 2; background: var(--surface); padding: 12px 14px;
+    border-bottom: 2px solid var(--accent); font-weight: 600; }
+  .head small { display: block; font-weight: 400; color: var(--muted); font-size: 13px; }
+  .rowlabel, .cell { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .rowlabel { background: var(--band); }
+  .rowlabel b { display: block; font-size: 14px; }
+  .rowlabel span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .cell { border-left: 1px solid var(--border); min-width: 0; }
+  .note { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+  .note b { color: var(--text); }
+  .file { font: 12px/1.5 ui-monospace, 'SF Mono', Menlo, monospace; color: var(--muted); background: var(--band);
+    border-radius: 6px; padding: 6px 10px; margin: 0 0 8px; white-space: pre; overflow-x: auto; }
+  .nl { color: var(--marker); }
+  .pane { border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; background: var(--surface); }
+  .ed { font-size: 16px; line-height: var(--line); }
+  .ed .l { min-height: var(--line); position: relative; }
+  .ed .l.blank { height: var(--line); }
+  .ed.c .l { padding-top: 16px; min-height: 45px; }
+  .ed.c .l.blank { height: 45px; }
+  .ed.c .l .caret.block { top: 20px; }
+  .caret { display: inline-block; width: 2px; height: 21px; background: var(--text); vertical-align: -5px; margin-left: 1px; }
+  .caret.block { position: absolute; left: 0; top: 4px; margin: 0; }
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+    .head { position: static; }
+    .cell { border-left: 0; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Blank lines in the editor: A, B and C</h1>
+  <p class="lede">One row per feature, so each option lines up with the others. All three remove the hidden first blank line and the stand-in; in every option a blank line is a real line and the cursor never changes the layout.</p>
+  <div class="grid">
+    <div class="head"></div>
+    <div class="head">A<small>Show it as written</small></div>
+    <div class="head">B<small>Same gap; blank lines added to the files</small></div>
+    <div class="head">C<small>Every line the same; old blank lines removed</small></div>
+    <div class="rowlabel"><b>Height of a line</b><span>Every line, a blank line included</span></div><div class="cell"><p class="note"><b>29px</b>. A blank line is 29px. No gap above a paragraph.</p></div><div class="cell"><p class="note"><b>29px</b>. A blank line is 29px. No gap above a paragraph.</p></div><div class="cell"><p class="note"><b>45px</b> (16px gap + 29px line). A blank line is 45px too.</p></div><div class="rowlabel"><b>A note written with Enter once</b><span>No blank lines between paragraphs</span></div><div class="cell"><div class="file">First<span class="nl">⏎</span>
+Second<span class="nl">⏎</span>
+Third</div><div class="pane ed"><div class="l">First</div><div class="l">Second</div><div class="l">Third</div></div><p class="note">Tight. Looks different from notes that have blank lines.</p></div><div class="cell"><div class="file">First<span class="nl">⏎⏎</span>
+Second<span class="nl">⏎⏎</span>
+Third   <span class="nl">← after the script adds blank lines</span></div><div class="pane ed"><div class="l">First</div><div class="l blank"></div><div class="l">Second</div><div class="l blank"></div><div class="l">Third</div></div><p class="note">Gap, but the file changed.</p></div><div class="cell"><div class="file">First<span class="nl">⏎</span>
+Second<span class="nl">⏎</span>
+Third</div><div class="pane ed c"><div class="l">First</div><div class="l">Second</div><div class="l">Third</div></div><p class="note">Looks like paragraphs. File untouched.</p></div><div class="rowlabel"><b>An older note with a blank line between paragraphs</b><span>As most of your notes were written</span></div><div class="cell"><div class="file">First<span class="nl">⏎⏎</span>
+Second<span class="nl">⏎⏎</span>
+Third</div><div class="pane ed"><div class="l">First</div><div class="l blank"></div><div class="l">Second</div><div class="l blank"></div><div class="l">Third</div></div><p class="note">29px gap. File untouched.</p></div><div class="cell"><div class="file">First<span class="nl">⏎⏎</span>
+Second<span class="nl">⏎⏎</span>
+Third</div><div class="pane ed"><div class="l">First</div><div class="l blank"></div><div class="l">Second</div><div class="l blank"></div><div class="l">Third</div></div><p class="note">29px gap. File untouched.</p></div><div class="cell"><div class="file">First<span class="nl">⏎⏎</span>
+Second<span class="nl">⏎⏎</span>
+Third   <span class="nl">← before the fix</span></div><div class="pane ed c"><div class="l">First</div><div class="l blank"></div><div class="l">Second</div><div class="l blank"></div><div class="l">Third</div></div><p class="note">Loose (90px between text) until the fix.</p></div><div class="rowlabel"><b>The same note, fixed</b><span>What each option needs done to your files</span></div><div class="cell"><p class="note"><b>Nothing to fix.</b></p></div><div class="cell"><p class="note"><b>Nothing to fix</b> for these. The Enter-only notes need the blank lines added (above).</p></div><div class="cell"><div class="file">First<span class="nl">⏎</span>
+Second<span class="nl">⏎</span>
+Third   <span class="nl">← blank lines removed</span></div><div class="pane ed c"><div class="l">First</div><div class="l">Second</div><div class="l">Third</div></div><p class="note">Looks right.</p></div><div class="rowlabel"><b>Cursor at the end of a paragraph</b><span>Your question, with the next paragraph below</span></div><div class="cell"><div class="pane ed"><div class="l">How big did the team grow?<span class="caret"></span></div><div class="l blank"></div><div class="l">How did you develop people?</div></div></div><div class="cell"><div class="pane ed"><div class="l">How big did the team grow?<span class="caret"></span></div><div class="l blank"></div><div class="l">How did you develop people?</div></div></div><div class="cell"><div class="pane ed c"><div class="l">How big did the team grow?<span class="caret"></span></div><div class="l">How did you develop people?</div></div></div><div class="rowlabel"><b>Press Enter</b><span>A new line opens, caret on it</span></div><div class="cell"><div class="pane ed"><div class="l">How big did the team grow?</div><div class="l blank"><span class="caret block"></span></div><div class="l blank"></div><div class="l">How did you develop people?</div></div><p class="note">One more 29px line. The blank line below it stays.</p></div><div class="cell"><div class="pane ed"><div class="l">How big did the team grow?</div><div class="l blank"><span class="caret block"></span></div><div class="l blank"></div><div class="l">How did you develop people?</div></div><p class="note">One more 29px line. The blank line below it stays.</p></div><div class="cell"><div class="pane ed c"><div class="l">How big did the team grow?</div><div class="l blank"><span class="caret block"></span></div><div class="l">How did you develop people?</div></div><p class="note">One more 45px line. This is already the new paragraph.</p></div><div class="rowlabel"><b>Type a letter</b><span>Does anything move?</span></div><div class="cell"><div class="pane ed"><div class="l">How big did the team grow?</div><div class="l">Next<span class="caret"></span></div><div class="l blank"></div><div class="l">How did you develop people?</div></div><p class="note">Caret and text above do not move.</p></div><div class="cell"><div class="pane ed"><div class="l">How big did the team grow?</div><div class="l">Next<span class="caret"></span></div><div class="l blank"></div><div class="l">How did you develop people?</div></div><p class="note">Caret and text above do not move.</p></div><div class="cell"><div class="pane ed c"><div class="l">How big did the team grow?</div><div class="l">Next<span class="caret"></span></div><div class="l">How did you develop people?</div></div><p class="note">Caret and everything do not move.</p></div><div class="rowlabel"><b>Press Enter twice in a row</b><span>How much space is left</span></div><div class="cell"><div class="pane ed"><div class="l">First</div><div class="l blank"></div><div class="l blank"><span class="caret block"></span></div><div class="l">Second</div></div><p class="note">Two blank lines: 58px of space. Matches the file.</p></div><div class="cell"><div class="pane ed"><div class="l">First</div><div class="l blank"></div><div class="l blank"><span class="caret block"></span></div><div class="l">Second</div></div><p class="note">Two blank lines: 58px of space. Matches the file.</p></div><div class="cell"><div class="pane ed c"><div class="l">First</div><div class="l blank"></div><div class="l blank"><span class="caret block"></span></div><div class="l">Second</div></div><p class="note">Two blank lines: 90px of space. One extra Enter than needed.</p></div><div class="rowlabel"><b>Cursor moves between lines</b><span>Up and Down arrows</span></div><div class="cell"><p class="note">Land on every blank line, like any line.</p></div><div class="cell"><p class="note">Land on every blank line, like any line.</p></div><div class="cell"><p class="note">Land on every line. There are few blank lines.</p></div><div class="rowlabel"><b>What changes in your files</b><span></span></div><div class="cell"><p class="note"><b>Nothing.</b></p></div><div class="cell"><p class="note">Blank lines <b>added</b> to the Enter-only notes. A one-off script; I have not counted these (about 20 notes have stacked paragraph lines).</p></div><div class="cell"><p class="note"><b>287 blank lines removed in 50 of 263 notes</b>: 98 between paragraphs, 90 around lists, 41 around headings, 38 around tables, 20 other. A one-off script, dry run first.</p></div><div class="rowlabel"><b>Outside this app</b><span>Other Markdown tools, exports</span></div><div class="cell"><p class="note">Reads as written.</p></div><div class="cell"><p class="note">Reads as written.</p></div><div class="cell"><p class="note"><b>Differs.</b> Paragraph lines with no blank line between them become one paragraph, and a paragraph under a list item joins that item. Here each line is already its own paragraph.</p></div><div class="rowlabel"><b>Code that goes away</b><span>In the editor</span></div><div class="cell"><p class="note">The void line, the stand-in, the swapped blank line, the per-paragraph gap.</p></div><div class="cell"><p class="note">The same.</p></div><div class="cell"><p class="note">The void line, the stand-in, the swapped blank line. The per-paragraph gap stays and applies to every line.</p></div>
+  </div>
+</main>
+</body>
+</html>

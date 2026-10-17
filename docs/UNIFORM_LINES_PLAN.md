@@ -1,0 +1,27 @@
+# Every line the same space (plan, 17 Oct 2026)
+
+The user chose "Option C" from `docs/design/editor-blank-lines-mockup.html` after the hidden-first-blank-line model kept producing a cramped
+cursor and jumps (`docs/DECISIONS.md`, "The cursor's blank line is drawn as the paragraph typed there"; "Research: other editors"). They said
+"I think I want C?" (tentative), and earlier: "Fix old notes for C".
+
+**The rule.** Every line of a note is one unit, a blank line included: a line of text carries the 16px block gap above it, so a unit is 45px
+(a wrapped line adds 29px per extra row). One Enter makes a new paragraph; a blank line is only for extra space, and n blank lines are n
+units. No hidden first blank line, no stand-in for the gap, no cursor-dependent layout. Enter at the start of a paragraph pushes the text
+down and the cursor goes with it. The gap rules that were already there stay: none next to a heading, 4px between list items, a quote's own,
+none inside code, tables and quotes.
+
+## Stage 1: the editor (done 17 Oct 2026)
+
+`live-spacing.ts` rewritten (every line, blank or not, carries the gap its text would; a blank line gets the gap a typed paragraph there
+would get, so typing moves nothing); the `live-void` and `live-gap-cursor` CSS removed; Enter at the start of a paragraph no longer keeps
+the cursor on the new empty line (`live-lists.ts`); a selection ends on blank lines like on any line (`live-selection.ts`). Driven in the
+built app on a scratch library. Until stage 2, notes with a blank line between paragraphs look loose (90px between the text).
+
+## Stage 2: the old notes (not started; wait for the user)
+
+`npm run tidy:paragraph-blanks [-- --apply]`: remove a single blank line between two blocks where that does not change how this app reads the
+note. Counted read-only on a copy of the library: 287 single blank lines in 50 of 263 notes (98 between paragraphs, 90 between a list and a
+paragraph, 41 around headings, 38 around tables, 20 other). Like `tidy:blank-runs`: dry run by default, backs each note up, apply with the app
+closed, refuses a note where any non-blank line would change, never touches code. Open questions for the user: which of those pairs to
+remove (outside this app, two paragraph lines with no blank line between them are one paragraph, and a paragraph under a list item joins
+that item).
