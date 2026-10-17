@@ -46,7 +46,6 @@ export function WeekCard({
       : 0
   // The summary is against the whole week's aim (the rules' plan for the week's last day), not what is expected so far.
   const { aim, minutes: worked } = weekFigures(data, week, now)
-  const begun = week <= now.date
   const aimed = hasAim(data)
   const first = week <= data.start
   const last = addDays(week, 7) > yearEnd(data.start, data.weeks)
@@ -83,12 +82,11 @@ export function WeekCard({
           </button>
         </div>
       </header>
-      {begun &&
-        (aimed ? (
-          <PeriodSummary minutes={worked} aim={aim} />
-        ) : (
-          <p className={styles.total}>{formatHours(worked)}</p>
-        ))}
+      {aimed ? (
+        <PeriodSummary minutes={worked} aim={aim} />
+      ) : (
+        <p className={styles.total}>{formatHours(worked)}</p>
+      )}
       <table className={styles.table}>
         <thead>
           <tr>
@@ -231,17 +229,15 @@ function DayRows({
         </td>
         {bar && (
           <td>
-            {past && (
-              <div className={styles.track} aria-hidden>
-                <i
-                  className={styles.fill}
-                  style={{ width: `${barFill(minutes, aim, perDay) * 100}%` }}
-                />
-                {aim !== null && (
-                  <b className={styles.tick} style={{ left: `${(1 / BAR_SCALE) * 100}%` }} />
-                )}
-              </div>
-            )}
+            <div className={styles.track} aria-hidden>
+              <i
+                className={styles.fill}
+                style={{ width: `${past ? barFill(minutes, aim, perDay) * 100 : 0}%` }}
+              />
+              {aim !== null && (
+                <b className={styles.tick} style={{ left: `${(1 / BAR_SCALE) * 100}%` }} />
+              )}
+            </div>
           </td>
         )}
       </tr>
