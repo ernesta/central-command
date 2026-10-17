@@ -243,6 +243,12 @@ export function buildDecorations(
             marker(node.from, node.from + 1, spanRevealed(reveal, node.from, node.to))
             return
           }
+          case 'HardBreak': {
+            // The backslash Shift-Enter writes at a line's end is hidden away from the cursor (a two-space break has nothing to hide).
+            if (text(node.from, node.from + 1) !== '\\') return
+            marker(node.from, node.from + 1, spanRevealed(reveal, node.from, node.from + 1))
+            return
+          }
           case 'Link': {
             // A mention is drawn as a chip, whatever the cursor does (`live-entities.ts`); its own marks and label are not decorated.
             const chip = chipOf(state, node.node)

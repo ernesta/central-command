@@ -233,6 +233,20 @@ describe('escapes', () => {
   })
 })
 
+describe('a backslash line break', () => {
+  const doc = '1. one\\\n   two\n2. three'
+
+  it('is hidden away from the cursor, and shown while the cursor is on it', () => {
+    expect(hiddenText(stateFor(doc, doc.length))).toContain('\\')
+    expect(shownMarkers(stateFor(doc, at(doc, 'one')))).toEqual([])
+    expect(shownMarkers(stateFor(doc, at(doc, '\\')))).toEqual(['\\'])
+  })
+
+  it('leaves a two-space break alone', () => {
+    expect(hiddenText(stateFor('a  \nb', 5))).not.toContain(' ')
+  })
+})
+
 describe('a marker at the start of its line', () => {
   const lead = (doc: string, at: number): string[] => {
     const state = stateFor(doc, at)
