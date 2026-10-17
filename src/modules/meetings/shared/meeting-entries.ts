@@ -138,10 +138,6 @@ export function occupiedByMeetings(
 }
 
 /** What `Occupied.meeting` and the `self` of `overlapping` hold for a note: a meeting and a lecture of one name are two things. */
-export function noteKey(
-  kind: DerivedKind | undefined,
-  workspace: MeetingWorkspace,
-  id: string
-): string {
+export function noteKey(kind: DerivedKind | undefined, workspace: string, id: string): string {
   return `${kind ?? 'meeting'}:${workspace}/${id}`
 }
