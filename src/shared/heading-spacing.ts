@@ -48,3 +48,16 @@ export function tidyBlankLines(body: string): string {
   // Anything dropped after the last line of text means a line break followed it.
   return raw.slice(start, end).join('\n') + (end < raw.length ? '\n' : '')
 }
+
+/**
+ * The body with every run of blank lines cut to one (the first line of the run stays, so its own whitespace and line
+ * break style do). Blank lines inside a code fence stay, and nothing but blank lines is ever removed. What follows the
+ * final line break is not a line.
+ */
+export function collapseBlankRuns(body: string): string {
+  const raw = body.split('\n')
+  const { lines } = scan(body)
+  const last = raw.length > 1 && raw[raw.length - 1] === '' ? raw.length - 1 : -1
+  const blank = (i: number): boolean => i !== last && !lines[i].inFence && raw[i].trim() === ''
+  return raw.filter((_, i) => !(blank(i) && i > 0 && blank(i - 1))).join('\n')
+}

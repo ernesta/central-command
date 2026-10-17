@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { tidyBlankLines, tightenHeadings } from './heading-spacing'
+import { collapseBlankRuns, tidyBlankLines, tightenHeadings } from './heading-spacing'
 
 describe('tightenHeadings', () => {
   it('removes blank lines before and after headings', () => {
@@ -121,5 +121,28 @@ describe('tidyBlankLines', () => {
       expect(content(out)).toEqual(content(body))
       expect(tidyBlankLines(out)).toBe(out)
     }
+  })
+})
+
+describe('collapseBlankRuns', () => {
+  it('cuts a run of blank lines to one', () => {
+    expect(collapseBlankRuns('a\n\n\n\nb\n\nc\n')).toBe('a\n\nb\n\nc\n')
+  })
+
+  it('counts whitespace-only lines as blank and keeps the first line of the run', () => {
+    expect(collapseBlankRuns('a\n \n\t\n\nb\n')).toBe('a\n \nb\n')
+  })
+
+  it('keeps CRLF', () => {
+    expect(collapseBlankRuns('a\r\n\r\n\r\nb\r\n')).toBe('a\r\n\r\nb\r\n')
+  })
+
+  it('leaves blank lines inside a code fence', () => {
+    expect(collapseBlankRuns('a\n```\nx\n\n\ny\n```\n\n\nb\n')).toBe('a\n```\nx\n\n\ny\n```\n\nb\n')
+  })
+
+  it('does not count the end of the file as a blank line, and changes nothing else', () => {
+    expect(collapseBlankRuns('a\n\nb\n')).toBe('a\n\nb\n')
+    expect(collapseBlankRuns('')).toBe('')
   })
 })
