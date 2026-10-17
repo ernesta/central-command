@@ -410,6 +410,18 @@ Order agreed: A, B, D, E, then C. For each: do it on a scratch library (never th
       ("Dr Robert De Vries", "Prof. Gaelle Vallee-Tourangeau", "DataCamp", "SEDarc DTP"), whether the Statistical Genetics Group Seminar
       and other one-offs need a series, and PS5302 / PS2021 entries that have no session titles. Then try the Series and Institution
       drop-downs on an entry page and the Type before Series column order in the Training and Meetings lists.
+- [ ] **Review Training entries: consistency and overlaps (built unattended, 17 Oct 2026; `docs/TRAINING_ENTRIES_PLAN.md`, `docs/DECISIONS.md`, "Training entries: one
+      time line, overlaps without a task").** Look at: (1) the Training landing's "Recent and upcoming" rows and Meetings' and a person page's training rows, which
+      now all read `09:30–15:00 · 5 h 30 min · In person` (a row with no times says "No time yet"; a start with no end shows the start); (2) the new **Format** column in the
+      Training table (Research and Life, after Duration); (3) the overlap warning on a training entry page ("Overlaps <label> <start>–<end>."), which now needs only a
+      date and both times (no task, no series, upcoming dates too) and also appears on a meeting without a task; it is drawn under the details, not in the Task card.
+- [ ] **Training audit: left for you to decide (17 Oct 2026).** None of these was changed: (a) the Meetings table calls attendance "Type" while Training calls it
+      "Format" (Training already has a "Type"); one word for both? (b) the PDF export has no Format column, shows no "No time yet", lists hours as `1:30` where the
+      table and landing say `1 h 30 min`, and puts the series after the title instead of "Series: title"; should the PDF follow the screens (it mirrors Inkpath's log)?
+      (c) hours of a training note derive into the Hours page only when it has a task, while the Training counters count every note's session; the 129 older notes are in
+      the counters but not in Hours (documented, to avoid double counting; a cut-off rule is still open). (d) A warning on the Training table, landing or card for an
+      overlapping entry was ruled out ("entry page only"); say if that changes. (e) The landing row's time line sits right after the title, not in a column, so lines of
+      different titles do not line up; a shared `RecentList` layout, so it was left alone.
 - [ ] **Try the Training entry page's new side panel** (Files above Outline, matching Meetings; see `docs/DECISIONS.md`,
       "Training entry page: a side panel"). Say what to change, and whether Meetings should get a second, plain outline
       after all now that you've seen Training's (a deliberate no for now, see item 2 above).
