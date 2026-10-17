@@ -1,6 +1,6 @@
 # Self-study tasks for trainings (plan, 17 Oct 2026)
 
-The user's idea, agreed in conversation on 17 Oct 2026. **Nothing here is built yet.**
+The user's idea, agreed in conversation on 17 Oct 2026. **Built and driven 17 Oct 2026** (`docs/DECISIONS.md`, "Self-study tasks for trainings").
 
 **Standing exception to CLAUDE.md (the user's explicit instruction, 17 Oct 2026):** the user is away, so do every stage in one go, without stopping between
 them, and finish with the push and the install. Still one small commit per standalone part; test, lint and typecheck must pass before each commit.
