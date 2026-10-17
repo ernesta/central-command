@@ -64,7 +64,7 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   - `live-links.ts`: Cmd-click and paste-a-URL-over-a-selection; `live-paste.ts`: plain-text paste; `live-history.ts`: each command its own undo step
   - `live-find.ts`, `live-outline.ts`: Find and replace and the outline jump, through small bridge objects (`notes/find-types.ts`,
     `entities/mention-target.ts`, and Meetings' `todo-live.ts`)
-  - tests: one `*.test.ts` per module, helpers `live-test-utils.ts`, `live-key-utils.ts`, `live-history.testing.ts`, and the real-library gate `live-library.test.ts`
+  - tests: one `*.test.ts` per module, helpers `live-test-utils.ts`, `live-key-utils.ts`, `live-history.testing.ts`, and the real-library gate (`live-library.gate.ts`, run as `live-library.<part>.test.ts` files so the parts run in parallel)
 - Path aliases: `@shared`, `@modules`, `@renderer`.
 
 ## Conventions
@@ -115,6 +115,12 @@ workspaces are Life, Research and Work, data lives in `~/CentralCommand/`, and t
   weeks from a Monday, `useYear`); one top-level Tasks list per Work client (`docs/CLIENT_LISTS_PLAN.md`); the timer and tasks rule, "every hour has a task"
   (`docs/TIMER_TASKS_PLAN.md`, stages 1 to 4 done; stage 5, Research's historical data, waits for the user's answers); meetings and trainings make their own
   subtasks by themselves (`task: auto`).
+- Self-study tasks for trainings (`docs/SELF_STUDY_PLAN.md`): Start and Add time on a training note go to the lecture's own `<title> · self-study` subtask under one
+  `<series> · self-study` task per series, made when first pressed (`selfstudy:` in the note); the lecture's own task is the session and has no Start. `entryMinutes`
+  counts the session plus both tasks.
+- Hours counted the same way everywhere (`docs/HOURS_CONSISTENCY_PLAN.md`): one shown year (`hours/shared/shown-year.ts`), one year choice (`yearToShow`) and one set of
+  Home figures (`periodFigures`) serve the Hours page, Home, the Home summary and `snapshot.json` (`week` and `work`). One known difference, left to the user: Hours reports
+  a note's own session to the quarter hour, the training log keeps the exact minutes.
 - The editor: `LiveEditor` (CodeMirror 6) replaced Milkdown everywhere; every editor sits in `EditorCard`; panels use `DocSplit` and `Panel` (architecture above).
 - Dark mode (colours are `light-dark()` pairs in `tokens.css`: a new colour needs both), Settings in tabs, a few Mac conventions, entities (`@` mentions as
   `[label](cc://kind/key)` chips), packaging (`npm run build:mac`, installed in `/Applications`; quit it before replacing it).
@@ -160,7 +166,7 @@ npx electron-vite dev -- --remote-debugging-port=9333`, then `chromium.connectOv
   - A CSS rule that pads a `.cm-line` class must be spelled `.wrap .cm-editor .cm-line.live-x`, or the editor's own `.cm-line { padding: 0 }` reset wins (it hid
     nested-quote indents and heading spacing for six stages; unit tests read the DOM and passed).
   - The real-library gate must pass before each editor change is finished: copy `~/CentralCommand/notes` and `backups` into the session scratchpad and run
-    `LIVE_EDITOR_LIBRARY=<that copy> npx vitest run src/renderer/src/editor/live-library`. It is opt-in, so a plain `npm test` skips it.
+    `LIVE_EDITOR_LIBRARY=<that copy> npx vitest run src/renderer/src/editor/live-library`. It is opt-in, so a plain `npm test` skips it; it takes about two minutes (it was ten as one file: the parts, and the slow ones in shards, are separate files so vitest runs them in parallel; add a part or a shard as a new `live-library.<part>.test.ts`).
   - Change reporting must stay synchronous (`EditorView.updateListener`, no debounce): a debounced reporter once lost the last keystrokes on quick exit.
 - React StrictMode runs effect, cleanup, effect back to back without awaiting: lifecycle methods
   (`NotesSession.start`/`dispose`) must change state synchronously.
