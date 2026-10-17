@@ -22,6 +22,8 @@ export function useSelfStudyTask(
   const made = useRef(new Set<string>())
   const { selfStudy, series, title } = meta
   const latest = useRef({ selfStudy, series, title })
+  // The task `ensure` made last: the note's `selfstudy:` follows a moment later, and a second press in between must find it, not make another.
+  const ensured = useRef('')
   useEffect(() => {
     latest.current = { selfStudy, series, title }
   }, [selfStudy, series, title])
@@ -53,8 +55,14 @@ export function useSelfStudyTask(
     }
     busy.current = true
     try {
-      const task = await makeSelfStudyTask(window.api.tasks, latest.current, made.current)
-      if (task.uid !== latest.current.selfStudy) setSelfStudy(task.uid)
+      const note = latest.current
+      const task = await makeSelfStudyTask(
+        window.api.tasks,
+        { ...note, selfStudy: note.selfStudy || ensured.current },
+        made.current
+      )
+      ensured.current = task.uid
+      if (task.uid !== note.selfStudy) setSelfStudy(task.uid)
       return task
     } finally {
       busy.current = false
