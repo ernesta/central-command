@@ -43,6 +43,7 @@ export function TrainingEntryPage(): React.JSX.Element {
     <EntryView
       key={key}
       entryRef={{ workspace, id: key }}
+      currentId={id}
       onRenamed={(newId) => {
         setKnown((prev) =>
           prev.key === key ? { key, ids: [...prev.ids, newId] } : { key, ids: [key, newId] }
@@ -55,9 +56,12 @@ export function TrainingEntryPage(): React.JSX.Element {
 
 function EntryView({
   entryRef,
+  currentId,
   onRenamed
 }: {
   entryRef: TrainingRef
+  /** The id in the address now: the page stays mounted under the id it opened with, but a rename changes the file's. */
+  currentId: string
   onRenamed: (id: string) => void
 }): React.JSX.Element {
   const navigate = useNavigate()
@@ -240,7 +244,7 @@ function EntryView({
 
       <MeetingHoursNote
         workspace={workspace}
-        id={entryRef.id}
+        id={currentId}
         meta={meta}
         kind="training"
         show="clashes"
