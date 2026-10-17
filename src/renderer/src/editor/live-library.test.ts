@@ -440,6 +440,8 @@ function indepCells(line: string): string[] {
 /** Where Tab should put the cursor in each cell of a table line (document positions), worked out from the text alone: the start of the cell's text, or after the first space of an empty cell. */
 function cellCarets(line: { from: number; text: string }): number[] {
   const pipes = [...line.text.matchAll(/(?<!\\)\|/g)].map((match) => match.index as number)
+  // A row with no pipe at all (a plain line under the table) is one cell: the caret goes to the start of its text.
+  if (pipes.length === 0) return [line.from + line.text.length - line.text.trimStart().length]
   const carets: number[] = []
   pipes.forEach((pipe, i) => {
     const from = pipe + 1
@@ -462,7 +464,14 @@ interface TableAt {
   last: number
 }
 
-/** The tables of a document: a line that starts with a pipe, a delimiter line under it, and the lines under that that start with one. */
+/** A line that begins another block (list item, heading, quote, fence, HTML) and so ends a table above it. */
+const STARTS_A_BLOCK = /^ {0,3}(?:[-*+] |\d{1,9}[.)] |#{1,6}(?: |$)|>|```|~~~|<)/
+
+/**
+ * The tables of a document: a line that starts with a pipe, a delimiter line under it, and the lines under that: every one
+ * that starts with a pipe, and (as in GFM) a plain line right under the table is one more row, one cell wide, until a blank
+ * line or the start of another block.
+ */
 function tablesOf(state: EditorState): TableAt[] {
   const lines = state.doc.toString().split('\n')
   const found: TableAt[] = []
@@ -470,7 +479,12 @@ function tablesOf(state: EditorState): TableAt[] {
     if (!lines[k].startsWith('|') || !lines[k + 1].startsWith('|') || !DELIMITER.test(lines[k + 1]))
       continue
     let end = k + 1
-    while (end + 1 < lines.length && lines[end + 1].startsWith('|')) end += 1
+    while (
+      end + 1 < lines.length &&
+      (lines[end + 1].startsWith('|') ||
+        (lines[end + 1].trim() !== '' && !STARTS_A_BLOCK.test(lines[end + 1])))
+    )
+      end += 1
     found.push({ first: k + 1, last: end + 1 })
     k = end
   }
@@ -575,7 +589,14 @@ function checkTable(file: string, text: string, table: TableAt, nl: string): { c
 
   const added = run(tableTab(true), state)
   expect(added.tr?.docChanged, `${where} Tab after the last cell`).toBe(true)
-  const row = `|${'  |'.repeat(indepCells(headLine.text).length)}`
+  // The new row has as many cells as the header and takes the shape of the row above it: its indent, and a pipe at the start
+  // and at the end only if that row has one.
+  const lastText = doc.line(table.last).text
+  const row = `${lastText.slice(0, lastText.length - lastText.trimStart().length)}${
+    lastText.trimStart().startsWith('|') ? '|' : ''
+  }${indepCells(headLine.text)
+    .map(() => '  ')
+    .join('|')}${/(?<!\\)\|\s*$/.test(lastText) ? '|' : ''}`
   const end = offset(to)
   expect(added.tr?.state.sliceDoc(), `${where} new row`).toBe(
     `${text.slice(0, end)}${nl}${row}${text.slice(end)}`
