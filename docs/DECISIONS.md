@@ -3138,7 +3138,7 @@ The user's request, looking at a task's Subtasks card: always order subtasks by 
 
 - **Why (the user):** the sections should run Due today, Overdue, Upcoming (next 7 days), In progress; and a task that fits several (due today and in progress) should show in all of them, not only the first. Their CastlesFest task (in progress, due tomorrow) had only appeared under In progress.
 - **Now:** `LANDING_SECTIONS` is `today, overdue, upcoming, doing` and `TasksLanding` renders in that order; `UPCOMING_DAYS` is 7 (label "Next 7 days"). `landingSections` (`tasks/shared/views.ts`) no longer stops at the first match: a task is listed under every section whose own date or status fits, or where an open subtask's own date fits (that subtask nested under it, only in the section it fits). Done tasks are never listed.
-- **Consequences:** Overdue's "Move to Today" / "Move to Backlog" act on the whole Overdue section, so an in-progress, overdue task moves and stays in In progress. A task with a date in the next 7 days and a subtask due today shows in Today (subtask nested) and Upcoming (nothing nested).
+- **Consequences:** Overdue's "Move to Today" (no confirmation, no "Move to Backlog") acts on the whole Overdue section, so an in-progress, overdue task moves and stays in In progress. A task with a date in the next 7 days and a subtask due today shows in Today (subtask nested) and Upcoming (nothing nested).
 - **To go back** to "once, under the first heading that fits": restore the `break` after the push in `landingSections` (commit `bf03a73` is the one to revert; the order and window are in `5ba3af8`).
 - Unit-tested (`views.test.ts`); not driven in the app.
 

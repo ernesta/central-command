@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import { Button } from '@renderer/components/Button'
-import { Dialog } from '@renderer/components/Dialog'
 import { EmptyState } from '@renderer/components/EmptyState'
 import {
   AllLink,
@@ -32,7 +30,6 @@ export function TasksLanding(): React.JSX.Element {
   const { rows } = useTasksList(workspace)
   const { tracked, running } = useTaskTime(workspace)
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set())
-  const [moving, setMoving] = useState<'today' | 'backlog' | null>(null)
   const today = todayIso()
 
   const all = rows ?? []
@@ -91,14 +88,14 @@ export function TasksLanding(): React.JSX.Element {
     )
   }
 
-  const moveOverdue = async (to: 'today' | 'backlog'): Promise<void> => {
+  const moveOverdueToToday = async (): Promise<void> => {
     try {
-      const uids = sections.overdue.map((r) => r.task.uid)
-      await window.api.tasks.setDue(uids, to === 'today' ? today : null)
+      await window.api.tasks.setDue(
+        sections.overdue.map((r) => r.task.uid),
+        today
+      )
     } catch (e) {
       showToast(`Couldn’t move them: ${ipcErrorMessage(e)}`)
-    } finally {
-      setMoving(null)
     }
   }
 
@@ -123,14 +120,13 @@ export function TasksLanding(): React.JSX.Element {
             'overdue',
             'Overdue',
             'Nothing is overdue.',
-            <span className={styles.asideButtons}>
-              <button type="button" className={styles.quiet} onClick={() => setMoving('today')}>
-                Move to Today
-              </button>
-              <button type="button" className={styles.quiet} onClick={() => setMoving('backlog')}>
-                Move to Backlog
-              </button>
-            </span>,
+            <button
+              type="button"
+              className={styles.quiet}
+              onClick={() => void moveOverdueToToday()}
+            >
+              Move to Today
+            </button>,
             true
           )}
           {section('today', 'Due today', 'Nothing is due today.')}
@@ -182,27 +178,6 @@ export function TasksLanding(): React.JSX.Element {
             )}
           </LandingSection>
         </>
-      )}
-
-      {moving && (
-        <Dialog
-          title={moving === 'today' ? 'Move to Today' : 'Move to Backlog'}
-          onCancel={() => setMoving(null)}
-          actions={
-            <>
-              <Button autoFocus onClick={() => setMoving(null)}>
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={() => void moveOverdue(moving)}>
-                Move
-              </Button>
-            </>
-          }
-        >
-          {moving === 'today'
-            ? `Make ${sections.overdue.length} overdue ${sections.overdue.length === 1 ? 'task' : 'tasks'} due today?`
-            : `Clear the date of ${sections.overdue.length} overdue ${sections.overdue.length === 1 ? 'task' : 'tasks'}? They go to the Backlog.`}
-        </Dialog>
       )}
     </LandingPage>
   )

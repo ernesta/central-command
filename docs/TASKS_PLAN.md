@@ -75,7 +75,7 @@ its first matching heading; Upcoming = the next 14 days; Backlog = open, undated
 ## Screens (all follow existing patterns; see the mockup)
 
 - **Landing** (`LandingPage`/`LandingHeader`/`LandingSection`): back link, title "Tasks", **All tasks** and **New task** buttons; the add bar; sections Due today, In
-  progress, Overdue (five shown, "Show all", Move to Today / Move to Backlog), Upcoming (14 days); then **list cards** (the Series cards pattern: open count, overdue,
+  progress, Overdue (five shown, "Show all", Move to Today, no confirmation), Upcoming (14 days); then **list cards** (the Series cards pattern: open count, overdue,
   sublists as a line) and a Backlog link.
 - **All tasks** (the Meetings page pattern): the usual filter row (search, list, priority, tag) and a Segmented Open / Backlog / Done, the add bar, and the table. A
   list page is All tasks with the list filter set, titled with the list.
