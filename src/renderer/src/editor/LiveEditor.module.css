@@ -99,6 +99,9 @@
   height: var(--block-gap);
   min-height: var(--block-gap);
   padding: 0;
+  /* The caret is taller than the gap: lift the line so it sits in the middle of it, not against the text below. */
+  position: relative;
+  top: -3px;
 }
 .wrap {
   --block-gap: 16px;

@@ -39,7 +39,8 @@ describe('the space between blocks', () => {
 
   it('keeps the line with the cursor, and the first blank line again once it is not the first', () => {
     const doc = 'a\n\n\nb'
-    expect(spacing(doc, 2).map((row) => row.includes('void'))).toEqual([false, false, false, false])
+    // The cursor on the first blank line makes the second the free one; on the second, the first stays free.
+    expect(spacing(doc, 2).map((row) => row.includes('void'))).toEqual([false, false, true, false])
     expect(spacing(doc, 3).map((row) => row.includes('void'))).toEqual([false, true, false, false])
   })
 
@@ -47,8 +48,10 @@ describe('the space between blocks', () => {
     // 'a', a blank line with the cursor, 'b': the blank line has the gap's height and 'b' gives its gap up.
     expect(spacing('a\n\nb', 2)).toEqual([[], ['gap-cursor'], []])
     expect(spacing('a\n\nb', 0)).toEqual([[], ['void'], ['gap']])
-    // A longer run: the first blank line stands in, the next keeps its height, and the text gives up its gap.
-    expect(spacing('a\n\n\nb', 2)).toEqual([[], ['gap-cursor'], [], []])
+    // A longer run: the cursor's line is a whole line that carries the gap (as the text typed there would), the other blank
+    // line is free, and the text gives up its gap.
+    expect(spacing('a\n\n\nb', 2)).toEqual([[], ['gap'], ['void'], []])
+    expect(spacing('a\n\n\nb', 3)).toEqual([[], ['void'], ['gap'], []])
     // Where the gap is not the block gap (a heading pads itself, items have a small one) the cursor's line is a full line.
     expect(spacing('## h\n\nb', 5)).toEqual([[], [], []])
     expect(spacing('- a\n\n- b', 4)[1]).toEqual([])
@@ -99,5 +102,69 @@ describe('the space between blocks', () => {
   it('has no gap between the rows of a table, and one on each side', () => {
     const doc = 'a\n\n| h | i |\n|---|---|\n| 1 | 2 |\n\nb'
     expect(textLines(spacing(doc), doc)).toEqual([[], ['gap'], [], [], ['gap']])
+  })
+})
+
+/** Heights in units of the page: a text line is 29, the block gap 16, the item gap 4, the stand-in for a gap 16. */
+function height(doc: string, at: number): number {
+  const rows = spacing(doc, at)
+  const lines = doc.split('\n')
+  return rows.reduce((total, row, i) => {
+    if (row.includes('void')) return total
+    if (row.includes('gap-cursor')) return total + 16
+    const gap =
+      row.includes('gap') || row.includes('gap-quote') ? 16 : row.includes('gap-item') ? 4 : 0
+    return total + gap + (lines[i] === undefined ? 0 : 29)
+  }, 0)
+}
+/** Where the caret sits on the page when it is on the line holding `at`: the top of that line plus its gap. */
+function caretTop(doc: string, at: number): number {
+  const rows = spacing(doc, at)
+  const lineNumber = doc.slice(0, at).split('\n').length - 1
+  let top = 0
+  rows.forEach((row, i) => {
+    if (i >= lineNumber) return
+    if (row.includes('void')) return
+    top += (row.includes('gap') ? 16 : 0) + 29
+  })
+  const here = rows[lineNumber]
+  return top + (here.includes('gap-cursor') ? -3 : here.includes('gap') ? 16 : 0)
+}
+
+describe('the cursor on a blank line', () => {
+  const docs = ['a\n\nb', 'a\n\n\nb', 'a\n\n\n\nb', 'a\nb\n\n\nc\nd', '> q\n\n\nb', 'a\n\n\n- x']
+
+  it('leaves a run as tall as it is with the cursor away, on whichever blank line it is', () => {
+    for (const doc of docs) {
+      const away = height(doc, 0)
+      let at = 0
+      doc.split('\n').forEach((line) => {
+        if (line === '')
+          expect(height(doc, at), `${JSON.stringify(doc)} cursor at ${at}`).toBe(away)
+        at += line.length + 1
+      })
+    }
+  })
+
+  it('does not move the caret when the first character is typed', () => {
+    for (const doc of ['a\n\n\nb', 'a\n\n\n\nb', 'a\n\n\n- x', 'a\n\n', '## h\n\n\nb']) {
+      let at = 0
+      doc.split('\n').forEach((line, i) => {
+        // Not the lone blank line (its caret sits in the gap and the paragraph opens beneath it) and not the end-of-file line.
+        const alone = doc.split('\n')[i - 1] !== '' && doc.split('\n')[i + 1] !== ''
+        if (line === '' && i > 0 && i < doc.split('\n').length - 1 && !alone) {
+          const typed = doc.slice(0, at) + 'x' + doc.slice(at)
+          expect(caretTop(typed, at + 1), `${JSON.stringify(doc)} line ${i}`).toBe(
+            caretTop(doc, at)
+          )
+        }
+        at += line.length + 1
+      })
+    }
+  })
+
+  it('gives a blank line at the end of a note, and one after a heading, the height of the paragraph typed there', () => {
+    expect(spacing('a\n\n', 2)[1]).toEqual(['gap'])
+    expect(spacing('## h\n\n\nb', 5)[1]).toEqual([])
   })
 })
