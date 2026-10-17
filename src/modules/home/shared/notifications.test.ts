@@ -10,7 +10,7 @@ const empty: HomeSummary = {
   today: '2026-10-15',
   generatedAt: '2026-10-15T08:40:00.000Z',
   timer: null,
-  hours: null,
+  hours: { research: null, work: null },
   tasks: { overdue: [], today: [], overdueTotal: 0, todayTotal: 0 },
   meetings: { next: null, openTodos: 0 },
   upcoming: [],
@@ -224,7 +224,22 @@ describe('buildWidgetSnapshot', () => {
         time: '08:00',
         minutes: 40
       },
-      hours: { todayMinutes: 40, weekMinutes: 600, weekAimMinutes: 2250 }
+      hours: {
+        research: {
+          label: 'This week',
+          minutes: 600,
+          aimMinutes: 2250,
+          todayMinutes: 40,
+          clients: []
+        },
+        work: {
+          label: 'This month',
+          minutes: 900,
+          aimMinutes: 4800,
+          todayMinutes: 120,
+          clients: [{ client: 'Impact', minutes: 900 }]
+        }
+      }
     })
     expect(snap.version).toBe(1)
     expect(snap.tasks.map((t) => t.title)).toEqual(['late', 't0', 't1', 't2', 't3'])
@@ -232,7 +247,14 @@ describe('buildWidgetSnapshot', () => {
     expect(snap.taskCounts).toEqual({ overdue: 1, today: 6 })
     expect(snap.timer).toEqual({ label: 'Reading', minutes: 40 })
     expect(snap.nextMeeting).toEqual({ title: 'Supervision', date: '2026-10-15', time: '14:00' })
-    expect(snap.week).toEqual({ minutes: 600, aimMinutes: 2250 })
+    expect(snap.week).toEqual({
+      label: 'This week',
+      minutes: 600,
+      aimMinutes: 2250,
+      todayMinutes: 40,
+      clients: []
+    })
+    expect(snap.work).toMatchObject({ label: 'This month', minutes: 900, aimMinutes: 4800 })
     expect(JSON.stringify(snap)).not.toContain('uid')
   })
 })

@@ -17,7 +17,7 @@ const summary = (generatedAt: string, todayTotal = 1): HomeSummary => ({
   today: '2026-10-15',
   generatedAt,
   timer: null,
-  hours: null,
+  hours: { research: null, work: null },
   tasks: { overdue: [], today: [], overdueTotal: 0, todayTotal },
   meetings: { next: null, openTodos: 0 },
   upcoming: [],
@@ -39,5 +39,32 @@ describe('WidgetWriter', () => {
     expect(
       JSON.parse(await readFile(join(dir, 'widget', 'snapshot.json'), 'utf8')).taskCounts.today
     ).toBe(3)
+  })
+
+  it('writes the hours of both workspaces as the summary has them (derived hours included)', async () => {
+    const w = new WidgetWriter(join(dir, 'widget'))
+    const hours = {
+      research: {
+        label: 'This week' as const,
+        minutes: 180,
+        aimMinutes: 2250,
+        todayMinutes: 30,
+        clients: []
+      },
+      work: {
+        label: 'This month' as const,
+        minutes: 105,
+        aimMinutes: 4800,
+        todayMinutes: 0,
+        clients: [{ client: 'Impact', minutes: 105 }]
+      }
+    }
+    await w.write({ ...summary('a'), hours })
+    const written = JSON.parse(await readFile(join(dir, 'widget', 'snapshot.json'), 'utf8'))
+    expect(written.version).toBe(1)
+    expect(written.week).toEqual(hours.research)
+    expect(written.work).toEqual(hours.work)
+    // a change in the hours is a change a widget shows
+    expect(await w.write({ ...summary('b'), hours: { ...hours, work: null } })).toBe(true)
   })
 })

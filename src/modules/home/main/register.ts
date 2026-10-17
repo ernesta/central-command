@@ -82,6 +82,7 @@ export function registerHome({ db, paths, settings, tracking }: HomeContext): ()
       now: now(),
       generatedAt: new Date().toISOString(),
       weather: weatherNow,
+      yearStarts: settings.get().yearStarts,
       watch: true
     })
 

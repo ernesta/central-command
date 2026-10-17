@@ -56,11 +56,25 @@ export interface HomeTimer {
   minutes: number
 }
 
+/**
+ * One workspace's time so far, as the Hours and Home pages show it: the stored year plus the hours the notes derive
+ * (`periodFigures`, `shownYear`). The period is the week, or the invoice month of a Work contract.
+ */
 export interface HomeHours {
+  label: 'This week' | 'This month'
+  /** The period's minutes so far. */
+  minutes: number
+  /** The period's whole aim in minutes (0 = no aim). */
+  aimMinutes: number
   todayMinutes: number
-  weekMinutes: number
-  /** The week's aim, minutes (0 = no aim). */
-  weekAimMinutes: number
+  /** Minutes per client in the period (Work, only those with time); none where the plan has no clients. */
+  clients: { client: string | null; minutes: number }[]
+}
+
+/** Time so far for each workspace that tracks it; null when the workspace has no year holding today. */
+export interface HomeHoursByWorkspace {
+  research: HomeHours | null
+  work: HomeHours | null
 }
 
 export interface WeatherSummary {
@@ -96,7 +110,7 @@ export interface HomeSummary {
   today: string
   generatedAt: string
   timer: HomeTimer | null
-  hours: HomeHours | null
+  hours: HomeHoursByWorkspace
   tasks: {
     overdue: HomeTask[]
     today: HomeTask[]

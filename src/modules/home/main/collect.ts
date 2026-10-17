@@ -1,10 +1,17 @@
 import type { Database } from 'better-sqlite3'
 import type { RunningTimer } from '@shared/tracking/api'
 import { timeOffRows } from '@shared/tracking/timeoff'
-import { dayMinutes, weekMinutes } from '@shared/tracking/totals'
+import { openContracts } from '@shared/tracking/contracts'
+import { yearToShow } from '@shared/tracking/current-year'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
-import { weekStartOf } from '@shared/year'
+import { inYear } from '@shared/year'
 import type { Workspace } from '@shared/settings'
+import { shownYear } from '../../hours/shared/shown-year'
+import { periodFigures } from '../../hours/shared/so-far'
+import { listMeetingRows } from '../../meetings/main/repository'
+import { listTasks } from '../../tasks/main/repository'
+import { workClients } from '../../tasks/shared/work-lists'
+import { listTrainingRows } from '../../training/main/repository'
 import { getCounts, listItems, upcoming } from '../../watch/main/repository'
 import {
   buildHomeSummary,
@@ -46,18 +53,45 @@ function homeTimer(tracking: TrackingSource, now: Moment): HomeTimer | null {
   }
 }
 
-/** Research's current year: today's and this week's tracked minutes against the week's aim, and the days off still to come. */
-function researchYear(tracking: TrackingSource): TrackingYear | null {
-  const start = tracking.years('research')[0]
-  return start ? tracking.get('research', start) : null
+/**
+ * A workspace's year as the Hours page opens it, with the hours its notes derive added: the one `yearToShow` picks (today must be
+ * in it), read through `shownYear`, so every figure is the Hours page's. Read only. Null when there is no such year.
+ */
+function shownYearOf(
+  db: Database,
+  tracking: TrackingSource,
+  workspace: 'research' | 'work',
+  now: Moment,
+  yearStarts: readonly string[]
+): TrackingYear | null {
+  const starts = tracking.years(workspace)
+  const files = workspace === 'work' ? starts.map((s) => tracking.get(workspace, s)) : []
+  const start = yearToShow(workspace, now.date, {
+    yearStarts,
+    years: starts,
+    open: workspace === 'work' ? openContracts(files, now.date) : null
+  })
+  if (!start || !starts.includes(start)) return null
+  const stored = files.find((f) => f.start === start) ?? tracking.get(workspace, start)
+  if (!inYear(now.date, stored.start, stored.weeks)) return null
+  return shownYear(stored, {
+    meetings: listMeetingRows(db, workspace),
+    lectures: workspace === 'research' ? listTrainingRows(db, 'research') : [],
+    tasks: listTasks(db, workspace),
+    clients: workspace === 'work' ? workClients(files.map((f) => f.plan)) : null,
+    today: now.date
+  })
 }
 
 function homeHours(year: TrackingYear | null, now: Moment): HomeHours | null {
   if (!year) return null
+  const f = periodFigures(year, now)
   return {
-    todayMinutes: dayMinutes(year, now.date, now),
-    weekMinutes: weekMinutes(year, weekStartOf(now.date), now),
-    weekAimMinutes: year.plan.hoursPerWeek
+    label: f.label,
+    minutes: f.minutes,
+    aimMinutes: f.aim,
+    todayMinutes: f.today,
+    clients: f.clients
   }
 }
 
@@ -68,6 +102,8 @@ export interface CollectDeps {
   now: Moment
   generatedAt: string
   weather: WeatherSummary | null
+  /** The settings' year starts: which year Research is in. */
+  yearStarts: readonly string[]
   /** Whether Watch has anything to say (it has when a source exists). */
   watch: boolean
 }
@@ -110,7 +146,8 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
       .get(now.date) as { n: number }
   ).n
 
-  const year = researchYear(deps.tracking)
+  const research = shownYearOf(db, deps.tracking, 'research', now, deps.yearStarts)
+  const work = shownYearOf(db, deps.tracking, 'work', now, deps.yearStarts)
   const hasWatch = deps.watch && getCounts(db).sources > 0
   const inputs: HomeInputs = {
     today: now.date,
@@ -121,9 +158,9 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
     trainings,
     openMeetingTodos,
     timer: homeTimer(deps.tracking, now),
-    hours: homeHours(year, now),
-    timeOff: year
-      ? timeOffRows(year, now.date)
+    hours: { research: homeHours(research, now), work: homeHours(work, now) },
+    timeOff: research
+      ? timeOffRows(research, now.date)
           .filter((r) => !r.taken)
           .map(({ date, type }) => ({ date, type }))
       : [],

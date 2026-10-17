@@ -27,7 +27,7 @@ const base: HomeSummary = {
   today: '2026-10-15',
   generatedAt: '',
   timer: null,
-  hours: null,
+  hours: { research: null, work: null },
   tasks: { overdue: [], today: [], overdueTotal: 0, todayTotal: 0 },
   meetings: { next: null, openTodos: 4 },
   upcoming: [],

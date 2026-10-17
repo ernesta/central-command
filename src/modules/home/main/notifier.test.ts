@@ -8,7 +8,7 @@ const summary: HomeSummary = {
   today: '2026-10-15',
   generatedAt: '',
   timer: null,
-  hours: null,
+  hours: { research: null, work: null },
   tasks: { overdue: [], today: [], overdueTotal: 0, todayTotal: 2 },
   meetings: { next: null, openTodos: 0 },
   upcoming: [],

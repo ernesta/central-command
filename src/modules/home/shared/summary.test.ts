@@ -11,7 +11,7 @@ const base: HomeInputs = {
   trainings: [],
   openMeetingTodos: 0,
   timer: null,
-  hours: null,
+  hours: { research: null, work: null },
   timeOff: [],
   watch: null,
   weather: null
@@ -214,7 +214,16 @@ describe('the rest', () => {
       time: '09:00',
       minutes: 60
     }
-    const hours = { todayMinutes: 60, weekMinutes: 600, weekAimMinutes: 2250 }
+    const hours = {
+      research: {
+        label: 'This week' as const,
+        minutes: 600,
+        aimMinutes: 2250,
+        todayMinutes: 60,
+        clients: []
+      },
+      work: null
+    }
     const items = Array.from({ length: 9 }, (_, i) => watchItem({ id: i + 1 }))
     const s = buildHomeSummary({
       ...base,

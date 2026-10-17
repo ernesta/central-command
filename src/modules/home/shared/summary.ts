@@ -2,7 +2,7 @@ import type { TimeOffEntry } from '@shared/tracking/types'
 import type { WatchItem } from '../../watch/shared/types'
 import type {
   HomeEvent,
-  HomeHours,
+  HomeHoursByWorkspace,
   HomeMeeting,
   HomeSummary,
   HomeTask,
@@ -52,7 +52,7 @@ export interface HomeInputs {
   trainings: TrainingInput[]
   openMeetingTodos: number
   timer: HomeTimer | null
-  hours: HomeHours | null
+  hours: HomeHoursByWorkspace
   timeOff: TimeOffEntry[]
   watch: { counts: WatchBrief['counts']; relevant: WatchItem[]; upcoming: WatchItem[] } | null
   weather: WeatherSummary | null

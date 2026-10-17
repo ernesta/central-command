@@ -4,6 +4,14 @@ import type { HomeSummary } from './types'
  * The small file a Mac widget reads. Plain JSON, versioned, no more than a widget draws: nothing the widget has to
  * work out, and nothing it is not meant to show. Written next to the app's other data; it never leaves the Mac.
  */
+export interface WidgetHours {
+  label: 'This week' | 'This month'
+  minutes: number
+  aimMinutes: number
+  todayMinutes: number
+  clients: { client: string | null; minutes: number }[]
+}
+
 export interface WidgetSnapshot {
   version: 1
   generatedAt: string
@@ -13,7 +21,10 @@ export interface WidgetSnapshot {
   tasks: { title: string; list: string; overdue: boolean }[]
   taskCounts: { overdue: number; today: number }
   nextMeeting: { title: string; date: string; time: string | null } | null
-  week: { minutes: number; aimMinutes: number } | null
+  /** Research's time so far (the week), counted as the Hours page counts it: derived hours included. */
+  week: WidgetHours | null
+  /** Work's time so far (the invoice month or week), the same way; added without a version bump while nothing reads the file. */
+  work: WidgetHours | null
   /** New Watch items that mention a keyword. */
   watchNew: number
   weather: {
@@ -40,9 +51,8 @@ export function buildWidgetSnapshot(summary: HomeSummary): WidgetSnapshot {
     tasks,
     taskCounts: { overdue: summary.tasks.overdueTotal, today: summary.tasks.todayTotal },
     nextMeeting: m ? { title: m.series || 'Meeting', date: m.date, time: m.start } : null,
-    week: summary.hours
-      ? { minutes: summary.hours.weekMinutes, aimMinutes: summary.hours.weekAimMinutes }
-      : null,
+    week: summary.hours.research,
+    work: summary.hours.work,
     watchNew: summary.watch?.counts.newRelevant ?? 0,
     weather: summary.weather
       ? {
