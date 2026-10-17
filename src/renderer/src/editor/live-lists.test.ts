@@ -51,6 +51,10 @@ describe('Enter', () => {
     expect(after('1. a\n2. |', 'Enter')).toBe('1. a\n|')
   })
 
+  it('renumbers the items below when an empty numbered item ends', () => {
+    expect(after('1. a\n2. |\n3. b\n4. c', 'Enter')).toBe('1. a\n|\n2. b\n3. c')
+  })
+
   it('moves an empty nested item out a level first', () => {
     expect(after('- a\n  - |', 'Enter')).toBe('- a\n- |')
   })

@@ -287,8 +287,11 @@ function nextMarker(parts: LineParts): string {
   return parts.marker
 }
 
-/** Renumber the items after this one when the list counted up by one, as it did before the new item went in. */
-function renumberAfter(state: EditorState, item: ItemAt): ChangeSpec[] {
+/**
+ * Renumber the items after this one when the list counted up by one, as it did before this item changed: by +1 when a new
+ * item goes in after it, by -1 when this one is emptied and ends.
+ */
+function renumberAfter(state: EditorState, item: ItemAt, shift = 1): ChangeSpec[] {
   if (item.parts.kind !== 'ordered') return []
   const following: SyntaxNode[] = []
   for (let sibling = item.node.nextSibling; sibling; sibling = sibling.nextSibling)
@@ -310,7 +313,7 @@ function renumberAfter(state: EditorState, item: ItemAt): ChangeSpec[] {
       {
         from: entry.mark.from,
         to: entry.mark.from + digits,
-        insert: String(item.parts.level + 2 + i)
+        insert: String(item.parts.level + 1 + shift + i)
       }
     ]
   })
@@ -348,7 +351,10 @@ function enterAt(state: EditorState, range: SelectionRange): Edit {
     }
     // The item ends: its marker goes, the quote (if any) stays.
     const at = prefixStart(line, parts)
-    return { changes: { from: at, to: line.to }, range: EditorSelection.cursor(at) }
+    return {
+      changes: [{ from: at, to: line.to }, ...renumberAfter(state, item, -1)],
+      range: EditorSelection.cursor(at)
+    }
   }
   if (empty && parts.kind === 'none' && parts.quote !== '') {
     // An empty quoted line: out of the quote altogether, however deep.
