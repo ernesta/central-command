@@ -3508,3 +3508,12 @@ Found by using the app: typing a paragraph, Enter, then `-` to start a list turn
 ## Files panel: no folder name at the top level (16 Oct 2026)
 
 The Training Files panel opened with a crumb repeating the linked folder's name above its contents. The panel's header already has an open-folder button, so at the top level the crumb is gone. Inside a subfolder the path still shows, with the linked folder's name as its first link, because that is the way back up. Not driven in the app.
+
+## Extra blank lines are drawn (17 Oct 2026)
+
+Plan: `docs/EXTRA_BLANK_LINES_PLAN.md`. The user could not add empty lines: since "Spacing between blocks" every blank line drew no height, so Enter on an empty line changed nothing anyone could see. They want 0 and 1 blank line to look the same (some Markdown uses one for a new paragraph, some does not) and each blank line after the first to be visible.
+
+- **The rule** (`live-spacing.ts`): the first blank line of a run keeps no height, as before; each one after it has a normal line's height, so a run of n adds n - 1 lines to the block gap. Nothing edits the text. Blank lines in code are code. A note's empty last line (the final line break) is never part of a run, so a note ending "text, blank, line break" is still one blank line.
+- **Backspace and Delete beside empty lines are the ordinary keys again.** `deleteBlankRun`, `backspaceBlankRun`, `backspaceAboveBlankRun` and `deleteBelowBlankRun` (15 Oct, "Delete on an empty line …") took a whole run because the lines were invisible; with the extra lines drawn, one press removing one line is the visible, expected thing. Removed with their bindings.
+- **Existing notes** were brought to "no run longer than one" first: `npm run tidy:blank-runs`, applied 17 Oct 2026 (8 of 261 notes, 58 blank lines, backup `backups/tidy-blank-runs-2026-10-17T09-19-14-649Z/`; two of them had the run between the front matter and the first heading, which the script handles too). Commit `3f6a98a`.
+- **Checks**: `live-spacing.test.ts` (runs of 1 to 5, cursor on a line of a run, start of a note, after a heading, the last line, code); mutation checks on the first-line, start-of-note, end-of-file and previous-line-blank clauses, all caught (a fourth clause could not be reached and was removed); the built app driven with real Enter presses on a scratch library: heights 0/29 for the first blank line and 29 for every one after it.

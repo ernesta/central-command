@@ -40,4 +40,4 @@ so nothing already written changes look.
 ## Done
 
 - **Stage 2 applied 17 Oct 2026** (the user's request, before stage 1): `npm run tidy:blank-runs -- --apply`, 8 of 261 notes, 58 blank lines (meetings/work 1, notes/research 3, notes/work 1, training/research 3). Backup `backups/tidy-blank-runs-2026-10-17T09-19-14-649Z/`. A second dry run finds nothing. Two of the notes had their run between the front matter and the first heading (one of 12 lines), which `splitNote` keeps in the head, so the script collapses the head's trailing blanks too.
-- Stage 1 (the editor) is not built yet.
+- **Stage 1 built 17 Oct 2026**: see `docs/DECISIONS.md`, "Extra blank lines are drawn". One change from the plan: the end of a note is not special (the empty last line is the end of the file and never part of a run), so Enter at the end of a note shows from the third press; and the Backspace and Delete run-collapsing commands were removed.
