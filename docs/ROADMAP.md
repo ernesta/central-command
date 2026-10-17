@@ -417,8 +417,7 @@ Order agreed: A, B, D, E, then C. For each: do it on a scratch library (never th
       date and both times (no task, no series, upcoming dates too) and also appears on a meeting without a task; it is drawn under the details, not in the Task card.
 - [ ] **Training audit: left for you to decide (17 Oct 2026).** None of these was changed: (a) ~~Meetings' "Type" against Training's "Format"~~ decided 17 Oct: "Format" in both (done, Meetings' table and field; the Meetings PDF still says Type); (b) the PDF export has no Format column, shows no "No time yet", lists hours as `1:30` where the
       table and landing say `1 h 30 min`, and puts the series after the title instead of "Series: title"; should the PDF follow the screens (it mirrors Inkpath's log)?
-      (c) hours of a training note derive into the Hours page only when it has a task, while the Training counters count every note's session; the 129 older notes are in
-      the counters but not in Hours (documented, to avoid double counting; a cut-off rule is still open). (d) A warning on the Training table, landing or card for an
+      (c) ~~hours of a note with no task~~ left as it is (the user, 17 Oct 2026): hours are counted correctly, they are just not linked to tasks, which are not linked to trainings; that is the migration question already tracked (`docs/DECISIONS.md`, TIMER_TASKS stage 5). (d) A warning on the Training table, landing or card for an
       overlapping entry was ruled out ("entry page only"); say if that changes. (e) The landing row's time line sits right after the title, not in a column, so lines of
       different titles do not line up; a shared `RecentList` layout, so it was left alone.
 - [ ] **Try the Training entry page's new side panel** (Files above Outline, matching Meetings; see `docs/DECISIONS.md`,
