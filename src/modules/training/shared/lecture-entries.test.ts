@@ -17,6 +17,7 @@ const row = (over: Partial<TrainingIndexRow> = {}): TrainingIndexRow => ({
   institution: null,
   folder: null,
   task: 'k1',
+  selfStudy: '',
   summary: '',
   excerpt: '',
   hasNotes: false,

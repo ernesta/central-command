@@ -17,6 +17,7 @@ const row = (date: string, over: Partial<TrainingIndexRow> = {}): TrainingIndexR
   institution: null,
   folder: null,
   task: '',
+  selfStudy: '',
   summary: '',
   excerpt: '',
   hasNotes: false,

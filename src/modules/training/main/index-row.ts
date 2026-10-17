@@ -44,6 +44,7 @@ export function buildTrainingIndexRow(
     institution: meta.institution,
     folder: meta.folder,
     task: meta.task,
+    selfStudy: meta.selfStudy,
     summary: markdownToExcerpt(extractSection(body, 'Summary') ?? '', SUMMARY_LENGTH),
     excerpt: markdownToExcerpt(body, SEARCH_TEXT_LENGTH),
     hasNotes: notes !== '',

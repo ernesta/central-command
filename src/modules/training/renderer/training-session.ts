@@ -31,7 +31,8 @@ export const EMPTY_TRAINING_META: TrainingMeta = {
   folder: null,
   organisation: null,
   points: null,
-  task: ''
+  task: '',
+  selfStudy: ''
 }
 
 /**

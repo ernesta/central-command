@@ -17,6 +17,7 @@ const entry = (over: Partial<TrainingIndexRow>): TrainingIndexRow => ({
   institution: null,
   folder: null,
   task: '',
+  selfStudy: '',
   summary: '',
   excerpt: 'Presentations on logistics infrastructure in England and commodity shocks.',
   hasNotes: true,

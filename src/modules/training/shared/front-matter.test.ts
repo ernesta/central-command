@@ -42,7 +42,8 @@ describe('parseTrainingMeta', () => {
       folder: '2025-26/SEDarc/2025 12 10 Data Management',
       organisation: 'SEDarc DTP',
       points: '1',
-      task: ''
+      task: '',
+      selfStudy: ''
     })
   })
 
@@ -101,5 +102,29 @@ describe('the task of a note', () => {
     expect(set.replace('task: k3f9a2x1\n', '')).toBe(HEAD)
     expect(updateTrainingHead(set, { task: '' })).toBe(HEAD)
     expect(updateTrainingHead(HEAD, { title: 'B' })).not.toContain('task:')
+  })
+})
+
+describe('the self-study task of a note', () => {
+  it('reads `selfstudy`, and a note without it has none', () => {
+    expect(parseTrainingMeta('---\ntitle: A\nselfstudy: k7q\n---\n').meta.selfStudy).toBe('k7q')
+    expect(parseTrainingMeta(HEAD).meta.selfStudy).toBe('')
+  })
+
+  it('is written after `task`, an empty one removes the line, and nothing else moves', () => {
+    const marked = updateTrainingHead(HEAD, { task: 'k3f9a2x1' })
+    const set = updateTrainingHead(marked, { selfStudy: 'k7q' })
+    expect(set).toContain('\ntask: k3f9a2x1\nselfstudy: k7q\n')
+    expect(updateTrainingHead(set, { selfStudy: '' })).toBe(marked)
+    expect(updateTrainingHead(HEAD, { selfStudy: 'k7q' }).replace('selfstudy: k7q\n', '')).toBe(
+      HEAD
+    )
+  })
+
+  it('an older note stays byte for byte after unrelated edits', () => {
+    const text = HEAD + '## Notes\nhello\n'
+    expect(applyTrainingChanges(text, { body: '## Notes\nbye\n' })).toBe(HEAD + '## Notes\nbye\n')
+    expect(updateTrainingHead(HEAD, { series: 'SEDarc' })).toBe(HEAD)
+    expect(updateTrainingHead(HEAD, { title: 'B' })).not.toContain('selfstudy')
   })
 })

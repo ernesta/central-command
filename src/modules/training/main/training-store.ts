@@ -99,6 +99,9 @@ export function checkTrainingPatch(patch: TrainingPatch): void {
   if (patch.task !== undefined && !/^[A-Za-z0-9_-]*$/.test(patch.task)) {
     throw new TrainingError(`Invalid task: ${patch.task}`)
   }
+  if (patch.selfStudy !== undefined && !/^[A-Za-z0-9_-]*$/.test(patch.selfStudy)) {
+    throw new TrainingError(`Invalid self-study task: ${patch.selfStudy}`)
+  }
   if (patch.points !== undefined && patch.points !== null && !/^\d+(\.\d+)?$/.test(patch.points)) {
     throw new TrainingError(`Points must be a number: ${patch.points}`)
   }

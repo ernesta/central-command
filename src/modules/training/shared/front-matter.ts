@@ -71,7 +71,8 @@ export function parseTrainingMeta(head: string): ParsedTrainingMeta {
       folder: text('folder'),
       organisation: text('organisation'),
       points: text('points'),
-      task: text('task') ?? ''
+      task: text('task') ?? '',
+      selfStudy: text('selfstudy') ?? ''
     },
     problems
   }
@@ -79,7 +80,8 @@ export function parseTrainingMeta(head: string): ParsedTrainingMeta {
 
 export type TrainingPatch = { [K in keyof TrainingMeta]?: TrainingMeta[K] }
 
-const ORDER: (keyof TrainingMeta)[] = [
+/** The keys as the file spells them (`selfstudy` is `TrainingMeta.selfStudy`). */
+const ORDER: string[] = [
   'date',
   'start',
   'end',
@@ -93,7 +95,8 @@ const ORDER: (keyof TrainingMeta)[] = [
   'folder',
   'organisation',
   'points',
-  'task'
+  'task',
+  'selfstudy'
 ]
 
 /**
@@ -107,12 +110,17 @@ export function updateTrainingHead(head: string, patch: TrainingPatch): string {
   if ('date' in patch && patch.date === '') changes = { ...changes, date: null }
   // An empty task removes the key: the note has none (and is not marked).
   if ('task' in patch && patch.task === '') changes = { ...changes, task: null }
+  // An empty self-study task removes the key, which the file spells `selfstudy`.
+  if ('selfStudy' in patch) {
+    const { selfStudy, ...rest } = changes
+    changes = { ...rest, selfstudy: selfStudy === '' ? null : selfStudy }
+  }
   return updateHeadKeys(head, changes, {
     order: ORDER,
     style: (key) =>
       key === 'start' || key === 'end'
         ? 'quote'
-        : key === 'date' || key === 'points' || key === 'task'
+        : key === 'date' || key === 'points' || key === 'task' || key === 'selfstudy'
           ? 'plain'
           : 'auto'
   })

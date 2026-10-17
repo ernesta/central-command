@@ -150,6 +150,11 @@ export interface TrainingMeta {
    * yet (it gets its subtask when a series is chosen), '' for a note with none: every older note, which is left alone.
    */
   task: string
+  /**
+   * The task the lecture's self-study hours go to (`selfstudy:`): a task uid, '' while none was made. Nothing is made in advance:
+   * Start or Add time on the note makes it.
+   */
+  selfStudy: string
 }
 
 /** Which entry: the folder (workspace) and the file's base name, e.g. "2025-12-10 Data Management and Security". */
@@ -175,6 +180,8 @@ export interface TrainingIndexRow {
   folder: string | null
   /** The note's `task:` value: a task uid, `auto` or ''. */
   task: string
+  /** The note's `selfstudy:` value: a task uid or ''. */
+  selfStudy: string
   /** Plain text of the Summary section; '' when empty. */
   summary: string
   /** Plain text of the whole note, for search. */

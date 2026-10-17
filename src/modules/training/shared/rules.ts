@@ -30,20 +30,24 @@ export function entriesInYear(rows: readonly TrainingIndexRow[], year: string): 
   return rows.filter((r) => inYear(r.date, year))
 }
 
-/** Minutes tracked on each task (by uid) in Hours: a lecture's self-study timers and typed time. */
+/** Minutes tracked on each task (by uid) in Hours: the timers and typed time on a lecture's tasks. */
 export type SelfStudy = ReadonlyMap<string, number>
 
 /**
- * A lecture's hours as one total, with no split: the note's own session (its start and end) plus everything tracked on its
- * subtask. A note with no task has only its session, exactly as before. Null when there is neither (no times, no self-study).
+ * A lecture's hours as one total, with no split: the note's own session (its start and end), plus everything tracked on its lecture
+ * task (older notes keep theirs) and on its self-study task. A note with neither task has only its session, exactly as before.
+ * Null when there is nothing (no times, no tracked time).
  */
 export function entryMinutes(
-  row: Pick<TrainingIndexRow, 'start' | 'end' | 'task'>,
-  selfStudy?: SelfStudy
+  row: Pick<TrainingIndexRow, 'start' | 'end' | 'task' | 'selfStudy'>,
+  tracked?: SelfStudy
 ): number | null {
   const session = durationMinutes(row.start, row.end)
-  const uid = lectureTaskUid(row.task)
-  const extra = uid ? (selfStudy?.get(uid) ?? 0) : 0
+  const lecture = lectureTaskUid(row.task)
+  const study = row.selfStudy || null
+  const extra =
+    (lecture ? (tracked?.get(lecture) ?? 0) : 0) +
+    (study && study !== lecture ? (tracked?.get(study) ?? 0) : 0)
   return session === null && extra === 0 ? null : (session ?? 0) + extra
 }
 

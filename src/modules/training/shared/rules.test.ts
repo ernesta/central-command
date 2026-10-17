@@ -34,6 +34,7 @@ const row = (date: string, over: Partial<TrainingIndexRow> = {}): TrainingIndexR
   institution: null,
   folder: null,
   task: '',
+  selfStudy: '',
   summary: '',
   excerpt: '',
   hasNotes: false,
@@ -247,9 +248,12 @@ describe('a lecture total (session plus self-study, one number)', () => {
   })
 
   it('never gives an older note (no task) the self-study of a task, even one with the same uid text', () => {
-    expect(entryMinutes({ start: '10:00', end: '11:00', task: '' }, study)).toBe(60)
+    expect(entryMinutes({ start: '10:00', end: '11:00', task: '', selfStudy: '' }, study)).toBe(60)
     expect(
-      entryMinutes({ start: '10:00', end: '11:00', task: 'auto' }, new Map([['auto', 5]]))
+      entryMinutes(
+        { start: '10:00', end: '11:00', task: 'auto', selfStudy: '' },
+        new Map([['auto', 5]])
+      )
     ).toBe(60)
   })
 
@@ -259,7 +263,7 @@ describe('a lecture total (session plus self-study, one number)', () => {
     expect(hours.minutes).toBe(45)
     expect(hours.withoutTimes).toBe(0)
     expect(trainingHours(rows, '2025-09-22', TODAY, 200).withoutTimes).toBe(1)
-    expect(entryMinutes({ start: null, end: null, task: 'k2' }, study)).toBeNull()
+    expect(entryMinutes({ start: null, end: null, task: 'k2', selfStudy: '' }, study)).toBeNull()
   })
 
   it('totals each series with its lectures self-study', () => {
@@ -268,5 +272,69 @@ describe('a lecture total (session plus self-study, one number)', () => {
       { series: 'Intro', count: 2, minutes: 165 }
     ])
     expect(seriesSummaries(rows, TODAY)).toEqual([{ series: 'Intro', count: 2, minutes: 120 }])
+  })
+})
+
+describe('a lecture total with a self-study task of its own', () => {
+  const both = { start: '10:00', end: '11:00', task: 'k1', selfStudy: 'k7' }
+
+  it('is the session plus the time on the lecture task plus the time on the self-study task', () => {
+    expect(entryMinutes(both, new Map([['k1', 15]]))).toBe(75)
+    expect(entryMinutes(both, new Map([['k7', 30]]))).toBe(90)
+    expect(
+      entryMinutes(
+        both,
+        new Map([
+          ['k1', 15],
+          ['k7', 30]
+        ])
+      )
+    ).toBe(105)
+  })
+
+  it('counts a task once, even if both keys name it, and never counts an unrelated task', () => {
+    expect(entryMinutes({ ...both, selfStudy: 'k1' }, new Map([['k1', 15]]))).toBe(75)
+    expect(entryMinutes(both, new Map([['other', 99]]))).toBe(60)
+  })
+
+  it('counts self-study alone on a note with no times or lecture task', () => {
+    const open = { start: null, end: null, task: '', selfStudy: 'k7' }
+    expect(entryMinutes(open, new Map([['k7', 30]]))).toBe(30)
+    expect(entryMinutes(open, new Map())).toBeNull()
+  })
+
+  it('an older note (no self-study task) gives the numbers it gave before', () => {
+    expect(
+      entryMinutes(
+        { ...both, selfStudy: '' },
+        new Map([
+          ['k1', 15],
+          ['k7', 30]
+        ])
+      )
+    ).toBe(75)
+  })
+
+  it('flows into the year, per skill and the series summaries', () => {
+    const rows = [
+      row('2026-01-01', { ...both, series: 'Intro', skills: ['Networking (RP)'] }),
+      row('2026-01-02', {
+        task: 'k2',
+        selfStudy: 'k8',
+        series: 'Intro',
+        skills: ['Networking (RP)']
+      })
+    ]
+    const tracked = new Map([
+      ['k1', 15],
+      ['k7', 30],
+      ['k8', 10]
+    ])
+    const hours = trainingHours(rows, '2025-09-22', TODAY, 200, tracked)
+    expect(hours.minutes).toBe(105 + 70)
+    expect(hours.perSkill).toEqual([{ skill: 'Networking (RP)', minutes: 175 }])
+    expect(seriesSummaries(rows, TODAY, tracked)).toEqual([
+      { series: 'Intro', count: 2, minutes: 175 }
+    ])
   })
 })

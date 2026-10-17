@@ -387,3 +387,42 @@ describe('a lecture task', () => {
     expect(disk('2025-12-10 Old')).toBe(text)
   })
 })
+
+describe('a self-study task', () => {
+  it('is written to the file and the index when set, and removed again when emptied', async () => {
+    const made = await make({ task: 'auto', body: '## Notes\nhello\n' })
+    expect(disk(made.ref.id)).not.toContain('selfstudy')
+    const saved = await store.save(made.ref, { meta: { selfStudy: 'k7q' } }, made.note.hash)
+    expect(saved.status).toBe('saved')
+    expect(disk(made.ref.id)).toContain('selfstudy: k7q')
+    expect(splitNote(disk(made.ref.id)).body).toBe('## Notes\nhello\n')
+    expect(getTrainingRow(db, 'research', made.ref.id)?.selfStudy).toBe('k7q')
+    const after = await store.read(made.ref)
+    await store.save(made.ref, { meta: { selfStudy: '' } }, after.note.hash)
+    expect(disk(made.ref.id)).not.toContain('selfstudy')
+    expect(getTrainingRow(db, 'research', made.ref.id)?.selfStudy).toBe('')
+  })
+
+  it('refuses a value that is not a task id, and leaves the file alone', async () => {
+    const made = await make()
+    const before = disk(made.ref.id)
+    await expect(
+      store.save(made.ref, { meta: { selfStudy: 'x\ntitle: Other' } }, made.note.hash)
+    ).rejects.toThrow(TrainingError)
+    expect(disk(made.ref.id)).toBe(before)
+  })
+
+  it('is filled from the file when the index is rebuilt, and an older file is not rewritten', async () => {
+    mkdirSync(dir, { recursive: true })
+    const text = '---\ndate: 2025-12-10\ntitle: Old\ntask: k1\nselfstudy: k7q\n---\n## Notes\n'
+    writeFileSync(file('2025-12-10 Old'), text)
+    const plain = '---\ndate: 2025-12-11\ntitle: Plain\n---\n## Notes\n'
+    writeFileSync(file('2025-12-11 Plain'), plain)
+    db.prepare('DELETE FROM training').run()
+    await store.reindexAll('research')
+    expect(getTrainingRow(db, 'research', '2025-12-10 Old')?.selfStudy).toBe('k7q')
+    expect(getTrainingRow(db, 'research', '2025-12-11 Plain')?.selfStudy).toBe('')
+    expect(disk('2025-12-10 Old')).toBe(text)
+    expect(disk('2025-12-11 Plain')).toBe(plain)
+  })
+})
