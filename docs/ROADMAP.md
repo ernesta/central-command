@@ -310,6 +310,12 @@ Choices the plan left open, made conservatively; change any of them by telling C
 
 ### For the user (review and decisions)
 
+**Priority questions (17 Oct 2026, the user's request; nothing built):** the tasks the app makes for meetings and trainings (`useMeetingTask`, `useLectureTask`) are created with `status: 'doing'` and no due date, so Tasks shows them as half-filled circles with "Add date".
+
+- **Due date (to build, agreed in principle):** a meeting's or lecture's subtask gets the note's date as its due date and keeps it in step when the date changes. Open: an older task the user has already given a date by hand is never overwritten (the same rule as titles)?
+- **Done automatically (wanted):** the task of a past meeting or training is marked done at the end of the session (its `end` time; a note with a date but no end time: end of that day?). Applies to the tasks already made too, as a one-off script (dry run, backup, `--apply` only when the user says so)?
+- **To think through first — work done on a task that was already marked done:** if the user logs hours on a meeting or training subtask after it closed (preparation, write-up, self-study), what happens? Options: the task reopens until the work stops; it stays done and the hours just attach to it; the work goes on a separate task. Also open: should "done" mean the session is over, while the series task above it stays open?
+
 ### For Claude: low-involvement queue (11 Oct 2026, the user's go-ahead; one item per session, then stop)
 
 Order agreed: A, B, D, E, then C. For each: do it on a scratch library (never the real one), test/lint/typecheck pass, write up in `docs/DECISIONS.md`, small commits, push (the user allowed pushing for these), tick it here, then stop and give the user the prompt for the next one. No decisions for the user unless a fix needs a UI choice.
