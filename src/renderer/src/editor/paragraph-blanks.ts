@@ -61,7 +61,7 @@ function readings(state: EditorState): string[] {
   const doc = state.doc
   const tree = syntaxTree(state)
   const marks = decorationsOf(state, false).filter(
-    (d) => !/^live-(gap|pad)/.test(d.kind) && d.kind !== 'live-endbreak'
+    (d) => !/^live-(gap|pad|sep)/.test(d.kind) && d.kind !== 'live-endbreak'
   )
   const out: string[] = []
   for (let n = 1; n <= doc.lines; n++) {

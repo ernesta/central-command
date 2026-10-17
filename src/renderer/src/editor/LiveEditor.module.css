@@ -116,6 +116,15 @@
   clip-path: inset(var(--lead, 0px) 0 0 0);
 }
 
+/* A blank line that Markdown needs between two blocks is the gap itself: 16px, so those blocks sit as far apart as any other. */
+.wrap :global(.cm-editor) :global(.cm-line.live-sep) {
+  height: var(--block-gap);
+  min-height: 0;
+  padding: 0;
+  line-height: var(--block-gap);
+  overflow: hidden;
+}
+
 /* The empty line a final line break leaves at the end of a note: no height, until the cursor is on it (spelled out to outrank the `.cm-line` padding reset). */
 .wrap :global(.cm-editor) :global(.cm-line.live-endbreak) {
   height: 0;
