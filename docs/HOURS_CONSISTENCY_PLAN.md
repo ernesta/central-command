@@ -1,7 +1,7 @@
 # Hours counted the same way everywhere (plan, 17 Oct 2026)
 
 The user wants every place that shows or reports hours to give the same number for the same period, now and for whatever is built on the data later (a widget
-is wanted some day, but **no widget, Settings switch or page is part of this**). **Nothing here is built yet.** Standing rules apply (CLAUDE.md): small commits,
+is wanted some day, but **no widget, Settings switch or page is part of this**). **Built and driven 17 Oct 2026** (`docs/DECISIONS.md`, "Hours counted the same way everywhere"; the audit below was confirmed against the code, with the corrections marked). Standing rules apply (CLAUDE.md): small commits,
 test/lint/typecheck before each commit, scratch library only; push and install only when the prompt for the run says so.
 
 ## What "the hours" are
@@ -11,15 +11,15 @@ Hours on a day = the stored year file (timers and typed entries) **plus the hour
 
 ## Audit (17 Oct 2026, by reading the code; confirm each line when starting)
 
-| Place                                                                                      | Counts the shown year?                                                                                       |
-| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| Hours page, its cards and charts (`HoursPage`, `HoursCard`, `useWeek`, ...)                | yes (`useShownYear(s)`)                                                                                      |
-| Home page's hours (`HomeHours.tsx`)                                                        | yes                                                                                                          |
-| A task's Time (`useTaskTime`)                                                              | yes (`withDerived`)                                                                                          |
-| Training totals (`entryMinutes`: landing, table, series cards, per-skill, PDF `report.ts`) | its own path: the note's session + time tracked on the task. Same intent, never compared with the Hours page |
-| **Home summary `hours` (`home/main/collect.ts`) -> widget file, notifications**            | **no: raw Research year only, no derived hours, no Work, first year without checking that today is in it**   |
-| Meeting clash warnings (`useMeetingClashes`)                                               | raw on purpose (it looks for overlaps with stored entries)                                                   |
-| Time off (`TimeOffCard`, page)                                                             | not hours worked; stored on purpose                                                                          |
+| Place                                                                                      | Counts the shown year?                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hours page, its cards and charts (`HoursPage`, `HoursCard`, `useWeek`, ...)                | yes (`useShownYear(s)`)                                                                                                                                                                                                                                                                                   |
+| Home page's hours (`HomeHours.tsx`)                                                        | yes                                                                                                                                                                                                                                                                                                       |
+| A task's Time (`useTaskTime`)                                                              | yes (`withDerived`)                                                                                                                                                                                                                                                                                       |
+| Training totals (`entryMinutes`: landing, table, series cards, per-skill, PDF `report.ts`) | its own path: the note's session (exact minutes) + time tracked on its tasks. Same intent; compared in `parity.test.ts`: it agrees with the Hours page except that Hours reports a derived session to the quarter hour and the training log keeps the exact minutes (recorded decision; left to the user) |
+| **Home summary `hours` (`home/main/collect.ts`) -> widget file, notifications**            | **no: raw Research year only, no derived hours, no Work, the newest file (not the year holding today) without checking that today is in it, and the plan's whole `hoursPerWeek` as the aim (the page's week aim takes leave days off).** Fixed. (Notifications do not read `hours`.)                      |
+| Meeting clash warnings (`useMeetingClashes`)                                               | raw on purpose (it looks for overlaps with stored entries)                                                                                                                                                                                                                                                |
+| Time off (`TimeOffCard`, page)                                                             | not hours worked; stored on purpose                                                                                                                                                                                                                                                                       |
 
 So the renderer already agrees with itself; the gaps are (1) the main-process Home summary and (2) no test that the training figures and the Hours page agree.
 
@@ -27,11 +27,11 @@ So the renderer already agrees with itself; the gaps are (1) the main-process Ho
 
 - **One pure function builds the shown year, for the renderer and the main process.** Today the renderer assembles it in `useMeetingEntries`/`useShownYear`
   (rows over IPC, `taskOf` from the tasks, Work's clients). Extract the assembly into a pure `shared` function, for example
-  `shownYear(year, { meetings, lectures, tasks, clients, today })` in `src/modules/hours/shared/`, that does the `taskOf` mapping (a subtask takes its parent's list),
+  `shownYear(year, { meetings, lectures, tasks, clients, today })` (built as `derivedEntries` + `shownYear`) in `src/modules/hours/shared/`, that does the `taskOf` mapping (a subtask takes its parent's list),
   `meetingEntries`, `lectureEntries` and `withDerived`. `useMeetingEntries` calls it, and so does the main process. Behaviour of the renderer does not change.
 - **One function decides the Home figures**, used by `HomeHours.tsx` and the main process: from a shown year and `now`, the label (`This week` / `This month`),
   period minutes, aim, today's minutes and hours per client (the arithmetic `HomeHours.tsx` does inline today, with `thisWeek`, `thisPeriod`, `weekFigures`).
-- **Main process.** `collect.ts` reads, per workspace, the current year (the newest whose range holds today, as the page does), the meeting rows (Research and
+- **Main process.** `collect.ts` reads, per workspace, the current year (as the page picks it: `currentYear` of the settings' starts for Research, `contractToShow` for Work, now `yearToShow`), the meeting rows (Research and
   Work), the training rows (Research), the tasks and Work's clients (`workClients`, as `tasks/main/register.ts` does), builds the shown year with the shared
   function, and gives the figures to the summary. Read only; no file or table is changed.
 - **`HomeSummary.hours` becomes per workspace**: `{ research: HomeHours | null; work: HomeHours | null }`, `HomeHours` gaining `label`, the period's minutes and aim.
