@@ -3,7 +3,7 @@ import type { EditorState, Transaction, TransactionSpec } from '@codemirror/stat
 import type { EditorView } from '@codemirror/view'
 import { readdirSync, readFileSync, statSync } from 'fs'
 import { join } from 'path'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it as vitestIt } from 'vitest'
 import { insertTodoText, todoTriggerAt } from './todo-live'
 import { findMentions } from '@shared/entities'
 import { splitNote } from '@shared/front-matter'
@@ -766,88 +766,165 @@ function checkBlocks(file: string, text: string): { tables: number; fences: numb
   return { tables, fences }
 }
 
-describe.skipIf(!root)('every note of a real library', () => {
-  const files = root ? markdownFiles(root) : []
+/** The checks, by the name each test file registers (`live-library.<name>.test.ts`). They run in separate files so they run in parallel. */
+export const GATE_PARTS = [
+  'notes',
+  'keys',
+  'lists',
+  'mentions',
+  'find',
+  'todo',
+  'blocks',
+  'words',
+  'paste'
+] as const
+export type GatePart = (typeof GATE_PARTS)[number]
 
-  it('has notes to check', () => {
-    expect(files.length).toBeGreaterThan(0)
-  })
+/**
+ * Registers one part of the gate. `shard` and `shards` split the notes between files for a part that is slow on its own (a note
+ * belongs to the shard its position in the sorted list gives); the counts a check asserts are over the notes it was given, so a
+ * shard needs enough of them to find something (the library has hundreds).
+ */
+export function registerGate(part: GatePart, shard = 0, shards = 1): void {
+  describe.skipIf(!root)(
+    `every note of a real library: ${part}${shards > 1 ? ` (${shard + 1}/${shards})` : ''}`,
+    () => {
+      const files = root
+        ? markdownFiles(root)
+            .sort()
+            .filter((_, i) => i % shards === shard)
+        : []
+      // Each check names its part; only the part this file was asked for is registered.
+      const it = (which: GatePart, name: string, fn: () => void, timeout?: number): void => {
+        if (which === part) vitestIt(name, fn, timeout)
+      }
 
-  it('opens as the same text, edits only where edited, and never hides text under the cursor', () => {
-    for (const file of files) {
-      const whole = readFileSync(file, 'utf8')
-      // The editors show the body; the whole file is checked too, in case a note is ever opened with its head.
-      for (const text of [splitNote(whole).body, whole]) checkNote(file, text)
+      it('notes', 'has notes to check', () => {
+        expect(files.length).toBeGreaterThan(0)
+      })
+
+      it(
+        'notes',
+        'opens as the same text, edits only where edited, and never hides text under the cursor',
+        () => {
+          for (const file of files) {
+            const whole = readFileSync(file, 'utf8')
+            // The editors show the body; the whole file is checked too, in case a note is ever opened with its head.
+            for (const text of [splitNote(whole).body, whole]) checkNote(file, text)
+          }
+        },
+        600_000
+      )
+
+      it(
+        'keys',
+        'runs every formatting and list key at a spread of places without losing content, and undoes in one step',
+        () => {
+          for (const file of files) {
+            const whole = readFileSync(file, 'utf8')
+            checkKeys(file, splitNote(whole).body)
+          }
+        },
+        1_200_000
+      )
+
+      it(
+        'lists',
+        'draws every list marker as one unit exactly over the marker, and a checkbox click changes one character',
+        () => {
+          for (const file of files) {
+            const whole = readFileSync(file, 'utf8')
+            checkList(file, splitNote(whole).body)
+          }
+        },
+        600_000
+      )
+
+      it(
+        'mentions',
+        'draws a mention as one chip over exactly its text, removes it whole with Backspace, and offers @ only where it belongs',
+        () => {
+          let chips = 0
+          for (const file of files) {
+            const whole = readFileSync(file, 'utf8')
+            chips += checkMentions(file, splitNote(whole).body).chips
+          }
+          // A check that finds nothing to check proves nothing.
+          expect(chips).toBeGreaterThan(files.length)
+        },
+        1_200_000
+      )
+
+      it(
+        'find',
+        'finds words as an independent search does, and replace (all or one) changes exactly the matches, undone in one step',
+        () => {
+          let searched = 0
+          for (const file of files) {
+            const whole = readFileSync(file, 'utf8')
+            searched += checkFind(file, splitNote(whole).body).searched
+          }
+          expect(searched).toBeGreaterThan(files.length)
+        },
+        1_200_000
+      )
+
+      it(
+        'todo',
+        'writes a TODO exactly over the range it is given, undone in one step, and opens the menu only where /todo belongs',
+        () => {
+          let triggers = 0
+          for (const file of files) {
+            const whole = readFileSync(file, 'utf8')
+            triggers += checkTodo(file, splitNote(whole).body).triggers
+          }
+          expect(triggers).toBeGreaterThan(files.length)
+        },
+        1_200_000
+      )
+
+      it(
+        'blocks',
+        'draws tables as a grid away from the cursor and as text in it, Tab visits each cell and adds one row, and typing changes one cell',
+        () => {
+          let tables = 0
+          let fences = 0
+          for (const file of files) {
+            const whole = readFileSync(file, 'utf8')
+            const found = checkBlocks(file, splitNote(whole).body)
+            tables += found.tables
+            fences += found.fences
+          }
+          // A check that finds nothing to check proves nothing.
+          expect(tables).toBeGreaterThan(files.length)
+          expect(fences).toBeGreaterThan(files.length)
+        },
+        3_600_000
+      )
+
+      it(
+        'words',
+        'counts words without counting Markdown',
+        () => {
+          for (const file of files) {
+            const whole = readFileSync(file, 'utf8')
+            for (const text of [splitNote(whole).body, whole]) checkWords(file, text)
+          }
+        },
+        600_000
+      )
+
+      it(
+        'paste',
+        'pastes a web address over a word as a link and changes nothing else',
+        () => {
+          for (const file of files) {
+            const whole = readFileSync(file, 'utf8')
+            checkPaste(file, splitNote(whole).body)
+          }
+        },
+        600_000
+      )
     }
-  }, 600_000)
-
-  it('runs every formatting and list key at a spread of places without losing content, and undoes in one step', () => {
-    for (const file of files) {
-      const whole = readFileSync(file, 'utf8')
-      checkKeys(file, splitNote(whole).body)
-    }
-  }, 1_200_000)
-
-  it('draws every list marker as one unit exactly over the marker, and a checkbox click changes one character', () => {
-    for (const file of files) {
-      const whole = readFileSync(file, 'utf8')
-      checkList(file, splitNote(whole).body)
-    }
-  }, 600_000)
-
-  it('draws a mention as one chip over exactly its text, removes it whole with Backspace, and offers @ only where it belongs', () => {
-    let chips = 0
-    for (const file of files) {
-      const whole = readFileSync(file, 'utf8')
-      chips += checkMentions(file, splitNote(whole).body).chips
-    }
-    // A check that finds nothing to check proves nothing.
-    expect(chips).toBeGreaterThan(files.length)
-  }, 1_200_000)
-
-  it('finds words as an independent search does, and replace (all or one) changes exactly the matches, undone in one step', () => {
-    let searched = 0
-    for (const file of files) {
-      const whole = readFileSync(file, 'utf8')
-      searched += checkFind(file, splitNote(whole).body).searched
-    }
-    expect(searched).toBeGreaterThan(files.length)
-  }, 1_200_000)
-
-  it('writes a TODO exactly over the range it is given, undone in one step, and opens the menu only where /todo belongs', () => {
-    let triggers = 0
-    for (const file of files) {
-      const whole = readFileSync(file, 'utf8')
-      triggers += checkTodo(file, splitNote(whole).body).triggers
-    }
-    expect(triggers).toBeGreaterThan(files.length)
-  }, 1_200_000)
-
-  it('draws tables as a grid away from the cursor and as text in it, Tab visits each cell and adds one row, and typing changes one cell', () => {
-    let tables = 0
-    let fences = 0
-    for (const file of files) {
-      const whole = readFileSync(file, 'utf8')
-      const found = checkBlocks(file, splitNote(whole).body)
-      tables += found.tables
-      fences += found.fences
-    }
-    // A check that finds nothing to check proves nothing.
-    expect(tables).toBeGreaterThan(files.length)
-    expect(fences).toBeGreaterThan(files.length)
-  }, 3_600_000)
-
-  it('counts words without counting Markdown', () => {
-    for (const file of files) {
-      const whole = readFileSync(file, 'utf8')
-      for (const text of [splitNote(whole).body, whole]) checkWords(file, text)
-    }
-  }, 600_000)
-
-  it('pastes a web address over a word as a link and changes nothing else', () => {
-    for (const file of files) {
-      const whole = readFileSync(file, 'utf8')
-      checkPaste(file, splitNote(whole).body)
-    }
-  }, 600_000)
-})
+  )
+}
