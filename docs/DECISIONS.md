@@ -3545,3 +3545,12 @@ The user sent three screenshots of selections in the editor: one with an odd tai
 - **Shift-click on a status icon, and Shift-Space on a focused row, go round the circle backwards** (done, in progress, to do, done). Before, Shift-click jumped straight to done (or back to to do); the user chose backwards instead ("ideally one would cycle backwards"). `nextStatus` and `PREVIOUS_STATUS` in `task-actions.ts`; the Today card's circle on Home shares them. The icon's tooltip names both directions, and Settings lists Shift-Space.
 - **Not changed:** the menu has no modifier-click; it opens only from a right-click or the menu key.
 - **Checks:** typecheck, lint and tests pass; not driven in the app.
+
+## The cursor no longer changes the space between paragraphs (17 Oct 2026)
+
+The user found it jarring: Enter makes a blank line with space, moving the cursor away makes the space vanish, so they pressed Enter again and got two blank lines. The rule stays (none or one blank line between paragraphs look the same, because some Markdown writes none and some one); only the cursor stops changing the layout.
+
+- **Cause:** the first blank line of a run is drawn with no height (`live-void`) and the line after it carries the gap; the line the cursor was on took a full line's height back so the caret had somewhere to be. One blank line therefore looked like a big gap with the cursor on it and like none with it away.
+- **Fix** (`live-spacing.ts`, `LiveEditor.module.css`): a first blank line with the cursor on it gets `live-gap-cursor`, the height of the block gap, and the text line after the run gives its gap up, so the total is the same with the cursor there or away. A second blank line keeps a full line's height as before.
+- **Not changed:** where the gap is not the block gap (next to a heading, which pads itself; between list items, which have a small gap) the cursor's blank line still takes a full line's height, so the page can still move there.
+- **Checks:** typecheck, lint and tests pass (`live-spacing.test.ts`); not driven in the app.

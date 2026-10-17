@@ -95,6 +95,11 @@
   overflow: hidden;
   line-height: 0;
 }
+.wrap :global(.cm-editor) :global(.cm-line.live-gap-cursor) {
+  height: var(--block-gap);
+  min-height: var(--block-gap);
+  padding: 0;
+}
 .wrap {
   --block-gap: 16px;
   --item-gap: 4px;

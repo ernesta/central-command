@@ -13,7 +13,9 @@ function spacing(doc: string, at = doc.length): string[][] {
       return found
         .filter((seen) => seen.from === from)
         .flatMap((seen) => seen.kind.split(' '))
-        .filter((name) => /^live-(void|gap|gap-item|gap-quote|pad-first|pad-last)$/.test(name))
+        .filter((name) =>
+          /^live-(void|gap|gap-cursor|gap-item|gap-quote|pad-first|pad-last)$/.test(name)
+        )
         .map((name) => name.replace('live-', ''))
     })
 }
@@ -39,6 +41,17 @@ describe('the space between blocks', () => {
     const doc = 'a\n\n\nb'
     expect(spacing(doc, 2).map((row) => row.includes('void'))).toEqual([false, false, false, false])
     expect(spacing(doc, 3).map((row) => row.includes('void'))).toEqual([false, true, false, false])
+  })
+
+  it('lets the cursor stand on the gap itself, so the page does not move when it comes or goes', () => {
+    // 'a', a blank line with the cursor, 'b': the blank line has the gap's height and 'b' gives its gap up.
+    expect(spacing('a\n\nb', 2)).toEqual([[], ['gap-cursor'], []])
+    expect(spacing('a\n\nb', 0)).toEqual([[], ['void'], ['gap']])
+    // A longer run: the first blank line stands in, the next keeps its height, and the text gives up its gap.
+    expect(spacing('a\n\n\nb', 2)).toEqual([[], ['gap-cursor'], [], []])
+    // Where the gap is not the block gap (a heading pads itself, items have a small one) the cursor's line is a full line.
+    expect(spacing('## h\n\nb', 5)).toEqual([[], [], []])
+    expect(spacing('- a\n\n- b', 4)[1]).toEqual([])
   })
 
   it('counts a run at the start of a note and after a heading the same way', () => {
