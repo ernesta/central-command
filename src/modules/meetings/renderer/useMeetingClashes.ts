@@ -1,31 +1,27 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { RunningTimer } from '@shared/tracking/api'
 import type { DerivedKind, Session } from '@shared/tracking/types'
-import { todayIso } from '@shared/time'
-import { useMeetingEntries } from '../../hours/renderer/useMeetingHours'
-import {
-  noteKey,
-  occupiedByMeetings,
-  occupiedBySessions,
-  overlapping,
-  type Occupied
-} from '../shared/meeting-entries'
-import type { MeetingMeta, MeetingWorkspace } from '../shared/types'
+import type { HoursWorkspace } from '../../hours/shared/workspaces'
+import { notesOverlapping } from '../../training/shared/note-clashes'
+import { useNoteSpans } from './useNoteSpans'
+import { occupiedBySessions, overlapping, type Occupied } from '../shared/meeting-entries'
+import type { MeetingMeta } from '../shared/types'
 
 /**
- * What else is on the clock when a meeting is: the timer and typed blocks of its workspace for its day (and the timer if it runs
- * elsewhere), and the other meetings that have a task. Pure rules in `overlapping`; this only reads and says.
+ * What else is on the clock when a meeting or a training entry is: the timer and typed blocks of its workspace for its day (and
+ * the timer if it runs elsewhere), and every other meeting and training note with a date and both times (no task needed, any
+ * date). Pure rules in `overlapping` and `notesOverlapping`; this only reads and says.
  */
 export function useMeetingClashes(
-  workspace: MeetingWorkspace,
+  workspace: HoursWorkspace,
   id: string,
   meta: Pick<MeetingMeta, 'date' | 'start' | 'end'>,
-  /** A lecture is a training note: the same clock, its own kind. */
+  /** A training entry is a note too: the same clock, its own kind. */
   kind: DerivedKind = 'meeting'
 ): Occupied[] {
   const [sessions, setSessions] = useState<{ date: string; list: Session[] } | null>(null)
   const [running, setRunning] = useState<RunningTimer | null>(null)
-  const entries = useMeetingEntries(workspace, todayIso())
+  const spans = useNoteSpans(workspace)
   const { date } = meta
 
   useEffect(() => {
@@ -59,15 +55,14 @@ export function useMeetingClashes(
         : []
     const now = new Date()
     const seconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()
-    return overlapping(
-      meta.start,
-      meta.end,
-      [
-        ...occupiedBySessions([...own, ...elsewhere], date),
-        ...occupiedByMeetings(entries, date, workspace)
-      ],
-      seconds,
-      noteKey(kind, workspace, id)
-    )
-  }, [sessions, running, entries, workspace, id, kind, date, meta.start, meta.end])
+    return [
+      ...overlapping(
+        meta.start,
+        meta.end,
+        occupiedBySessions([...own, ...elsewhere], date),
+        seconds
+      ),
+      ...notesOverlapping(spans, { kind, workspace, id }, date, meta.start, meta.end)
+    ]
+  }, [sessions, running, spans, workspace, id, kind, date, meta.start, meta.end])
 }

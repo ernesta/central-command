@@ -1,9 +1,23 @@
 import { TriangleAlert } from 'lucide-react'
 import { durationMinutes } from '../shared/time'
 import type { DerivedKind } from '@shared/tracking/types'
-import type { MeetingMeta, MeetingWorkspace } from '../shared/types'
+import type { HoursWorkspace } from '../../hours/shared/workspaces'
+import type { MeetingMeta } from '../shared/types'
 import { useMeetingClashes } from './useMeetingClashes'
 import styles from './MeetingHoursNote.module.css'
+
+/** "No hours until …", only for a note that has a task but not yet what its hours need. */
+export function HoursLine({
+  meta
+}: {
+  meta: Pick<MeetingMeta, 'task' | 'date' | 'start' | 'end'>
+}): React.JSX.Element | null {
+  if (meta.task && meta.date && durationMinutes(meta.start, meta.end) === null) {
+    return <p className={styles.quiet}>No hours until it has a start and end.</p>
+  }
+  if (meta.task && !meta.date) return <p className={styles.quiet}>No hours until it has a date.</p>
+  return null
+}
 
 /**
  * One quiet line under the details, only when there is something to say: the meeting overlaps something else on the clock
@@ -13,13 +27,16 @@ export function MeetingHoursNote({
   workspace,
   id,
   meta,
-  kind = 'meeting'
+  kind = 'meeting',
+  show = 'both'
 }: {
-  workspace: MeetingWorkspace
+  workspace: HoursWorkspace
   id: string
   /** What it needs of a note: a meeting's, or a lecture's (`task` is its uid, '' for none). */
   meta: Pick<MeetingMeta, 'task' | 'date' | 'start' | 'end'>
   kind?: DerivedKind
+  /** `clashes`: only the overlap (a training entry draws it apart from its task card, where `HoursLine` goes). */
+  show?: 'both' | 'clashes'
 }): React.JSX.Element | null {
   const clashes = useMeetingClashes(workspace, id, meta, kind)
   if (clashes.length > 0) {
@@ -36,9 +53,5 @@ export function MeetingHoursNote({
       </p>
     )
   }
-  if (meta.task && meta.date && durationMinutes(meta.start, meta.end) === null) {
-    return <p className={styles.quiet}>No hours until it has a start and end.</p>
-  }
-  if (meta.task && !meta.date) return <p className={styles.quiet}>No hours until it has a date.</p>
-  return null
+  return show === 'both' ? <HoursLine meta={meta} /> : null
 }

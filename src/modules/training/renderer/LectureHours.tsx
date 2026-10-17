@@ -1,5 +1,5 @@
 import { formatHours } from '@shared/tracking/format'
-import { MeetingHoursNote } from '../../meetings/renderer/MeetingHoursNote'
+import { HoursLine } from '../../meetings/renderer/MeetingHoursNote'
 import { TaskTimeActions } from '../../tasks/renderer/TaskTimeActions'
 import { todayIso } from '../../tasks/renderer/tasks-paths'
 import { useTaskTime } from '../../tasks/renderer/useTaskTime'
@@ -16,11 +16,9 @@ import { useSelfStudy } from './useSelfStudy'
  * missing time. Shown once the lecture has its task.
  */
 export function LectureHours({
-  id,
   meta,
   tasks
 }: {
-  id: string
   meta: TrainingMeta
   tasks: readonly Task[] | null
 }): React.JSX.Element | null {
@@ -49,12 +47,7 @@ export function LectureHours({
         />
       </div>
       <div className={styles.note}>
-        <MeetingHoursNote
-          workspace="research"
-          id={id}
-          meta={{ ...meta, task: uid }}
-          kind="training"
-        />
+        <HoursLine meta={{ ...meta, task: uid }} />
       </div>
     </>
   )

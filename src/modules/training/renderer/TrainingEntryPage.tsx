@@ -18,6 +18,7 @@ import { institutionOptions, seriesOptions } from '../shared/rules'
 import type { TrainingRef } from '../shared/types'
 import { formatHours } from '@shared/tracking/format'
 import { lectureLabel, lectureTaskUid } from '../shared/lecture-entries'
+import { MeetingHoursNote } from '../../meetings/renderer/MeetingHoursNote'
 import { FilesPanel } from './FilesPanel'
 import { LectureHours } from './LectureHours'
 import { LectureTask } from './LectureTask'
@@ -237,6 +238,14 @@ function EntryView({
         workspace={workspace}
       />
 
+      <MeetingHoursNote
+        workspace={workspace}
+        id={entryRef.id}
+        meta={meta}
+        kind="training"
+        show="clashes"
+      />
+
       {research && meta.task && (
         <LectureTask
           task={meta.task}
@@ -244,7 +253,7 @@ function EntryView({
           tasks={tasks}
           onRemake={() => session.setMeta({ task: 'auto' })}
         >
-          <LectureHours id={entryRef.id} meta={meta} tasks={tasks} />
+          <LectureHours meta={meta} tasks={tasks} />
         </LectureTask>
       )}
 
