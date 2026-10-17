@@ -16,8 +16,8 @@ import type { Extent } from './live-reveal'
 
 type Add = (kind: string, from: number, to: number, deco: Decoration) => void
 
-type Kind = 'heading' | 'list' | 'quote' | 'code' | 'table' | 'rule' | 'paragraph'
-interface Info {
+export type Kind = 'heading' | 'list' | 'quote' | 'code' | 'table' | 'rule' | 'paragraph'
+export interface Info {
   kind: Kind
   /** Where the block starts: two lines with the same kind and id are one block. */
   id: number
@@ -32,7 +32,7 @@ const padFirst = Decoration.line({ class: 'live-pad-first' })
 const padLast = Decoration.line({ class: 'live-pad-last' })
 
 /** What the (non-blank) line is part of. */
-function infoOf(state: EditorState, lineFrom: number, text: string): Info {
+export function infoOf(state: EditorState, lineFrom: number, text: string): Info {
   const indent = text.length - text.trimStart().length
   let quote: SyntaxNode | null = null
   let code: SyntaxNode | null = null
