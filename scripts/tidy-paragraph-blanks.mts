@@ -1,16 +1,16 @@
 /**
- * One-off tidy (17 Oct 2026, `docs/UNIFORM_LINES_PLAN.md`, stage 2): remove a single blank line between two paragraph lines,
- * in every note folder (Readings included): only blank lines go, backed up first. From now
- * on the editor draws every blank line as a whole line of space, so the old "blank line between paragraphs" would look loose.
+ * One-off tidy (17 Oct 2026, `docs/UNIFORM_LINES_PLAN.md`, stage 2): remove every single blank line between two lines of text, in
+ * every note folder (Readings included): only blank lines go, backed up first. The editor draws every blank line as a whole line of
+ * space, so a lone blank line between blocks would look loose. (Written first for paragraph + paragraph only; the user then asked for
+ * all of them, so the name stayed.)
  *
- *   npm run tidy:paragraph-blanks                # dry run: lists what it would remove and every other single blank line by kind
+ *   npm run tidy:paragraph-blanks                # dry run: lists what it would remove and every blank line it keeps, by kind
  *   npm run tidy:paragraph-blanks -- --apply     # rewrites the notes (after copying each to a backup folder)
  *
- * Outside this app two paragraph lines with no blank line between them are one paragraph, so a blank line is removed only when
- * the editor's own parse reads the note the same afterwards (`paragraph-blanks.ts`); the others are listed as "kept". Blank lines
- * next to lists, headings, tables, quotes, rules or code are never touched: they are listed by kind for the user to decide.
- * Blank lines in code fences, the front matter and runs of two or more are left alone. Each result is checked (every non-blank
- * line identical, in order) and a note that fails is left alone and reported. Applying copies every note it changes to
+ * Outside this app the lines joined would be one paragraph, a lazy list continuation or a table row, so a blank line is removed only
+ * when the editor's own parse reads the note the same afterwards (`paragraph-blanks.ts`); the others are kept and listed. Blank lines
+ * in code fences, the front matter and runs of two or more are left alone. Each result is checked (every non-blank line identical,
+ * in order) and a note that fails is left alone and reported. Applying copies every note it changes to
  * `~/CentralCommand/backups/tidy-paragraph-blanks-<time>/` first; a note that changed since it was read is skipped. Close the
  * app before applying. A second run finds nothing to remove.
  */
@@ -71,8 +71,8 @@ async function run(): Promise<void> {
   let singleTotal = 0
   const notesWithSingles = new Set<string>()
   const byFolder = new Map<string, number>()
-  const kept: Listed[] = []
-  const others = new Map<string, Listed[]>()
+  const kept = new Map<string, Listed[]>()
+  const removedBy = new Map<string, number>()
   for (const path of markdownFiles(notesRoot).sort()) {
     const rel = relative(notesRoot, path)
     const note = await readNoteFile(path)
@@ -87,18 +87,16 @@ async function run(): Promise<void> {
       above: short(raw[b.line - 1]),
       below: short(raw[b.line + 1])
     })
-    const all = [...plan.remove, ...plan.keep, ...plan.others]
+    const all = [...plan.remove, ...plan.keep]
     singleTotal += all.length
     if (all.length > 0) notesWithSingles.add(rel)
-    for (const b of plan.keep) kept.push(listed(b))
-    for (const b of plan.others) {
+    for (const b of plan.keep) {
       const label = pairLabel(b.above, b.below)
-      others.set(label, [...(others.get(label) ?? []), listed(b)])
+      kept.set(label, [...(kept.get(label) ?? []), listed(b)])
     }
-    if (plan.combinedDiffers) {
-      failed++
-      console.log(`LEFT ALONE ${rel}: the editor reads the note differently once all are removed`)
-      continue
+    for (const b of plan.remove) {
+      const label = pairLabel(b.above, b.below)
+      removedBy.set(label, (removedBy.get(label) ?? 0) + 1)
     }
     if (plan.remove.length === 0) continue
     const tidy = dropLines(
@@ -129,25 +127,26 @@ async function run(): Promise<void> {
     } else if (wrote) changed++
   }
   console.log(
-    `\n${changed} of ${seen} note(s) ${apply ? 'changed' : 'would change'}, ${removedTotal} blank line(s) between paragraph lines${failed ? `, ${failed} left alone` : ''}.`
+    `\n${changed} of ${seen} note(s) ${apply ? 'changed' : 'would change'}, ${removedTotal} blank line(s) removed${failed ? `, ${failed} left alone` : ''}.`
   )
   if (byFolder.size > 0) {
     console.log('\nBy folder:')
     for (const [folder, n] of [...byFolder].sort()) console.log(`  ${folder}: ${n}`)
   }
+  const keptTotal = [...kept.values()].reduce((n, l) => n + l.length, 0)
   console.log(
-    `\nAll single blank lines between two lines of text: ${singleTotal}, in ${notesWithSingles.size} note(s).`
+    `\nAll single blank lines between two lines of text: ${singleTotal}, in ${notesWithSingles.size} note(s): ${removedTotal} removed, ${keptTotal} kept.`
   )
-  console.log('By kind (not touched except the first):')
-  console.log(`  paragraph + paragraph: ${removedTotal} removed, ${kept.length} kept`)
-  for (const [label, list] of [...others].sort((a, b) => b[1].length - a[1].length))
+  console.log('Removed, by kind:')
+  for (const [label, n] of [...removedBy].sort((a, b) => b[1] - a[1]))
+    console.log(`  ${label}: ${n}`)
+  console.log('Kept, by kind:')
+  for (const [label, list] of [...kept].sort((a, b) => b[1].length - a[1].length))
     console.log(`  ${label}: ${list.length}`)
-  if (kept.length > 0) {
-    console.log('\nKept because the editor would read the joined lines differently:')
-    for (const k of kept) console.log(`  ${k.rel}:${k.lineNo}  "${k.above}" / "${k.below}"`)
-  }
-  for (const [label, list] of [...others].sort((a, b) => b[1].length - a[1].length)) {
-    console.log(`\nNot touched, ${label} (${list.length}):`)
+  for (const [label, list] of [...kept].sort((a, b) => b[1].length - a[1].length)) {
+    console.log(
+      `\nKept because the editor would read the joined lines differently, ${label} (${list.length}):`
+    )
     for (const k of list) console.log(`  ${k.rel}:${k.lineNo}  "${k.above}" / "${k.below}"`)
   }
   if (apply && changed > 0) console.log(`Originals are in ${backupDir}`)

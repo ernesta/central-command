@@ -24,9 +24,6 @@ export function pairLabel(a: Kind, b: Kind): string {
   return a === b ? `${a} + ${a}` : [a, b].sort().join(' + ')
 }
 
-export const isParagraphPair = (b: SingleBlank): boolean =>
-  b.above === 'paragraph' && b.below === 'paragraph'
-
 /** The body with LF breaks only, for the parser (a line is the same line either way). */
 const lf = (body: string): string => body.replace(/\r\n/g, '\n')
 
@@ -101,33 +98,26 @@ export function firstReadingDifference(before: string, after: string): number | 
 }
 
 export interface ParagraphPlan {
-  /** Single blanks between two paragraph lines whose removal leaves the note reading the same. */
+  /** Single blanks whose removal (together with the others in this list) leaves the note reading the same. */
   remove: SingleBlank[]
-  /** Paragraph pairs that read differently once joined (hard breaks, emphasis across the lines, setext underlines …). */
+  /** Single blanks that would make the editor read the note differently (a paragraph joining a list item, a line becoming a table row, a hard break, a setext underline, emphasis across the lines …). */
   keep: SingleBlank[]
-  /** Every other single blank line, for the dry run to list by kind. */
-  others: SingleBlank[]
-  /** True when removing all of `remove` together does not read the same (then nothing is removed from this note). */
-  combinedDiffers: boolean
 }
 
-/** Which single blanks of a body to remove. Each is tried on its own first; the set is then checked together. */
+/**
+ * Which single blanks of a body to remove, whatever sits on either side (the user's call, 17 Oct 2026: all of them, so the notes are
+ * consistent). Each is tried on its own; those that pass are then added one at a time and kept only while the whole set still
+ * reads the same, so `*a` / `b` / `c*` loses its first blank line and keeps the second.
+ */
 export function planParagraphBlanks(body: string): ParagraphPlan {
-  const all = singleBlanks(body)
-  const others = all.filter((b) => !isParagraphPair(b))
-  const candidates = all.filter(isParagraphPair)
   const remove: SingleBlank[] = []
   const keep: SingleBlank[] = []
-  for (const c of candidates)
-    (firstReadingDifference(body, dropLines(body, [c.line])) === null ? remove : keep).push(c)
-  const combinedDiffers =
-    remove.length > 1 &&
-    firstReadingDifference(
-      body,
-      dropLines(
-        body,
-        remove.map((b) => b.line)
-      )
-    ) !== null
-  return { remove: combinedDiffers ? [] : remove, keep, others, combinedDiffers }
+  for (const c of singleBlanks(body)) {
+    const tried = [...remove, c].map((b) => b.line)
+    const alone = firstReadingDifference(body, dropLines(body, [c.line])) === null
+    ;(alone && firstReadingDifference(body, dropLines(body, tried)) === null ? remove : keep).push(
+      c
+    )
+  }
+  return { remove, keep }
 }

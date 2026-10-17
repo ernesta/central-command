@@ -48,13 +48,24 @@ describe('planParagraphBlanks', () => {
     expect(tidy('One\n\n\nTwo\n')).toBe('One\n\n\nTwo\n')
   })
 
-  it('does not touch blank lines next to a list, heading, table, quote, rule or code', () => {
-    const body =
-      '## H\n\ntext\n\n- a\n\ntext\n\n| a |\n| - |\n| b |\n\n> q\n\ntext\n\n---\n\ntext\n\n```\nx\n```\n\ntext\n'
-    const plan = planParagraphBlanks(body)
-    expect(plan.remove).toEqual([])
-    expect(plan.others.length).toBe(singleBlanks(body).length)
-    expect(tidy(body)).toBe(body)
+  it('removes the blank line next to a heading, list, table, quote or rule when the reading stays the same', () => {
+    expect(tidy('## H\n\ntext\n\n- a\n\n- b\n')).toBe('## H\ntext\n- a\n- b\n')
+    expect(tidy('text\n\n| a |\n| - |\n| b |\n')).toBe('text\n| a |\n| - |\n| b |\n')
+    expect(tidy('text\n\n> q\n')).toBe('text\n> q\n')
+    expect(tidy('---\n\ntext\n')).toBe('---\ntext\n')
+  })
+
+  it('keeps the blank line that stops a line joining the block above it', () => {
+    for (const body of [
+      '- a\n\ntext\n',
+      '1. a\n\ntext\n',
+      '> q\n\ntext\n',
+      '| a |\n| - |\n| b |\n\ntext\n',
+      'text\n\n---\n'
+    ]) {
+      expect(planParagraphBlanks(body).keep.length, body).toBe(1)
+      expect(tidy(body), body).toBe(body)
+    }
   })
 
   it('does not join a paragraph to a list item above it', () => {
@@ -75,17 +86,17 @@ describe('planParagraphBlanks', () => {
     expect(tidy('One  \n\nTwo\n')).toBe('One  \n\nTwo\n')
   })
 
-  it('removes none of a note whose removals together read differently', () => {
+  it('keeps a blank line that is fine alone but not together with the others', () => {
     const body = '*One\n\nTwo\n\nThree*\n'
     const plan = planParagraphBlanks(body)
-    expect(plan.keep.length).toBe(0)
-    expect(plan.combinedDiffers).toBe(true)
-    expect(plan.remove).toEqual([])
+    expect(plan.remove.map((b) => b.line)).toEqual([1])
+    expect(plan.keep.map((b) => b.line)).toEqual([3])
     expect(firstReadingDifference(body, dropLines(body, [1, 3]))).not.toBeNull()
+    expect(tidy(body)).toBe('*One\nTwo\n\nThree*\n')
   })
 
   it('keeps CRLF line breaks and removes the right lines', () => {
-    expect(tidy('One\r\n\r\nTwo\r\n\r\n- a\r\n')).toBe('One\r\nTwo\r\n\r\n- a\r\n')
+    expect(tidy('One\r\n\r\nTwo\r\n\r\n- a\r\n\r\nB\r\n')).toBe('One\r\nTwo\r\n- a\r\n\r\nB\r\n')
   })
 
   it('does not touch blank lines in a fence, and finds nothing the second time', () => {
