@@ -2,6 +2,7 @@ import { history, historyKeymap } from '@codemirror/commands'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { EditorState, type Extension } from '@codemirror/state'
 import { drawSelection, EditorView, keymap } from '@codemirror/view'
+import { liveCaret } from './live-caret'
 import { liveLayer } from './live-decorations'
 import { entityExtensions, type LiveEntities } from './live-entities'
 import { findExtension } from './live-find'
@@ -59,6 +60,7 @@ export function liveExtensions(options: LiveOptions): Extension[] {
     looseTask,
     keymap.of([...keys, ...historyKeymap]),
     liveLayer,
+    liveCaret,
     tableScroll,
     entityExtensions(options.entities),
     findExtension(options.find),
