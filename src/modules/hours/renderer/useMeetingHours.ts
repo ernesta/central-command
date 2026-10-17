@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { withDerived, type DerivedEntry } from '@shared/tracking/derived'
 import type { TrackingYear } from '@shared/tracking/types'
-import { meetingEntries, type TaskInfo } from '../../meetings/shared/meeting-entries'
 import type { MeetingIndexRow } from '../../meetings/shared/types'
-import { lectureEntries } from '../../training/shared/lecture-entries'
 import type { TrainingIndexRow } from '../../training/shared/types'
 import { useWorkClients } from '../../tasks/renderer/useWorkClients'
 import type { Task } from '../../tasks/shared/types'
+import { derivedEntries } from '../shared/shown-year'
 import type { HoursWorkspace } from '../shared/workspaces'
 
 /**
@@ -51,18 +50,13 @@ export function useMeetingEntries(workspace: HoursWorkspace, today: string): Der
 
   return useMemo(() => {
     if (!loaded || loaded.workspace !== workspace) return []
-    const byUid = new Map(loaded.tasks.map((t) => [t.uid, t]))
-    const taskOf = (uid: string): TaskInfo | null => {
-      const task = byUid.get(uid)
-      if (!task) return null
-      // A subtask sits in its parent's list.
-      const list = task.list || (task.parentUid ? (byUid.get(task.parentUid)?.list ?? '') : '')
-      return { title: task.title, list }
-    }
-    return [
-      ...meetingEntries(loaded.rows, taskOf, today, clients),
-      ...lectureEntries(loaded.lectures, (uid) => taskOf(uid), today)
-    ]
+    return derivedEntries({
+      meetings: loaded.rows,
+      lectures: loaded.lectures,
+      tasks: loaded.tasks,
+      clients,
+      today
+    })
   }, [loaded, workspace, today, clients])
 }
 
