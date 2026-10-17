@@ -3644,3 +3644,12 @@ The user's report: the picker only read the text before the caret, Add sometimes
 - **Add did nothing** (`LiveEditor.tsx`): found by driving the built app. The page-level mousedown handler that blurs the editor on a press outside it (so blank space beside the editor does not put the cursor in the text) also caught the picker, which is drawn in a portal outside the editor. A press on a row's padding or icon (an element with no text of its own) blurred the editor, `onBlur` closed the picker, and the click never reached the row; a press on the name's own text slipped through, hence "sometimes". The handler now leaves `[role="listbox"]` alone.
 - **Dark chip** (`LiveEditor.module.css`, `LiveEditor.tsx`): not reproduced. The user saw it turn blue after hovering and moving away, which is the hover shade (`--panel`, dark in dark mode) left on by a stale `:hover`. The shade now follows `data-hover`, set and cleared by the mouseover and mouseout the editor already listens to (`chipUnder`), so a chip drawn fresh never starts shaded. Driven in the built app: blue, shaded under the pointer, blue again after it leaves. A guess at the cause; if a dark chip shows up again, say whether moving over it and off still fixes it.
 - **Checks:** full suite, lint and typecheck pass. Driven in the built app on a scratch library, light and dark: mid-word query, Add with a new name (person added, chip drawn), the click on a row's padding.
+
+## Editor: ending a numbered item renumbers the items below (17 Oct 2026)
+
+The user's report (`POST Placement Interview Briefing`): a list of 1, 2, 3; Enter after the first made a new 2 (the 3 became 4, correctly); Enter again on the empty 2 removed it, but the 3 stayed 3.
+
+- **Cause** (`live-lists.ts`, `enterAt`): Enter on an empty item deleted its marker and nothing else. Enter after an item already renumbered the items below (`renumberAfter`), so only the way out was missing.
+- **Fix:** `renumberAfter` takes a shift (+1 for a new item, -1 for an emptied one) and the "item ends" branch uses -1. The same rule as before: only when the items below were counting up in order from this one; any other numbering is left alone. One undo step, as the Enter was.
+- **Checks:** test in `live-lists.test.ts` (`1. a`, empty `2.`, `3. b`, `4. c` gives `1. a`, blank, `2. b`, `3. c`); full suite, lint and typecheck pass. **Not driven in the app** (unit tests only).
+- **To undo:** drop the `renumberAfter(state, item, -1)` entry from the "item ends" changes.
