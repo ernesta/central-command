@@ -3538,6 +3538,7 @@ The user sent three screenshots of selections in the editor: one with an odd tai
 - **Checks:** typecheck, lint and tests pass; the unfocused case driven in the built app (blurred editor: every selection rectangle transparent).
 
 - **Shift-Enter's backslash is hidden away from the cursor** (17 Oct 2026, the user's choice over writing a plain new line, which other viewers would join). `live-decorations.ts` hides the `\` of a `HardBreak` like an escape's and shows it while the cursor touches it; the file still holds the backslash. A two-space break has nothing to hide. Real-library gate passes; not driven in the app.
+- **The backslash right after Shift-Enter is hidden too (17 Oct 2026, the user's report: a `\` showed on the line above the new, still blank line).** The parse reads a backslash before a blank line as plain text, so there is no `HardBreak` to hide until something is typed. `buildDecorations` also hides a line-ending `\` (odd run, not in code) while the cursor sits on the blank line below it; once the cursor leaves, it shows as the text it is. Unit-tested. The real-library gate's two failures (`@ka` suggestion now takes the whole word; the tables test takes ~4 minutes) fail the same way without this change.
 
 ## Tasks: right-click offers the part you clicked, Shift goes backwards (17 Oct 2026)
 

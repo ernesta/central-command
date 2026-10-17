@@ -242,6 +242,16 @@ describe('a backslash line break', () => {
     expect(shownMarkers(stateFor(doc, at(doc, '\\')))).toEqual(['\\'])
   })
 
+  it('is hidden on the blank line Shift-Enter leaves, before anything is typed', () => {
+    const fresh = '- one\\\n  '
+    expect(hiddenText(stateFor(fresh, fresh.length))).toContain('\\')
+    expect(hiddenText(stateFor(fresh, 0))).not.toContain('\\')
+    const escaped = '- one\\\\\n  '
+    expect(hiddenText(stateFor(escaped, escaped.length))).toEqual(['\\'])
+    const code = '```\none\\\n  '
+    expect(hiddenText(stateFor(code, code.length))).not.toContain('\\')
+  })
+
   it('leaves a two-space break alone', () => {
     expect(hiddenText(stateFor('a  \nb', 5))).not.toContain(' ')
   })

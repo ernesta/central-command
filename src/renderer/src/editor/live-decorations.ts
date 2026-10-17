@@ -124,6 +124,24 @@ export function buildDecorations(
     )
       add('endbreak', last.from, last.from, lineDeco('live-endbreak'))
 
+    // Shift-Enter's new line is blank until something is typed on it, and the parse reads a backslash before a blank line as plain
+    // text, not a break: hide it meanwhile, so it does not flash up as a stray character. Once the cursor leaves, it shows as the text it is.
+    for (const sel of state.selection.ranges) {
+      if (!sel.empty || sel.head < range.from || sel.head > range.to) continue
+      const here = doc.lineAt(sel.head)
+      if (here.number < 2 || here.text.trim() !== '') continue
+      const before = doc.line(here.number - 1)
+      if (!/(?:^|[^\\])(?:\\\\)*\\$/.test(before.text)) continue
+      let inCode = false
+      for (
+        let up: SyntaxNode | null = syntaxTree(state).resolveInner(before.to - 1, -1);
+        up;
+        up = up.parent
+      )
+        if (/Code/.test(up.name)) inCode = true
+      if (!inCode) marker(before.to - 1, before.to, false)
+    }
+
     syntaxTree(state).iterate({
       from: range.from,
       to: range.to,
