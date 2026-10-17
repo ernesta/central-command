@@ -258,8 +258,10 @@ function checkMentions(file: string, text: string): { chips: number } {
     const typing = stateFor(typed, at + 3)
     const suggestion = findSuggestion(typing)
     if (suggestion) {
+      // The cursor is inside a word when text follows it on the line: the suggestion then covers the whole word.
+      const rest = /^[\p{L}\p{N}'’-]+/u.exec(text.slice(at).split('\n')[0])?.[0] ?? ''
       expect(typing.sliceDoc(suggestion.from, suggestion.to), `${file} @${at} suggestion`).toBe(
-        '@ka'
+        `@ka${rest}`
       )
       let result: string | null = null
       liveTarget({
