@@ -2,9 +2,8 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import type { Workspace } from '@shared/settings'
 import type { TrackingYear } from '@shared/tracking/types'
-import { contractToShow } from '@shared/tracking/contracts'
+import { yearToShow } from '@shared/tracking/current-year'
 import { hasContracts } from '@shared/tracking/workspace-weeks'
-import { currentYear } from '@shared/year'
 import { todayIso } from '@shared/time'
 import { useSettings } from './settings-context'
 import { useModuleState } from './use-module-state'
@@ -48,11 +47,12 @@ export function useTrackingYear(workspace: Workspace): {
   const years = offered?.workspace === workspace ? offered.years : null
   // A workspace with contracts has no year but the ones made (none yet: ''); the open ones are read before choosing.
   const today = todayIso()
-  const current = hasContracts(workspace)
-    ? years && open
-      ? contractToShow(years, today, open, remembered.value.shown[workspace])
-      : ''
-    : currentYear(today, settings.yearStarts)
+  const current = yearToShow(workspace, today, {
+    yearStarts: settings.yearStarts,
+    years,
+    open,
+    remembered: remembered.value.shown[workspace]
+  })
   const asked = params.get('year')
   const year = asked && years?.includes(asked) ? asked : current
 
