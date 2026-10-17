@@ -262,6 +262,18 @@ describe('the @ picker', () => {
   })
 
   it.each([
+    ['Met @Laura Web|b (POST)', 'Laura Webb', '@Laura Webb'],
+    ['Met @Lau|ra Webb, then', 'Laura', '@Laura'],
+    ['Met @Laura Webb| (POST)', 'Laura Webb', '@Laura Webb'],
+    ['Met @Laura |Webb', 'Laura ', '@Laura ']
+  ])('takes the rest of the word the cursor is in: %j', (marked, query, text) => {
+    const { view } = openView(marked)
+    const s = findSuggestion(view.state)!
+    expect(s.query).toBe(query)
+    expect(view.state.sliceDoc(s.from, s.to)).toBe(text)
+  })
+
+  it.each([
     'mail me a@b.org|',
     'meet @ noon|',
     'Met @kathy  ras|',

@@ -197,7 +197,11 @@ export function findSuggestion(state: EditorState): Suggestion | null {
     node = node.parent
   )
     if (NOT_A_PLACE_FOR_A_MENTION.has(node.name)) return null
-  return { from: line.from + found.at, to: pos, query: found.query }
+  // A cursor in the middle of a word (the name typed, then a click or arrow back into it) still means the whole word.
+  const rest = /^[\p{L}\p{N}'’-]+/u.exec(state.sliceDoc(pos, line.to))?.[0] ?? ''
+  const inWord = /[\p{L}\p{N}'’-]$/u.test(state.sliceDoc(line.from, pos))
+  const extra = inWord ? rest : ''
+  return { from: line.from + found.at, to: pos + extra.length, query: found.query + extra }
 }
 
 /** The picker's view of a live editor. `caret` is where the cursor is on screen, read while the editor measures. */
