@@ -28,7 +28,7 @@ else Inbox), so tasks landed in the wrong list unseen; Stop, Switch and Discard 
 ## The five states (all with the same top block)
 
 1. Running on a task. 2. Just started, no task ("No task yet", "Pick one below", picker with Recent). 3. Typing a name that matches
-(matches, then the Create row). 4. Typing a new name (Create row only). 5. Stop pressed with no task (as above).
+   (matches, then the Create row). 4. Typing a new name (Create row only). 5. Stop pressed with no task (as above).
 
 ## Stages (stop after each and ask the user)
 
