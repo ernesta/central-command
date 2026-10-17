@@ -272,7 +272,9 @@ describe('blank lines', () => {
   it('counts a line of only spaces as blank, as the real notes have between list items', () => {
     const doc = '- one\n    \n- two\n\nend'
     const state = stateFor(doc, doc.length)
-    const blank = decorationsOf(state).filter((seen) => seen.kind === 'live-void')
+    const blank = decorationsOf(state).filter(
+      (seen) => seen.kind.includes('live-gap') && state.doc.lineAt(seen.from).text.trim() === ''
+    )
     expect(blank.map((seen) => state.doc.lineAt(seen.from).text)).toEqual(['    ', ''])
   })
 })

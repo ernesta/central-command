@@ -5,15 +5,13 @@ import type { SyntaxNode } from '@lezer/common'
 import type { Extent } from './live-reveal'
 
 /*
- * The space between blocks. It depends on what the blocks are and on how many blank lines separate them: none or one look the same,
- * because the first blank line is drawn with no height (`live-void`) and the line after it carries the gap
- * (`live-gap`, `live-gap-item`); each blank line after the first keeps its height (a run of n adds n - 1 lines). The cursor needs somewhere to be, so a first blank line with the cursor
- * on it takes the gap's height itself (`live-gap-cursor`) and the line after the run gives its gap up: the page does not move when the cursor comes or goes. Where that gap is not the block gap (a list's small one, a heading's own
- * padding), the cursor's blank line takes a line's height back instead. Blank lines inside code are code and keep theirs. Nothing here edits the text.
- *
- * Each line that holds text is one of: a heading (which pads itself), a list item, a quote line, a code line, a table row,
- * a rule, or a paragraph line (each line of paragraph text is its own paragraph, as the notes are written). Between two
- * lines of one block there is no gap (a list: a small one; a quote: a full one, as each of its lines is a paragraph); between blocks, and between paragraph lines, there is a gap.
+ * The space between lines. Every line of the note is one unit, a blank line included: a line of text is its own paragraph (the
+ * notes are written that way), so it carries the block gap above it (`live-gap`) and a blank line carries the gap the text typed on
+ * it would carry, so typing there moves nothing and the cursor never changes the layout. Where the gap is not the block gap it is the
+ * list's small one (`live-gap-item`), a quote's (`live-gap-quote`), or none (a heading pads itself, code keeps its own blank lines,
+ * and the first line of a note has nothing above it). A blank line is therefore real: n blank lines are n lines of space.
+ * The note's empty last line (the final line break) is the end of the file and is drawn with no height until the cursor goes there.
+ * Nothing here edits the text.
  */
 
 type Add = (kind: string, from: number, to: number, deco: Decoration) => void
@@ -27,11 +25,9 @@ interface Info {
 
 const isBlank = (text: string): boolean => /^[ \t]*$/.test(text)
 
-const voidLine = Decoration.line({ class: 'live-void' })
 const gapLine = Decoration.line({ class: 'live-gap' })
 const itemGapLine = Decoration.line({ class: 'live-gap-item' })
 const quoteGapLine = Decoration.line({ class: 'live-gap-quote' })
-const cursorGapLine = Decoration.line({ class: 'live-gap-cursor' })
 const padFirst = Decoration.line({ class: 'live-pad-first' })
 const padLast = Decoration.line({ class: 'live-pad-last' })
 
@@ -92,99 +88,52 @@ export function drawSpacing(state: EditorState, range: Extent, add: Add): void {
   const cursorOn = (from: number, to: number): boolean =>
     state.selection.ranges.some((r) => r.head >= from && r.head <= to)
 
-  /** The gap the text line `n` carries over the line before it. */
+  /** The gap the line `n` (text, or blank as the paragraph typed there would be) carries over the line before it. */
   const gapOf = (n: number): 'gap' | 'item' | 'quote' | null => {
     const before = nearest(n, -1)
     if (!before) return null
-    const here = info(n)
+    const line = doc.line(n)
+    const blank = isBlank(line.text)
     const prev = info(before)
-    if (here.kind === 'heading' || prev.kind === 'heading') return null
+    if (prev.kind === 'heading') return null
+    if (blank) {
+      // Blank lines after the first of a run start a paragraph; the first continues what is above it.
+      if (before < n - 1) return 'gap'
+      return prev.kind === 'list' ? 'item' : prev.kind === 'quote' ? 'quote' : 'gap'
+    }
+    const here = info(n)
+    if (here.kind === 'heading') return null
+    // Text after a blank line is a new paragraph, except inside code (a blank line there is code).
+    if (before < n - 1 && !(same(prev, here) && here.kind === 'code')) return 'gap'
     if (!same(prev, here)) return 'gap'
     return here.kind === 'list' ? 'item' : here.kind === 'quote' ? 'quote' : null
   }
-  /** A blank line the cursor is on, with text above it (not in code): the text typed there would be a paragraph. */
-  const cursorBlank = (n: number): boolean => {
-    const line = doc.line(n)
-    return (
-      n > 1 &&
-      isBlank(line.text) &&
-      cursorOn(line.from, line.to) &&
-      !inCode(state, line.from) &&
-      nearest(n, -1) > 0
-    )
-  }
-  /**
-   * Whether text typed on the blank line `n` would carry a gap. Not under a heading (which pads itself), and not directly under a
-   * list item or quote line, where the text would continue it.
-   */
-  const typedGap = (n: number): boolean => {
-    const above = info(nearest(n, -1))
-    if (above.kind === 'heading') return false
-    return !((above.kind === 'list' || above.kind === 'quote') && !isBlank(doc.line(n - 1).text))
-  }
-  /** The blank line with the cursor in the run just above the text line `n` (0 if none). */
-  const cursorInRunAbove = (n: number): number => {
-    const before = nearest(n, -1)
-    for (let m = n - 1; m > before && before > 0; m--) if (cursorBlank(m)) return m
-    return 0
-  }
-  /** The cursor's blank line, when the text line after the run carries the block gap: the cursor's line takes that gap, so the run is as tall as with the cursor away. */
-  const standsInForGap = (n: number): boolean => {
-    if (!cursorBlank(n) || !typedGap(n)) return false
-    const after = nearest(n, 1)
-    if (!after) return false
-    const gap = gapOf(after)
-    return gap === 'gap' || gap === 'quote'
-  }
-  /** The first blank line of a run, with the cursor on it, in a run of two or more: the second blank line is the free one. */
-  const takesLine = (n: number): boolean =>
-    cursorBlank(n) &&
-    !isBlank(doc.line(n - 1).text) &&
-    n < doc.lines &&
-    isBlank(doc.line(n + 1).text)
 
   const first = doc.lineAt(range.from).number
   const lastLine = doc.lineAt(range.to).number
   for (let n = first; n <= lastLine; n++) {
     const line = doc.line(n)
-    if (isBlank(line.text)) {
-      // The cursor's blank line is drawn as the paragraph typed there would be, gap included, so typing moves nothing. The text
-      // after the run gives its gap up (`stoodIn`), so the run is as tall as with the cursor away. A single blank line is just
-      // the gap itself (`live-gap-cursor`: the caret sits in the middle of it).
-      if (cursorBlank(n) && typedGap(n)) {
-        const alone =
-          !isBlank(doc.line(n - 1).text) && n < doc.lines && !isBlank(doc.line(n + 1).text)
-        add('gap', line.from, line.from, alone && standsInForGap(n) ? cursorGapLine : gapLine)
-      }
-      if (cursorOn(line.from, line.to) || inCode(state, line.from)) continue
-      // Only the first blank line of a run is free; each one after it keeps a line's height, so Enter on an empty line
-      // shows (when the cursor is on the first, the second is the free one). A note's empty last line (the final line break)
-      // is the end of the file, never part of a run.
-      const endBreak = n === doc.lines && n > 1 && line.length === 0
-      const free =
-        n === 1 ||
-        !isBlank(doc.line(n - 1).text) ||
-        (n > 2 && !isBlank(doc.line(n - 2).text) && takesLine(n - 1))
-      if (endBreak || free) add('void', line.from, line.from, voidLine)
+    const blank = isBlank(line.text)
+    if (blank && inCode(state, line.from)) continue
+    // The empty last line is the end of the file, drawn with no height (`live-endbreak`) unless the cursor is on it.
+    if (blank && n === doc.lines && n > 1 && line.length === 0 && !cursorOn(line.from, line.to))
       continue
-    }
-    const here = info(n)
-    const before = nearest(n, -1)
-    const after = nearest(n, 1)
-    const prev = before ? info(before) : null
-    const next = after ? info(after) : null
 
     const gap = gapOf(n)
-    // The cursor's blank line in the run before this line stands in for the gap while the cursor is on it.
-    const standing = cursorInRunAbove(n)
-    const stoodIn = standing > 0 && standsInForGap(standing)
-    if (gap && !stoodIn)
+    if (gap)
       add(
         'gap',
         line.from,
         line.from,
         gap === 'gap' ? gapLine : gap === 'item' ? itemGapLine : quoteGapLine
       )
+    if (blank) continue
+
+    const here = info(n)
+    const before = nearest(n, -1)
+    const after = nearest(n, 1)
+    const prev = before ? info(before) : null
+    const next = after ? info(after) : null
     if (here.kind === 'quote' || here.kind === 'code') {
       if (!prev || !same(prev, here)) add('padfirst', line.from, line.from, padFirst)
       if (!next || !same(next, here)) add('padlast', line.from, line.from, padLast)
