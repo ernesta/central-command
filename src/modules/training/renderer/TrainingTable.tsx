@@ -18,7 +18,7 @@ import styles from './TrainingTable.module.css'
 const VISIBLE_LEADS = 3
 
 /**
- * Date, Time, Duration, Mode, Type, Series, Title and summary, Skills, Leads. Clicking anywhere on a row opens
+ * Date, Time, Duration, Format, Type, Series, Title and summary, Skills, Leads. Clicking anywhere on a row opens
  * the entry. Like the Notes table, it is one tab stop: arrow keys, Home/End and PageUp/PageDown move
  * between rows and Enter opens the entry.
  */
@@ -54,14 +54,14 @@ export function TrainingTable({
                   'Date',
                   'Time',
                   'Duration',
-                  'Mode',
+                  'Format',
                   'Type',
                   'Series',
                   'Title and summary',
                   'Skills',
                   'Leads'
                 ]
-              : ['Date', 'Time', 'Duration', 'Mode', 'Series', 'Title and summary', 'Leads']
+              : ['Date', 'Time', 'Duration', 'Format', 'Series', 'Title and summary', 'Leads']
             ).map((label) => (
               <th key={label} className={styles.th} scope="col">
                 {label}
