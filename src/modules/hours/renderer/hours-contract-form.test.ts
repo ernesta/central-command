@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { createElement } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { contract, mount, type, unmount } from './hours-ui-test-utils'
+import { contract, mount, pickDate, type, unmount } from './hours-ui-test-utils'
 
 const files = vi.hoisted(() => ({ value: [] as unknown[] }))
 const year = vi.hoisted(() => ({ value: null as unknown }))
@@ -31,7 +31,6 @@ describe('the new-contract form', () => {
     host.querySelector(`input[aria-label="${label}"]`) as HTMLInputElement
   const fill = (host: HTMLElement): void => {
     type(field(host, 'Name'), 'Luminos')
-    type(field(host, 'Last day'), '2027-03-28')
     type(field(host, 'Clients'), 'Impact, Teaching & Learning')
   }
 
@@ -39,14 +38,14 @@ describe('the new-contract form', () => {
     const host = mount(createElement(ContractFields, { workspace: 'work' }))
     expect(add(host).disabled).toBe(true)
     // 26 weeks from 28 Sep 2026 end on 28 Mar 2027, so the next begins the day after.
-    expect(field(host, 'First day').value).toBe('2027-03-29')
+    expect(host.querySelector('button[aria-label="First day: Mar 29, 2027"]')).not.toBeNull()
   })
 
   it('stays disabled until the name, the last day and the clients are given', () => {
     const host = mount(createElement(ContractFields, { workspace: 'work' }))
     type(field(host, 'Name'), 'Luminos')
     expect(add(host).disabled).toBe(true)
-    type(field(host, 'Last day'), '2027-09-26')
+    pickDate(host, 'Last day', '2027-09-26')
     expect(add(host).disabled).toBe(true)
     type(field(host, 'Clients'), 'Impact')
     expect(add(host).disabled).toBe(false)
@@ -55,9 +54,13 @@ describe('the new-contract form', () => {
   it('stays disabled for a last day that makes no whole weeks, unreadable hours or a blank name', () => {
     const host = mount(createElement(ContractFields, { workspace: 'work' }))
     fill(host)
-    type(field(host, 'Last day'), '2027-04-02')
+    // A day that makes no whole weeks is dimmed and cannot be picked.
+    pickDate(host, 'Last day', '2027-04-02')
     expect(add(host).disabled).toBe(true)
-    type(field(host, 'Last day'), '2027-09-26')
+    expect(
+      (host.querySelector('button[aria-label="Apr 2, 2027"]') as HTMLButtonElement).disabled
+    ).toBe(true)
+    pickDate(host, 'Last day', '2027-09-26')
     expect(add(host).disabled).toBe(false)
     type(field(host, 'Weekly hours'), 'lots')
     expect(add(host).disabled).toBe(true)
@@ -71,7 +74,7 @@ describe('the new-contract form', () => {
     createContract.mockResolvedValue({ ok: true })
     const host = mount(createElement(ContractFields, { workspace: 'work' }))
     fill(host)
-    type(field(host, 'Last day'), '2027-09-26')
+    pickDate(host, 'Last day', '2027-09-26')
     add(host).click()
     expect(createContract).toHaveBeenCalledWith('work', '2027-03-29', '2027-09-26', {
       name: 'Luminos',
@@ -92,7 +95,7 @@ describe('the new-contract form', () => {
     createContract.mockResolvedValue({ ok: false, reason })
     const host = mount(createElement(ContractFields, { workspace: 'work' }))
     fill(host)
-    type(field(host, 'Last day'), '2027-09-26')
+    pickDate(host, 'Last day', '2027-09-26')
     add(host).click()
     await vi.waitFor(() => expect(host.textContent).toContain(message))
     expect(field(host, 'Name').value).toBe('Luminos')
@@ -102,7 +105,7 @@ describe('the new-contract form', () => {
     createContract.mockResolvedValue({ ok: false, reason: 'same-start' })
     const host = mount(createElement(ContractFields, { workspace: 'work' }))
     fill(host)
-    type(field(host, 'Last day'), '2027-09-26')
+    pickDate(host, 'Last day', '2027-09-26')
     add(host).click()
     await vi.waitFor(() => expect(host.textContent).toContain('Another contract starts'))
     type(field(host, 'Name'), 'Luminos 2')

@@ -124,3 +124,12 @@
 .quick:hover {
   background: var(--hover-tint);
 }
+.day:disabled,
+.quick:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.day:disabled:hover,
+.quick:disabled:hover {
+  background: transparent;
+}

@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Button } from '@renderer/components/Button'
+import { DatePicker } from '@renderer/components/DatePicker'
 import { FieldError } from '@renderer/components/FieldError'
 import { Input } from '@renderer/components/Input'
 import { Segmented } from '@renderer/components/Segmented'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
-import { formatDate } from '@shared/time'
-import { addDays, yearEnd } from '@shared/year'
+import { formatDate, todayIso } from '@shared/time'
+import { yearEnd } from '@shared/year'
 import { contractWeeks, dayAfterContract } from '@shared/tracking/workspace-weeks'
 import type { Invoice } from '@shared/tracking/types'
 import {
@@ -39,17 +40,10 @@ export function ContractFields({ workspace }: { workspace: HoursWorkspace }): Re
   const current = data
   const end = current ? yearEnd(current.start, current.weeks) : ''
 
-  const [endDraft, setEndDraft] = useState<{ for: string; value: string } | null>(null)
-  const shownEnd = endDraft?.for === end ? endDraft.value : end
-  const endRefused =
-    current !== null &&
-    ISO.test(shownEnd) &&
-    shownEnd !== end &&
-    !contractWeeks(current.start, shownEnd).ok
-
-  const changeEnd = (value: string): void => {
-    setEndDraft({ for: end, value })
-    if (current && ISO.test(value) && value !== end && contractWeeks(current.start, value).ok)
+  const today = todayIso()
+  // Only a last day that makes whole weeks from the first day is offered, so nothing chosen is ever refused.
+  const changeEnd = (value: string | null): void => {
+    if (current && value && value !== end && contractWeeks(current.start, value).ok)
       void window.api.tracking.setContractEnd(workspace, current.start, value)
   }
 
@@ -104,19 +98,20 @@ export function ContractFields({ workspace }: { workspace: HoursWorkspace }): Re
             <output aria-labelledby="contract-start-label">{formatDate(current.start)}</output>
           </div>
           <div className={styles.field}>
-            <label htmlFor="contract-end" className={styles.label}>
+            <span className={styles.label} id="contract-end-label">
               Contract ends
-            </label>
-            <Input
-              id="contract-end"
-              className={styles.date}
-              type="date"
-              value={shownEnd}
-              min={addDays(current.start, 6)}
-              aria-invalid={endRefused || undefined}
-              onChange={(event) => changeEnd(event.target.value)}
-              onBlur={() => setEndDraft(null)}
-            />
+            </span>
+            <div className={styles.row}>
+              <DatePicker
+                label="Contract ends"
+                value={end}
+                today={today}
+                full
+                clearable={false}
+                isDisabled={(date) => !contractWeeks(current.start, date).ok}
+                onChange={changeEnd}
+              />
+            </div>
           </div>
         </>
       )}
@@ -133,23 +128,28 @@ export function ContractFields({ workspace }: { workspace: HoursWorkspace }): Re
             onChange={(event) => edit(() => setName(event.target.value))}
           />
           <div className={styles.row}>
-            <Input
-              className={styles.date}
-              type="date"
-              aria-label="First day"
-              value={from}
-              aria-invalid={
-                (ISO.test(from) && check?.ok === false && check.reason === 'bad-start') || undefined
+            <DatePicker
+              label="First day"
+              placeholder="First day"
+              value={from || null}
+              today={today}
+              full
+              onChange={(day) =>
+                edit(() => {
+                  setStart(day ?? '')
+                  // A last day that no longer makes whole weeks from the new first day is dropped.
+                  if (!day || !contractWeeks(day, finish).ok) setFinish('')
+                })
               }
-              onChange={(event) => edit(() => setStart(event.target.value))}
             />
-            <Input
-              className={styles.date}
-              type="date"
-              aria-label="Last day"
-              value={finish}
-              aria-invalid={(check?.ok === false && check.reason === 'bad-end') || undefined}
-              onChange={(event) => edit(() => setFinish(event.target.value))}
+            <DatePicker
+              label="Last day"
+              placeholder="Last day"
+              value={finish || null}
+              today={today}
+              full
+              isDisabled={(date) => !ISO.test(from) || !contractWeeks(from, date).ok}
+              onChange={(day) => edit(() => setFinish(day ?? ''))}
             />
           </div>
           <Input

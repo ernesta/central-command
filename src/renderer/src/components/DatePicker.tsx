@@ -31,7 +31,9 @@ export function DatePicker({
   label,
   placeholder = 'No date',
   clearable = true,
-  plain = false
+  plain = false,
+  full = false,
+  isDisabled
 }: {
   value: string | null
   today: string
@@ -41,6 +43,10 @@ export function DatePicker({
   clearable?: boolean
   /** Text only, for a table cell: no border, icon or fill until hovered; empty shows only on row hover. */
   plain?: boolean
+  /** Always the whole date ("Sep 20, 2027"), never "Today" or a year-less short form: for a setting. */
+  full?: boolean
+  /** Days that cannot be chosen are drawn dimmed and do nothing. */
+  isDisabled?: (date: string) => boolean
 }): React.JSX.Element {
   const [open, setOpen] = useState(false)
   const [month, setMonth] = useState(monthOf(value ?? today))
@@ -80,11 +86,13 @@ export function DatePicker({
   const text =
     value === null
       ? placeholder
-      : value === today
-        ? 'Today'
-        : value.slice(0, 4) === today.slice(0, 4)
-          ? formatShortDate(value)
-          : formatDate(value)
+      : full
+        ? formatDate(value)
+        : value === today
+          ? 'Today'
+          : value.slice(0, 4) === today.slice(0, 4)
+            ? formatShortDate(value)
+            : formatDate(value)
 
   return (
     <span
@@ -166,6 +174,7 @@ export function DatePicker({
                   .join(' ')}
                 aria-label={formatDate(day)}
                 aria-pressed={day === value}
+                disabled={isDisabled?.(day) ?? false}
                 onClick={() => choose(day)}
               >
                 {Number(day.slice(8))}
@@ -173,7 +182,12 @@ export function DatePicker({
             ))}
           </div>
           <div className={styles.foot}>
-            <button type="button" className={styles.quick} onClick={() => choose(today)}>
+            <button
+              type="button"
+              className={styles.quick}
+              disabled={isDisabled?.(today) ?? false}
+              onClick={() => choose(today)}
+            >
               Today
             </button>
             {clearable && (

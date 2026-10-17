@@ -11,13 +11,6 @@
   flex-wrap: wrap;
   gap: 8px;
 }
-.date {
-  width: 168px;
-  font-variant-numeric: tabular-nums;
-}
-.date[aria-invalid='true'] {
-  border-color: var(--danger);
-}
 .group {
   display: grid;
   gap: 8px;
