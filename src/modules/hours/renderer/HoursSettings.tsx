@@ -13,6 +13,7 @@ import {
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { WORKSPACE_LABELS } from '@renderer/shell/workspaces'
+import { YearFields } from '@renderer/shell/YearFields'
 import { HOURS_WORKSPACES, TIME_OFF_WORKSPACES, type HoursWorkspace } from '../shared/workspaces'
 import { ClientFields } from './ClientFields'
 import { ContractFields } from './ContractFields'
@@ -137,6 +138,12 @@ export function HoursSettings(): React.JSX.Element {
       <h2 id="hours-settings" className={styles.heading}>
         Hours
       </h2>
+      <div className={styles.block} role="group" aria-labelledby="hours-year-heading">
+        <h3 id="hours-year-heading" className={styles.subheading}>
+          Year
+        </h3>
+        <YearFields />
+      </div>
       {HOURS_WORKSPACES.map((workspace) => (
         <PlanBlock key={workspace} workspace={workspace} />
       ))}
