@@ -21,6 +21,7 @@ import { writeTasksSnapshot } from './snapshot'
 import { TrackingStore } from '../../../main/tracking/store'
 import { trackingMoment } from '@shared/time'
 import { workClients } from '../shared/work-lists'
+import { localMoment, settleSessionTasks } from './session-sweep'
 import { TasksStore } from './tasks-store'
 
 /** One readable copy of the tasks per day, taken when the app starts (nothing is written while there are no tasks). */
@@ -197,7 +198,19 @@ function register(context: MainContext): () => void {
     changing(asUid(uid), () => store.discardIfEmpty(asUid(uid)))
   )
 
+  // A meeting's or training's own task is due on its day and done once the session is over: settled now and every minute.
+  const settle = (): void => {
+    try {
+      for (const w of settleSessionTasks(context.db, store, localMoment())) broadcast(w)
+    } catch (error) {
+      console.error('Could not settle the meeting and training tasks:', error)
+    }
+  }
+  settle()
+  const sweep = setInterval(settle, 60_000)
+
   return () => {
+    clearInterval(sweep)
     for (const channel of Object.values(TASKS_IPC)) ipcMain.removeHandler(channel)
   }
 }
