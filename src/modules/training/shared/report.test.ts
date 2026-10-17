@@ -73,6 +73,31 @@ describe('trainingReportHtml', () => {
     expect(trainingReportHtml(input([row('2025-10-01')]))).not.toContain('of meetings')
   })
 
+  it('counts the lecture task and the self-study task in each row, the total and each skill', () => {
+    const rows = [
+      row('2025-10-01', { task: 'k1', selfStudy: 'k7', skills: ['Networking (RP)'] }),
+      row('2025-10-02', { task: '', selfStudy: '', skills: ['Networking (RP)'] })
+    ]
+    const html = trainingReportHtml({
+      ...input(rows),
+      selfStudy: new Map([
+        ['k1', 15],
+        ['k7', 30]
+      ])
+    })
+    // 1:30 session + 0:15 + 0:30 for the first, 1:30 for the older note
+    expect(html).toContain('<td class="nw r">2:15</td>')
+    expect(html).toContain('<strong>3:45</strong> of 200:00 in 2 entries')
+    expect(html).toContain('Networking (RP): 3:45')
+  })
+
+  it('is byte for byte the same for notes with no self-study task, with or without the tracked map', () => {
+    const rows = [row('2025-10-01', { task: 'k1' }), row('2025-10-02')]
+    const plain = trainingReportHtml(input(rows))
+    expect(trainingReportHtml({ ...input(rows), selfStudy: new Map([['k9', 99]]) })).toBe(plain)
+    expect(trainingReportHtml({ ...input(rows), selfStudy: new Map() })).toBe(plain)
+  })
+
   it('names the file after the year', () => {
     expect(reportFileName('2025-09-22')).toBe('Training log 2025-26.pdf')
   })

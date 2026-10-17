@@ -337,4 +337,26 @@ describe('a lecture total with a self-study task of its own', () => {
       { series: 'Intro', count: 2, minutes: 175 }
     ])
   })
+
+  it('every total gives one number: the entry, the year, the skill and the series agree', () => {
+    const tracked = new Map([
+      ['k1', 15],
+      ['k7', 30]
+    ])
+    const rows = [
+      row('2026-01-01', { ...both, series: 'Intro', skills: ['Networking (RP)'] }),
+      row('2026-01-02', {
+        start: '09:00',
+        end: '09:30',
+        series: 'Intro',
+        skills: ['Networking (RP)']
+      })
+    ]
+    const entries = rows.map((r) => entryMinutes(r, tracked) ?? 0)
+    const year = trainingHours(rows, '2025-09-22', TODAY, 200, tracked)
+    const [summary] = seriesSummaries(rows, TODAY, tracked)
+    expect(year.minutes).toBe(entries[0] + entries[1])
+    expect(year.perSkill[0].minutes).toBe(year.minutes)
+    expect(summary.minutes).toBe(year.minutes)
+  })
 })
