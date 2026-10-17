@@ -176,6 +176,30 @@ describe('a lecture with no series', () => {
   })
 })
 
+describe('a lecture task is due on the date of its note', () => {
+  it('is made with it and takes it when it has none or the date moves', () => {
+    expect(
+      planLectureTask({ task: 'auto', series: null, title: 'Day 1', date: '2026-10-09' }, [])
+    ).toEqual({ kind: 'create', title: 'Day 1', parent: null, due: '2026-10-09' })
+    const own = task('l', 'Day 1', { due: null })
+    expect(
+      planLectureTask({ task: 'l', series: null, title: 'Day 1', date: '2026-10-09' }, [own])
+    ).toEqual({ kind: 'sync', uid: 'l', due: '2026-10-09' })
+    expect(
+      planLectureTask({ task: 'l', series: null, title: 'Day 1', date: '2026-10-09' }, [
+        { ...own, due: '2026-10-09' }
+      ])
+    ).toEqual({ kind: 'none' })
+  })
+  it('is left undated while the note has no date', () => {
+    expect(planLectureTask({ task: 'auto', series: null, title: 'Day 1', date: '' }, [])).toEqual({
+      kind: 'create',
+      title: 'Day 1',
+      parent: null
+    })
+  })
+})
+
 describe('strandedParent', () => {
   const kid = task('s2', 'Other lecture', { list: '', parentUid: 'p1' })
   it('names a series task this page made once the lecture has left it empty', () => {

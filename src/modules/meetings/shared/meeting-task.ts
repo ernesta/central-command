@@ -67,9 +67,9 @@ export type MeetingParent = { uid: string } | { title: string; list: string }
 export type MeetingPlan =
   | { kind: 'none' }
   /** A marked note with a date and a series task to sit under: make the subtask. */
-  | { kind: 'create'; title: string; parent: MeetingParent }
+  | { kind: 'create'; title: string; parent: MeetingParent; due: string }
   /** The subtask follows the note: its title, and the series task it sits under. */
-  | { kind: 'sync'; uid: string; title?: string; parent?: MeetingParent }
+  | { kind: 'sync'; uid: string; title?: string; parent?: MeetingParent; due?: string }
 
 export interface MeetingNote {
   /** The note's `task:` value: a task uid, `auto` or ''. */
@@ -103,7 +103,7 @@ function target(proposal: TaskProposal): MeetingParent {
  * - An older note (`task` empty) is left alone, always.
  * - A marked note (`auto`) gets a subtask once it has a date and its series names a task (`proposeMeetingTask`: found, or made).
  *   Work's series that is no client is its own task in `OTHER_SERIES_CLIENT`'s list.
- * - The subtask then follows the note: titled "<series task> · <date>", under the task the series names.
+ * - The subtask then follows the note: titled "<series task> · <date>", under the task the series names, due on the note's date.
  * - A task the user chose is never renamed or moved: only a subtask whose title this module made is the meeting's own. A task
  *   that is gone is not made again by itself.
  *
@@ -123,7 +123,8 @@ export function planMeetingTask(
       ? {
           kind: 'create',
           title: meetingTaskTitle(proposal.title, note.date),
-          parent: target(proposal)
+          parent: target(proposal),
+          due: note.date
         }
       : { kind: 'none' }
   }
@@ -131,12 +132,21 @@ export function planMeetingTask(
   if (!own || !isOwnMeetingTask(own) || !proposal) return { kind: 'none' }
   const parent = tasks.find((t) => t.uid === own.parentUid)
   const parentOk = !!parent && fold(parent.title.trim()) === fold(proposal.title)
-  const plan: { kind: 'sync'; uid: string; title?: string; parent?: MeetingParent } = {
+  const plan: {
+    kind: 'sync'
+    uid: string
+    title?: string
+    parent?: MeetingParent
+    due?: string
+  } = {
     kind: 'sync',
     uid: own.uid
   }
   if (!parentOk) plan.parent = target(proposal)
   const title = meetingTaskTitle(proposal.title, note.date)
   if (title !== own.title) plan.title = title
-  return plan.title === undefined && plan.parent === undefined ? { kind: 'none' } : plan
+  if (own.due !== note.date) plan.due = note.date
+  return plan.title === undefined && plan.parent === undefined && plan.due === undefined
+    ? { kind: 'none' }
+    : plan
 }

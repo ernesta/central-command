@@ -38,11 +38,11 @@ export function useLectureTask(
   const busy = useRef(false)
   // Series tasks this page made: the series is typed letter by letter, so one may be left behind and is put in the trash.
   const made = useRef(new Set<string>())
-  const { task, series, title } = meta
+  const { task, series, title, date } = meta
 
   useEffect(() => {
     if (!ready || tasks === null || busy.current) return
-    const plan = planLectureTask({ task, series, title }, tasks)
+    const plan = planLectureTask({ task, series, title, date }, tasks)
     if (plan.kind === 'none') return
     const run = async (): Promise<void> => {
       busy.current = true
@@ -52,6 +52,7 @@ export function useLectureTask(
             workspace: 'research',
             title: plan.title,
             status: 'doing',
+            ...(plan.due ? { due: plan.due } : {}),
             ...(plan.parent
               ? { parentUid: await parentUid(plan.parent, made.current) }
               : { list: TRAINING_LIST })
@@ -61,6 +62,7 @@ export function useLectureTask(
           const left = tasks.find((t) => t.uid === plan.uid)?.parentUid ?? null
           await window.api.tasks.update(plan.uid, {
             ...(plan.title !== undefined ? { title: plan.title } : {}),
+            ...(plan.due !== undefined ? { due: plan.due } : {}),
             ...(plan.parent
               ? { parentUid: await parentUid(plan.parent, made.current) }
               : plan.parent === null
@@ -85,7 +87,7 @@ export function useLectureTask(
     // The series and the title are typed letter by letter: nothing is made or moved until they settle.
     const timer = setTimeout(() => void run(), SETTLE_MS)
     return () => clearTimeout(timer)
-  }, [ready, tasks, task, series, title, setTask])
+  }, [ready, tasks, task, series, title, date, setTask])
 
   return { tasks }
 }

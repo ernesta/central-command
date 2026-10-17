@@ -84,6 +84,7 @@ describe('planMeetingTask', () => {
   it('a marked note makes its subtask under the series task that exists', () => {
     expect(planMeetingTask('research', note, null, [series])).toEqual({
       kind: 'create',
+      due: '2026-10-12',
       title: 'Supervision · Oct 12, 2026',
       parent: { uid: 's' }
     })
@@ -91,6 +92,7 @@ describe('planMeetingTask', () => {
   it('makes the series task too when there is none (Other is Meetings)', () => {
     expect(planMeetingTask('research', { ...note, series: 'Other' }, null, [])).toEqual({
       kind: 'create',
+      due: '2026-10-12',
       title: 'Meetings · Oct 12, 2026',
       parent: { title: 'Meetings', list: 'Meetings' }
     })
@@ -105,6 +107,7 @@ describe('planMeetingTask', () => {
       )
     ).toEqual({
       kind: 'create',
+      due: '2026-10-12',
       title: 'Document Automation – Vecten · Oct 12, 2026',
       parent: { title: 'Document Automation – Vecten', list: 'Teaching & Learning' }
     })
@@ -113,6 +116,7 @@ describe('planMeetingTask', () => {
     })
     expect(planMeetingTask('work', { ...note, series: 'impact' }, ['Impact'], [])).toEqual({
       kind: 'create',
+      due: '2026-10-12',
       title: 'Impact meetings · Oct 12, 2026',
       parent: { title: 'Impact meetings', list: 'Impact' }
     })
@@ -122,7 +126,13 @@ describe('planMeetingTask', () => {
     uid: 'm',
     title: 'Supervision · Oct 12, 2026',
     list: '',
-    parentUid: 's'
+    parentUid: 's',
+    due: '2026-10-12'
+  })
+  it('a subtask with no due date, or the wrong one, is dated by the note', () => {
+    expect(
+      planMeetingTask('research', { ...note, task: 'm' }, null, [series, { ...sub, due: null }])
+    ).toEqual({ kind: 'sync', uid: 'm', due: '2026-10-12' })
   })
   it('a subtask in step needs nothing', () => {
     expect(planMeetingTask('research', { ...note, task: 'm' }, null, [series, sub])).toEqual({
@@ -132,7 +142,12 @@ describe('planMeetingTask', () => {
   it('the subtask follows the date', () => {
     expect(
       planMeetingTask('research', { ...note, task: 'm', date: '2026-10-13' }, null, [series, sub])
-    ).toEqual({ kind: 'sync', uid: 'm', title: 'Supervision · Oct 13, 2026' })
+    ).toEqual({
+      kind: 'sync',
+      uid: 'm',
+      title: 'Supervision · Oct 13, 2026',
+      due: '2026-10-13'
+    })
   })
   it('the subtask follows the series: new title, new series task', () => {
     const lab = task({ uid: 'l', title: 'Rastle Lab', list: 'Meetings' })

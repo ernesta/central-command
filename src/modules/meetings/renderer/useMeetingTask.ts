@@ -46,12 +46,14 @@ export function useMeetingTask(
             workspace,
             title: plan.title,
             status: 'doing',
+            due: plan.due,
             parentUid: await parentUid(workspace, plan.parent)
           })
           setTask(sub.uid)
         } else {
           await window.api.tasks.update(plan.uid, {
             ...(plan.title !== undefined ? { title: plan.title } : {}),
+            ...(plan.due !== undefined ? { due: plan.due } : {}),
             ...(plan.parent ? { parentUid: await parentUid(workspace, plan.parent) } : {})
           })
         }

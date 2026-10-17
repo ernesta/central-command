@@ -19,15 +19,17 @@ export type ParentTarget = { uid: string } | { title: string; list: string }
 export type LecturePlan =
   | { kind: 'none' }
   /** A marked note with no task yet: make it, under the series task, or on its own (`parent: null`) in Training. */
-  | { kind: 'create'; title: string; parent: ParentTarget | null }
+  | { kind: 'create'; title: string; parent: ParentTarget | null; due?: string }
   /** The task follows the note: its title, and where it sits (under the series task, or `parent: null` for top level in Training). */
-  | { kind: 'sync'; uid: string; title?: string; parent?: ParentTarget | null }
+  | { kind: 'sync'; uid: string; title?: string; parent?: ParentTarget | null; due?: string }
 
 export interface LectureNote {
   /** The note's `task:` value: a task uid, `auto` or ''. */
   task: string
   series: string | null
   title: string
+  /** YYYY-MM-DD, or '' while the note has none: the task is due that day. */
+  date?: string
 }
 
 /** An open top-level task called the series (in "Training" first, else any list), or the one to create. */
@@ -51,6 +53,7 @@ const named = (title: string): boolean => title !== '' && title !== 'Untitled'
  *   level in Training).
  * - The task takes the note's title, is a subtask under the task its series names, and is a task of its own while the note has no
  *   series: adding a series moves it under the series task, clearing it takes it back out.
+ * - The task is due on the note's date, and follows it.
  * - A task that is not the lecture's own is never renamed or moved: a subtask is always the lecture's, a top-level task only when
  *   it is in Training with nothing under it. A task that is gone is not made again by itself.
  *
@@ -59,20 +62,30 @@ const named = (title: string): boolean => title !== '' && title !== 'Untitled'
 export function planLectureTask(note: LectureNote, tasks: readonly Task[]): LecturePlan {
   const series = (note.series ?? '').trim()
   const title = note.title.trim()
+  const due = note.date || undefined
   if (note.task === 'auto') {
     if (series) {
       return {
         kind: 'create',
         title: title || 'Untitled',
-        parent: parentFor(series, tasks)
+        parent: parentFor(series, tasks),
+        ...(due ? { due } : {})
       }
     }
-    return named(title) ? { kind: 'create', title: title, parent: null } : { kind: 'none' }
+    return named(title)
+      ? { kind: 'create', title: title, parent: null, ...(due ? { due } : {}) }
+      : { kind: 'none' }
   }
   if (!note.task) return { kind: 'none' }
   const own = tasks.find((t) => t.uid === note.task)
   if (!own) return { kind: 'none' }
-  const plan: { kind: 'sync'; uid: string; title?: string; parent?: ParentTarget | null } = {
+  const plan: {
+    kind: 'sync'
+    uid: string
+    title?: string
+    parent?: ParentTarget | null
+    due?: string
+  } = {
     kind: 'sync',
     uid: own.uid
   }
@@ -94,7 +107,10 @@ export function planLectureTask(note: LectureNote, tasks: readonly Task[]): Lect
       )
     }
   }
-  return plan.title === undefined && plan.parent === undefined ? { kind: 'none' } : plan
+  if (due && own.due !== due) plan.due = due
+  return plan.title === undefined && plan.parent === undefined && plan.due === undefined
+    ? { kind: 'none' }
+    : plan
 }
 
 /**
