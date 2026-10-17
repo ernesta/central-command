@@ -71,8 +71,6 @@ const selectionLayer = layer({
       if (range.empty) continue
       let to = range.to
       if (view.state.doc.lineAt(to).from === to && to - 1 > range.from) to -= 1
-      // A selection that ends on blank lines would show a stub on each; it stops at the last line with text.
-      while (view.state.doc.lineAt(to).length === 0 && to - 1 > range.from) to -= 1
       for (const marker of RectangleMarker.forRange(
         view,
         'cm-selectionBackground',
