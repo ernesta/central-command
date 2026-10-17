@@ -400,7 +400,7 @@
   white-space: nowrap;
   cursor: default;
 }
-.wrap :global(.live-chip):hover {
+.wrap :global(.live-chip[data-hover]) {
   background: var(--panel);
 }
 .wrap :global(.live-chip)::before {

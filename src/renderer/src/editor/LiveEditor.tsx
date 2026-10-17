@@ -39,6 +39,13 @@ export interface LiveEditorProps {
  * The notes editor where the document is the Markdown text itself (CodeMirror 6): markers such as `### `, `**` and
  * `](url)` are real characters, drawn only on the block or span the cursor is in. See `live-decorations.ts`.
  */
+/**
+ * The chip a pointer event is on. A chip's hover shade follows these events rather than `:hover`, which the browser can
+ * leave on a chip that was drawn under, or next to, a pointer that has not moved since.
+ */
+const chipUnder = (event: React.MouseEvent): HTMLElement | null =>
+  (event.target as HTMLElement).closest<HTMLElement>('.live-chip')
+
 export function LiveEditor({
   initial,
   onChange,
@@ -183,8 +190,14 @@ export function LiveEditor({
         controller.dismiss()
         onBlur()
       }}
-      onMouseOver={onMouseOver}
-      onMouseOut={onMouseOut}
+      onMouseOver={(event) => {
+        chipUnder(event)?.setAttribute('data-hover', '')
+        onMouseOver(event)
+      }}
+      onMouseOut={(event) => {
+        chipUnder(event)?.removeAttribute('data-hover')
+        onMouseOut()
+      }}
       // The space around the text still puts the cursor in the note.
       onClick={(event) => {
         if (event.target === event.currentTarget) viewRef.current?.focus()
