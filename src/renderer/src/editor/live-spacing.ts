@@ -5,9 +5,9 @@ import type { SyntaxNode } from '@lezer/common'
 import type { Extent } from './live-reveal'
 
 /*
- * The space between blocks. It depends on what the blocks are and on nothing else: no blank line between two paragraphs,
- * one or five look the same, because a blank line is drawn with no height (`live-void`) and the line after it carries the gap
- * (`live-gap`, `live-gap-item`). A blank line takes its height back while the cursor is on it, so the cursor has somewhere to
+ * The space between blocks. It depends on what the blocks are and on how many blank lines separate them: none or one look the same,
+ * because the first blank line is drawn with no height (`live-void`) and the line after it carries the gap
+ * (`live-gap`, `live-gap-item`); each blank line after the first keeps its height (a run of n adds n - 1 lines). A blank line takes its height back while the cursor is on it, so the cursor has somewhere to
  * be; blank lines inside code are code and keep theirs. Nothing here edits the text.
  *
  * Each line that holds text is one of: a heading (which pads itself), a list item, a quote line, a code line, a table row,
@@ -95,7 +95,11 @@ export function drawSpacing(state: EditorState, range: Extent, add: Add): void {
   for (let n = first; n <= lastLine; n++) {
     const line = doc.line(n)
     if (isBlank(line.text)) {
-      if (!cursorOn(line.from, line.to) && !inCode(state, line.from))
+      if (cursorOn(line.from, line.to) || inCode(state, line.from)) continue
+      // Only the first blank line of a run is free; each one after it keeps a line's height, so Enter on an empty line
+      // shows. A note's empty last line (the final line break) is the end of the file, never part of a run.
+      const endBreak = n === doc.lines && n > 1 && line.length === 0
+      if (endBreak || n === 1 || !isBlank(doc.line(n - 1).text))
         add('void', line.from, line.from, voidLine)
       continue
     }

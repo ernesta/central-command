@@ -87,8 +87,8 @@
   line-height: 0.9;
 }
 
-/* Space between blocks (`live-spacing.ts`): a blank line has no height unless the cursor is on it, and the line after a block boundary carries the gap,
-   so one blank line and five look the same. Spelled out to outrank the `.cm-line` padding reset. */
+/* Space between blocks (`live-spacing.ts`): the first blank line of a run has no height unless the cursor is on it (each one after it keeps a line's height), and the line after a block boundary carries the gap,
+   so no blank line and one look the same. Spelled out to outrank the `.cm-line` padding reset. */
 .wrap :global(.cm-editor) :global(.cm-line.live-void) {
   height: 0;
   min-height: 0;

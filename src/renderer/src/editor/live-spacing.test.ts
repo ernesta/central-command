@@ -21,22 +21,46 @@ const textLines = (rows: string[][], doc: string): string[][] =>
   rows.filter((_, i) => doc.split('\n')[i].trim() !== '')
 
 describe('the space between blocks', () => {
-  it('is the same with no blank line, one or five between two paragraphs', () => {
-    const results = ['a\nb', 'a\n\nb', 'a\n\n\n\n\n\nb'].map((doc) => textLines(spacing(doc), doc))
+  it('is the same with no blank line or one between two paragraphs', () => {
+    const results = ['a\nb', 'a\n\nb'].map((doc) => textLines(spacing(doc), doc))
     expect(results[0]).toEqual([[], ['gap']])
     expect(results[1]).toEqual(results[0])
-    expect(results[2]).toEqual(results[0])
   })
 
-  it('draws blank lines with no height, unless the cursor is on one', () => {
+  it('draws the first blank line of a run with no height and keeps every one after it', () => {
+    const void_ = (doc: string, at?: number): boolean[] =>
+      spacing(doc, at).map((row) => row.includes('void'))
+    expect(void_('a\n\nb')).toEqual([false, true, false])
+    expect(void_('a\n\n\nb')).toEqual([false, true, false, false])
+    expect(void_('a\n\n\n\n\nb')).toEqual([false, true, false, false, false, false])
+  })
+
+  it('keeps the line with the cursor, and the first blank line again once it is not the first', () => {
     const doc = 'a\n\n\nb'
-    expect(spacing(doc, doc.length).map((row) => row.includes('void'))).toEqual([
+    expect(spacing(doc, 2).map((row) => row.includes('void'))).toEqual([false, false, false, false])
+    expect(spacing(doc, 3).map((row) => row.includes('void'))).toEqual([false, true, false, false])
+  })
+
+  it('counts a run at the start of a note and after a heading the same way', () => {
+    expect(spacing('\n\na', 3).map((r) => r.includes('void'))).toEqual([true, false, false])
+    expect(spacing('## h\n\n\nb', 8).map((r) => r.includes('void'))).toEqual([
       false,
       true,
-      true,
+      false,
       false
     ])
-    expect(spacing(doc, 2).map((row) => row.includes('void'))).toEqual([false, false, true, false])
+  })
+
+  it('never counts the empty last line of a note as part of a run', () => {
+    // 'a', one blank line, then the final line break: one blank line and the end of the file.
+    expect(spacing('a\n\n', 0).map((r) => r.includes('void'))).toEqual([false, true, true])
+    // Two blank lines: the second shows, the end of the file does not.
+    expect(spacing('a\n\n\n', 0).map((r) => r.includes('void'))).toEqual([false, true, false, true])
+  })
+
+  it('does not count blank lines inside code', () => {
+    const doc = 'a\n```\nx\n\n\ny\n```\nb'
+    expect(spacing(doc, 0).map((r) => r.includes('void'))).toEqual(new Array(8).fill(false))
   })
 
   it('gives a list after text, and text after a list, the block gap, and items a small one', () => {
