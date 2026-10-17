@@ -6,7 +6,7 @@
 }
 .table {
   width: 100%;
-  min-width: 960px;
+  min-width: 1040px;
   border-collapse: separate;
   border-spacing: 0;
   background: var(--surface);

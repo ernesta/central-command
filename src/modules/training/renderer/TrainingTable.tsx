@@ -6,14 +6,19 @@ import type { Person } from '@shared/people'
 import { formatDate, formatDuration } from '@shared/time'
 import { formatTimeRange, initialsFor } from '@modules/meetings/shared/query'
 import { entryMinutes, isUpcoming, type SelfStudy } from '../shared/rules'
-import { typeLabel, type TrainingIndexRow, type TrainingWorkspace } from '../shared/types'
+import {
+  TRAINING_MODE_LABELS,
+  typeLabel,
+  type TrainingIndexRow,
+  type TrainingWorkspace
+} from '../shared/types'
 import { entryRoute } from './training-paths'
 import styles from './TrainingTable.module.css'
 
 const VISIBLE_LEADS = 3
 
 /**
- * Date, Time, Duration, Type, Series, Title and summary, Skills, Leads. Clicking anywhere on a row opens
+ * Date, Time, Duration, Mode, Type, Series, Title and summary, Skills, Leads. Clicking anywhere on a row opens
  * the entry. Like the Notes table, it is one tab stop: arrow keys, Home/End and PageUp/PageDown move
  * between rows and Enter opens the entry.
  */
@@ -49,13 +54,14 @@ export function TrainingTable({
                   'Date',
                   'Time',
                   'Duration',
+                  'Mode',
                   'Type',
                   'Series',
                   'Title and summary',
                   'Skills',
                   'Leads'
                 ]
-              : ['Date', 'Time', 'Duration', 'Series', 'Title and summary', 'Leads']
+              : ['Date', 'Time', 'Duration', 'Mode', 'Series', 'Title and summary', 'Leads']
             ).map((label) => (
               <th key={label} className={styles.th} scope="col">
                 {label}
@@ -93,6 +99,7 @@ export function TrainingTable({
                 <td className={styles.nowrap}>
                   {duration === null ? '—' : formatDuration(duration)}
                 </td>
+                <td className={styles.nowrap}>{row.mode ? TRAINING_MODE_LABELS[row.mode] : '—'}</td>
                 {research && (
                   <td className={styles.nowrap}>
                     {row.type ? (
