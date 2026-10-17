@@ -1,10 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import { weekTotals } from '@shared/tracking/plan'
-import { weekMinutes } from '@shared/tracking/totals'
-import { emptyYear, WORK_PLAN, type Moment, type TrackingYear } from '@shared/tracking/types'
+import { dayMinutes, weekMinutes } from '@shared/tracking/totals'
+import {
+  DEFAULT_PLAN,
+  emptyYear,
+  WORK_PLAN,
+  type Moment,
+  type TrackingYear
+} from '@shared/tracking/types'
 import { addDays } from '@shared/year'
 import { periodOfWeek, periodsOf } from './periods'
-import { thisPeriod, thisWeek, weekFigures } from './so-far'
+import { periodFigures, thisPeriod, thisWeek, weekFigures } from './so-far'
 
 const now: Moment = { date: '2026-10-15', time: '10:00' }
 // A Work contract whose weeks start on a Friday, with time in two clients.
@@ -37,5 +43,39 @@ describe('what Home and the Hours page both show', () => {
     const period = thisPeriod(contract, now)
     expect(period?.minutes).toBeGreaterThan(0)
     expect(period?.clients.reduce((n, c) => n + c.minutes, 0)).toBe(period?.minutes)
+  })
+})
+
+describe('periodFigures: the one decision about time so far', () => {
+  it('a plan with a whole-week aim is shown by the invoice period: the month, with its clients', () => {
+    const f = periodFigures(contract, now)
+    const period = thisPeriod(contract, now)
+    expect(f.label).toBe('This month')
+    expect(f.minutes).toBe(period?.minutes)
+    expect(f.aim).toBe(period?.plan)
+    expect(f.clients).toEqual(period?.clients)
+    expect(f.today).toBe(dayMinutes(contract, now.date, now))
+  })
+
+  it('a contract invoiced by week is shown by the week', () => {
+    const weekly = { ...contract, invoice: 'week' as const }
+    const f = periodFigures(weekly, now)
+    expect(f.label).toBe('This week')
+    expect(f.minutes).toBe(thisPeriod(weekly, now)?.minutes)
+  })
+
+  it('any other plan is shown by the week, with no clients', () => {
+    const research: TrackingYear = {
+      ...emptyYear('2026-09-14', DEFAULT_PLAN),
+      adjusts: [{ id: 'a', date: '2026-10-15', label: 'Reading', minutes: 90 }]
+    }
+    const week = thisWeek(research, now)
+    const f = periodFigures(research, now)
+    expect(f.label).toBe('This week')
+    expect(f.minutes).toBe(weekMinutes(research, week, now))
+    expect(f.minutes).toBe(90)
+    expect(f.aim).toBe(weekFigures(research, week, now).aim)
+    expect(f.today).toBe(90)
+    expect(f.clients).toEqual([])
   })
 })

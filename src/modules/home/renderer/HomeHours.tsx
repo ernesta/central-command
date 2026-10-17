@@ -3,13 +3,11 @@ import { useNow } from '@renderer/state/use-now'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { formatHours } from '@shared/tracking/format'
 import { hasAim } from '@shared/tracking/plan'
-import { dayMinutes } from '@shared/tracking/totals'
-import { invoiceOf } from '@shared/tracking/types'
 import { inYear } from '@shared/year'
 import { hoursBase } from '../../hours/renderer/hours-paths'
 import { PeriodSummary } from '../../hours/renderer/PeriodSummary'
 import { useShownYear } from '../../hours/renderer/useMeetingHours'
-import { thisPeriod, thisWeek, weekFigures } from '../../hours/shared/so-far'
+import { periodFigures } from '../../hours/shared/so-far'
 import type { HomeWorkspace } from '../shared/types'
 import { StyledLink } from './HomeParts'
 import styles from './Home.module.css'
@@ -25,12 +23,7 @@ export function HomeHours({ workspace }: { workspace: HomeWorkspace }): React.JS
   const data = useShownYear(workspace, stored, now.date)
   if (!data || !inYear(now.date, data.start, data.weeks)) return null
 
-  // The same choice the Hours page makes: a plan with a whole-week aim is shown by invoice period, any other by week.
-  const period = data.plan.weekAim ? thisPeriod(data, now) : null
-  const label = period && invoiceOf(data) === 'month' ? 'This month' : 'This week'
-  const week = weekFigures(data, thisWeek(data, now), now)
-  const minutes = period ? period.minutes : week.minutes
-  const aim = period ? period.plan : week.aim
+  const { label, minutes, aim, today, clients } = periodFigures(data, now)
 
   return (
     <Panel label={label} actions={<StyledLink to={hoursBase(workspace)}>Hours</StyledLink>}>
@@ -41,10 +34,10 @@ export function HomeHours({ workspace }: { workspace: HomeWorkspace }): React.JS
       ) : (
         <p className={styles.total}>{formatHours(minutes)}</p>
       )}
-      <p className={styles.small}>Today {formatHours(dayMinutes(data, now.date, now))}</p>
-      {period && period.clients.length > 0 && (
+      <p className={styles.small}>Today {formatHours(today)}</p>
+      {clients.length > 0 && (
         <ul className={styles.list}>
-          {period.clients.map((c) => (
+          {clients.map((c) => (
             <li key={c.client ?? ''} className={styles.plain}>
               <span className={styles.grow}>{c.client ?? 'No client'}</span>
               <span className={styles.num}>{formatHours(c.minutes)}</span>
