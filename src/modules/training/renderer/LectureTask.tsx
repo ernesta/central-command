@@ -14,6 +14,7 @@ export function LectureTask({
   series,
   tasks,
   onRemake,
+  selfStudy,
   children
 }: {
   /** The note's `task:` value. */
@@ -21,6 +22,8 @@ export function LectureTask({
   series: string | null
   tasks: readonly Task[] | null
   onRemake: () => void
+  /** The lecture's self-study task, once it exists: a short link beside the lecture's own. */
+  selfStudy?: Task
   /** The lecture's hours, on the same line as its task. */
   children?: React.ReactNode
 }): React.JSX.Element | null {
@@ -59,6 +62,11 @@ export function LectureTask({
         <span className={styles.list}>
           {parent ? `${parent.title} · ${parent.list}` : own.list}
         </span>
+        {selfStudy && (
+          <Link className={styles.title} to={taskRoute(selfStudy.workspace, selfStudy.uid)}>
+            Self-study
+          </Link>
+        )}
       </div>
       {children}
     </Panel>

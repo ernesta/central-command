@@ -26,6 +26,7 @@ import { entryRoute, trainingBase, useTrainingWorkspace } from './training-paths
 import { TrainingMetaFields } from './TrainingMetaFields'
 import { useLectureTask } from './useLectureTask'
 import { useSelfStudy } from './useSelfStudy'
+import { useSelfStudyTask } from './useSelfStudyTask'
 import { useTrainingSession } from './useTrainingSession'
 import styles from './TrainingEntryPage.module.css'
 
@@ -106,9 +107,14 @@ function EntryView({
 
   const { meta, body, save, error, conflict, reloadedFromDisk, problems, updatedAt } = snapshot
   const { tasks } = useLectureTask(meta, ready, (task) => session.setMeta({ task }))
+  const { ensure } = useSelfStudyTask(meta, ready, tasks, (selfStudyTask) =>
+    session.setMeta({ selfStudy: selfStudyTask })
+  )
   const selfStudy = useSelfStudy()
   const lectureUid = lectureTaskUid(meta.task)
-  const studied = lectureUid ? (selfStudy.get(lectureUid) ?? 0) : 0
+  const studied =
+    (lectureUid ? (selfStudy.get(lectureUid) ?? 0) : 0) +
+    (meta.selfStudy ? (selfStudy.get(meta.selfStudy) ?? 0) : 0)
   useDocumentTitle(meta.title)
 
   // Back goes to wherever the user came from (the list); with no history, the list.
@@ -133,10 +139,11 @@ function EntryView({
     try {
       await session.dispose() // saves anything pending first
       await window.api.training.delete(session.getRef())
-      // The lecture's task goes with it (to the Tasks trash); the hours tracked on it stay in Hours.
-      if (lectureUid) {
+      // The lecture's tasks go with it (to the Tasks trash; the series' self-study task stays); the hours tracked on them stay in Hours.
+      for (const uid of [lectureUid, meta.selfStudy]) {
+        if (!uid) continue
         try {
-          await window.api.tasks.delete(lectureUid)
+          await window.api.tasks.delete(uid)
         } catch (e) {
           console.error('Could not delete the lecture task:', e)
         }
@@ -256,8 +263,9 @@ function EntryView({
           series={meta.series}
           tasks={tasks}
           onRemake={() => session.setMeta({ task: 'auto' })}
+          selfStudy={tasks?.find((t) => t.uid === meta.selfStudy)}
         >
-          <LectureHours meta={meta} tasks={tasks} />
+          <LectureHours meta={meta} tasks={tasks} ensure={ensure} />
         </LectureTask>
       )}
 
