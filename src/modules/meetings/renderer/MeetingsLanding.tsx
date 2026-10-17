@@ -19,7 +19,8 @@ import { recentAndUpcoming, seriesLine, seriesSummaries } from '../shared/landin
 import { meetingsInYear, meetingsInYearOrPlanned } from '../shared/hours'
 import { mine, openTodos } from '../shared/open-todos'
 import { MODE_LABELS, initialsFor, isUpcoming } from '../shared/query'
-import { durationMinutes, formatDate, formatDuration, formatShortDate } from '../shared/time'
+import { formatDate, formatShortDate } from '../shared/time'
+import { rowTimeLine } from '@modules/training/shared/row-time'
 import { fixedSeries, tracksSkills, type MeetingIndexRow } from '../shared/types'
 import { MeetingsHours } from './MeetingsHours'
 import { NewMeetingButton } from './NewMeetingButton'
@@ -35,19 +36,11 @@ import { useMeetingsList } from './useMeetingsList'
 
 type Whose = 'everyone' | 'mine'
 
-/** What to say at the right of a "recent and upcoming" row. */
+/** What to say at the right of a "recent and upcoming" row: the same parts for an upcoming and a past one. */
 function noteFor(row: MeetingIndexRow, today: string): string {
-  if (isUpcoming(row, today)) {
-    const topics =
-      row.topicCount > 0
-        ? `${row.topicCount} ${row.topicCount === 1 ? 'topic' : 'topics'} ready`
-        : ''
-    return [row.start ?? 'No time yet', topics].filter(Boolean).join(' · ')
-  }
-  const minutes = durationMinutes(row.start, row.end)
-  return [minutes === null ? '' : formatDuration(minutes), row.mode ? MODE_LABELS[row.mode] : '']
-    .filter(Boolean)
-    .join(' · ')
+  const time = rowTimeLine(row, row.mode ? MODE_LABELS[row.mode] : null)
+  if (!isUpcoming(row, today) || row.topicCount === 0) return time
+  return `${time} · ${row.topicCount} ${row.topicCount === 1 ? 'topic' : 'topics'} ready`
 }
 
 /** The Meetings landing page: open TODOs, the series, and the recent and upcoming meetings. */
