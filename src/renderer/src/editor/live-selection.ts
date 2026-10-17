@@ -6,13 +6,18 @@ import {
 } from '@codemirror/state'
 import { layer, RectangleMarker, type LayerMarker } from '@codemirror/view'
 
-const HEADING_MARKER = /^#{1,6}[ \t]+/
+/**
+ * What a line starts with before its text: an optional quote or list prefix (never snapped to, it is drawn as its own
+ * thing), then the hidden markers of a heading or of spans that open at the text's first character.
+ */
+const LEADING_MARKERS =
+  /^([ \t]*(?:>[ \t]*)*(?:(?:[-+*]|\d+[.)])[ \t]+(?:\[[ xX]\][ \t]+)?)?)((?:#{1,6}[ \t]+|\*\*|__|~~|[*_`])+)/
 
 /**
- * A selection that reaches into the next heading's line from above ends at the heading's text, which is where the
- * pointer is when it sits at the line's edge; the hidden `## ` lies before that point, so deleting took it too.
- * Such a selection now ends at the start of the line. Only when the selection starts on an earlier line: one that
- * starts inside the heading's own text is meant to begin there.
+ * A selection that reaches into the next line from above ends at that line's text, which is where the pointer is
+ * when it sits at the line's edge; the hidden `## ` of a heading or `**` / `*` that open the line lie before that
+ * point, so deleting took them too. Such a selection now ends at the start of the line. Only when the selection
+ * starts on an earlier line: one that starts inside the line's own text is meant to begin there.
  */
 export const snapSelectionToLineStart = EditorState.transactionFilter.of(
   (tr): TransactionSpec[] => {
@@ -23,8 +28,10 @@ export const snapSelectionToLineStart = EditorState.transactionFilter.of(
       const to = range.to
       const line = tr.newDoc.lineAt(to)
       if (range.from >= line.from) return range
-      const marker = HEADING_MARKER.exec(line.text)
-      if (!marker || to !== line.from + marker[0].length) return range
+      const marker = LEADING_MARKERS.exec(line.text)
+      if (!marker) return range
+      const textStart = line.from + marker[1].length
+      if (to < textStart || to > textStart + marker[2].length) return range
       changed = true
       return range.anchor < range.head
         ? EditorSelection.range(range.anchor, line.from)
@@ -64,6 +71,8 @@ const selectionLayer = layer({
       if (range.empty) continue
       let to = range.to
       if (view.state.doc.lineAt(to).from === to && to - 1 > range.from) to -= 1
+      // A selection that ends on blank lines would show a stub on each; it stops at the last line with text.
+      while (view.state.doc.lineAt(to).length === 0 && to - 1 > range.from) to -= 1
       for (const marker of RectangleMarker.forRange(
         view,
         'cm-selectionBackground',

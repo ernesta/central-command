@@ -52,13 +52,12 @@
 .wrap :global(.cm-editor) :global(.cm-selectionLayer) {
   display: none;
 }
-.wrap :global(.cm-editor) :global(.cm-selectionBackground),
-.wrap
-  :global(.cm-editor.cm-focused)
-  :global(.cm-scroller)
-  > :global(.cm-selectionLayer)
-  :global(.cm-selectionBackground) {
+.wrap :global(.cm-editor) :global(.cm-selectionBackground) {
   background: var(--selected-bg);
+}
+/* Without focus nothing is selected as far as typing goes, so nothing is drawn (the markers hide too). */
+.wrap :global(.cm-editor):not(:global(.cm-focused)) :global(.cm-selectionBackground) {
+  background: transparent;
 }
 
 /* Markers: the characters of the Markdown, shown only where the cursor is. */
