@@ -3538,3 +3538,10 @@ The user sent three screenshots of selections in the editor: one with an odd tai
 - **Checks:** typecheck, lint and tests pass; the unfocused case driven in the built app (blurred editor: every selection rectangle transparent).
 
 - **Shift-Enter's backslash is hidden away from the cursor** (17 Oct 2026, the user's choice over writing a plain new line, which other viewers would join). `live-decorations.ts` hides the `\` of a `HardBreak` like an escape's and shows it while the cursor touches it; the file still holds the backslash. A two-space break has nothing to hide. Real-library gate passes; not driven in the app.
+
+## Tasks: right-click offers the part you clicked, Shift goes backwards (17 Oct 2026)
+
+- **Right-click on a task row** opens only the menu for the cell under the pointer: the status cell gives Status, the priority cell gives Priority (a subtask has no priority of its own, so it gets the full menu). Anywhere else on the row, and the menu key or Shift-F10, still give the whole menu (status, priority, Add subtask). `TasksTable.tsx`: cells carry `data-cell`, `MenuState.kind` is `status | priority | row`.
+- **Shift-click on a status icon, and Shift-Space on a focused row, go round the circle backwards** (done, in progress, to do, done). Before, Shift-click jumped straight to done (or back to to do); the user chose backwards instead ("ideally one would cycle backwards"). `nextStatus` and `PREVIOUS_STATUS` in `task-actions.ts`; the Today card's circle on Home shares them. The icon's tooltip names both directions, and Settings lists Shift-Space.
+- **Not changed:** the menu has no modifier-click; it opens only from a right-click or the menu key.
+- **Checks:** typecheck, lint and tests pass; not driven in the app.

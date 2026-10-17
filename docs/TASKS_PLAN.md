@@ -43,7 +43,7 @@ reading of the file (2,193 tasks, 2,535 h, "97 duplicate pairs") was wrong for t
     no Repeats column ever; **a task always has a list**; **the default due date is the same everywhere (Today)** and the default list is the one you are on or last
     used; the task page's controls are compact (the list name is cut off with an ellipsis, never wrapped); explanatory text is mock-only, not UI. Answers: the Today
     default is right; **keep every imported subtask date as it is** (the user will clean up).
-12. **Round-4 feedback**: **clicking the status icon rotates it** (to do, in progress, done, back to to do; Shift-click goes straight to done or back); right-click a row for
+12. **Round-4 feedback**: **clicking the status icon rotates it** (to do, in progress, done, back to to do; Shift-click goes round the other way, since 17 Oct 2026); right-click a row for
     status, priority and Add subtask. **Subtasks expand in place** with a chevron in the Status cell (a reserved slot, so rows never shift); an expanded task ends with an
     "Add a subtask" line; a row's hover plus and the right-click menu add a subtask to a task that has none; subtasks carry no priority of their own. Right-click menu: fine.
 13. **Round-5 feedback**: **priority is a P1 / P2 / P3 badge column** (sortable and filterable; solid accent, a tint of the same colour, a quiet grey), subtasks carry none.

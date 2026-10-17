@@ -13,6 +13,11 @@ export const TASKS_SHORTCUTS: ShortcutGroup[] = [
         note: 'On a row in a list of tasks: to do, in progress, done.'
       },
       {
+        action: 'Move a task back to the previous status',
+        keys: ['Shift-Space'],
+        note: 'Or Shift-click the status icon.'
+      },
+      {
         action: 'Open or close a task’s subtasks',
         keys: ['ArrowRight', 'ArrowLeft'],
         note: 'On a row with subtasks.'

@@ -9,7 +9,7 @@ import {
 import type { TaskStatus } from '../../tasks/shared/types'
 import styles from './Home.module.css'
 
-/** The task's status circle, as in Tasks: click moves it on (to do, in progress, done), Shift-click goes straight to done. */
+/** The task's status circle, as in Tasks: click moves it on (to do, in progress, done), Shift-click moves it back. */
 export function StatusButton({
   uid,
   status

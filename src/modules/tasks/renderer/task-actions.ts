@@ -17,10 +17,15 @@ export const STATUS_LABELS: Record<TaskStatus, string> = {
   done: 'Done'
 }
 
-/** Where a click on the status icon goes: round the circle; with Shift, straight to done (or back to to do). */
+export const PREVIOUS_STATUS: Record<TaskStatus, TaskStatus> = {
+  todo: 'done',
+  doing: 'todo',
+  done: 'doing'
+}
+
+/** Where a click on the status icon goes: round the circle; with Shift, round it the other way. */
 export function nextStatus(status: TaskStatus, shift: boolean): TaskStatus {
-  if (shift) return status === 'done' ? 'todo' : 'done'
-  return NEXT_STATUS[status]
+  return shift ? PREVIOUS_STATUS[status] : NEXT_STATUS[status]
 }
 
 /**

@@ -22,7 +22,13 @@ import {
   type SectionRow,
   type TaskRow
 } from '../shared/views'
-import { NEXT_STATUS, STATUS_LABELS, nextStatus, setTaskStatus } from './task-actions'
+import {
+  NEXT_STATUS,
+  PREVIOUS_STATUS,
+  STATUS_LABELS,
+  nextStatus,
+  setTaskStatus
+} from './task-actions'
 import { PriorityBadge, StatusIcon } from './TaskIcons'
 import { PRIORITY_LABELS } from './task-labels'
 import { ListField } from './ListField'
@@ -77,8 +83,8 @@ interface MenuState {
   task: Task
   x: number
   y: number
-  /** `priority` from the badge, `row` from a right-click or the menu key. */
-  kind: 'priority' | 'row'
+  /** `priority` from the badge, `status` or `priority` from a right-click on that cell, `row` from a right-click elsewhere or the menu key. */
+  kind: 'priority' | 'status' | 'row'
 }
 
 const COLUMNS: { label: string; key: SortKey }[] = [
@@ -179,7 +185,7 @@ export function TasksTable({
         onSelect: () => void setTaskStatus(task, s)
       }))
     }
-    if (task.parentUid) return [status]
+    if (state.kind === 'status' || task.parentUid) return [status]
     return [
       status,
       priority,
@@ -203,7 +209,7 @@ export function TasksTable({
     if (event.metaKey || event.ctrlKey || event.altKey) return
     if (event.key === ' ' && item.type !== 'add') {
       event.preventDefault()
-      void setTaskStatus(item.task, NEXT_STATUS[item.task.status])
+      void setTaskStatus(item.task, nextStatus(item.task.status, event.shiftKey))
       return
     }
     if (event.key === 'ArrowRight' && item.type === 'task' && item.kids.length > 0) {
@@ -338,7 +344,7 @@ export function TasksTable({
                       : { task: item.task, x, y, kind: 'priority' }
                   )
                 }
-                onContextMenu={(x, y) => setMenu({ task: item.task, x, y, kind: 'row' })}
+                onContextMenu={(x, y, kind) => setMenu({ task: item.task, x, y, kind })}
               />
             )
           )}
@@ -348,7 +354,7 @@ export function TasksTable({
         <TaskMenu
           x={menu.x}
           y={menu.y}
-          label={menu.kind === 'priority' ? 'Priority' : 'Task'}
+          label={menu.kind === 'priority' ? 'Priority' : menu.kind === 'status' ? 'Status' : 'Task'}
           groups={menuGroups(menu)}
           onClose={() => setMenu(null)}
         />
@@ -474,7 +480,7 @@ function TaskRowView({
   onToggle: () => void
   onAddSubtask: () => void
   onPriorityMenu: (x: number, y: number) => void
-  onContextMenu: (x: number, y: number) => void
+  onContextMenu: (x: number, y: number, kind: MenuState['kind']) => void
 }): React.JSX.Element {
   const { task } = item
   const kids = item.type === 'task' ? item.kids : []
@@ -499,18 +505,23 @@ function TaskRowView({
         // From the keyboard (the menu key) there is no pointer: open it at the row.
         const rect = event.currentTarget.getBoundingClientRect()
         const fromKeyboard = event.clientX === 0 && event.clientY === 0
+        // Right-click on the status or priority cell offers only that part.
+        const cell = fromKeyboard
+          ? null
+          : (event.target as HTMLElement).closest<HTMLElement>('td[data-cell]')?.dataset.cell
         onContextMenu(
           fromKeyboard ? rect.left + 24 : event.clientX,
-          fromKeyboard ? rect.bottom : event.clientY
+          fromKeyboard ? rect.bottom : event.clientY,
+          cell === 'status' || (cell === 'priority' && !isKid) ? cell : 'row'
         )
       }}
     >
-      <td>
+      <td data-cell="status">
         <button
           type="button"
           tabIndex={-1}
           className={styles.iconButton}
-          title={`${STATUS_LABELS[task.status]} · click for ${STATUS_LABELS[NEXT_STATUS[task.status]]}`}
+          title={`${STATUS_LABELS[task.status]} · click for ${STATUS_LABELS[NEXT_STATUS[task.status]]}, Shift-click for ${STATUS_LABELS[PREVIOUS_STATUS[task.status]]}`}
           aria-label={`Status: ${STATUS_LABELS[task.status]}`}
           onClick={(event) => {
             event.stopPropagation()
@@ -564,7 +575,7 @@ function TaskRowView({
         </td>
       )}
       {!flat && (
-        <td>
+        <td data-cell="priority">
           {!isKid && (
             <button
               type="button"
