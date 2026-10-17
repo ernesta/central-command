@@ -161,7 +161,7 @@ describe('shownYear', () => {
           label: 'Supervision',
           minutes: 60,
           task: 'cc://task/m1',
-          earlier: true
+          earlier: true as const
         }
       ]
     }

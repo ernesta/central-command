@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
+import type { OpenContracts } from './contracts'
 import { yearToShow } from './current-year'
 
-const open = (years: string[], last?: string) => ({
+const open = (years: string[], last?: string): OpenContracts => ({
   contracts: years.map((year) => ({
     year,
     clients: [year === '2026-09-01' ? 'Impact' : 'Luminos']
