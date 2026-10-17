@@ -20,10 +20,14 @@ describe('rowTimeParts', () => {
     expect(rowTimeLine({ start: null, end: null }, null)).toBe('No time yet')
   })
 
-  it('treats an end without a start, a start without an end and a backwards range as no times', () => {
+  it('treats an end without a start as no times and shows a start that has no end', () => {
     expect(rowTimeLine({ start: null, end: '15:00' }, 'Online')).toBe('No time yet · Online')
-    expect(rowTimeLine({ start: '09:30', end: null }, null)).toBe('No time yet')
-    expect(rowTimeLine({ start: '15:00', end: '09:30' }, null)).toBe('No time yet')
+    expect(rowTimeLine({ start: '09:30', end: null }, null)).toBe('09:30')
+    expect(rowTimeLine({ start: '09:30', end: null }, 'Online')).toBe('09:30 · Online')
+  })
+
+  it('shows a backwards range as its start alone, with no duration', () => {
+    expect(rowTimeLine({ start: '15:00', end: '09:30' }, null)).toBe('15:00')
   })
 
   it('shows a total that includes self-study, with or without times', () => {

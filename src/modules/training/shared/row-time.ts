@@ -2,7 +2,7 @@ import { durationMinutes, formatDuration } from '@shared/time'
 
 /** The parts of a row's time line, in the order they are shown. A part that is missing is null, never an empty string. */
 export interface RowTimeParts {
-  /** "09:30–15:00", or "No time yet" when the row has no usable start and end. */
+  /** "09:30–15:00"; just the start ("14:00") when only that is known; "No time yet" otherwise (an end alone is no time). */
   range: string
   /** "5 h 30 min", or null when there is no duration. */
   duration: string | null
@@ -12,7 +12,7 @@ export interface RowTimeParts {
 
 /**
  * What every "recent and upcoming" row says about when and how, upcoming or past, training or meeting: the range, the duration and
- * the type of attendance. An end without a start (or a start without an end) is no times. `minutes` is the row's total where it has
+ * the type of attendance. An end without a start is no time; a start without an end shows the start. `minutes` is the row's total where it has
  * more than its session (a lecture's self-study); it defaults to the session's own length.
  */
 export function rowTimeParts(
@@ -23,7 +23,7 @@ export function rowTimeParts(
   const session = durationMinutes(row.start, row.end)
   const total = minutes === undefined ? session : minutes
   return {
-    range: session !== null ? `${row.start}–${row.end}` : 'No time yet',
+    range: session !== null ? `${row.start}–${row.end}` : (row.start ?? 'No time yet'),
     duration: total === null ? null : formatDuration(total),
     mode: modeLabel || null
   }
