@@ -99,6 +99,7 @@ export function formatChord(chord: string, mac: boolean): string[] {
 export const BACK_SHORTCUT = 'Mod-['
 export const ASK_SHORTCUT = 'Mod-j'
 export const SEARCH_SHORTCUT = 'Mod-k'
+export const UNDO_SHORTCUT = 'Mod-z'
 export const SETTINGS_SHORTCUT = 'Mod-,'
 /** Go straight to a workspace, in the order of the top bar. */
 export const WORKSPACE_SHORTCUTS = [
@@ -131,6 +132,11 @@ export const GENERAL_SHORTCUTS: ShortcutGroup = {
     { action: 'Go to Research', keys: [WORKSPACE_SHORTCUTS[1].chord] },
     { action: 'Go to Work', keys: [WORKSPACE_SHORTCUTS[2].chord] },
     { action: 'Open Settings', keys: [SETTINGS_SHORTCUT] },
+    {
+      action: 'Undo the last change',
+      keys: [UNDO_SHORTCUT],
+      note: 'Task changes, deletions and removals. Inside a text field or a note it undoes typing instead.'
+    },
     {
       action: 'Search everything',
       keys: [SEARCH_SHORTCUT],

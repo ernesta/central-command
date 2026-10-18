@@ -8,12 +8,14 @@ import {
   BACK_SHORTCUT,
   SEARCH_SHORTCUT,
   SETTINGS_SHORTCUT,
+  UNDO_SHORTCUT,
   WORKSPACE_SHORTCUTS,
   matchesShortcut
 } from '@shared/shortcuts'
 import { ErrorBoundary } from '../components/ErrorBoundary'
 import { Notice } from '../components/Notice'
 import { Toast } from '../components/Toast'
+import { undoLast } from '../components/undo-store'
 import { useSettings } from '../state/settings-context'
 import { DockActions } from './DockActions'
 import { RouteOpener } from './RouteOpener'
@@ -31,6 +33,14 @@ import styles from './Shell.module.css'
 function workspaceFromPath(pathname: string): Workspace | null {
   const segment = pathname.split('/')[1]
   return WORKSPACES.find((w) => w === segment) ?? null
+}
+
+/** True in an input, a textarea or the notes editor, which undo their own typing. */
+function inTextField(target: EventTarget | null): boolean {
+  return (
+    target instanceof HTMLElement &&
+    !!target.closest('input, textarea, select, [contenteditable="true"]')
+  )
 }
 
 export function Shell(): React.JSX.Element {
@@ -57,6 +67,16 @@ export function Shell(): React.JSX.Element {
       if (matchesShortcut(event, SEARCH_SHORTCUT)) {
         event.preventDefault()
         setSearchOpen((open) => !open)
+        return
+      }
+      // Cmd-Z outside a text field takes back the latest change (a text field or the editor undoes its own typing).
+      if (
+        matchesShortcut(event, UNDO_SHORTCUT) &&
+        !event.defaultPrevented &&
+        !inTextField(event.target)
+      ) {
+        event.preventDefault()
+        void undoLast()
         return
       }
       // The notes editor uses the same keys to move a list item out a level; when it handled the key press, stay.
