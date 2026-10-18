@@ -160,7 +160,7 @@ describe('hours counted the same way everywhere (Research)', () => {
     expect(hours.minutes).toBe(120)
     expect(hours.perSkill).toEqual([{ skill: 'Networking (RP)', minutes: 120 }])
     expect(seriesSummaries([row], now.date, study)).toEqual([
-      { series: 'PS5210', count: 1, minutes: 120 }
+      { series: 'PS5210', count: 1, minutes: 120, training: 90, selfStudy: 30 }
     ])
   })
 

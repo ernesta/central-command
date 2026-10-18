@@ -3,9 +3,10 @@ import { Link, useNavigate } from 'react-router'
 import { SkillChips } from '@renderer/components/SkillChips'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import type { Person } from '@shared/people'
-import { formatDate, formatDuration } from '@shared/time'
+import { formatDate } from '@shared/time'
+import { durationWithStudy } from '../shared/row-time'
 import { formatTimeRange, initialsFor } from '@modules/meetings/shared/query'
-import { entryMinutes, isUpcoming, type SelfStudy } from '../shared/rules'
+import { entryParts, isUpcoming, type SelfStudy } from '../shared/rules'
 import {
   TRAINING_MODE_LABELS,
   typeLabel,
@@ -71,7 +72,7 @@ export function TrainingTable({
         </thead>
         <tbody>
           {rows.map((row, index) => {
-            const duration = entryMinutes(row, selfStudy)
+            const parts = entryParts(row, selfStudy)
             const shown = row.leads.slice(0, VISIBLE_LEADS)
             const more = row.leads.length - shown.length
             return (
@@ -97,7 +98,7 @@ export function TrainingTable({
                 </td>
                 <td className={styles.nowrap}>{formatTimeRange(row.start, row.end)}</td>
                 <td className={styles.nowrap}>
-                  {duration === null ? '—' : formatDuration(duration)}
+                  {parts === null ? '—' : durationWithStudy(parts.training, parts.selfStudy)}
                 </td>
                 <td className={styles.nowrap}>{row.mode ? TRAINING_MODE_LABELS[row.mode] : '—'}</td>
                 {research && (

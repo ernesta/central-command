@@ -42,13 +42,26 @@ export function entryMinutes(
   row: Pick<TrainingIndexRow, 'start' | 'end' | 'task' | 'selfStudy'>,
   tracked?: SelfStudy
 ): number | null {
+  const parts = entryParts(row, tracked)
+  return parts === null ? null : parts.training + parts.selfStudy
+}
+
+/**
+ * The same hours in two parts, for the places that show them apart (cards, rows, the table): `training` is the session plus
+ * what is tracked on the lecture's own task, `selfStudy` what is tracked on its self-study task. Null when there is nothing.
+ */
+export function entryParts(
+  row: Pick<TrainingIndexRow, 'start' | 'end' | 'task' | 'selfStudy'>,
+  tracked?: SelfStudy
+): { training: number; selfStudy: number } | null {
   const session = durationMinutes(row.start, row.end)
   const lecture = lectureTaskUid(row.task)
   const study = row.selfStudy || null
-  const extra =
-    (lecture ? (tracked?.get(lecture) ?? 0) : 0) +
-    (study && study !== lecture ? (tracked?.get(study) ?? 0) : 0)
-  return session === null && extra === 0 ? null : (session ?? 0) + extra
+  const own = lecture ? (tracked?.get(lecture) ?? 0) : 0
+  const selfStudy = study && study !== lecture ? (tracked?.get(study) ?? 0) : 0
+  return session === null && own + selfStudy === 0
+    ? null
+    : { training: (session ?? 0) + own, selfStudy }
 }
 
 export interface TrainingHours {
@@ -256,6 +269,9 @@ export interface SeriesSummary {
   /** Entries that have happened (upcoming ones are not counted). */
   count: number
   minutes: number
+  /** `minutes` in its two parts. */
+  training: number
+  selfStudy: number
 }
 
 /** One summary per series that has entries among the rows given. */
@@ -266,10 +282,9 @@ export function seriesSummaries(
 ): SeriesSummary[] {
   return seriesOptions(rows).map((series) => {
     const mine = rows.filter((r) => r.series === series && !isUpcoming(r, today))
-    return {
-      series,
-      count: mine.length,
-      minutes: mine.reduce((n, r) => n + (entryMinutes(r, selfStudy) ?? 0), 0)
-    }
+    const parts = mine.map((r) => entryParts(r, selfStudy))
+    const training = parts.reduce((n, p) => n + (p?.training ?? 0), 0)
+    const study = parts.reduce((n, p) => n + (p?.selfStudy ?? 0), 0)
+    return { series, count: mine.length, minutes: training + study, training, selfStudy: study }
   })
 }

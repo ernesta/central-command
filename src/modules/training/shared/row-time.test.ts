@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { rowTimeLine, rowTimeParts } from './row-time'
+import { durationWithStudy, rowTimeLine, rowTimeParts } from './row-time'
 
 describe('rowTimeParts', () => {
   const timed = { start: '09:30', end: '15:00' }
@@ -40,5 +40,12 @@ describe('rowTimeParts', () => {
 
   it('gives the same parts upcoming or past (it does not know which)', () => {
     expect(rowTimeParts(timed, 'Online')).toEqual(rowTimeParts({ ...timed }, 'Online'))
+  })
+})
+
+describe('durationWithStudy', () => {
+  it('adds the self-study after the duration, and nothing when there is none', () => {
+    expect(durationWithStudy(180, 75)).toBe('3 h + 1 h 15 min self-study')
+    expect(durationWithStudy(180)).toBe('3 h')
   })
 })

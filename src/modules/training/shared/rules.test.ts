@@ -4,6 +4,7 @@ import {
   DEFAULT_TRAINING_QUERY,
   entriesInYear,
   entryMinutes,
+  entryParts,
   entriesInYearOrPlanned,
   isUpcoming,
   leadNames,
@@ -268,10 +269,12 @@ describe('a lecture total (session plus self-study, one number)', () => {
 
   it('totals each series with its lectures self-study', () => {
     const rows = [lecture('2026-01-01', 'k1'), lecture('2026-01-02', 'k2')]
-    expect(seriesSummaries(rows, TODAY, study)).toEqual([
+    expect(seriesSummaries(rows, TODAY, study)).toMatchObject([
       { series: 'Intro', count: 2, minutes: 165 }
     ])
-    expect(seriesSummaries(rows, TODAY)).toEqual([{ series: 'Intro', count: 2, minutes: 120 }])
+    expect(seriesSummaries(rows, TODAY)).toMatchObject([
+      { series: 'Intro', count: 2, minutes: 120, selfStudy: 0 }
+    ])
   })
 })
 
@@ -333,7 +336,7 @@ describe('a lecture total with a self-study task of its own', () => {
     const hours = trainingHours(rows, '2025-09-22', TODAY, 200, tracked)
     expect(hours.minutes).toBe(105 + 70)
     expect(hours.perSkill).toEqual([{ skill: 'Networking (RP)', minutes: 175 }])
-    expect(seriesSummaries(rows, TODAY, tracked)).toEqual([
+    expect(seriesSummaries(rows, TODAY, tracked)).toMatchObject([
       { series: 'Intro', count: 2, minutes: 175 }
     ])
   })
@@ -358,5 +361,20 @@ describe('a lecture total with a self-study task of its own', () => {
     expect(year.minutes).toBe(entries[0] + entries[1])
     expect(year.perSkill[0].minutes).toBe(year.minutes)
     expect(summary.minutes).toBe(year.minutes)
+  })
+})
+
+describe('entryParts and the split of a series', () => {
+  const row = { start: '09:00', end: '12:00', task: 'l1', selfStudy: 's1' }
+  it('splits the session and the lecture task from the self-study, and entryMinutes is their sum', () => {
+    const tracked = new Map([
+      ['l1', 15],
+      ['s1', 75]
+    ])
+    expect(entryParts(row, tracked)).toEqual({ training: 195, selfStudy: 75 })
+    expect(entryMinutes(row, tracked)).toBe(270)
+  })
+  it('is null with no times and nothing tracked', () => {
+    expect(entryParts({ ...row, start: null, end: null }, new Map())).toBeNull()
   })
 })

@@ -24,7 +24,7 @@ import {
   isUpcoming,
   meetingsLine,
   recentAndUpcoming,
-  entryMinutes,
+  entryParts,
   seriesSummaries,
   trainingHours,
   type SelfStudy,
@@ -47,10 +47,12 @@ import { useTrainingList } from './useTrainingList'
 
 /** What to say at the right of a "recent and upcoming" row: the same parts for an upcoming and a past one. */
 function noteFor(row: TrainingIndexRow, selfStudy: SelfStudy): string {
+  const parts = entryParts(row, selfStudy)
   return rowTimeLine(
     row,
     row.mode ? TRAINING_MODE_LABELS[row.mode] : null,
-    entryMinutes(row, selfStudy)
+    parts && parts.training,
+    parts?.selfStudy
   )
 }
 
@@ -124,7 +126,7 @@ export function TrainingLanding(): React.JSX.Element {
                 line:
                   s.count === 0
                     ? 'No entries yet'
-                    : `${s.count} ${s.count === 1 ? 'entry' : 'entries'} · ${formatHours(s.minutes)}`
+                    : `${s.count} ${s.count === 1 ? 'entry' : 'entries'} · ${formatHours(s.training)}${s.selfStudy > 0 ? ` + ${formatHours(s.selfStudy)} self-study` : ''}`
               }))}
             />
           </LandingSection>

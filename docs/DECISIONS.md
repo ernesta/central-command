@@ -3693,3 +3693,7 @@ The user's report (`POST Placement Interview Briefing`): a list of 1, 2, 3; Ente
 ## Every report of time is to the quarter hour (18 Oct 2026)
 
 The user's request. Timers and typed time were already whole quarters; the gaps were a note's start and end and the lengths computed from them. `TimeInput` (meetings, training, the timer's start, a stale timer's end) snaps its minutes to 00/15/30/45 as they are typed, pasted or stepped (one digit is the tens: "3" is 30), and `durationMinutes` (`src/shared/time.ts`) rounds a session's length to the nearest quarter, halves up. This ends the one known difference between Hours and the training log (a 70-minute session now reads 75 in both). Times already stored in notes are left as they are; only the length they report changes.
+
+## Training cards show training + self-study; summaries show the total (18 Oct 2026)
+
+The user's choice from `docs/design/training-self-study-split-mockup.html` (a mix of its options). Summaries (year strip, per skill, PDF) stay one total that includes self-study, because self-study is first-class training. Series cards, "recent and upcoming" rows and the table's Duration column read "3 h + 1 h 15 min self-study" (nothing added when there is none). `entryParts` in `training/shared/rules.ts` splits an entry into `training` (the session plus the lecture's own task) and `selfStudy`; `entryMinutes` is their sum, so no total changed.
