@@ -3752,3 +3752,14 @@ The user: each task on the Tasks main view shows up once only; one that is in pr
 - **Rule** (`landingSections`, `views.ts`): a task appears under the first heading that fits, in the order Overdue, Due today, Due tomorrow, Soon (day 2 to 7), In progress. It fits by its own date or status, or because an open subtask has its own date that fits (then the subtask is nested under it). This reverts "a landing task shows under every section that fits" (13 Oct 2026, `bf03a73`) and keeps the section order set after it.
 - So an overdue, in-progress task is only under Overdue, a due-today, in-progress task only under Due today, and In progress lists the in-progress tasks that fit nowhere above it. A parent whose subtask is under Due today is not repeated under Soon for its own later date.
 - Tests: `views.test.ts`.
+
+## Undo: Cmd-Z and the toast are one list (18 Oct 2026)
+
+The user: everything that has a toast with Undo should also undo with Cmd-Z; other changes to tasks (mark as done and the rest) should be undoable too, without a toast. Toasts are for significant changes that are hard to take back (deletions).
+
+- **One list** (`renderer/src/components/undo-store.ts`): `pushUndo` remembers a change silently; `pushUndoWithToast` also shows the toast, whose Undo runs the same entry. An entry runs once, whichever way it is asked; the list keeps the latest 50. It lives in the renderer and is lost on quit.
+- **Cmd-Z** (`UNDO_SHORTCUT`, handled in `Shell.tsx`, listed in Settings under Everywhere): takes back the latest entry, unless the key press was already handled or focus is in an input, textarea, select or the editor, which undo their own typing.
+- **Toasts moved onto it:** deleting a task (table and task page), Time off removal, Hours deletion, contract removal.
+- **Silent entries for task changes** (`task-actions.ts`): status (`setTaskStatus`; undoing the finish of a recurring task also deletes the next occurrence it started), and `updateTaskUndoable` for priority, due, tags, list, rename in the table and the task page's non-text fields, plus the Tasks landing's "move overdue to today". `updateTaskUndoable` records the fields it overwrites (a move under a parent also records list and sublist).
+- **Not undoable by Cmd-Z:** task title and description edits on the task page (typing; the editor has its own undo).
+- Tests: `undo-store.test.ts`. Not yet driven in the built app.
