@@ -140,7 +140,7 @@ export function parsePlaces(json: string): PlaceCandidate[] {
   } catch {
     throw new Error('The place search sent something unreadable')
   }
-  return (data.results ?? []).flatMap((r) =>
+  const places = (data.results ?? []).flatMap((r) =>
     r.name && num(r.latitude) !== null && num(r.longitude) !== null
       ? [
           {
@@ -154,6 +154,14 @@ export function parsePlaces(json: string): PlaceCandidate[] {
         ]
       : []
   )
+  // Two places that round to the same town and read the same are one choice.
+  const seen = new Set<string>()
+  return places.filter((p) => {
+    const key = [p.name, p.region, p.country, p.latitude, p.longitude].join('|')
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 }
 
 export class WeatherService {

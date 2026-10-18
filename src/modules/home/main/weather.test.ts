@@ -127,6 +127,21 @@ describe('parsePlaces', () => {
     ])
     expect(parsePlaces('{}')).toEqual([])
   })
+
+  it('lists two places that round to the same town once', () => {
+    const row = { name: 'Egham', admin1: 'North West', country: 'South Africa' }
+    const json = JSON.stringify({
+      results: [
+        { ...row, latitude: -25.512, longitude: 25.704 },
+        { ...row, latitude: -25.49, longitude: 25.71 },
+        { ...row, latitude: -26.5, longitude: 25.7 }
+      ]
+    })
+    expect(parsePlaces(json).map((p) => [p.latitude, p.longitude])).toEqual([
+      [-25.5, 25.7],
+      [-26.5, 25.7]
+    ])
+  })
 })
 
 describe('WeatherService', () => {
