@@ -267,6 +267,15 @@ describe('a lecture total (session plus self-study, one number)', () => {
     expect(entryMinutes({ start: null, end: null, task: 'k2', selfStudy: '' }, study)).toBeNull()
   })
 
+  it('counts a series upcoming entries apart from the ones that happened', () => {
+    const rows = [
+      lecture('2026-01-01', 'k1', { series: 'Intro' }),
+      lecture('2099-01-01', 'k2', { series: 'Intro' }),
+      lecture('2099-02-01', 'k3', { series: 'Intro' })
+    ]
+    expect(seriesSummaries(rows, TODAY)).toMatchObject([{ series: 'Intro', count: 1, upcoming: 2 }])
+  })
+
   it('totals each series with its lectures self-study', () => {
     const rows = [lecture('2026-01-01', 'k1'), lecture('2026-01-02', 'k2')]
     expect(seriesSummaries(rows, TODAY, study)).toMatchObject([

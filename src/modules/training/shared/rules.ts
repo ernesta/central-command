@@ -268,6 +268,8 @@ export interface SeriesSummary {
   series: string
   /** Entries that have happened (upcoming ones are not counted). */
   count: number
+  /** Entries still to come (a later date, or none yet). */
+  upcoming: number
   minutes: number
   /** `minutes` in its two parts. */
   training: number
@@ -285,6 +287,13 @@ export function seriesSummaries(
     const parts = mine.map((r) => entryParts(r, selfStudy))
     const training = parts.reduce((n, p) => n + (p?.training ?? 0), 0)
     const study = parts.reduce((n, p) => n + (p?.selfStudy ?? 0), 0)
-    return { series, count: mine.length, minutes: training + study, training, selfStudy: study }
+    return {
+      series,
+      count: mine.length,
+      upcoming: rows.filter((r) => r.series === series && isUpcoming(r, today)).length,
+      minutes: training + study,
+      training,
+      selfStudy: study
+    }
   })
 }

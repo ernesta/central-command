@@ -124,9 +124,17 @@ export function TrainingLanding(): React.JSX.Element {
                 to: seriesRoute(s.series, year, workspace),
                 title: s.series,
                 line:
-                  s.count === 0
+                  s.count === 0 && s.upcoming === 0
                     ? 'No entries yet'
-                    : `${s.count} ${s.count === 1 ? 'entry' : 'entries'} · ${formatHours(s.training)}${s.selfStudy > 0 ? ` + ${formatHours(s.selfStudy)} self-study` : ''}`
+                    : [
+                        `${s.count} ${s.count === 1 ? 'entry' : 'entries'}`,
+                        s.upcoming > 0 ? `${s.upcoming} upcoming` : '',
+                        s.count > 0
+                          ? `${formatHours(s.training)}${s.selfStudy > 0 ? ` + ${formatHours(s.selfStudy)} self-study` : ''}`
+                          : ''
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')
               }))}
             />
           </LandingSection>
