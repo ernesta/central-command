@@ -30,8 +30,9 @@ export function MeetingsCard(): React.JSX.Element {
       ) : (
         <>
           <p className={styles.line}>
-            {count} {count === 1 ? 'meeting' : 'meetings'}
-            {next ? ` · next ${formatShortDate(next)}` : ''}
+            {[count > 0 ? `${count} done` : '', next ? `next ${formatShortDate(next)}` : '']
+              .filter(Boolean)
+              .join(' · ')}
           </p>
           <p className={styles.line}>
             {open === 0 ? 'No open TODOs' : `${open} open ${open === 1 ? 'TODO' : 'TODOs'}`}

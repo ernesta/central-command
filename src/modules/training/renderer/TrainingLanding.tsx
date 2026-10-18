@@ -77,7 +77,7 @@ export function TrainingLanding(): React.JSX.Element {
   const summaries = seriesSummaries(entriesInYear(all, year), today, selfStudy)
 
   const noteParts = [
-    `${hours.entries} ${hours.entries === 1 ? 'entry' : 'entries'}`,
+    `${hours.entries} done`,
     hours.withoutTimes > 0 ? `${hours.withoutTimes} without times, counted as 0` : ''
   ].filter(Boolean)
 

@@ -17,7 +17,7 @@ export function MeetingsHours({
 }): React.JSX.Element {
   const hours = meetingHours(rows, year, today)
   const note = [
-    `${hours.meetings} ${hours.meetings === 1 ? 'meeting' : 'meetings'}`,
+    `${hours.meetings} done`,
     hours.withoutTimes > 0 ? `${hours.withoutTimes} without times, counted as 0` : ''
   ]
     .filter(Boolean)
