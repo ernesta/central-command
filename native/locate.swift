@@ -1,7 +1,7 @@
 // Prints this Mac's position once, as JSON, and exits: {"latitude":51.4,"longitude":-0.6,"place":"Egham"} or {"error":"denied"}.
 // Central Command runs it (as the small background app Locate.app, which macOS needs to ask for permission) when Weather is on.
 // The position is rounded to one decimal, about a town, before it is printed: nothing more precise leaves this process.
-// The town's name comes from Apple's own lookup (CLGeocoder), asked about the rounded position only.
+// The town's name comes from Apple's own lookup (CLGeocoder), asked about the precise position (it is never printed).
 import CoreLocation
 import Foundation
 
@@ -10,7 +10,7 @@ final class Locator: NSObject, CLLocationManagerDelegate {
 
   func start() {
     manager.delegate = self
-    manager.desiredAccuracy = kCLLocationAccuracyKilometer
+    manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
     switch manager.authorizationStatus {
     case .notDetermined: manager.requestWhenInUseAuthorization()
     case .denied, .restricted: finish(["error": "denied"])
@@ -32,7 +32,7 @@ final class Locator: NSObject, CLLocationManagerDelegate {
     let longitude = (here.coordinate.longitude * 10).rounded() / 10
     var result: [String: Any] = ["latitude": latitude, "longitude": longitude]
     // The weather does not wait for a name: no answer is no name.
-    CLGeocoder().reverseGeocodeLocation(CLLocation(latitude: latitude, longitude: longitude)) { marks, _ in
+    CLGeocoder().reverseGeocodeLocation(here) { marks, _ in
       if let mark = marks?.first, let name = mark.locality ?? mark.subAdministrativeArea ?? mark.name {
         result["place"] = name
       }

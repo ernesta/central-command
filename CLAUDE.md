@@ -219,5 +219,5 @@ to do next, short>. Next meeting <Mon D, YYYY>.` Example: "Key topics: Study 1 p
   explicit user action with a confirmation, and it goes to the macOS Trash (`shell.trashItem`),
   never removed outright. Meeting notes are still never overwritten: saves check the file's
   content hash, and a new meeting never replaces an existing file.
-- Never send user data over the network. (Watch requests only public pages the user listed, with no identifiers; the weather sends only a town's rounded position and is off until chosen; the town's name is asked of Apple's own lookup, again with the rounded position only.)
+- Never send user data over the network. (Watch requests only public pages the user listed, with no identifiers; the weather sends only a town's rounded position and is off until chosen; the town's name is asked of Apple's own lookup with the precise position, the user's choice of 18 Oct 2026; nothing else gets more than the rounded one.)
 - Never commit secrets or user data; user data lives in `~/CentralCommand/`.
