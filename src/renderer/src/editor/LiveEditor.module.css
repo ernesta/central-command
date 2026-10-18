@@ -282,7 +282,7 @@
 .wrap :global(.cm-editor) :global(.cm-line.live-table-row) {
   display: grid;
   column-gap: 16px;
-  padding-inline: 4px;
+  padding: 6px 4px;
   border-bottom: 1px solid var(--border-soft);
   line-height: calc(var(--table-row) - 1px);
   /* A table wider than the page scrolls sideways, every row together (`tableScroll`); the bar is not drawn. */

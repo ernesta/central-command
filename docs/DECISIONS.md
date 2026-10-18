@@ -3805,3 +3805,11 @@ The user (from a screenshot): near the top edge of a full-screen window, just be
 - **Cause:** the `.topSentinel` hover (the pointer at the very top edge) shifted `.lead` and `.actions` down 28px with `translateY`, to clear the opaque system strip. The bar kept its height and its `border-bottom`, so the shifted tabs sat on the border.
 - **Fix** (`TopBar.module.css`): on that hover the bar itself grows by `--fullscreen-strip-shift` (`height` plus an equal `padding-top`, both transitioned with the padding-left that makes room for the dots), and the transforms are gone. The border stays below the tabs. The page below moves down by the same 28px while the strip shows.
 - **Not driven in the app** (the hover state in full screen is hard to script): lint and typecheck pass. The user judges the look as they use it. The alternative, if the content shift bothers them, is to keep the content still and draw the border lower.
+
+## Editor tables: space around the row dividers (18 Oct 2026)
+
+The user (from a screenshot): the text of a table row sat tight against the divider lines, which was hard to read in a long, wrapped row.
+
+- **Fix** (`LiveEditor.module.css`, `.live-table-row`): the grid rows have `padding: 6px 4px` (was inline padding only), so every row, the header included, has 6px above and below its text. The line of dashes under the header still takes no height.
+- **Not matched in the text view:** a table the cursor is in shows as plain Markdown, which keeps its one-row-high lines. The user: tables look so different as text that the rows jumping when the cursor enters is fine.
+- **Not driven in the app:** a CSS change only; the user judges the look as they use it.
