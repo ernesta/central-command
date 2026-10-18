@@ -134,20 +134,18 @@ export interface HomeApi {
   summary(): Promise<HomeSummary>
   /** The weather, read again (it is also part of `summary`); null when it is off. */
   weather(): Promise<WeatherSummary | null>
-  /** Looks up a place by name (the name is the only thing sent) and returns candidates to choose from. */
-  findPlace(name: string): Promise<PlaceCandidate[]>
+  /**
+   * Asks Location Services for this Mac's position now (macOS asks for permission the first time), so Settings can say
+   * whether Weather can work. The position itself never reaches the page.
+   */
+  locate(): Promise<WeatherAccess>
 }
 
-export interface PlaceCandidate {
-  name: string
-  region: string
-  country: string
-  latitude: number
-  longitude: number
-}
+/** Whether the weather can find where this Mac is. */
+export type WeatherAccess = 'ok' | 'denied' | 'unavailable'
 
 export const HOME_IPC = {
   summary: 'home:summary',
   weather: 'home:weather',
-  findPlace: 'home:find-place'
+  locate: 'home:locate'
 } as const

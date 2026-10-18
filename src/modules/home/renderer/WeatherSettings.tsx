@@ -1,50 +1,37 @@
-import { useId, useState } from 'react'
-import { Button } from '@renderer/components/Button'
-import { Input } from '@renderer/components/Input'
+import { useState } from 'react'
 import { Segmented } from '@renderer/components/Segmented'
-import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useSettings } from '@renderer/state/settings-context'
-import type { WeatherSettings as Weather } from '@shared/home-settings'
-import type { PlaceCandidate } from '../shared/types'
+import type { WeatherAccess } from '../shared/types'
 import styles from './WeatherSettings.module.css'
 
-const UNITS = [
-  { value: 'celsius', label: '°C' },
-  { value: 'fahrenheit', label: '°F' }
+const CHOICES = [
+  { value: 'off', label: 'Off' },
+  { value: 'on', label: 'On' }
 ] as const
 
-const candidateLabel = (c: PlaceCandidate): string =>
-  [c.name, c.region, c.country].filter(Boolean).join(', ')
+const PROBLEMS: Record<Exclude<WeatherAccess, 'ok'>, string> = {
+  denied:
+    'Central Command may not use your location. Allow it in System Settings → Privacy & Security → Location Services.',
+  unavailable: 'Couldn’t find where this Mac is.'
+}
 
 /**
- * Settings → Weather: off until a place is chosen. Looking a place up sends its name; the weather then sends only the
- * town's rounded position (`home-settings.ts`).
+ * Settings → Weather: one switch. The place is where this Mac is (Location Services, which asks once) and the unit is the
+ * one the Mac uses; only the town's rounded position is sent to open-meteo.com.
  */
 export function WeatherSettings(): React.JSX.Element {
   const { settings, update } = useSettings()
-  const weather = settings.home.weather
-  const id = useId()
-  const [name, setName] = useState(weather.place)
-  const [found, setFound] = useState<PlaceCandidate[] | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
+  const enabled = settings.home.weather.enabled
+  const [problem, setProblem] = useState<WeatherAccess | null>(null)
 
-  const change = (patch: Partial<Weather>): void => void update({ home: { weather: patch } })
-
-  const find = async (): Promise<void> => {
-    if (!name.trim()) return
-    try {
-      const places = await window.api.home.findPlace(name)
-      setFound(places)
-      setMessage(places.length === 0 ? 'No place found.' : null)
-    } catch (e) {
-      setFound(null)
-      setMessage(`Couldn’t look it up: ${ipcErrorMessage(e)}`)
+  const choose = async (value: 'off' | 'on'): Promise<void> => {
+    if (value === 'off') {
+      setProblem(null)
+      await update({ home: { weather: { enabled: false } } })
+      return
     }
-  }
-  const choose = (c: PlaceCandidate): void => {
-    setName(c.name)
-    setFound(null)
-    change({ enabled: true, place: c.name, latitude: c.latitude, longitude: c.longitude })
+    await update({ home: { weather: { enabled: true } } })
+    setProblem(await window.api.home.locate())
   }
 
   return (
@@ -53,60 +40,24 @@ export function WeatherSettings(): React.JSX.Element {
         Weather
       </h2>
       <div className={styles.field}>
-        <label htmlFor={id} className={styles.label}>
-          Place
-        </label>
+        <span className={styles.label}>Show the weather beside the date</span>
         <p className={styles.help}>
-          {weather.enabled
-            ? `Shown beside the date. Only ${weather.place}’s rounded position is sent to open-meteo.com.`
-            : 'Off until you choose a place. Nothing is sent before then.'}
+          Where this Mac is, in the unit it uses. Only the town’s rounded position is sent to
+          open-meteo.com. Off until you turn it on.
         </p>
-        <form
-          className={styles.row}
-          onSubmit={(e) => {
-            e.preventDefault()
-            void find()
-          }}
-        >
-          <Input
-            id={id}
-            value={name}
-            placeholder="Egham"
-            onChange={(e) => setName(e.target.value)}
-            className={styles.input}
-          />
-          <Button type="submit" disabled={!name.trim()}>
-            Find
-          </Button>
-          {weather.enabled && <Button onClick={() => change({ enabled: false })}>Turn off</Button>}
-        </form>
-        {found && found.length > 0 && (
-          <ul className={styles.places}>
-            {found.map((c) => (
-              <li key={`${c.latitude},${c.longitude}`}>
-                <button type="button" className={styles.place} onClick={() => choose(c)}>
-                  {candidateLabel(c)}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-        {message && (
-          <p role="status" className={styles.help}>
-            {message}
-          </p>
-        )}
-      </div>
-      <div className={styles.field}>
-        <span className={styles.label}>Unit</span>
         <div>
           <Segmented
-            label="Unit"
-            value={weather.unit}
-            options={UNITS}
-            onChange={(unit) => change({ unit })}
+            label="Weather"
+            value={enabled ? 'on' : 'off'}
+            options={CHOICES}
+            onChange={(value) => void choose(value)}
           />
         </div>
+        {enabled && problem && problem !== 'ok' && (
+          <p role="status" className={styles.help}>
+            {PROBLEMS[problem]}
+          </p>
+        )}
       </div>
     </section>
   )

@@ -3,14 +3,11 @@
  * weather) or interrupts the user (notifications) is OFF until they turn it on in Settings.
  */
 export interface WeatherSettings {
-  /** Off by default: asking for the weather sends a place's coordinates to a weather service. */
+  /**
+   * Off by default: asking for the weather reads this Mac's position (Location Services) and sends its rounded value, a
+   * town, to a weather service. The place and the unit are not settings: they come from the Mac.
+   */
   enabled: boolean
-  /** What the user typed, shown back to them ("Egham"). */
-  place: string
-  /** Rounded to one decimal (about 10 km) before it is ever sent: a town, not a street. */
-  latitude: number | null
-  longitude: number | null
-  unit: 'celsius' | 'fahrenheit'
 }
 
 export interface NotificationSettings {
@@ -45,7 +42,7 @@ export interface HomePatch {
 }
 
 export const DEFAULT_HOME_SETTINGS: HomeSettings = {
-  weather: { enabled: false, place: '', latitude: null, longitude: null, unit: 'celsius' },
+  weather: { enabled: false },
   notifications: {
     enabled: false,
     digestAt: '08:30',
@@ -62,11 +59,6 @@ const obj = (v: unknown): Record<string, unknown> =>
 const bool = (v: unknown, d: boolean): boolean => (typeof v === 'boolean' ? v : d)
 const int = (v: unknown, min: number, max: number, d: number): number =>
   typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max ? v : d
-const coord = (v: unknown, limit: number): number | null =>
-  typeof v === 'number' && Number.isFinite(v) && Math.abs(v) <= limit
-    ? Math.round(v * 10) / 10
-    : null
-
 /** Untrusted JSON merged over the defaults, keeping only well-typed values (a hand-edited file cannot break the app). */
 export function normaliseHome(
   raw: unknown,
@@ -76,24 +68,8 @@ export function normaliseHome(
   const w = obj(o.weather)
   const n = obj(o.notifications)
   const g = obj(o.widget)
-  const lat = coord(w.latitude, 90)
-  const lon = coord(w.longitude, 180)
-  const place = typeof w.place === 'string' ? w.place.trim().slice(0, 80) : defaults.weather.place
-  const located = lat !== null && lon !== null
   return {
-    weather: {
-      // Weather needs a place: without coordinates it stays off, whatever the file says.
-      enabled: bool(w.enabled, defaults.weather.enabled) && located,
-      place,
-      latitude: located ? lat : null,
-      longitude: located ? lon : null,
-      unit:
-        w.unit === 'fahrenheit'
-          ? 'fahrenheit'
-          : w.unit === 'celsius'
-            ? 'celsius'
-            : defaults.weather.unit
-    },
+    weather: { enabled: bool(w.enabled, defaults.weather.enabled) },
     notifications: {
       enabled: bool(n.enabled, defaults.notifications.enabled),
       digestAt:

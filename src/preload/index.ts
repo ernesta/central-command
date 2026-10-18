@@ -293,7 +293,7 @@ const api: Api = {
   home: {
     summary: () => ipcRenderer.invoke(HOME_IPC.summary),
     weather: () => ipcRenderer.invoke(HOME_IPC.weather),
-    findPlace: (name) => ipcRenderer.invoke(HOME_IPC.findPlace, name)
+    locate: () => ipcRenderer.invoke(HOME_IPC.locate)
   },
   lifecycle: {
     onBeforeClose: (handler) => {

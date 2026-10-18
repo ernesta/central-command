@@ -24,32 +24,3 @@
   color: var(--text-muted);
   font-size: var(--text-13);
 }
-.row {
-  display: flex;
-  gap: 8px;
-}
-.input {
-  flex: 1;
-}
-.places {
-  display: grid;
-  gap: 4px;
-  margin: 4px 0 0;
-  padding: 0 4px 4px;
-  list-style: none;
-}
-.place {
-  width: 100%;
-  padding: 8px 10px;
-  text-align: left;
-  font: inherit;
-  font-size: var(--text-14);
-  color: var(--ink);
-  background: transparent;
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-control);
-  cursor: pointer;
-}
-.place:hover {
-  background: var(--panel);
-}

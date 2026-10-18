@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { DEFAULT_HOME_SETTINGS, applyHomePatch, normaliseHome } from './home-settings'
 
 describe('normaliseHome', () => {
-  it('is all off by default, with nothing located', () => {
+  it('is all off by default', () => {
     const h = normaliseHome(undefined)
     expect(h).toEqual(DEFAULT_HOME_SETTINGS)
     expect([h.weather.enabled, h.notifications.enabled, h.widget.enabled]).toEqual([
@@ -12,28 +12,22 @@ describe('normaliseHome', () => {
     ])
   })
 
-  it('keeps weather off without a place, whatever the file says', () => {
-    expect(normaliseHome({ weather: { enabled: true } }).weather.enabled).toBe(false)
-    expect(normaliseHome({ weather: { enabled: true, latitude: 51.4 } }).weather.enabled).toBe(
-      false
-    )
-    expect(
-      normaliseHome({ weather: { enabled: true, latitude: 51.43, longitude: -0.55 } }).weather
-    ).toMatchObject({
-      enabled: true,
-      latitude: 51.4,
-      longitude: -0.5
-    })
-  })
-
-  it('rounds coordinates to a town, never a street', () => {
-    const w = normaliseHome({ weather: { latitude: 51.4312345, longitude: -0.5598765 } }).weather
-    expect([w.latitude, w.longitude]).toEqual([51.4, -0.6])
+  it('drops the place and unit an older settings file kept: they come from the Mac now', () => {
+    const w = normaliseHome({
+      weather: {
+        enabled: true,
+        place: 'Egham',
+        latitude: 51.4,
+        longitude: -0.5,
+        unit: 'fahrenheit'
+      }
+    }).weather
+    expect(w).toEqual({ enabled: true })
   })
 
   it('drops impossible values', () => {
     const h = normaliseHome({
-      weather: { latitude: 200, longitude: 0, unit: 'kelvin', place: 7 },
+      weather: { enabled: 'yes' },
       notifications: {
         digestAt: '25:99',
         meetingMinutesBefore: -5,
@@ -41,7 +35,7 @@ describe('normaliseHome', () => {
         watchDeadlineDays: 'x'
       }
     })
-    expect(h.weather).toMatchObject({ latitude: null, unit: 'celsius', place: '' })
+    expect(h.weather).toEqual({ enabled: false })
     expect(h.notifications).toMatchObject({
       digestAt: '08:30',
       meetingMinutesBefore: 10,

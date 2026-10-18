@@ -1,6 +1,5 @@
-import type { WeatherSettings } from '@shared/home-settings'
 import type { Fetcher } from '../../watch/main/checker'
-import type { PlaceCandidate, WeatherSummary } from '../shared/types'
+import type { WeatherSummary } from '../shared/types'
 
 /** WMO weather codes, as Open-Meteo reports them, in words. */
 const DESCRIPTIONS: [number[], string][] = [
@@ -31,17 +30,21 @@ export function describeWeather(code: number): string {
 export const WEATHER_CACHE_MS = 30 * 60_000
 
 const FORECAST = 'https://api.open-meteo.com/v1/forecast'
-const GEOCODING = 'https://geocoding-api.open-meteo.com/v1/search'
+
+export type TemperatureUnit = 'celsius' | 'fahrenheit'
+
+/** What the weather is asked for: a town's rounded position, in the unit the Mac uses. */
+export interface WeatherQuery {
+  latitude: number
+  longitude: number
+  unit: TemperatureUnit
+}
 
 /**
  * The address asked for the weather. Only the rounded coordinates and the unit are in it: no name, no account, no
- * identifier. (Coordinates are rounded to a town by the settings; this is the one place they leave the app.)
+ * identifier. (Coordinates are rounded to a town by `parseLocation`; this is the one place they leave the app.)
  */
-export function forecastUrl(
-  latitude: number,
-  longitude: number,
-  unit: WeatherSettings['unit']
-): string {
+export function forecastUrl(latitude: number, longitude: number, unit: TemperatureUnit): string {
   const q = new URLSearchParams({
     latitude: String(latitude),
     longitude: String(longitude),
@@ -75,7 +78,7 @@ const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFi
 export function parseForecast(
   json: string,
   place: string,
-  unit: WeatherSettings['unit'],
+  unit: TemperatureUnit,
   at: string
 ): WeatherSummary {
   let data: ForecastJson
@@ -121,49 +124,6 @@ export function parseForecast(
   }
 }
 
-export function geocodeUrl(name: string): string {
-  return `${GEOCODING}?${new URLSearchParams({ name: name.trim().slice(0, 80), count: '5', language: 'en', format: 'json' }).toString()}`
-}
-
-export function parsePlaces(json: string): PlaceCandidate[] {
-  let data: {
-    results?: {
-      name?: string
-      admin1?: string
-      country?: string
-      latitude?: number
-      longitude?: number
-    }[]
-  }
-  try {
-    data = JSON.parse(json)
-  } catch {
-    throw new Error('The place search sent something unreadable')
-  }
-  const places = (data.results ?? []).flatMap((r) =>
-    r.name && num(r.latitude) !== null && num(r.longitude) !== null
-      ? [
-          {
-            name: r.name,
-            region: r.admin1 ?? '',
-            country: r.country ?? '',
-            // Rounded here too, so a candidate is already only a town.
-            latitude: Math.round((r.latitude as number) * 10) / 10,
-            longitude: Math.round((r.longitude as number) * 10) / 10
-          }
-        ]
-      : []
-  )
-  // Two places that round to the same town and read the same are one choice.
-  const seen = new Set<string>()
-  return places.filter((p) => {
-    const key = [p.name, p.region, p.country, p.latitude, p.longitude].join('|')
-    if (seen.has(key)) return false
-    seen.add(key)
-    return true
-  })
-}
-
 export class WeatherService {
   private cache: { key: string; at: number; summary: WeatherSummary } | null = null
 
@@ -172,26 +132,24 @@ export class WeatherService {
     private readonly clock: () => number = Date.now
   ) {}
 
-  /** The weather for the settings, or null when it is off. A failed request keeps the last reading for a while rather than blanking the page. */
-  async read(settings: WeatherSettings): Promise<WeatherSummary | null> {
-    if (!settings.enabled || settings.latitude === null || settings.longitude === null) return null
-    const key = `${settings.latitude},${settings.longitude},${settings.unit}`
+  /** The weather for a position, or null when there is none. A failed request keeps the last reading for a while rather than blanking the page. */
+  async read(query: WeatherQuery | null): Promise<WeatherSummary | null> {
+    if (!query) return null
+    const key = `${query.latitude},${query.longitude},${query.unit}`
     const now = this.clock()
     if (this.cache && this.cache.key === key && now - this.cache.at < WEATHER_CACHE_MS)
       return this.cache.summary
     try {
       const response = await this.fetcher(
-        forecastUrl(settings.latitude, settings.longitude, settings.unit),
-        {
-          headers: { Accept: 'application/json', 'User-Agent': 'CentralCommand/1.0' }
-        }
+        forecastUrl(query.latitude, query.longitude, query.unit),
+        { headers: { Accept: 'application/json', 'User-Agent': 'CentralCommand/1.0' } }
       )
       if (response.status !== 200)
         throw new Error(`The weather service answered ${response.status}`)
       const summary = parseForecast(
         await response.text(),
-        settings.place,
-        settings.unit,
+        '',
+        query.unit,
         new Date(now).toISOString()
       )
       this.cache = { key, at: now, summary }
@@ -201,15 +159,5 @@ export class WeatherService {
         return this.cache.summary
       throw error
     }
-  }
-
-  async findPlace(name: string): Promise<PlaceCandidate[]> {
-    const query = name.trim()
-    if (query.length < 2) return []
-    const response = await this.fetcher(geocodeUrl(query), {
-      headers: { Accept: 'application/json', 'User-Agent': 'CentralCommand/1.0' }
-    })
-    if (response.status !== 200) throw new Error(`The place search answered ${response.status}`)
-    return parsePlaces(await response.text())
   }
 }

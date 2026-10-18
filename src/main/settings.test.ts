@@ -159,12 +159,12 @@ describe('year starts', () => {
     await store.update({
       home: {
         notifications: { enabled: true },
-        weather: { latitude: 51.4, longitude: -0.5, place: 'Egham', enabled: true }
+        weather: { enabled: true }
       }
     })
     const loaded = await new SettingsStore(file, defaults).load()
     expect(loaded.home.notifications).toMatchObject({ enabled: true, meetingMinutesBefore: 10 })
-    expect(loaded.home.weather).toMatchObject({ enabled: true, place: 'Egham' })
+    expect(loaded.home.weather).toEqual({ enabled: true })
     expect(loaded.home.widget.enabled).toBe(false)
   })
 })

@@ -1,14 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import type { WeatherSettings } from '@shared/home-settings'
 import type { Fetcher } from '../../watch/main/checker'
 import {
   describeWeather,
   forecastUrl,
-  geocodeUrl,
   parseForecast,
-  parsePlaces,
   WEATHER_CACHE_MS,
-  WeatherService
+  WeatherService,
+  type WeatherQuery
 } from './weather'
 
 const FORECAST = JSON.stringify({
@@ -28,13 +26,7 @@ const FORECAST = JSON.stringify({
   }
 })
 
-const settings: WeatherSettings = {
-  enabled: true,
-  place: 'Egham',
-  latitude: 51.4,
-  longitude: -0.5,
-  unit: 'celsius'
-}
+const query: WeatherQuery = { latitude: 51.4, longitude: -0.5, unit: 'celsius' }
 
 function fetcher(body: string, status = 200): { f: Fetcher; urls: string[] } {
   const urls: string[] = []
@@ -93,63 +85,12 @@ describe('what is sent', () => {
     expect(url.searchParams.get('latitude')).toBe('51.4')
     expect(url.searchParams.get('temperature_unit')).toBe('fahrenheit')
   })
-
-  it('the place search holds only the name', () => {
-    const url = new URL(geocodeUrl('  Egham  '))
-    expect(url.searchParams.get('name')).toBe('Egham')
-    expect(url.host).toBe('geocoding-api.open-meteo.com')
-  })
-})
-
-describe('parsePlaces', () => {
-  it('gives candidates with town-level coordinates and skips broken rows', () => {
-    const json = JSON.stringify({
-      results: [
-        {
-          name: 'Egham',
-          admin1: 'England',
-          country: 'United Kingdom',
-          latitude: 51.43123,
-          longitude: -0.55987
-        },
-        { name: 'No coordinates' },
-        { admin1: 'No name', latitude: 1, longitude: 2 }
-      ]
-    })
-    expect(parsePlaces(json)).toEqual([
-      {
-        name: 'Egham',
-        region: 'England',
-        country: 'United Kingdom',
-        latitude: 51.4,
-        longitude: -0.6
-      }
-    ])
-    expect(parsePlaces('{}')).toEqual([])
-  })
-
-  it('lists two places that round to the same town once', () => {
-    const row = { name: 'Egham', admin1: 'North West', country: 'South Africa' }
-    const json = JSON.stringify({
-      results: [
-        { ...row, latitude: -25.512, longitude: 25.704 },
-        { ...row, latitude: -25.49, longitude: 25.71 },
-        { ...row, latitude: -26.5, longitude: 25.7 }
-      ]
-    })
-    expect(parsePlaces(json).map((p) => [p.latitude, p.longitude])).toEqual([
-      [-25.5, 25.7],
-      [-26.5, 25.7]
-    ])
-  })
 })
 
 describe('WeatherService', () => {
-  it('asks nothing while off or without a place', async () => {
+  it('asks nothing without a position', async () => {
     const { f, urls } = fetcher(FORECAST)
-    const s = new WeatherService(f)
-    expect(await s.read({ ...settings, enabled: false })).toBeNull()
-    expect(await s.read({ ...settings, latitude: null })).toBeNull()
+    expect(await new WeatherService(f).read(null)).toBeNull()
     expect(urls).toEqual([])
   })
 
@@ -157,20 +98,20 @@ describe('WeatherService', () => {
     let now = 1_000_000
     const { f, urls } = fetcher(FORECAST)
     const s = new WeatherService(f, () => now)
-    await s.read(settings)
+    await s.read(query)
     now += WEATHER_CACHE_MS - 1
-    await s.read(settings)
+    await s.read(query)
     expect(urls).toHaveLength(1)
     now += 2
-    await s.read(settings)
+    await s.read(query)
     expect(urls).toHaveLength(2)
   })
 
-  it('asks again at once when the place or unit changed', async () => {
+  it('asks again at once when the position or unit changed', async () => {
     const { f, urls } = fetcher(FORECAST)
     const s = new WeatherService(f, () => 5)
-    await s.read(settings)
-    await s.read({ ...settings, unit: 'fahrenheit' })
+    await s.read(query)
+    await s.read({ ...query, unit: 'fahrenheit' })
     expect(urls).toHaveLength(2)
   })
 
@@ -182,22 +123,16 @@ describe('WeatherService', () => {
       return { status: 200, headers: { get: () => null }, text: async () => FORECAST }
     }
     const s = new WeatherService(f, () => now)
-    const first = await s.read(settings)
+    const first = await s.read(query)
     fail = true
     now += WEATHER_CACHE_MS + 1
-    expect(await s.read(settings)).toBe(first)
+    expect(await s.read(query)).toBe(first)
     now += 6 * WEATHER_CACHE_MS
-    await expect(s.read(settings)).rejects.toThrow('offline')
+    await expect(s.read(query)).rejects.toThrow('offline')
   })
 
   it('treats a non-200 answer as an error', async () => {
     const s = new WeatherService(fetcher('', 500).f)
-    await expect(s.read(settings)).rejects.toThrow('answered 500')
-  })
-
-  it('does not search for a place name that is too short', async () => {
-    const { f, urls } = fetcher('{}')
-    expect(await new WeatherService(f).findPlace(' x ')).toEqual([])
-    expect(urls).toEqual([])
+    await expect(s.read(query)).rejects.toThrow('answered 500')
   })
 })
