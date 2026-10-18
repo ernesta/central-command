@@ -3735,3 +3735,11 @@ Checked against the two decisions above: summaries are one total with self-study
 - **New contract is a button under the table** that opens a row at the top (`NewContractRow`: name, first and last day, clients, hours, invoiced; Add stays disabled until it reads). `ContractFields` stays only for Hours' empty page, where there is no table.
 - **Research's years are a table** (`YearsTable`, replacing `YearFields`): every listed year newest first, Edit only on the next one until it begins.
 - Driven in the built app on a scratch copy of the library (layout, the new row, row edit); not in dev mode.
+
+## Selection in a grid table (18 Oct 2026)
+
+The user: selection "still seems to be confusing and broken" — a selection ending inside a wrapped cell filled the whole row's height up to the end's x, and the rest of the row from the left edge.
+
+- **Cause:** a grid row is one line of the text but several lines on the screen (each cell wraps by itself), so the text-line bands `RectangleMarker.forRange` draws (first line to the right edge, last line from the left edge) ran through the cells.
+- **Fix** (`live-selection.ts`, `tableRows`, `rowMarkers`): the part of a selection on a grid row is drawn by the row. A row that is selected from end to end is one band of its box; a partly selected one is the selected text of each cell, one band per wrapped line, as tall as the row's line height. Everything else still goes through `forRange`. A table the cursor is in is text, and keeps the text bands.
+- Driven in the built app on a scratch library (a drag from a paragraph into a wrapped cell, then Shift-Down through the rest of the table), light mode. Layout only exists in a browser, so no unit test; not checked in dev mode or dark mode.

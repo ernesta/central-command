@@ -4,7 +4,7 @@ import {
   type Extension,
   type TransactionSpec
 } from '@codemirror/state'
-import { layer, RectangleMarker, type LayerMarker } from '@codemirror/view'
+import { layer, RectangleMarker, type EditorView, type LayerMarker } from '@codemirror/view'
 
 /**
  * What a line starts with before its text: an optional quote or list prefix (never snapped to, it is drawn as its own
@@ -45,6 +45,74 @@ export const snapSelectionToLineStart = EditorState.transactionFilter.of(
   }
 )
 
+interface TableRow {
+  from: number
+  to: number
+  el: HTMLElement
+}
+
+/** The rows of every grid table drawn in the view, in document order. */
+function tableRows(view: EditorView): TableRow[] {
+  const rows: TableRow[] = []
+  for (const el of view.contentDOM.querySelectorAll<HTMLElement>('.cm-line.live-table-row')) {
+    const line = view.state.doc.lineAt(view.posAtDOM(el))
+    rows.push({ from: line.from, to: line.to, el })
+  }
+  return rows
+}
+
+/**
+ * The selected part of one grid row: the whole row's box when all of it is selected, otherwise the selected text of
+ * each cell, one band per wrapped line, as tall as the row's line height.
+ */
+function rowMarkers(
+  view: EditorView,
+  row: TableRow,
+  from: number,
+  to: number,
+  base: { left: number; top: number }
+): LayerMarker[] {
+  const box = row.el.getBoundingClientRect()
+  if (from <= row.from && to >= row.to) {
+    return [
+      new RectangleMarker(
+        'cm-selectionBackground',
+        box.left - base.left,
+        box.top - base.top,
+        box.width,
+        box.height
+      )
+    ]
+  }
+  const lineHeight = parseFloat(window.getComputedStyle(row.el).lineHeight) || box.height
+  const markers: LayerMarker[] = []
+  const walker = document.createTreeWalker(row.el, NodeFilter.SHOW_TEXT)
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const length = node.nodeValue?.length ?? 0
+    if (!length || node.parentElement?.closest('[contenteditable="false"]')) continue
+    const start = view.posAtDOM(node, 0)
+    const lo = Math.max(from, start)
+    const hi = Math.min(to, start + length)
+    if (lo >= hi) continue
+    const piece = document.createRange()
+    piece.setStart(node, lo - start)
+    piece.setEnd(node, hi - start)
+    for (const rect of piece.getClientRects()) {
+      if (rect.width <= 0) continue
+      markers.push(
+        new RectangleMarker(
+          'cm-selectionBackground',
+          rect.left - base.left,
+          rect.top + rect.height / 2 - lineHeight / 2 - base.top,
+          rect.width,
+          lineHeight
+        )
+      )
+    }
+  }
+  return markers
+}
+
 /**
  * The selection, drawn as one block. CodeMirror's own drawing starts the bands of a note at the first line's
  * padding (a quote or an item pushes every band in) and runs a selection that ends at the start of a line down
@@ -67,14 +135,12 @@ const selectionLayer = layer({
       top: scroller.top - view.scrollDOM.scrollTop
     }
     const markers: LayerMarker[] = []
-    for (const range of view.state.selection.ranges) {
-      if (range.empty) continue
-      let to = range.to
-      if (view.state.doc.lineAt(to).from === to && to - 1 > range.from) to -= 1
+    const rows = tableRows(view)
+    const place = (from: number, to: number): void => {
       for (const marker of RectangleMarker.forRange(
         view,
         'cm-selectionBackground',
-        EditorSelection.range(range.from, to)
+        EditorSelection.range(from, to)
       )) {
         const shift = marker.left + base.left - defaultLeft
         markers.push(
@@ -89,6 +155,25 @@ const selectionLayer = layer({
             : marker
         )
       }
+    }
+    for (const range of view.state.selection.ranges) {
+      if (range.empty) continue
+      let to = range.to
+      if (view.state.doc.lineAt(to).from === to && to - 1 > range.from) to -= 1
+      // A row of a grid is one line of the text but several lines on the screen, each cell wrapping on its own: the
+      // text-line bands CodeMirror draws would run through the cells, so a row's selection is drawn cell by cell.
+      let at = range.from
+      for (const row of rows) {
+        if (row.to < at || row.from > to) continue
+        if (at < row.from) place(at, row.from - 1)
+        const from = Math.max(at, row.from)
+        const end = Math.min(to, row.to)
+        if (from < end || (from === end && range.from <= row.from && to > row.to)) {
+          markers.push(...rowMarkers(view, row, from, end, base))
+        }
+        at = row.to + 1
+      }
+      if (at < to) place(at, to)
     }
     // The pieces meet at fractional heights: let each run a pixel into the next, or a hairline shows between them.
     return markers.map((marker, i) =>
