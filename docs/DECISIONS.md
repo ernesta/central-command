@@ -3743,3 +3743,11 @@ The user: selection "still seems to be confusing and broken" — a selection end
 - **Cause:** a grid row is one line of the text but several lines on the screen (each cell wraps by itself), so the text-line bands `RectangleMarker.forRange` draws (first line to the right edge, last line from the left edge) ran through the cells.
 - **Fix** (`live-selection.ts`, `tableRows`, `rowMarkers`): the part of a selection on a grid row is drawn by the row. A row that is selected from end to end is one band of its box; a partly selected one is the selected text of each cell, one band per wrapped line, as tall as the row's line height. Everything else still goes through `forRange`. A table the cursor is in is text, and keeps the text bands.
 - Driven in the built app on a scratch library (a drag from a paragraph into a wrapped cell, then Shift-Down through the rest of the table), light mode. Layout only exists in a browser, so no unit test; not checked in dev mode or dark mode.
+
+## Tasks landing: a task shows once (18 Oct 2026)
+
+The user: each task on the Tasks main view shows up once only; one that is in progress and already under Today must not also be under In progress.
+
+- **Rule** (`landingSections`, `views.ts`): a task appears under the first heading that fits, in the order Overdue, Due today, Due tomorrow, Soon (day 2 to 7), In progress. It fits by its own date or status, or because an open subtask has its own date that fits (then the subtask is nested under it). This reverts "a landing task shows under every section that fits" (13 Oct 2026, `bf03a73`) and keeps the section order set after it.
+- So an overdue, in-progress task is only under Overdue, a due-today, in-progress task only under Due today, and In progress lists the in-progress tasks that fit nowhere above it. A parent whose subtask is under Due today is not repeated under Soon for its own later date.
+- Tests: `views.test.ts`.
