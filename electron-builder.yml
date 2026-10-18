@@ -5,6 +5,8 @@ directories:
 files:
   - '!**/.vscode/*'
   - '!src/*'
+  - '!resources/Locate.app'
+  - '!native'
   - '!electron.vite.config.{js,ts,mjs,cjs}'
   - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
@@ -20,6 +22,12 @@ nsis:
   createDesktopShortcut: always
 mac:
   entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    NSLocationUsageDescription: Central Command shows the weather where you are. Only a rounded position, about a town, is used.
+    NSLocationWhenInUseUsageDescription: Central Command shows the weather where you are. Only a rounded position, about a town, is used.
+  extraResources:
+    - from: resources/Locate.app
+      to: Locate.app
   notarize: false
 dmg:
   artifactName: ${name}-${version}.${ext}

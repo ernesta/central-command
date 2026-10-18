@@ -10,3 +10,4 @@ out
 *.tsbuildinfo
 
 .claude/
+resources/Locate.app
