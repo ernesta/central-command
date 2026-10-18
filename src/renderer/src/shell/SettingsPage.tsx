@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react'
+import { WeatherSettings } from '@modules/home/renderer/WeatherSettings'
 import { moduleSettingsSections } from '@modules/index'
 import { useModuleState } from '../state/use-module-state'
 import { AboutSettings } from './AboutSettings'
@@ -13,11 +14,12 @@ interface SettingsTab {
   Section: ComponentType
 }
 
-/** General first, then one tab per module that has something to configure (named after the module), then Shortcuts and About. */
+/** General first, then one tab per module that has something to configure (named after the module), Weather, then Shortcuts and About. */
 function tabs(): SettingsTab[] {
   return [
     { id: 'general', label: 'General', Section: GeneralSettings },
     ...moduleSettingsSections(),
+    { id: 'weather', label: 'Weather', Section: WeatherSettings },
     { id: 'shortcuts', label: 'Shortcuts', Section: ShortcutsSettings },
     { id: 'about', label: 'About', Section: AboutSettings }
   ]

@@ -1,4 +1,5 @@
 import { HomeDate, HomePage } from '@modules/home/renderer/HomePage'
+import { HomeWeather } from '@modules/home/renderer/HomeWeather'
 import { liveModules, plannedModulesFor } from '@modules/index'
 import type { Workspace } from '@shared/settings'
 import { WORKSPACE_LABELS } from './workspaces'
@@ -22,6 +23,7 @@ export function WorkspaceLanding({
         <div className={styles.title}>
           <h1 className={styles.heading}>{WORKSPACE_LABELS[workspace]}</h1>
           {hasHome && <HomeDate />}
+          {hasHome && <HomeWeather />}
         </div>
         {actions}
       </header>

@@ -1,0 +1,55 @@
+.section {
+  display: grid;
+  gap: 28px;
+  padding: 28px 32px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-panel);
+}
+.heading {
+  margin: 0;
+  font-size: var(--text-20);
+  font-weight: 600;
+}
+.field {
+  display: grid;
+  gap: 6px;
+}
+.label {
+  font-size: var(--text-14);
+  font-weight: 600;
+}
+.help {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+}
+.row {
+  display: flex;
+  gap: 8px;
+}
+.input {
+  flex: 1;
+}
+.places {
+  display: grid;
+  gap: 4px;
+  margin: 4px 0 0;
+  padding: 0 4px 4px;
+  list-style: none;
+}
+.place {
+  width: 100%;
+  padding: 8px 10px;
+  text-align: left;
+  font: inherit;
+  font-size: var(--text-14);
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+.place:hover {
+  background: var(--panel);
+}

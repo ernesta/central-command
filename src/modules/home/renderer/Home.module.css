@@ -144,3 +144,13 @@
   align-items: center;
   gap: 12px;
 }
+.weather {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: var(--text-16);
+}
+.temperature {
+  color: var(--ink);
+}
