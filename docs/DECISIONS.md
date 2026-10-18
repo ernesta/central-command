@@ -1884,7 +1884,7 @@ The user is leaving ClickUp and wants a task manager in the app. Plan: `docs/TAS
 
 Built `src/modules/tasks/`: `shared/` (types, `recurrence.ts`, `views.ts`), `main/` (migration `tasks/0001_init`, `repository.ts`, `tasks-store.ts`, `snapshot.ts`, `register.ts`). No UI.
 
-- **Rules are plain and tested.** `nextOccurrence` counts from the completion date; the views (`isOpen`, `isBacklog`, `landingSections`, `listSummaries`, `effectiveDue`, `taskTime`) take rows (a top-level task and its subtasks) so the renderer and the tests share them. A task appears once on the landing, under the first heading that fits (Due today, In progress, Overdue, Upcoming), also when only a subtask's own date fits (then it comes with that subtask nested).
+- **Rules are plain and tested.** `nextOccurrence` counts from the completion date; the views (`isOpen`, `isBacklog`, `landingSections`, `listSummaries`, `effectiveDue`, `taskTime`) take rows (a top-level task and its subtasks) so the renderer and the tests share them. A task appears once on the landing, under the first heading that fits (now Overdue, Due today, Due tomorrow, Soon, In progress), also when only a subtask's own date fits (then it comes with that subtask nested).
 - **Trash is a column.** `deleted_at` hides a task and its subtasks; restore brings back only the subtasks deleted at the same moment. Hard delete exists only for a task that was never written in (`discardIfEmpty`), as with notes and meetings.
 - **`series_uid`** was added to the plan's model so "only one open instance of a series" is a query, not a guess. Re-opening and re-completing a finished task starts nothing while the series has an open instance, nor when its next one was deleted (a mutation check found the second case untested).
 - **Mutation checks** (break, see a test fail, restore): next date from the due date instead of the completion date; the one-open-instance guard; subtasks not copied; subtasks not trashed with the parent; restoring every subtask; discarding an imported task; completing an already-done task spawning again. All caught.
@@ -1906,7 +1906,7 @@ Built `src/modules/tasks/`: `shared/` (types, `recurrence.ts`, `views.ts`), `mai
 
 ## Tasks: stage 3 write-up, landing, All tasks and the table (5 Oct 2026)
 
-Built (renderer in `src/modules/tasks/renderer/`, IPC `TASKS_IPC` in `shared/api.ts`, handlers in `main/register.ts`, which re-broadcast `tasks:changed` so every page refreshes): the landing (Due today, In progress, Overdue, Upcoming, list cards, Backlog link), All tasks and a list's page (filter row, Open/Backlog/Done with counts, column sorting, "Showing N of M"), the one table (`TasksTable`), the add bar, the New task dialog and Mod-Shift-A (`TaskGlobals`, research instance only), the right-click and priority menus (`TaskMenu`), and the workspace card. The list field reuses Notes' `GroupField` (now with `noun` and `allowNone`).
+Built (renderer in `src/modules/tasks/renderer/`, IPC `TASKS_IPC` in `shared/api.ts`, handlers in `main/register.ts`, which re-broadcast `tasks:changed` so every page refreshes): the landing (Overdue, Due today, Due tomorrow, Soon, In progress, list cards, Backlog link), All tasks and a list's page (filter row, Open/Backlog/Done with counts, column sorting, "Showing N of M"), the one table (`TasksTable`), the add bar, the New task dialog and Mod-Shift-A (`TaskGlobals`, research instance only), the right-click and priority menus (`TaskMenu`), and the workspace card. The list field reuses Notes' `GroupField` (now with `noun` and `allowNone`).
 
 - **Checked against the real data in a scratch library**: the landing shows In progress 17 and Overdue 8 as the mockup counted for Research; subtasks open under a thread; the context menu, dialog, add bar, Space, the status icon and adding subtasks (Enter keeps the field open) were driven with real keystrokes, in the production build and in dev mode (no console errors).
 - **Quit test**: typing a title and pressing Enter, then quitting at once, left the task in the database (the IPC call is awaited by main before the app closes the window).
@@ -3136,10 +3136,11 @@ The user's request, looking at a task's Subtasks card: always order subtasks by 
 
 ## Tasks landing: order, Upcoming window, and every section that fits (13 Oct 2026)
 
+_"Every section that fits" was reverted on 18 Oct 2026 ("Tasks landing: a task shows once"), and the order was changed on 13 Oct 2026 ("Overdue, Today, Tomorrow, Soon, In progress"); the rest below stands as history._
+
 - **Why (the user):** the sections should run Due today, Overdue, Upcoming (next 7 days), In progress; and a task that fits several (due today and in progress) should show in all of them, not only the first. Their CastlesFest task (in progress, due tomorrow) had only appeared under In progress.
 - **Now:** `LANDING_SECTIONS` is `today, overdue, upcoming, doing` and `TasksLanding` renders in that order; `UPCOMING_DAYS` is 7 (label "Next 7 days"). `landingSections` (`tasks/shared/views.ts`) no longer stops at the first match: a task is listed under every section whose own date or status fits, or where an open subtask's own date fits (that subtask nested under it, only in the section it fits). Done tasks are never listed.
 - **Consequences:** Overdue's "Move to Today" (no confirmation, no "Move to Backlog") acts on the whole Overdue section, so an in-progress, overdue task moves and stays in In progress. A task with a date in the next 7 days and a subtask due today shows in Today (subtask nested) and Upcoming (nothing nested).
-- **To go back** to "once, under the first heading that fits": restore the `break` after the push in `landingSections` (commit `bf03a73` is the one to revert; the order and window are in `5ba3af8`).
 - Unit-tested (`views.test.ts`); not driven in the app.
 
 ## Priority choosers show P1, P2, P3 (13 Oct 2026)

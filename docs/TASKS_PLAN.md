@@ -69,13 +69,13 @@ Descriptions are short (a minority of tasks have one) and live in the database t
 `position`, `recurrence` (null or a rule: every N days, weeks or months), `earlier_minutes` (the task's own ClickUp time, shown, never written by the app),
 `source_id` (the ClickUp id, so a re-run cannot duplicate), `created_at`, `updated_at`, `deleted_at`. `task_tags`: `task_uid`, `tag`.
 
-Rules in `src/modules/tasks/shared/`, plain and tested: `nextOccurrence(task, completedOn)`; the views (Today = due today, in progress, overdue, a task once, under
-its first matching heading; Upcoming = the next 14 days; Backlog = open, undated, not in progress; Open = dated or in progress; Done); the date a task shows (its own; a task with no date and dated open subtasks takes the earliest); rolled-up time; the order of subtasks. **Only top-level tasks are rows in any table.**
+Rules in `src/modules/tasks/shared/`, plain and tested: `nextOccurrence(task, completedOn)`; the views (the landing's sections Overdue, Due today, Due tomorrow, Soon (days 2 to 7), In progress, a task once, under
+its first matching heading; Backlog = open, undated, not in progress; Open = dated or in progress; Done); the date a task shows (its own; a task with no date and dated open subtasks takes the earliest); rolled-up time; the order of subtasks. **Only top-level tasks are rows in any table.**
 
 ## Screens (all follow existing patterns; see the mockup)
 
-- **Landing** (`LandingPage`/`LandingHeader`/`LandingSection`): back link, title "Tasks", **All tasks** and **New task** buttons; the add bar; sections Due today, In
-  progress, Overdue (five shown, "Show all", Move to Today, no confirmation), Upcoming (14 days); then **list cards** (the Series cards pattern: open count, overdue,
+- **Landing** (`LandingPage`/`LandingHeader`/`LandingSection`): back link, title "Tasks", **All tasks** and **New task** buttons; the add bar; sections Overdue, Due today,
+  Due tomorrow, Soon (days 2 to 7), In progress (a section with nothing in it is not drawn; five rows shown, "Show all"; Overdue has Move to Today, no confirmation); then **list cards** (the Series cards pattern: open count, overdue,
   sublists as a line) and a Backlog link.
 - **All tasks** (the Meetings page pattern): the usual filter row (search, list, priority, tag) and a Segmented Open / Backlog / Done, the add bar, and the table. A
   list page is All tasks with the list filter set, titled with the list.
@@ -83,8 +83,8 @@ its first matching heading; Upcoming = the next 14 days; Backlog = open, undated
   Time (h:mm; a parent adds its subtasks'), Due (overdue red, today accent). One tab stop, arrow keys, Enter opens (`useRowNavigation`). Click a Status icon to rotate it
   (Shift-click: straight to Done); click a Priority icon for a menu; right-click a row for both and Add subtask. Space on the selected row advances the status and the arrow
   keys open and close the subtasks (listed in Settings).
-- **Subtask dates**: a subtask has a date only if the user gave it one (copies of the parent's date are dropped on import). A subtask with its own date shows in Due today,
-  Overdue and Upcoming **nested directly under its parent**, which gives it context; otherwise subtasks are only seen on their task's page. The parent's own Due is
+- **Subtask dates**: a subtask has a date only if the user gave it one (copies of the parent's date are dropped on import). A subtask with its own date shows in the section its date fits
+  (Overdue, Due today, Due tomorrow or Soon), **nested directly under its parent**, which gives it context; otherwise subtasks are only seen on their task's page. The parent's own Due is
   never replaced by a subtask's. (Earlier drafts only handled a parent with no date.)
 - **Task page**: back link, title with its tags under it, details above the note (Status and Priority as segmented buttons, Due, List, Repeats), Subtasks, the
   description in `EditorCard`, and a side panel with Time (Start, Add time) and Mentioned in.
