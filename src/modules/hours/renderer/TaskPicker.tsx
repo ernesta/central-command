@@ -158,6 +158,9 @@ export function TaskPicker({
       event.preventDefault()
       if (shown && active >= 0) choose(items[active])
       else submit()
+    } else if (event.key === 'Tab' && !event.shiftKey && shown && !asking && active >= 0) {
+      // Tab takes the highlighted task and moves on.
+      choose(items[active])
     } else if (event.key === 'Escape' && (shown || asking)) {
       // Only the list (or the question) closes, not the popover or form behind it.
       event.preventDefault()

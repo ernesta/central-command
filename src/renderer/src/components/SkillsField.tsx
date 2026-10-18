@@ -1,5 +1,5 @@
 import { Plus, X } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import {
   MAX_SKILLS,
   SKILLS,
@@ -20,7 +20,10 @@ interface SkillsFieldProps {
  * from. A name in the file that is not on the list is shown outlined and can be removed, never invented.
  */
 export function SkillsField({ skills, onChange }: SkillsFieldProps): React.JSX.Element {
+  const listId = useId()
   const [open, setOpen] = useState(false)
+  const [active, setActive] = useState(-1)
+  const popRef = useRef<HTMLDivElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
   const addRef = useRef<HTMLButtonElement>(null)
   const full = skills.length >= MAX_SKILLS
@@ -31,10 +34,25 @@ export function SkillsField({ skills, onChange }: SkillsFieldProps): React.JSX.E
       if (!wrapRef.current?.contains(event.target as Node)) setOpen(false)
     }
     document.addEventListener('mousedown', onDown)
+    popRef.current?.focus()
     return () => document.removeEventListener('mousedown', onDown)
   }, [open])
 
+  useEffect(() => {
+    if (open)
+      popRef.current?.querySelector('[data-active="true"]')?.scrollIntoView({ block: 'nearest' })
+  }, [open, active])
+
   const chosen = new Set(skills)
+  // The menu's options in the order shown, so the arrows walk them across the groups.
+  const flat = SKILL_TAG_ORDER.flatMap((tag) =>
+    SKILLS.filter((s) => s.tag === tag && !chosen.has(s.name))
+  )
+  const pick = (index: number): void => {
+    if (!flat[index]) return
+    onChange([...skills, flat[index].name])
+    close()
+  }
   const close = (): void => {
     setOpen(false)
     addRef.current?.focus()
@@ -70,7 +88,10 @@ export function SkillsField({ skills, onChange }: SkillsFieldProps): React.JSX.E
             aria-expanded={open}
             disabled={full}
             title={full ? `Up to ${MAX_SKILLS} skills` : undefined}
-            onClick={() => setOpen((o) => !o)}
+            onClick={() => {
+              setActive(-1)
+              setOpen((o) => !o)
+            }}
           >
             <Plus size={12} strokeWidth={2} aria-hidden />
             add
@@ -79,11 +100,30 @@ export function SkillsField({ skills, onChange }: SkillsFieldProps): React.JSX.E
       </ul>
       {open && (
         <div
+          ref={popRef}
           className={styles.popover}
-          role="dialog"
+          role="listbox"
+          tabIndex={-1}
           aria-label="Add a skill"
+          aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
           onKeyDown={(event) => {
-            if (event.key === 'Escape') {
+            const last = flat.length - 1
+            const move = (to: number): void => {
+              event.preventDefault()
+              setActive(Math.min(last, Math.max(0, to)))
+            }
+            if (event.key === 'ArrowDown') move(active + 1)
+            else if (event.key === 'ArrowUp') move(active < 0 ? last : active - 1)
+            else if (event.key === 'Home') move(0)
+            else if (event.key === 'End') move(last)
+            else if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault()
+              pick(active)
+            } else if (event.key === 'Tab') {
+              // Tab takes the highlighted skill and moves on.
+              if (!event.shiftKey && flat[active]) onChange([...skills, flat[active].name])
+              setOpen(false)
+            } else if (event.key === 'Escape') {
               event.stopPropagation()
               close()
             }
@@ -96,20 +136,24 @@ export function SkillsField({ skills, onChange }: SkillsFieldProps): React.JSX.E
               <div key={tag} role="group" aria-label={SKILL_TAG_LABELS[tag]}>
                 <p className={styles.group}>{SKILL_TAG_LABELS[tag]}</p>
                 <ul className={styles.options}>
-                  {options.map((s) => (
-                    <li key={s.name}>
-                      <button
-                        type="button"
+                  {options.map((s) => {
+                    const index = flat.indexOf(s)
+                    return (
+                      <li
+                        key={s.name}
+                        id={`${listId}-${index}`}
+                        role="option"
+                        aria-selected={false}
+                        data-active={index === active}
                         className={styles.option}
-                        onClick={() => {
-                          onChange([...skills, s.name])
-                          close()
-                        }}
+                        onMouseEnter={() => setActive(index)}
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => pick(index)}
                       >
                         {s.name}
-                      </button>
-                    </li>
-                  ))}
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             )

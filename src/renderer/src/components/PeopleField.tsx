@@ -29,6 +29,7 @@ export function PeopleField({
   const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [active, setActive] = useState(0)
+  const moved = useRef(false)
   const wrapRef = useRef<HTMLDivElement>(null)
   const addRef = useRef<HTMLButtonElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -37,6 +38,7 @@ export function PeopleField({
     setOpen(false)
     setName('')
     setActive(0)
+    moved.current = false
     setError(null)
     addRef.current?.focus()
   }
@@ -156,11 +158,20 @@ export function PeopleField({
             onKeyDown={(event) => {
               if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
                 event.preventDefault()
+                moved.current = true
                 if (rows > 0)
                   setActive((current + (event.key === 'ArrowDown' ? 1 : rows - 1)) % rows)
               } else if (event.key === 'Enter') {
                 event.preventDefault()
                 choose(current)
+              } else if (
+                event.key === 'Tab' &&
+                !event.shiftKey &&
+                (moved.current || trimmed !== '') &&
+                current < matches.length
+              ) {
+                // Tab takes the person the arrows or the typing led to, then moves on.
+                add(matches[current].name)
               }
             }}
           />

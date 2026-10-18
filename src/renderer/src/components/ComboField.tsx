@@ -81,7 +81,11 @@ export function ComboField({
       event.preventDefault()
       event.stopPropagation()
       setOpen(false)
-    } else if (event.key === 'Tab') setOpen(false)
+    } else if (event.key === 'Tab') {
+      // Tab takes the highlighted option, if the arrows moved to one, and moves on.
+      if (open && !event.shiftKey && active >= 0 && shown[active]) onChange(shown[active])
+      setOpen(false)
+    }
   }
 
   return (

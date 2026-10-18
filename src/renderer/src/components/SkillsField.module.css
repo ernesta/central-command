@@ -76,6 +76,7 @@
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-control);
   box-shadow: var(--shadow-float);
+  outline: none;
 }
 .group {
   margin: 0;
@@ -93,6 +94,7 @@
   list-style: none;
 }
 .option {
+  cursor: default;
   width: 100%;
   padding: 6px 8px;
   border: 0;
@@ -101,6 +103,6 @@
   font-size: var(--text-14);
   text-align: left;
 }
-.option:hover {
+.option[data-active='true'] {
   background: var(--hover-tint);
 }

@@ -52,6 +52,7 @@ export function GroupField({
   const [place, setPlace] = useState<React.CSSProperties | undefined>(undefined)
   const Noun = noun.charAt(0).toUpperCase() + noun.slice(1)
   const wrapRef = useRef<HTMLDivElement>(null)
+  const popRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const filterRef = useRef<HTMLInputElement>(null)
 
@@ -150,6 +151,7 @@ export function GroupField({
       </button>
       {open && (
         <div
+          ref={popRef}
           className={styles.popover}
           style={plain ? place : undefined}
           role="dialog"
@@ -171,6 +173,11 @@ export function GroupField({
             value={filter}
             onChange={(event) => setFilter(event.target.value)}
             onKeyDown={(event) => {
+              if (event.key === 'ArrowDown') {
+                event.preventDefault()
+                popRef.current?.querySelector<HTMLElement>('ul button')?.focus()
+                return
+              }
               // Enter picks the only match, so the menu can be used without the mouse.
               if (event.key !== 'Enter') return
               // Enter must not reach a form around the field (it would add a task).
@@ -180,7 +187,21 @@ export function GroupField({
               else if (canCreate) addNew()
             }}
           />
-          <ul className={styles.list} aria-label={`${Noun}s`}>
+          <ul
+            className={styles.list}
+            aria-label={`${Noun}s`}
+            onKeyDown={(event) => {
+              if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
+              event.preventDefault()
+              const items = [...event.currentTarget.querySelectorAll<HTMLElement>('button')]
+              const at = items.indexOf(document.activeElement as HTMLElement)
+              if (event.key === 'ArrowUp' && at <= 0) filterRef.current?.focus()
+              else
+                items[
+                  Math.min(items.length - 1, at + (event.key === 'ArrowDown' ? 1 : -1))
+                ]?.focus()
+            }}
+          >
             {allowNone && terms.length === 0 && (
               <li>
                 <button

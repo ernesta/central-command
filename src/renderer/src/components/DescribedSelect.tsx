@@ -104,7 +104,11 @@ export function DescribedSelect<T extends string>({
       event.preventDefault()
       event.stopPropagation()
       close()
-    } else if (event.key === 'Tab') setOpen(false)
+    } else if (event.key === 'Tab') {
+      // Tab takes the highlighted option and moves on.
+      if (!event.shiftKey && ordered[active]) onChange(ordered[active].value)
+      setOpen(false)
+    }
   }
 
   let lastGroup: string | undefined
