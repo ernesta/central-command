@@ -15,7 +15,7 @@ import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { WORKSPACE_LABELS } from '@renderer/shell/workspaces'
 import { PLAN_WORKSPACES, TIME_OFF_WORKSPACES, type HoursWorkspace } from '../shared/workspaces'
 import { ContractsTable } from './ContractsTable'
-import { YearFields } from '@renderer/shell/YearFields'
+import { YearsTable } from './YearsTable'
 import styles from './HoursSettings.module.css'
 
 /** A field that shows what is saved until it is edited, saves a valid value on Enter or leaving it, and drops anything else. */
@@ -78,7 +78,7 @@ function PlanBlock({ workspace }: { workspace: HoursWorkspace }): React.JSX.Elem
         {WORKSPACE_LABELS[workspace]}
       </h3>
       {hasContracts(workspace) && <ContractsTable workspace={workspace} />}
-      {workspace === 'research' && <YearFields />}
+      {workspace === 'research' && <YearsTable />}
       {data && (
         <>
           {!hasContracts(workspace) && (

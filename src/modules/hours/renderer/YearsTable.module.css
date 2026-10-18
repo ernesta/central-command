@@ -1,0 +1,70 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+}
+/* A scroll box: 4px of padding so a focus ring is never clipped. */
+.wrap {
+  overflow: auto;
+  padding: 4px;
+  scroll-padding: 4px;
+}
+.table {
+  width: 100%;
+  min-width: 480px;
+  /* Fixed columns and rows: opening a row for editing changes neither widths nor heights. */
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+.table th {
+  padding: 12px 10px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-muted);
+  font-size: var(--text-11);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+}
+.table tbody th {
+  color: var(--text);
+  font-size: var(--text-14);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  border-bottom: 1px solid var(--border-faint);
+  height: 56px;
+  padding: 6px 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.table th:nth-child(1) {
+  width: 30%;
+}
+.table th:nth-child(4) {
+  width: 22%;
+}
+.table td {
+  height: 56px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-faint);
+  font-size: var(--text-14);
+  white-space: nowrap;
+}
+.hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.table td.actions {
+  text-align: right;
+}
+.actions > * + * {
+  margin-left: 8px;
+}
