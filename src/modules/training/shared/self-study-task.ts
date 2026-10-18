@@ -2,9 +2,12 @@ import { fold } from '@shared/text'
 import type { Task } from '../../tasks/shared/types'
 import { bareTitle, TRAINING_LIST, type ParentTarget } from './lecture-task'
 
-const SUFFIX = ' · self-study'
+const SUFFIX = ' self-study'
 
-/** The title of a self-study task: the series' own, or a lecture's (`<series> · self-study`, `<note title> · self-study`). */
+/** A title folded, with the first version's middle dot taken out (`PS5210 · self-study`), so tasks made then are still found. */
+const plain = (title: string): string => fold(bareTitle(title)).replace(' · self-study', SUFFIX)
+
+/** The title of a self-study task: the series' own, or a lecture's (`<series> self-study`, `<note title> self-study`). */
 export const selfStudyTitle = (name: string): string => `${name.trim()}${SUFFIX}`
 
 /** What a training note's self-study task needs done now. Pure: it only says, the page does it. */
@@ -22,11 +25,11 @@ export interface SelfStudyNote {
   title: string
 }
 
-/** An open top-level task called `<series> · self-study` (in "Training" first, else any list), or the one to create. */
+/** An open top-level task called `<series> self-study` (in "Training" first, else any list), or the one to create. */
 export function selfStudyParentFor(series: string, tasks: readonly Task[]): ParentTarget {
   const name = selfStudyTitle(series)
   const same = tasks.filter(
-    (t) => !t.parentUid && t.status !== 'done' && fold(bareTitle(t.title)) === fold(bareTitle(name))
+    (t) => !t.parentUid && t.status !== 'done' && plain(t.title) === plain(name)
   )
   const found = same.find((t) => fold(t.list) === fold(TRAINING_LIST)) ?? same[0]
   return found ? { uid: found.uid } : { title: name, list: TRAINING_LIST }
@@ -43,9 +46,9 @@ const isSeriesTask = (t: Task | undefined): boolean =>
  * What a training note's self-study task needs. Unlike the lecture task, nothing is made by itself: while `selfstudy` is empty the
  * plan is `none` until `asked` (Start or Add time was pressed), and a task that is gone is made again only when asked, silently.
  *
- * - The task is a subtask under the series' `<series> · self-study` task, and a task of its own (top level, in Training) while the note
+ * - The task is a subtask under the series' `<series> self-study` task, and a task of its own (top level, in Training) while the note
  *   has no series; adding a series moves it under the series' task, clearing it takes it back out.
- * - The task takes the note's title (`<title> · self-study`), and has no due date.
+ * - The task takes the note's title (`<title> self-study`), and has no due date.
  * - A task that is not the note's own is never renamed or moved: a subtask is the note's only under a self-study series task, and a
  *   top-level task only when it is in Training with nothing under it.
  *
@@ -75,7 +78,7 @@ export function planSelfStudyTask(
   if (own.parentUid) {
     if (!isSeriesTask(parent)) return { kind: 'none' }
     if (!series) plan.parent = null
-    else if (fold(bareTitle(parent?.title ?? '')) !== fold(selfStudyTitle(series))) {
+    else if (plain(parent?.title ?? '') !== plain(selfStudyTitle(series))) {
       plan.parent = selfStudyParentFor(series, tasks)
     }
   } else {

@@ -57,8 +57,8 @@ describe('makeSelfStudyTask', () => {
     const made = new Set<string>()
     const task = await makeSelfStudyTask(f.api, note, made)
     expect(f.tasks.map((t) => [t.title, t.parentUid ? 'sub' : t.list])).toEqual([
-      ['PS5210 · self-study', 'Training'],
-      ['Plotly · self-study', 'sub']
+      ['PS5210 self-study', 'Training'],
+      ['Plotly self-study', 'sub']
     ])
     expect(task.parentUid).toBe(f.tasks[0].uid)
     expect(task.status).toBe('doing')
@@ -77,7 +77,7 @@ describe('makeSelfStudyTask', () => {
   it('makes a top-level task in Training for a lecture with no series', async () => {
     const f = fake([])
     const task = await makeSelfStudyTask(f.api, { ...note, series: null }, new Set())
-    expect(task).toMatchObject({ title: 'Plotly · self-study', list: 'Training', parentUid: null })
+    expect(task).toMatchObject({ title: 'Plotly self-study', list: 'Training', parentUid: null })
   })
 
   it('returns a task that exists as it is, and makes a deleted one again, silently', async () => {
@@ -111,7 +111,7 @@ describe('syncSelfStudyTask', () => {
   it('follows a renamed title', async () => {
     const f = await setup()
     await run(f, { title: 'Plotly 2' })
-    expect(f.tasks.find((t) => t.uid === f.uid)?.title).toBe('Plotly 2 · self-study')
+    expect(f.tasks.find((t) => t.uid === f.uid)?.title).toBe('Plotly 2 self-study')
   })
 
   it('moves under another series and trashes the series task it made and left empty', async () => {
@@ -119,7 +119,7 @@ describe('syncSelfStudyTask', () => {
     const old = f.tasks[0].uid
     await run(f, { series: 'PS6000' })
     const moved = f.tasks.find((t) => t.uid === f.uid)
-    expect(f.tasks.find((t) => t.uid === moved?.parentUid)?.title).toBe('PS6000 · self-study')
+    expect(f.tasks.find((t) => t.uid === moved?.parentUid)?.title).toBe('PS6000 self-study')
     expect(f.deleted).toEqual([old])
   })
 
@@ -130,7 +130,7 @@ describe('syncSelfStudyTask', () => {
     await run(f, { series: 'PS6000' })
     expect(f.deleted).toEqual([])
     expect(f.tasks.some((t) => t.uid === mine)).toBe(true)
-    const userMade = fake([blank('u1', 'PS5210 · self-study')])
+    const userMade = fake([blank('u1', 'PS5210 self-study')])
     const made = new Set<string>()
     const sub = await makeSelfStudyTask(userMade.api, note, made)
     const plan = planSelfStudyTask({ ...note, selfStudy: sub.uid, series: null }, userMade.tasks)

@@ -30,8 +30,8 @@ const task = (uid: string, title: string, over: Partial<Task> = {}): Task => ({
   ...over
 })
 
-const seriesTask = task('p1', 'PS5210 · self-study')
-const mine = task('s1', 'Plotly · self-study', { list: '', parentUid: 'p1' })
+const seriesTask = task('p1', 'PS5210 self-study')
+const mine = task('s1', 'Plotly self-study', { list: '', parentUid: 'p1' })
 const note = (over: Partial<SelfStudyNote> = {}): SelfStudyNote => ({
   selfStudy: 's1',
   series: 'PS5210',
@@ -40,24 +40,34 @@ const note = (over: Partial<SelfStudyNote> = {}): SelfStudyNote => ({
 })
 
 describe('selfStudyParentFor', () => {
-  it('finds the open top-level `<series> · self-study` task, ignoring case, else says what to create', () => {
+  it('finds the open top-level `<series> self-study` task, ignoring case, else says what to create', () => {
     expect(selfStudyParentFor('ps5210 ', [seriesTask])).toEqual({ uid: 'p1' })
     expect(selfStudyParentFor('PS5210', [])).toEqual({
-      title: 'PS5210 · self-study',
+      title: 'PS5210 self-study',
       list: 'Training'
     })
   })
   it('does not take the series task itself, a done task or a subtask', () => {
     const plain = task('x', 'PS5210')
-    const done = task('d', 'PS5210 · self-study', { status: 'done' })
-    const sub = task('u', 'PS5210 · self-study', { list: '', parentUid: 'x' })
+    const done = task('d', 'PS5210 self-study', { status: 'done' })
+    const sub = task('u', 'PS5210 self-study', { list: '', parentUid: 'x' })
     expect(selfStudyParentFor('PS5210', [plain, done, sub])).toEqual({
-      title: 'PS5210 · self-study',
+      title: 'PS5210 self-study',
       list: 'Training'
     })
   })
+  it('still finds a series task made with the first version’s middle dot, and renames its lecture task', () => {
+    const old = task('p1', 'PS5210 · self-study')
+    expect(selfStudyParentFor('PS5210', [old])).toEqual({ uid: 'p1' })
+    const oldMine = task('s1', 'Plotly · self-study', { list: '', parentUid: 'p1' })
+    expect(planSelfStudyTask(note(), [old, oldMine])).toEqual({
+      kind: 'sync',
+      uid: 's1',
+      title: 'Plotly self-study'
+    })
+  })
   it('prefers the Training list', () => {
-    const other = task('p2', 'PS5210 · self-study', { list: 'Reading' })
+    const other = task('p2', 'PS5210 self-study', { list: 'Reading' })
     expect(selfStudyParentFor('PS5210', [other, seriesTask])).toEqual({ uid: 'p1' })
     expect(selfStudyParentFor('PS5210', [other])).toEqual({ uid: 'p2' })
   })
@@ -72,7 +82,7 @@ describe('planSelfStudyTask', () => {
   it('when asked, makes the subtask under the series task that exists', () => {
     expect(planSelfStudyTask(note({ selfStudy: '' }), [seriesTask], true)).toEqual({
       kind: 'create',
-      title: 'Plotly · self-study',
+      title: 'Plotly self-study',
       parent: { uid: 'p1' }
     })
   })
@@ -80,20 +90,20 @@ describe('planSelfStudyTask', () => {
   it('when asked, says the series task is to be made when there is none', () => {
     expect(planSelfStudyTask(note({ selfStudy: '' }), [], true)).toEqual({
       kind: 'create',
-      title: 'Plotly · self-study',
-      parent: { title: 'PS5210 · self-study', list: 'Training' }
+      title: 'Plotly self-study',
+      parent: { title: 'PS5210 self-study', list: 'Training' }
     })
   })
 
   it('when asked with no series, makes a top-level task of its own', () => {
     expect(planSelfStudyTask(note({ selfStudy: '', series: null }), [], true)).toEqual({
       kind: 'create',
-      title: 'Plotly · self-study',
+      title: 'Plotly self-study',
       parent: null
     })
     expect(planSelfStudyTask(note({ selfStudy: '', series: '  ', title: '' }), [], true)).toEqual({
       kind: 'create',
-      title: 'Untitled · self-study',
+      title: 'Untitled self-study',
       parent: null
     })
   })
@@ -115,7 +125,7 @@ describe('planSelfStudyTask', () => {
     expect(planSelfStudyTask(note({ title: 'Plotly 2' }), [seriesTask, mine])).toEqual({
       kind: 'sync',
       uid: 's1',
-      title: 'Plotly 2 · self-study'
+      title: 'Plotly 2 self-study'
     })
   })
 
@@ -127,9 +137,9 @@ describe('planSelfStudyTask', () => {
     expect(planSelfStudyTask(note({ series: 'PS6000' }), [seriesTask, mine])).toEqual({
       kind: 'sync',
       uid: 's1',
-      parent: { title: 'PS6000 · self-study', list: 'Training' }
+      parent: { title: 'PS6000 self-study', list: 'Training' }
     })
-    const other = task('p2', 'PS6000 · self-study')
+    const other = task('p2', 'PS6000 self-study')
     expect(planSelfStudyTask(note({ series: 'PS6000' }), [seriesTask, other, mine])).toEqual({
       kind: 'sync',
       uid: 's1',
@@ -146,7 +156,7 @@ describe('planSelfStudyTask', () => {
   })
 
   it('a top-level task of its own moves under the series task once a series is added', () => {
-    const alone = task('s1', 'Plotly · self-study')
+    const alone = task('s1', 'Plotly self-study')
     expect(planSelfStudyTask(note(), [seriesTask, alone])).toEqual({
       kind: 'sync',
       uid: 's1',
@@ -156,11 +166,11 @@ describe('planSelfStudyTask', () => {
   })
 
   it('never takes the note itself as its own series task', () => {
-    const alone = task('s1', 'PS5210 · self-study')
+    const alone = task('s1', 'PS5210 self-study')
     expect(planSelfStudyTask(note({ title: 'PS5210' }), [alone])).toEqual({
       kind: 'sync',
       uid: 's1',
-      parent: { title: 'PS5210 · self-study', list: 'Training' }
+      parent: { title: 'PS5210 self-study', list: 'Training' }
     })
   })
 
@@ -178,12 +188,12 @@ describe('planSelfStudyTask', () => {
   })
 
   it('another note’s subtask is left alone: only the uid in the note is ever planned', () => {
-    const neighbour = task('s2', 'Dash · self-study', { list: '', parentUid: 'p1' })
+    const neighbour = task('s2', 'Dash self-study', { list: '', parentUid: 'p1' })
     const plan = planSelfStudyTask(note({ title: 'Plotly 2' }), [seriesTask, mine, neighbour])
     expect(plan).toMatchObject({ kind: 'sync', uid: 's1' })
   })
 
   it('the title helper trims', () => {
-    expect(selfStudyTitle('  PS5210 ')).toBe('PS5210 · self-study')
+    expect(selfStudyTitle('  PS5210 ')).toBe('PS5210 self-study')
   })
 })
