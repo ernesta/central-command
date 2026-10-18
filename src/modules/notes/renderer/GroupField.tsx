@@ -1,5 +1,5 @@
 import { Check, ChevronDown, Plus } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { Select } from '@renderer/components/Select'
 import { fold } from '@shared/text'
 import {
@@ -49,10 +49,11 @@ export function GroupField({
   const [open, setOpen] = useState(false)
   const [filter, setFilter] = useState('')
   const [inside, setInside] = useState('')
+  const [active, setActive] = useState(-1)
   const [place, setPlace] = useState<React.CSSProperties | undefined>(undefined)
+  const listId = useId()
   const Noun = noun.charAt(0).toUpperCase() + noun.slice(1)
   const wrapRef = useRef<HTMLDivElement>(null)
-  const popRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const filterRef = useRef<HTMLInputElement>(null)
 
@@ -60,6 +61,7 @@ export function GroupField({
     setOpen(false)
     setFilter('')
     setInside('')
+    setActive(-1)
   }
   const close = (): void => {
     reset()
@@ -97,6 +99,10 @@ export function GroupField({
     return terms.every((t) => text.includes(t))
   })
   const current = groupLabel(group, subgroup)
+  // The rows the arrows walk, in the order shown: "No …" first, then the options.
+  const noneRow = allowNone && terms.length === 0
+  const rows = [...(noneRow ? [{ group: '', subgroup: '' }] : []), ...options]
+  const highlighted = Math.min(active, rows.length - 1)
   const isCurrent = (g: string, s: string): boolean =>
     nameKey(g) === nameKey(group) && nameKey(s) === nameKey(subgroup)
 
@@ -151,7 +157,6 @@ export function GroupField({
       </button>
       {open && (
         <div
-          ref={popRef}
           className={styles.popover}
           style={plain ? place : undefined}
           role="dialog"
@@ -171,41 +176,51 @@ export function GroupField({
             aria-label={`Find a ${noun}`}
             placeholder={`Type to find a ${noun}`}
             value={filter}
-            onChange={(event) => setFilter(event.target.value)}
+            onChange={(event) => {
+              setFilter(event.target.value)
+              setActive(-1)
+            }}
+            aria-activedescendant={highlighted >= 0 ? `${listId}-${highlighted}` : undefined}
             onKeyDown={(event) => {
-              if (event.key === 'ArrowDown') {
+              if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
                 event.preventDefault()
-                popRef.current?.querySelector<HTMLElement>('ul button')?.focus()
+                if (rows.length === 0) return
+                const last = rows.length - 1
+                setActive(
+                  event.key === 'ArrowDown'
+                    ? Math.min(last, highlighted + 1)
+                    : highlighted < 0
+                      ? last
+                      : Math.max(0, highlighted - 1)
+                )
                 return
               }
-              // Enter picks the only match, so the menu can be used without the mouse.
+              // Tab takes the highlighted row (if the arrows moved to one) and moves on.
+              if (event.key === 'Tab') {
+                if (!event.shiftKey && highlighted >= 0) choose(rows[highlighted])
+                else reset()
+                return
+              }
               if (event.key !== 'Enter') return
               // Enter must not reach a form around the field (it would add a task).
               event.preventDefault()
               event.stopPropagation()
-              if (options.length === 1) choose(options[0])
+              if (highlighted >= 0) choose(rows[highlighted])
+              // Enter picks the only match, so the menu can be used without the mouse.
+              else if (options.length === 1) choose(options[0])
               else if (canCreate) addNew()
             }}
           />
-          <ul
-            className={styles.list}
-            aria-label={`${Noun}s`}
-            onKeyDown={(event) => {
-              if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
-              event.preventDefault()
-              const items = [...event.currentTarget.querySelectorAll<HTMLElement>('button')]
-              const at = items.indexOf(document.activeElement as HTMLElement)
-              if (event.key === 'ArrowUp' && at <= 0) filterRef.current?.focus()
-              else
-                items[
-                  Math.min(items.length - 1, at + (event.key === 'ArrowDown' ? 1 : -1))
-                ]?.focus()
-            }}
-          >
-            {allowNone && terms.length === 0 && (
-              <li>
+          <ul className={styles.list} aria-label={`${Noun}s`} role="listbox">
+            {noneRow && (
+              <li role="presentation">
                 <button
                   type="button"
+                  tabIndex={-1}
+                  role="option"
+                  id={`${listId}-0`}
+                  aria-selected={!group}
+                  data-active={highlighted === 0}
                   className={styles.item}
                   onClick={() => choose({ group: '', subgroup: '' })}
                 >
@@ -214,22 +229,33 @@ export function GroupField({
                 </button>
               </li>
             )}
-            {options.map((o) => (
-              <li key={o.label}>
-                <button
-                  type="button"
-                  className={[styles.item, o.depth === 1 && styles.nested]
-                    .filter(Boolean)
-                    .join(' ')}
-                  onClick={() => choose(o)}
-                >
-                  {o.depth === 1 ? o.subgroup : o.group}
-                  {isCurrent(o.group, o.subgroup) && (
-                    <Check size={14} strokeWidth={2} aria-hidden />
-                  )}
-                </button>
-              </li>
-            ))}
+            {options.map((o, i) => {
+              const index = i + (noneRow ? 1 : 0)
+              return (
+                <li key={o.label} role="presentation">
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    role="option"
+                    id={`${listId}-${index}`}
+                    aria-selected={isCurrent(o.group, o.subgroup)}
+                    data-active={highlighted === index}
+                    ref={(el) => {
+                      if (el && highlighted === index) el.scrollIntoView({ block: 'nearest' })
+                    }}
+                    className={[styles.item, o.depth === 1 && styles.nested]
+                      .filter(Boolean)
+                      .join(' ')}
+                    onClick={() => choose(o)}
+                  >
+                    {o.depth === 1 ? o.subgroup : o.group}
+                    {isCurrent(o.group, o.subgroup) && (
+                      <Check size={14} strokeWidth={2} aria-hidden />
+                    )}
+                  </button>
+                </li>
+              )
+            })}
             {terms.length > 0 && options.length === 0 && !canCreate && (
               <li className={styles.empty}>No {noun} matches.</li>
             )}

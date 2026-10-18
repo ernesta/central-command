@@ -80,7 +80,8 @@
   font-size: var(--text-14);
   text-align: left;
 }
-.item:hover {
+.item:hover,
+.item[data-active='true'] {
   background: var(--hover-tint);
 }
 .nested {
