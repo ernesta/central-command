@@ -3725,3 +3725,11 @@ Checked against the two decisions above: summaries are one total with self-study
 - **Delete only while a contract holds nothing** (no sessions, typed hours, days, notes or days off: `contractIsEmpty`), the user's choice, so no hours are ever lost. `removeContract` also refuses when a client only that contract has still has tasks, and sets the file aside as `<start>.json.removed-<time>` instead of deleting it. Undo makes the contract again with the same terms.
 - **New store calls:** `setContractTerms` (name, invoice) and `removeContract`, with IPC, preload and `Api` entries; the end and hours use the existing `setContractEnd` and `setPlan`. Tests: `store.test.ts` (mutation-checked: without the guard, a contract with time is removed and the test fails) and `contracts-table.test.ts` (replaces `hours-settings-aim.test.ts`: "none" not 0:00, clearing back to none, nonsense refused, Delete only when empty).
 - **Not driven in the app** at the time of writing.
+
+### Hours settings, second pass (18 Oct 2026)
+
+- **The card spilled out of the panel:** a grid item's minimum width is its content's, so the 860px table pushed the settings panel's grid wider than the panel. `HoursSettings.module.css` grids are now `minmax(0, 1fr)`; the table (minimum 840px) scrolls inside its own card.
+- **A contract's clients are edited in its row** (comma separated, in `ContractsTable`); the separate Clients chips (`ClientFields`) are gone. One name replaced in place is a rename (`renameClient`: the Tasks list, tasks and hours follow it), any other change sets the list (`clientChange` in `plan-settings.ts`); a removal that leaves a client's tasks behind is refused with the same words as before.
+- **New contract is a button under the table** that opens a row at the top (`NewContractRow`: name, first and last day, clients, hours, invoiced; Add stays disabled until it reads). `ContractFields` stays only for Hours' empty page, where there is no table.
+- **Research's years are a table** (`YearsTable`, replacing `YearFields`): every listed year newest first, Edit only on the next one until it begins.
+- Driven in the built app on a scratch copy of the library (layout, the new row, row edit); not in dev mode.
