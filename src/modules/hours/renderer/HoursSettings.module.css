@@ -1,5 +1,6 @@
 .section {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
   padding: 28px 32px;
   background: var(--surface);
@@ -67,6 +68,7 @@
 }
 .block {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
 }
 .block + .block {

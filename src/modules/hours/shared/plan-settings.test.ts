@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  clientChange,
   addClient,
   formatAimHours,
   parseAimHours,
@@ -12,6 +13,17 @@ import {
   removeClient,
   toggleWorkDay
 } from './plan-settings'
+
+describe('clientChange', () => {
+  it('reads one name replaced in place as a rename', () => {
+    expect(clientChange(['A', 'B'], ['A', 'C'])).toEqual({ rename: { from: 'B', to: 'C' } })
+  })
+  it('reads any other change as the new list, and no change as none', () => {
+    expect(clientChange(['A'], ['A', 'B'])).toEqual({ set: ['A', 'B'] })
+    expect(clientChange(['A', 'B'], ['B', 'A'])).toEqual({ set: ['B', 'A'] })
+    expect(clientChange(['A', 'B'], ['A', 'B'])).toBeNull()
+  })
+})
 
 describe('toggleWorkDay', () => {
   it('adds a day and keeps the week in order', () => {

@@ -1,3 +1,4 @@
+import { Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { DatePicker } from '@renderer/components/DatePicker'
@@ -11,12 +12,15 @@ import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { formatDate, todayIso } from '@shared/time'
 import { yearEnd } from '@shared/year'
 import { contractIsEmpty } from '@shared/tracking/contracts'
-import { contractWeeks } from '@shared/tracking/workspace-weeks'
+import { clientRefusal } from '@shared/tracking/client-names'
+import { contractWeeks, dayAfterContract } from '@shared/tracking/workspace-weeks'
 import { invoiceOf, type Invoice, type TrackingYear } from '@shared/tracking/types'
 import {
+  clientChange,
   contractRefusal,
   formatAimHours,
   MAX_CONTRACT_NAME_LENGTH,
+  parseClientList,
   parseContractHours
 } from '../shared/plan-settings'
 import type { YearResult } from '@shared/tracking/api'
@@ -27,6 +31,8 @@ const INVOICE_OPTIONS = [
   { value: 'week', label: 'Week' },
   { value: 'month', label: 'Month' }
 ] as const
+
+const ISO = /^\d{4}-\d{2}-\d{2}$/
 
 const INVOICE_LABELS: Record<Invoice, string> = { week: 'Week', month: 'Month' }
 
@@ -57,8 +63,10 @@ function ContractRow({
   const [finish, setFinish] = useState(end)
   const [hours, setHours] = useState(formatAimHours(contract.plan.hoursPerWeek))
   const [invoice, setInvoice] = useState<Invoice>(invoiceOf(contract))
+  const [clientsText, setClientsText] = useState((contract.plan.clients ?? []).join(', '))
   const [problem, setProblem] = useState<string | null>(null)
-  const clients = (contract.plan.clients ?? []).join(', ') || '–'
+  const savedClients = contract.plan.clients ?? []
+  const clients = savedClients.join(', ') || '–'
   const label = title(contract)
 
   if (!editing)
@@ -84,26 +92,40 @@ function ContractRow({
     )
 
   const weeklyMinutes = parseContractHours(hours)
+  const newClients = parseClientList(clientsText)
   const cancel = (): void => {
     setName(contract.name ?? '')
     setFinish(end)
     setHours(formatAimHours(contract.plan.hoursPerWeek))
     setInvoice(invoiceOf(contract))
+    setClientsText(savedClients.join(', '))
     setProblem(null)
     onDone()
   }
   const save = async (): Promise<void> => {
-    if (name.trim() === '' || weeklyMinutes === null) return
+    if (name.trim() === '' || weeklyMinutes === null || newClients === null) return
     const api = window.api.tracking
     const results: YearResult[] = []
+    const change = clientChange(savedClients, newClients)
+    if (change && 'rename' in change) {
+      const renamed = await api.renameClient(workspace, change.rename.from, change.rename.to)
+      if (!renamed.ok) return setProblem(clientRefusal(renamed.reason))
+    }
     if (name.trim() !== (contract.name ?? '') || invoice !== invoiceOf(contract))
       results.push(await api.setContractTerms(workspace, contract.start, { name, invoice }))
     if (finish !== end && contractWeeks(contract.start, finish).ok)
       results.push(await api.setContractEnd(workspace, contract.start, finish))
     if (weeklyMinutes !== contract.plan.hoursPerWeek)
       results.push(await api.setPlan(workspace, contract.start, { hoursPerWeek: weeklyMinutes }))
+    if (change && 'set' in change)
+      results.push(await api.setPlan(workspace, contract.start, { clients: change.set }))
     const refused = results.find((result) => !result.ok)
-    if (refused && !refused.ok) setProblem(contractRefusal(refused.reason))
+    if (refused && !refused.ok)
+      setProblem(
+        refused.reason === 'client-has-tasks'
+          ? clientRefusal(refused.reason, refused.detail?.client, refused.detail?.tasks)
+          : contractRefusal(refused.reason)
+      )
     else onDone()
   }
   return (
@@ -141,7 +163,17 @@ function ContractRow({
           }}
         />
       </td>
-      <td className={styles.clients}>{clients}</td>
+      <td>
+        <Input
+          aria-label={`Clients of ${label}`}
+          aria-invalid={newClients === null || undefined}
+          value={clientsText}
+          onChange={(event) => {
+            setClientsText(event.target.value)
+            setProblem(null)
+          }}
+        />
+      </td>
       <td>
         <Input
           inputMode="numeric"
@@ -174,7 +206,132 @@ function ContractRow({
   )
 }
 
-/** Every contract of a workspace, newest first; each row has Edit, and Delete while it holds no time. */
+/** The row a new contract is typed into: the first day starts as the day after the latest contract ends. */
+function NewContractRow({
+  workspace,
+  suggested,
+  onDone
+}: {
+  workspace: HoursWorkspace
+  suggested: string
+  onDone: () => void
+}): React.JSX.Element {
+  const [name, setName] = useState('')
+  const [start, setStart] = useState(suggested)
+  const [finish, setFinish] = useState('')
+  const [clientsText, setClientsText] = useState('')
+  const [hours, setHours] = useState('')
+  const [invoice, setInvoice] = useState<Invoice>('month')
+  const [problem, setProblem] = useState<string | null>(null)
+  const clients = parseClientList(clientsText)
+  const weeklyMinutes = parseContractHours(hours)
+  const check = ISO.test(start) && ISO.test(finish) ? contractWeeks(start, finish) : null
+  const ready =
+    check?.ok === true && name.trim() !== '' && clients !== null && weeklyMinutes !== null
+  const edit = (change: () => void): void => {
+    change()
+    setProblem(null)
+  }
+  const add = (): void => {
+    if (!ready || !clients || weeklyMinutes === null) return
+    void window.api.tracking
+      .createContract(workspace, start, finish, {
+        name: name.trim(),
+        clients,
+        weeklyMinutes,
+        invoice
+      })
+      .then((result) => {
+        if (result.ok) onDone()
+        else setProblem(contractRefusal(result.reason))
+      })
+  }
+
+  return (
+    <tr
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') onDone()
+        if (event.key === 'Enter' && !(event.target instanceof HTMLButtonElement)) add()
+      }}
+    >
+      <td>
+        <Input
+          autoFocus
+          aria-label="Name"
+          placeholder="Name"
+          maxLength={MAX_CONTRACT_NAME_LENGTH}
+          value={name}
+          onChange={(event) => edit(() => setName(event.target.value))}
+        />
+        {problem && <FieldError message={problem} />}
+      </td>
+      <td>
+        <DatePicker
+          label="First day"
+          placeholder="First day"
+          value={start || null}
+          today={todayIso()}
+          full
+          onChange={(day) =>
+            edit(() => {
+              setStart(day ?? '')
+              // A last day that no longer makes whole weeks from the new first day is dropped.
+              if (!day || !contractWeeks(day, finish).ok) setFinish('')
+            })
+          }
+        />
+      </td>
+      <td>
+        <DatePicker
+          label="Last day"
+          placeholder="Last day"
+          value={finish || null}
+          today={todayIso()}
+          full
+          isDisabled={(date) => !ISO.test(start) || !contractWeeks(start, date).ok}
+          onChange={(day) => edit(() => setFinish(day ?? ''))}
+        />
+      </td>
+      <td>
+        <Input
+          aria-label="Clients"
+          placeholder="Clients"
+          aria-invalid={(clientsText.trim() !== '' && clients === null) || undefined}
+          value={clientsText}
+          onChange={(event) => edit(() => setClientsText(event.target.value))}
+        />
+      </td>
+      <td>
+        <Input
+          inputMode="numeric"
+          aria-label="Hours a week"
+          placeholder="none"
+          aria-invalid={weeklyMinutes === null || undefined}
+          value={hours}
+          onChange={(event) => edit(() => setHours(event.target.value))}
+        />
+      </td>
+      <td>
+        <Select
+          label="Invoiced"
+          value={invoice}
+          options={INVOICE_OPTIONS}
+          onChange={(next) => edit(() => setInvoice(next))}
+        />
+      </td>
+      <td className={styles.actions}>
+        <Button size="small" variant="primary" disabled={!ready} onClick={add}>
+          Add
+        </Button>
+        <Button size="small" onClick={onDone}>
+          Cancel
+        </Button>
+      </td>
+    </tr>
+  )
+}
+
+/** Every contract of a workspace, newest first; each row has Edit, and Delete while it holds no time. New contract adds a row at the top. */
 export function ContractsTable({
   workspace
 }: {
@@ -184,6 +341,7 @@ export function ContractsTable({
   const [loaded, setLoaded] = useState<TrackingYear[]>([])
   const [editing, setEditing] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<TrackingYear | null>(null)
+  const [adding, setAdding] = useState(false)
   const key = years.join(',')
   const entering = useNewRowKeys(loaded.map((contract) => contract.start))
 
@@ -208,8 +366,9 @@ export function ContractsTable({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspace, key])
 
-  if (loaded.length === 0) return null
+  if (years.length > 0 && loaded.length === 0) return null
   const rows = [...loaded].sort((a, b) => b.start.localeCompare(a.start))
+  const latest = rows[0]
 
   const remove = (contract: TrackingYear): void => {
     setDeleting(null)
@@ -252,6 +411,13 @@ export function ContractsTable({
             </tr>
           </thead>
           <tbody>
+            {adding && (
+              <NewContractRow
+                workspace={workspace}
+                suggested={latest ? dayAfterContract(latest.start, latest.weeks ?? 52) : ''}
+                onDone={() => setAdding(false)}
+              />
+            )}
             {rows.map((contract) => (
               <ContractRow
                 // Saved or restored, a contract is a new row, so a stale edit draft never carries over.
@@ -274,6 +440,17 @@ export function ContractsTable({
           </tbody>
         </table>
       </div>
+      {!adding && (
+        <div className={styles.footer}>
+          <Button
+            size="small"
+            icon={<Plus size={14} strokeWidth={2} aria-hidden />}
+            onClick={() => setAdding(true)}
+          >
+            New contract
+          </Button>
+        </div>
+      )}
       {deleting && (
         <Dialog
           title="Remove this contract?"

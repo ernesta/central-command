@@ -78,6 +78,22 @@ export function parseClientList(text: string): string[] | null {
   return clients.length > 0 && clients.length <= MAX_CLIENTS ? clients : null
 }
 
+/**
+ * What changing a contract's clients from `before` to `after` means: one name replaced by another in the same place is a
+ * rename (the client's Tasks list, tasks and hours follow it); any other change is the new list. Null when nothing changed.
+ */
+export function clientChange(
+  before: readonly string[],
+  after: readonly string[]
+): { rename: { from: string; to: string } } | { set: string[] } | null {
+  const differing = after.flatMap((name, i) => (name !== before[i] ? [i] : []))
+  if (before.length === after.length && differing.length === 0) return null
+  if (before.length === after.length && differing.length === 1) {
+    return { rename: { from: before[differing[0]], to: after[differing[0]] } }
+  }
+  return { set: [...after] }
+}
+
 /** A new contract's weekly hours as typed: blank is no fixed hours (0), else a time as for the plan. Null when it cannot be read. */
 export function parseContractHours(text: string): number | null {
   return text.trim() === '' ? 0 : parseWeekHours(text)

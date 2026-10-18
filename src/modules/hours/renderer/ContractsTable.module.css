@@ -11,7 +11,7 @@
 }
 .table {
   width: 100%;
-  min-width: 860px;
+  min-width: 840px;
   /* Fixed columns and rows: opening a row for editing changes neither widths nor heights. */
   table-layout: fixed;
   border-collapse: separate;
@@ -19,7 +19,7 @@
   font-variant-numeric: tabular-nums;
 }
 .table th {
-  padding: 12px 16px;
+  padding: 12px 10px;
   background: var(--surface);
   border-bottom: 1px solid var(--border-soft);
   color: var(--text-muted);
@@ -37,28 +37,31 @@
   text-transform: none;
   border-bottom: 1px solid var(--border-faint);
   height: 56px;
-  padding: 6px 16px;
+  padding: 6px 10px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .table th:nth-child(1) {
-  width: 17%;
-}
-.table th:nth-child(2),
-.table th:nth-child(3) {
   width: 15%;
 }
-.table th:nth-child(5),
+.table th:nth-child(2),
+.table th:nth-child(3),
+.table th:nth-child(4) {
+  width: 17%;
+}
+.table th:nth-child(5) {
+  width: 9%;
+}
 .table th:nth-child(6) {
   width: 11%;
 }
 .table th:nth-child(7) {
-  width: 15%;
+  width: 14%;
 }
 .table td {
   height: 56px;
-  padding: 6px 16px;
+  padding: 6px 10px;
   border-bottom: 1px solid var(--border-faint);
   font-size: var(--text-14);
   white-space: nowrap;
@@ -92,4 +95,14 @@
   to {
     background-color: transparent;
   }
+}
+
+.footer {
+  padding: 8px 14px 12px;
+}
+/* A field fills its cell and never wider: its own width would run into the next column. */
+.table td input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }

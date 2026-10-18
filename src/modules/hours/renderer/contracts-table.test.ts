@@ -17,7 +17,9 @@ const api = {
   setPlan: vi.fn(),
   setContractTerms: vi.fn(),
   setContractEnd: vi.fn(),
-  removeContract: vi.fn()
+  removeContract: vi.fn(),
+  renameClient: vi.fn(),
+  createContract: vi.fn()
 }
 
 async function show(year: ReturnType<typeof contract>): Promise<HTMLElement> {
@@ -39,6 +41,8 @@ beforeEach(() => {
   api.setPlan.mockResolvedValue(ok)
   api.setContractTerms.mockResolvedValue(ok)
   api.setContractEnd.mockResolvedValue(ok)
+  api.renameClient.mockResolvedValue(ok)
+  api.createContract.mockResolvedValue(ok)
   ;(window as unknown as { api: unknown }).api = { tracking: api }
 })
 afterEach(unmount)
@@ -80,5 +84,42 @@ describe('Contracts table in Settings, Work', () => {
       name: 'Royal Holloway'
     })
     expect(empty.querySelector('button[aria-label^="Delete"]')).not.toBeNull()
+  })
+
+  it('renames a client edited in place, and sets the list when more changed', async () => {
+    const host = await show(contract({ aim: true, invoice: 'month' }))
+    press(host, 'Edit Royal Holloway')
+    const clients = host.querySelector<HTMLInputElement>('input[aria-label^="Clients of"]')!
+    expect(clients.value).toBe('Royal Holloway')
+    type(clients, 'RHUL')
+    press(host, 'Save')
+    await act(async () => {})
+    expect(api.renameClient).toHaveBeenCalledWith('work', 'Royal Holloway', 'RHUL')
+    expect(api.setPlan).not.toHaveBeenCalled()
+    unmount()
+
+    const again = await show(contract({ aim: true, invoice: 'month' }))
+    press(again, 'Edit Royal Holloway')
+    type(
+      again.querySelector<HTMLInputElement>('input[aria-label^="Clients of"]')!,
+      'Royal Holloway, Luminos'
+    )
+    press(again, 'Save')
+    await act(async () => {})
+    expect(api.setPlan).toHaveBeenCalledWith('work', '2026-09-28', {
+      clients: ['Royal Holloway', 'Luminos']
+    })
+  })
+
+  it('adds a contract from a row at the top of the table', async () => {
+    const host = await show(contract({ aim: true, invoice: 'month' }))
+    expect(host.querySelector('input[aria-label="Name"]')).toBeNull()
+    press(host, 'New contract')
+    expect(host.querySelector('tbody tr:first-child input[aria-label="Name"]')).not.toBeNull()
+    const add = [...host.querySelectorAll('button')].find((b) => b.textContent === 'Add')!
+    expect(add.disabled).toBe(true)
+    press(host, 'Cancel')
+    expect(host.querySelector('input[aria-label="Name"]')).toBeNull()
+    expect(api.createContract).not.toHaveBeenCalled()
   })
 })
