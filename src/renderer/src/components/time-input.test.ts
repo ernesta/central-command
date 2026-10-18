@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { endFollowingStart, parseTime, stepTime } from './time-input'
+import { endFollowingStart, parseQuarterTime, parseTime, snapTime, stepTime } from './time-input'
 
 describe('parseTime', () => {
   it('reads typed times in the usual shapes', () => {
@@ -10,6 +10,25 @@ describe('parseTime', () => {
   })
   it('refuses what is not a time', () => {
     for (const raw of ['', '9', '25:00', '12:60', '12:', 'ab:cd']) expect(parseTime(raw)).toBeNull()
+  })
+})
+
+describe('snapTime', () => {
+  it('goes to the nearest quarter hour, halves up', () => {
+    expect(snapTime('09:07')).toBe('09:00')
+    expect(snapTime('09:08')).toBe('09:15')
+    expect(snapTime('09:53')).toBe('10:00')
+    expect(snapTime('09:30')).toBe('09:30')
+  })
+  it('stops at the last quarter of the day', () => {
+    expect(snapTime('23:59')).toBe('23:45')
+  })
+  it('snaps a pasted time', () => {
+    expect(parseQuarterTime('9:20')).toBe('09:15')
+    expect(parseQuarterTime('nope')).toBeNull()
+  })
+  it('keeps a step on the quarters when the time started off them', () => {
+    expect(stepTime('10:07', 'minutes', 1)).toBe('10:15')
   })
 })
 
@@ -43,6 +62,6 @@ describe('endFollowingStart', () => {
   })
   it('leaves the end when the start is cleared and caps at the end of the day', () => {
     expect(endFollowingStart('13:00', null, '14:00')).toBe('14:00')
-    expect(endFollowingStart(null, '23:30', null)).toBe('23:59')
+    expect(endFollowingStart(null, '23:30', null)).toBe('23:45')
   })
 })

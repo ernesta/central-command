@@ -77,3 +77,13 @@ describe('trackingMoment', () => {
     })
   })
 })
+
+describe('durationMinutes to the quarter hour', () => {
+  it('rounds odd times to the nearest quarter, halves up', () => {
+    expect(durationMinutes('09:00', '09:50')).toBe(45)
+    expect(durationMinutes('09:00', '09:53')).toBe(60)
+    expect(durationMinutes('09:00', '09:52')).toBe(45)
+    expect(durationMinutes('09:00', '10:08')).toBe(75)
+    expect(durationMinutes('09:00', '10:07')).toBe(60)
+  })
+})

@@ -170,9 +170,9 @@ describe('hours counted the same way everywhere (Research)', () => {
     expect(onTasks.get('l1')).toBe(90)
   })
 
-  it('a lecture that is not a whole number of quarter hours: Hours reports to the quarter, the training log keeps the exact minutes', () => {
-    // The one known difference, by design (docs/DECISIONS.md, "Meetings' derived hours" and "One total with no split"): a derived block
-    // is reported to the quarter hour like any block, while the training counters (Inkpath's log) use the session's exact length.
+  it('a lecture that is not a whole number of quarter hours: Hours and the training log both report to the quarter', () => {
+    // Once a known difference (docs/DECISIONS.md, "Meetings' derived hours"); since 18 Oct 2026 every report of time is to the quarter hour,
+    // the session's length included.
     const odd = lecture({
       id: '2026-10-12 Odd',
       date: '2026-10-12',
@@ -187,7 +187,7 @@ describe('hours counted the same way everywhere (Research)', () => {
     )
     const hoursPage = trackedByTask([withOdd]).get('l2')
     const trainingLog = entryMinutes(odd, trackedByTask([stored]))
-    expect(trainingLog).toBe(70)
+    expect(trainingLog).toBe(75)
     expect(hoursPage).toBe(75)
     expect(hoursPage).toBe(roundToQuarter(70 * 60))
     expect(derivedRows(withOdd, '2026-10-12').map((r) => r.minutes)).toEqual([75])

@@ -1,4 +1,5 @@
 import { normaliseTime } from './front-matter'
+import { QUARTER } from './tracking/rounding'
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -7,11 +8,13 @@ function minutes(time: string | null): number | null {
   return t ? Number(t.slice(0, 2)) * 60 + Number(t.slice(3)) : null
 }
 
-/** End minus start in minutes; null when either is missing or the end is not after the start. */
+/** End minus start in minutes, to the nearest quarter hour (as every report of time is); null when either is missing or the end is not after the start. */
 export function durationMinutes(start: string | null, end: string | null): number | null {
   const a = minutes(start)
   const b = minutes(end)
-  return a === null || b === null || b <= a ? null : b - a
+  return a === null || b === null || b <= a
+    ? null
+    : Math.floor((b - a + QUARTER / 2) / QUARTER) * QUARTER
 }
 
 /** A length of time in hours and minutes: "45 min", "3 h", "1 h 30 min". */

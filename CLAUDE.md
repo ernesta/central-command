@@ -119,8 +119,7 @@ workspaces are Life, Research and Work, data lives in `~/CentralCommand/`, and t
   `<series> · self-study` task per series, made when first pressed (`selfstudy:` in the note); the lecture's own task is the session and has no Start. `entryMinutes`
   counts the session plus both tasks.
 - Hours counted the same way everywhere (`docs/HOURS_CONSISTENCY_PLAN.md`): one shown year (`hours/shared/shown-year.ts`), one year choice (`yearToShow`) and one set of
-  Home figures (`periodFigures`) serve the Hours page, Home, the Home summary and `snapshot.json` (`week` and `work`). One known difference, left to the user: Hours reports
-  a note's own session to the quarter hour, the training log keeps the exact minutes.
+  Home figures (`periodFigures`) serve the Hours page, Home, the Home summary and `snapshot.json` (`week` and `work`). Every report of time is to the quarter hour (18 Oct 2026): a note's start and end sit on 00/15/30/45 in `TimeInput`, and `durationMinutes` rounds, so Hours and the training log agree.
 - The editor: `LiveEditor` (CodeMirror 6) replaced Milkdown everywhere; every editor sits in `EditorCard`; panels use `DocSplit` and `Panel` (architecture above).
 - Dark mode (colours are `light-dark()` pairs in `tokens.css`: a new colour needs both), Settings in tabs, a few Mac conventions, entities (`@` mentions as
   `[label](cc://kind/key)` chips), packaging (`npm run build:mac`, installed in `/Applications`; quit it before replacing it).

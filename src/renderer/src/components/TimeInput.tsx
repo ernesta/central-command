@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { parseTime, stepTime } from './time-input'
+import { parseQuarterTime, parseTime, snapTime, stepTime } from './time-input'
 import styles from './TimeInput.module.css'
 
 interface TimeInputProps {
@@ -18,7 +18,7 @@ type Part = 'hours' | 'minutes'
  * A time of day as two parts, hours and minutes, like Hours' duration field: Tab lands on hours and again on minutes, a
  * click goes to the part clicked, and the part focused is selected. Digits are typed over it (hours move on to minutes
  * once complete); setting one part fills in the other (09 and 00); Up and Down step (an hour; a quarter hour, without
- * carrying); Backspace or Delete empties the whole time.
+ * carrying); minutes always sit on 00, 15, 30 or 45 (typed 07 becomes 00); Backspace or Delete empties the whole time.
  */
 export function TimeInput({ value, onChange, id, ...rest }: TimeInputProps): React.JSX.Element {
   const refs = { hours: useRef<HTMLInputElement>(null), minutes: useRef<HTMLInputElement>(null) }
@@ -30,7 +30,9 @@ export function TimeInput({ value, onChange, id, ...rest }: TimeInputProps): Rea
   const pad = (n: number): string => String(n).padStart(2, '0')
   const set = (part: Part, n: number): void => {
     const [h, m] = (time ?? '09:00').split(':')
-    onChange(part === 'hours' ? `${pad(n)}:${time ? m : '00'}` : `${time ? h : '09'}:${pad(n)}`)
+    onChange(
+      snapTime(part === 'hours' ? `${pad(n)}:${time ? m : '00'}` : `${time ? h : '09'}:${pad(n)}`)
+    )
   }
   const go = (part: Part): void => {
     typed.current = ''
@@ -48,7 +50,8 @@ export function TimeInput({ value, onChange, id, ...rest }: TimeInputProps): Rea
         set('hours', Math.min(23, Number(digits)))
         if (digits.length === 2 || Number(key) > 2) go('minutes')
       } else {
-        set('minutes', Math.min(59, Number(digits)))
+        // One digit is the tens ("3" is 30); the time always sits on a quarter hour.
+        set('minutes', Math.min(59, digits.length === 1 ? Number(digits) * 10 : Number(digits)))
         if (digits.length === 2) typed.current = ''
       }
     } else if (key === 'ArrowUp' || key === 'ArrowDown') {
@@ -80,7 +83,7 @@ export function TimeInput({ value, onChange, id, ...rest }: TimeInputProps): Rea
       value={text}
       // Every key is handled above; a paste of a whole time is the one thing that arrives as a change.
       onChange={(event) => {
-        const pasted = parseTime(event.target.value)
+        const pasted = parseQuarterTime(event.target.value)
         if (pasted) onChange(pasted)
       }}
       onKeyDown={keys(name)}
