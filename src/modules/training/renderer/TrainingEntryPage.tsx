@@ -22,6 +22,8 @@ import { MeetingHoursNote } from '../../meetings/renderer/MeetingHoursNote'
 import { FilesPanel } from './FilesPanel'
 import { LectureHours } from './LectureHours'
 import { LectureTask } from './LectureTask'
+import { draftSelfStudyTask } from './self-study-sync'
+import { taskRoute } from '../../tasks/renderer/tasks-paths'
 import { entryRoute, trainingBase, useTrainingWorkspace } from './training-paths'
 import { TrainingMetaFields } from './TrainingMetaFields'
 import { useLectureTask } from './useLectureTask'
@@ -112,6 +114,7 @@ function EntryView({
   )
   const selfStudy = useSelfStudy()
   const lectureUid = lectureTaskUid(meta.task)
+  const lectureTask = lectureUid ? tasks?.find((t) => t.uid === lectureUid) : undefined
   const studied =
     (lectureUid ? (selfStudy.get(lectureUid) ?? 0) : 0) +
     (meta.selfStudy ? (selfStudy.get(meta.selfStudy) ?? 0) : 0)
@@ -247,6 +250,9 @@ function EntryView({
         onChange={(patch) => session.setMeta(patch)}
         onAddPerson={addPerson}
         workspace={workspace}
+        lectureTaskTo={
+          research && lectureTask ? taskRoute(lectureTask.workspace, lectureTask.uid) : undefined
+        }
       />
 
       <MeetingHoursNote
@@ -264,6 +270,7 @@ function EntryView({
           tasks={tasks}
           onRemake={() => session.setMeta({ task: 'auto' })}
           selfStudy={tasks?.find((t) => t.uid === meta.selfStudy)}
+          draft={draftSelfStudyTask(meta)}
         >
           <LectureHours meta={meta} tasks={tasks} ensure={ensure} />
         </LectureTask>

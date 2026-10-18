@@ -26,3 +26,7 @@
 .list {
   color: var(--text-muted);
 }
+/* The self-study task before it exists: its name, not yet a link. */
+.plain {
+  color: var(--ink);
+}

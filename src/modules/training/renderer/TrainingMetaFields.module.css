@@ -47,3 +47,19 @@
   font-size: var(--text-14);
   font-variant-numeric: tabular-nums;
 }
+/* The lecture's own task, as an icon next to the fields. */
+.taskLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-left: auto;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  color: var(--text-secondary);
+}
+.taskLink:hover {
+  background: var(--hover-tint);
+  color: var(--ink);
+}

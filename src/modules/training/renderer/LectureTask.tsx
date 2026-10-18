@@ -6,8 +6,9 @@ import type { Task } from '../../tasks/shared/types'
 import styles from './LectureTask.module.css'
 
 /**
- * The task a lecture's hours belong to, shown (it is made and kept in step automatically, `useLectureTask`). A note made before
- * lectures had tasks shows nothing. One whose task was deleted says so and offers to make it again; nothing is remade by itself.
+ * The task a lecture's hours go to: its self-study task (made when Start or Add time is first pressed; the lecture's own task, the
+ * session, is made and kept in step automatically by `useLectureTask` and linked from the note's details). A note made before
+ * lectures had tasks shows nothing. One whose lecture task was deleted says so and offers to make it again; nothing is remade by itself.
  */
 export function LectureTask({
   task,
@@ -15,6 +16,7 @@ export function LectureTask({
   tasks,
   onRemake,
   selfStudy,
+  draft,
   children
 }: {
   /** The note's `task:` value. */
@@ -22,8 +24,10 @@ export function LectureTask({
   series: string | null
   tasks: readonly Task[] | null
   onRemake: () => void
-  /** The lecture's self-study task, once it exists: a short link beside the lecture's own. */
+  /** The lecture's self-study task, once it exists. */
   selfStudy?: Task
+  /** The self-study task as it will be made, shown (not linked) until Start or Add time makes it. */
+  draft: Task
   /** The lecture's hours, on the same line as its task. */
   children?: React.ReactNode
 }): React.JSX.Element | null {
@@ -52,21 +56,21 @@ export function LectureTask({
       </Panel>
     )
   }
-  const parent = own.parentUid ? tasks.find((t) => t.uid === own.parentUid) : undefined
+  const shown = selfStudy ?? draft
+  const parent = shown.parentUid ? tasks.find((t) => t.uid === shown.parentUid) : undefined
   return (
     <Panel label="Task" row>
       <div className={styles.name}>
-        <Link className={styles.title} to={taskRoute(own.workspace, own.uid)}>
-          {own.title}
-        </Link>
-        <span className={styles.list}>
-          {parent ? `${parent.title} · ${parent.list}` : own.list}
-        </span>
-        {selfStudy && (
+        {selfStudy ? (
           <Link className={styles.title} to={taskRoute(selfStudy.workspace, selfStudy.uid)}>
-            Self-study
+            {selfStudy.title}
           </Link>
+        ) : (
+          <span className={styles.plain}>{draft.title}</span>
         )}
+        <span className={styles.list}>
+          {parent ? `${parent.title} · ${parent.list}` : shown.list}
+        </span>
       </div>
       {children}
     </Panel>

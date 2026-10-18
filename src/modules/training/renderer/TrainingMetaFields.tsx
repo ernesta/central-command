@@ -1,3 +1,5 @@
+import { ListChecks } from 'lucide-react'
+import { Link } from 'react-router'
 import { TimeInput } from '@renderer/components/TimeInput'
 import { endFollowingStart } from '@renderer/components/time-input'
 import { Segmented } from '@renderer/components/Segmented'
@@ -28,6 +30,8 @@ interface TrainingMetaFieldsProps {
   onAddPerson: (name: string) => Promise<Person>
   /** Life's entries have no type or skills (they are Inkpath's). */
   workspace?: TrainingWorkspace
+  /** Where the lecture's own task (the session) is, once it exists: shown as a small icon link. */
+  lectureTaskTo?: string
 }
 
 const MODE_OPTIONS = TRAINING_MODES.map((value) => ({
@@ -43,7 +47,8 @@ export function TrainingMetaFields({
   institutionSuggestions,
   onChange,
   onAddPerson,
-  workspace = 'research'
+  workspace = 'research',
+  lectureTaskTo
 }: TrainingMetaFieldsProps): React.JSX.Element {
   const research = workspace === 'research'
   const duration = durationMinutes(meta.start, meta.end)
@@ -176,6 +181,16 @@ export function TrainingMetaFields({
           <span className={styles.label}>Skills</span>
           <SkillsField skills={meta.skills} onChange={(skills) => onChange({ skills })} />
         </div>
+      )}
+      {lectureTaskTo && (
+        <Link
+          className={styles.taskLink}
+          to={lectureTaskTo}
+          aria-label="Lecture task"
+          title="Lecture task"
+        >
+          <ListChecks size={16} strokeWidth={1.75} aria-hidden />
+        </Link>
       )}
     </div>
   )
