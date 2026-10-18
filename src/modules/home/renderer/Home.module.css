@@ -146,10 +146,15 @@
 }
 .weather {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   gap: 6px;
   color: var(--text-secondary);
   font-size: var(--text-16);
+}
+.weatherIcon {
+  position: relative;
+  top: 2px;
+  align-self: baseline;
 }
 .temperature {
   color: var(--ink);

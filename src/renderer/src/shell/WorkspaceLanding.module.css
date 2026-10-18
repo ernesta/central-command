@@ -13,12 +13,13 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px 16px;
+  gap: 4px 8px;
 }
 .heading {
   margin: 0;
   font-size: var(--text-32);
   font-weight: 700;
+  margin-right: 8px;
 }
 .live {
   display: grid;

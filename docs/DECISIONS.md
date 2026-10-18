@@ -3784,3 +3784,10 @@ The user: take the weather's place and °C/°F from the laptop, and do not keep 
 - **Unit** (`temperature-unit.ts`): the Temperature unit in System Settings (`defaults read -g AppleTemperatureUnit`, which exists only once someone changed it) and otherwise the region (Fahrenheit for US, LR, MM, BS, BZ, KY, PW; this Mac is en_GB, so °C).
 - **The town's name** (the user asked for it, then for it to be as precise as it can be, 18 Oct 2026): `Locate.app` asks Location Services for a position to about 100 m and gives Apple's own lookup (`CLGeocoder`) that **precise** position; the name comes back as `place` (no answer is no name). The precise position is never printed, stored or sent anywhere else: the helper prints only the rounded one, and the weather is still asked for the rounded one (a finer position buys no better forecast). So the one place a precise position leaves the Mac is Apple's own lookup, at the user's choice.
 - Driven in a packaged build on a scratch library (`electron-builder --mac --dir`, ad-hoc signed): On, the read, the header, the temp file gone. **Not driven:** the denied case (only its parsing is tested) and a Developer-ID-signed or installed build.
+
+## The heading's date and weather: a dot and one baseline (18 Oct 2026)
+
+The user (from a screenshot): a middle dot must separate the date from the weather, and the two were misaligned.
+
+- **Dot:** `HomeWeather` starts with a `·`, so it only appears when the weather does. The title row's gap is 8px (was 16px) and the heading has an 8px right margin, so "Research" keeps its space.
+- **Alignment:** `.weather` was `align-items: center`, which gave the group a baseline of its icon and lifted its text off the date's. It is now `baseline`, and the icon (`.weatherIcon`) is nudged down 2px to sit level with the text. Not driven in the app: the user judges the look as they use it.

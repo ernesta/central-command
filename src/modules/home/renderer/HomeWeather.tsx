@@ -31,7 +31,8 @@ export function HomeWeather(): React.JSX.Element | null {
   const { temperature, text } = weatherLine(weather)
   return (
     <span className={styles.weather} title={`Feels like ${weather.now.feelsLike}°`}>
-      <Icon size={16} strokeWidth={1.75} aria-hidden />
+      <span aria-hidden>·</span>
+      <Icon className={styles.weatherIcon} size={16} strokeWidth={1.75} aria-hidden />
       <span className={styles.temperature}>{temperature}</span>
       <span>{text}</span>
     </span>
