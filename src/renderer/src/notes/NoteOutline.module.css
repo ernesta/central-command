@@ -31,3 +31,8 @@
   padding-left: 32px;
   color: var(--text-muted);
 }
+.item.current {
+  background: var(--selected-bg);
+  color: var(--selected-text);
+  font-weight: 600;
+}

@@ -897,6 +897,12 @@ kind of control across the app.
   new parsing, just the levels it cares about.
 - Checked in the built app: typing `##`/`###` headings updates the outline live, clicking a nested heading scrolls to it and not to
   an outer heading sharing its text.
+- **The outline shows where you are (18 Oct 2026, the user's report: "doesn't show where I am").** The entry for the heading being
+  read is highlighted (`--selected-bg`, bold, `aria-current="location"`). "Being read" is the last heading at or above a line 120px
+  below the top of the window (`READING_LINE`, clear of the top bar), found from the editor's own line heights (`lineBlockAt`), so
+  headings far off screen, which have no element, still count. The page scrolls (not the editor), so it listens to scroll in the
+  capture phase and to resize, and re-reads when the headings change. A short last section that cannot scroll up to the line leaves
+  the previous heading highlighted. Not yet driven in the app; the 120px is a guess to tune.
 
 ## Find in the note (Cmd-F, at the user's request, replacing the earlier find-on-page attempt)
 
