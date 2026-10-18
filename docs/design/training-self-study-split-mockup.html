@@ -1,0 +1,71 @@
+<title>Training and self-study hours: three options</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@500;600&display=swap">
+<style>
+/* Mockup: how Training shows its own hours apart from self-study. Rows are the places that summarise training; columns are the options. Made-up numbers. Tokens mirror tokens.css. */
+:root {
+  --bg: #edeff2; --surface: #ffffff; --ink: #1b222b; --text-muted: #5c6672; --border: #d3d8de; --faint: #e6e9ed;
+  --accent: #35577a; --track: #dfe4ea; --font-display: 'Newsreader', Georgia, serif; --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root { --bg: #14181d; --surface: #1f262e; --ink: #e6eaee; --text-muted: #98a3af; --border: #2f3843; --faint: #262e37; --accent: #86aad0; --track: #2a333d; color-scheme: dark; } }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.45 var(--font-body); margin: 0; padding: 24px 16px 64px; }
+.wrap { max-width: 1240px; margin: 0 auto; }
+h1 { font-family: var(--font-display); font-size: 28px; margin: 0 0 6px; }
+.lead { color: var(--text-muted); margin: 0 0 20px; }
+.grid { display: grid; grid-template-columns: 110px repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.col { font-weight: 600; padding-bottom: 4px; }
+.col small { display: block; font-weight: 400; color: var(--text-muted); }
+.rowlabel { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; padding-top: 14px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; min-width: 0; }
+.big { font-family: var(--font-display); font-weight: 600; font-size: 30px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.aim { font-size: 15px; color: var(--text-muted); font-family: var(--font-body); font-weight: 400; }
+.bar { height: 6px; background: var(--track); border-radius: 3px; margin: 8px 0; overflow: hidden; }
+.fill { height: 100%; background: var(--accent); width: 64%; }
+.muted { color: var(--text-muted); } .num { font-variant-numeric: tabular-nums; }
+.line { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-top: 1px solid var(--faint); margin-top: 3px; }
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.split .big { font-size: 24px; }
+.item { border-top: 1px solid var(--faint); padding: 8px 0; }
+.item:first-child { border-top: 0; padding-top: 0; }
+th, td { text-align: left; padding: 4px 8px 4px 0; font-size: 12.5px; white-space: nowrap; }
+th { color: var(--text-muted); font-weight: 600; font-size: 11px; }
+@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .rowlabel { padding-top: 0; } }
+</style>
+<div class="wrap">
+<h1>Training hours and self-study hours</h1>
+<p class="lead">Numbers are made up. Today one total mixes both. A: separate figures everywhere. B: training is the figure, self-study a quiet line. C: training only (self-study left out of every summary, still on the entry and its task).</p>
+<div class="grid">
+  <div></div>
+  <div class="col">A. Two figures<small>both always visible</small></div>
+  <div class="col">B. Training first<small>self-study as a quiet extra line</small></div>
+  <div class="col">C. Training only<small>self-study not shown in summaries</small></div>
+
+  <div class="rowlabel">Year strip</div>
+  <div class="card"><div class="split">
+    <div><div class="big">38:15 <span class="aim">of 60:00</span></div><div class="bar"><div class="fill"></div></div><div class="muted">Training, 2025–26</div></div>
+    <div><div class="big">12:30</div><div class="bar"><div class="fill" style="width:0"></div></div><div class="muted">Self-study</div></div>
+  </div><div class="muted" style="margin-top:6px">14 entries</div></div>
+  <div class="card"><div class="big">38:15 <span class="aim">of 60:00</span></div><div class="bar"><div class="fill"></div></div><div class="muted">Hours of training, 2025–26</div><div class="muted">14 entries · plus 12:30 of self-study</div></div>
+  <div class="card"><div class="big">38:15 <span class="aim">of 60:00</span></div><div class="bar"><div class="fill"></div></div><div class="muted">Hours of training, 2025–26</div><div class="muted">14 entries</div></div>
+
+  <div class="rowlabel">Per skill</div>
+  <div class="card"><table><tr><th>Skill</th><th>Training</th><th>Self-study</th></tr><tr><td>Statistics</td><td class="num">14:00</td><td class="num">5:15</td></tr><tr><td>Writing</td><td class="num">9:30</td><td class="num">2:00</td></tr><tr><td>Data viz</td><td class="num">6:45</td><td class="num">5:15</td></tr></table></div>
+  <div class="card"><div class="line" style="border:0"><span>Statistics</span><span class="num">14:00</span></div><div class="line"><span>Writing</span><span class="num">9:30</span></div><div class="line"><span>Data viz</span><span class="num">6:45</span></div></div>
+  <div class="card"><div class="line" style="border:0"><span>Statistics</span><span class="num">14:00</span></div><div class="line"><span>Writing</span><span class="num">9:30</span></div><div class="line"><span>Data viz</span><span class="num">6:45</span></div></div>
+
+  <div class="rowlabel">Series card</div>
+  <div class="card"><b>Data visualisation</b><div class="muted num">6 entries · 9:00 training · 3:30 self-study</div></div>
+  <div class="card"><b>Data visualisation</b><div class="muted num">6 entries · 9:00 <span title="">(+3:30 self-study)</span></div></div>
+  <div class="card"><b>Data visualisation</b><div class="muted num">6 entries · 9:00</div></div>
+
+  <div class="rowlabel">Recent row and table</div>
+  <div class="card"><div class="item"><b>Plotly basics</b><div class="muted num">09:00–12:00 · 3 h · self-study 1 h 15 min</div></div><div class="item"><b>Advanced charts</b><div class="muted num">13:00–15:00 · 2 h · no self-study</div></div><div style="margin-top:8px"><table><tr><th>Time</th><th>Training</th><th>Self-study</th></tr><tr><td class="num">09:00–12:00</td><td class="num">3 h</td><td class="num">1 h 15 min</td></tr></table></div></div>
+  <div class="card"><div class="item"><b>Plotly basics</b><div class="muted num">09:00–12:00 · 3 h <span>(+1 h 15 min self-study)</span></div></div><div class="item"><b>Advanced charts</b><div class="muted num">13:00–15:00 · 2 h</div></div><div style="margin-top:8px"><table><tr><th>Time</th><th>Duration</th></tr><tr><td class="num">09:00–12:00</td><td class="num">3 h</td></tr></table></div></div>
+  <div class="card"><div class="item"><b>Plotly basics</b><div class="muted num">09:00–12:00 · 3 h</div></div><div class="item"><b>Advanced charts</b><div class="muted num">13:00–15:00 · 2 h</div></div><div style="margin-top:8px"><table><tr><th>Time</th><th>Duration</th></tr><tr><td class="num">09:00–12:00</td><td class="num">3 h</td></tr></table></div></div>
+
+  <div class="rowlabel">PDF log</div>
+  <div class="card"><b>38:15</b> of 60:00 training, plus <b>12:30</b> self-study. Table: Hours column is training; a second column Self-study.</div>
+  <div class="card"><b>38:15</b> of 60:00 training. Plus 12:30 of self-study. Table: Hours column is training only.</div>
+  <div class="card"><b>38:15</b> of 60:00 in 14 entries. Table: Hours column is training only.</div>
+</div>
+</div>
