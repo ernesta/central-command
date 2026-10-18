@@ -1,5 +1,6 @@
 import { Pin } from 'lucide-react'
 import { Link } from 'react-router'
+import { LANDING_DAYS } from '@shared/year'
 import styles from './Landing.module.css'
 
 /** A module's landing page: a page wrapper so every module's landing looks and behaves alike. */
@@ -68,18 +69,32 @@ export function LandingSection({
   )
 }
 
-/** "See all meetings →" style link for a section's aside. */
+/**
+ * "See all meetings →" style link for a section's aside. `window` puts what a "Recent and upcoming" section covers in front
+ * of it, said the same way on every landing page.
+ */
 export function SeeAllLink({
   to,
-  children
+  children,
+  window = false
 }: {
   to: string
   children: React.ReactNode
+  window?: boolean
 }): React.JSX.Element {
-  return (
+  const link = (
     <Link className={styles.link} to={to}>
       {children}
     </Link>
+  )
+  if (!window) return link
+  return (
+    <span className={styles.asideGroup}>
+      <span className={styles.windowNote}>
+        Last {LANDING_DAYS} and next {LANDING_DAYS} days
+      </span>
+      {link}
+    </span>
   )
 }
 

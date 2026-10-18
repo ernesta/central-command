@@ -127,7 +127,7 @@ export function TrainingLanding(): React.JSX.Element {
                   s.count === 0 && s.upcoming === 0
                     ? 'No entries yet'
                     : [
-                        `${s.count} ${s.count === 1 ? 'entry' : 'entries'}`,
+                        s.count > 0 ? `${s.count} done` : '',
                         s.upcoming > 0 ? `${s.upcoming} upcoming` : '',
                         s.count > 0
                           ? `${formatHours(s.training)}${s.selfStudy > 0 ? ` + ${formatHours(s.selfStudy)} self-study` : ''}`
@@ -143,14 +143,17 @@ export function TrainingLanding(): React.JSX.Element {
             id="recent"
             label="Recent and upcoming"
             aside={
-              <SeeAllLink to={`${trainingListRoute(workspace)}?year=${year}`}>
+              <SeeAllLink window to={`${trainingListRoute(workspace)}?year=${year}`}>
                 See all training
                 <ArrowRight size={14} strokeWidth={1.75} aria-hidden />
               </SeeAllLink>
             }
           >
             {recentRows.length === 0 ? (
-              <EmptyState heading="No training yet" message="Create an entry to start your log." />
+              <EmptyState
+                heading="Nothing in the last or next 7 days"
+                message="See all training for the rest."
+              />
             ) : (
               <RecentList rows={recentRows} />
             )}

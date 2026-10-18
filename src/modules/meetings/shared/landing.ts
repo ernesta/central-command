@@ -1,3 +1,4 @@
+import { LANDING_DAYS, addDays } from '@shared/year'
 import { compareNewestFirst, isUpcoming, upcomingMeetings } from './query'
 import { SERIES, type MeetingIndexRow } from './types'
 
@@ -37,10 +38,10 @@ export function seriesSummaries(
   })
 }
 
-/** "9 meetings · last Sep 12 · next Oct 1", "1 meeting · last Jun 23", or "No meetings yet". */
+/** "9 done · last Sep 12 · next Oct 1", "1 done · last Jun 23", or "No meetings yet". */
 export function seriesLine(summary: SeriesSummary, formatDate: (date: string) => string): string {
   const { count, last, next } = summary
-  const parts = [`${count} ${count === 1 ? 'meeting' : 'meetings'}`]
+  const parts = count > 0 ? [`${count} done`] : []
   if (last) parts.push(`last ${formatDate(last)}`)
   if (next) parts.push(`next ${formatDate(next)}`)
   return count === 0 && !next ? 'No meetings yet' : parts.join(' · ')
@@ -53,17 +54,15 @@ export interface RecentAndUpcoming {
   recent: MeetingIndexRow[]
 }
 
-/** For the landing page: the next few upcoming meetings and the latest few that have happened. */
+/** For the landing page: the meetings of the next `LANDING_DAYS` days and of the last `LANDING_DAYS` days, today included. */
 export function recentAndUpcoming(
   rows: readonly MeetingIndexRow[],
-  today: string,
-  limits = { upcoming: 3, recent: 5 }
+  today: string
 ): RecentAndUpcoming {
+  const from = addDays(today, -LANDING_DAYS)
+  const to = addDays(today, LANDING_DAYS)
   return {
-    upcoming: upcomingMeetings(rows, today).slice(0, limits.upcoming),
-    recent: rows
-      .filter((r) => !isUpcoming(r, today))
-      .sort(compareNewestFirst)
-      .slice(0, limits.recent)
+    upcoming: upcomingMeetings(rows, today).filter((r) => r.date === '' || r.date <= to),
+    recent: rows.filter((r) => !isUpcoming(r, today) && r.date >= from).sort(compareNewestFirst)
   }
 }

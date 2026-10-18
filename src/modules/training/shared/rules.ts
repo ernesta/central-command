@@ -1,4 +1,4 @@
-import { inYear, yearLabel } from '@shared/year'
+import { LANDING_DAYS, addDays, inYear, yearLabel } from '@shared/year'
 import { fold } from '@shared/text'
 import { formatDate, durationMinutes } from '@shared/time'
 import { formatHours, minutesPerSkill } from '@shared/skills'
@@ -246,21 +246,21 @@ export function meetingsLine(meetingMinutes: number): string {
   return `plus ${formatHours(meetingMinutes)} of meetings, which Inkpath also counts`
 }
 
-/** The next few upcoming entries (soonest first, planned ones with no date last) and the latest few that have happened. */
+/**
+ * The entries of the next `LANDING_DAYS` days (soonest first; planned ones with no date come last) and of the last
+ * `LANDING_DAYS` days, today included (newest first).
+ */
 export function recentAndUpcoming(
   rows: readonly TrainingIndexRow[],
-  today: string,
-  limits = { upcoming: 3, recent: 5 }
+  today: string
 ): { upcoming: TrainingIndexRow[]; recent: TrainingIndexRow[] } {
+  const from = addDays(today, -LANDING_DAYS)
+  const to = addDays(today, LANDING_DAYS)
   return {
     upcoming: rows
-      .filter((r) => isUpcoming(r, today))
-      .sort((a, b) => -compareNewestFirst(a, b))
-      .slice(0, limits.upcoming),
-    recent: rows
-      .filter((r) => !isUpcoming(r, today))
-      .sort(compareNewestFirst)
-      .slice(0, limits.recent)
+      .filter((r) => isUpcoming(r, today) && (r.date === '' || r.date <= to))
+      .sort((a, b) => -compareNewestFirst(a, b)),
+    recent: rows.filter((r) => !isUpcoming(r, today) && r.date >= from).sort(compareNewestFirst)
   }
 }
 

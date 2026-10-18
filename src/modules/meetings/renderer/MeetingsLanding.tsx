@@ -134,7 +134,7 @@ export function MeetingsLanding(): React.JSX.Element {
             id="recent"
             label="Recent and upcoming"
             aside={
-              <SeeAllLink to={`${meetingsListRoute(workspace)}?year=${year}`}>
+              <SeeAllLink window to={`${meetingsListRoute(workspace)}?year=${year}`}>
                 See all meetings
                 <ArrowRight size={14} strokeWidth={1.75} aria-hidden />
               </SeeAllLink>
@@ -142,8 +142,8 @@ export function MeetingsLanding(): React.JSX.Element {
           >
             {recentRows.length === 0 ? (
               <EmptyState
-                heading="No meetings yet"
-                message="Create a meeting to start keeping notes."
+                heading="Nothing in the last or next 7 days"
+                message="See all meetings for the rest."
               />
             ) : (
               <RecentList rows={recentRows} />

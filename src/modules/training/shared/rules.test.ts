@@ -14,6 +14,7 @@ import {
   reconcileTrainingQuery,
   institutionOptions,
   seriesOptions,
+  recentAndUpcoming,
   seriesSummaries,
   trainingFiltersActive,
   trainingHours
@@ -385,5 +386,21 @@ describe('entryParts and the split of a series', () => {
   })
   it('is null with no times and nothing tracked', () => {
     expect(entryParts({ ...row, start: null, end: null }, new Map())).toBeNull()
+  })
+})
+
+describe('recentAndUpcoming', () => {
+  it('gives the last 7 days (newest first) and the next 7 days (soonest first, undated last)', () => {
+    const rows = [
+      row('2026-10-10'),
+      row('2026-10-11'),
+      row('2026-10-18'),
+      row('2026-10-25'),
+      row('2026-10-26'),
+      row('', { id: 'Planned' })
+    ]
+    const { upcoming, recent } = recentAndUpcoming(rows, '2026-10-18')
+    expect(upcoming.map((r) => r.date)).toEqual(['2026-10-25', ''])
+    expect(recent.map((r) => r.date)).toEqual(['2026-10-18', '2026-10-11'])
   })
 })

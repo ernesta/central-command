@@ -33,6 +33,9 @@ function fromDayNumber(n: number): string {
   return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`
 }
 
+/** How many days either side of today a landing page's "Recent and upcoming" looks. */
+export const LANDING_DAYS = 7
+
 /** The date `days` after (or before, if negative) another. Throws on a bad date: callers validate first. */
 export function addDays(date: string, days: number): string {
   const n = dayNumber(date)

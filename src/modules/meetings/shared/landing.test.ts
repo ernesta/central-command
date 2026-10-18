@@ -83,20 +83,18 @@ describe('seriesLine', () => {
   const line = (s: Parameters<typeof seriesLine>[0]): string => seriesLine(s, formatShortDate)
   it('reads like the mockup', () => {
     expect(line({ series: 'S', count: 52, last: '2026-09-24', next: '2026-10-01' })).toBe(
-      '52 meetings · last Sep 24 · next Oct 1'
+      '52 done · last Sep 24 · next Oct 1'
     )
     expect(line({ series: 'S', count: 9, last: '2026-09-12', next: null })).toBe(
-      '9 meetings · last Sep 12'
+      '9 done · last Sep 12'
     )
     expect(line({ series: 'S', count: 1, last: '2026-06-23', next: null })).toBe(
-      '1 meeting · last Jun 23'
+      '1 done · last Jun 23'
     )
   })
   it('handles none and only-upcoming', () => {
     expect(line({ series: 'S', count: 0, last: null, next: null })).toBe('No meetings yet')
-    expect(line({ series: 'S', count: 0, last: null, next: '2026-10-01' })).toBe(
-      '0 meetings · next Oct 1'
-    )
+    expect(line({ series: 'S', count: 0, last: null, next: '2026-10-01' })).toBe('next Oct 1')
   })
 })
 
@@ -105,16 +103,13 @@ describe('recentAndUpcoming', () => {
     ...['01', '02', '03', '04', '05', '06', '07'].map((d) => row(`2026-08-${d} Other`)),
     ...['2026-10-01', '2026-10-08', '2026-10-15', '2026-10-22'].map((d) => row(`${d} Supervision`))
   ]
-  it('gives the soonest upcoming (limited) and the latest recent (limited), each in its order', () => {
-    const { upcoming, recent } = recentAndUpcoming(rows, TODAY)
-    expect(upcoming.map((r) => r.date)).toEqual(['2026-10-01', '2026-10-08', '2026-10-15'])
-    expect(recent.map((r) => r.date)).toEqual([
-      '2026-08-07',
-      '2026-08-06',
-      '2026-08-05',
-      '2026-08-04',
-      '2026-08-03'
-    ])
+  it('gives the last 7 days (newest first) and the next 7 days (soonest first), today counting as recent', () => {
+    const near = ['2026-09-16', '2026-09-17', '2026-09-24', '2026-09-30', '2026-10-02'].map((d) =>
+      row(`${d} Supervision`)
+    )
+    const { upcoming, recent } = recentAndUpcoming([...rows, ...near], TODAY)
+    expect(upcoming.map((r) => r.date)).toEqual(['2026-09-30', '2026-10-01'])
+    expect(recent.map((r) => r.date)).toEqual(['2026-09-24', '2026-09-17'])
   })
   it('is empty for no meetings, and today counts as recent', () => {
     expect(recentAndUpcoming([], TODAY)).toEqual({ upcoming: [], recent: [] })

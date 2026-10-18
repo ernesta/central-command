@@ -259,3 +259,14 @@ li:only-child .recent {
 .cardChips .chipZero {
   font-family: inherit;
 }
+
+.asideGroup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+}
+.windowNote {
+  color: var(--text-muted);
+  font-size: var(--text-13);
+}
