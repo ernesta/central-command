@@ -97,7 +97,13 @@ export function contractRefusal(reason: string): string {
     case 'bad-start':
     case 'bad-end':
       return 'Check the dates.'
+    case 'has-time-after':
+      return 'Time is recorded after that day.'
+    case 'has-time':
+      return 'It holds time, so it can’t be removed.'
+    case 'client-has-tasks':
+      return 'A client of it still has tasks.'
     default:
-      return 'Couldn’t add it. Try again.'
+      return 'Couldn’t save it. Try again.'
   }
 }

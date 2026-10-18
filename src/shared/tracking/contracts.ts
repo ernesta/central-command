@@ -105,3 +105,17 @@ export function contractToShow(
   }
   return years.find((y) => y <= today) ?? years[0] ?? ''
 }
+
+/** Whether a contract holds nothing (no time, typed hours, notes or days off): only then can it be removed without losing hours. */
+export function contractIsEmpty(
+  year: Pick<TrackingYear, 'sessions' | 'adjusts' | 'timeOff' | 'days' | 'weekDays'>
+): boolean {
+  return (
+    year.sessions.length +
+      year.adjusts.length +
+      year.timeOff.length +
+      Object.keys(year.days).length +
+      Object.keys(year.weekDays).length ===
+    0
+  )
+}

@@ -1,6 +1,14 @@
 import type { Workspace } from '../settings'
 import type { OpenContracts } from './contracts'
-import type { Change, ContractTerms, Plan, Session, TimeOffType, TrackingYear } from './types'
+import type {
+  Change,
+  ContractTerms,
+  Invoice,
+  Plan,
+  Session,
+  TimeOffType,
+  TrackingYear
+} from './types'
 
 /** The one running timer of the whole app, with the file it lives in. */
 export interface RunningTimer {
@@ -126,6 +134,14 @@ export interface TrackingApi {
   ): Promise<{ ok: true } | { ok: false; reason: string }>
   /** Move a contract's last day. */
   setContractEnd(workspace: Workspace, year: string, end: string): Promise<YearResult>
+  /** Change a contract's name and how it is invoiced. */
+  setContractTerms(
+    workspace: Workspace,
+    year: string,
+    terms: { name?: string; invoice?: Invoice }
+  ): Promise<YearResult>
+  /** Remove a contract that holds no time (its file is set aside, not deleted). */
+  removeContract(workspace: Workspace, year: string): Promise<YearResult>
   /** A year's file changed (any workspace). Returns an unsubscribe function. */
   onChanged(listener: (event: TrackingChangedEvent) => void): () => void
 }
@@ -154,5 +170,7 @@ export const TRACKING_IPC = {
   createContract: 'tracking:create-contract',
   renameClient: 'tracking:rename-client',
   setContractEnd: 'tracking:set-contract-end',
+  setContractTerms: 'tracking:set-contract-terms',
+  removeContract: 'tracking:remove-contract',
   changed: 'tracking:changed'
 } as const

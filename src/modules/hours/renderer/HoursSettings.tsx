@@ -84,14 +84,16 @@ function PlanBlock({ workspace }: { workspace: HoursWorkspace }): React.JSX.Elem
       {workspace === 'research' && <YearFields />}
       {data && (
         <>
-          <PlanField
-            id={`${id}-per-week`}
-            label="Hours per week"
-            value={data.plan.hoursPerWeek}
-            format={data.plan.weekAim ? formatAimHours : formatHours}
-            parse={data.plan.weekAim ? parseAimHours : parseWeekHours}
-            onCommit={(hoursPerWeek) => save({ hoursPerWeek })}
-          />
+          {!hasContracts(workspace) && (
+            <PlanField
+              id={`${id}-per-week`}
+              label="Hours per week"
+              value={data.plan.hoursPerWeek}
+              format={data.plan.weekAim ? formatAimHours : formatHours}
+              parse={data.plan.weekAim ? parseAimHours : parseWeekHours}
+              onCommit={(hoursPerWeek) => save({ hoursPerWeek })}
+            />
+          )}
           {!data.plan.weekAim && (
             <div className={styles.field}>
               <span className={styles.label} id={`${id}-days-label`}>

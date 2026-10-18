@@ -32,6 +32,7 @@ import {
   emptyYear,
   type Change,
   type ContractTerms,
+  type Invoice,
   type Moment,
   type Plan,
   type TimeOffType,
@@ -41,6 +42,7 @@ import { dayNumber, inYear, yearEnd, yearLabel, yearStartOf, yearsPresent } from
 import { contractWeeks, hasContracts } from '@shared/tracking/workspace-weeks'
 import {
   contractForClient,
+  contractIsEmpty,
   contractOfLastClient,
   openContracts,
   type OpenContracts
@@ -532,6 +534,49 @@ export class TrackingStore {
         ? { ok: false, reason: 'has-time-after' }
         : { ok: true, year: { ...y, weeks: weeks.weeks } }
     })
+  }
+
+  /** Change a contract's name and how it is invoiced. */
+  setContractTerms(
+    workspace: Workspace,
+    start: string,
+    terms: { name?: string; invoice?: Invoice }
+  ): YearResult {
+    if (!hasContracts(workspace)) return { ok: false, reason: 'no-contracts' }
+    const name = terms.name?.trim()
+    if (terms.name !== undefined && !name) return { ok: false, reason: 'bad-name' }
+    return this.mutate(workspace, start, (y) => ({
+      ok: true,
+      year: {
+        ...y,
+        ...(name ? { name } : {}),
+        ...(terms.invoice ? { invoice: terms.invoice } : {})
+      }
+    }))
+  }
+
+  /**
+   * Remove a contract that holds nothing (no time, no typed hours, no notes, no days off), so no hours are ever lost.
+   * Refused when a client only it has still has tasks. The file is set aside beside the others, never deleted.
+   */
+  removeContract(workspace: Workspace, start: string): YearResult {
+    if (!hasContracts(workspace)) return { ok: false, reason: 'no-contracts' }
+    const year = this.peek(workspace, start)
+    if (!year) return { ok: false, reason: 'unknown-year' }
+    if (!contractIsEmpty(year)) return { ok: false, reason: 'has-time' }
+    if (this.clientTasks) {
+      const others = this.otherPlans(workspace, start)
+      for (const lost of clientsLost(year.plan.clients ?? [], [], others)) {
+        const tasks = this.clientTasks.count(lost)
+        if (tasks > 0) {
+          return { ok: false, reason: 'client-has-tasks', detail: { client: lost, tasks } }
+        }
+      }
+    }
+    const path = this.path(workspace, start)
+    renameSync(path, `${path}.removed-${Date.now()}`)
+    this.deps.onChange?.({ workspace, year: start })
+    return { ok: true, year }
   }
 
   /**

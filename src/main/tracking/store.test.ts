@@ -269,6 +269,35 @@ describe('Work contracts', () => {
       reason: 'has-time-after'
     })
   })
+  it('renames a contract and changes how it is invoiced', () => {
+    const store = contract()
+    expect(store.setContractTerms('work', START, { name: ' Luminos ', invoice: 'week' }).ok).toBe(
+      true
+    )
+    expect(read('work', `${START}.json`)).toMatchObject({ name: 'Luminos', invoice: 'week' })
+    expect(store.setContractTerms('work', START, { name: ' ' })).toEqual({
+      ok: false,
+      reason: 'bad-name'
+    })
+  })
+
+  it('removes a contract that holds nothing, setting its file aside, and never one that holds time', () => {
+    const store = contract()
+    expect(
+      store.createContract('work', '2027-05-01', '2027-10-29', { clients: ['Other'] }).ok
+    ).toBe(true)
+    at('2026-09-29', '10:00:00')
+    store.start('work', 'A')
+    at('2026-09-29', '10:30:00')
+    store.stop()
+    expect(store.removeContract('work', START)).toEqual({ ok: false, reason: 'has-time' })
+    expect(read('work', `${START}.json`).sessions).toHaveLength(1)
+    expect(store.removeContract('work', '2027-05-01').ok).toBe(true)
+    const names = readdirSync(join(dir, 'work'))
+    expect(names).not.toContain('2027-05-01.json')
+    expect(names.some((n) => n.startsWith('2027-05-01.json.removed-'))).toBe(true)
+    expect(store.years('work')).toEqual([START])
+  })
 })
 
 describe('clients on Work entries', () => {

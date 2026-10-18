@@ -5,8 +5,7 @@ import { FieldError } from '@renderer/components/FieldError'
 import { Input } from '@renderer/components/Input'
 import { Segmented } from '@renderer/components/Segmented'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
-import { formatDate, todayIso } from '@shared/time'
-import { yearEnd } from '@shared/year'
+import { todayIso } from '@shared/time'
 import { contractWeeks, dayAfterContract } from '@shared/tracking/workspace-weeks'
 import type { Invoice } from '@shared/tracking/types'
 import {
@@ -31,21 +30,13 @@ function nextStart(latest: { start: string; weeks?: number } | null): string {
 }
 
 /**
- * Work's contracts. The latest one's last day can be moved (a contract is whole weeks from its own first day, whatever
- * weekday); a new one is added with its first and last day.
+ * Adding a Work contract: its first and last day are whole weeks from the first (whatever weekday); the table above
+ * edits the ones made.
  */
 export function ContractFields({ workspace }: { workspace: HoursWorkspace }): React.JSX.Element {
   const { data } = useTrackingYear(workspace)
-  // The contract shown (this one's last day can be moved).
   const current = data
-  const end = current ? yearEnd(current.start, current.weeks) : ''
-
   const today = todayIso()
-  // Only a last day that makes whole weeks from the first day is offered, so nothing chosen is ever refused.
-  const changeEnd = (value: string | null): void => {
-    if (current && value && value !== end && contractWeeks(current.start, value).ok)
-      void window.api.tracking.setContractEnd(workspace, current.start, value)
-  }
 
   const [start, setStart] = useState('')
   const [finish, setFinish] = useState('')
@@ -89,32 +80,6 @@ export function ContractFields({ workspace }: { workspace: HoursWorkspace }): Re
 
   return (
     <>
-      {current && (
-        <>
-          <div className={styles.field}>
-            <span className={styles.label} id="contract-start-label">
-              Contract starts
-            </span>
-            <output aria-labelledby="contract-start-label">{formatDate(current.start)}</output>
-          </div>
-          <div className={styles.field}>
-            <span className={styles.label} id="contract-end-label">
-              Contract ends
-            </span>
-            <div className={styles.row}>
-              <DatePicker
-                label="Contract ends"
-                value={end}
-                today={today}
-                full
-                clearable={false}
-                isDisabled={(date) => !contractWeeks(current.start, date).ok}
-                onChange={changeEnd}
-              />
-            </div>
-          </div>
-        </>
-      )}
       <div className={styles.field}>
         <span className={styles.label} id="new-contract-label">
           {current ? 'New contract' : 'Contract'}

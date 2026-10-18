@@ -139,6 +139,14 @@ export function registerTrackingIpc(store: TrackingStore): void {
   h(TRACKING_IPC.setContractEnd, (_e, ws, year, end) =>
     store.setContractEnd(workspace(ws), text(year), text(end))
   )
+  h(TRACKING_IPC.setContractTerms, (_e, ws, year, terms) => {
+    const t = (terms ?? {}) as Record<string, unknown>
+    return store.setContractTerms(workspace(ws), text(year), {
+      ...(t.name !== undefined ? { name: text(t.name) } : {}),
+      ...(t.invoice !== undefined ? { invoice: invoice(t.invoice) } : {})
+    })
+  })
+  h(TRACKING_IPC.removeContract, (_e, ws, year) => store.removeContract(workspace(ws), text(year)))
   h(TRACKING_IPC.addTimeOff, (_e, ws, year, from, to, type) =>
     store.addTimeOff(workspace(ws), text(year), text(from), text(to), timeOffType(type))
   )
