@@ -3797,3 +3797,11 @@ The user (from a screenshot): a middle dot must separate the date from the weath
 
 - **Dot:** `HomeWeather` starts with a `·`, so it only appears when the weather does. The title row's gap is 8px (was 16px) and the heading has an 8px right margin, so "Research" keeps its space.
 - **Alignment:** `.weather` was `align-items: center`, which gave the group a baseline of its icon and lifted its text off the date's. It is now `baseline`, and the icon (`.weatherIcon`) is nudged down 2px to sit level with the text. Not driven in the app: the user judges the look as they use it.
+
+## Top bar in full screen: it grows below the revealed system strip (18 Oct 2026)
+
+The user (from a screenshot): near the top edge of a full-screen window, just before the Mac's menu bar shows, a line ran through the Life / Research / Work tabs.
+
+- **Cause:** the `.topSentinel` hover (the pointer at the very top edge) shifted `.lead` and `.actions` down 28px with `translateY`, to clear the opaque system strip. The bar kept its height and its `border-bottom`, so the shifted tabs sat on the border.
+- **Fix** (`TopBar.module.css`): on that hover the bar itself grows by `--fullscreen-strip-shift` (`height` plus an equal `padding-top`, both transitioned with the padding-left that makes room for the dots), and the transforms are gone. The border stays below the tabs. The page below moves down by the same 28px while the strip shows.
+- **Not driven in the app** (the hover state in full screen is hard to script): lint and typecheck pass. The user judges the look as they use it. The alternative, if the content shift bothers them, is to keep the content still and draw the border lower.
