@@ -69,6 +69,25 @@ describe('notesOverlapping', () => {
     expect(clash(spans, 'same', '2026-10-20', '09:30', '10:30', 'meeting')).toEqual(['T'])
   })
 
+  it('does not count the entry under a name it had a moment ago (a rename leaves both in the index)', () => {
+    const spans = noteSpans(
+      [],
+      [
+        training({ id: '2026-10-20 A' }),
+        training({ id: '2026-10-20 B', title: 'B' }),
+        training({ id: '2026-10-20 C', title: 'C' })
+      ]
+    )
+    const found = notesOverlapping(
+      spans,
+      { ...self('2026-10-20 B'), renamedFrom: ['2026-10-20 A'] },
+      '2026-10-20',
+      '09:00',
+      '10:00'
+    )
+    expect(found.map((o) => o.label)).toEqual(['C'])
+  })
+
   it('finds a training against a meeting without a task, and the reverse', () => {
     const spans = noteSpans([meeting()], [training()])
     expect(clash(spans, '2026-10-20 A', '2026-10-20', '09:00', '10:00')).toEqual(['Supervision'])

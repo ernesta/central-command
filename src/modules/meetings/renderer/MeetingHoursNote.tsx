@@ -28,7 +28,8 @@ export function MeetingHoursNote({
   id,
   meta,
   kind = 'meeting',
-  show = 'both'
+  show = 'both',
+  renamedFrom
 }: {
   workspace: HoursWorkspace
   id: string
@@ -37,8 +38,10 @@ export function MeetingHoursNote({
   kind?: DerivedKind
   /** `clashes`: only the overlap (a training entry draws it apart from its task card, where `HoursLine` goes). */
   show?: 'both' | 'clashes'
+  /** The names the note has had (a training entry is renamed by its date and title). */
+  renamedFrom?: readonly string[]
 }): React.JSX.Element | null {
-  const clashes = useMeetingClashes(workspace, id, meta, kind)
+  const clashes = useMeetingClashes(workspace, id, meta, kind, renamedFrom)
   if (clashes.length > 0) {
     const names = clashes
       .map(

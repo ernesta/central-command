@@ -17,7 +17,9 @@ export function useMeetingClashes(
   id: string,
   meta: Pick<MeetingMeta, 'date' | 'start' | 'end'>,
   /** A training entry is a note too: the same clock, its own kind. */
-  kind: DerivedKind = 'meeting'
+  kind: DerivedKind = 'meeting',
+  /** The names the note had before, still in the index until their files are seen gone. */
+  renamedFrom?: readonly string[]
 ): Occupied[] {
   const [sessions, setSessions] = useState<{ date: string; list: Session[] } | null>(null)
   const [running, setRunning] = useState<RunningTimer | null>(null)
@@ -62,7 +64,7 @@ export function useMeetingClashes(
         occupiedBySessions([...own, ...elsewhere], date),
         seconds
       ),
-      ...notesOverlapping(spans, { kind, workspace, id }, date, meta.start, meta.end)
+      ...notesOverlapping(spans, { kind, workspace, id, renamedFrom }, date, meta.start, meta.end)
     ]
-  }, [sessions, running, spans, workspace, id, kind, date, meta.start, meta.end])
+  }, [sessions, running, spans, workspace, id, kind, renamedFrom, date, meta.start, meta.end])
 }

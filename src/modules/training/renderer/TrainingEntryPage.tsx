@@ -47,6 +47,7 @@ export function TrainingEntryPage(): React.JSX.Element {
       key={key}
       entryRef={{ workspace, id: key }}
       currentId={id}
+      names={known.ids}
       onRenamed={(newId) => {
         setKnown((prev) =>
           prev.key === key ? { key, ids: [...prev.ids, newId] } : { key, ids: [key, newId] }
@@ -60,11 +61,14 @@ export function TrainingEntryPage(): React.JSX.Element {
 function EntryView({
   entryRef,
   currentId,
+  names,
   onRenamed
 }: {
   entryRef: TrainingRef
   /** The id in the address now: the page stays mounted under the id it opened with, but a rename changes the file's. */
   currentId: string
+  /** Every name this entry has had since the page opened. */
+  names: readonly string[]
   onRenamed: (id: string) => void
 }): React.JSX.Element {
   const navigate = useNavigate()
@@ -261,6 +265,7 @@ function EntryView({
         meta={meta}
         kind="training"
         show="clashes"
+        renamedFrom={names}
       />
 
       {research && meta.task && (

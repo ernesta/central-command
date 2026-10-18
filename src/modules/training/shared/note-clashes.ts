@@ -58,13 +58,25 @@ export function noteSpans(
  */
 export function notesOverlapping(
   spans: readonly NoteSpan[],
-  self: { kind: DerivedKind; workspace: HoursWorkspace; id: string },
+  self: {
+    kind: DerivedKind
+    workspace: HoursWorkspace
+    id: string
+    renamedFrom?: readonly string[]
+  },
   date: string,
   start: string | null,
   end: string | null
 ): Occupied[] {
+  // A rename is a new file and a deleted one, seen one after the other: for a moment the index holds the note under both names.
+  const own = new Set([self.id, ...(self.renamedFrom ?? [])])
   const others: Occupied[] = spans
-    .filter((s) => s.date === date && s.workspace === self.workspace)
+    .filter(
+      (s) =>
+        s.date === date &&
+        s.workspace === self.workspace &&
+        !(s.kind === self.kind && own.has(s.id))
+    )
     .map((s) => ({
       label: s.label,
       start: s.start,
