@@ -28,6 +28,7 @@ import { TaskTimeCard } from './TaskTimeCard'
 import { taskRoute, todayIso, useTasksWorkspace } from './tasks-paths'
 import { useTaskTime } from './useTaskTime'
 import { useTasksList } from './useTasksList'
+import { useLectureTaskUids } from '../../training/renderer/useLectureTaskUids'
 import styles from './TaskPage.module.css'
 
 /** One task's page: its title, status, priority, due date and list, its subtasks, its description, and its time. */
@@ -90,6 +91,7 @@ function TaskView({
   const navigate = useNavigate()
   const today = todayIso()
   const { tracked, running, yearFor, clientFor, months } = useTaskTime(workspace)
+  const lectures = useLectureTaskUids()
   const [error, setError] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -296,7 +298,8 @@ function TaskView({
             clientFor={clientFor}
             months={months(task.uid)}
             list={task.list}
-            parts={row.kids.filter((k) => k.status !== 'done')}
+            parts={row.kids.filter((k) => k.status !== 'done' && !lectures.has(k.uid))}
+            actions={!lectures.has(task.uid)}
           />
           <MentionedIn
             kind="task"

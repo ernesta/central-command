@@ -26,7 +26,8 @@ export function TaskTimeCard({
   clientFor,
   months,
   list,
-  parts
+  parts,
+  actions = true
 }: {
   task: Task
   workspace: TaskWorkspace
@@ -43,6 +44,8 @@ export function TaskTimeCard({
   list: string
   /** The open subtasks Add time may go to. */
   parts: readonly Task[]
+  /** False for a training lecture's own task: nothing is started or added on it. */
+  actions?: boolean
 }): React.JSX.Element {
   return (
     <section className={styles.box} aria-label="Time">
@@ -69,16 +72,18 @@ export function TaskTimeCard({
           <span>0:00</span>
         </div>
       )}
-      <TaskTimeActions
-        task={task}
-        list={list}
-        parts={parts}
-        workspace={workspace}
-        isRunning={isRunning}
-        today={today}
-        yearFor={yearFor}
-        clientFor={clientFor}
-      />
+      {actions && (
+        <TaskTimeActions
+          task={task}
+          list={list}
+          parts={parts}
+          workspace={workspace}
+          isRunning={isRunning}
+          today={today}
+          yearFor={yearFor}
+          clientFor={clientFor}
+        />
+      )}
     </section>
   )
 }
