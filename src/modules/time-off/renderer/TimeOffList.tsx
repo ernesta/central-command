@@ -5,6 +5,7 @@ import { Input } from '@renderer/components/Input'
 import { FieldError } from '@renderer/components/FieldError'
 import { Select } from '@renderer/components/Select'
 import { showToast } from '@renderer/components/toast-store'
+import { pushUndoWithToast } from '@renderer/components/undo-store'
 import { useNewRowKeys } from '@renderer/components/useNewRowKeys'
 import { formatDay } from '@shared/tracking/format'
 import { timeOffRows, type TimeOffRow } from '@shared/tracking/timeoff'
@@ -193,14 +194,17 @@ export function TimeOffList({
                     .removeTimeOff(workspace, data.start, date)
                     .then((result) => {
                       if (!result.ok) return
-                      showToast(`Removed ${formatDay(date)}.`, {
-                        label: 'Undo',
-                        run: () => {
-                          void window.api.tracking
-                            .addTimeOff(workspace, data.start, date, date, type)
-                            .then((added) => {
-                              if (!added.ok) showToast('Couldn’t bring it back.')
-                            })
+                      pushUndoWithToast(`Removed ${formatDay(date)}.`, {
+                        label: 'removal',
+                        undo: async () => {
+                          const added = await window.api.tracking.addTimeOff(
+                            workspace,
+                            data.start,
+                            date,
+                            date,
+                            type
+                          )
+                          if (!added.ok) showToast('Couldn’t bring it back.')
                         }
                       })
                     })

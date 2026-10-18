@@ -7,6 +7,7 @@ import { FieldError } from '@renderer/components/FieldError'
 import { Input } from '@renderer/components/Input'
 import { Select } from '@renderer/components/Select'
 import { showToast } from '@renderer/components/toast-store'
+import { pushUndoWithToast } from '@renderer/components/undo-store'
 import { useNewRowKeys } from '@renderer/components/useNewRowKeys'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { formatDate, todayIso } from '@shared/time'
@@ -374,20 +375,22 @@ export function ContractsTable({
     setDeleting(null)
     void window.api.tracking.removeContract(workspace, contract.start).then((result) => {
       if (!result.ok) return showToast(contractRefusal(result.reason))
-      showToast(`Removed ${title(contract)}.`, {
-        label: 'Undo',
-        run: () => {
+      pushUndoWithToast(`Removed ${title(contract)}.`, {
+        label: 'removal',
+        undo: async () => {
           const weeks = contract.weeks ?? 52
-          void window.api.tracking
-            .createContract(workspace, contract.start, yearEnd(contract.start, weeks), {
+          const added = await window.api.tracking.createContract(
+            workspace,
+            contract.start,
+            yearEnd(contract.start, weeks),
+            {
               ...(contract.name ? { name: contract.name } : {}),
               clients: contract.plan.clients ?? [],
               weeklyMinutes: contract.plan.hoursPerWeek,
               invoice: invoiceOf(contract)
-            })
-            .then((added) => {
-              if (!added.ok) showToast('Couldn’t bring it back.')
-            })
+            }
+          )
+          if (!added.ok) showToast('Couldn’t bring it back.')
         }
       })
     })

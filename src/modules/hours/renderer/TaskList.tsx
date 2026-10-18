@@ -3,7 +3,7 @@ import { Play, Square, Trash2 } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
 import { Dialog } from '@renderer/components/Dialog'
 import { Select } from '@renderer/components/Select'
-import { showToast } from '@renderer/components/toast-store'
+import { pushUndoWithToast } from '@renderer/components/undo-store'
 import { useNewRowKeys } from '@renderer/components/useNewRowKeys'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { formatHours } from '@shared/tracking/format'
@@ -214,9 +214,9 @@ export function TaskList({
                   const { label, client, minutes, task } = deleting
                   onDelete(label, client)
                   setDeleting(null)
-                  showToast(`Deleted “${label || 'Untitled'}” (${formatHours(minutes)}).`, {
-                    label: 'Undo',
-                    run: () => onSetMinutes(label, minutes, client, task)
+                  pushUndoWithToast(`Deleted “${label || 'Untitled'}” (${formatHours(minutes)}).`, {
+                    label: 'deletion',
+                    undo: () => onSetMinutes(label, minutes, client, task)
                   })
                 }}
               >
