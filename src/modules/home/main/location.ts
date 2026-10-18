@@ -1,7 +1,8 @@
 export type LocationFailure = 'denied' | 'unavailable'
 
 export type LocationResult =
-  { ok: true; latitude: number; longitude: number } | { ok: false; reason: LocationFailure }
+  | { ok: true; latitude: number; longitude: number; place: string }
+  | { ok: false; reason: LocationFailure }
 
 const round = (v: number): number => Math.round(v * 10) / 10
 
@@ -19,7 +20,12 @@ export function parseLocation(stdout: string): LocationResult {
       Math.abs(latitude) <= 90 &&
       Math.abs(longitude) <= 180
     )
-      return { ok: true, latitude: round(latitude), longitude: round(longitude) }
+      return {
+        ok: true,
+        latitude: round(latitude),
+        longitude: round(longitude),
+        place: typeof raw.place === 'string' ? raw.place.trim().slice(0, 80) : ''
+      }
     return { ok: false, reason: raw.error === 'denied' ? 'denied' : 'unavailable' }
   } catch {
     return { ok: false, reason: 'unavailable' }

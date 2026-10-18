@@ -1,11 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import { LOCATION_CACHE_MS, LOCATION_FAILURE_MS, LocationService, parseLocation } from './location'
 
-const GOOD = '{"latitude":51.43123,"longitude":-0.55987}'
+const GOOD = '{"latitude":51.43123,"longitude":-0.55987,"place":"Egham"}'
 
 describe('parseLocation', () => {
   it('rounds the position to a town', () => {
-    expect(parseLocation(GOOD)).toEqual({ ok: true, latitude: 51.4, longitude: -0.6 })
+    expect(parseLocation(GOOD)).toEqual({
+      ok: true,
+      latitude: 51.4,
+      longitude: -0.6,
+      place: 'Egham'
+    })
+    expect(parseLocation('{"latitude":51.4,"longitude":-0.6}')).toMatchObject({ place: '' })
   })
   it('tells a refusal from every other failure', () => {
     expect(parseLocation('{"error":"denied"}')).toEqual({ ok: false, reason: 'denied' })

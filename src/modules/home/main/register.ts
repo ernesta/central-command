@@ -119,7 +119,12 @@ export function registerHome({ db, paths, settings, tracking }: HomeContext): ()
       const here = await locations.current()
       if (!here.ok) return null
       const unit = temperatureUnit(await macTemperatureUnit(), app.getLocaleCountryCode())
-      return await weatherService.read({ latitude: here.latitude, longitude: here.longitude, unit })
+      return await weatherService.read({
+        place: here.place,
+        latitude: here.latitude,
+        longitude: here.longitude,
+        unit
+      })
     } catch {
       return null
     }

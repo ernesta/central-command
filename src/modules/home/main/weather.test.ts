@@ -26,7 +26,7 @@ const FORECAST = JSON.stringify({
   }
 })
 
-const query: WeatherQuery = { latitude: 51.4, longitude: -0.5, unit: 'celsius' }
+const query: WeatherQuery = { place: 'Egham', latitude: 51.4, longitude: -0.5, unit: 'celsius' }
 
 function fetcher(body: string, status = 200): { f: Fetcher; urls: string[] } {
   const urls: string[] = []

@@ -33,8 +33,9 @@ const FORECAST = 'https://api.open-meteo.com/v1/forecast'
 
 export type TemperatureUnit = 'celsius' | 'fahrenheit'
 
-/** What the weather is asked for: a town's rounded position, in the unit the Mac uses. */
+/** What the weather is asked for: a town's rounded position, in the unit the Mac uses; `place` is only shown, never sent. */
 export interface WeatherQuery {
+  place: string
   latitude: number
   longitude: number
   unit: TemperatureUnit
@@ -148,7 +149,7 @@ export class WeatherService {
         throw new Error(`The weather service answered ${response.status}`)
       const summary = parseForecast(
         await response.text(),
-        '',
+        query.place,
         query.unit,
         new Date(now).toISOString()
       )
