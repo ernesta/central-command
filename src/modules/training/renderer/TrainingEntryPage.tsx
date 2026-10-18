@@ -115,9 +115,9 @@ function EntryView({
   const selfStudy = useSelfStudy()
   const lectureUid = lectureTaskUid(meta.task)
   const lectureTask = lectureUid ? tasks?.find((t) => t.uid === lectureUid) : undefined
+  // Self-study only: time on the lecture's own task counts as training, and stays in Hours all the same.
   const studied =
-    (lectureUid ? (selfStudy.get(lectureUid) ?? 0) : 0) +
-    (meta.selfStudy ? (selfStudy.get(meta.selfStudy) ?? 0) : 0)
+    meta.selfStudy && meta.selfStudy !== lectureUid ? (selfStudy.get(meta.selfStudy) ?? 0) : 0
   useDocumentTitle(meta.title)
 
   // Back goes to wherever the user came from (the list); with no history, the list.
