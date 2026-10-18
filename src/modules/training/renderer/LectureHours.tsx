@@ -40,7 +40,6 @@ export function LectureHours({
     <>
       <div className={styles.total}>
         <b>{formatHours(total)}</b>
-        <span>on this task</span>
       </div>
       <div className={styles.actions}>
         <TaskTimeActions
