@@ -77,7 +77,7 @@ describe('groupTasks', () => {
 })
 
 describe('landingSections', () => {
-  it('puts a task under every heading that fits', () => {
+  it('puts a task under the first heading that fits only', () => {
     const rows = [
       row({ uid: 'a', due: TODAY, status: 'doing' }),
       row({ uid: 'b', due: null, status: 'doing' }),
@@ -92,7 +92,7 @@ describe('landingSections', () => {
     const s = landingSections(rows, TODAY)
     const ids = (k: keyof typeof s): string[] => s[k].map((r) => r.task.uid)
     expect(ids('today')).toEqual(['a'])
-    expect(ids('doing')).toEqual(['i', 'a', 'b'])
+    expect(ids('doing')).toEqual(['b'])
     expect(ids('overdue')).toEqual(['c', 'i'])
     expect(ids('tomorrow')).toEqual(['f'])
     expect(ids('upcoming')).toEqual(['d'])
@@ -107,8 +107,7 @@ describe('landingSections', () => {
     )
     expect(s.today.map((r) => r.task.uid)).toEqual(['p'])
     expect(s.today[0].nested.map((k) => k.uid)).toEqual(['k'])
-    expect(s.upcoming.map((r) => r.task.uid)).toEqual(['p'])
-    expect(s.upcoming[0].nested).toEqual([])
+    expect(s.upcoming).toEqual([])
   })
 
   it('orders a section by the date that put the row there, not the task’s own', () => {
