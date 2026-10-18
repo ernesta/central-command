@@ -3386,6 +3386,8 @@ progress that are worked on every day (Daily admin).
 - **Not done:** the ROADMAP question on how far back it reaches is still open (a task not timed for a week and not due today is not suggested).
 - Not driven in the app; unit tests only.
 
+**Changed 18 Oct 2026 (the user, looking at the picker):** the tasks already worked on **today** come first (latest used first), then the other tasks due today, then the last week's as above. A task worked on today and due today is listed once, in the first group. Test: "puts tasks already worked on today before the others due today" in `start-picker.test.ts`. Not driven in the app.
+
 ## Group picker: one field to find or create (15 Oct 2026)
 
 The user's review of the Group menu: a "New group" form under the list (name, "Inside", Add) beside the search field was convoluted when other places (the timer's task picker) use one field for both.
