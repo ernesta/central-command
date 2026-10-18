@@ -8,6 +8,7 @@ import {
   SeriesCards
 } from '@renderer/components/Landing'
 import { showToast } from '@renderer/components/toast-store'
+import { pushUndo } from '@renderer/components/undo-store'
 import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
@@ -90,10 +91,17 @@ export function TasksLanding(): React.JSX.Element {
 
   const moveOverdueToToday = async (): Promise<void> => {
     try {
+      const moved = sections.overdue.map((r) => r.task)
       await window.api.tasks.setDue(
-        sections.overdue.map((r) => r.task.uid),
+        moved.map((t) => t.uid),
         today
       )
+      pushUndo({
+        label: 'move',
+        undo: async () => {
+          for (const t of moved) await window.api.tasks.setDue([t.uid], t.due)
+        }
+      })
     } catch (e) {
       showToast(`Couldn’t move them: ${ipcErrorMessage(e)}`)
     }

@@ -5,7 +5,7 @@ import { Dialog } from '@renderer/components/Dialog'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { Segmented } from '@renderer/components/Segmented'
-import { showToast } from '@renderer/components/toast-store'
+import { pushUndoWithToast } from '@renderer/components/undo-store'
 import { LiveEditor } from '@renderer/editor/LiveEditor'
 import { MentionedIn } from '@renderer/entities/MentionedIn'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
@@ -18,7 +18,7 @@ import { subtaskProgress, taskTime, type TaskRow } from '../shared/views'
 import { DebouncedSaver } from './debounced-saver'
 import { DueField } from './DueField'
 import { ListField } from './ListField'
-import { setTaskStatus, STATUS_LABELS } from './task-actions'
+import { setTaskStatus, STATUS_LABELS, updateTaskUndoable } from './task-actions'
 import { PRIORITY_OPTIONS } from './task-labels'
 import { StatusIcon } from './TaskIcons'
 import { RecurrenceField } from './RecurrenceField'
@@ -98,7 +98,7 @@ function TaskView({
 
   const update = (changes: TaskChanges): void => {
     setError(null)
-    window.api.tasks.update(task.uid, changes).catch((e: unknown) => setError(ipcErrorMessage(e)))
+    updateTaskUndoable(task, changes, 'change').catch((e: unknown) => setError(ipcErrorMessage(e)))
   }
 
   const { saver: title, state: titleState } = useSaver(task.title, async (text) => {
@@ -133,12 +133,11 @@ function TaskView({
       }
       await window.api.tasks.delete(task.uid)
       leave()
-      showToast(`Deleted “${title.current || 'Untitled'}”.`, {
-        label: 'Undo',
-        run: () =>
-          void window.api.tasks
-            .restore(task.uid)
-            .catch((e: unknown) => showToast(`Couldn’t bring it back: ${ipcErrorMessage(e)}`))
+      pushUndoWithToast(`Deleted “${title.current || 'Untitled'}”.`, {
+        label: 'deletion',
+        undo: async () => {
+          await window.api.tasks.restore(task.uid)
+        }
       })
     } catch (e) {
       setError(ipcErrorMessage(e))

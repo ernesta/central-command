@@ -3,6 +3,7 @@ import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { DatePicker } from '@renderer/components/DatePicker'
 import { showToast } from '@renderer/components/toast-store'
+import { pushUndoWithToast } from '@renderer/components/undo-store'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { describeRecurrence } from '../shared/recurrence'
@@ -27,7 +28,8 @@ import {
   PREVIOUS_STATUS,
   STATUS_LABELS,
   nextStatus,
-  setTaskStatus
+  setTaskStatus,
+  updateTaskUndoable
 } from './task-actions'
 import { PriorityBadge, StatusIcon } from './TaskIcons'
 import { PRIORITY_LABELS } from './task-labels'
@@ -365,7 +367,7 @@ export function TasksTable({
 
 async function updateTask(task: Task, changes: TaskChanges, what: string): Promise<void> {
   try {
-    await window.api.tasks.update(task.uid, changes)
+    await updateTaskUndoable(task, changes, what)
   } catch (error) {
     showToast(`Couldn’t ${what}: ${ipcErrorMessage(error)}`)
   }
@@ -378,12 +380,11 @@ const setDue = (task: Task, due: string | null): Promise<void> =>
 async function removeTask(task: Task): Promise<void> {
   try {
     await window.api.tasks.delete(task.uid)
-    showToast(`Deleted “${task.title || 'Untitled'}”.`, {
-      label: 'Undo',
-      run: () =>
-        void window.api.tasks
-          .restore(task.uid)
-          .catch((e: unknown) => showToast(`Couldn’t bring it back: ${ipcErrorMessage(e)}`))
+    pushUndoWithToast(`Deleted “${task.title || 'Untitled'}”.`, {
+      label: 'deletion',
+      undo: async () => {
+        await window.api.tasks.restore(task.uid)
+      }
     })
   } catch (error) {
     showToast(`Couldn’t delete it: ${ipcErrorMessage(error)}`)
@@ -441,7 +442,7 @@ function TitleCell({ task }: { task: Task }): React.JSX.Element {
 
 async function setPriority(task: Task, priority: TaskPriority): Promise<void> {
   try {
-    await window.api.tasks.update(task.uid, { priority })
+    await updateTaskUndoable(task, { priority }, 'priority change')
   } catch (error) {
     showToast(`Couldn’t change the priority: ${ipcErrorMessage(error)}`)
   }

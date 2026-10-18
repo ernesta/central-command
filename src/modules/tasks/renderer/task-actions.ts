@@ -1,8 +1,9 @@
 import { showToast } from '@renderer/components/toast-store'
+import { pushUndo } from '@renderer/components/undo-store'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { formatDate } from '@shared/time'
 import { describeRecurrence } from '../shared/recurrence'
-import type { Task, TaskStatus } from '../shared/types'
+import type { Task, TaskChanges, TaskStatus } from '../shared/types'
 
 /** To do, in progress, done, and round again. */
 export const NEXT_STATUS: Record<TaskStatus, TaskStatus> = {
@@ -37,7 +38,18 @@ export async function setTaskStatus(
   status: TaskStatus
 ): Promise<void> {
   try {
+    const before = await window.api.tasks.get(task.uid)
     const { next } = await window.api.tasks.setStatus(task.uid, status)
+    if (before && before.status !== status) {
+      pushUndo({
+        label: 'status change',
+        undo: async () => {
+          await window.api.tasks.setStatus(task.uid, before.status)
+          // Finishing a recurring task started the next one; taking the finish back takes that with it.
+          if (next) await window.api.tasks.delete(next.uid)
+        }
+      })
+    }
     if (next?.due) {
       showToast(
         `Done. The next one is due ${formatDate(next.due)}${task.recurrence ? ` (${describeRecurrence(task.recurrence).toLowerCase()})` : ''}.`
@@ -46,4 +58,32 @@ export async function setTaskStatus(
   } catch (error) {
     showToast(`Couldn’t change the status: ${ipcErrorMessage(error)}`)
   }
+}
+
+/** What a change overwrites, so that putting it back is one update. A move under a parent (or out of one) also brings the list back. */
+function previousValues(task: Task, changes: TaskChanges): TaskChanges {
+  const keys = new Set(Object.keys(changes) as (keyof TaskChanges)[])
+  if (keys.has('parentUid')) {
+    keys.add('list')
+    keys.add('sublist')
+  }
+  const before: Record<string, unknown> = {}
+  for (const key of keys) before[key] = task[key]
+  return before as TaskChanges
+}
+
+/** Change a task and remember how to put it back (Cmd-Z). Errors are thrown for the caller to show. */
+export async function updateTaskUndoable(
+  task: Task,
+  changes: TaskChanges,
+  label: string
+): Promise<void> {
+  const before = previousValues(task, changes)
+  await window.api.tasks.update(task.uid, changes)
+  pushUndo({
+    label,
+    undo: async () => {
+      await window.api.tasks.update(task.uid, before)
+    }
+  })
 }
