@@ -31,8 +31,8 @@ export function pickerOptions(tasks: readonly Task[], typed: string, limit = 8):
 }
 
 /**
- * What the picker offers before anything is typed, at most `limit`, each task once: the open tasks due `today` first;
- * then the ones the timer was on in the last week, those in progress before the rest, and within each the ones used on
+ * What the picker offers before anything is typed, at most `limit`, each task once: the open tasks already worked on
+ * `today` first (the latest first); then the others due `today`; then the ones the timer was on in the last week, those in progress before the rest, and within each the ones used on
  * the most days first (daily work such as admin rises), then the most recently used.
  */
 export function suggestedTasks(
@@ -62,8 +62,9 @@ export function suggestedTasks(
   const ordered = [...recent]
     .sort((a, b) => rank(b) - rank(a) || b.days.size - a.days.size)
     .map((r) => r.task)
+  const worked = recent.filter((r) => r.days.has(today)).map((r) => r.task)
   const due = open.filter((t) => t.due === today)
-  return [...new Set([...due, ...ordered])].slice(0, limit)
+  return [...new Set([...worked, ...due, ...ordered])].slice(0, limit)
 }
 
 /** The client a task's list stands for: the list's name when it is one of the open contracts' clients (ignoring case). */

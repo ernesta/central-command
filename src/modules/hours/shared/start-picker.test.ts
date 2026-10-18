@@ -103,6 +103,11 @@ describe('suggestedTasks', () => {
     expect(suggestedTasks(year, open, '2026-10-07').map((t) => t.uid)).toEqual(['1', '9', '3'])
   })
 
+  it('puts tasks already worked on today before the others due today', () => {
+    const open = [task('9', 'Due today', { due: '2026-10-06' }), ...tasks]
+    expect(suggestedTasks(year, open, '2026-10-06').map((t) => t.uid)).toEqual(['1', '3', '9'])
+  })
+
   it('is limited', () => {
     expect(suggestedTasks(year, tasks, '2026-10-07', 1)).toHaveLength(1)
   })
