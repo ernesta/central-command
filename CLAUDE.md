@@ -10,6 +10,7 @@ ask the user.
 - `npm test`: Vitest unit tests (run under plain Node; better-sqlite3 ships
   N-API prebuilds so no Electron rebuild is needed)
 - `npm run lint`, `npm run typecheck`, `npm run format`
+- `npm run build:locate`: builds `resources/Locate.app` (the Weather location helper, `native/locate.swift`; macOS, Xcode command line tools); `build:mac` runs it first
 - `npm run check:work-lists`: report only; the live Work tasks whose top-level list is not a client of a contract (expected: none; real library 7 Oct 2026: none)
 - `npm run import:reading-list -- --file <docx> [--title "…"] [--list-dir <folder>] [--apply]`: turn a Word reading list into a Reading list
   (dry run by default; macOS only)
