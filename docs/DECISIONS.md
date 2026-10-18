@@ -3763,3 +3763,13 @@ The user: everything that has a toast with Undo should also undo with Cmd-Z; oth
 - **Silent entries for task changes** (`task-actions.ts`): status (`setTaskStatus`; undoing the finish of a recurring task also deletes the next occurrence it started), and `updateTaskUndoable` for priority, due, tags, list, rename in the table and the task page's non-text fields, plus the Tasks landing's "move overdue to today". `updateTaskUndoable` records the fields it overwrites (a move under a parent also records list and sublist).
 - **Not undoable by Cmd-Z:** task title and description edits on the task page (typing; the editor has its own undo).
 - Tests: `undo-store.test.ts`. Not yet driven in the built app.
+
+## Weather beside the date, and Settings → Weather (18 Oct 2026)
+
+The user: weather as a starter on the Research (and Work) heading, right after the date.
+
+- **Heading** (`HomeWeather`, `useWeather`, `weather-model.ts` in `src/modules/home/renderer/`): an icon, the temperature and "Overcast · Egham" after the date in `WorkspaceLanding`. Nothing is drawn while weather is off, unset or unreachable (`home.weather()` returns null). Read again every 30 minutes and on focus; the service already reuses a reading for 30 minutes, so no extra requests. The tooltip gives "feels like". Fahrenheit shows "°F"; Celsius shows "°".
+- **Settings → Weather** (`WeatherSettings`): the one way to turn it on. Type a town, Find, pick a candidate (that sets place, rounded position and `enabled`); Turn off; a °C / °F choice. Off by default, as before: nothing is sent until a place is chosen. The Home/Notifications tabs of stage 3 are still not built; this tab is only weather.
+- **Fixed on the way:** the place search listed the same town twice when two results rounded to one position (`parsePlaces` now lists it once; a duplicate React key otherwise).
+- Tests: `weather-model.test.ts`, `weather.test.ts` (mutation-checked: without the dedupe the new test fails). Driven in the built app on a scratch library (light and dark; chosen, switched to °F, turned off, survived a restart). The weather and place search did reach open-meteo.com during that drive (a town name, then its rounded position).
+- Not built: the Weather card of the mockup (a three-day forecast), kept for later.
