@@ -111,9 +111,21 @@ export function TrainingMetaFields({
         <span className={styles.label} id="training-duration-label">
           Duration
         </span>
-        <output className={styles.calc} aria-labelledby="training-duration-label">
-          {duration === null ? '—' : formatDuration(duration)}
-        </output>
+        <div className={styles.durationRow}>
+          <output className={styles.calc} aria-labelledby="training-duration-label">
+            {duration === null ? '—' : formatDuration(duration)}
+          </output>
+          {lectureTaskTo && (
+            <Link
+              className={styles.taskLink}
+              to={lectureTaskTo}
+              aria-label="Open task"
+              title="Open task"
+            >
+              <ListChecks size={16} strokeWidth={1.75} aria-hidden />
+            </Link>
+          )}
+        </div>
       </div>
       <div className={styles.field}>
         <label className={styles.label} htmlFor="training-series">
@@ -181,16 +193,6 @@ export function TrainingMetaFields({
           <span className={styles.label}>Skills</span>
           <SkillsField skills={meta.skills} onChange={(skills) => onChange({ skills })} />
         </div>
-      )}
-      {lectureTaskTo && (
-        <Link
-          className={styles.taskLink}
-          to={lectureTaskTo}
-          aria-label="Lecture task"
-          title="Lecture task"
-        >
-          <ListChecks size={16} strokeWidth={1.75} aria-hidden />
-        </Link>
       )}
     </div>
   )
