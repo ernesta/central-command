@@ -14,9 +14,10 @@ import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { WORKSPACE_LABELS } from '@renderer/shell/workspaces'
 import { YearFields } from '@renderer/shell/YearFields'
-import { HOURS_WORKSPACES, TIME_OFF_WORKSPACES, type HoursWorkspace } from '../shared/workspaces'
+import { PLAN_WORKSPACES, TIME_OFF_WORKSPACES, type HoursWorkspace } from '../shared/workspaces'
 import { ClientFields } from './ClientFields'
 import { ContractFields } from './ContractFields'
+import { ContractsTable } from './ContractsTable'
 import styles from './HoursSettings.module.css'
 
 /** A field that shows what is saved until it is edited, saves a valid value on Enter or leaving it, and drops anything else. */
@@ -78,7 +79,9 @@ function PlanBlock({ workspace }: { workspace: HoursWorkspace }): React.JSX.Elem
       <h3 id={`${id}-heading`} className={styles.subheading}>
         {WORKSPACE_LABELS[workspace]}
       </h3>
+      {hasContracts(workspace) && <ContractsTable workspace={workspace} />}
       {hasContracts(workspace) && <ContractFields workspace={workspace} />}
+      {workspace === 'research' && <YearFields />}
       {data && (
         <>
           <PlanField
@@ -131,20 +134,14 @@ function PlanBlock({ workspace }: { workspace: HoursWorkspace }): React.JSX.Elem
   )
 }
 
-/** Hours' settings: a plan block for every workspace that tracks hours. They are the plan of the current year (a new year starts from the previous one's). */
+/** Hours' settings: a plan block for every workspace that has a plan (Life has none). They are the plan of the current year (a new year starts from the previous one's). */
 export function HoursSettings(): React.JSX.Element {
   return (
     <section className={styles.section} aria-labelledby="hours-settings">
       <h2 id="hours-settings" className={styles.heading}>
         Hours
       </h2>
-      <div className={styles.block} role="group" aria-labelledby="hours-year-heading">
-        <h3 id="hours-year-heading" className={styles.subheading}>
-          Year
-        </h3>
-        <YearFields />
-      </div>
-      {HOURS_WORKSPACES.map((workspace) => (
+      {PLAN_WORKSPACES.map((workspace) => (
         <PlanBlock key={workspace} workspace={workspace} />
       ))}
     </section>

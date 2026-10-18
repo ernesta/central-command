@@ -1,0 +1,35 @@
+.wrap {
+  overflow-x: auto;
+  padding: 4px;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-14);
+}
+.caption {
+  padding-bottom: 8px;
+  text-align: left;
+  font-weight: 500;
+}
+.table th,
+.table td {
+  padding: 8px 12px 8px 0;
+  border-bottom: 1px solid var(--border-soft);
+  text-align: left;
+  white-space: nowrap;
+}
+.table thead th {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.table tbody th {
+  font-weight: 600;
+}
+.table tr[aria-current='true'] td,
+.table tr[aria-current='true'] th {
+  background: var(--selected-bg);
+}
+.number {
+  font-variant-numeric: tabular-nums;
+}

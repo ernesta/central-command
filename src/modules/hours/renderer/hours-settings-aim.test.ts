@@ -9,6 +9,7 @@ vi.mock('@renderer/state/use-tracking-year', () => ({
 }))
 vi.mock('./ContractFields', () => ({ ContractFields: () => null }))
 vi.mock('./ClientFields', () => ({ ClientFields: () => null }))
+vi.mock('./ContractsTable', () => ({ ContractsTable: () => null }))
 vi.mock('@renderer/shell/YearFields', () => ({ YearFields: () => null }))
 
 import { HoursSettings } from './HoursSettings'
