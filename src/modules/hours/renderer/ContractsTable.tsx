@@ -2,7 +2,6 @@ import { Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { DatePicker } from '@renderer/components/DatePicker'
-import { Dialog } from '@renderer/components/Dialog'
 import { FieldError } from '@renderer/components/FieldError'
 import { Input } from '@renderer/components/Input'
 import { Select } from '@renderer/components/Select'
@@ -341,7 +340,6 @@ export function ContractsTable({
   const { years } = useTrackingYear(workspace)
   const [loaded, setLoaded] = useState<TrackingYear[]>([])
   const [editing, setEditing] = useState<string | null>(null)
-  const [deleting, setDeleting] = useState<TrackingYear | null>(null)
   const [adding, setAdding] = useState(false)
   const key = years.join(',')
   const entering = useNewRowKeys(loaded.map((contract) => contract.start))
@@ -372,7 +370,6 @@ export function ContractsTable({
   const latest = rows[0]
 
   const remove = (contract: TrackingYear): void => {
-    setDeleting(null)
     void window.api.tracking.removeContract(workspace, contract.start).then((result) => {
       if (!result.ok) return showToast(contractRefusal(result.reason))
       pushUndoWithToast(`Removed ${title(contract)}.`, {
@@ -437,7 +434,7 @@ export function ContractsTable({
                 entering={entering.has(contract.start)}
                 onEdit={() => setEditing(contract.start)}
                 onDone={() => setEditing(null)}
-                onDelete={() => setDeleting(contract)}
+                onDelete={() => remove(contract)}
               />
             ))}
           </tbody>
@@ -453,24 +450,6 @@ export function ContractsTable({
             New contract
           </Button>
         </div>
-      )}
-      {deleting && (
-        <Dialog
-          title="Remove this contract?"
-          onCancel={() => setDeleting(null)}
-          actions={
-            <>
-              <Button size="small" onClick={() => setDeleting(null)} autoFocus>
-                Cancel
-              </Button>
-              <Button size="small" variant="danger" onClick={() => remove(deleting)}>
-                Delete
-              </Button>
-            </>
-          }
-        >
-          {title(deleting)} holds no time, and will be removed.
-        </Dialog>
       )}
     </section>
   )
