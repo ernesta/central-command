@@ -3824,3 +3824,12 @@ The user: "follow Mac" for every display format; APA references stay as they are
 - **Time field** (`TimeInput`): in a 12-hour region it has a third part, AM or PM (A, P, Up and Down set it; hours take 1 to 12); the value it reports is still 24-hour. Driven in the built app with `--lang=en-US` (typing, arrows, the end following the start) and `--lang=en-GB` (unchanged).
 - **Tests run in US English** (`vitest.config.ts` sets `LC_ALL`), so expected text such as "Sep 24, 2026" and "2:00 PM" is the same on every machine. On the user's Mac (British English) the same text reads "24 Sept 2026" and "14:00".
 - **Not driven:** the Hours pages, Home and the date picker's first column in the app; unit tests cover them. The user judges the look as they use it.
+
+## Delete goes at once, with Undo (19 Oct 2026)
+
+The user: "instead of showing a prompt to confirm, delete right away, but show a toast at the bottom with an undo, and allow undo with cmd z", for People and "elsewhere with similar behaviours". Built on the existing `pushUndoWithToast` (`undo-store.ts`, Cmd-Z outside a text field) and `Toast`.
+
+- **No confirmation any more** for: a task (its page), a day off, an Hours row's time, a contract, a person nobody mentions, and the four notes that go to the Trash (meeting, training entry, note, reading list). `DeleteDialog` is gone. A page nothing was typed into is still removed without a toast, as before.
+- **A person who notes mention** still gets the Archive / Merge dialog: that is a choice, not a confirmation (Archive is itself undone by Restore). Undo of a plain delete adds the person back with the same name, initials, `me` flag and links.
+- **Undo of a deleted note file**: Electron's `shell.trashItem` does not say where in the Trash the file went, so Undo cannot move it back. `delete` now resolves with the file's exact content and `restore(ref, content)` (Meetings, Training, Notes, Reading lists) writes it back with `createNoteFileExclusive`: byte for byte, reindexed, and refused (nothing written) when a file is at that name by then, so it never overwrites. The trashed copy stays in the Trash. A meeting's own task and a training entry's lecture and self-study tasks, trashed with it, are restored by Undo too. Undo does not navigate: the item reappears in its list.
+- Tests: one `restore` test per store (round trip, index row, never replaces). Driven in the built app on a scratch library: each of the four pages and People, toast shown, Undo button and Cmd-Z both bring the item back with its text. Not checked in dev mode.
