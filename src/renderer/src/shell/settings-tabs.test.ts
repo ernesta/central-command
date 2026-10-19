@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { normaliseSettingsTab } from './settings-tabs'
 
-const ids = ['general', 'training', 'shortcuts', 'about']
+const ids = ['general', 'training', 'search', 'shortcuts', 'about']
 
 describe('normaliseSettingsTab', () => {
   it('keeps a remembered tab that still exists', () => {
     expect(normaliseSettingsTab({ tab: 'shortcuts' }, ids)).toEqual({ tab: 'shortcuts' })
+  })
+
+  it('keeps the Search tab', () => {
+    expect(normaliseSettingsTab({ tab: 'search' }, ids)).toEqual({ tab: 'search' })
   })
 
   it('falls back to the first tab when nothing was remembered', () => {

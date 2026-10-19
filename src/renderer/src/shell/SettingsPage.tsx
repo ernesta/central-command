@@ -5,6 +5,7 @@ import { useModuleState } from '../state/use-module-state'
 import { AboutSettings } from './AboutSettings'
 import { GeneralSettings } from './GeneralSettings'
 import { normaliseSettingsTab } from './settings-tabs'
+import { SearchSettings } from './SearchSettings'
 import { ShortcutsSettings } from './ShortcutsSettings'
 import styles from './SettingsPage.module.css'
 
@@ -14,12 +15,13 @@ interface SettingsTab {
   Section: ComponentType
 }
 
-/** General first, then one tab per module that has something to configure (named after the module), Weather, then Shortcuts and About. */
+/** General first, then one tab per module that has something to configure (named after the module), Weather, Search, then Shortcuts and About. */
 function tabs(): SettingsTab[] {
   return [
     { id: 'general', label: 'General', Section: GeneralSettings },
     ...moduleSettingsSections(),
     { id: 'weather', label: 'Weather', Section: WeatherSettings },
+    { id: 'search', label: 'Search', Section: SearchSettings },
     { id: 'shortcuts', label: 'Shortcuts', Section: ShortcutsSettings },
     { id: 'about', label: 'About', Section: AboutSettings }
   ]
