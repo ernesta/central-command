@@ -96,6 +96,7 @@ const api: Api = {
     list: (workspace) => ipcRenderer.invoke(MEETINGS_IPC.list, workspace),
     save: (ref, changes, baseHash) => ipcRenderer.invoke(MEETINGS_IPC.save, ref, changes, baseHash),
     delete: (ref) => ipcRenderer.invoke(MEETINGS_IPC.delete, ref),
+    restore: (ref, content) => ipcRenderer.invoke(MEETINGS_IPC.restore, ref, content),
     move: (ref, to) => ipcRenderer.invoke(MEETINGS_IPC.move, ref, to),
     ensureUid: (ref) => ipcRenderer.invoke(MEETINGS_IPC.ensureUid, ref),
     syncPreviousTodos: (ref, baseHash) =>
@@ -123,6 +124,7 @@ const api: Api = {
     list: (workspace) => ipcRenderer.invoke(TRAINING_IPC.list, workspace),
     save: (ref, changes, baseHash) => ipcRenderer.invoke(TRAINING_IPC.save, ref, changes, baseHash),
     delete: (ref) => ipcRenderer.invoke(TRAINING_IPC.delete, ref),
+    restore: (ref, content) => ipcRenderer.invoke(TRAINING_IPC.restore, ref, content),
     exportPdf: (year) => ipcRenderer.invoke(TRAINING_IPC.exportPdf, year),
     files: {
       list: (folder, sub) => ipcRenderer.invoke(TRAINING_IPC.filesList, folder, sub),
@@ -176,6 +178,7 @@ const api: Api = {
     list: (workspace) => ipcRenderer.invoke(NOTES_IPC.list, workspace),
     save: (ref, changes, baseHash) => ipcRenderer.invoke(NOTES_IPC.save, ref, changes, baseHash),
     delete: (ref) => ipcRenderer.invoke(NOTES_IPC.delete, ref),
+    restore: (ref, content) => ipcRenderer.invoke(NOTES_IPC.restore, ref, content),
     move: (ref, to) => ipcRenderer.invoke(NOTES_IPC.move, ref, to),
     ensureUid: (ref) => ipcRenderer.invoke(NOTES_IPC.ensureUid, ref),
     discardIfEmpty: (ref) => ipcRenderer.invoke(NOTES_IPC.discardIfEmpty, ref),
@@ -193,6 +196,7 @@ const api: Api = {
     save: (ref, changes, baseHash) =>
       ipcRenderer.invoke(READING_LISTS_IPC.save, ref, changes, baseHash),
     delete: (ref) => ipcRenderer.invoke(READING_LISTS_IPC.delete, ref),
+    restore: (ref, content) => ipcRenderer.invoke(READING_LISTS_IPC.restore, ref, content),
     forReading: (citekey) => ipcRenderer.invoke(READING_LISTS_IPC.forReading, citekey),
     onChanged: (listener) => {
       const handler = (_event: Electron.IpcRendererEvent, change: ReadingListChangedEvent): void =>

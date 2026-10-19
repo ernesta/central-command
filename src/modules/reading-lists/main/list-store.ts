@@ -162,7 +162,7 @@ export class ReadingListStore {
    * list, and only ever on the user's explicit request. Nothing is deleted outright: the file stays
    * recoverable from the Trash.
    */
-  async delete(ref: ReadingListRef): Promise<void> {
+  async delete(ref: ReadingListRef): Promise<string> {
     const path = this.pathOf(ref)
     const note = await readNoteFile(path)
     if (!note.exists) {
@@ -171,6 +171,18 @@ export class ReadingListStore {
     }
     await this.trash(path)
     deleteListRow(this.db, ref.workspace, ref.id)
+    return note.content
+  }
+
+  /**
+   * Put a deleted file back (the Undo of `delete`, which returns the content): created only if nothing is at that name now,
+   * so a file is never replaced.
+   */
+  async restore(ref: ReadingListRef, content: string): Promise<void> {
+    if (!(await createNoteFileExclusive(this.pathOf(ref), content))) {
+      throw new ReadingListError('Something with that name exists now')
+    }
+    await this.reindex(ref)
   }
 
   /** Recompute one list's index row (and its mentions) from its file; a file that is gone loses its row. */

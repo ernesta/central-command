@@ -317,6 +317,18 @@ describe('delete', () => {
     expect(getTrainingRow(db, 'research', entry.ref.id)).toBeNull()
   })
 
+  it('restore puts the file back byte for byte and indexes it, and never replaces one', async () => {
+    const entry = await make()
+    const before = readFileSync(file(entry.ref.id), 'utf8')
+    const content = await store.delete(entry.ref)
+    expect(content).toBe(before)
+    await store.restore(entry.ref, content)
+    expect(readFileSync(file(entry.ref.id), 'utf8')).toBe(before)
+    expect(getTrainingRow(db, 'research', entry.ref.id)).not.toBeNull()
+    await expect(store.restore(entry.ref, 'other')).rejects.toThrow(/exists now/)
+    expect(readFileSync(file(entry.ref.id), 'utf8')).toBe(before)
+  })
+
   it('touches only the entry it was asked to delete', async () => {
     const a = await make({ title: 'A' })
     const b = await make({ title: 'B' })

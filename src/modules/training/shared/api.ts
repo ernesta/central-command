@@ -114,8 +114,10 @@ export interface TrainingApi {
    * conflict is returned.
    */
   save(ref: TrainingRef, changes: TrainingChanges, baseHash: string): Promise<TrainingSaveResult>
-  /** Move the entry's file to the Trash. The caller is responsible for asking the user first. */
-  delete(ref: TrainingRef): Promise<void>
+  /** Move the entry's file to the Trash. It resolves with the file's content, which `restore` takes to bring it back. */
+  delete(ref: TrainingRef): Promise<string>
+  /** Undo of `delete`: write the content it returned back as the same file (refused when something is there now). */
+  restore(ref: TrainingRef, content: string): Promise<void>
   files: TrainingFilesApi
   plan: TrainingPlanApi
   /** Ask where to save, then write the year (its start date) as a PDF, oldest entry first. Upcoming entries are left out. */
@@ -130,6 +132,7 @@ export const TRAINING_IPC = {
   list: 'training:list',
   save: 'training:save',
   delete: 'training:delete',
+  restore: 'training:restore',
   exportPdf: 'training:export-pdf',
   filesList: 'training:files-list',
   filesOpen: 'training:files-open',

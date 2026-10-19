@@ -388,6 +388,16 @@ describe('delete', () => {
     writeFileSync(file('b'), content)
   })
 
+  it('restore puts the file back byte for byte and indexes it, and never replaces one', async () => {
+    await store.reindexAll('research')
+    expect(await store.delete(ref('a'))).toBe(content)
+    await store.restore(ref('a'), content)
+    expect(readFileSync(file('a'), 'utf8')).toBe(content)
+    expect(getMeetingRow(db, 'research', 'a')).not.toBeNull()
+    await expect(store.restore(ref('a'), 'other')).rejects.toThrow(/exists now/)
+    expect(readFileSync(file('a'), 'utf8')).toBe(content)
+  })
+
   it('moves the file to the Trash (recoverable) and drops its row', async () => {
     await store.reindexAll('research')
     await store.delete(ref('a'))

@@ -198,7 +198,7 @@ export class NotesStore {
    * and only ever on the user's explicit request (the interface asks first). Nothing is deleted outright:
    * the file stays recoverable from the Trash. If the move fails the file and its row are left as they were.
    */
-  async delete(ref: NoteRef): Promise<void> {
+  async delete(ref: NoteRef): Promise<string> {
     const path = this.pathOf(ref)
     const note = await readNoteFile(path)
     if (!note.exists) {
@@ -207,6 +207,18 @@ export class NotesStore {
     }
     await this.trash(path)
     deleteNoteRow(this.db, ref.workspace, ref.id)
+    return note.content
+  }
+
+  /**
+   * Put a deleted file back (the Undo of `delete`, which returns the content): created only if nothing is at that name now,
+   * so a file is never replaced.
+   */
+  async restore(ref: NoteRef, content: string): Promise<void> {
+    if (!(await createNoteFileExclusive(this.pathOf(ref), content))) {
+      throw new NoteError('Something with that name exists now')
+    }
+    await this.reindex(ref)
   }
 
   /**

@@ -91,8 +91,10 @@ export interface MeetingsApi {
    * conflict is returned.
    */
   save(ref: MeetingRef, changes: MeetingChanges, baseHash: string): Promise<MeetingSaveResult>
-  /** Move the meeting's file to the Trash. The caller is responsible for asking the user first. */
-  delete(ref: MeetingRef): Promise<void>
+  /** Move the meeting's file to the Trash. It resolves with the file's content, which `restore` takes to bring it back. */
+  delete(ref: MeetingRef): Promise<string>
+  /** Undo of `delete`: write the content it returned back as the same file (refused when something is there now). */
+  restore(ref: MeetingRef, content: string): Promise<void>
   /** The id a mention of this meeting uses, added to its front matter the first time (see `MeetingsStore.ensureUid`). */
   ensureUid(ref: MeetingRef): Promise<string>
   /** Move the meeting to the other workspace (see `MeetingsStore.move`); resolves with it there. The caller saves first. */
@@ -141,6 +143,7 @@ export const MEETINGS_IPC = {
   list: 'meetings:list',
   save: 'meetings:save',
   delete: 'meetings:delete',
+  restore: 'meetings:restore',
   move: 'meetings:move',
   ensureUid: 'meetings:ensure-uid',
   syncPrevious: 'meetings:sync-previous',

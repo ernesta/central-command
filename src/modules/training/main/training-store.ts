@@ -230,7 +230,7 @@ export class TrainingStore {
    * note, and only ever on the user's explicit request (the interface asks first). If the move fails
    * the file and its row are left as they were.
    */
-  async delete(ref: TrainingRef): Promise<void> {
+  async delete(ref: TrainingRef): Promise<string> {
     const path = this.pathOf(ref)
     const note = await readNoteFile(path)
     if (!note.exists) {
@@ -239,6 +239,18 @@ export class TrainingStore {
     }
     await this.trash(path)
     deleteTrainingRow(this.db, ref.workspace, ref.id)
+    return note.content
+  }
+
+  /**
+   * Put a deleted file back (the Undo of `delete`, which returns the content): created only if nothing is at that name now,
+   * so a file is never replaced.
+   */
+  async restore(ref: TrainingRef, content: string): Promise<void> {
+    if (!(await createNoteFileExclusive(this.pathOf(ref), content))) {
+      throw new TrainingError('Something with that name exists now')
+    }
+    await this.reindex(ref)
   }
 
   list(workspace: TrainingWorkspace): ReturnType<typeof listTrainingRows> {

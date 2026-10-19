@@ -57,8 +57,10 @@ export interface NotesApi {
    * conflict is returned. Changing the title renames the file.
    */
   save(ref: NoteRef, changes: NoteChanges, baseHash: string): Promise<NoteSaveResult>
-  /** Move the note's file to the Trash. The caller is responsible for asking the user first. */
-  delete(ref: NoteRef): Promise<void>
+  /** Move the note's file to the Trash. It resolves with the file's content, which `restore` takes to bring it back. */
+  delete(ref: NoteRef): Promise<string>
+  /** Undo of `delete`: write the content it returned back as the same file (refused when something is there now). */
+  restore(ref: NoteRef, content: string): Promise<void>
   /** The id a mention of this note uses, added to its front matter the first time (see `NotesStore.ensureUid`). */
   ensureUid(ref: NoteRef): Promise<string>
   /**
@@ -80,6 +82,7 @@ export const NOTES_IPC = {
   list: 'notes:list',
   save: 'notes:save',
   delete: 'notes:delete',
+  restore: 'notes:restore',
   move: 'notes:move',
   ensureUid: 'notes:ensure-uid',
   discardIfEmpty: 'notes:discard-if-empty',

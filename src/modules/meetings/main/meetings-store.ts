@@ -226,7 +226,7 @@ export class MeetingsStore {
    * deleted outright: the file stays recoverable from the Trash. If the move fails the file and its
    * row are left as they were.
    */
-  async delete(ref: MeetingRef): Promise<void> {
+  async delete(ref: MeetingRef): Promise<string> {
     const path = this.pathOf(ref)
     const note = await readNoteFile(path)
     if (!note.exists) {
@@ -235,6 +235,18 @@ export class MeetingsStore {
     }
     await this.trash(path)
     deleteMeetingRow(this.db, ref.workspace, ref.id)
+    return note.content
+  }
+
+  /**
+   * Put a deleted file back (the Undo of `delete`, which returns the content): created only if nothing is at that name now,
+   * so a file is never replaced.
+   */
+  async restore(ref: MeetingRef, content: string): Promise<void> {
+    if (!(await createNoteFileExclusive(this.pathOf(ref), content))) {
+      throw new MeetingError('Something with that name exists now')
+    }
+    await this.reindex(ref)
   }
 
   /**

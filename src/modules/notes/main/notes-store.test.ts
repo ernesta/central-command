@@ -371,6 +371,18 @@ describe('delete', () => {
     expect(listNoteIds(db, 'research')).toEqual([])
   })
 
+  it('restore puts the file back byte for byte and indexes it, and never replaces one', async () => {
+    await store.create({ workspace: 'research', title: 'Ideas', body: 'words' })
+    const before = readFileSync(file('Ideas'), 'utf8')
+    const content = await store.delete(ref('Ideas'))
+    expect(content).toBe(before)
+    await store.restore(ref('Ideas'), content)
+    expect(readFileSync(file('Ideas'), 'utf8')).toBe(before)
+    expect(listNoteIds(db, 'research')).toEqual(['Ideas'])
+    await expect(store.restore(ref('Ideas'), 'other')).rejects.toThrow(/exists now/)
+    expect(readFileSync(file('Ideas'), 'utf8')).toBe(before)
+  })
+
   it('leaves the file and its row when the Trash fails', async () => {
     await store.create({ workspace: 'research', title: 'Ideas' })
     trashFails = true

@@ -66,8 +66,10 @@ export interface ReadingListsApi {
    * conflict is returned. Changing the title renames the file.
    */
   save(ref: ReadingListRef, changes: ListChanges, baseHash: string): Promise<ReadingListSaveResult>
-  /** Move the list's file to the Trash. The caller is responsible for asking the user first. */
-  delete(ref: ReadingListRef): Promise<void>
+  /** Move the list's file to the Trash. It resolves with the file's content, which `restore` takes to bring it back. */
+  delete(ref: ReadingListRef): Promise<string>
+  /** Undo of `delete`: write the content it returned back as the same file (refused when something is there now). */
+  restore(ref: ReadingListRef, content: string): Promise<void>
   /** Every list (in every workspace) that names this reading, for its own page. */
   forReading(citekey: string): Promise<ReadingListMention[]>
   /** Subscribe to list files changing on disk. Returns an unsubscribe function. */
@@ -80,6 +82,7 @@ export const READING_LISTS_IPC = {
   list: 'reading-lists:list',
   save: 'reading-lists:save',
   delete: 'reading-lists:delete',
+  restore: 'reading-lists:restore',
   forReading: 'reading-lists:for-reading',
   changed: 'reading-lists:changed'
 } as const

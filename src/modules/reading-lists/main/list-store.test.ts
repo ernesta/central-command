@@ -149,6 +149,20 @@ describe('delete', () => {
     expect(mentionsOf(db, 'x')).toEqual([])
   })
 
+  it('restore puts the file back byte for byte and indexes it, and never replaces one', async () => {
+    const list = await store.create({ workspace: 'research', title: 'A' })
+    await store.save(list.ref, { body: '## S\n\n- **@x** y\n' }, list.note.hash)
+    const before = disk('A')
+    const content = await store.delete(list.ref)
+    expect(content).toBe(before)
+    await store.restore(list.ref, content)
+    expect(disk('A')).toBe(before)
+    expect(listListIds(db, 'research')).toEqual(['A'])
+    expect(mentionsOf(db, 'x')).not.toEqual([])
+    await expect(store.restore(list.ref, 'other')).rejects.toThrow(/exists now/)
+    expect(disk('A')).toBe(before)
+  })
+
   it('leaves the file and its row alone if the Trash move fails', async () => {
     const list = await store.create({ workspace: 'research', title: 'A' })
     trashFails = true
