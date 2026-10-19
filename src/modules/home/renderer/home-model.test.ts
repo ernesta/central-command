@@ -103,7 +103,7 @@ describe('whenLabel', () => {
   it('names today and tomorrow and counts the rest', () => {
     expect(whenLabel(0, '14:00')).toBe('Today 2:00 PM')
     expect(whenLabel(1, null)).toBe('Tomorrow')
-    expect(whenLabel(4, '11:00')).toBe('In 4 days 11:00')
+    expect(whenLabel(4, '11:00')).toBe('In 4 days 11:00 AM')
   })
 })
 
