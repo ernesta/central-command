@@ -1,4 +1,5 @@
-import { dayNumber, weekdayOf } from '../year'
+import { localeDate } from '../locale-names'
+import { dayNumber } from '../year'
 
 /** "7:45", "1,523:30", "−2:30": minutes as hours and minutes, never decimals. Fractions are rounded to the nearest minute. */
 export function formatHours(totalMinutes: number): string {
@@ -35,19 +36,15 @@ export function clockTime(time: string): string {
     : `${String(hour % 24).padStart(2, '0')}${time.slice(2, 5)}`
 }
 
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
-/** "Thu, Oct 1": a day as the Hours pages name it. Anything that is not a date is returned as it is. */
+/** "Thu, Oct 1" (or "Thu 1 Oct"): a day as the Hours pages name it. Anything that is not a date is returned as it is. */
 export function formatDay(date: string): string {
   if (dayNumber(date) === null) return date
-  const [, month, day] = date.split('-').map(Number)
-  return `${WEEKDAYS[weekdayOf(date) - 1]}, ${MONTHS[month - 1]} ${day}`
+  return localeDate(date, { weekday: 'short', month: 'short', day: 'numeric' })
 }
 
 /** "Sep 28 – Oct 4": the days of a week, from the first to the last. */
 export function formatRange(from: string, to: string): string {
-  const day = (date: string): string => formatDay(date).split(', ')[1] ?? ''
+  const day = (date: string): string => localeDate(date, { month: 'short', day: 'numeric' })
   return dayNumber(from) === null || dayNumber(to) === null
     ? `${from} – ${to}`
     : `${day(from)} – ${day(to)}`
