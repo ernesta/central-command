@@ -26,7 +26,7 @@ export function SkillsField({ skills, onChange }: SkillsFieldProps): React.JSX.E
   const [active, setActive] = useState(-1)
   const popRef = useRef<HTMLDivElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
-  const removeSkill = useUndoableRemoval(skills, onChange)
+  const removeSkill = useUndoableRemoval(skills, onChange, undefined, (name) => name)
   const addRef = useRef<HTMLButtonElement>(null)
   const full = skills.length >= MAX_SKILLS
 

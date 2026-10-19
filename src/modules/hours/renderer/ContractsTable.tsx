@@ -141,7 +141,7 @@ function ContractRow({
     }
     if (undoSteps.length > 0) {
       pushUndo({
-        label: 'contract change',
+        label: `change to ${title(contract)}`,
         undo: async () => {
           for (const step of undoSteps) {
             const done = await step()
@@ -404,7 +404,7 @@ export function ContractsTable({
     void window.api.tracking.removeContract(workspace, contract.start).then((result) => {
       if (!result.ok) return showToast(contractRefusal(result.reason))
       pushUndoWithToast(`Removed ${title(contract)}.`, {
-        label: 'removal',
+        label: `removal of ${title(contract)}`,
         undo: async () => {
           const weeks = contract.weeks ?? 52
           const added = await window.api.tracking.createContract(

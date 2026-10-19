@@ -109,7 +109,7 @@ function NoteView({
       void navigate(noteRoute(moved.ref.workspace, moved.ref.id), { replace: true })
       // Cmd-Z moves it back and shows it there.
       pushUndo({
-        label: 'move',
+        label: `move to ${target}`,
         undo: async () => {
           const back = await window.api.notes.move(moved.ref, from)
           void navigate(noteRoute(back.ref.workspace, back.ref.id), { replace: true })
@@ -134,7 +134,7 @@ function NoteView({
       const content = await window.api.notes.delete(ref)
       if (!untouched) {
         pushUndoWithToast(`Deleted “${heading}”.`, {
-          label: 'deletion',
+          label: `deletion of “${heading}”`,
           undo: () => window.api.notes.restore(ref, content)
         })
       }

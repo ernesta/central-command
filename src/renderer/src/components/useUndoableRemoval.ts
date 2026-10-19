@@ -8,7 +8,8 @@ import { pushUndo } from './undo-store'
 export function useUndoableRemoval<T>(
   items: readonly T[],
   onChange: (next: T[]) => void,
-  same: (a: T, b: T) => boolean = Object.is
+  same: (a: T, b: T) => boolean = Object.is,
+  describe: (item: T) => string = String
 ): (item: T) => void {
   const latest = useRef({ items, onChange })
   const mounted = useRef(true)
@@ -27,7 +28,7 @@ export function useUndoableRemoval<T>(
     if (at === -1) return
     onChange(items.filter((_, i) => i !== at))
     pushUndo({
-      label: 'removal',
+      label: `removal of ${describe(item)}`,
       isStale: () => !mounted.current,
       undo: () => {
         const { items: now, onChange: set } = latest.current

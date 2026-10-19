@@ -21,7 +21,7 @@ export function TagsField({
   const [adding, setAdding] = useState(false)
   const [text, setText] = useState('')
   const listId = useId()
-  const removeTag = useUndoableRemoval(tags, onChange)
+  const removeTag = useUndoableRemoval(tags, onChange, undefined, (tag) => `the tag ${tag}`)
 
   const add = (): void => {
     const tag = normaliseTag(text)

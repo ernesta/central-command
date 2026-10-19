@@ -96,7 +96,7 @@ function TimerPopover({
     await tracking.deleteSession(workspace, year, session.id)
     onClose()
     pushUndoWithToast('Timer discarded.', {
-      label: 'discard',
+      label: 'discarded timer',
       undo: async () => {
         if (await tracking.running()) return showToast('Another timer is running.')
         const again = await tracking.start(workspace, label, task, client)

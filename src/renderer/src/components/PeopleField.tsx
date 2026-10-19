@@ -32,7 +32,7 @@ export function PeopleField({
   const [active, setActive] = useState(0)
   const moved = useRef(false)
   const wrapRef = useRef<HTMLDivElement>(null)
-  const removeName = useUndoableRemoval(names, onChange)
+  const removeName = useUndoableRemoval(names, onChange, undefined, (name) => name)
   const addRef = useRef<HTMLButtonElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 

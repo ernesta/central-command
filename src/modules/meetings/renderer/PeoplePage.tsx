@@ -40,7 +40,7 @@ export function PeoplePage(): React.JSX.Element {
     const result = await run(window.api.meetings.people.remove(person.name, { how: 'delete' }))
     if (result.error !== null) return setError(result.error)
     pushUndoWithToast(`Deleted ${person.name}.`, {
-      label: 'deletion',
+      label: `deletion of ${person.name}`,
       undo: async () => {
         const back = await run(
           window.api.meetings.people.add({
@@ -140,7 +140,7 @@ export function PeoplePage(): React.JSX.Element {
               report(result)
               if (how.how !== 'archive' || result.error !== null) return
               pushUndoWithToast(`Archived ${name}.`, {
-                label: 'archive',
+                label: `archiving of ${name}`,
                 undo: async () => void report(await run(window.api.meetings.people.restore(name)))
               })
             })

@@ -365,23 +365,28 @@ export function TasksTable({
   )
 }
 
-async function updateTask(task: Task, changes: TaskChanges, what: string): Promise<void> {
+async function updateTask(
+  task: Task,
+  changes: TaskChanges,
+  what: string,
+  label: string
+): Promise<void> {
   try {
-    await updateTaskUndoable(task, changes, what)
+    await updateTaskUndoable(task, changes, label)
   } catch (error) {
     showToast(`Couldn’t ${what}: ${ipcErrorMessage(error)}`)
   }
 }
 
 const setDue = (task: Task, due: string | null): Promise<void> =>
-  updateTask(task, { due }, 'change the due date')
+  updateTask(task, { due }, 'change the due date', 'due date change')
 
 /** To the trash, with an Undo in the toast (a task's subtasks go with it and come back with it). */
 async function removeTask(task: Task): Promise<void> {
   try {
     await window.api.tasks.delete(task.uid)
     pushUndoWithToast(`Deleted “${task.title || 'Untitled'}”.`, {
-      label: 'deletion',
+      label: `deletion of “${task.title || 'Untitled'}”`,
       undo: async () => {
         await window.api.tasks.restore(task.uid)
       }
@@ -419,7 +424,8 @@ function TitleCell({ task }: { task: Task }): React.JSX.Element {
   const finish = (save: boolean): void => {
     setEditing(false)
     const next = text.trim()
-    if (save && next && next !== task.title) void updateTask(task, { title: next }, 'rename it')
+    if (save && next && next !== task.title)
+      void updateTask(task, { title: next }, 'rename it', 'rename')
   }
   return (
     <input
@@ -549,7 +555,7 @@ function TaskRowView({
               inline
               tags={task.tags}
               suggestions={tagsIn(allRows)}
-              onChange={(tags) => void updateTask(task, { tags }, 'change the tags')}
+              onChange={(tags) => void updateTask(task, { tags }, 'change the tags', 'tag change')}
             />
           </span>
           {!isKid && (
@@ -568,7 +574,7 @@ function TaskRowView({
                 sublist={task.sublist}
                 rows={allRows}
                 onChange={({ list, sublist }) =>
-                  void updateTask(task, { list, sublist }, 'change the list')
+                  void updateTask(task, { list, sublist }, 'change the list', 'list change')
                 }
               />
             </span>

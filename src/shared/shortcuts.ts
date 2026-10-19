@@ -135,7 +135,7 @@ export const GENERAL_SHORTCUTS: ShortcutGroup = {
     {
       action: 'Undo the last change',
       keys: [UNDO_SHORTCUT],
-      note: 'Task changes, deletions and removals. Inside a text field or a note it undoes typing instead.'
+      note: 'Deletions, edits, removals and moves, wherever they were made; it says what it undid. Inside a text field or a note it undoes typing instead.'
     },
     {
       action: 'Search everything',

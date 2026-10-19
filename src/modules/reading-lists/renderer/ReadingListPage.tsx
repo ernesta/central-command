@@ -77,7 +77,7 @@ function ListView({
       const content = await window.api.readingLists.delete(ref)
       if (!untouched) {
         pushUndoWithToast(`Deleted “${heading}”.`, {
-          label: 'deletion',
+          label: `deletion of “${heading}”`,
           undo: () => window.api.readingLists.restore(ref, content)
         })
       }

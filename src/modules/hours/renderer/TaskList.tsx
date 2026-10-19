@@ -65,7 +65,10 @@ export function TaskList({
     if (typed !== row.minutes) {
       const { label, client, minutes, task } = row
       onSetMinutes(label, typed, client)
-      pushUndo({ label: 'time change', undo: () => onSetMinutes(label, minutes, client, task) })
+      pushUndo({
+        label: `time change on “${label || 'Untitled'}”`,
+        undo: () => onSetMinutes(label, minutes, client, task)
+      })
     }
     setEditing(null)
   }
@@ -191,7 +194,7 @@ export function TaskList({
                       pushUndoWithToast(
                         `Deleted “${label || 'Untitled'}” (${formatHours(minutes)}).`,
                         {
-                          label: 'deletion',
+                          label: `deletion of “${label || 'Untitled'}” (${formatHours(minutes)})`,
                           undo: () => onSetMinutes(label, minutes, client, task)
                         }
                       )

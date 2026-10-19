@@ -160,7 +160,7 @@ function MeetingView({
       void navigate(meetingRoute(moved.ref.workspace, moved.ref.id), { replace: true })
       // Cmd-Z moves it back and shows it there.
       pushUndo({
-        label: 'move',
+        label: `move to ${target}`,
         undo: async () => {
           const back = await window.api.meetings.move(moved.ref, from)
           void navigate(meetingRoute(back.ref.workspace, back.ref.id), { replace: true })
@@ -196,7 +196,7 @@ function MeetingView({
       const content = await window.api.meetings.delete(ref)
       if (!untouched) {
         pushUndoWithToast(`Deleted “${heading}”.`, {
-          label: 'deletion',
+          label: `deletion of “${heading}”`,
           undo: async () => {
             await window.api.meetings.restore(ref, content)
             if (trashedTask) await window.api.tasks.restore(trashedTask)

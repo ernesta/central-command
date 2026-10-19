@@ -97,7 +97,7 @@ export function TasksLanding(): React.JSX.Element {
         today
       )
       pushUndo({
-        label: 'move',
+        label: 'move of the overdue tasks',
         undo: async () => {
           for (const t of moved) await window.api.tasks.setDue([t.uid], t.due)
         }

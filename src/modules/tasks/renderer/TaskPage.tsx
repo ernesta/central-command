@@ -96,7 +96,9 @@ function TaskView({
 
   const update = (changes: TaskChanges): void => {
     setError(null)
-    updateTaskUndoable(task, changes, 'change').catch((e: unknown) => setError(ipcErrorMessage(e)))
+    updateTaskUndoable(task, changes, 'task change').catch((e: unknown) =>
+      setError(ipcErrorMessage(e))
+    )
   }
 
   const { saver: title, state: titleState } = useSaver(task.title, async (text) => {
@@ -132,7 +134,7 @@ function TaskView({
       await window.api.tasks.delete(task.uid)
       leave()
       pushUndoWithToast(`Deleted “${title.current || 'Untitled'}”.`, {
-        label: 'deletion',
+        label: `deletion of “${title.current || 'Untitled'}”`,
         undo: async () => {
           await window.api.tasks.restore(task.uid)
         }

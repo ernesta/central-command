@@ -61,7 +61,7 @@ export function ReadingsPage(): React.JSX.Element {
     setActionVersion((v) => v + 1)
     // Cmd-Z brings the suggestion back (the page refreshes if it is still open).
     pushUndo({
-      label: 'dismissal',
+      label: 'dismissal of a rename suggestion',
       undo: async () => {
         await window.api.readings.renameSuggestions.undismiss(id)
         setActionVersion((v) => v + 1)

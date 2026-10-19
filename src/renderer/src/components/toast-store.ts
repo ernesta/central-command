@@ -25,6 +25,11 @@ export function clearToast(): void {
   listeners.forEach((l) => l())
 }
 
+/** The message now shown, if any (for code outside React). */
+export function currentToast(): AppToast | null {
+  return current
+}
+
 export function useToast(): AppToast | null {
   return useSyncExternalStore(
     (listener) => {

@@ -167,7 +167,7 @@ export function TimeOffList({
                   )
                   if (!result.ok) return REFUSED[result.reason] ?? 'Couldn’t save that day.'
                   pushUndo({
-                    label: 'change',
+                    label: `change to ${formatDay(row.date)}`,
                     undo: async () => {
                       const back = await window.api.tracking.editTimeOff(
                         workspace,
@@ -188,7 +188,7 @@ export function TimeOffList({
                     .then((result) => {
                       if (!result.ok) return
                       pushUndoWithToast(`Removed ${formatDay(date)}.`, {
-                        label: 'removal',
+                        label: `removal of ${formatDay(date)}`,
                         undo: async () => {
                           const added = await window.api.tracking.addTimeOff(
                             workspace,

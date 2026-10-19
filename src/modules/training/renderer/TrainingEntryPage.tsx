@@ -153,7 +153,7 @@ function EntryView({
       }
       if (!untouched) {
         pushUndoWithToast(`Deleted “${heading}”.`, {
-          label: 'deletion',
+          label: `deletion of “${heading}”`,
           undo: async () => {
             await window.api.training.restore(ref, content)
             for (const uid of trashedTasks) await window.api.tasks.restore(uid)

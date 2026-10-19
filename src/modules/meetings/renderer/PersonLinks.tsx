@@ -30,7 +30,8 @@ export function PersonLinks({
   const remove = useUndoableRemoval(
     links,
     onChange,
-    (a, b) => a.label === b.label && a.url === b.url
+    (a, b) => a.label === b.label && a.url === b.url,
+    (link) => `the link ${link.label}`
   )
 
   return (
