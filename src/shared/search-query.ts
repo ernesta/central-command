@@ -158,16 +158,23 @@ export function sourceAccepts(source: string, filter: SearchFilter, today: strin
   return spec !== undefined && specAccepts(spec, filter.value, today)
 }
 
+/** The values a modifier is shown to accept, one form each, for notices and the completion list. Empty when it takes the user's own words. */
+export function modifierValues(name: ModifierName): string[] {
+  if (name === 'in') return [...IN_SHOWN]
+  if (name === 'workspace') return [...WORKSPACE_VALUES]
+  const lists = [...new Set(Object.values(MODIFIERS[name].sources).filter(Array.isArray).flat())]
+  return name === 'priority' ? lists.map((v) => v.toUpperCase()) : lists
+}
+
+/** How a value is typed: quoted when it has spaces or is not a single plain word. */
+export function quoteValue(value: string): string {
+  return /^[^\s"]+$/.test(value) ? value : `"${value.replace(/"/g, '')}"`
+}
+
 function acceptedValues(name: ModifierName): string {
-  if (name === 'in') return IN_SHOWN.join(', ')
-  if (name === 'workspace') return WORKSPACE_VALUES.join(', ')
-  const specs = Object.values(MODIFIERS[name].sources)
-  const lists = [...new Set(specs.filter(Array.isArray).flat())]
-  if (lists.length > 0) {
-    const shown = name === 'priority' ? lists.map((v) => v.toUpperCase()) : lists
-    return shown.map((v) => (v.includes(' ') ? `"${v}"` : v)).join(', ')
-  }
-  if (specs.includes('period'))
+  const values = modifierValues(name)
+  if (values.length > 0) return values.map(quoteValue).join(', ')
+  if (Object.values(MODIFIERS[name].sources).includes('period'))
     return 'YYYY-MM, YYYY, today, yesterday, "this week", "last week", "this month", "last month", "this year", "last year"'
   return 'YYYY-MM-DD, YYYY-MM, YYYY, today, yesterday'
 }
