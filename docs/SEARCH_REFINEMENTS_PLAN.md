@@ -1,6 +1,6 @@
 # Search refinements: plan
 
-Status: **built 19 Oct 2026 in one unattended run, all five steps, pushed, not installed.** What differed from the plan: (1) the chip field is a plain `<input>` after the chips (not a
+Status: **built 19 Oct 2026 in one unattended run, all five steps, pushed and installed.** What differed from the plan: (1) the chip field is a plain `<input>` after the chips (not a
 contentEditable), so chips always sit before the text and the modifier order is not kept; (2) a `with:`/`by:` word is a chip only for a person in the list; (3) Tab also turns a
 modifier typed in full into a chip, and each chip has a × (outside the Tab order); (4) the grown window's empty state lists the modifiers' names as chips; (5) `/search?q=` stays as a
 redirect that opens the window (`SearchRedirect`) instead of being removed; (6) the Settings tab is "Search" and reads `search-help.ts`. Details: `docs/DECISIONS.md`, "Search modifiers", "Refinements". Original plan follows. The user's review of the search modifiers (`docs/SEARCH_MODIFIERS_PLAN.md`), collected in conversation while using the

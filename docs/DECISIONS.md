@@ -859,7 +859,7 @@ filtering sits beside its `renderer/search.ts` (tasks: `tasks/shared/search-filt
 - **Mutation-checked:** `every` to `some` in `passesFilters`, dropping the negation, `workspace:` ignoring unscoped sources, a negated
   modifier narrowing, `-in:` ignored and the repeat check off each fail tests.
 
-#### Refinements (19 Oct 2026; `docs/SEARCH_REFINEMENTS_PLAN.md`, built unattended, pushed, not installed)
+#### Refinements (19 Oct 2026; `docs/SEARCH_REFINEMENTS_PLAN.md`, built unattended, pushed and installed)
 
 All of it the user's decisions from using the built feature. Code: `search-query.ts` (`isSearch`, `valueAccepted`), `search-complete.ts`
 (`isFinishedValue`, `modifierAt`, `ghostFor`), `search-help.ts` (the table), `search-chips.ts` (`splitChips`, `insertPaste`,
