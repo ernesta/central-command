@@ -9,7 +9,6 @@ import {
   sortSkills
 } from '@shared/skills'
 import styles from './SkillsField.module.css'
-import { useUndoableRemoval } from './useUndoableRemoval'
 
 interface SkillsFieldProps {
   skills: string[]
@@ -26,7 +25,6 @@ export function SkillsField({ skills, onChange }: SkillsFieldProps): React.JSX.E
   const [active, setActive] = useState(-1)
   const popRef = useRef<HTMLDivElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
-  const removeSkill = useUndoableRemoval(skills, onChange, undefined, (name) => name)
   const addRef = useRef<HTMLButtonElement>(null)
   const full = skills.length >= MAX_SKILLS
 
@@ -75,7 +73,7 @@ export function SkillsField({ skills, onChange }: SkillsFieldProps): React.JSX.E
               type="button"
               className={styles.remove}
               aria-label={`Remove ${name}`}
-              onClick={() => removeSkill(name)}
+              onClick={() => onChange(skills.filter((s) => s !== name))}
             >
               <X size={12} strokeWidth={2} aria-hidden />
             </button>

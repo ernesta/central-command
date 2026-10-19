@@ -24,9 +24,12 @@ export interface UndoEntry {
 
 const LIMIT = 50
 let stack: UndoEntry[] = []
+/** True while an undo runs: the edit it makes through the page's normal path must not record itself as a new change. */
+let undoing = false
 
-/** Remember a change. The latest is the first Cmd-Z takes back; nothing is shown. */
+/** Remember a change. The latest is the first Cmd-Z takes back; nothing is shown. Ignored while an undo runs. */
 export function pushUndo(entry: UndoEntry): UndoEntry {
+  if (undoing) return entry
   stack = [...stack.slice(-(LIMIT - 1)), entry]
   return entry
 }
@@ -35,12 +38,15 @@ export function pushUndo(entry: UndoEntry): UndoEntry {
 export async function undoEntry(entry: UndoEntry): Promise<boolean> {
   if (!stack.includes(entry)) return false
   stack = stack.filter((e) => e !== entry)
+  undoing = true
   try {
     await entry.undo()
     return true
   } catch (error) {
     showToast(`Couldn’t undo the ${entry.label}: ${ipcErrorMessage(error)}`)
     return false
+  } finally {
+    undoing = false
   }
 }
 

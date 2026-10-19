@@ -38,6 +38,17 @@ describe('undo store', () => {
     expect(calls).toEqual(['a'])
   })
 
+  it('does not record what an undo itself changes', async () => {
+    pushUndo({
+      label: 'a',
+      undo: () => {
+        pushUndo({ label: 'b', undo: () => {} })
+      }
+    })
+    await undoLast()
+    expect(await undoLast()).toBe(false)
+  })
+
   it('says what Cmd-Z undid, and not when the undo failed', async () => {
     pushUndo({ label: 'move to Work', undo: () => {} })
     await undoLast()

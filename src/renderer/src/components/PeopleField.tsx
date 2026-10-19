@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from 'react'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { activePeople, findByName, matchPeople, sortPeople, type Person } from '@shared/people'
 import styles from './PeopleField.module.css'
-import { useUndoableRemoval } from './useUndoableRemoval'
 
 interface PeopleFieldProps {
   /** What the people are called, plural: "Attendees", "Leads". */
@@ -32,7 +31,6 @@ export function PeopleField({
   const [active, setActive] = useState(0)
   const moved = useRef(false)
   const wrapRef = useRef<HTMLDivElement>(null)
-  const removeName = useUndoableRemoval(names, onChange, undefined, (name) => name)
   const addRef = useRef<HTMLButtonElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -108,7 +106,7 @@ export function PeopleField({
                 type="button"
                 className={styles.remove}
                 aria-label={`Remove ${name}`}
-                onClick={() => removeName(name)}
+                onClick={() => onChange(names.filter((a) => a !== name))}
               >
                 <X size={12} strokeWidth={2} aria-hidden />
               </button>

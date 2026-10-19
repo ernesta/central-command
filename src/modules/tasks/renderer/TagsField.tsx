@@ -1,6 +1,5 @@
 import { X } from 'lucide-react'
 import { useId, useState } from 'react'
-import { useUndoableRemoval } from '@renderer/components/useUndoableRemoval'
 import { normaliseTag } from '../shared/tag'
 import styles from './TagsField.module.css'
 
@@ -21,7 +20,6 @@ export function TagsField({
   const [adding, setAdding] = useState(false)
   const [text, setText] = useState('')
   const listId = useId()
-  const removeTag = useUndoableRemoval(tags, onChange, undefined, (tag) => `the tag ${tag}`)
 
   const add = (): void => {
     const tag = normaliseTag(text)
@@ -39,7 +37,7 @@ export function TagsField({
             type="button"
             className={styles.remove}
             aria-label={`Remove tag ${tag}`}
-            onClick={() => removeTag(tag)}
+            onClick={() => onChange(tags.filter((t) => t !== tag))}
           >
             <X size={12} strokeWidth={2} aria-hidden />
           </button>
