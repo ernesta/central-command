@@ -212,14 +212,16 @@ describe('settleSelfStudyTasks', () => {
       expect(byTitle('Lecture 1 self-study')[0].status).toBe('done')
     })
 
-    it('an old entry gets its task already done, once', async () => {
+    it('an entry whose week is over gets no task from the app, and its task already done, once, from the repair', async () => {
       await entry({ date: '2026-08-01' })
-      await sweep()
+      expect(await sweep()).toBe(false)
+      expect(byTitle('Lecture 1 self-study')).toHaveLength(0)
+      await sweep(NOW, { backfill: true })
       expect(byTitle('Lecture 1 self-study')[0]).toMatchObject({
         status: 'done',
         due: '2026-08-01'
       })
-      expect(await sweep()).toBe(false)
+      expect(await sweep(NOW, { backfill: true })).toBe(false)
     })
 
     it('moving the date back past the week closes it; a done task is never reopened', async () => {

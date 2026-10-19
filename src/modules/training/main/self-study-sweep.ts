@@ -27,6 +27,11 @@ export interface SelfStudySweepOptions {
   nowMs: number
   /** Overridable for tests. */
   quietMs?: number
+  /**
+   * Also make the task of an entry whose week is already over (history, made done at once). The app never does: its sweep makes tasks
+   * for entries still in their week, and backfilling the past is the repair script's `--apply`, which the user runs (19 Oct 2026).
+   */
+  backfill?: boolean
 }
 
 const named = (title: string): boolean => title.trim() !== '' && title.trim() !== 'Untitled'
@@ -47,11 +52,11 @@ async function link(training: TrainingStore, ref: TrainingRef, uid: string): Pro
  * Every Research training entry with a title and a date has its self-study task (the user's rule, 19 Oct 2026): made here, in the main
  * process, so it exists whether or not the note is ever opened. The task is a subtask under the series' `<series> self-study` task (a
  * top-level task in Training for an entry with no series), is due on the entry's date, follows its title and series, and is marked
- * done a week after the entry ends. Idempotent: the uid is written into the note, and an entry that has one never gets a second. A
+ * done a week after the entry ends. An entry whose week is already over gets none here (see `backfill`). Idempotent: the uid is written into the note, and an entry that has one never gets a second. A
  * task the note names that is gone (the user deleted it) is not made again by itself. Returns whether any task changed.
  */
 export async function settleSelfStudyTasks(options: SelfStudySweepOptions): Promise<boolean> {
-  const { db, tasks, training, now, nowMs, quietMs = QUIET_MS } = options
+  const { db, tasks, training, now, nowMs, quietMs = QUIET_MS, backfill = false } = options
   let changed = false
   let all = listTasks(db, 'research')
   const refresh = (): void => {
@@ -84,6 +89,11 @@ export async function settleSelfStudyTasks(options: SelfStudySweepOptions): Prom
     if (!meta.selfStudy) {
       const plan = planSelfStudyTask(note, all, true)
       if (plan.kind !== 'create') continue
+      if (
+        !backfill &&
+        selfStudyTaskChanges({ status: 'doing', due: null } as Task, session, now).done
+      )
+        continue
       const made: string[] = []
       const task = tasks.create({
         workspace: 'research',
