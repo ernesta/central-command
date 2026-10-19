@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { TrainingIndexRow } from '../shared/types'
 import { planHits, planYears, trainingHits } from './search'
+import { plainRequest, searchRequest } from '@shared/search-query'
 
 const entry = (over: Partial<TrainingIndexRow>): TrainingIndexRow => ({
   workspace: 'research',
@@ -39,7 +40,7 @@ describe('trainingHits', () => {
   ]
 
   it('finds an entry by its title and labels it with its series and describes it by date', () => {
-    const [hit] = trainingHits(rows, [], 'datacamp')
+    const [hit] = trainingHits(rows, [], plainRequest('datacamp'))
     expect(hit).toMatchObject({
       title: 'DataCamp: R basics',
       detail: 'Jan 5',
@@ -48,7 +49,7 @@ describe('trainingHits', () => {
   })
 
   it('finds an entry by its notes and shows the part that matched', () => {
-    const [hit] = trainingHits(rows, [], 'logistics')
+    const [hit] = trainingHits(rows, [], plainRequest('logistics'))
     expect(hit.title).toBe('Applied Economics September Meet-up')
     expect(hit.detail).toContain('logistics')
   })
@@ -64,7 +65,7 @@ describe('planHits', () => {
   ]
 
   it('finds a plan by its text and shows the part that matched', () => {
-    const [hit] = planHits(plans, 'bayesian')
+    const [hit] = planHits(plans, plainRequest('bayesian'))
     expect(hit).toMatchObject({
       key: 'plan-2026',
       title: 'Training plan 2026–27',
@@ -74,11 +75,11 @@ describe('planHits', () => {
   })
 
   it('finds a plan by its name, and skips a plan with no text', () => {
-    expect(planHits(plans, 'training plan').map((h) => h.key)).toEqual(['plan-2026'])
+    expect(planHits(plans, plainRequest('training plan')).map((h) => h.key)).toEqual(['plan-2026'])
   })
 
   it('finds nothing for a word that is not there', () => {
-    expect(planHits(plans, 'zebra')).toEqual([])
+    expect(planHits(plans, plainRequest('zebra'))).toEqual([])
   })
 })
 
@@ -89,5 +90,48 @@ describe('planYears', () => {
       '2026-09-21',
       '2025-09-22'
     ])
+  })
+})
+
+describe('trainingHits with modifiers', () => {
+  const today = '2026-10-19'
+  const rows = [
+    entry({ id: 'a', series: 'DataCamp', date: '2026-01-05', leads: ['Zed Lead'], skills: ['R'] }),
+    entry({ id: 'b', series: null, date: '2025-09-24', leads: [], skills: [] }),
+    entry({ id: 'c', series: 'DataCamp', date: '', leads: ['Zed Lead'], skills: ['Stats'] })
+  ]
+  const run = (query: string): string[] =>
+    trainingHits(rows, [], searchRequest(query, today), 40).map((h) => h.key)
+
+  it('with: and by: are both the leads', () => {
+    expect(run('with:"zed lead"').sort()).toEqual(['a', 'c'])
+    expect(run('by:"zed lead"').sort()).toEqual(['a', 'c'])
+    expect(run('-by:"zed lead"')).toEqual(['b'])
+  })
+
+  it('series: and skill:', () => {
+    expect(run('series:datacamp').sort()).toEqual(['a', 'c'])
+    expect(run('skill:r')).toEqual(['a'])
+    expect(run('-series:datacamp')).toEqual(['b'])
+  })
+
+  it('dates', () => {
+    expect(run('after:2025-12')).toEqual(['a'])
+    expect(run('during:2025')).toEqual(['b'])
+    expect(run('before:2026-01-05')).toEqual(['b'])
+  })
+})
+
+describe('planHits with modifiers', () => {
+  const plans = [{ year: '2026-10-01', markdown: 'Bayesian modelling course.' }]
+  it('a plan has none of the fields, so only a negated filter lets it through', () => {
+    expect(planHits(plans, searchRequest('bayesian'))).toHaveLength(1)
+    expect(planHits(plans, searchRequest('bayesian -series:x'))).toHaveLength(1)
+    expect(planHits(plans, searchRequest('bayesian series:x'))).toEqual([])
+    expect(planHits(plans, searchRequest('bayesian after:2000'))).toEqual([])
+  })
+  it('matches a quoted phrase', () => {
+    expect(planHits(plans, searchRequest('"bayesian modelling"'))).toHaveLength(1)
+    expect(planHits(plans, searchRequest('"modelling bayesian"'))).toEqual([])
   })
 })

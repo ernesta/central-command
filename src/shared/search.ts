@@ -1,3 +1,5 @@
+import type { SearchRequest } from './search-query'
+import type { Workspace } from './settings'
 import { fold } from './text'
 
 /** One result of the global search: where it is, what to call it, and one line about it. */
@@ -11,6 +13,16 @@ export interface SearchHit {
   route?: string
   /** Runs instead of navigating (a command: "New meeting" creates one, then goes to it itself). */
   run?: () => void | Promise<void>
+}
+
+/** One place the global search looks: a module's items, the people list, or the commands. */
+export interface Searchable {
+  id: string
+  label: string
+  /** The workspace its items belong to; null for what belongs to none (people, readings, commands): `workspace:` keeps those. */
+  workspace: Workspace | null
+  /** `limit` is how many of the best matches to return; each source's own default (usually 6) when left out. */
+  search: (request: SearchRequest, limit?: number) => Promise<SearchHit[]>
 }
 
 /** The words of a search, folded (accents and case do not matter); every word has to match. */
@@ -74,48 +86,8 @@ export const SEARCH_GROUP_ORDER = [
   'people',
   'notes',
   'meetings',
+  'tasks',
   'training',
   'readings',
   'reading-lists'
 ]
-
-/** What `in:` may be followed by, and which source it means. Plural or singular, either is fine. */
-const SOURCE_ALIASES: Record<string, string> = {
-  person: 'people',
-  people: 'people',
-  note: 'notes',
-  notes: 'notes',
-  meeting: 'meetings',
-  meetings: 'meetings',
-  training: 'training',
-  trainings: 'training',
-  reading: 'readings',
-  readings: 'readings',
-  list: 'reading-lists',
-  lists: 'reading-lists'
-}
-
-export interface ParsedSearch {
-  /** Source ids to search (from one or more `in:` words); null means everything. */
-  sources: string[] | null
-  /** The query with every `in:` word removed. */
-  text: string
-}
-
-/**
- * Slack- and Gmail-style `in:` modifiers: `in:meetings luminos` searches only meetings for "luminos". More than
- * one `in:` searches all of them. An `in:` naming nothing recognised is left in the text (so `in:progress`, part
- * of an ordinary phrase, is not silently dropped).
- */
-export function parseSearchQuery(raw: string): ParsedSearch {
-  const sources = new Set<string>()
-  const words = raw.split(/\s+/).filter(Boolean)
-  const rest = words.filter((word) => {
-    const match = /^in:(.+)$/i.exec(word)
-    const source = match && SOURCE_ALIASES[match[1].toLowerCase()]
-    if (!source) return true
-    sources.add(source)
-    return false
-  })
-  return { sources: sources.size > 0 ? [...sources] : null, text: rest.join(' ') }
-}

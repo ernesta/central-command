@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react'
 import type { Workspace } from '@shared/settings'
-import type { SearchHit } from '@shared/search'
+import type { Searchable } from '@shared/search'
 import type { EntityProvider } from '@renderer/entities/registry'
 import type { ShortcutGroup } from '@shared/shortcuts'
 import { createHoursModule } from './hours'
@@ -76,13 +76,18 @@ export function moduleEntityProviders(): EntityProvider[] {
 }
 
 /** The modules that can be searched, in registration order. */
-export function moduleSearches(): {
-  id: string
-  label: string
-  search: (query: string, limit?: number) => Promise<SearchHit[]>
-}[] {
+export function moduleSearches(): Searchable[] {
   return modules.flatMap((m) =>
-    m.status === 'live' && m.search ? [{ id: m.id, label: searchLabel(m), search: m.search }] : []
+    m.status === 'live' && m.search
+      ? [
+          {
+            id: m.id,
+            label: searchLabel(m),
+            workspace: m.searchUnscoped ? null : m.workspace,
+            search: m.search
+          }
+        ]
+      : []
   )
 }
 

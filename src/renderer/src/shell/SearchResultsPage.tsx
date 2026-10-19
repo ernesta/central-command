@@ -1,13 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router'
-import { moduleSearches } from '@modules/index'
-import { searchPeople } from '@modules/meetings/renderer/people-search'
+import { useEffect, useState } from 'react'
+import { Link, useSearchParams } from 'react-router'
 import type { SearchHit } from '@shared/search'
 import { EmptyState } from '../components/EmptyState'
 import { SearchInput } from '../components/SearchInput'
-import { searchCommands } from './commands'
-import { useQuickActionWorkspace } from './useQuickActionWorkspace'
-import { searchEverywhere, type SearchGroup, type Searchable } from './run-search'
+import { searchEverywhere, type SearchOutcome } from './run-search'
+import { useSearchSources } from './search-sources'
+import { SearchNotices } from './SearchNotices'
 import styles from './SearchResultsPage.module.css'
 
 const RESULTS_LIMIT = 40
@@ -39,35 +37,24 @@ function Hit({ hit, onRun }: { hit: SearchHit; onRun: () => void }): React.JSX.E
  * The same `in:` modifiers work here. See `docs/DECISIONS.md`, "Global search" for how results are ordered.
  */
 export function SearchResultsPage(): React.JSX.Element {
-  const navigate = useNavigate()
-  const workspace = useQuickActionWorkspace()
   const [params, setParams] = useSearchParams()
   const [query, setQuery] = useState(params.get('q') ?? '')
-  const [result, setResult] = useState<{ query: string; groups: SearchGroup[] }>({
+  const [result, setResult] = useState<{ query: string } & SearchOutcome>({
     query: '',
-    groups: []
+    groups: [],
+    notices: [],
+    impossible: false
   })
 
-  const sources: Searchable[] = useMemo(
-    () => [
-      {
-        id: 'actions',
-        label: 'Actions',
-        search: (q: string, limit?: number) => searchCommands(q, navigate, limit, workspace)
-      },
-      { id: 'people', label: 'People', search: searchPeople },
-      ...moduleSearches()
-    ],
-    [navigate, workspace]
-  )
+  const sources = useSearchSources()
 
   // Search a moment after typing stops; an answer for words that have since changed is dropped.
   useEffect(() => {
     if (query.trim() === '') return
     let cancelled = false
     const timer = setTimeout(() => {
-      void searchEverywhere(sources, query, RESULTS_LIMIT).then((groups) => {
-        if (!cancelled) setResult({ query, groups })
+      void searchEverywhere(sources, query, RESULTS_LIMIT).then((outcome) => {
+        if (!cancelled) setResult({ query, ...outcome })
       })
     }, DELAY_MS)
     return () => {
@@ -93,7 +80,8 @@ export function SearchResultsPage(): React.JSX.Element {
           setParams(value ? { q: value } : {}, { replace: true })
         }}
       />
-      {answered && total === 0 && query.trim() !== '' && (
+      {answered && <SearchNotices notices={result.notices} />}
+      {answered && total === 0 && !result.impossible && query.trim() !== '' && (
         <EmptyState heading="No results" message={`Nothing matches “${query.trim()}”.`} />
       )}
       <div className={styles.groups}>

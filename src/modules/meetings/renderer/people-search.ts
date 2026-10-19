@@ -1,5 +1,6 @@
 import { fold } from '@shared/text'
-import { searchTerms, type SearchHit } from '@shared/search'
+import type { SearchHit } from '@shared/search'
+import { textMatches, type SearchRequest } from '@shared/search-query'
 import type { PersonUsage } from '../shared/people-usage'
 import type { Person } from '../shared/types'
 import { personRoute } from './meetings-paths'
@@ -24,14 +25,13 @@ function usageLine(usage: PersonUsage | undefined): string {
 export function personHits(
   people: readonly Person[],
   usage: readonly PersonUsage[],
-  query: string,
+  request: SearchRequest,
   limit = DEFAULT_LIMIT
 ): SearchHit[] {
-  const terms = searchTerms(query)
   const usageFor = (name: string): PersonUsage | undefined => usage.find((u) => u.name === name)
   return people
     .filter((p) => !p.archived)
-    .filter((p) => terms.every((t) => fold(`${p.name} ${p.initials}`).includes(t)))
+    .filter((p) => textMatches(fold(`${p.name} ${p.initials}`), request))
     .sort((a, b) => {
       const total = (u: PersonUsage | undefined): number => (u?.meetings ?? 0) + (u?.trainings ?? 0)
       return total(usageFor(b.name)) - total(usageFor(a.name)) || a.name.localeCompare(b.name)
@@ -45,10 +45,10 @@ export function personHits(
     }))
 }
 
-export async function searchPeople(query: string, limit?: number): Promise<SearchHit[]> {
+export async function searchPeople(request: SearchRequest, limit?: number): Promise<SearchHit[]> {
   const [people, usage] = await Promise.all([
     window.api.meetings.people.list(),
     window.api.meetings.people.usage()
   ])
-  return personHits(people, usage, query, limit)
+  return personHits(people, usage, request, limit)
 }

@@ -1,22 +1,50 @@
 import type { Person } from '@shared/people'
-import { searchTerms, snippet, type SearchHit } from '@shared/search'
+import { snippet, type SearchHit } from '@shared/search'
+import { dayItem } from '@shared/search-dates'
+import {
+  dateFilterMatches,
+  passesFilters,
+  searchNeedles,
+  textMatches,
+  type SearchFilter,
+  type SearchRequest
+} from '@shared/search-query'
 import { fold } from '@shared/text'
 import { meetingHeading } from '@shared/time'
-import { DEFAULT_MEETINGS_QUERY, queryMeetings } from '../shared/query'
+import { DEFAULT_MEETINGS_QUERY, haystack, queryMeetings } from '../shared/query'
 import type { MeetingIndexRow, MeetingWorkspace } from '../shared/types'
 import { meetingRoute } from './meetings-paths'
 
 const DEFAULT_LIMIT = 6
 
+/** Whether a meeting passes one search filter, before negation. `has:todos` means a TODO still open. */
+function meetingMatches(row: MeetingIndexRow, filter: SearchFilter, today: string): boolean {
+  const value = filter.value
+  switch (filter.name) {
+    case 'with':
+      return row.attendees.some((a) => fold(a) === value)
+    case 'skill':
+      return row.skills.some((s) => fold(s) === value)
+    case 'series':
+      return fold(row.series) === value
+    case 'has':
+      return value === 'todos' ? row.todos.some((t) => !t.done) : row.summary.trim() !== ''
+    default:
+      return dateFilterMatches(filter, today, dayItem(row.date))
+  }
+}
+
 /** The meetings that match, newest first: the part of the notes that matched, else the summary. */
 export function meetingHits(
   rows: readonly MeetingIndexRow[],
   people: readonly Person[],
-  query: string,
+  request: SearchRequest,
   limit = DEFAULT_LIMIT
 ): SearchHit[] {
-  const terms = searchTerms(query)
-  return queryMeetings(rows, { ...DEFAULT_MEETINGS_QUERY, search: query }, people)
+  const terms = searchNeedles(request)
+  return queryMeetings(rows, { ...DEFAULT_MEETINGS_QUERY, search: request.text }, people)
+    .filter((row) => textMatches(haystack(row, people), request))
+    .filter((row) => passesFilters(request.filters, (f) => meetingMatches(row, f, request.today)))
     .slice(0, limit)
     .map((row) => {
       const title = meetingHeading(row.series, row.date)
@@ -32,12 +60,12 @@ export function meetingHits(
 
 export function searchMeetings(
   workspace: MeetingWorkspace
-): (query: string, limit?: number) => Promise<SearchHit[]> {
-  return async (query, limit) => {
+): (request: SearchRequest, limit?: number) => Promise<SearchHit[]> {
+  return async (request, limit) => {
     const [rows, people] = await Promise.all([
       window.api.meetings.list(workspace),
       window.api.meetings.people.list()
     ])
-    return meetingHits(rows, people, query, limit)
+    return meetingHits(rows, people, request, limit)
   }
 }

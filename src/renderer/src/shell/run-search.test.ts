@@ -1,18 +1,22 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { SearchHit } from '@shared/search'
-import { runSearches, searchEverywhere, type Searchable } from './run-search'
+import type { SearchHit, Searchable } from '@shared/search'
+import type { Person } from '@shared/people'
+import { parseSearch, plainRequest, type SearchRequest } from '@shared/search-query'
+import { runSearches, searchEverywhere, type SearchOutcome } from './run-search'
 
 const hit = (key: string): SearchHit => ({ key, title: key, detail: '', route: `/${key}` })
+const source = (
+  id: string,
+  hits: SearchHit[] = [hit(`${id}1`)],
+  workspace: Searchable['workspace'] = null
+): Searchable => ({ id, label: id, workspace, search: async () => hits })
+const planFor = (sources: Searchable[]): { source: Searchable; request: SearchRequest }[] =>
+  sources.map((s) => ({ source: s, request: plainRequest('x') }))
 
 describe('runSearches', () => {
   it('keeps the modules that found something, in the order given', async () => {
     const groups = await runSearches(
-      [
-        { id: 'a', label: 'A', search: async () => [hit('a1')] },
-        { id: 'b', label: 'B', search: async () => [] },
-        { id: 'c', label: 'C', search: async () => [hit('c1'), hit('c2')] }
-      ],
-      'x'
+      planFor([source('a'), source('b', []), source('c', [hit('c1'), hit('c2')])])
     )
     expect(groups.map((g) => [g.id, g.hits.length])).toEqual([
       ['a', 1],
@@ -22,88 +26,159 @@ describe('runSearches', () => {
 
   it('leaves out a module that fails and still shows the others', async () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => {})
-    const groups = await runSearches(
-      [
-        {
-          id: 'a',
-          label: 'A',
-          search: async () => {
-            throw new Error('boom')
-          }
-        },
-        { id: 'b', label: 'B', search: async () => [hit('b1')] }
-      ],
-      'x'
-    )
+    const failing: Searchable = {
+      ...source('a'),
+      search: async () => {
+        throw new Error('boom')
+      }
+    }
+    const groups = await runSearches(planFor([failing, source('b')]))
     expect(groups.map((g) => g.id)).toEqual(['b'])
     error.mockRestore()
   })
 
-  it('passes the limit on to each source', async () => {
+  it('passes the request and the limit on to each source', async () => {
     const search = vi.fn(async () => [hit('a1')])
-    await runSearches([{ id: 'a', label: 'A', search }], 'x', 30)
-    expect(search).toHaveBeenCalledWith('x', 30)
+    const request = plainRequest('x')
+    await runSearches([{ source: { ...source('a'), search }, request }], 30)
+    expect(search).toHaveBeenCalledWith(request, 30)
   })
 })
 
 describe('searchEverywhere', () => {
+  const people = async (): Promise<Person[]> => []
+  const run = (sources: Searchable[], query: string, limit?: number): Promise<SearchOutcome> =>
+    searchEverywhere(sources, query, limit, people, '2026-10-19')
   const sources: Searchable[] = [
-    { id: 'readings', label: 'Readings', search: async () => [hit('r1')] },
-    { id: 'training', label: 'Training', search: async () => [hit('t1')] },
-    { id: 'meetings', label: 'Meetings', search: async () => [hit('m1')] },
-    { id: 'notes', label: 'Notes', search: async () => [hit('n1')] },
-    { id: 'people', label: 'People', search: async () => [hit('p1')] },
-    { id: 'actions', label: 'Actions', search: async () => [hit('act1')] }
+    source('readings'),
+    source('training', [hit('t1')], 'research'),
+    source('meetings', [hit('m1')], 'research'),
+    source('notes', [hit('n1')], 'work'),
+    source('tasks', [hit('k1')], 'research'),
+    source('people'),
+    source('actions')
   ]
+  const ids = async (query: string): Promise<string[]> =>
+    (await run(sources, query)).groups.map((g) => g.id)
 
   it('does not search anyone for a plain empty query', async () => {
     const search = vi.fn(async () => [hit('a1')])
-    expect(await searchEverywhere([{ id: 'a', label: 'A', search }], '   ')).toEqual([])
+    const outcome = await run([{ ...source('a'), search }], '   ')
+    expect(outcome.groups).toEqual([])
     expect(search).not.toHaveBeenCalled()
   })
 
-  it('orders the groups Actions, People, Notes, Meetings, Training, Readings, whatever order the sources answered in', async () => {
-    const groups = await searchEverywhere(sources, 'x')
-    expect(groups.map((g) => g.id)).toEqual([
+  it('orders the groups Actions, People, Notes, Meetings, Tasks, Training, Readings, whatever order the sources answered in', async () => {
+    expect(await ids('x')).toEqual([
       'actions',
       'people',
       'notes',
       'meetings',
+      'tasks',
       'training',
       'readings'
     ])
   })
 
   it('puts a source this build does not know about last, rather than dropping it', async () => {
-    const groups = await searchEverywhere(
-      [...sources, { id: 'mystery', label: 'Mystery', search: async () => [hit('z1')] }],
-      'x'
-    )
-    expect(groups.at(-1)?.id).toBe('mystery')
+    const outcome = await run([...sources, source('mystery', [hit('z1')])], 'x')
+    expect(outcome.groups.at(-1)?.id).toBe('mystery')
   })
 
-  it('restricts to the sources an in: modifier names, and still passes the rest of the text on', async () => {
+  it('restricts to the sources an in: modifier names, and passes the rest of the text on', async () => {
     const meetings = vi.fn(async () => [hit('m1')])
     const notes = vi.fn(async () => [hit('n1')])
-    const groups = await searchEverywhere(
+    const outcome = await run(
       [
-        { id: 'meetings', label: 'Meetings', search: meetings },
-        { id: 'notes', label: 'Notes', search: notes }
+        { ...source('meetings'), search: meetings },
+        { ...source('notes'), search: notes }
       ],
       'in:meetings luminos'
     )
-    expect(groups.map((g) => g.id)).toEqual(['meetings'])
-    expect(meetings).toHaveBeenCalledWith('luminos', undefined)
+    expect(outcome.groups.map((g) => g.id)).toEqual(['meetings'])
+    expect(meetings).toHaveBeenCalledWith(expect.objectContaining({ text: 'luminos' }), undefined)
     expect(notes).not.toHaveBeenCalled()
+  })
+
+  it('finds tasks with in:task (the search that once found nothing)', async () => {
+    expect(await ids('experiments in:task')).toEqual(['tasks'])
   })
 
   it('searches everything in a source named alone, with nothing else to match', async () => {
     const meetings = vi.fn(async () => [hit('m1')])
-    const groups = await searchEverywhere(
-      [{ id: 'meetings', label: 'Meetings', search: meetings }],
-      'in:meetings'
+    const outcome = await run([{ ...source('meetings'), search: meetings }], 'in:meetings')
+    expect(outcome.groups).toHaveLength(1)
+    expect(meetings).toHaveBeenCalledWith(expect.objectContaining({ text: '' }), undefined)
+  })
+
+  it('keeps the commands out when a modifier is used or no words are typed', async () => {
+    expect(await ids('in:notes x')).toEqual(['notes'])
+    expect(await ids('workspace:work')).toEqual(['people', 'notes', 'readings'])
+    expect(await ids('-in:readings x')).not.toContain('readings')
+  })
+
+  it('workspace: keeps its workspace and the sources that have none', async () => {
+    expect(await ids('workspace:work x')).toEqual(['actions', 'people', 'notes', 'readings'])
+    expect(await ids('workspace:research x')).toEqual([
+      'actions',
+      'people',
+      'meetings',
+      'tasks',
+      'training',
+      'readings'
+    ])
+  })
+
+  it('gives each source only the filters it has', async () => {
+    const tasks = vi.fn(async () => [hit('k1')])
+    await run([{ ...source('tasks'), search: tasks }], 'in:tasks priority:p1 -tag:a workspace:work')
+    expect(tasks).toHaveBeenCalledWith(
+      expect.objectContaining({
+        filters: [
+          { name: 'priority', value: 'p1', negated: false },
+          { name: 'tag', value: 'a', negated: true }
+        ]
+      }),
+      undefined
     )
-    expect(groups).toHaveLength(1)
-    expect(meetings).toHaveBeenCalledWith('', undefined)
+  })
+
+  it('searches nothing and says so for two different in:, even though words were typed', async () => {
+    const search = vi.fn(async () => [hit('a1')])
+    const outcome = await run([{ ...source('notes'), search }], 'x in:notes in:tasks')
+    expect(search).not.toHaveBeenCalled()
+    expect(outcome).toMatchObject({
+      groups: [],
+      impossible: true,
+      notices: ['No item has two sources.']
+    })
+  })
+
+  it('returns the notices of a query that does searchable work too', async () => {
+    const outcome = await run(sources, 'x foo:bar')
+    expect(outcome.notices).toEqual(['Not a filter: foo:bar'])
+    expect(outcome.groups.length).toBeGreaterThan(0)
+  })
+
+  it('turns with: into the person’s full name, and says when nobody is meant', async () => {
+    const search = vi.fn(async () => [hit('m1')])
+    const list = async (): Promise<Person[]> => [
+      { name: 'Chris Cummiskey', initials: 'CC', me: false }
+    ]
+    const m = { ...source('meetings'), search }
+    const ok = await searchEverywhere([m], 'with:cc', undefined, list, '2026-10-19')
+    expect(search).toHaveBeenCalledWith(
+      expect.objectContaining({
+        filters: [{ name: 'with', value: 'chris cummiskey', negated: false }]
+      }),
+      undefined
+    )
+    expect(ok.notices).toEqual([])
+    const bad = await searchEverywhere([m], 'with:Zed luminos', undefined, list, '2026-10-19')
+    expect(bad.notices).toEqual(['with: needs a name or initials from the people list'])
+  })
+
+  it('parses with the same clock it plans with', () => {
+    expect(parseSearch('on:today', '2026-10-19').filters).toHaveLength(1)
   })
 })

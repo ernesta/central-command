@@ -1,6 +1,7 @@
 import type { ComponentType, ReactNode } from 'react'
 import type { Workspace } from '@shared/settings'
 import type { SearchHit } from '@shared/search'
+import type { SearchRequest } from '@shared/search-query'
 import type { ShortcutGroup } from '@shared/shortcuts'
 import type { EntityProvider } from '@renderer/entities/registry'
 
@@ -37,7 +38,9 @@ export interface LiveModuleManifest extends BaseManifest {
   globals?: ComponentType
   /** Finds this module's items for the global search: a few of the best matches for a query, most relevant first. */
   /** `limit` is how many of the best matches to return; the module's own default (usually 6) when left out. */
-  search?: (query: string, limit?: number) => Promise<SearchHit[]>
+  search?: (request: SearchRequest, limit?: number) => Promise<SearchHit[]>
+  /** The module's items belong to no workspace (readings), so a `workspace:` search keeps them whichever it names. */
+  searchUnscoped?: boolean
   /** What a note can mention with `@` (people, readings, meetings, notes): the kinds of entity this module owns. Give them to one instance of a module that exists per workspace. */
   entities?: EntityProvider[]
   /** Listed in Settings under Keyboard shortcuts. Add a shortcut here whenever the module gets one. */

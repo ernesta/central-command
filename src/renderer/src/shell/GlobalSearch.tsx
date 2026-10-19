@@ -2,12 +2,10 @@ import { Search } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router'
-import { searchPeople } from '@modules/meetings/renderer/people-search'
-import { moduleSearches } from '@modules/index'
 import type { SearchHit } from '@shared/search'
-import { searchCommands } from './commands'
-import { useQuickActionWorkspace } from './useQuickActionWorkspace'
-import { searchEverywhere, type SearchGroup, type Searchable } from './run-search'
+import { searchEverywhere, type SearchOutcome } from './run-search'
+import { useSearchSources } from './search-sources'
+import { SearchNotices } from './SearchNotices'
 import styles from './GlobalSearch.module.css'
 
 const DELAY_MS = 120
@@ -20,29 +18,18 @@ const DELAY_MS = 120
  */
 export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.Element {
   const navigate = useNavigate()
-  const workspace = useQuickActionWorkspace()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const [query, setQuery] = useState('')
-  const [result, setResult] = useState<{ query: string; groups: SearchGroup[] }>({
+  const [result, setResult] = useState<{ query: string } & SearchOutcome>({
     query: '',
-    groups: []
+    groups: [],
+    notices: [],
+    impossible: false
   })
   const [active, setActive] = useState(0)
 
-  // Built once per open: `navigate` does not change while the window is up.
-  const sources = useMemo<Searchable[]>(
-    () => [
-      {
-        id: 'actions',
-        label: 'Actions',
-        search: (q: string, limit?: number) => searchCommands(q, navigate, limit, workspace)
-      },
-      { id: 'people', label: 'People', search: searchPeople },
-      ...moduleSearches()
-    ],
-    [navigate, workspace]
-  )
+  const sources = useSearchSources()
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -54,9 +41,9 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
     if (query.trim() === '') return
     let cancelled = false
     const timer = setTimeout(() => {
-      void searchEverywhere(sources, query).then((groups) => {
+      void searchEverywhere(sources, query).then((outcome) => {
         if (cancelled) return
-        setResult({ query, groups })
+        setResult({ query, ...outcome })
         setActive(0)
       })
     }, DELAY_MS)
@@ -170,7 +157,10 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
             })}
           </div>
         ))}
-        {answered && hits.length === 0 && <p className={styles.empty}>No results.</p>}
+        {answered && <SearchNotices notices={result.notices} />}
+        {answered && hits.length === 0 && !result.impossible && (
+          <p className={styles.empty}>No results.</p>
+        )}
         {answered && capped && (
           <button type="button" className={styles.seeAll} onClick={seeAll}>
             See all results

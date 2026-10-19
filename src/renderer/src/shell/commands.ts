@@ -2,7 +2,8 @@ import type { NavigateFunction } from 'react-router'
 import { startUnnamed } from '@modules/hours/renderer/start-request'
 import { peopleRoute } from '@modules/meetings/renderer/meetings-paths'
 import { fold } from '@shared/text'
-import { searchTerms, type SearchHit } from '@shared/search'
+import type { SearchHit } from '@shared/search'
+import { textMatches, type SearchRequest } from '@shared/search-query'
 import { QUICK_ACTIONS, type QuickActionWorkspace } from './quick-actions'
 
 const DEFAULT_LIMIT = 6
@@ -44,13 +45,12 @@ const COMMANDS: Command[] = [
 ]
 
 export async function searchCommands(
-  query: string,
+  request: SearchRequest,
   navigate: NavigateFunction,
   limit = DEFAULT_LIMIT,
   workspace: QuickActionWorkspace = 'research'
 ): Promise<SearchHit[]> {
-  const terms = searchTerms(query)
-  const matching = COMMANDS.filter((c) => terms.every((t) => fold(c.title).includes(t)))
+  const matching = COMMANDS.filter((c) => textMatches(fold(c.title), request))
   const running = matching.some((c) => c.whileRunning !== undefined)
     ? (await window.api.tracking.running()) !== null
     : false

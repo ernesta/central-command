@@ -45,7 +45,7 @@ export function compareRecent(a: NoteIndexRow, b: NoteIndexRow): number {
   return b.edited - a.edited || a.id.localeCompare(b.id)
 }
 
-function haystack(row: NoteIndexRow): string {
+export function haystack(row: NoteIndexRow): string {
   return fold(
     [
       row.title,

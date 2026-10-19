@@ -1,0 +1,9 @@
+.notices {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 8px 12px;
+  list-style: none;
+  color: var(--text-secondary);
+  font-size: var(--text-13);
+}

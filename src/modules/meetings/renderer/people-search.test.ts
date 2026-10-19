@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { PersonUsage } from '../shared/people-usage'
 import type { Person } from '../shared/types'
 import { personHits } from './people-search'
+import { plainRequest, searchRequest } from '@shared/search-query'
 
 const person = (over: Partial<Person>): Person => ({
   name: 'Kathy Rastle',
@@ -28,38 +29,53 @@ describe('personHits', () => {
   const usages = [usage('Kathy Rastle', 14, 0), usage('Kathryn Redway', 1, 0)]
 
   it('finds by name or initials, folding case and accents', () => {
-    expect(personHits(people, usages, 'kathy').map((h) => h.key)).toEqual(['Kathy Rastle'])
-    expect(personHits(people, usages, 'KR2').map((h) => h.key)).toEqual(['Kathryn Redway'])
+    expect(personHits(people, usages, plainRequest('kathy')).map((h) => h.key)).toEqual([
+      'Kathy Rastle'
+    ])
+    expect(personHits(people, usages, plainRequest('KR2')).map((h) => h.key)).toEqual([
+      'Kathryn Redway'
+    ])
   })
 
   it('shows how often each is mentioned, and marks the user as "(you)"', () => {
-    const [hit] = personHits(people, usages, 'kathy rastle')
+    const [hit] = personHits(people, usages, plainRequest('kathy rastle'))
     expect(hit.detail).toBe('14 meetings')
-    expect(personHits(people, [], 'ernesta')[0].title).toBe('Ernesta Orlovaitė (you)')
+    expect(personHits(people, [], plainRequest('ernesta'))[0].title).toBe('Ernesta Orlovaitė (you)')
   })
 
   it('says "Not mentioned yet" for someone with no meetings or trainings', () => {
-    expect(personHits(people, [], 'ernesta')[0].detail).toBe('Not mentioned yet')
+    expect(personHits(people, [], plainRequest('ernesta'))[0].detail).toBe('Not mentioned yet')
   })
 
   it('puts the most mentioned first when several match', () => {
-    expect(personHits(people, usages, 'kath').map((h) => h.key)).toEqual([
+    expect(personHits(people, usages, plainRequest('kath')).map((h) => h.key)).toEqual([
       'Kathy Rastle',
       'Kathryn Redway'
     ])
   })
 
   it('never matches an archived person', () => {
-    expect(personHits(people, [], 'archived')).toEqual([])
+    expect(personHits(people, [], plainRequest('archived'))).toEqual([])
   })
 
   it('routes to that person’s own page', () => {
-    expect(personHits(people, usages, 'kathy rastle')[0].route).toBe(
+    expect(personHits(people, usages, plainRequest('kathy rastle'))[0].route).toBe(
       '/research/meetings/people/Kathy%20Rastle'
     )
   })
 
   it('shows at most the given limit', () => {
-    expect(personHits(people, usages, '', 2)).toHaveLength(2)
+    expect(personHits(people, usages, plainRequest(''), 2)).toHaveLength(2)
+  })
+})
+
+describe('personHits with phrases', () => {
+  const people = [person({}), person({ name: 'Kathryn Redway', initials: 'KR2' })]
+  const usages = [usage('Kathy Rastle', 14, 0)]
+  it('finds a quoted phrase as written', () => {
+    expect(personHits(people, usages, searchRequest('"kathy rastle"')).map((h) => h.key)).toEqual([
+      'Kathy Rastle'
+    ])
+    expect(personHits(people, usages, searchRequest('"rastle kathy"'))).toEqual([])
   })
 })

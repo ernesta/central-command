@@ -1,9 +1,18 @@
 import { nextYearStart, yearLabel, yearsPresent } from '@shared/year'
 import type { Person } from '@shared/people'
-import { searchTerms, snippet, type SearchHit } from '@shared/search'
+import { snippet, type SearchHit } from '@shared/search'
+import { dayItem } from '@shared/search-dates'
+import {
+  dateFilterMatches,
+  passesFilters,
+  searchNeedles,
+  textMatches,
+  type SearchFilter,
+  type SearchRequest
+} from '@shared/search-query'
 import { fold, markdownToExcerpt } from '@shared/text'
-import { formatShortDate, todayIso } from '@shared/time'
-import { DEFAULT_TRAINING_QUERY, queryTraining } from '../shared/rules'
+import { formatShortDate } from '@shared/time'
+import { DEFAULT_TRAINING_QUERY, haystack, queryTraining } from '../shared/rules'
 import { planKey } from '../shared/plan'
 import type { TrainingIndexRow, TrainingWorkspace } from '../shared/types'
 import { lectureLabel } from '../shared/lecture-entries'
@@ -11,15 +20,33 @@ import { entryRoute, trainingPlanRoute } from './training-paths'
 
 const DEFAULT_LIMIT = 6
 
+/** Whether an entry passes one search filter, before negation. `with:` and `by:` are both the entry's leads. */
+function trainingMatches(row: TrainingIndexRow, filter: SearchFilter, today: string): boolean {
+  const value = filter.value
+  switch (filter.name) {
+    case 'with':
+    case 'by':
+      return row.leads.some((l) => fold(l) === value)
+    case 'skill':
+      return row.skills.some((s) => fold(s) === value)
+    case 'series':
+      return fold(row.series ?? '') === value
+    default:
+      return dateFilterMatches(filter, today, dayItem(row.date))
+  }
+}
+
 /** The training entries that match, newest first: the part of the notes that matched, else the date and series. */
 export function trainingHits(
   rows: readonly TrainingIndexRow[],
   people: readonly Person[],
-  query: string,
+  request: SearchRequest,
   limit = DEFAULT_LIMIT
 ): SearchHit[] {
-  const terms = searchTerms(query)
-  return queryTraining(rows, { ...DEFAULT_TRAINING_QUERY, search: query }, people)
+  const terms = searchNeedles(request)
+  return queryTraining(rows, { ...DEFAULT_TRAINING_QUERY, search: request.text }, people)
+    .filter((row) => textMatches(haystack(row, people), request))
+    .filter((row) => passesFilters(request.filters, (f) => trainingMatches(row, f, request.today)))
     .slice(0, limit)
     .map((row) => {
       const inTitle = terms.every((t) => fold(row.title).includes(t))
@@ -41,13 +68,14 @@ export interface PlanText {
 }
 
 /** The plans that match, as hits: the part of the plan that matched (there is nothing else to say about one). */
-export function planHits(plans: readonly PlanText[], query: string): SearchHit[] {
-  const terms = searchTerms(query)
+export function planHits(plans: readonly PlanText[], request: SearchRequest): SearchHit[] {
+  // A plan has none of the fields a filter looks at, so only a negated filter lets it through.
+  if (request.filters.some((f) => !f.negated)) return []
+  const terms = searchNeedles(request)
   return plans.flatMap(({ year, markdown }) => {
     const title = `Training plan ${yearLabel(year)}`
     const text = markdownToExcerpt(markdown, Number.MAX_SAFE_INTEGER)
-    const haystack = fold(`${title} ${text}`)
-    if (text === '' || !terms.every((t) => haystack.includes(t))) return []
+    if (text === '' || !textMatches(fold(`${title} ${text}`), request)) return []
     const inTitle = terms.every((t) => fold(title).includes(t))
     return [
       {
@@ -72,20 +100,20 @@ export function planYears(
 /** One workspace's training for the search. Only Research has plans. */
 export function searchTraining(
   workspace: TrainingWorkspace
-): (query: string, limit?: number) => Promise<SearchHit[]> {
-  return (query, limit = DEFAULT_LIMIT) =>
-    workspace === 'research' ? searchResearch(query, limit) : searchLife(query, limit)
+): (request: SearchRequest, limit?: number) => Promise<SearchHit[]> {
+  return (request, limit = DEFAULT_LIMIT) =>
+    workspace === 'research' ? searchResearch(request, limit) : searchLife(request, limit)
 }
 
-async function searchLife(query: string, limit: number): Promise<SearchHit[]> {
+async function searchLife(request: SearchRequest, limit: number): Promise<SearchHit[]> {
   const [rows, people] = await Promise.all([
     window.api.training.list('life'),
     window.api.meetings.people.list()
   ])
-  return trainingHits(rows, people, query, limit)
+  return trainingHits(rows, people, request, limit)
 }
 
-async function searchResearch(query: string, limit: number): Promise<SearchHit[]> {
+async function searchResearch(request: SearchRequest, limit: number): Promise<SearchHit[]> {
   const [rows, people, settings] = await Promise.all([
     window.api.training.list('research'),
     window.api.meetings.people.list(),
@@ -93,7 +121,7 @@ async function searchResearch(query: string, limit: number): Promise<SearchHit[]
   ])
   const years = planYears(
     rows.map((r) => r.date),
-    todayIso(),
+    request.today,
     settings.yearStarts
   )
   const plans = await Promise.all(
@@ -103,5 +131,8 @@ async function searchResearch(query: string, limit: number): Promise<SearchHit[]
     }))
   )
   // A plan comes first: there is at most one a year, and one that matches is probably what was wanted.
-  return [...planHits(plans, query), ...trainingHits(rows, people, query, limit)].slice(0, limit)
+  return [...planHits(plans, request), ...trainingHits(rows, people, request, limit)].slice(
+    0,
+    limit
+  )
 }

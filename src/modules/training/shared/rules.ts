@@ -178,7 +178,7 @@ export function compareNewestFirst(a: TrainingIndexRow, b: TrainingIndexRow): nu
   return a.id < b.id ? 1 : a.id > b.id ? -1 : 0
 }
 
-function haystack(row: TrainingIndexRow, people: readonly Person[]): string {
+export function haystack(row: TrainingIndexRow, people: readonly Person[]): string {
   return fold(
     [
       row.date,
