@@ -154,6 +154,16 @@ describe('searchEverywhere', () => {
     })
   })
 
+  it('is not a search for a modifier with no value, an unknown one or a value it does not take', async () => {
+    const search = vi.fn(async () => [hit('a1')])
+    for (const query of ['in:', 'person:', 'in:home']) {
+      const outcome = await run([{ ...source('notes'), search }], query)
+      expect(outcome).toMatchObject({ groups: [], searched: false })
+    }
+    expect(search).not.toHaveBeenCalled()
+    expect((await run(sources, 'x')).searched).toBe(true)
+  })
+
   it('returns the notices of a query that does searchable work too', async () => {
     const outcome = await run(sources, 'x foo:bar')
     expect(outcome.notices).toEqual(['Not a filter: foo:bar'])

@@ -1,5 +1,12 @@
 import { fold } from './text'
-import { MODIFIER_NAMES, modifierValues, quoteValue, type ModifierName } from './search-query'
+import {
+  MODIFIER_NAMES,
+  modifierValues,
+  quoteValue,
+  valueAccepted,
+  type ModifierName
+} from './search-query'
+import { todayIso } from './time'
 
 export interface CompletionOption {
   /** Shown. */
@@ -81,6 +88,31 @@ function wordStart(text: string, caret: number): number {
   return start
 }
 
+/**
+ * Whether what follows the colon already says it all, so no list should open over it: a quoted value with its closing quote, a
+ * value the modifier accepts as it stands (`in:meeting`, `status:done`, a date), or the exact name, initials or label of one of
+ * the user's own values. A partly typed value (`with:Ern`, `workspace:re`) is not.
+ */
+export function isFinishedValue(
+  modifier: ModifierName,
+  rawValue: string,
+  known: readonly CompletionOption[],
+  today = todayIso()
+): boolean {
+  if (/^".+"$/s.test(rawValue)) return true
+  const typed = fold(rawValue.replace(/^"/, '')).replace(/\s+/g, ' ').trim()
+  if (typed === '') return false
+  const listed = known.some((o) => fold(o.label) === typed || fold(o.hint ?? '') === typed)
+  if (listed) return true
+  return !rawValue.startsWith('"') && isFixedAccepted(modifier, typed, today)
+}
+
+/** A value the parser accepts on its own account: anything but a modifier that takes the user's own words (checked against data). */
+function isFixedAccepted(modifier: ModifierName, typed: string, today: string): boolean {
+  const own = ['with', 'by', 'list', 'tag', 'skill', 'series']
+  return !own.includes(modifier) && valueAccepted(modifier, typed, today)
+}
+
 function rank(options: readonly CompletionOption[], typed: string): CompletionOption[] {
   const wanted = fold(typed)
   const labels = (o: CompletionOption): string => fold(o.label)
@@ -127,7 +159,7 @@ export function completionAt(
     .map((o) => ({ ...o, insert: `${minus}${key}:${o.insert}` }))
   if (options.length === 0) return null
   // The word already says it all: no list left to open.
-  if (options.length === 1 && fold(options[0].label) === fold(typed) && typed !== '') return null
+  if (isFinishedValue(key, rawValue, known)) return null
   return { from, to, kind: 'value', modifier: key, options }
 }
 

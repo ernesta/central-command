@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { applyCompletion, completionAt, type Completion, type UserValues } from './search-complete'
+import {
+  applyCompletion,
+  completionAt,
+  isFinishedValue,
+  type Completion,
+  type UserValues
+} from './search-complete'
 
 const at = (text: string, user: UserValues = {}): Completion | null =>
   completionAt(text, text.length, user)
@@ -104,5 +110,64 @@ describe('applyCompletion', () => {
   it('puts the caret right after a modifier’s name', () => {
     const c = at('wor')!
     expect(applyCompletion('wor', c, c.options[0])).toEqual({ text: 'workspace:', caret: 10 })
+  })
+})
+
+describe('isFinishedValue', () => {
+  const people = [
+    { label: 'Ernesta Orlovaitė', insert: '"Ernesta Orlovaitė"', hint: 'EO' },
+    { label: 'Ernest Smith', insert: '"Ernest Smith"', hint: 'ES' }
+  ]
+  const done = (modifier: Parameters<typeof isFinishedValue>[0], raw: string): boolean =>
+    isFinishedValue(modifier, raw, modifier === 'with' ? people : [], '2026-10-19')
+
+  it('is finished for a quoted value with its closing quote', () => {
+    expect(done('with', '"Ernesta Orlovaitė"')).toBe(true)
+    expect(done('tag', '"a b"')).toBe(true)
+  })
+
+  it('is not finished while the quote is open or the value is a prefix being typed', () => {
+    expect(done('with', '"Ernesta')).toBe(false)
+    expect(done('with', 'Ern')).toBe(false)
+    expect(done('workspace', 're')).toBe(false)
+    expect(done('in', 'meet')).toBe(false)
+    expect(done('status', '')).toBe(false)
+  })
+
+  it('is finished for a value the modifier accepts as it stands, in any listed spelling', () => {
+    expect(done('in', 'meetings')).toBe(true)
+    expect(done('in', 'meeting')).toBe(true)
+    expect(done('workspace', 'Research')).toBe(true)
+    expect(done('status', 'done')).toBe(true)
+    expect(done('before', '2026-10-01')).toBe(true)
+    expect(done('before', 'today')).toBe(true)
+  })
+
+  it('is finished for the exact name or initials of one of the user\u2019s own values', () => {
+    expect(done('with', 'ernesta orlovaite')).toBe(true)
+    expect(done('with', 'EO')).toBe(true)
+  })
+
+  it('does not take a person for finished just because the parser accepts any text', () => {
+    expect(done('with', 'zzz')).toBe(false)
+  })
+})
+
+describe('completionAt: finished values', () => {
+  it('opens no list over a complete value', () => {
+    expect(at('in:meetings')).toBeNull()
+    expect(at('in:meeting')).toBeNull()
+    expect(at('workspace:work')).toBeNull()
+    const user: UserValues = {
+      with: [{ label: 'Ernesta Orlovaitė', insert: '"Ernesta Orlovaitė"', hint: 'EO' }]
+    }
+    expect(at('with:"Ernesta Orlovaitė"', user)).toBeNull()
+    expect(at('with:EO', user)).toBeNull()
+  })
+
+  it('still opens it while the value is empty or a prefix', () => {
+    expect(at('in:')).not.toBeNull()
+    expect(at('workspace:re')).not.toBeNull()
+    expect(at('with:Ern', { with: [{ label: 'Ernesta Orlovaitė', insert: 'x' }] })).not.toBeNull()
   })
 })

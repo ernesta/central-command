@@ -45,6 +45,7 @@ export function SearchResultsPage(): React.JSX.Element {
     query: '',
     groups: [],
     notices: [],
+    searched: false,
     impossible: false
   })
 
@@ -115,7 +116,7 @@ export function SearchResultsPage(): React.JSX.Element {
         )}
       </div>
       {answered && <SearchNotices notices={choices.completion ? [] : result.notices} />}
-      {answered && total === 0 && !result.impossible && query.trim() !== '' && (
+      {answered && result.searched && total === 0 && (
         <EmptyState heading="No results" message={`Nothing matches “${query.trim()}”.`} />
       )}
       <div className={styles.groups}>

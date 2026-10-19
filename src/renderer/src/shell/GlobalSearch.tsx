@@ -28,6 +28,7 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
     query: '',
     groups: [],
     notices: [],
+    searched: false,
     impossible: false
   })
   const [active, setActive] = useState(0)
@@ -184,7 +185,7 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
           </div>
         ))}
         {answered && <SearchNotices notices={choices.completion ? [] : result.notices} />}
-        {answered && hits.length === 0 && !result.impossible && (
+        {answered && result.searched && hits.length === 0 && (
           <p className={styles.empty}>No results.</p>
         )}
         {answered && capped && (

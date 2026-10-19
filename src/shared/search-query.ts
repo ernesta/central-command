@@ -120,6 +120,8 @@ export interface ParsedSearch {
   /** Quoted phrases, without the quotes. */
   phrases: string[]
   filters: SearchFilter[]
+  /** How many of the words are plain text: an unknown `name:value` is in `text` but is not something to search for. */
+  plainWords: number
   /** Short lines to show above the results. */
   notices: string[]
   /** Two different values of a single-valued modifier: nothing can match. */
@@ -133,7 +135,15 @@ export interface SearchRequest extends ParsedSearch {
 
 /** A request for plain words, for tests and callers that have no modifiers. */
 export function plainRequest(text: string): SearchRequest {
-  return { text, phrases: [], filters: [], notices: [], impossible: false, today: todayIso() }
+  return {
+    text,
+    phrases: [],
+    filters: [],
+    plainWords: text.split(/\s+/).filter(Boolean).length,
+    notices: [],
+    impossible: false,
+    today: todayIso()
+  }
 }
 
 /** A typed search as the request a source gets (`with:` and `by:` need the full name, since the people list is not read here). */
@@ -143,6 +153,13 @@ export function searchRequest(raw: string, today = todayIso()): SearchRequest {
 
 function isModifier(name: string): name is ModifierName {
   return (MODIFIER_NAMES as readonly string[]).includes(name)
+}
+
+/** Whether a folded value is one the modifier takes (for `in:` and `workspace:` the listed values, else any source's spec). */
+export function valueAccepted(name: ModifierName, folded: string, today: string): boolean {
+  if (name === 'in') return folded in IN_VALUES
+  if (name === 'workspace') return (WORKSPACE_VALUES as readonly string[]).includes(folded)
+  return Object.values(MODIFIERS[name].sources).some((spec) => specAccepts(spec, folded, today))
 }
 
 function specAccepts(spec: Spec, value: string, today: string): boolean {
@@ -193,6 +210,7 @@ export function parseSearch(raw: string, today = todayIso()): ParsedSearch {
   const phrases: string[] = []
   const filters: SearchFilter[] = []
   const notices: string[] = []
+  let unknown = 0
   for (const match of raw.matchAll(TOKEN)) {
     const [token, minus, rawName, quoted, bare, phrase, word] = match
     if (rawName !== undefined) {
@@ -202,19 +220,12 @@ export function parseSearch(raw: string, today = todayIso()): ParsedSearch {
         words.push(token)
       } else if (!isModifier(name)) {
         words.push(token)
+        unknown++
         notices.push(`Not a filter: ${token}`)
       } else if (value.trim() !== '') {
         const folded = fold(value).replace(/\s+/g, ' ').trim()
-        const ok = Object.values(MODIFIERS[name].sources).some((spec) =>
-          specAccepts(spec, folded, today)
-        )
-        const valid =
-          name === 'in'
-            ? folded in IN_VALUES
-            : name === 'workspace'
-              ? (WORKSPACE_VALUES as readonly string[]).includes(folded)
-              : ok
-        if (valid) filters.push({ name, value: folded, negated: minus === '-' })
+        if (valueAccepted(name, folded, today))
+          filters.push({ name, value: folded, negated: minus === '-' })
         else notices.push(`${name}: accepts ${acceptedValues(name)}`)
       }
     } else if (phrase !== undefined) {
@@ -237,14 +248,19 @@ export function parseSearch(raw: string, today = todayIso()): ParsedSearch {
     text: words.join(' '),
     phrases,
     filters,
+    plainWords: words.length - unknown,
     notices,
     impossible: repeated.length > 0
   }
 }
 
-/** Whether there is anything to search for (words, a phrase, or a filter): an empty field searches nothing. */
-export function hasSearch(parsed: ParsedSearch): boolean {
-  return parsed.text.trim() !== '' || parsed.phrases.length > 0 || parsed.filters.length > 0
+/**
+ * Whether the query is a search at all: it has plain words, a phrase, or a modifier with an accepted value. A modifier with no
+ * value yet (`in:`), an unknown one (`person:`) and a known one with a value it does not take (`in:home`) are not: they get their
+ * help or notice instead of "No results.".
+ */
+export function isSearch(parsed: ParsedSearch): boolean {
+  return parsed.plainWords > 0 || parsed.phrases.length > 0 || parsed.filters.length > 0
 }
 
 /** The person a `with:` or `by:` value names: a full name or initials, case and accents ignored. */

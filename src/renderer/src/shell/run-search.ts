@@ -1,6 +1,6 @@
 import type { Person } from '@shared/people'
 import {
-  hasSearch,
+  isSearch,
   parseSearch,
   planSources,
   resolvePeople,
@@ -21,6 +21,8 @@ export interface SearchGroup {
 export interface SearchOutcome {
   groups: SearchGroup[]
   notices: string[]
+  /** The query is a search (`isSearch`): only then does an empty answer mean "No results.". */
+  searched: boolean
   /** The modifiers rule everything out (two different `in:`s): the notice says so, so "No results." would only repeat it. */
   impossible: boolean
 }
@@ -67,8 +69,8 @@ export async function searchEverywhere(
   if (parsed.filters.some((f) => f.name === 'with' || f.name === 'by')) {
     parsed = resolvePeople(parsed, await people())
   }
-  if (parsed.impossible || !hasSearch(parsed)) {
-    return { groups: [], notices: parsed.notices, impossible: parsed.impossible }
+  if (parsed.impossible || !isSearch(parsed)) {
+    return { groups: [], notices: parsed.notices, searched: false, impossible: parsed.impossible }
   }
   const plan = planSources(parsed, modules, today)
     // The commands answer words only.
@@ -78,6 +80,7 @@ export async function searchEverywhere(
   return {
     groups: [...groups].sort((a, b) => groupRank(a.id) - groupRank(b.id)),
     notices: parsed.notices,
+    searched: true,
     impossible: false
   }
 }

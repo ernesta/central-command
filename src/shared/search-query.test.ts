@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Person } from './people'
 import {
-  hasSearch,
+  isSearch,
   type ParsedSearch,
   parseSearch,
   passesFilters,
@@ -118,13 +118,46 @@ describe('parseSearch', () => {
   })
 })
 
-describe('hasSearch', () => {
-  it('is false for an empty field and true for words, a phrase or a modifier', () => {
-    expect(hasSearch(parse('   '))).toBe(false)
-    expect(hasSearch(parse('x'))).toBe(true)
-    expect(hasSearch(parse('"x y"'))).toBe(true)
-    expect(hasSearch(parse('in:notes'))).toBe(true)
-    expect(hasSearch(parse('-in:notes'))).toBe(true)
+describe('isSearch', () => {
+  const searched = (raw: string): boolean => isSearch(parse(raw))
+
+  it('is false for an empty field and true for words, a phrase or a modifier with a value', () => {
+    expect(searched('   ')).toBe(false)
+    expect(searched('x')).toBe(true)
+    expect(searched('"x y"')).toBe(true)
+    expect(searched('in:notes')).toBe(true)
+    expect(searched('-in:notes')).toBe(true)
+  })
+
+  it('lists what modifiers alone match', () => {
+    expect(searched('in:meetings workspace:work')).toBe(true)
+    expect(searched('before:2026-01')).toBe(true)
+  })
+
+  it('is false for a modifier with no value yet', () => {
+    expect(searched('in:')).toBe(false)
+    expect(searched('before:')).toBe(false)
+    expect(searched('-tag:')).toBe(false)
+    expect(searched('in:"')).toBe(false)
+  })
+
+  it('is false for an unknown modifier on its own, and true once there are real words beside it', () => {
+    expect(searched('person:')).toBe(false)
+    expect(searched('person:kathy')).toBe(false)
+    expect(searched('person:kathy foo:bar')).toBe(false)
+    expect(searched('person:kathy rastle')).toBe(true)
+  })
+
+  it('is false for a value the modifier does not accept, true with other words', () => {
+    expect(searched('in:home')).toBe(false)
+    expect(searched('workspace:elsewhere')).toBe(false)
+    expect(searched('before:soon')).toBe(false)
+    expect(searched('in:home sample')).toBe(true)
+  })
+
+  it('treats an address or a time as text', () => {
+    expect(searched('https://example.org')).toBe(true)
+    expect(searched('10:30')).toBe(true)
   })
 })
 
