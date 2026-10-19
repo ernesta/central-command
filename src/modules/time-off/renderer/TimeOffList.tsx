@@ -4,7 +4,7 @@ import { Input } from '@renderer/components/Input'
 import { FieldError } from '@renderer/components/FieldError'
 import { Select } from '@renderer/components/Select'
 import { showToast } from '@renderer/components/toast-store'
-import { pushUndoWithToast } from '@renderer/components/undo-store'
+import { pushUndo, pushUndoWithToast } from '@renderer/components/undo-store'
 import { useNewRowKeys } from '@renderer/components/useNewRowKeys'
 import { formatDay } from '@shared/tracking/format'
 import { timeOffRows, type TimeOffRow } from '@shared/tracking/timeoff'
@@ -165,7 +165,21 @@ export function TimeOffList({
                     date,
                     type
                   )
-                  return result.ok ? null : (REFUSED[result.reason] ?? 'Couldn’t save that day.')
+                  if (!result.ok) return REFUSED[result.reason] ?? 'Couldn’t save that day.'
+                  pushUndo({
+                    label: 'change',
+                    undo: async () => {
+                      const back = await window.api.tracking.editTimeOff(
+                        workspace,
+                        data.start,
+                        date,
+                        row.date,
+                        row.type
+                      )
+                      if (!back.ok) showToast('Couldn’t put the day back.')
+                    }
+                  })
+                  return null
                 }}
                 onDelete={() => {
                   const { date, type } = row

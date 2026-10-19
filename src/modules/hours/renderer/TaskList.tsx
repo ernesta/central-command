@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Play, Square, Trash2 } from 'lucide-react'
 import { Select } from '@renderer/components/Select'
-import { pushUndoWithToast } from '@renderer/components/undo-store'
+import { pushUndo, pushUndoWithToast } from '@renderer/components/undo-store'
 import { useNewRowKeys } from '@renderer/components/useNewRowKeys'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { formatHours } from '@shared/tracking/format'
@@ -62,7 +62,11 @@ export function TaskList({
   // Reported time is whole quarter hours, so a typed 0:07 becomes 0:00 and 0:08 becomes 0:15.
   const commit = (row: TaskRow): void => {
     const typed = Math.round(draft / QUARTER) * QUARTER
-    if (typed !== row.minutes) onSetMinutes(row.label, typed, row.client)
+    if (typed !== row.minutes) {
+      const { label, client, minutes, task } = row
+      onSetMinutes(label, typed, client)
+      pushUndo({ label: 'time change', undo: () => onSetMinutes(label, minutes, client, task) })
+    }
     setEditing(null)
   }
   const commitName = (row: TaskRow): void => {
