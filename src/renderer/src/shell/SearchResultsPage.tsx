@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import type { SearchHit } from '@shared/search'
 import { EmptyState } from '../components/EmptyState'
 import { SearchInput } from '../components/SearchInput'
+import { CompletionList } from './CompletionList'
 import { searchEverywhere, type SearchOutcome } from './run-search'
 import { useSearchSources } from './search-sources'
 import { SearchNotices } from './SearchNotices'
+import { useSearchCompletion } from './useSearchCompletion'
 import styles from './SearchResultsPage.module.css'
 
 const RESULTS_LIMIT = 40
@@ -47,6 +49,15 @@ export function SearchResultsPage(): React.JSX.Element {
   })
 
   const sources = useSearchSources()
+  const inputRef = useRef<HTMLInputElement>(null)
+  const choices = useSearchCompletion(
+    query,
+    (value) => {
+      setQuery(value)
+      setParams(value ? { q: value } : {}, { replace: true })
+    },
+    inputRef
+  )
 
   // Search a moment after typing stops; an answer for words that have since changed is dropped.
   useEffect(() => {
@@ -71,15 +82,38 @@ export function SearchResultsPage(): React.JSX.Element {
   return (
     <div className={styles.page}>
       <h1 className={styles.heading}>Search</h1>
-      <SearchInput
-        label="Search"
-        value={query}
-        autoFocus
-        onChange={(value) => {
-          setQuery(value)
-          setParams(value ? { q: value } : {}, { replace: true })
-        }}
-      />
+      <div className={styles.field}>
+        <SearchInput
+          label="Search"
+          value={query}
+          autoFocus
+          ref={inputRef}
+          onChange={(value) => {
+            setQuery(value)
+            setParams(value ? { q: value } : {}, { replace: true })
+          }}
+          onSelect={(event) => choices.track(event.currentTarget.selectionStart)}
+          onKeyUp={(event) => choices.track(event.currentTarget.selectionStart)}
+          onKeyDown={choices.onKeyDown}
+          role="combobox"
+          aria-expanded={choices.completion !== null}
+          aria-controls={choices.completion ? 'search-page-filters' : undefined}
+          aria-activedescendant={
+            choices.completion && choices.active >= 0
+              ? `search-page-filters-${choices.active}`
+              : undefined
+          }
+        />
+        {choices.completion && (
+          <CompletionList
+            id="search-page-filters"
+            completion={choices.completion}
+            active={choices.active}
+            onPick={choices.accept}
+            floating
+          />
+        )}
+      </div>
       {answered && <SearchNotices notices={result.notices} />}
       {answered && total === 0 && !result.impossible && query.trim() !== '' && (
         <EmptyState heading="No results" message={`Nothing matches “${query.trim()}”.`} />

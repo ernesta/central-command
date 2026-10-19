@@ -140,7 +140,12 @@ export const GENERAL_SHORTCUTS: ShortcutGroup = {
     {
       action: 'Search everything',
       keys: [SEARCH_SHORTCUT],
-      note: 'Notes, meetings, training and readings.'
+      note: 'Tasks, notes, meetings, training, readings and people. Filters such as in:tasks or status:done narrow it.'
+    },
+    {
+      action: 'Complete a search filter',
+      keys: ['Tab'],
+      note: 'Type two letters of a filter, or a filter and a colon, to see the choices. The arrow keys pick one, Enter or Tab inserts it, Escape closes the list.'
     },
     { action: 'Close the Ask panel, a menu or a pop-up', keys: ['Escape'] }
   ]

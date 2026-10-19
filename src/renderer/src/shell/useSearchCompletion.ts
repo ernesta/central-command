@@ -1,0 +1,104 @@
+import { useEffect, useMemo, useState, type KeyboardEvent, type RefObject } from 'react'
+import {
+  applyCompletion,
+  completionAt,
+  type Completion,
+  type CompletionOption,
+  type UserValues
+} from '@shared/search-complete'
+import { loadUserValues } from './search-values'
+
+export interface SearchCompletion {
+  /** What could finish the word at the caret; null when nothing is offered (or the list was closed with Escape). */
+  completion: Completion | null
+  /** The highlighted option, or -1. */
+  active: number
+  /** Tell the hook where the caret is after the field changes or the caret moves. */
+  track: (caret: number | null) => void
+  /** Insert an option in place of the word. */
+  accept: (option: CompletionOption) => void
+  /** Call first in the field's key handler; true when the key was used. */
+  onKeyDown: (event: KeyboardEvent) => boolean
+}
+
+/**
+ * The completion list behind a search field: names of modifiers, then the values that exist (`docs/SEARCH_MODIFIERS_PLAN.md`,
+ * stage 5). Arrow keys move through the options, Tab or Enter inserts the highlighted one (Tab the first when none is), and
+ * Escape closes the list until the word changes. A list of names highlights nothing at first, so Enter still opens a result
+ * for a plain word that only looks like the start of a modifier ("with").
+ */
+export function useSearchCompletion(
+  query: string,
+  setQuery: (query: string) => void,
+  inputRef: RefObject<HTMLInputElement | null>
+): SearchCompletion {
+  const [values, setValues] = useState<UserValues>({})
+  const [caret, setCaret] = useState(0)
+  const [closed, setClosed] = useState<string | null>(null)
+  const [pick, setPick] = useState<{ key: string | null; index: number }>({ key: null, index: -1 })
+
+  useEffect(() => {
+    let cancelled = false
+    void loadUserValues().then((loaded) => {
+      if (!cancelled) setValues(loaded)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const found = useMemo(
+    () => completionAt(query, Math.min(caret, query.length), values),
+    [query, caret, values]
+  )
+  const key = found ? `${found.from}:${query.slice(found.from, found.to)}` : null
+  const completion = found && key !== closed ? found : null
+  const count = completion?.options.length ?? 0
+  const active =
+    completion === null
+      ? -1
+      : pick.key === key
+        ? Math.min(pick.index, count - 1)
+        : completion.kind === 'value'
+          ? 0
+          : -1
+
+  const accept = (option: CompletionOption): void => {
+    if (!completion) return
+    const next = applyCompletion(query, completion, option)
+    setQuery(next.text)
+    setCaret(next.caret)
+    // The field has the new text once React has rendered it.
+    setTimeout(() => inputRef.current?.setSelectionRange(next.caret, next.caret), 0)
+  }
+
+  const onKeyDown = (event: KeyboardEvent): boolean => {
+    if (!completion) return false
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault()
+      const step = event.key === 'ArrowDown' ? 1 : -1
+      const from = active < 0 ? (step === 1 ? -1 : 0) : active
+      setPick({ key, index: (from + step + count) % count })
+      return true
+    }
+    if (event.key === 'Tab' && !event.shiftKey) {
+      event.preventDefault()
+      accept(completion.options[Math.max(active, 0)])
+      return true
+    }
+    if (event.key === 'Enter' && active >= 0) {
+      event.preventDefault()
+      accept(completion.options[active])
+      return true
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      event.stopPropagation()
+      setClosed(key)
+      return true
+    }
+    return false
+  }
+
+  return { completion, active, track: (c) => setCaret(c ?? query.length), accept, onKeyDown }
+}

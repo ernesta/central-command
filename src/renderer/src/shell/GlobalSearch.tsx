@@ -3,9 +3,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router'
 import type { SearchHit } from '@shared/search'
+import { CompletionList } from './CompletionList'
 import { searchEverywhere, type SearchOutcome } from './run-search'
 import { useSearchSources } from './search-sources'
 import { SearchNotices } from './SearchNotices'
+import { useSearchCompletion } from './useSearchCompletion'
 import styles from './GlobalSearch.module.css'
 
 const DELAY_MS = 120
@@ -20,6 +22,7 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
   const navigate = useNavigate()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState('')
   const [result, setResult] = useState<{ query: string } & SearchOutcome>({
     query: '',
@@ -30,6 +33,7 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
   const [active, setActive] = useState(0)
 
   const sources = useSearchSources()
+  const choices = useSearchCompletion(query, setQuery, inputRef)
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -86,6 +90,7 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
   }
 
   const onKeyDown = (event: React.KeyboardEvent): void => {
+    if (choices.onKeyDown(event)) return
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault()
       if (hits.length === 0) return
@@ -122,13 +127,34 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
           aria-label="Search"
           role="combobox"
           aria-expanded={hits.length > 0}
-          aria-controls="global-search-results"
-          aria-activedescendant={hits.length > 0 ? `global-search-${activeIndex}` : undefined}
+          aria-controls={choices.completion ? 'global-search-filters' : 'global-search-results'}
+          aria-activedescendant={
+            choices.completion
+              ? choices.active >= 0
+                ? `global-search-filters-${choices.active}`
+                : undefined
+              : hits.length > 0
+                ? `global-search-${activeIndex}`
+                : undefined
+          }
+          ref={inputRef}
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => {
+            setQuery(event.target.value)
+            choices.track(event.target.selectionStart)
+          }}
+          onSelect={(event) => choices.track(event.currentTarget.selectionStart)}
           onKeyDown={onKeyDown}
         />
       </div>
+      {choices.completion && (
+        <CompletionList
+          id="global-search-filters"
+          completion={choices.completion}
+          active={choices.active}
+          onPick={choices.accept}
+        />
+      )}
       <div className={styles.results} id="global-search-results" role="listbox" ref={listRef}>
         {groups.map((group, groupIndex) => (
           <div key={group.label} role="group" aria-label={group.label}>
