@@ -1,4 +1,5 @@
 import { TriangleAlert } from 'lucide-react'
+import { formatClock } from '@shared/locale-names'
 import { durationMinutes } from '../shared/time'
 import type { DerivedKind } from '@shared/tracking/types'
 import type { HoursWorkspace } from '../../hours/shared/workspaces'
@@ -46,7 +47,7 @@ export function MeetingHoursNote({
     const names = clashes
       .map(
         (c) =>
-          `${c.label || 'Untitled'} ${c.start.slice(0, 5)}–${c.end ? c.end.slice(0, 5) : 'now'}`
+          `${c.label || 'Untitled'} ${formatClock(c.start)}–${c.end ? formatClock(c.end) : 'now'}`
       )
       .join(', ')
     return (
