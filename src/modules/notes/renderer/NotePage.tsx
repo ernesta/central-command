@@ -2,11 +2,11 @@ import { Pin } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
-import { DeleteDialog } from '@renderer/components/DeleteDialog'
 import { isUntouchedBody } from '@renderer/components/untouched'
 import { NEW_NOTE_BODY } from '../shared/front-matter'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
+import { pushUndoWithToast } from '@renderer/components/undo-store'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { DocSplit } from '@renderer/notes/DocSplit'
@@ -76,7 +76,6 @@ function NoteView({
   const location = useLocation()
   const { session, snapshot } = useNoteSession(noteRef, onRenamed)
   const rows = useNotesList(noteRef.workspace)
-  const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const titleRef = useRef<HTMLInputElement>(null)
@@ -117,17 +116,23 @@ function NoteView({
   // A page nothing was typed into goes without asking.
   const untouched = !meta.title && !meta.pinned && isUntouchedBody(body, NEW_NOTE_BODY)
 
-  const confirmAndDelete = async (): Promise<void> => {
+  const removeNote = async (): Promise<void> => {
     setDeleting(true)
     setDeleteError(null)
     try {
       await session.dispose() // saves anything pending first
-      await window.api.notes.delete(session.getRef())
+      const ref = session.getRef()
+      const content = await window.api.notes.delete(ref)
+      if (!untouched) {
+        pushUndoWithToast(`Deleted “${heading}”.`, {
+          label: 'deletion',
+          undo: () => window.api.notes.restore(ref, content)
+        })
+      }
       void navigate(notesBase(noteRef.workspace), { replace: true })
     } catch (e) {
       setDeleteError(ipcErrorMessage(e))
       setDeleting(false)
-      setConfirmDelete(false)
       void session.start()
     }
   }
@@ -194,7 +199,8 @@ function NoteView({
           <Button
             size="small"
             variant="danger-outline"
-            onClick={() => (untouched ? void confirmAndDelete() : setConfirmDelete(true))}
+            disabled={deleting}
+            onClick={() => void removeNote()}
           >
             Delete note
           </Button>
@@ -276,16 +282,6 @@ function NoteView({
           />
         </EditorCard>
       </DocSplit>
-
-      <DeleteDialog
-        open={confirmDelete}
-        heading={heading}
-        noun="note"
-        contents="text"
-        busy={deleting}
-        onCancel={() => setConfirmDelete(false)}
-        onConfirm={() => void confirmAndDelete()}
-      />
     </div>
   )
 }
