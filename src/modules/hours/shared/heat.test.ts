@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { emptyYear } from '@shared/tracking/types'
-import { heatDays, heatLevel, heatWindow, monthColumns } from './heat'
+import { heatDays, heatGrid, heatLevel, heatWindow, monthColumns } from './heat'
 
 const START = '2026-09-21'
 const NOW = { date: '2026-09-25', time: '12:00:00' }
@@ -103,5 +103,35 @@ describe('heatDays with no aim', () => {
     expect(level('2026-09-24')).toBe(2)
     expect(level('2026-09-23')).toBe(1)
     expect(level('2026-09-25')).toBe(0)
+  })
+})
+
+describe('heatGrid', () => {
+  const friday = emptyYear('2026-09-25') // a Friday, 52 weeks
+  const days = heatDays(friday, NOW)
+
+  it('starts its weeks on the day asked for, with empty cells before the first day', () => {
+    const grid = heatGrid(friday, days, 1)
+    // Friday is the fifth day of a Monday week: four empty cells, then the year.
+    expect(grid.slice(0, 4)).toEqual([null, null, null, null])
+    expect(grid[4]?.date).toBe('2026-09-25')
+    expect(grid[7]?.date).toBe('2026-09-28') // a Monday: row 0 of the second column
+  })
+  it('is whole weeks, empty after the last day', () => {
+    const grid = heatGrid(friday, days, 1)
+    expect(grid.length % 7).toBe(0)
+    expect(grid.length).toBe(53 * 7)
+    expect(grid.at(-1)).toBeNull()
+  })
+  it('has no empty cells when the year starts on the first day', () => {
+    const monday = emptyYear(START)
+    const grid = heatGrid(monday, heatDays(monday, NOW), 1)
+    expect(grid[0]?.date).toBe(START)
+    expect(grid.every((d) => d !== null)).toBe(true)
+  })
+  it('keeps month labels on the right columns when the grid starts early', () => {
+    const lead = 4
+    // Column 1 is Mon 28 Sep to Sun 4 Oct, whose Thursday is 1 Oct; September's single column is too short to label.
+    expect(monthColumns(friday, 0, 53, lead)[0]).toEqual({ column: 1, month: 9 })
   })
 })

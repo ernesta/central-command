@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useElementWidth } from '@renderer/state/use-element-width'
+import { firstWeekday, monthName, weekdayName } from '@shared/locale-names'
 import { formatDay, formatHours } from '@shared/tracking/format'
 import { TIME_OFF_TYPES, type Moment, type TrackingYear } from '@shared/tracking/types'
-import { addDays, weekdayOf, YEAR_WEEKS } from '@shared/year'
-import { heatDays, heatWindow, monthColumns } from '../shared/heat'
+import { addDays, daysBetween, weekdayOf } from '@shared/year'
+import { heatDays, heatGrid, heatWindow, monthColumns } from '../shared/heat'
 import { CHART_HEIGHT } from './charts-size'
 import { weekRoute } from './hours-paths'
 import styles from './YearHeatMap.module.css'
@@ -13,8 +14,6 @@ const PAD = { top: 20, left: 32, right: 4, bottom: 4 }
 const MAX_STEP = 26
 const GAP = 3
 const HEIGHT = CHART_HEIGHT
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 /** Below this cell size a day number no longer fits. */
 const MIN_LABEL_CELL = 15
 /** Today's mark: a small triangle in the cell's top-right corner, following the cell's rounded corner. */
@@ -26,7 +25,7 @@ function notch(x: number, y: number, cell: number): string {
 const OFF_LABELS = Object.fromEntries(TIME_OFF_TYPES.map((t) => [t.id, t.label]))
 
 /**
- * The year as a calendar grid: a column a week, a row a weekday, shaded by how much of the day's aim was done; days off are outlined.
+ * The year as a calendar grid: a column a week (weeks start on the Mac's first weekday, whatever day the contract starts on), a row a weekday, shaded by how much of the day's aim was done; days off are outlined.
  * A day opens its week. The cells are square and as large as the plot is tall, so as many weeks as fit across are drawn, ending with
  * the week that holds today (`heatWindow`): the grid slides with the date.
  */
@@ -42,9 +41,13 @@ export function YearHeatMap({
   const navigate = useNavigate()
   const { ref, width } = useElementWidth()
   const [active, setActive] = useState<number | null>(null)
+  const firstDayOfWeek = firstWeekday()
   const days = heatDays(data, now)
-  const totalWeeks = data.weeks ?? YEAR_WEEKS
-  const lastBegun = days.filter((d) => !d.future).length - 1
+  const grid = heatGrid(data, days, firstDayOfWeek)
+  const lead = (weekdayOf(data.start) - firstDayOfWeek + 7) % 7
+  const totalWeeks = grid.length / 7
+  const lastBegun = days.filter((d) => !d.future).length - 1 + lead
+  const lastCell = lead + days.length - 1
 
   // Cells are square, as large as the plot's seven rows allow; the weeks that fit across the width are the ones shown.
   const step = Math.min(MAX_STEP, (HEIGHT - PAD.top - PAD.bottom) / 7)
@@ -53,7 +56,7 @@ export function YearHeatMap({
     Math.floor(Math.max(lastBegun, 0) / 7),
     (width - PAD.left - PAD.right) / step
   )
-  const months = monthColumns(data, first, count)
+  const months = monthColumns(data, first, count, lead)
   const stepY = step
   const cell = step - GAP
   const cellH = cell
@@ -62,15 +65,19 @@ export function YearHeatMap({
   const lastDay = (first + count) * 7 - 1
   const cx = (i: number): number => PAD.left + (Math.floor(i / 7) - first) * step
   const cy = (i: number): number => PAD.top + (i % 7) * stepY
-  const open = (i: number): void =>
-    void navigate(weekRoute(workspace, data.start, addDays(data.start, Math.floor(i / 7) * 7)))
-
-  const move = (delta: number): void => {
-    const at = active === null ? Math.max(lastBegun, 0) : active + delta
-    setActive(Math.max(firstDay, Math.min(lastDay, at)))
+  const open = (i: number): void => {
+    const day = grid[i]
+    if (!day) return
+    const weekStart = addDays(data.start, Math.floor(daysBetween(data.start, day.date) / 7) * 7)
+    void navigate(weekRoute(workspace, data.start, weekStart))
   }
 
-  const tip = active === null ? null : days[active]
+  const move = (delta: number): void => {
+    const at = active === null ? Math.max(lastBegun, lead) : active + delta
+    setActive(Math.max(firstDay, lead, Math.min(lastDay, lastCell, at)))
+  }
+
+  const tip = active === null ? null : grid[active]
   const tipLeft = active === null ? 0 : Math.min(Math.max(cx(active) + cell / 2, 90), width - 90)
 
   return (
@@ -114,10 +121,10 @@ export function YearHeatMap({
           <svg width={width} height={HEIGHT} aria-hidden>
             {months.map((m) => (
               <text key={m.column} className={styles.axis} x={PAD.left + m.column * step} y={12}>
-                {MONTHS[m.month]}
+                {monthName(m.month + 1)}
               </text>
             ))}
-            {DAY_NAMES.map((_, row) => (
+            {[0, 1, 2, 3, 4, 5, 6].map((row) => (
               <text
                 key={row}
                 className={styles.axis}
@@ -125,11 +132,12 @@ export function YearHeatMap({
                 y={PAD.top + row * stepY + cellH / 2 + 4}
                 textAnchor="end"
               >
-                {DAY_NAMES[(weekdayOf(data.start) - 1 + row) % 7]}
+                {weekdayName(((firstDayOfWeek - 1 + row) % 7) + 1)}
               </text>
             ))}
-            {days.slice(firstDay, lastDay + 1).map((d, local) => {
+            {grid.slice(firstDay, lastDay + 1).map((d, local) => {
               const i = firstDay + local
+              if (!d) return null
               return (
                 <g key={d.date} onPointerEnter={() => setActive(i)} onClick={() => open(i)}>
                   <rect

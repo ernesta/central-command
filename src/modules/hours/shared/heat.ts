@@ -1,7 +1,7 @@
 import { dailyAim, hasAim } from '@shared/tracking/plan'
 import { minutesByDate } from '@shared/tracking/totals'
 import type { Moment, TimeOffType, TrackingYear } from '@shared/tracking/types'
-import { addDays, YEAR_WEEKS } from '@shared/year'
+import { addDays, weekdayOf, YEAR_WEEKS } from '@shared/year'
 
 export interface HeatDay {
   date: string
@@ -50,6 +50,22 @@ export function heatDays(year: TrackingYear, now: Moment): HeatDay[] {
 }
 
 /**
+ * The days as a calendar grid whose weeks start on `firstDay` (1 Monday to 7 Sunday), whatever day the year starts on: empty
+ * cells (null) fill the first week before the year's first day and the last week after its last, and the grid is a whole
+ * number of weeks. Cell `i` is in column `floor(i / 7)` and row `i % 7`.
+ */
+export function heatGrid(
+  year: TrackingYear,
+  days: readonly HeatDay[],
+  firstDay: number
+): (HeatDay | null)[] {
+  const lead = (weekdayOf(year.start) - firstDay + 7) % 7
+  const grid: (HeatDay | null)[] = [...Array<null>(lead).fill(null), ...days]
+  while (grid.length % 7 !== 0) grid.push(null)
+  return grid
+}
+
+/**
  * The weeks of the year to draw when only `capacity` fit across: as many as fit, ending with the week that holds `todayWeek`, so the
  * window slides with the date and shows as much of the past as there is room for. Early in the year, before there are that many
  * weeks behind today, it starts at the first week and runs on into the weeks to come to fill the width; it never runs past the
@@ -68,17 +84,18 @@ export function heatWindow(
 /**
  * The first column (week) each month starts in, for the labels above the grid: `[{ column: 0, month: 8 }, …]`. With `first` and
  * `count` only that window of weeks is labelled, and `column` counts from its first week (which is always labelled, even when its
- * month began before it).
+ * month began before it). `lead` is the empty cells `heatGrid` puts before the year's first day.
  */
 export function monthColumns(
   year: TrackingYear,
   first = 0,
-  count = (year.weeks ?? YEAR_WEEKS) - first
+  count = (year.weeks ?? YEAR_WEEKS) - first,
+  lead = 0
 ): { column: number; month: number }[] {
   const out: { column: number; month: number }[] = []
   for (let column = 0; column < count; column++) {
     // A week belongs to the month its Thursday is in, so a label never sits on a week that is mostly the month before.
-    const month = Number(addDays(year.start, (first + column) * 7 + 3).slice(5, 7)) - 1
+    const month = Number(addDays(year.start, (first + column) * 7 + 3 - lead).slice(5, 7)) - 1
     if (out.length === 0 || out[out.length - 1].month !== month) out.push({ column, month })
   }
   // A month that lasts under three columns before the next begins is left unlabelled, or its name would sit on the next one's.
