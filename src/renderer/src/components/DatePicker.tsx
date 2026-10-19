@@ -1,24 +1,9 @@
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { localeDate, weekdayName } from '@shared/locale-names'
 import { formatDate, formatShortDate } from '@shared/time'
 import { monthGrid, monthOf, popoverPlace, shiftMonth } from './calendar'
 import styles from './DatePicker.module.css'
-
-const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-const MONTH_NAMES = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December'
-]
 
 /**
  * A date as a button that opens a calendar: one click on a day sets it and closes, with Today and No date in the
@@ -142,7 +127,7 @@ export function DatePicker({
               <ChevronLeft size={16} strokeWidth={1.75} aria-hidden />
             </button>
             <span className={styles.month} aria-live="polite">
-              {MONTH_NAMES[Number(month.slice(5, 7)) - 1]} {month.slice(0, 4)}
+              {localeDate(`${month}-01`, { month: 'long', year: 'numeric' })}
             </span>
             <button
               type="button"
@@ -154,9 +139,9 @@ export function DatePicker({
             </button>
           </div>
           <div className={styles.grid}>
-            {WEEKDAYS.map((d, i) => (
-              <span key={i} className={styles.weekday} aria-hidden>
-                {d}
+            {[1, 2, 3, 4, 5, 6, 7].map((d) => (
+              <span key={d} className={styles.weekday} aria-hidden>
+                {weekdayName(d, 'narrow')}
               </span>
             ))}
             {monthGrid(month).map((day) => (
