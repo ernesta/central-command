@@ -70,6 +70,7 @@ export async function makeSelfStudyTask(
     title: plan.title,
     status: 'doing',
     ownKind: 'self-study',
+    ...(plan.due ? { due: plan.due } : {}),
     ...(plan.parent
       ? { parentUid: await parentUid(api, plan.parent, made) }
       : { list: TRAINING_LIST })
@@ -89,6 +90,7 @@ export async function syncSelfStudyTask(
   const left = tasks.find((t) => t.uid === plan.uid)?.parentUid ?? null
   await api.update(plan.uid, {
     ...(plan.title !== undefined ? { title: plan.title } : {}),
+    ...(plan.due !== undefined ? { due: plan.due } : {}),
     ...(plan.parent
       ? { parentUid: await parentUid(api, plan.parent, made) }
       : plan.parent === null

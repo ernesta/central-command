@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { sessionOver, sessionTaskChanges } from './session-task'
+import {
+  END_OF_DAY,
+  SELF_STUDY_DONE_AFTER_DAYS,
+  selfStudyDoneAt,
+  selfStudyTaskChanges,
+  sessionOver,
+  sessionTaskChanges
+} from './session-task'
 import type { Task } from './types'
 
 const task = (over: Partial<Task> = {}): Task =>
@@ -51,5 +58,47 @@ describe('sessionTaskChanges', () => {
     expect(sessionTaskChanges(task(), { date: '', end: null }, at('2026-10-17', '09:00'))).toEqual(
       {}
     )
+  })
+})
+
+describe('selfStudyDoneAt', () => {
+  it('is a week after the date, at the end time, or at the end of the day', () => {
+    expect(SELF_STUDY_DONE_AFTER_DAYS).toBe(7)
+    expect(selfStudyDoneAt({ date: '2026-10-10', end: '11:00' })).toEqual(at('2026-10-17', '11:00'))
+    expect(selfStudyDoneAt({ date: '2026-10-10', end: null })).toEqual(at('2026-10-17', END_OF_DAY))
+    expect(selfStudyDoneAt({ date: '2026-12-28', end: '09:30' })).toEqual(at('2027-01-04', '09:30'))
+    expect(selfStudyDoneAt({ date: '', end: '09:30' })).toBeNull()
+  })
+})
+
+describe('selfStudyTaskChanges', () => {
+  const session = { date: '2026-10-10', end: '11:00' }
+  it('is due on the date and open until a week has passed since the end, to the minute', () => {
+    expect(selfStudyTaskChanges(task(), session, at('2026-10-17', '10:59'))).toEqual({
+      due: '2026-10-10'
+    })
+    expect(selfStudyTaskChanges(task(), session, at('2026-10-17', '11:00'))).toEqual({
+      due: '2026-10-10',
+      done: true
+    })
+    expect(selfStudyTaskChanges(task(), session, at('2026-10-16', '23:59'))).toEqual({
+      due: '2026-10-10'
+    })
+    expect(selfStudyTaskChanges(task(), session, at('2026-10-18', '00:00'))).toEqual({
+      due: '2026-10-10',
+      done: true
+    })
+  })
+  it('does nothing to a task already dated and done, and nothing without a date', () => {
+    expect(
+      selfStudyTaskChanges(
+        task({ status: 'done', due: '2026-10-10' }),
+        session,
+        at('2026-11-01', '00:00')
+      )
+    ).toEqual({})
+    expect(
+      selfStudyTaskChanges(task(), { date: '', end: null }, at('2026-11-01', '00:00'))
+    ).toEqual({})
   })
 })

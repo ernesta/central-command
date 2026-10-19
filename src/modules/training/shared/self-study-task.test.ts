@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Task } from '../../tasks/shared/types'
 import {
+  isSelfStudyOwn,
   planSelfStudyTask,
   type SelfStudyNote,
   selfStudyParentFor,
@@ -196,5 +197,52 @@ describe('planSelfStudyTask', () => {
 
   it('the title helper trims', () => {
     expect(selfStudyTitle('  PS5210 ')).toBe('PS5210 self-study')
+  })
+})
+
+describe('the self-study task follows the note’s date', () => {
+  it('a new task is made due on the date; one with no date is made with none', () => {
+    expect(planSelfStudyTask(note({ selfStudy: '', date: '2026-10-21' }), [], true)).toMatchObject({
+      kind: 'create',
+      due: '2026-10-21'
+    })
+    expect(planSelfStudyTask(note({ selfStudy: '' }), [], true)).not.toHaveProperty('due')
+  })
+  it('an existing task is dated, redated when the date moves, and left when it is in step or the note has no date', () => {
+    const mineDue = (due: string | null): Task => ({ ...mine, due })
+    expect(planSelfStudyTask(note({ date: '2026-10-21' }), [seriesTask, mineDue(null)])).toEqual({
+      kind: 'sync',
+      uid: 's1',
+      due: '2026-10-21'
+    })
+    expect(
+      planSelfStudyTask(note({ date: '2026-10-22' }), [seriesTask, mineDue('2026-10-21')])
+    ).toEqual({
+      kind: 'sync',
+      uid: 's1',
+      due: '2026-10-22'
+    })
+    expect(
+      planSelfStudyTask(note({ date: '2026-10-21' }), [seriesTask, mineDue('2026-10-21')])
+    ).toEqual({
+      kind: 'none'
+    })
+    expect(planSelfStudyTask(note(), [seriesTask, mineDue('2026-10-21')])).toEqual({ kind: 'none' })
+  })
+})
+
+describe('isSelfStudyOwn', () => {
+  it('is a subtask under a self-study series task, or a top-level Training task with nothing under it', () => {
+    expect(isSelfStudyOwn(mine, [seriesTask, mine])).toBe(true)
+    const alone = task('a', 'Plotly self-study')
+    expect(isSelfStudyOwn(alone, [alone])).toBe(true)
+  })
+  it('is not a task the user chose: another list, a subtask elsewhere, or a series task', () => {
+    const elsewhere = task('w', 'Writing', { list: 'Writing' })
+    const under = task('u', 'Something', { list: '', parentUid: 'w' })
+    expect(isSelfStudyOwn(elsewhere, [elsewhere, under])).toBe(false)
+    expect(isSelfStudyOwn(under, [elsewhere, under])).toBe(false)
+    expect(isSelfStudyOwn(seriesTask, [seriesTask, mine])).toBe(false)
+    expect(isSelfStudyOwn({ ...under, ownKind: 'self-study' }, [elsewhere, under])).toBe(true)
   })
 })

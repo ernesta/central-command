@@ -26,7 +26,11 @@ import { planYearFromFileName } from '../shared/plan'
 import { openablePath, relativeToRoot, resolveInside } from './files'
 import { FolderMemory, listLinkedFolder } from './folder-memory'
 import { trainingMigrations } from './migrations'
+import { settleSelfStudyTasks } from './self-study-sweep'
 import { TrainingStore } from './training-store'
+import { broadcastTasksChanged } from '../../tasks/main/broadcast'
+import { localMoment } from '../../tasks/main/session-sweep'
+import { TasksStore } from '../../tasks/main/tasks-store'
 
 /** Workspaces whose training folder is created and watched. */
 const ACTIVE_WORKSPACES: readonly TrainingWorkspace[] = ['life', 'research']
@@ -194,14 +198,41 @@ function register({ db, paths, settings }: MainContext): () => void {
         }
       })
   )
+  // Every Research entry with a title and a date has its self-study task: made here so it exists whether or not the note is opened.
+  const tasks = new TasksStore(db)
+  let settling = false
+  const settleSelfStudy = async (): Promise<void> => {
+    if (settling) return
+    settling = true
+    try {
+      const changed = await settleSelfStudyTasks({
+        db,
+        tasks,
+        training: store,
+        now: localMoment(),
+        nowMs: Date.now()
+      })
+      if (changed) broadcastTasksChanged('research')
+    } catch (error) {
+      console.error('Could not settle the self-study tasks:', error)
+    } finally {
+      settling = false
+    }
+  }
+  let sweep: ReturnType<typeof setInterval> | null = null
   void Promise.all(
     ACTIVE_WORKSPACES.map(async (workspace) => {
       await mkdir(dirFor(workspace), { recursive: true })
       await store.reindexAll(workspace)
     })
-  ).then(() => watchers.forEach((w) => w.start()))
+  ).then(() => {
+    watchers.forEach((w) => w.start())
+    void settleSelfStudy()
+    sweep = setInterval(() => void settleSelfStudy(), 60_000)
+  })
 
   return () => {
+    if (sweep) clearInterval(sweep)
     for (const w of watchers) void w.close()
     void planWatcher.close()
     for (const channel of Object.values(TRAINING_IPC)) ipcMain.removeHandler(channel)

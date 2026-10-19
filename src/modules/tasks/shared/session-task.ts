@@ -1,3 +1,4 @@
+import { addDays } from '@shared/year'
 import type { Task } from './types'
 
 /** A meeting or training as far as its task cares: the day, and when it ended (null: it has no end time). */
@@ -44,5 +45,42 @@ export function sessionTaskChanges(
   if (!session.date) return changes
   if (task.due !== session.date) changes.due = session.date
   if (task.status !== 'done' && sessionOver(session, now)) changes.done = true
+  return changes
+}
+
+/** How long after a training ends its self-study task is marked done (the user's rule, 19 Oct 2026): a week, to the minute. */
+export const SELF_STUDY_DONE_AFTER_DAYS = 7
+
+/** The time of day a training with no end time is taken to end (the end of its day). */
+export const END_OF_DAY = '23:59'
+
+/**
+ * The moment a training's self-study task is done: `SELF_STUDY_DONE_AFTER_DAYS` after its date, at its end time (the end of the day
+ * when it has none). Null without a date.
+ */
+export function selfStudyDoneAt(session: SessionTimes): LocalMoment | null {
+  if (!session.date) return null
+  return {
+    date: addDays(session.date, SELF_STUDY_DONE_AFTER_DAYS),
+    time: session.end ?? END_OF_DAY
+  }
+}
+
+/**
+ * What a training's self-study task needs from the clock and the note: due on the training's date, done once a week has passed since
+ * its end (at that minute, not the one before). Pure. A done task stays done and is never reopened here; like `sessionTaskChanges`, an
+ * open one that is past its moment is closed again on the next run.
+ */
+export function selfStudyTaskChanges(
+  task: Task,
+  session: SessionTimes,
+  now: LocalMoment
+): SessionTaskChanges {
+  const changes: SessionTaskChanges = {}
+  const doneAt = selfStudyDoneAt(session)
+  if (!doneAt) return changes
+  if (task.due !== session.date) changes.due = session.date
+  const reached = now.date !== doneAt.date ? now.date > doneAt.date : now.time >= doneAt.time
+  if (task.status !== 'done' && reached) changes.done = true
   return changes
 }
