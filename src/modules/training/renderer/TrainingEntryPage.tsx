@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
-import { DeleteDialog } from '@renderer/components/DeleteDialog'
 import { isUntouchedBody } from '@renderer/components/untouched'
 import { NEW_TRAINING_BODY } from '../shared/front-matter'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
+import { pushUndoWithToast } from '@renderer/components/undo-store'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { DocSplit } from '@renderer/notes/DocSplit'
@@ -16,7 +16,6 @@ import type { Person } from '@shared/people'
 import { formatDate } from '@shared/time'
 import { institutionOptions, seriesOptions } from '../shared/rules'
 import type { TrainingRef } from '../shared/types'
-import { formatHours } from '@shared/tracking/format'
 import { lectureLabel, lectureTaskUid } from '../shared/lecture-entries'
 import { MeetingHoursNote } from '../../meetings/renderer/MeetingHoursNote'
 import { FilesPanel } from './FilesPanel'
@@ -27,7 +26,6 @@ import { taskRoute } from '../../tasks/renderer/tasks-paths'
 import { entryRoute, trainingBase, useTrainingWorkspace } from './training-paths'
 import { TrainingMetaFields } from './TrainingMetaFields'
 import { useLectureTask } from './useLectureTask'
-import { useSelfStudy } from './useSelfStudy'
 import { useSelfStudyTask } from './useSelfStudyTask'
 import { useTrainingSession } from './useTrainingSession'
 import styles from './TrainingEntryPage.module.css'
@@ -80,7 +78,6 @@ function EntryView({
   const [people, setPeople] = useState<Person[]>([])
   const [seriesUsed, setSeriesUsed] = useState<string[]>([])
   const [institutionsUsed, setInstitutionsUsed] = useState<string[]>([])
-  const [confirmDelete, setConfirmDelete] = useState(false)
   const titleRef = useRef<HTMLInputElement>(null)
   const docRef = useRef<HTMLDivElement>(null)
   const focusTitle = useRef((location.state as { isNew?: boolean } | null)?.isNew === true)
@@ -116,12 +113,8 @@ function EntryView({
   const { ensure } = useSelfStudyTask(meta, ready, tasks, (selfStudyTask) =>
     session.setMeta({ selfStudy: selfStudyTask })
   )
-  const selfStudy = useSelfStudy()
   const lectureUid = lectureTaskUid(meta.task)
   const lectureTask = lectureUid ? tasks?.find((t) => t.uid === lectureUid) : undefined
-  // Self-study only: time on the lecture's own task counts as training, and stays in Hours all the same.
-  const studied =
-    meta.selfStudy && meta.selfStudy !== lectureUid ? (selfStudy.get(meta.selfStudy) ?? 0) : 0
   useDocumentTitle(meta.title)
 
   // Back goes to wherever the user came from (the list); with no history, the list.
@@ -140,26 +133,37 @@ function EntryView({
   const untouched =
     (!meta.title || meta.title === 'Untitled') && isUntouchedBody(body, NEW_TRAINING_BODY)
 
-  const confirmAndDelete = async (): Promise<void> => {
+  const removeNote = async (): Promise<void> => {
     setDeleting(true)
     setDeleteError(null)
     try {
       await session.dispose() // saves anything pending first
-      await window.api.training.delete(session.getRef())
+      const ref = session.getRef()
+      const content = await window.api.training.delete(ref)
       // The lecture's tasks go with it (to the Tasks trash; the series' self-study task stays); the hours tracked on them stay in Hours.
+      const trashedTasks: string[] = []
       for (const uid of [lectureUid, meta.selfStudy]) {
         if (!uid) continue
         try {
           await window.api.tasks.delete(uid)
+          trashedTasks.push(uid)
         } catch (e) {
           console.error('Could not delete the lecture task:', e)
         }
+      }
+      if (!untouched) {
+        pushUndoWithToast(`Deleted “${heading}”.`, {
+          label: 'deletion',
+          undo: async () => {
+            await window.api.training.restore(ref, content)
+            for (const uid of trashedTasks) await window.api.tasks.restore(uid)
+          }
+        })
       }
       void navigate(trainingBase(workspace), { replace: true })
     } catch (e) {
       setDeleteError(ipcErrorMessage(e))
       setDeleting(false)
-      setConfirmDelete(false)
       void session.start()
     }
   }
@@ -195,7 +199,8 @@ function EntryView({
           <Button
             size="small"
             variant="danger-outline"
-            onClick={() => (untouched ? void confirmAndDelete() : setConfirmDelete(true))}
+            disabled={deleting}
+            onClick={() => void removeNote()}
           >
             Delete entry
           </Button>
@@ -303,20 +308,6 @@ function EntryView({
           />
         </EditorCard>
       </DocSplit>
-
-      <DeleteDialog
-        open={confirmDelete}
-        heading={heading}
-        noun="training entry"
-        note={
-          studied > 0
-            ? `It has ${formatHours(studied)} of self-study: that time stays in Hours.`
-            : undefined
-        }
-        busy={deleting}
-        onCancel={() => setConfirmDelete(false)}
-        onConfirm={() => void confirmAndDelete()}
-      />
     </div>
   )
 }
