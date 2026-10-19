@@ -6,7 +6,7 @@ import { FieldError } from '@renderer/components/FieldError'
 import { Input } from '@renderer/components/Input'
 import { Select } from '@renderer/components/Select'
 import { showToast } from '@renderer/components/toast-store'
-import { pushUndoWithToast } from '@renderer/components/undo-store'
+import { pushUndo, pushUndoWithToast } from '@renderer/components/undo-store'
 import { useNewRowKeys } from '@renderer/components/useNewRowKeys'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { formatDate, todayIso } from '@shared/time'
@@ -106,19 +106,50 @@ function ContractRow({
     if (name.trim() === '' || weeklyMinutes === null || newClients === null) return
     const api = window.api.tracking
     const results: YearResult[] = []
+    // What Cmd-Z does, newest step first: each change that went through puts back what it replaced.
+    const undoSteps: (() => Promise<{ ok: boolean }>)[] = []
     const change = clientChange(savedClients, newClients)
     if (change && 'rename' in change) {
-      const renamed = await api.renameClient(workspace, change.rename.from, change.rename.to)
+      const { from, to } = change.rename
+      const renamed = await api.renameClient(workspace, from, to)
       if (!renamed.ok) return setProblem(clientRefusal(renamed.reason))
+      undoSteps.unshift(() => api.renameClient(workspace, to, from))
     }
-    if (name.trim() !== (contract.name ?? '') || invoice !== invoiceOf(contract))
-      results.push(await api.setContractTerms(workspace, contract.start, { name, invoice }))
-    if (finish !== end && contractWeeks(contract.start, finish).ok)
-      results.push(await api.setContractEnd(workspace, contract.start, finish))
-    if (weeklyMinutes !== contract.plan.hoursPerWeek)
-      results.push(await api.setPlan(workspace, contract.start, { hoursPerWeek: weeklyMinutes }))
-    if (change && 'set' in change)
-      results.push(await api.setPlan(workspace, contract.start, { clients: change.set }))
+    if (name.trim() !== (contract.name ?? '') || invoice !== invoiceOf(contract)) {
+      const result = await api.setContractTerms(workspace, contract.start, { name, invoice })
+      results.push(result)
+      const old = { name: contract.name ?? '', invoice: invoiceOf(contract) }
+      if (result.ok) undoSteps.unshift(() => api.setContractTerms(workspace, contract.start, old))
+    }
+    if (finish !== end && contractWeeks(contract.start, finish).ok) {
+      const result = await api.setContractEnd(workspace, contract.start, finish)
+      results.push(result)
+      if (result.ok) undoSteps.unshift(() => api.setContractEnd(workspace, contract.start, end))
+    }
+    if (weeklyMinutes !== contract.plan.hoursPerWeek) {
+      const result = await api.setPlan(workspace, contract.start, { hoursPerWeek: weeklyMinutes })
+      results.push(result)
+      const old = contract.plan.hoursPerWeek
+      if (result.ok)
+        undoSteps.unshift(() => api.setPlan(workspace, contract.start, { hoursPerWeek: old }))
+    }
+    if (change && 'set' in change) {
+      const result = await api.setPlan(workspace, contract.start, { clients: change.set })
+      results.push(result)
+      if (result.ok)
+        undoSteps.unshift(() => api.setPlan(workspace, contract.start, { clients: savedClients }))
+    }
+    if (undoSteps.length > 0) {
+      pushUndo({
+        label: 'contract change',
+        undo: async () => {
+          for (const step of undoSteps) {
+            const done = await step()
+            if (!done.ok) return showToast('Couldn’t put the contract back.')
+          }
+        }
+      })
+    }
     const refused = results.find((result) => !result.ok)
     if (refused && !refused.ok)
       setProblem(

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, createElement, useState } from 'react'
+import { act, createElement, useEffect, useState } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { clearUndoStack, undoLast } from './undo-store'
@@ -9,7 +9,7 @@ vi.mock('@renderer/lib/ipc-error', () => ({ ipcErrorMessage: (e: unknown) => Str
 
 let host: HTMLElement
 let root: Root
-let api: { items: string[]; remove: (item: string) => void; set: (items: string[]) => void }
+const api = {} as { remove: (item: string) => void; set: (items: string[]) => void }
 beforeEach(() => {
   ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
   host = document.createElement('div')
@@ -25,7 +25,10 @@ afterEach(async () => {
 function Field(): React.JSX.Element {
   const [items, set] = useState(['a', 'b', 'c'])
   const remove = useUndoableRemoval(items, set)
-  api = { items, remove, set }
+  useEffect(() => {
+    api.remove = remove
+    api.set = set
+  }, [remove, set])
   return createElement('p', null, items.join(','))
 }
 
