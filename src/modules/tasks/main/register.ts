@@ -1,9 +1,9 @@
 import { existsSync, readdirSync } from 'fs'
 import { notifyTitleChanged } from './title-hook'
 import { join } from 'path'
-import { BrowserWindow, ipcMain } from 'electron'
+import { ipcMain } from 'electron'
 import type { MainContext, MainModule } from '../../main-registry'
-import { TASKS_IPC, type CreateTaskInput, type TasksChangedEvent } from '../shared/api'
+import { TASKS_IPC, type CreateTaskInput } from '../shared/api'
 import { isValidRecurrence } from '../shared/recurrence'
 import {
   OWN_KINDS,
@@ -16,6 +16,7 @@ import {
   type TaskStatus,
   type TaskWorkspace
 } from '../shared/types'
+import { broadcastTasksChanged } from './broadcast'
 import { tasksMigrations } from './migrations'
 import { basename } from 'path'
 import { countAllTasks, listTasks, listTrash } from './repository'
@@ -93,12 +94,7 @@ function register(context: MainContext): () => void {
   const clients = (): string[] =>
     workClients(tracking.years('work').map((y) => tracking.get('work', y).plan))
   const store = new TasksStore(context.db, undefined, clients)
-  const broadcast = (workspace: TaskWorkspace): void => {
-    const event: TasksChangedEvent = { workspace }
-    for (const window of BrowserWindow.getAllWindows()) {
-      window.webContents.send(TASKS_IPC.changed, event)
-    }
-  }
+  const broadcast = broadcastTasksChanged
   /** Run a change, then tell every window which workspace's tasks moved. */
   const changing = <T>(uid: string | string[], run: () => T): T => {
     const uids = Array.isArray(uid) ? uid : [uid]

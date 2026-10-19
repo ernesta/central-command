@@ -691,3 +691,61 @@ describe('a meeting task', () => {
     expect(disk('2026-09-25 Supervision')).not.toContain('task:')
   })
 })
+
+describe('a deleted meeting takes its own task with it', () => {
+  let trashedTasks: string[]
+  let restoredTasks: string[]
+  beforeEach(() => {
+    trashedTasks = []
+    restoredTasks = []
+    store = new MeetingsStore({
+      db,
+      dirFor: (w) => join(root, w),
+      trash: async (path) => {
+        mkdirSync(trashDir, { recursive: true })
+        renameSync(path, join(trashDir, basename(path)))
+      },
+      trashTask: (uid) => trashedTasks.push(uid),
+      restoreTask: (uid) => restoredTasks.push(uid)
+    })
+  })
+  const make = async (task: string, date = '2026-10-19'): Promise<MeetingRef> =>
+    (await store.create({ workspace: 'research', series: 'Supervision', date, task })).ref
+
+  it('asks for the task named in the meeting, and Undo restores it', async () => {
+    const meeting = await make('k3f9a2x1')
+    const content = await store.delete(meeting)
+    expect(trashedTasks).toEqual(['k3f9a2x1'])
+    await store.restore(meeting, content)
+    expect(restoredTasks).toEqual(['k3f9a2x1'])
+  })
+
+  it('has no task to trash for a meeting with none yet, or one still marked auto', async () => {
+    await store.delete(await make('auto'))
+    await store.delete(
+      (await store.create({ workspace: 'research', series: 'Other', date: '2026-10-20' })).ref
+    )
+    expect(trashedTasks).toEqual([])
+  })
+
+  it('leaves a task another meeting names', async () => {
+    const a = await make('shared01')
+    await make('shared01', '2026-10-20')
+    await store.delete(a)
+    expect(trashedTasks).toEqual([])
+  })
+
+  it('keeps the task when the file cannot be moved to the Trash', async () => {
+    const meeting = await make('k3f9a2x1')
+    store = new MeetingsStore({
+      db,
+      dirFor: (w) => join(root, w),
+      trash: async () => {
+        throw new Error('Trash unavailable')
+      },
+      trashTask: (uid) => trashedTasks.push(uid)
+    })
+    await expect(store.delete(meeting)).rejects.toThrow('Trash unavailable')
+    expect(trashedTasks).toEqual([])
+  })
+})

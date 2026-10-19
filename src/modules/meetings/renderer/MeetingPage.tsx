@@ -22,7 +22,6 @@ import { MeetingHoursNote } from './MeetingHoursNote'
 import { MetaFields } from './MetaFields'
 import { MentionedIn } from '@renderer/entities/MentionedIn'
 import { TopicsPanel } from './TopicsPanel'
-import { isOwnMeetingTask } from '../shared/meeting-task'
 import { useMeetingsList } from './useMeetingsList'
 import { useMeetingTask } from './useMeetingTask'
 import { useMeetingSession } from './useMeetingSession'
@@ -88,11 +87,8 @@ function MeetingView({
   }, [])
 
   const { meta, body, save, error, conflict, reloadedFromDisk, problems, updatedAt } = snapshot
-  const { tasks } = useMeetingTask(
-    meetingRef.workspace,
-    meta,
-    snapshot.status === 'ready',
-    (task) => session.setMeta({ task })
+  useMeetingTask(meetingRef.workspace, meta, snapshot.status === 'ready', (task) =>
+    session.setMeta({ task })
   )
   useDocumentTitle(meta.series || meta.date ? meetingHeading(meta.series, meta.date) : null)
   const topics = useMemo(() => parseTopics(body, meta.discussed), [body, meta.discussed])
@@ -181,26 +177,14 @@ function MeetingView({
     setDeleteError(null)
     try {
       await session.dispose() // saves anything pending first
-      // The meeting's own subtask goes with it (to the Tasks trash); the hours tracked on it stay in Hours.
-      const own = tasks?.find((t) => t.uid === meta.task)
-      let trashedTask: string | null = null
-      if (own && isOwnMeetingTask(own)) {
-        try {
-          await window.api.tasks.delete(own.uid)
-          trashedTask = own.uid
-        } catch (e) {
-          console.error('Could not delete the meeting task:', e)
-        }
-      }
+      // The main process puts the meeting's own subtask in the Tasks trash with it (the hours tracked on it stay in Hours), and
+      // restoring the meeting brings it back.
       const ref = session.getRef()
       const content = await window.api.meetings.delete(ref)
       if (!untouched) {
         pushUndoWithToast(`Deleted “${heading}”.`, {
           label: `deletion of “${heading}”`,
-          undo: async () => {
-            await window.api.meetings.restore(ref, content)
-            if (trashedTask) await window.api.tasks.restore(trashedTask)
-          }
+          undo: () => window.api.meetings.restore(ref, content)
         })
       }
       void navigate(meetingsBase(meetingRef.workspace), { replace: true })

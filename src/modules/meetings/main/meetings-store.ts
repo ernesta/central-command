@@ -48,6 +48,13 @@ interface MeetingsStoreOptions {
   dirFor: (workspace: MeetingWorkspace) => string
   /** Moves a file to the operating system's Trash (Electron's `shell.trashItem`). Injected so tests need no Electron. */
   trash: (path: string) => Promise<void>
+  /**
+   * Puts a deleted meeting's own task in the Tasks trash (a task the user chose is left alone; the callback decides). Called by `delete`
+   * only, once the file is in the Trash, so every way the app removes a meeting removes its task too. Left out in tests of files alone.
+   */
+  trashTask?: (taskUid: string) => void
+  /** The Undo of `trashTask`, called by `restore` with the task the restored meeting names. */
+  restoreTask?: (taskUid: string) => void
 }
 
 function checkWorkspace(workspace: string): MeetingWorkspace {
@@ -99,11 +106,15 @@ export class MeetingsStore {
   private readonly db: Database
   private readonly dirFor: (workspace: MeetingWorkspace) => string
   private readonly trash: (path: string) => Promise<void>
+  private readonly trashTask: (taskUid: string) => void
+  private readonly restoreTask: (taskUid: string) => void
 
-  constructor({ db, dirFor, trash }: MeetingsStoreOptions) {
+  constructor({ db, dirFor, trash, trashTask, restoreTask }: MeetingsStoreOptions) {
     this.db = db
     this.dirFor = dirFor
     this.trash = trash
+    this.trashTask = trashTask ?? (() => undefined)
+    this.restoreTask = restoreTask ?? (() => undefined)
   }
 
   private pathOf(ref: MeetingRef): string {
@@ -229,7 +240,7 @@ export class MeetingsStore {
    * Move a meeting's file to the Trash and drop its index row. This is the only way the app removes
    * a note, and only ever on the user's explicit request (the interface asks first). Nothing is
    * deleted outright: the file stays recoverable from the Trash. If the move fails the file and its
-   * row are left as they were.
+   * row are left as they were. The meeting's own task goes to the Tasks trash with it, unless another meeting names the same task.
    */
   async delete(ref: MeetingRef): Promise<string> {
     const path = this.pathOf(ref)
@@ -240,7 +251,13 @@ export class MeetingsStore {
     }
     await this.trash(path)
     deleteMeetingRow(this.db, ref.workspace, ref.id)
+    const task = parseMeta(splitNote(note.content).head).meta.task
+    if (task && task !== 'auto' && !this.otherMeetingNames(task)) this.trashTask(task)
     return note.content
+  }
+
+  private otherMeetingNames(task: string): boolean {
+    return this.db.prepare('SELECT 1 FROM meetings WHERE task = ? LIMIT 1').get(task) !== undefined
   }
 
   /**
@@ -252,6 +269,8 @@ export class MeetingsStore {
       throw new MeetingError('Something with that name exists now')
     }
     await this.reindex(ref)
+    const task = parseMeta(splitNote(content).head).meta.task
+    if (task && task !== 'auto') this.restoreTask(task)
   }
 
   /**

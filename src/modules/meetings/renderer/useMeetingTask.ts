@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useTasksList } from '../../tasks/renderer/useTasksList'
 import { useWorkClients } from '../../tasks/renderer/useWorkClients'
-import type { Task } from '../../tasks/shared/types'
 import { planMeetingTask, type MeetingParent } from '../shared/meeting-task'
 import type { MeetingMeta, MeetingWorkspace } from '../shared/types'
 
@@ -28,7 +27,7 @@ export function useMeetingTask(
   meta: MeetingMeta,
   ready: boolean,
   setTask: (uid: string) => void
-): { tasks: Task[] | null } {
+): void {
   const { tasks } = useTasksList(workspace)
   const clients = useWorkClients(workspace)
   const busy = useRef(false)
@@ -67,6 +66,4 @@ export function useMeetingTask(
     const timer = setTimeout(() => void run(), SETTLE_MS)
     return () => clearTimeout(timer)
   }, [ready, tasks, clients, workspace, task, series, date, setTask])
-
-  return { tasks }
 }

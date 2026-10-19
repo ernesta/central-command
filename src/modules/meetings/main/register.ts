@@ -23,6 +23,9 @@ import { listMeetingRows } from './repository'
 import { TrainingStore } from '../../training/main/training-store'
 import { listTrainingRows } from '../../training/main/repository'
 import { TRAINING_WORKSPACES } from '../../training/shared/types'
+import { broadcastTasksChanged } from '../../tasks/main/broadcast'
+import { restoreOwnMeetingTask, trashOwnMeetingTask } from '../../tasks/main/session-tasks'
+import { TasksStore } from '../../tasks/main/tasks-store'
 import { PeopleService } from './people-service'
 import { PeopleStore } from './people-store'
 import type { RemoveHow } from '../shared/api'
@@ -60,10 +63,20 @@ function asRef(value: unknown): MeetingRef {
 
 function register({ db, paths }: MainContext): () => void {
   const dirFor = (workspace: MeetingWorkspace): string => join(paths.meetingsNotes, workspace)
+  const tasks = new TasksStore(db)
   const store = new MeetingsStore({
     db,
     dirFor,
-    trash: (path) => shell.trashItem(path)
+    trash: (path) => shell.trashItem(path),
+    // A deleted meeting takes its own task to the Tasks trash, and Undo brings both back (the task rule is the Tasks module's).
+    trashTask: (uid) => {
+      const trashed = trashOwnMeetingTask(tasks, uid)
+      if (trashed) broadcastTasksChanged(trashed.workspace)
+    },
+    restoreTask: (uid) => {
+      const restored = restoreOwnMeetingTask(db, tasks, uid)
+      if (restored) broadcastTasksChanged(restored.workspace)
+    }
   })
   const people = new PeopleStore(paths.people)
   people.load().catch((error) => console.error('Could not read the people list:', error))
