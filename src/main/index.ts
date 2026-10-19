@@ -1,6 +1,6 @@
 import { app, shell, BrowserWindow, Menu, clipboard, nativeTheme, screen } from 'electron'
 import { taskKey } from '@modules/tasks/shared/tracked'
-import { putStartedTaskInProgress } from '@modules/tasks/main/task-started'
+import { putStartedTaskInProgress, reopenSelfStudyTask } from '@modules/tasks/main/task-started'
 import { setTitleChanged } from '@modules/tasks/main/title-hook'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -197,6 +197,15 @@ app.whenReady().then(async () => {
   const startedTasks = new TasksStore(db)
   tracking.setTaskStarted((key) => {
     const task = putStartedTaskInProgress(startedTasks, key)
+    if (!task) return
+    for (const window of BrowserWindow.getAllWindows()) {
+      window.webContents.send(TASKS_IPC.changed, {
+        workspace: task.workspace
+      } satisfies TasksChangedEvent)
+    }
+  })
+  tracking.setTimeAdded((key) => {
+    const task = reopenSelfStudyTask(startedTasks, key)
     if (!task) return
     for (const window of BrowserWindow.getAllWindows()) {
       window.webContents.send(TASKS_IPC.changed, {

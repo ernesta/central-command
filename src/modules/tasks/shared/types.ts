@@ -21,7 +21,7 @@ export interface Recurrence {
  * What the app made a task for, when it made it for a session: a meeting's own subtask, a training lecture's own task, or a lecture's
  * self-study task. Set when the app creates the task, never inferred from the title; a task the user chose has none.
  */
-export const OWN_KINDS = ['meeting', 'lecture', 'self-study'] as const
+export const OWN_KINDS = ['meeting', 'training', 'self-study'] as const
 export type OwnKind = (typeof OWN_KINDS)[number]
 
 /** One task. A subtask has a `parentUid` and only one level exists: a subtask never has subtasks. */

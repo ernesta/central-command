@@ -140,7 +140,7 @@ describe('sessionTaskUids: what the timer and Hours do not offer', () => {
       workspace: 'research',
       title: 'Lecture 1',
       parentUid: series.uid,
-      ownKind: 'lecture'
+      ownKind: 'training'
     })
     const study = store.create({
       workspace: 'research',

@@ -61,7 +61,7 @@ describe('tasks/0003_own_kind', () => {
        VALUES ('before', 'research', 'Read', 'Reading', '2026-10-01T00:00:00.000Z', '2026-10-01T00:00:00.000Z')`
     ).run()
 
-    expect(runMigrations(db, tasksMigrations)).toEqual(['tasks/0003_own_kind'])
+    expect(runMigrations(db, tasksMigrations.slice(0, 3))).toEqual(['tasks/0003_own_kind'])
     const store = new TasksStore(db)
     expect(store.get('before')?.ownKind).toBeNull()
 

@@ -34,6 +34,17 @@ export interface SelfStudySweepOptions {
   backfill?: boolean
 }
 
+/** Whether the app has closed this task before (so it never closes it again: a task reopened by hand stays open). */
+const closedBefore = (db: Database, uid: string): boolean =>
+  (
+    db.prepare('SELECT auto_closed_at AS at FROM tasks WHERE uid = ?').get(uid) as
+      { at: string | null } | undefined
+  )?.at != null
+
+const markClosed = (db: Database, uid: string): void => {
+  db.prepare('UPDATE tasks SET auto_closed_at = ? WHERE uid = ?').run(new Date().toISOString(), uid)
+}
+
 const named = (title: string): boolean => title.trim() !== '' && title.trim() !== 'Untitled'
 
 /** Writes `selfstudy: <uid>` into the note through the store's guarded save, building on the file as it is now. */
@@ -111,7 +122,10 @@ export async function settleSelfStudyTasks(options: SelfStudySweepOptions): Prom
         continue
       }
       const changes = selfStudyTaskChanges(task, session, now)
-      if (changes.done) tasks.setStatus(task.uid, 'done')
+      if (changes.done) {
+        tasks.setStatus(task.uid, 'done')
+        markClosed(db, task.uid)
+      }
       refresh()
       continue
     }
@@ -137,8 +151,9 @@ export async function settleSelfStudyTasks(options: SelfStudySweepOptions): Prom
       tasks.setDue([current.uid], changes.due)
       refresh()
     }
-    if (changes.done) {
+    if (changes.done && !closedBefore(db, current.uid)) {
       tasks.setStatus(current.uid, 'done')
+      markClosed(db, current.uid)
       refresh()
     }
   }

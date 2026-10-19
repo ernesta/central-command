@@ -31,7 +31,7 @@ function isOwn(
   hasSubtasks: (uid: string) => boolean
 ): boolean {
   if (row.kind === 'meeting') return isOwnMeetingTask(task)
-  if (task.ownKind === 'lecture' || task.parentUid) return true
+  if (task.ownKind === 'training' || task.parentUid) return true
   return task.list.toLowerCase() === TRAINING_LIST.toLowerCase() && !hasSubtasks(task.uid)
 }
 

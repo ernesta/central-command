@@ -4,7 +4,10 @@ import { tmpdir } from 'os'
 import { join } from 'path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { tasksMigrations } from '../../modules/tasks/main/migrations'
-import { putStartedTaskInProgress } from '../../modules/tasks/main/task-started'
+import {
+  putStartedTaskInProgress,
+  reopenSelfStudyTask
+} from '../../modules/tasks/main/task-started'
 import { TasksStore } from '../../modules/tasks/main/tasks-store'
 import { taskKey } from '../../modules/tasks/shared/tracked'
 import { runMigrations } from '../db/migrate'
@@ -25,6 +28,7 @@ beforeEach(() => {
     now: () => ({ date: '2026-09-29', time: '10:00:00' })
   })
   tracking.setTaskStarted((key) => putStartedTaskInProgress(tasks, key))
+  tracking.setTimeAdded((key) => reopenSelfStudyTask(tasks, key))
 })
 afterEach(() => {
   db.close()
@@ -106,5 +110,40 @@ describe('starting a timer on a task', () => {
     fixed.setStatus(t.uid, 'done')
     tracking.start('research', 'Old', taskKey(t.uid))
     expect(fixed.get(t.uid)?.due).toBe('2026-09-01')
+  })
+})
+
+describe('time put on a done self-study task', () => {
+  const done = (ownKind?: 'self-study'): string => {
+    const t = tasks.create({
+      workspace: 'research',
+      title: 'L self-study',
+      list: 'Training',
+      ...(ownKind ? { ownKind } : {})
+    })
+    tasks.setStatus(t.uid, 'done')
+    return t.uid
+  }
+  it('reopens it when a timer starts, and when time is added', () => {
+    const a = done('self-study')
+    expect(tracking.start('research', 'L self-study', taskKey(a)).ok).toBe(true)
+    expect(tasks.get(a)?.status).toBe('doing')
+    const b = done('self-study')
+    tracking.addTime(
+      'research',
+      '2026-09-21',
+      '2026-09-29',
+      'L self-study',
+      30,
+      undefined,
+      taskKey(b)
+    )
+    expect(tasks.get(b)?.status).toBe('doing')
+  })
+  it('leaves any other done task done', () => {
+    const c = done()
+    tracking.addTime('research', '2026-09-21', '2026-09-29', 'x', 30, undefined, taskKey(c))
+    expect(tracking.start('research', 'x', taskKey(c)).ok).toBe(true)
+    expect(tasks.get(c)?.status).toBe('done')
   })
 })

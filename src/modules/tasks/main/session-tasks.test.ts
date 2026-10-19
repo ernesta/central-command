@@ -18,7 +18,7 @@ beforeEach(() => {
   parentUid = store.create({ workspace: 'research', title: 'Supervision', list: 'Meetings' }).uid
 })
 
-const sub = (title: string, ownKind?: 'meeting' | 'lecture'): string =>
+const sub = (title: string, ownKind?: 'meeting' | 'training'): string =>
   store.create({ workspace: 'research', title, parentUid, ...(ownKind ? { ownKind } : {}) }).uid
 
 describe('trashOwnMeetingTask', () => {
@@ -42,7 +42,7 @@ describe('trashOwnMeetingTask', () => {
   it('never touches a task the user chose, a lecture task or a series task', () => {
     for (const uid of [
       sub('Prepare for the supervision'),
-      sub('Supervision · 19 Oct 2026', 'lecture'),
+      sub('Supervision · 19 Oct 2026', 'training'),
       parentUid
     ]) {
       expect(trashOwnMeetingTask(store, uid)).toBeNull()

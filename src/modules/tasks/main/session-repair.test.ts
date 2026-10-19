@@ -205,7 +205,7 @@ describe('planRepair: trainings', () => {
     expect(report.trainingWithTask).toBe(1)
     expect(report.trainingGone).toEqual([{ id: 'f', selfStudy: 'gone0001' }])
     expect(report.trainingMarks.map((m) => [m.id, m.kind]).sort()).toEqual([
-      ['a', 'lecture'],
+      ['a', 'training'],
       ['e', 'self-study']
     ])
     const text = formatRepairReport(report, 'test')

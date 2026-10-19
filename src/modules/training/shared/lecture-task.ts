@@ -118,7 +118,7 @@ export function planLectureTask(note: LectureNote, tasks: readonly Task[]): Lect
  * subtask, or a top-level task in Training with nothing under it. Anything else is a task the user pointed the note at.
  */
 export function isLectureOwn(own: Task, tasks: readonly Task[]): boolean {
-  if (own.ownKind === 'lecture' || own.parentUid) return true
+  if (own.ownKind === 'training' || own.parentUid) return true
   return fold(own.list) === fold(TRAINING_LIST) && !tasks.some((t) => t.parentUid === own.uid)
 }
 

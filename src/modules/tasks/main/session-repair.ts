@@ -112,7 +112,7 @@ export interface TrainingLine {
 export interface TrainingMark {
   id: string
   uid: string
-  kind: 'lecture' | 'self-study'
+  kind: 'training' | 'self-study'
   title: string
 }
 
@@ -261,7 +261,7 @@ export function planRepair(
   for (const t of training) {
     const lecture = t.task && t.task !== 'auto' ? live.find((x) => x.uid === t.task) : undefined
     if (lecture && lecture.ownKind === null && isLectureOwn(lecture, live)) {
-      trainingMarks.push({ id: t.id, uid: lecture.uid, kind: 'lecture', title: lecture.title })
+      trainingMarks.push({ id: t.id, uid: lecture.uid, kind: 'training', title: lecture.title })
     }
     const study = t.selfStudy ? live.find((x) => x.uid === t.selfStudy) : undefined
     if (study) {

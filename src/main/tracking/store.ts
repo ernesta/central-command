@@ -113,6 +113,7 @@ export class TrackingStore {
   private readonly newId: () => string
   private clientTasks: ClientTasks | null = null
   private taskStarted: ((task: string) => void) | null = null
+  private timeAdded: ((task: string) => void) | null = null
 
   constructor(
     private readonly root: string,
@@ -129,6 +130,11 @@ export class TrackingStore {
   /** Tell Tasks when a timer starts on a task (Tasks then marks it in progress). */
   setTaskStarted(taskStarted: ((task: string) => void) | null): void {
     this.taskStarted = taskStarted
+  }
+
+  /** Tell Tasks when time is added to a task (Tasks then reopens a done self-study task). */
+  setTimeAdded(timeAdded: ((task: string) => void) | null): void {
+    this.timeAdded = timeAdded
   }
 
   // ---- reading ----
@@ -344,9 +350,11 @@ export class TrackingStore {
     client?: string,
     task?: string
   ): YearResult {
-    return this.mutate(workspace, year, (y) =>
+    const result = this.mutate(workspace, year, (y) =>
       addTime(y, date, label, minutes, this.newId(), client, task)
     )
+    if (result.ok && task) this.timeAdded?.(task)
+    return result
   }
 
   restoreEntries(

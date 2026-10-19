@@ -224,6 +224,18 @@ describe('settleSelfStudyTasks', () => {
       expect(await sweep(NOW, { backfill: true })).toBe(false)
     })
 
+    it('a task the user reopens by hand stays open: the app closes it once', async () => {
+      await entry({ date: '2026-10-10', start: '09:00', end: '11:00' })
+      await sweep({ date: '2026-10-17', time: '10:00' })
+      await sweep({ date: '2026-10-17', time: '11:00' })
+      const uid = byTitle('Lecture 1 self-study')[0].uid
+      expect(tasks.get(uid)?.status).toBe('done')
+      tasks.setStatus(uid, 'doing')
+      await sweep({ date: '2026-10-17', time: '11:05' })
+      await sweep({ date: '2026-10-18', time: '09:00' })
+      expect(tasks.get(uid)?.status).toBe('doing')
+    })
+
     it('moving the date back past the week closes it; a done task is never reopened', async () => {
       const ref = await entry({ date: '2026-10-21' })
       await sweep()
