@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
-import { DeleteDialog } from '@renderer/components/DeleteDialog'
 import { isUntouchedBody } from '@renderer/components/untouched'
 import { NEW_LIST_BODY } from '../shared/front-matter'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
+import { pushUndoWithToast } from '@renderer/components/undo-store'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
@@ -48,7 +48,6 @@ function ListView({
   const navigate = useNavigate()
   const location = useLocation()
   const { session, snapshot } = useListSession(listRef, onRenamed)
-  const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const titleRef = useRef<HTMLInputElement>(null)
@@ -69,17 +68,23 @@ function ListView({
   // A page nothing was typed into goes without asking.
   const untouched = !meta.title && isUntouchedBody(body, NEW_LIST_BODY)
 
-  const confirmAndDelete = async (): Promise<void> => {
+  const removeNote = async (): Promise<void> => {
     setDeleting(true)
     setDeleteError(null)
     try {
       await session.dispose()
-      await window.api.readingLists.delete(session.getRef())
+      const ref = session.getRef()
+      const content = await window.api.readingLists.delete(ref)
+      if (!untouched) {
+        pushUndoWithToast(`Deleted “${heading}”.`, {
+          label: 'deletion',
+          undo: () => window.api.readingLists.restore(ref, content)
+        })
+      }
       void navigate(readingListsBase, { replace: true })
     } catch (e) {
       setDeleteError(ipcErrorMessage(e))
       setDeleting(false)
-      setConfirmDelete(false)
       void session.start()
     }
   }
@@ -115,7 +120,8 @@ function ListView({
           <Button
             size="small"
             variant="danger-outline"
-            onClick={() => (untouched ? void confirmAndDelete() : setConfirmDelete(true))}
+            disabled={deleting}
+            onClick={() => void removeNote()}
           >
             Delete list
           </Button>
@@ -173,16 +179,6 @@ function ListView({
           />
         </EditorCard>
       </div>
-
-      <DeleteDialog
-        open={confirmDelete}
-        heading={heading}
-        noun="reading list"
-        contents="entries"
-        busy={deleting}
-        onCancel={() => setConfirmDelete(false)}
-        onConfirm={() => void confirmAndDelete()}
-      />
     </div>
   )
 }
