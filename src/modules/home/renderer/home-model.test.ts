@@ -109,7 +109,7 @@ describe('whenLabel', () => {
 
 describe('detailText', () => {
   it('writes the end of a run of days off as a day and month', () => {
-    expect(detailText('3 days, to 2026-10-21')).toBe('3 days, to 21 Oct')
+    expect(detailText('3 days, to 2026-10-21')).toBe('3 days, to Oct 21')
     expect(detailText('Admin')).toBe('Admin')
   })
 })

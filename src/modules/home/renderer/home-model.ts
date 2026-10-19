@@ -1,3 +1,4 @@
+import { formatShortDate } from '@shared/time'
 import { daysFrom } from '../shared/summary'
 import type { HomeEvent, HomeSummary, HomeTask, HomeWorkspace } from '../shared/types'
 
@@ -75,25 +76,7 @@ export function homeView(summary: HomeSummary, workspace: HomeWorkspace): HomeVi
   }
 }
 
-const SHORT_MONTHS = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec'
-]
-
-/** The line under an item; a run of days off ends "to 2026-10-21" in the summary, which reads better as "to 21 Oct". */
+/** The line under an item; a run of days off ends "to 2026-10-21" in the summary, which reads better as "to 21 Oct" (or "to Oct 21"). */
 export function detailText(detail: string): string {
-  return detail.replace(
-    /\b(\d{4})-(\d{2})-(\d{2})\b/,
-    (_, _y: string, m: string, d: string) => `${Number(d)} ${SHORT_MONTHS[Number(m) - 1]}`
-  )
+  return detail.replace(/\b\d{4}-\d{2}-\d{2}\b/, (date) => formatShortDate(date))
 }
