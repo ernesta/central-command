@@ -159,7 +159,7 @@ describe('planRepair: orphans', () => {
     const text = formatRepairReport(report, 'test')
     expect(text).toContain('"Supervision · 19 Oct 2026" in Meetings, pointed at by no meeting: 3')
     expect(text).toContain('KEEP: has time in Hours')
-    expect(text).toContain('candidate to trash')
+    expect(text).toContain('would be trashed')
     expect(text).toContain('CHECK "Other · 20 Oct 2026"')
   })
 

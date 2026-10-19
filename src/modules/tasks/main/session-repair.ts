@@ -264,10 +264,10 @@ export function formatRepairReport(report: RepairReport, region: string): string
 
   say()
   say(
-    `ORPHANED OWN-LOOKING MEETING TASKS: ${report.orphans.length} (no meeting names them; nothing is trashed by the script)`
+    `ORPHANED OWN-LOOKING MEETING TASKS: ${report.orphans.length} (no meeting names them; --apply trashes those with no time tracked)`
   )
   for (const o of report.orphans) {
-    const advice = o.trackedMinutes === 0 ? 'candidate to trash' : 'KEEP: has time in Hours'
+    const advice = o.trackedMinutes === 0 ? 'would be trashed' : 'KEEP: has time in Hours'
     say(
       `  "${o.title}" in ${o.list || '?'} › ${o.parentTitle || '?'}; due ${o.due ?? 'none'}; ${o.status}; made ${o.createdAt.slice(0, 10)}; ` +
         `${minutes(o.trackedMinutes)}; ${o.markerMissing ? 'no marker' : 'marked'}; ${advice} (${o.uid})`
