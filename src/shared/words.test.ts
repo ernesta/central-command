@@ -82,6 +82,6 @@ describe('wordCountLabel', () => {
   it('says word or words', () => {
     expect(wordCountLabel(1)).toBe('1 word')
     expect(wordCountLabel(412)).toBe('412 words')
-    expect(wordCountLabel(1234)).toBe('1,234 words')
+    expect(wordCountLabel(1234)).toBe(`${(1234).toLocaleString()} words`)
   })
 })

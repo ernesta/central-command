@@ -32,5 +32,5 @@ export function wordCount(markdown: string): number {
 
 /** "412 words", "1 word". */
 export function wordCountLabel(count: number): string {
-  return `${count.toLocaleString('en-GB')} ${count === 1 ? 'word' : 'words'}`
+  return `${count.toLocaleString()} ${count === 1 ? 'word' : 'words'}`
 }
