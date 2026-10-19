@@ -11,6 +11,9 @@ import { registerEntityProviders } from './entities/registry'
 // What a note can mention with `@` comes from the modules; the editor only knows the registry.
 registerEntityProviders(moduleEntityProviders())
 
+// The page's language is the Mac's (spell-check, hyphenation, screen readers); index.html only holds the fallback.
+document.documentElement.lang = navigator.language
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
