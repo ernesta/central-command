@@ -5,6 +5,7 @@ import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { LandingHeader, LandingPage } from '@renderer/components/Landing'
 import { Notice } from '@renderer/components/Notice'
+import { pushUndoWithToast } from '@renderer/components/undo-store'
 import type { RemoveHow } from '../shared/api'
 import type { PersonPatch } from '../shared/people'
 import type { Person } from '../shared/types'
@@ -28,10 +29,33 @@ export function PeoplePage(): React.JSX.Element {
   const [error, setError] = useState<string | null>(null)
   const [removing, setRemoving] = useState<Person | null>(null)
 
+  const removingUsage = removing ? usage.find((u) => u.name === removing.name) : undefined
   const current = sortPeople((people ?? []).filter((p) => !p.archived))
   const archived = sortPeople((people ?? []).filter((p) => p.archived))
   // Opened from a search hit for this person ("?person=Name"): scroll to their row and tint it.
   const highlighted = new URLSearchParams(useLocation().search).get('person')
+
+  // Nobody mentioned goes at once, with an Undo that adds them back as they were; someone mentioned still asks (archive or merge).
+  const removeUnmentioned = async (person: Person): Promise<void> => {
+    const result = await run(window.api.meetings.people.remove(person.name, { how: 'delete' }))
+    if (result.error !== null) return setError(result.error)
+    pushUndoWithToast(`Deleted ${person.name}.`, {
+      label: 'deletion',
+      undo: async () => {
+        const back = await run(
+          window.api.meetings.people.add({
+            name: person.name,
+            initials: person.initials,
+            me: person.me
+          })
+        )
+        if (back.error !== null) return setError(back.error)
+        if (person.links?.length) {
+          await run(window.api.meetings.people.update(person.name, { links: person.links }))
+        }
+      }
+    })
+  }
 
   const report = (result: PeopleActionResult): string | null => {
     // A refusal (taken initials, a blank name) is shown beside the field by the row; only a partial result goes up here.
@@ -81,7 +105,11 @@ export function PeoplePage(): React.JSX.Element {
             onSave={async (name: string, patch: PersonPatch) =>
               report(await run(window.api.meetings.people.update(name, patch)))
             }
-            onRemove={setRemoving}
+            onRemove={(person) => {
+              const used = usage.find((u) => u.name === person.name)
+              if (!used || used.meetings + used.trainings === 0) void removeUnmentioned(person)
+              else setRemoving(person)
+            }}
           />
         </div>
       )}
@@ -99,10 +127,10 @@ export function PeoplePage(): React.JSX.Element {
           />
         </details>
       )}
-      {removing && people && (
+      {removing && people && removingUsage && (
         <RemoveDialog
           person={removing}
-          usage={usage.find((u) => u.name === removing.name)}
+          usage={removingUsage}
           everyone={people}
           onCancel={() => setRemoving(null)}
           onConfirm={(how: RemoveHow) => {

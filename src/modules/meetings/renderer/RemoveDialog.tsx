@@ -11,15 +11,15 @@ import styles from './RemoveDialog.module.css'
 
 interface RemoveDialogProps {
   person: Person
-  usage: PersonUsage | undefined
+  usage: PersonUsage
   everyone: readonly Person[]
   onCancel: () => void
   onConfirm: (how: RemoveHow) => void
 }
 
 /**
- * Removing someone: Delete when no note mentions them; otherwise Archive (the notes stay as they are) or Merge
- * (their name and TODO initials in the notes change to another person's).
+ * Removing someone a note mentions: Archive (the notes stay as they are) or Merge (their name and TODO initials in
+ * the notes change to another person's). Someone nobody mentions is deleted by the page without asking.
  */
 export function RemoveDialog({
   person,
@@ -37,25 +37,6 @@ export function RemoveDialog({
       Cancel
     </Button>
   )
-
-  if (!usage || usage.meetings + usage.trainings === 0) {
-    return (
-      <Dialog
-        title={`Delete ${person.name}?`}
-        onCancel={onCancel}
-        actions={
-          <>
-            {cancel}
-            <Button size="small" variant="danger" onClick={() => onConfirm({ how: 'delete' })}>
-              Delete
-            </Button>
-          </>
-        }
-      >
-        No meeting or training mentions them.
-      </Dialog>
-    )
-  }
 
   if (merging) {
     return (
