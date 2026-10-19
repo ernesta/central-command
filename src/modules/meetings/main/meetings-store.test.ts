@@ -788,3 +788,49 @@ describe('a meeting with no series (New meeting: only today’s date)', () => {
     expect(existsSync(file('my own name'))).toBe(true)
   })
 })
+
+describe('discardIfUntouched', () => {
+  let trashedTasks: string[]
+  beforeEach(() => {
+    trashedTasks = []
+    store = new MeetingsStore({
+      db,
+      dirFor: (w) => join(root, w),
+      trash: async (path) => {
+        mkdirSync(trashDir, { recursive: true })
+        renameSync(path, join(trashDir, basename(path)))
+      },
+      trashTask: (uid) => trashedTasks.push(uid)
+    })
+  })
+
+  it('moves a meeting nothing was written in to the Trash, with its own task', async () => {
+    const m = await store.create({ workspace: 'research', date: '2026-10-19', task: 'auto' })
+    await store.save(m.ref, { meta: { task: 'own00001' } }, m.note.hash)
+    expect(await store.discardIfUntouched(m.ref)).toBe(true)
+    expect(existsSync(file(m.ref.id))).toBe(false)
+    expect(existsSync(join(trashDir, `${m.ref.id}.md`))).toBe(true)
+    expect(getMeetingRow(db, 'research', m.ref.id)).toBeNull()
+    expect(trashedTasks).toEqual(['own00001'])
+  })
+
+  it('keeps a meeting with anything in it, judged from the file', async () => {
+    const m = await store.create({ workspace: 'research', date: '2026-10-19', task: 'auto' })
+    const typed = await store.read(m.ref)
+    await store.save(m.ref, { body: '## Summary\n## Notes\nwe talked\n' }, typed.note.hash)
+    expect(await store.discardIfUntouched(m.ref)).toBe(false)
+    const named = await store.create({
+      workspace: 'research',
+      series: 'Luminos',
+      date: '2026-10-19'
+    })
+    expect(await store.discardIfUntouched(named.ref)).toBe(false)
+    expect(existsSync(file(m.ref.id))).toBe(true)
+    expect(existsSync(file(named.ref.id))).toBe(true)
+    expect(trashedTasks).toEqual([])
+  })
+
+  it('is false, not an error, for a meeting that is gone', async () => {
+    expect(await store.discardIfUntouched(ref('missing'))).toBe(false)
+  })
+})

@@ -99,6 +99,11 @@ export interface MeetingsApi {
   save(ref: MeetingRef, changes: MeetingChanges, baseHash: string): Promise<MeetingSaveResult>
   /** Move the meeting's file to the Trash. It resolves with the file's content, which `restore` takes to bring it back. */
   delete(ref: MeetingRef): Promise<string>
+  /**
+   * Remove the meeting (file to the Trash, its own task to the Tasks trash) if it is still exactly what New meeting made, judged from
+   * the file itself, never from what the caller believes. Resolves with whether it was removed. Called when a page is left.
+   */
+  discardIfUntouched(ref: MeetingRef): Promise<boolean>
   /** Undo of `delete`: write the content it returned back as the same file (refused when something is there now). */
   restore(ref: MeetingRef, content: string): Promise<void>
   /** The id a mention of this meeting uses, added to its front matter the first time (see `MeetingsStore.ensureUid`). */
@@ -149,6 +154,7 @@ export const MEETINGS_IPC = {
   list: 'meetings:list',
   save: 'meetings:save',
   delete: 'meetings:delete',
+  discardIfUntouched: 'meetings:discard-if-untouched',
   restore: 'meetings:restore',
   move: 'meetings:move',
   ensureUid: 'meetings:ensure-uid',

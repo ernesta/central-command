@@ -83,6 +83,15 @@ describe('planMeetingTask', () => {
       kind: 'none'
     })
   })
+  it('a marked note with no series waits: no task until one is chosen, then it is made', () => {
+    expect(planMeetingTask('research', { ...note, series: '' }, null, [series])).toEqual({
+      kind: 'none'
+    })
+    expect(planMeetingTask('work', { ...note, series: '' }, ['Impact'], [])).toEqual({
+      kind: 'none'
+    })
+    expect(planMeetingTask('research', note, null, [series]).kind).toBe('create')
+  })
   it('a marked note with no date waits', () => {
     expect(planMeetingTask('research', { ...note, date: '' }, null, [series])).toEqual({
       kind: 'none'

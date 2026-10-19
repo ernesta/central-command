@@ -154,6 +154,9 @@ function register({ db, paths }: MainContext): () => void {
     return store.save(asRef(ref), asObject(changes, 'changes') as MeetingChanges, baseHash)
   })
   ipcMain.handle(MEETINGS_IPC.delete, (_event, ref: unknown) => store.delete(asRef(ref)))
+  ipcMain.handle(MEETINGS_IPC.discardIfUntouched, (_event, ref: unknown) =>
+    store.discardIfUntouched(asRef(ref))
+  )
   ipcMain.handle(MEETINGS_IPC.restore, (_event, ref: unknown, content: unknown) => {
     if (typeof content !== 'string') throw new Error('Not a note')
     return store.restore(asRef(ref), content)

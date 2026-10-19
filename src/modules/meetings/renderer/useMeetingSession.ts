@@ -24,8 +24,8 @@ export function useMeetingSession(
     // Last-chance save if the window closes while a save is pending.
     const onPageHide = (): void => void session.flush()
     window.addEventListener('pagehide', onPageHide)
-    // Also saved when the window is closed or the app quits (see App).
-    const unregister = registerFlushable(() => session.flush())
+    // Also saved (and an untouched meeting removed) when the window is closed or the app quits (see App).
+    const unregister = registerFlushable(() => session.settle())
     return () => {
       unregister()
       window.removeEventListener('pagehide', onPageHide)

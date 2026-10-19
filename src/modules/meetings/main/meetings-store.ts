@@ -29,6 +29,7 @@ import type {
   TickTodoResult
 } from '../shared/api'
 import { tickTodo } from '../shared/todo-boxes'
+import { isUntouchedMeeting } from '../shared/untouched'
 import {
   MEETING_MODES,
   MEETING_WORKSPACES,
@@ -259,6 +260,19 @@ export class MeetingsStore {
 
   private otherMeetingNames(task: string): boolean {
     return this.db.prepare('SELECT 1 FROM meetings WHERE task = ? LIMIT 1').get(task) !== undefined
+  }
+
+  /**
+   * Remove a meeting nothing was written in (see `isUntouchedMeeting`), judged from the file as it is now. It goes the way every
+   * delete goes (the Trash, and its own task to the Tasks trash), so nothing is lost for good. A missing file is not an error here.
+   */
+  async discardIfUntouched(ref: MeetingRef): Promise<boolean> {
+    const note = await readNoteFile(this.pathOf(ref))
+    if (!note.exists) return false
+    const { head, body } = splitNote(note.content)
+    if (!isUntouchedMeeting(parseMeta(head).meta, body)) return false
+    await this.delete(ref)
+    return true
   }
 
   /**

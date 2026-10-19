@@ -150,7 +150,7 @@ function MeetingView({
     setMoving(true)
     setMoveError(null)
     try {
-      await session.dispose() // saves anything pending first
+      await session.disposeKeeping() // saves anything pending first
       const from = session.getRef().workspace
       const moved = await window.api.meetings.move(session.getRef(), target)
       void navigate(meetingRoute(moved.ref.workspace, moved.ref.id), { replace: true })
@@ -176,7 +176,11 @@ function MeetingView({
     setDeleting(true)
     setDeleteError(null)
     try {
-      await session.dispose() // saves anything pending first
+      await session.dispose() // saves anything pending first; a meeting nothing was written in is removed by it
+      if (session.wasDiscarded()) {
+        void navigate(meetingsBase(meetingRef.workspace), { replace: true })
+        return
+      }
       // The main process puts the meeting's own subtask in the Tasks trash with it (the hours tracked on it stay in Hours), and
       // restoring the meeting brings it back.
       const ref = session.getRef()

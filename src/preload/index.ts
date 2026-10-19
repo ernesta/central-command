@@ -97,6 +97,7 @@ const api: Api = {
     list: (workspace) => ipcRenderer.invoke(MEETINGS_IPC.list, workspace),
     save: (ref, changes, baseHash) => ipcRenderer.invoke(MEETINGS_IPC.save, ref, changes, baseHash),
     delete: (ref) => ipcRenderer.invoke(MEETINGS_IPC.delete, ref),
+    discardIfUntouched: (ref) => ipcRenderer.invoke(MEETINGS_IPC.discardIfUntouched, ref),
     restore: (ref, content) => ipcRenderer.invoke(MEETINGS_IPC.restore, ref, content),
     move: (ref, to) => ipcRenderer.invoke(MEETINGS_IPC.move, ref, to),
     ensureUid: (ref) => ipcRenderer.invoke(MEETINGS_IPC.ensureUid, ref),

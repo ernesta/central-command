@@ -6,7 +6,8 @@ import type {
   SyncPreviousResult
 } from '../shared/api'
 import { applyChanges, parseMeta, splitNote, type MeetingChanges } from '../shared/front-matter'
-import type { MeetingRef } from '../shared/types'
+import type { MeetingMeta, MeetingRef } from '../shared/types'
+import { isUntouchedMeeting } from '../shared/untouched'
 import { MeetingSession, type MeetingSessionApi } from './meeting-session'
 
 const REF: MeetingRef = { workspace: 'research', id: '2026-09-24 Supervision' }
@@ -72,6 +73,16 @@ class FakeDisk implements MeetingSessionApi {
   syncPreviousTodos = async (_ref: MeetingRef, baseHash: string): Promise<SyncPreviousResult> => {
     this.syncs.push(baseHash)
     return this.syncResult(this)
+  }
+  discards: string[] = []
+  /** The main process's check: judged from the file itself. */
+  discardIfUntouched = async (ref: MeetingRef): Promise<boolean> => {
+    if (this.text === null) return false
+    const { head, body } = splitNote(this.text)
+    if (!isUntouchedMeeting(parseMeta(head).meta, body)) return false
+    this.discards.push(ref.id)
+    this.text = null
+    return true
   }
   onChanged = (listener: (e: MeetingChangedEvent) => void): (() => void) => {
     this.listeners.add(listener)
@@ -407,5 +418,72 @@ describe('the file changing underneath', () => {
   it('stops listening after dispose', async () => {
     await session.dispose()
     expect(disk.listeners.size).toBe(0)
+  })
+})
+
+describe('leaving a meeting nothing was written in', () => {
+  const NEW = '---\ndate: 2026-10-19\ntask: auto\n---\n## Summary\n## Notes\n'
+  beforeEach(() => {
+    disk.text = NEW
+  })
+
+  it('removes it, with a note that it did (so Delete on the page just leaves)', async () => {
+    await session.start()
+    await session.dispose()
+    expect(disk.discards).toEqual([REF.id])
+    expect(session.wasDiscarded()).toBe(true)
+  })
+
+  it('removes it when the window closes or the app quits too', async () => {
+    await session.start()
+    await session.settle()
+    expect(disk.discards).toEqual([REF.id])
+  })
+
+  it('never removes one with a series, a time, an attendee or a word in it', async () => {
+    await session.start()
+    session.setMeta({ series: 'Luminos' })
+    await session.dispose()
+    expect(disk.discards).toEqual([])
+
+    for (const change of [
+      { start: '10:00' },
+      { attendees: ['Kathy Rastle'] },
+      { mode: 'online' }
+    ] as Partial<MeetingMeta>[]) {
+      disk.text = NEW
+      session = new MeetingSession(REF, disk, { debounceMs: 500 })
+      await session.start()
+      session.setMeta(change)
+      await session.dispose()
+    }
+    expect(disk.discards).toEqual([])
+
+    disk.text = NEW
+    session = new MeetingSession(REF, disk, { debounceMs: 500 })
+    await session.start()
+    session.editBody('## Summary\n## Notes\nwe talked\n')
+    await session.dispose()
+    expect(disk.discards).toEqual([])
+    expect(disk.text).toContain('we talked')
+  })
+
+  it('judges the file, not the page: a meeting changed outside the app stays', async () => {
+    await session.start()
+    disk.text = NEW.replace('date:', 'series: Luminos\ndate:')
+    await session.dispose()
+    expect(disk.discards).toEqual([])
+    expect(session.wasDiscarded()).toBe(false)
+  })
+
+  it('is not removed by a Strict Mode clean-up that starts again at once, nor by a move', async () => {
+    await session.start()
+    const disposing = session.dispose()
+    void session.start()
+    await disposing
+    expect(disk.discards).toEqual([])
+
+    await session.disposeKeeping()
+    expect(disk.discards).toEqual([])
   })
 })
