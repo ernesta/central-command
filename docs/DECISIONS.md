@@ -850,7 +850,7 @@ filtering sits beside its `renderer/search.ts` (tasks: `tasks/shared/search-filt
   adds a space; a value with spaces is quoted. Same list in the Mod-K window (above the results) and on `/search` (under the field).
   Listed in Settings ("Complete a search filter").
 - **Notices** show above the results in both places. They are hidden while the completion list is open: a notice about the word still
-  being typed (`with:c`, "needs a name from the people list") only flickered. *Found by driving the app.*
+  being typed (`with:c`, "needs a name from the people list") only flickered. _Found by driving the app._
 - **Not built, by decision:** `is:`, `title:`, `type:`, `mode:`, commas, `from:`/`@`, prefixes, academic years or contracts in dates.
 - **Checked in the built app and dev mode (StrictMode), light and dark, on a scratch library:** `experiments in:task`, status, priority,
   overdue, `with:` by initials, phrases, `has:todos`, readings by read state, `during:"this month"`, `workspace:work`, `-in:readings`, each

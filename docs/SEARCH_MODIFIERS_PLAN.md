@@ -27,37 +27,37 @@ modifiers that narrow the result, with a visible warning for anything unrecognis
 
 ## General rules
 
-| Rule | Behaviour |
-|---|---|
-| Syntax | `name:value`; a value with spaces is quoted: `status:"in progress"`. |
-| Exact phrase | `"effect size"` (double quotes, no modifier). |
-| Plain words | Matched against title and text as today, every word required. |
-| Only modifiers | Lists everything that matches (as `in:meetings` does today). |
-| A modifier a source does not have | Narrows the search to the sources that have it: `status:done` leaves out meetings, notes and people. Exceptions: `workspace:` and negated modifiers (above). |
-| Unknown `name:value` | Searched as plain text, with a visible notice "Not a filter". |
-| A known modifier with a value it does not accept | A visible notice naming the accepted values, and nothing is searched for that modifier's text. |
-| Repeated single-valued modifier | Notice "No item has two <name>s." |
+| Rule                                             | Behaviour                                                                                                                                                    |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Syntax                                           | `name:value`; a value with spaces is quoted: `status:"in progress"`.                                                                                         |
+| Exact phrase                                     | `"effect size"` (double quotes, no modifier).                                                                                                                |
+| Plain words                                      | Matched against title and text as today, every word required.                                                                                                |
+| Only modifiers                                   | Lists everything that matches (as `in:meetings` does today).                                                                                                 |
+| A modifier a source does not have                | Narrows the search to the sources that have it: `status:done` leaves out meetings, notes and people. Exceptions: `workspace:` and negated modifiers (above). |
+| Unknown `name:value`                             | Searched as plain text, with a visible notice "Not a filter".                                                                                                |
+| A known modifier with a value it does not accept | A visible notice naming the accepted values, and nothing is searched for that modifier's text.                                                               |
+| Repeated single-valued modifier                  | Notice "No item has two <name>s."                                                                                                                            |
 
 ## The modifiers (complete)
 
-| Modifier | Accepted values | Applies to | What it does |
-|---|---|---|---|
-| `in:` | `tasks` `task` · `notes` `note` · `meetings` `meeting` · `training` `trainings` · `readings` `reading` · `lists` `list` · `people` `person` | all | Limits to one source (singular and plural are the only forms). |
-| `workspace:` | `research` `work` `life` | scoped sources; unscoped ones always kept | Limits to one workspace. |
-| `with:` | a person's full name or initials | meetings (attendees), training (leads), notes (people chipped in), readings (authors) | Items involving that person. |
-| `by:` | a person's full name or initials | readings (authors), training (leads) | Items made or led by them; a subset of `with:`. |
-| `status:` | tasks: `"not started"` `"in progress"` `done` `open` · readings: `read` `"to read"` | tasks, readings | Task state as labelled (`open` = not started + in progress); a reading's read state. |
-| `priority:` | `P1` `P2` `P3` | tasks | Priority as shown (high, normal, low). |
-| `due:` | `today` `tomorrow` `overdue` `week` | tasks | `week` = today plus the next six days. No due date matches none (`-has:due` finds them). |
-| `list:` | a list name, or `list/sublist` | tasks | Top-level list (a client in Work; free text in Research and Life). |
-| `tag:` | a tag name | tasks, readings (Zotero tags) | Items with that tag. |
-| `skill:` | a skill name from the Settings list | training, meetings (Research) | Items tagged with that skill. |
-| `series:` | a series name | meetings, training | Meeting or training series. |
-| `has:` | `due` `description` (tasks) · `notes` (readings) · `todos` `summary` (meetings) | tasks, readings, meetings | The item has it (`todos` = open TODOs). |
-| `before:` | a date | notes, meetings, training, tasks (due date), readings (year) | Strictly before; for a month or year, before its first day. |
-| `after:` | a date | same | Strictly after; for a month or year, after its last day. |
-| `on:` | a date | same | That day (a month or year: any day in it). |
-| `during:` | `YYYY-MM` · `YYYY` · `today` `yesterday` · `"this week"` `"last week"` · `"this month"` `"last month"` · `"this year"` `"last year"` | same | Inside that period; weeks run Monday to Sunday. |
+| Modifier     | Accepted values                                                                                                                             | Applies to                                                                            | What it does                                                                             |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `in:`        | `tasks` `task` · `notes` `note` · `meetings` `meeting` · `training` `trainings` · `readings` `reading` · `lists` `list` · `people` `person` | all                                                                                   | Limits to one source (singular and plural are the only forms).                           |
+| `workspace:` | `research` `work` `life`                                                                                                                    | scoped sources; unscoped ones always kept                                             | Limits to one workspace.                                                                 |
+| `with:`      | a person's full name or initials                                                                                                            | meetings (attendees), training (leads), notes (people chipped in), readings (authors) | Items involving that person.                                                             |
+| `by:`        | a person's full name or initials                                                                                                            | readings (authors), training (leads)                                                  | Items made or led by them; a subset of `with:`.                                          |
+| `status:`    | tasks: `"not started"` `"in progress"` `done` `open` · readings: `read` `"to read"`                                                         | tasks, readings                                                                       | Task state as labelled (`open` = not started + in progress); a reading's read state.     |
+| `priority:`  | `P1` `P2` `P3`                                                                                                                              | tasks                                                                                 | Priority as shown (high, normal, low).                                                   |
+| `due:`       | `today` `tomorrow` `overdue` `week`                                                                                                         | tasks                                                                                 | `week` = today plus the next six days. No due date matches none (`-has:due` finds them). |
+| `list:`      | a list name, or `list/sublist`                                                                                                              | tasks                                                                                 | Top-level list (a client in Work; free text in Research and Life).                       |
+| `tag:`       | a tag name                                                                                                                                  | tasks, readings (Zotero tags)                                                         | Items with that tag.                                                                     |
+| `skill:`     | a skill name from the Settings list                                                                                                         | training, meetings (Research)                                                         | Items tagged with that skill.                                                            |
+| `series:`    | a series name                                                                                                                               | meetings, training                                                                    | Meeting or training series.                                                              |
+| `has:`       | `due` `description` (tasks) · `notes` (readings) · `todos` `summary` (meetings)                                                             | tasks, readings, meetings                                                             | The item has it (`todos` = open TODOs).                                                  |
+| `before:`    | a date                                                                                                                                      | notes, meetings, training, tasks (due date), readings (year)                          | Strictly before; for a month or year, before its first day.                              |
+| `after:`     | a date                                                                                                                                      | same                                                                                  | Strictly after; for a month or year, after its last day.                                 |
+| `on:`        | a date                                                                                                                                      | same                                                                                  | That day (a month or year: any day in it).                                               |
+| `during:`    | `YYYY-MM` · `YYYY` · `today` `yesterday` · `"this week"` `"last week"` · `"this month"` `"last month"` · `"this year"` `"last year"`        | same                                                                                  | Inside that period; weeks run Monday to Sunday.                                          |
 
 Date values for `before:`, `after:` and `on:`: `YYYY-MM-DD`, `YYYY-MM`, `YYYY`, `today`, `yesterday`. Nothing else (no `Oct 3`). A reading's date is its
 year only. A task with no due date never matches a positive date modifier.
@@ -67,14 +67,14 @@ list names come from the user's own data, so the values are read from it, never 
 
 ## Examples
 
-| Typed | Meaning |
-|---|---|
-| `experiments in:task` | Tasks mentioning "experiments" (the failed search) |
-| `in:tasks status:"in progress" priority:P1` | In-progress P1 tasks |
-| `luminos with:Chris after:2026-05` | Luminos mentions involving Chris, after May 2026 |
-| `in:tasks due:overdue list:Luminos` | Overdue tasks of one list |
-| `-in:readings sample` | "sample", readings left out |
-| `workspace:work report` | Work items, plus people and readings, mentioning "report" |
+| Typed                                       | Meaning                                                   |
+| ------------------------------------------- | --------------------------------------------------------- |
+| `experiments in:task`                       | Tasks mentioning "experiments" (the failed search)        |
+| `in:tasks status:"in progress" priority:P1` | In-progress P1 tasks                                      |
+| `luminos with:Chris after:2026-05`          | Luminos mentions involving Chris, after May 2026          |
+| `in:tasks due:overdue list:Luminos`         | Overdue tasks of one list                                 |
+| `-in:readings sample`                       | "sample", readings left out                               |
+| `workspace:work report`                     | Work items, plus people and readings, mentioning "report" |
 
 ## Stages (the user waived the stop after each stage for this run)
 
