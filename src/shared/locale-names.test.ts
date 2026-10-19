@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { firstWeekday, localeDate, monthName, weekdayName } from './locale-names'
+import {
+  firstWeekday,
+  formatClock,
+  localeDate,
+  monthName,
+  uses12HourClock,
+  weekdayName
+} from './locale-names'
 
 // The tests run in US English (vitest.config.ts), so the expected text is fixed.
 describe('locale names', () => {
@@ -27,5 +34,17 @@ describe('locale names', () => {
 describe('firstWeekday', () => {
   it('is Sunday for US English', () => {
     expect(firstWeekday()).toBe(7)
+  })
+})
+
+describe('formatClock', () => {
+  it('writes a time the way the region does (12-hour in US English)', () => {
+    expect(uses12HourClock()).toBe(true)
+    expect(formatClock('14:00')).toBe('2:00 PM')
+    expect(formatClock('09:15:00')).toBe('9:15 AM')
+    expect(formatClock('00:30')).toBe('12:30 AM')
+  })
+  it('returns anything that is not a time as it is', () => {
+    expect(formatClock('now')).toBe('now')
   })
 })

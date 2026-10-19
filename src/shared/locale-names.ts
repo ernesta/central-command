@@ -38,3 +38,18 @@ export function firstWeekday(): number {
   }
   return locale.getWeekInfo?.().firstDay ?? locale.weekInfo?.firstDay ?? 1
 }
+
+/** Whether the Mac's region shows a 12-hour clock ("2:00 PM") rather than a 24-hour one ("14:00"). */
+export function uses12HourClock(): boolean {
+  return new Intl.DateTimeFormat(undefined, { hour: 'numeric' }).resolvedOptions().hour12 === true
+}
+
+/** "14:00" as the Mac's region writes it ("14:00", or "2:00 PM"). Anything that is not HH:MM is returned as it is. */
+export function formatClock(time: string): string {
+  const m = /^(\d{1,2}):(\d{2})/.exec(time)
+  if (!m) return time
+  return new Date(Date.UTC(2024, 0, 1, Number(m[1]) % 24, Number(m[2]))).toLocaleTimeString(
+    undefined,
+    { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }
+  )
+}
