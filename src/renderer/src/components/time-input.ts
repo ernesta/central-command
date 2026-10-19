@@ -51,3 +51,13 @@ export function endFollowingStart(
   const untouched = !end || (oldStart !== null && end === addHour(oldStart))
   return untouched ? addHour(newStart) : end
 }
+
+/** A 24-hour hour (0 to 23) on a 12-hour clock: 0 is 12 AM, 12 is 12 PM, 13 is 1 PM. */
+export function to12Hour(hour: number): { hour: number; pm: boolean } {
+  return { hour: hour % 12 || 12, pm: hour >= 12 }
+}
+
+/** The 24-hour hour for 1 to 12 and AM or PM; 12 AM is 0 and 12 PM is 12. */
+export function from12Hour(hour: number, pm: boolean): number {
+  return (hour % 12) + (pm ? 12 : 0)
+}

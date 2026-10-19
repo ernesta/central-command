@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { endFollowingStart, parseQuarterTime, parseTime, snapTime, stepTime } from './time-input'
+import {
+  endFollowingStart,
+  from12Hour,
+  parseQuarterTime,
+  parseTime,
+  snapTime,
+  stepTime,
+  to12Hour
+} from './time-input'
 
 describe('parseTime', () => {
   it('reads typed times in the usual shapes', () => {
@@ -63,5 +71,18 @@ describe('endFollowingStart', () => {
   it('leaves the end when the start is cleared and caps at the end of the day', () => {
     expect(endFollowingStart('13:00', null, '14:00')).toBe('14:00')
     expect(endFollowingStart(null, '23:30', null)).toBe('23:45')
+  })
+})
+
+describe('12-hour clock', () => {
+  it('turns 24-hour hours into 12-hour ones and back', () => {
+    expect(to12Hour(0)).toEqual({ hour: 12, pm: false })
+    expect(to12Hour(9)).toEqual({ hour: 9, pm: false })
+    expect(to12Hour(12)).toEqual({ hour: 12, pm: true })
+    expect(to12Hour(23)).toEqual({ hour: 11, pm: true })
+    for (let h = 0; h < 24; h++) {
+      const t = to12Hour(h)
+      expect(from12Hour(t.hour, t.pm)).toBe(h)
+    }
   })
 })
