@@ -145,7 +145,7 @@ export const GENERAL_SHORTCUTS: ShortcutGroup = {
     {
       action: 'Complete a search filter',
       keys: ['Tab'],
-      note: 'Type two letters of a filter, or a filter and a colon, to see the choices. The arrow keys pick one, Enter or Tab inserts it, Escape closes the list.'
+      note: 'Type two letters of a filter, or a filter and a colon, to see the choices. The arrow keys pick one, Enter or Tab inserts it (Tab takes grey text when one choice is left), Escape closes the list. A finished filter becomes a chip; Backspace at the start removes the last one.'
     },
     { action: 'Close the Ask panel, a menu or a pop-up', keys: ['Escape'] }
   ]
