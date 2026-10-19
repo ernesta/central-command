@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useElementWidth } from '@renderer/state/use-element-width'
+import { weekdayName } from '@shared/locale-names'
 import { formatHours } from '@shared/tracking/format'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
 import { columnPath, niceAxis, slotAt } from '../shared/chart'
@@ -12,7 +13,6 @@ const PAD = { top: 22, right: 8, bottom: 26, left: 52 }
 const MAX_BAR = 56
 const RADIUS = 4
 const STEP = 120 // a tick every 2 hours
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 /** The average hours on each weekday so far, weekends kept: met in the accent, under the daily aim in `--chart-under`, like the weeks. */
 export function TypicalWeek({ data, now }: { data: TrackingYear; now: Moment }): React.JSX.Element {
@@ -102,7 +102,7 @@ export function TypicalWeek({ data, now }: { data: TrackingYear; now: Moment }):
                   {d.days > 0 ? formatHours(d.average) : ''}
                 </text>
                 <text className={styles.axis} x={centre(i)} y={HEIGHT - 6} textAnchor="middle">
-                  {DAYS[d.weekday - 1]}
+                  {weekdayName(d.weekday)}
                 </text>
                 <rect
                   className={styles.hit}
@@ -133,7 +133,7 @@ export function TypicalWeek({ data, now }: { data: TrackingYear; now: Moment }):
           >
             <strong className={styles.tipValue}>{formatHours(tip.average)}</strong>
             <span className={styles.tipLine}>
-              {DAYS[tip.weekday - 1]} · average of {tip.days} {tip.days === 1 ? 'day' : 'days'}
+              {weekdayName(tip.weekday)} · average of {tip.days} {tip.days === 1 ? 'day' : 'days'}
             </span>
             {tip.aim !== null && <span className={styles.tipLine}>Aim {formatHours(tip.aim)}</span>}
           </div>
