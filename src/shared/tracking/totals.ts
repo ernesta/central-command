@@ -269,6 +269,36 @@ export function removeAdjust(year: TrackingYear, id: string): Change {
   return { ok: true, year: { ...year, adjusts: year.adjusts.filter((a) => a.id !== id) } }
 }
 
+/** Sessions and typed time, as a part of a year (what a change left different). */
+export interface EntryParts {
+  sessions: Session[]
+  adjusts: Adjust[]
+}
+
+/**
+ * Put entries back exactly as they were (the Undo of a change that edited entries in place: a start time that trimmed earlier
+ * entries, a rename that merged two rows). `after` is what the change left and `before` what it replaced; the same ids in
+ * both. Nothing is written unless every entry in `after` is still exactly as the change left it, so a later edit is never undone
+ * by accident. No entry is added or removed, and reported minutes are the ones frozen in `before`.
+ */
+export function restoreEntries(year: TrackingYear, before: EntryParts, after: EntryParts): Change {
+  const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b)
+  const hold = <T extends { id: string }>(now: T[], was: T[], then: T[]): T[] | null => {
+    const out = [...now]
+    for (const left of then) {
+      const at = out.findIndex((e) => e.id === left.id)
+      const old = was.find((e) => e.id === left.id)
+      if (at === -1 || !old || !same(out[at], left)) return null
+      out[at] = old
+    }
+    return out
+  }
+  const sessions = hold(year.sessions, before.sessions, after.sessions)
+  const adjusts = hold(year.adjusts, before.adjusts, after.adjusts)
+  if (!sessions || !adjusts) return { ok: false, reason: 'changed-since' }
+  return { ok: true, year: { ...year, sessions, adjusts } }
+}
+
 /** A day's short note. An empty one removes it; a day left with nothing is dropped. */
 export function setDayNote(year: TrackingYear, date: string, note: string): Change {
   if (!inYear(date, year.start, year.weeks)) return { ok: false, reason: 'outside-year' }

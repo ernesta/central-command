@@ -1,5 +1,6 @@
 import { pushUndo } from '@renderer/components/undo-store'
 import type { Workspace } from '@shared/settings'
+import { entryDiff } from '../shared/entry-diff'
 import { taskUidOf } from '@modules/tasks/shared/tracked'
 
 /**
@@ -17,14 +18,27 @@ export async function renameRow(
   const uid = taskUidOf(row.task)
   const title = to.trim()
   if (!title) return
-  if (uid) await window.api.tasks.update(uid, { title })
-  else await window.api.tracking.renameTask(workspace, year, date, row.label, title, row.client)
-  // Cmd-Z gives it its old name back (not when a name already used that day merged the two: the entries cannot be told apart).
+  if (uid) {
+    await window.api.tasks.update(uid, { title })
+    // Entries follow their task by its key, so the old title gives every one of them its name back.
+    pushUndo({
+      label: `rename of “${row.label}”`,
+      undo: async () => {
+        await window.api.tasks.update(uid, { title: row.label })
+      }
+    })
+    return
+  }
+  const api = window.api.tracking
+  const before = await api.get(workspace, year)
+  await api.renameTask(workspace, year, date, row.label, title, row.client)
+  // Cmd-Z gives back exactly the entries that were renamed, so a name already used that day, which merged the two rows, splits again.
+  const { before: was, after: now } = entryDiff(before, await api.get(workspace, year))
   pushUndo({
     label: `rename of “${row.label}”`,
     undo: async () => {
-      if (uid) await window.api.tasks.update(uid, { title: row.label })
-      else await window.api.tracking.renameTask(workspace, year, date, title, row.label, row.client)
+      const back = await api.restoreEntries(workspace, year, was, now)
+      if (!back.ok) throw new Error('The entries changed since.')
     }
   })
 }

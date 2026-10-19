@@ -19,6 +19,7 @@ import {
   startSession,
   stopSession
 } from './timer'
+import { restoreEntries } from './totals'
 import { at, nextId, ok, year } from './test-utils'
 import type { TrackingYear } from './types'
 
@@ -248,6 +249,21 @@ describe('starting earlier than now', () => {
     const moved = ok(setStartAt(y, id, '10:15:00', at(D, '10:45:00')))
     expect(runningSession(moved)?.start).toBe('10:15:00')
     expect(moved.sessions[0]).toMatchObject({ end: '10:00:00', minutes: 60 })
+  })
+
+  it('restoreEntries puts a trimmed entry and the start back exactly, and only while nothing changed since', () => {
+    const { y, id } = running()
+    const moved = ok(setStartAt(y, id, '09:30:00', at(D, '10:45:00')))
+    const before = { sessions: y.sessions, adjusts: [] }
+    const after = { sessions: moved.sessions, adjusts: [] }
+    const back = ok(restoreEntries(moved, before, after))
+    expect(back).toEqual(y)
+    // The earlier entry was edited again meanwhile: nothing is written.
+    const edited = {
+      ...moved,
+      sessions: moved.sessions.map((s, i) => (i === 0 ? { ...s, label: 'Other' } : s))
+    }
+    expect(restoreEntries(edited, before, after)).toEqual({ ok: false, reason: 'changed-since' })
   })
 
   it('trims the end of an earlier entry it overlaps and reports its minutes again', () => {

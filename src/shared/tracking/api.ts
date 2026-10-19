@@ -1,5 +1,6 @@
 import type { Workspace } from '../settings'
 import type { OpenContracts } from './contracts'
+import type { EntryParts } from './totals'
 import type {
   Change,
   ContractTerms,
@@ -102,6 +103,16 @@ export interface TrackingApi {
     /** The task (`cc://task/<uid>`) the time is for. */
     task?: string
   ): Promise<YearResult>
+  /**
+   * Put entries back as they were (the Undo of a change made to entries in place): `before` and `after` hold the same ids, and nothing is
+   * written unless each entry of `after` is still exactly as the change left it ("changed-since").
+   */
+  restoreEntries(
+    workspace: Workspace,
+    year: string,
+    before: EntryParts,
+    after: EntryParts
+  ): Promise<YearResult>
   /** Take back one piece of typed time by its id (the last of `adjusts` after `addTime`); the Undo of `addTime`. */
   removeAdjust(workspace: Workspace, year: string, id: string): Promise<YearResult>
   setNote(workspace: Workspace, year: string, date: string, note: string): Promise<YearResult>
@@ -165,6 +176,7 @@ export const TRACKING_IPC = {
   setClient: 'tracking:set-client',
   addTime: 'tracking:add-time',
   removeAdjust: 'tracking:remove-adjust',
+  restoreEntries: 'tracking:restore-entries',
   setNote: 'tracking:set-note',
   setPlan: 'tracking:set-plan',
   addTimeOff: 'tracking:add-time-off',

@@ -2,6 +2,8 @@ import { BrowserWindow, ipcMain } from 'electron'
 import { INVOICES, TIME_OFF_TYPES, type Invoice, type TimeOffType } from '@shared/tracking/types'
 import { TRACKING_IPC } from '@shared/tracking/api'
 import { WORKSPACES, type Workspace } from '@shared/settings'
+import type { EntryParts } from '@shared/tracking/totals'
+import type { Adjust, Session } from '@shared/tracking/types'
 import type { TrackingStore } from '../tracking/store'
 
 function workspace(value: unknown): Workspace {
@@ -23,6 +25,17 @@ function whole(value: unknown): number {
   if (typeof value !== 'number' || !Number.isInteger(value))
     throw new Error('Expected a whole number')
   return value
+}
+
+/** The sessions and typed time of a restore: arrays of entries, each with a text id (the rest is the store's to check). */
+function entryParts(value: unknown): EntryParts {
+  const parts = value as Partial<EntryParts> | null
+  const list = (items: unknown): { id: string }[] => {
+    if (!Array.isArray(items)) throw new Error('Expected a list of entries')
+    for (const item of items) text((item as { id?: unknown } | null)?.id)
+    return items as { id: string }[]
+  }
+  return { sessions: list(parts?.sessions) as Session[], adjusts: list(parts?.adjusts) as Adjust[] }
 }
 
 function timeOffType(value: unknown): TimeOffType {
@@ -100,6 +113,9 @@ export function registerTrackingIpc(store: TrackingStore): void {
       optionalText(from),
       text(to)
     )
+  )
+  h(TRACKING_IPC.restoreEntries, (_e, ws, year, before, after) =>
+    store.restoreEntries(workspace(ws), text(year), entryParts(before), entryParts(after))
   )
   h(TRACKING_IPC.removeAdjust, (_e, ws, year, id) =>
     store.removeAdjust(workspace(ws), text(year), text(id))

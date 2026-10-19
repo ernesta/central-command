@@ -4,6 +4,7 @@ import { TimeInput } from '@renderer/components/TimeInput'
 import { pushUndo } from '@renderer/components/undo-store'
 import type { RunningTimer, TimerResult } from '@shared/tracking/api'
 import { formatHours } from '@shared/tracking/format'
+import { entryDiff } from '../shared/entry-diff'
 import styles from './StartedAt.module.css'
 
 const REASONS: Record<string, string> = {
@@ -13,19 +14,21 @@ const REASONS: Record<string, string> = {
 }
 
 /**
- * Change when the running timer started. Cmd-Z puts the start back (an earlier entry the change trimmed stays trimmed), while that
- * session still runs.
+ * Change when the running timer started. Cmd-Z puts the start back and un-trims any earlier entry the change cut short, exactly,
+ * as long as none of them was changed since.
  */
 async function changeStart(running: RunningTimer, time: string): Promise<TimerResult> {
   const { workspace, year, session } = running
-  const result = await window.api.tracking.setStart(workspace, year, session.id, time)
+  const api = window.api.tracking
+  const before = await api.get(workspace, year)
+  const result = await api.setStart(workspace, year, session.id, time)
   if (result.ok) {
-    const was = session.start
+    const { before: was, after: now } = entryDiff(before, await api.get(workspace, year))
     pushUndo({
       label: 'change of the start time',
       undo: async () => {
-        const back = await window.api.tracking.setStart(workspace, year, session.id, was)
-        if (!back.ok) throw new Error(REASONS[back.reason] ?? 'The timer is not running any more.')
+        const back = await api.restoreEntries(workspace, year, was, now)
+        if (!back.ok) throw new Error('The timer or the entries before it changed since.')
       }
     })
   }

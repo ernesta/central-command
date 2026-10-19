@@ -23,8 +23,10 @@ import {
   addTime,
   deleteTaskTime,
   removeAdjust,
+  restoreEntries,
   setDayNote,
-  setTaskMinutes
+  setTaskMinutes,
+  type EntryParts
 } from '@shared/tracking/totals'
 import { addTimeOff, editTimeOff, removeTimeOff } from '@shared/tracking/timeoff'
 import type {
@@ -345,6 +347,15 @@ export class TrackingStore {
     return this.mutate(workspace, year, (y) =>
       addTime(y, date, label, minutes, this.newId(), client, task)
     )
+  }
+
+  restoreEntries(
+    workspace: Workspace,
+    year: string,
+    before: EntryParts,
+    after: EntryParts
+  ): YearResult {
+    return this.mutate(workspace, year, (y) => restoreEntries(y, before, after))
   }
 
   removeAdjust(workspace: Workspace, year: string, id: string): YearResult {
