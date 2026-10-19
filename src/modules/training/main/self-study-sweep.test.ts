@@ -56,6 +56,7 @@ const entry = async (over: Partial<CreateTrainingInput> = {}): Promise<TrainingR
       date: '2026-10-21',
       title: 'Lecture 1',
       series: 'PS5210',
+      task: 'auto',
       ...over
     })
   ).ref
@@ -184,6 +185,29 @@ describe('settleSelfStudyTasks', () => {
     expect(byTitle('Lecture 1 self-study')).toHaveLength(1)
   })
 
+  it('leaves every older entry alone: no task for one made before the app made tasks, however recent', async () => {
+    const plain = await entry({ task: undefined })
+    const mapped = tasks.create({ workspace: 'research', title: 'Mine', list: 'Training' })
+    const chosen = await entry({ title: 'Lecture 2', task: mapped.uid })
+    const file = await training.read(chosen)
+    expect(file.meta.task).toBe(mapped.uid)
+    expect(await sweep()).toBe(false)
+    expect(all().filter((t) => t.title.endsWith('self-study'))).toHaveLength(0)
+    expect((await training.read(plain)).meta.selfStudy).toBe('')
+  })
+
+  it('an entry whose own task is marked training is made one too', async () => {
+    const own = tasks.create({
+      workspace: 'research',
+      title: 'Lecture 3',
+      list: 'Training',
+      ownKind: 'training'
+    })
+    await entry({ title: 'Lecture 3', task: own.uid })
+    await sweep()
+    expect(byTitle('Lecture 3 self-study')).toHaveLength(1)
+  })
+
   describe('done a week after the entry ends', () => {
     it('not the minute before, done at the minute (an end time)', async () => {
       await entry({ date: '2026-10-10', start: '09:00', end: '11:00' })
@@ -212,16 +236,13 @@ describe('settleSelfStudyTasks', () => {
       expect(byTitle('Lecture 1 self-study')[0].status).toBe('done')
     })
 
-    it('an entry whose week is over gets no task from the app, and its task already done, once, from the repair', async () => {
+    it('an entry made in the app gets its task already done when its week is over', async () => {
       await entry({ date: '2026-08-01' })
-      expect(await sweep()).toBe(false)
-      expect(byTitle('Lecture 1 self-study')).toHaveLength(0)
-      await sweep(NOW, { backfill: true })
+      await sweep()
       expect(byTitle('Lecture 1 self-study')[0]).toMatchObject({
         status: 'done',
         due: '2026-08-01'
       })
-      expect(await sweep(NOW, { backfill: true })).toBe(false)
     })
 
     it('a task the user reopens by hand stays open: the app closes it once', async () => {

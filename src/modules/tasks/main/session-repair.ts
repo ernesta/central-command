@@ -7,9 +7,6 @@ import {
   type MeetingParent
 } from '../../meetings/shared/meeting-task'
 import type { MeetingWorkspace } from '../../meetings/shared/types'
-import { isLectureOwn } from '../../training/shared/lecture-task'
-import { isSelfStudyOwn } from '../../training/shared/self-study-task'
-import { selfStudyDoneAt, selfStudyTaskChanges, type LocalMoment } from '../shared/session-task'
 import { TASK_WORKSPACES, type OwnKind, type Task } from '../shared/types'
 import { listTasks, listTrash } from './repository'
 import { TasksStore } from './tasks-store'
@@ -27,12 +24,8 @@ export interface RepairMeeting {
   date: string
 }
 
+/** The tasks a training entry names: not orphans, whatever they look like. Trainings are otherwise left to the user. */
 export interface RepairTraining {
-  id: string
-  title: string
-  series: string | null
-  date: string
-  end: string | null
   task: string
   selfStudy: string
 }
@@ -97,35 +90,9 @@ export interface OrphanLine {
   markerMissing: boolean
 }
 
-export interface TrainingLine {
-  id: string
-  title: string
-  date: string
-  series: string | null
-  /** The self-study task it would get: the due date and the moment it is done. */
-  due: string
-  doneAt: LocalMoment
-  /** Already past that moment: made done at once. */
-  doneNow: boolean
-}
-
-export interface TrainingMark {
-  id: string
-  uid: string
-  kind: 'training' | 'self-study'
-  title: string
-}
-
 export interface RepairReport {
   meetings: MeetingLine[]
   orphans: OrphanLine[]
-  trainingMissing: TrainingLine[]
-  trainingMarks: TrainingMark[]
-  /** Entries whose note names a self-study task that is gone: left alone, never made again by itself. */
-  trainingGone: { id: string; selfStudy: string }[]
-  /** Entries still waiting for a title or a date. */
-  trainingWaiting: number
-  trainingWithTask: number
 }
 
 /** Everything the report reads, from a database (live and trashed tasks, the meetings and training index). */
@@ -144,14 +111,11 @@ export function readRepairInput(db: Database): RepairInput {
       .all() as RepairMeeting[],
     training: db
       .prepare(
-        `SELECT entry_id AS id, title, series, date, end_time AS end, task, self_study_task AS selfStudy
-         FROM training WHERE workspace = 'research' ORDER BY date, entry_id`
+        `SELECT task, self_study_task AS selfStudy FROM training WHERE workspace = 'research'`
       )
       .all() as RepairTraining[]
   }
 }
-
-const named = (title: string): boolean => title.trim() !== '' && title.trim() !== 'Untitled'
 
 /**
  * What is wrong with the meeting and training tasks, and what `--apply` would do about it. Pure: the same input gives the same
@@ -160,16 +124,13 @@ const named = (title: string): boolean => title.trim() !== '' && title.trim() !=
  * - Every meeting that names a task: does it exist, is it the meeting's own (marker, or the old title), has it the title, series task
  *   and due date the note calls for, do two meetings share it, is the marker missing.
  * - Every own-looking meeting subtask no meeting points to (orphans).
- * - Every Research training entry with a title and a date and no self-study task, with the due date and the done moment it would get.
- * - The markers the training tasks lack.
  *
  * `clients` is Work's list of clients; `tracked` the minutes tracked per task uid.
  */
 export function planRepair(
   input: RepairInput,
   clients: readonly string[] | null,
-  tracked: ReadonlyMap<string, number>,
-  now: LocalMoment
+  tracked: ReadonlyMap<string, number>
 ): RepairReport {
   const live = input.tasks.filter((t) => t.deletedAt === null)
   const byUid = new Map(input.tasks.map((t) => [t.uid, t]))
@@ -234,8 +195,7 @@ export function planRepair(
     if (fix.mark || fix.title !== undefined || fix.due !== undefined || fix.parent) line.fix = fix
   }
 
-  const training = input.training
-  for (const t of training) {
+  for (const t of input.training) {
     for (const uid of [t.task, t.selfStudy]) if (uid && uid !== 'auto') pointed.add(uid)
   }
   const orphans: OrphanLine[] = live
@@ -253,55 +213,7 @@ export function planRepair(
     }))
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
 
-  const trainingMissing: TrainingLine[] = []
-  const trainingMarks: TrainingMark[] = []
-  const trainingGone: { id: string; selfStudy: string }[] = []
-  let trainingWaiting = 0
-  let trainingWithTask = 0
-  for (const t of training) {
-    const lecture = t.task && t.task !== 'auto' ? live.find((x) => x.uid === t.task) : undefined
-    if (lecture && lecture.ownKind === null && isLectureOwn(lecture, live)) {
-      trainingMarks.push({ id: t.id, uid: lecture.uid, kind: 'training', title: lecture.title })
-    }
-    const study = t.selfStudy ? live.find((x) => x.uid === t.selfStudy) : undefined
-    if (study) {
-      trainingWithTask++
-      if (study.ownKind === null && isSelfStudyOwn(study, live)) {
-        trainingMarks.push({ id: t.id, uid: study.uid, kind: 'self-study', title: study.title })
-      }
-      continue
-    }
-    if (t.selfStudy) {
-      trainingGone.push({ id: t.id, selfStudy: t.selfStudy })
-      continue
-    }
-    if (!named(t.title) || !t.date) {
-      trainingWaiting++
-      continue
-    }
-    const session = { date: t.date, end: t.end }
-    const doneAt = selfStudyDoneAt(session) as LocalMoment
-    const probe = { status: 'doing', due: null } as Task
-    trainingMissing.push({
-      id: t.id,
-      title: t.title,
-      date: t.date,
-      series: t.series,
-      due: t.date,
-      doneAt,
-      doneNow: selfStudyTaskChanges(probe, session, now).done === true
-    })
-  }
-
-  return {
-    meetings,
-    orphans,
-    trainingMissing,
-    trainingMarks,
-    trainingGone,
-    trainingWaiting,
-    trainingWithTask
-  }
+  return { meetings, orphans }
 }
 
 const minutes = (n: number): string => (n === 0 ? 'no time tracked' : `${n} min tracked`)
@@ -379,18 +291,6 @@ export function formatRepairReport(report: RepairReport, region: string): string
   }
 
   say()
-  const history = report.trainingMissing.filter((t) => t.doneNow).length
-  say(
-    `TRAININGS: ${report.trainingWithTask} have a self-study task, ${report.trainingMissing.length} would get one (${history} history, made by --apply only; ${report.trainingMissing.length - history} the app makes by itself), ${report.trainingWaiting} wait for a title or a date, ${report.trainingGone.length} name a self-study task that is gone (left alone)`
-  )
-  for (const t of report.trainingMissing) {
-    say(
-      `  ${t.id}${t.series ? ` [${t.series}]` : ''}: make "${t.title} self-study", due ${t.due}, done ${t.doneAt.date} ${t.doneAt.time}${t.doneNow ? ' (history: its week is over, done at once; only --apply makes it)' : ' (the app makes it by itself)'}`
-    )
-  }
-  say(`  markers missing on training tasks: ${report.trainingMarks.length}`)
-  for (const m of report.trainingMarks) say(`  ${m.id}: mark "${m.title}" as ${m.kind}`)
-  for (const g of report.trainingGone) say(`  ${g.id}: self-study task ${g.selfStudy} is gone`)
   return out.join('\n')
 }
 
@@ -404,20 +304,21 @@ export { meetingTaskTitle }
 
 /**
  * Applies the task side of a report to a database inside one transaction: the markers, and each meeting task's title, due date and
- * series task. Afterwards the report is worked out again and must find nothing left to do, or everything is rolled back and an error
- * is thrown ("refuses to write unless the result verifies"). Training self-study tasks are made by the sweep, which needs the notes.
+ * series task, and the orphans with no time tracked go to the Tasks trash. Afterwards the report is worked out again and must find
+ * nothing left to do, or everything is rolled back and an error is thrown ("refuses to write unless the result verifies"). Trainings
+ * are never touched: the user maps them to tasks and hours by hand.
  */
 export function applyRepair(
   db: Database,
   clients: readonly string[] | null,
-  tracked: ReadonlyMap<string, number>,
-  now: LocalMoment
-): { marked: number; changed: number } {
+  tracked: ReadonlyMap<string, number>
+): { marked: number; changed: number; trashed: number } {
   const store = new TasksStore(db)
   let marked = 0
   let changed = 0
+  let trashed = 0
   db.transaction(() => {
-    const report = planRepair(readRepairInput(db), clients, tracked, now)
+    const report = planRepair(readRepairInput(db), clients, tracked)
     for (const m of report.meetings) {
       const fix = m.fix
       if (!fix) continue
@@ -441,14 +342,18 @@ export function applyRepair(
       if (fix.mark) marked++
       if (fix.title !== undefined || fix.due !== undefined || parentUid) changed++
     }
-    for (const mark of report.trainingMarks) {
-      store.update(mark.uid, { ownKind: mark.kind })
-      marked++
+    // Own-looking subtasks no meeting names and no time is tracked on: to the Tasks trash (restorable). One with time is kept.
+    for (const o of report.orphans) {
+      if (o.trackedMinutes > 0) continue
+      store.delete(o.uid)
+      trashed++
     }
-    const after = planRepair(readRepairInput(db), clients, tracked, now)
-    const left = after.meetings.filter((m) => m.fix).length + after.trainingMarks.length
+    const after = planRepair(readRepairInput(db), clients, tracked)
+    const left =
+      after.meetings.filter((m) => m.fix).length +
+      after.orphans.filter((o) => o.trackedMinutes === 0).length
     if (left > 0)
       throw new Error(`Refusing to write: ${left} item(s) would still need repair afterwards`)
   })()
-  return { marked, changed }
+  return { marked, changed, trashed }
 }

@@ -10,7 +10,6 @@ import { TasksStore } from './tasks-store'
 
 let db: Database.Database
 let store: TasksStore
-const NOW = { date: '2026-10-19', time: '12:00' }
 const NONE = new Map<string, number>()
 
 beforeEach(() => {
@@ -102,7 +101,7 @@ function scenario(): Record<string, string> {
 describe('planRepair: meetings', () => {
   it('finds the meeting changed to Other whose task still says Supervision, and says how to fix it', () => {
     const id = scenario()
-    const report = planRepair(readRepairInput(db), null, NONE, NOW)
+    const report = planRepair(readRepairInput(db), null, NONE)
     const other = report.meetings.find((m) => m.id === '2026-10-20 Other')
     expect(other?.fix).toMatchObject({
       uid: id.stale,
@@ -116,7 +115,7 @@ describe('planRepair: meetings', () => {
 
   it('classifies every meeting: in step, marker missing, chosen, in the trash, missing, auto, none', () => {
     scenario()
-    const report = planRepair(readRepairInput(db), null, NONE, NOW)
+    const report = planRepair(readRepairInput(db), null, NONE)
     const state = (id: string): string | undefined =>
       report.meetings.find((m) => m.id === id)?.state
     expect(state('2026-10-12 Supervision')).toBe('own')
@@ -135,7 +134,7 @@ describe('planRepair: meetings', () => {
 
   it('lists two meetings that share a task, and never proposes touching a chosen task', () => {
     scenario()
-    const report = planRepair(readRepairInput(db), null, NONE, NOW)
+    const report = planRepair(readRepairInput(db), null, NONE)
     const shared = report.meetings.filter((m) => m.sharedWith.length > 0)
     expect(shared.map((m) => m.id).sort()).toEqual([
       '2026-10-02 Supervision',
@@ -149,7 +148,7 @@ describe('planRepair: orphans', () => {
   it('lists the own-looking subtasks no meeting names, with their tracked time, and not the ones that are named', () => {
     const id = scenario()
     const tracked = new Map([[id.left0, 90]])
-    const report = planRepair(readRepairInput(db), null, tracked, NOW)
+    const report = planRepair(readRepairInput(db), null, tracked)
     const orphans = report.orphans.filter((o) => o.title === 'Supervision · 19 Oct 2026')
     expect(orphans).toHaveLength(3)
     expect(orphans.every((o) => o.list === 'Meetings' && o.parentTitle === 'Supervision')).toBe(
@@ -166,70 +165,46 @@ describe('planRepair: orphans', () => {
 
   it('proposes nothing for a trash: the script has no delete', () => {
     scenario()
-    const report = planRepair(readRepairInput(db), null, NONE, NOW)
+    const report = planRepair(readRepairInput(db), null, NONE)
     expect(JSON.stringify(report)).not.toMatch(/"delete"/)
   })
 })
 
-describe('planRepair: trainings', () => {
-  it('lists the entries that lack a self-study task with the due date and done date, and what it leaves', () => {
+describe('planRepair: trainings are left alone', () => {
+  it('reports nothing about trainings, and never counts a task a training names as an orphan', () => {
     const series = store.create({ workspace: 'research', title: 'PS5210', list: 'Training' })
-    const lecture = store.create({
-      workspace: 'research',
-      title: 'Lecture 3',
-      parentUid: series.uid
-    })
     const study = store.create({
       workspace: 'research',
-      title: 'PS5210 self-study',
-      list: 'Training'
-    })
-    const mine = store.create({
-      workspace: 'research',
       title: 'Lecture 4 self-study',
-      parentUid: study.uid
+      parentUid: series.uid
     })
-    training('a', { task: lecture.uid, title: 'Lecture 3', date: '2026-10-01' })
-    training('b', { task: '', title: 'Lecture 1', date: '2026-10-21', end: '11:00' })
-    training('c', { title: 'Untitled' })
-    training('d', { title: 'Lecture 2', date: '' })
-    training('e', { title: 'Lecture 4', selfStudy: mine.uid })
-    training('f', { title: 'Lecture 5', selfStudy: 'gone0001' })
-    const report = planRepair(readRepairInput(db), null, NONE, NOW)
-    const missing = report.trainingMissing.map((t) => [t.id, t.due, t.doneAt, t.doneNow])
-    expect(missing).toEqual([
-      ['a', '2026-10-01', { date: '2026-10-08', time: '23:59' }, true],
-      ['b', '2026-10-21', { date: '2026-10-28', time: '11:00' }, false]
-    ])
-    expect(report.trainingWaiting).toBe(2)
-    expect(report.trainingWithTask).toBe(1)
-    expect(report.trainingGone).toEqual([{ id: 'f', selfStudy: 'gone0001' }])
-    expect(report.trainingMarks.map((m) => [m.id, m.kind]).sort()).toEqual([
-      ['a', 'training'],
-      ['e', 'self-study']
-    ])
-    const text = formatRepairReport(report, 'test')
-    expect(text).toContain(
-      'done 2026-10-08 23:59 (history: its week is over, done at once; only --apply makes it)'
-    )
-    expect(text).toContain('done 2026-10-28 11:00 (the app makes it by itself)')
+    training('a', { selfStudy: study.uid })
+    const report = planRepair(readRepairInput(db), null, NONE)
+    expect(Object.keys(report).sort()).toEqual(['meetings', 'orphans'])
+    expect(formatRepairReport(report, 'test')).not.toMatch(/TRAINING/i)
   })
 })
 
 describe('applyRepair', () => {
-  it('marks, renames, dates and re-parents, leaves the orphans and the chosen task, and a second look finds nothing', () => {
+  it('marks, renames, dates and re-parents, trashes the orphans with no time, and leaves the chosen task, and a second look finds nothing', () => {
     const id = scenario()
-    const before = readRepairInput(db).tasks.filter((t) => t.deletedAt === null).length
-    const done = applyRepair(db, null, NONE, NOW)
+    const done = applyRepair(db, null, NONE)
     expect(done.marked).toBeGreaterThan(0)
+    expect(done.trashed).toBe(3)
     const other = store.get(id.stale)
     expect(other).toMatchObject({ due: '2026-10-20', parentUid: id.meetings, ownKind: 'meeting' })
     expect(store.get(id.chosen)).toMatchObject({ title: 'Write the plan', ownKind: null })
-    expect(store.get(id.left0)).not.toBeNull()
-    expect(readRepairInput(db).tasks.filter((t) => t.deletedAt === null)).toHaveLength(before)
-    const after = planRepair(readRepairInput(db), null, NONE, NOW)
+    expect(store.get(id.left0)).toBeNull()
+    const after = planRepair(readRepairInput(db), null, NONE)
     expect(after.meetings.filter((m) => m.fix)).toEqual([])
-    expect(applyRepair(db, null, NONE, NOW)).toEqual({ marked: 0, changed: 0 })
+    expect(applyRepair(db, null, NONE)).toEqual({ marked: 0, changed: 0, trashed: 0 })
+  })
+
+  it('keeps an orphan that has time tracked on it', () => {
+    const id = scenario()
+    const done = applyRepair(db, null, new Map([[id.left0, 90]]))
+    expect(done.trashed).toBe(2)
+    expect(store.get(id.left0)).not.toBeNull()
   })
 
   it('writes nothing at all when the result does not verify', () => {
@@ -239,7 +214,7 @@ describe('applyRepair', () => {
       `CREATE TRIGGER keep_title BEFORE UPDATE OF title ON tasks BEGIN SELECT RAISE(IGNORE); END`
     )
     const snapshot = JSON.stringify(readRepairInput(db).tasks)
-    expect(() => applyRepair(db, null, NONE, NOW)).toThrow(/Refusing to write/)
+    expect(() => applyRepair(db, null, NONE)).toThrow(/Refusing to write/)
     expect(JSON.stringify(readRepairInput(db).tasks)).toBe(snapshot)
     expect(store.get(id.stale)?.ownKind).toBeNull()
   })
