@@ -46,6 +46,13 @@ export async function runSearches(
   return groups.filter((g) => g.hits.length > 0)
 }
 
+/** "12 results", and when a kind was cut short, how many of each are shown at most. */
+export function countResults(groups: readonly SearchGroup[], limit: number): string {
+  const total = groups.reduce((n, g) => n + g.hits.length, 0)
+  const text = `${total} ${total === 1 ? 'result' : 'results'}`
+  return groups.some((g) => g.hits.length >= limit) ? `${text} · up to ${limit} of each kind` : text
+}
+
 function groupRank(id: string): number {
   const at = SEARCH_GROUP_ORDER.indexOf(id)
   return at < 0 ? SEARCH_GROUP_ORDER.length : at

@@ -1,13 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { X } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import type { SearchHit } from '@shared/search'
 import { ghostFor } from '@shared/search-complete'
 import { splitChips } from '@shared/search-chips'
 import { fold } from '@shared/text'
+import { IconButton } from '../components/IconButton'
 import { ChipInput } from './ChipInput'
+import { ModifierChip } from './ModifierChip'
 import { CompletionList } from './CompletionList'
-import { searchEverywhere, type SearchOutcome } from './run-search'
+import { countResults, searchEverywhere, type SearchOutcome } from './run-search'
+import { MODIFIER_NAMES } from '@shared/search-query'
 import { useSearchSources } from './search-sources'
 import { SearchHelp } from './SearchHelp'
 import { SearchNotices } from './SearchNotices'
@@ -16,20 +20,34 @@ import { useSearchCompletion, useUserValues } from './useSearchCompletion'
 import styles from './GlobalSearch.module.css'
 
 const DELAY_MS = 120
+/** Hits per kind in the window, and in the grown window ("See all results"). */
+const WINDOW_LIMIT = 6
+const EXPANDED_LIMIT = 40
 
 /**
  * Find anything in the app from one field: notes, meetings, training, readings and people, a few of the best
  * matches each, plus a few commands (a command palette sharing the same window). `in:meetings` (or any of the
  * other sources, singular or plural) restricts to it. Render this only while it is open. Arrow keys move
- * between results, Enter opens or runs one, Escape closes.
+ * between results, Enter opens or runs one, Escape closes. "See all results" grows the same window (wider, taller, up
+ * to 40 a kind, with a count) rather than opening a page; closing it leaves the user where they were.
  */
-export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.Element {
+export function GlobalSearch({
+  onClose,
+  initialQuery = '',
+  initialExpanded = false
+}: {
+  onClose: () => void
+  initialQuery?: string
+  initialExpanded?: boolean
+}): React.JSX.Element {
   const navigate = useNavigate()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const [result, setResult] = useState<{ query: string } & SearchOutcome>({
+  const [expanded, setExpanded] = useState(initialExpanded)
+  const [result, setResult] = useState<{ query: string; expanded: boolean } & SearchOutcome>({
     query: '',
+    expanded: false,
     groups: [],
     notices: [],
     searched: false,
@@ -41,7 +59,7 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
   const values = useUserValues()
   const person = (folded: string): boolean =>
     (values.with ?? []).some((o) => fold(o.label) === folded || fold(o.hint ?? '') === folded)
-  const chip = useChipQuery(person)
+  const chip = useChipQuery(person, initialQuery)
   const query = chip.query
   const choices = useSearchCompletion(chip.text, chip.setText, inputRef, values)
   const ghost = ghostFor(chip.text, choices.caret, choices.completion)
@@ -49,6 +67,11 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
   useEffect(() => {
     const dialog = dialogRef.current
     if (dialog && !dialog.open) dialog.showModal()
+    // Closing puts the user back where they were: on the field they had focused, not on nothing.
+    const before = document.activeElement
+    return () => {
+      if (before instanceof HTMLElement && before.isConnected) before.focus()
+    }
   }, [])
 
   // Search a moment after typing stops; an answer for words that have since changed is dropped.
@@ -56,17 +79,19 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
     if (query.trim() === '') return
     let cancelled = false
     const timer = setTimeout(() => {
-      void searchEverywhere(sources, query).then((outcome) => {
-        if (cancelled) return
-        setResult({ query, ...outcome })
-        setActive(0)
-      })
+      void searchEverywhere(sources, query, expanded ? EXPANDED_LIMIT : undefined).then(
+        (outcome) => {
+          if (cancelled) return
+          setResult({ query, expanded, ...outcome })
+          setActive(0)
+        }
+      )
     }, DELAY_MS)
     return () => {
       cancelled = true
       clearTimeout(timer)
     }
-  }, [query, sources])
+  }, [query, sources, expanded])
 
   const searched = query.trim() !== ''
   const groups = useMemo(() => (searched ? result.groups : []), [searched, result.groups])
@@ -79,9 +104,10 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
     () => groups.flatMap((g) => g.hits.map((hit) => ({ group: g.id, hit }))),
     [groups]
   )
-  const answered = searched && result.query === query
+  const answered = searched && result.query === query && result.expanded === expanded
   const activeIndex = Math.min(active, Math.max(hits.length - 1, 0))
-  const capped = groups.some((g) => g.hits.length >= 6)
+  const capped = groups.some((g) => g.hits.length >= WINDOW_LIMIT)
+  const count = countResults(groups, EXPANDED_LIMIT)
 
   useEffect(() => {
     listRef.current
@@ -93,11 +119,6 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
     onClose()
     if (hit.run) void hit.run()
     else if (hit.route) void navigate(hit.route)
-  }
-
-  const seeAll = (): void => {
-    onClose()
-    void navigate(`/search?q=${encodeURIComponent(query)}`)
   }
 
   const onKeyDown = (event: React.KeyboardEvent): void => {
@@ -126,7 +147,7 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
   return createPortal(
     <dialog
       ref={dialogRef}
-      className={styles.dialog}
+      className={[styles.dialog, expanded && styles.expanded].filter(Boolean).join(' ')}
       aria-label="Search"
       onCancel={(event) => {
         event.preventDefault()
@@ -162,6 +183,16 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
               : undefined
         }}
       />
+      {expanded && (
+        <div className={styles.bar}>
+          <span className={styles.count} role="status">
+            {answered && result.searched ? count : ''}
+          </span>
+          <IconButton label="Close" onClick={onClose}>
+            <X size={16} strokeWidth={1.75} aria-hidden />
+          </IconButton>
+        </div>
+      )}
       {choices.typing && (
         <SearchHelp
           modifier={choices.typing.modifier}
@@ -179,9 +210,33 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
         />
       )}
       <div className={styles.results} id="global-search-results" role="listbox" ref={listRef}>
+        {expanded && !searched && !choices.typing && (
+          <div className={styles.filters}>
+            <h2 className={styles.heading}>Filters</h2>
+            <p className={styles.chips}>
+              {MODIFIER_NAMES.map((name) => (
+                <ModifierChip
+                  key={name}
+                  label={`${name}:`}
+                  onClick={() => {
+                    chip.setText(`${chip.text}${name}:`)
+                    inputRef.current?.focus()
+                  }}
+                />
+              ))}
+            </p>
+          </div>
+        )}
         {groups.map((group, groupIndex) => (
           <div key={group.label} role="group" aria-label={group.label}>
-            <h2 className={styles.heading}>{group.label}</h2>
+            <h2 className={styles.heading}>
+              {group.label}
+              {expanded && (
+                <span className={styles.groupCount}>
+                  {group.hits.length >= EXPANDED_LIMIT ? `${EXPANDED_LIMIT}+` : group.hits.length}
+                </span>
+              )}
+            </h2>
             {group.hits.map((hit, hitIndex) => {
               const i = starts[groupIndex] + hitIndex
               return (
@@ -209,8 +264,17 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
         {answered && result.searched && hits.length === 0 && (
           <p className={styles.empty}>No results.</p>
         )}
-        {answered && capped && (
-          <button type="button" className={styles.seeAll} onClick={seeAll}>
+        {answered && capped && !expanded && (
+          <button
+            type="button"
+            className={styles.seeAll}
+            // The field keeps focus, so typing goes on where it was.
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => {
+              setExpanded(true)
+              inputRef.current?.focus()
+            }}
+          >
             See all results
           </button>
         )}

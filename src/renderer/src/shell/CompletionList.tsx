@@ -6,23 +6,15 @@ export function CompletionList({
   id,
   completion,
   active,
-  onPick,
-  floating = false
+  onPick
 }: {
   id: string
   completion: Completion
   active: number
   onPick: (option: CompletionOption) => void
-  /** Drawn over the page under the field (the results page), rather than as the first rows of the window. */
-  floating?: boolean
 }): React.JSX.Element {
   return (
-    <div
-      id={id}
-      role="listbox"
-      aria-label="Filters"
-      className={[styles.list, floating && styles.floating].filter(Boolean).join(' ')}
-    >
+    <div id={id} role="listbox" aria-label="Filters" className={styles.list}>
       {completion.options.map((option, index) => (
         <button
           key={option.insert}

@@ -4,17 +4,6 @@
   padding: 4px;
   border-bottom: 1px solid var(--border-soft);
 }
-.floating {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  z-index: 5;
-  width: 320px;
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-card);
-  background: var(--surface);
-  box-shadow: var(--shadow-float);
-}
 .option {
   display: flex;
   align-items: baseline;

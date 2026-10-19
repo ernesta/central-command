@@ -2,7 +2,13 @@ import { describe, expect, it, vi } from 'vitest'
 import type { SearchHit, Searchable } from '@shared/search'
 import type { Person } from '@shared/people'
 import { parseSearch, plainRequest, type SearchRequest } from '@shared/search-query'
-import { runSearches, searchEverywhere, type SearchOutcome } from './run-search'
+import {
+  countResults,
+  runSearches,
+  searchEverywhere,
+  type SearchGroup,
+  type SearchOutcome
+} from './run-search'
 
 const hit = (key: string): SearchHit => ({ key, title: key, detail: '', route: `/${key}` })
 const source = (
@@ -190,5 +196,23 @@ describe('searchEverywhere', () => {
 
   it('parses with the same clock it plans with', () => {
     expect(parseSearch('on:today', '2026-10-19').filters).toHaveLength(1)
+  })
+})
+
+describe('countResults', () => {
+  const group = (n: number): SearchGroup => ({
+    id: 'notes',
+    label: 'Notes',
+    hits: Array.from({ length: n }, (_, i) => hit(`n${i}`))
+  })
+
+  it('counts the hits of every group', () => {
+    expect(countResults([group(3), group(2)], 40)).toBe('5 results')
+    expect(countResults([group(1)], 40)).toBe('1 result')
+    expect(countResults([], 40)).toBe('0 results')
+  })
+
+  it('says when a kind was cut short', () => {
+    expect(countResults([group(40), group(2)], 40)).toBe('42 results · up to 40 of each kind')
   })
 })

@@ -35,8 +35,12 @@ export interface ChipQuery {
  * A search field's state as chips plus text. The query the search reads is always the chips and then the text, so the
  * order the modifiers were typed in is not kept (they combine with AND, so it does not matter).
  */
-export function useChipQuery(person: PersonCheck): ChipQuery {
-  const [state, setState] = useState<ChipQueryState>({ chips: [], text: '', caret: null })
+export function useChipQuery(person: PersonCheck, initial = ''): ChipQuery {
+  const [state, setState] = useState<ChipQueryState>(() => ({
+    chips: [],
+    text: initial,
+    caret: initial.length
+  }))
 
   const setText: ChipQuery['setText'] = (text, options = {}) => {
     if (options.raw) {

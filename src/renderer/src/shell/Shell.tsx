@@ -22,7 +22,7 @@ import { RouteOpener } from './RouteOpener'
 import { usePastePlain } from './usePastePlain'
 import { useEscapeFullScreen } from './useEscapeFullScreen'
 import { GlobalSearch } from './GlobalSearch'
-import { SearchResultsPage } from './SearchResultsPage'
+import { SearchRedirect } from './SearchRedirect'
 import { SettingsPage } from './SettingsPage'
 import { LifeLanding } from './LifeLanding'
 import { ResearchLanding } from './ResearchLanding'
@@ -49,7 +49,8 @@ export function Shell(): React.JSX.Element {
   const navigate = useNavigate()
   const canGoBack = useCanGoBack()
   const [buildError, setBuildError] = useState<string | null>(null)
-  const [searchOpen, setSearchOpen] = useState(false)
+  // The search window: closed, or open with a query (a link from the old results page) and whether it starts grown.
+  const [search, setSearch] = useState<{ query: string; expanded: boolean } | null>(null)
   usePastePlain()
   useEscapeFullScreen()
 
@@ -66,7 +67,7 @@ export function Shell(): React.JSX.Element {
     const onKeyDown = (event: KeyboardEvent): void => {
       if (matchesShortcut(event, SEARCH_SHORTCUT)) {
         event.preventDefault()
-        setSearchOpen((open) => !open)
+        setSearch((open) => (open ? null : { query: '', expanded: false }))
         return
       }
       // Cmd-Z outside a text field takes back the latest change (a text field or the editor undoes its own typing).
@@ -132,7 +133,7 @@ export function Shell(): React.JSX.Element {
         onBack={() => void navigate(-1)}
         onBuild={() => void openBuild()}
         onOpenSettings={() => navigate('/settings')}
-        onOpenSearch={() => setSearchOpen(true)}
+        onOpenSearch={() => setSearch({ query: '', expanded: false })}
       />
       {buildError && (
         <div className={styles.notice}>
@@ -141,7 +142,13 @@ export function Shell(): React.JSX.Element {
           </Notice>
         </div>
       )}
-      {searchOpen && <GlobalSearch onClose={() => setSearchOpen(false)} />}
+      {search && (
+        <GlobalSearch
+          initialQuery={search.query}
+          initialExpanded={search.expanded}
+          onClose={() => setSearch(null)}
+        />
+      )}
       <DockActions />
       <RouteOpener />
       <Toast />
@@ -154,7 +161,10 @@ export function Shell(): React.JSX.Element {
             <Route path="/" element={<Navigate to={`/${settings.ui.workspace}`} replace />} />
             <Route path="/research" element={<ResearchLanding />} />
             <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/search" element={<SearchResultsPage />} />
+            <Route
+              path="/search"
+              element={<SearchRedirect onOpen={(query) => setSearch({ query, expanded: true })} />}
+            />
             <Route path="/life" element={<LifeLanding />} />
             <Route path="/work" element={<WorkLanding />} />
             {modules.flatMap((m) =>
