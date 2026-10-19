@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Input } from '@renderer/components/Input'
+import { pushUndo } from '@renderer/components/undo-store'
 import { formatHours } from '@shared/tracking/format'
 import type { Plan } from '@shared/tracking/types'
 import {
@@ -67,8 +68,22 @@ function PlanField({
 /** One workspace's plan: the hours a week, the days worked and, where the workspace has time off, the days off a year. */
 function PlanBlock({ workspace }: { workspace: HoursWorkspace }): React.JSX.Element {
   const { data } = useTrackingYear(workspace)
-  const save = (patch: Partial<Plan>): void => {
-    if (data) void window.api.tracking.setPlan(workspace, data.start, patch)
+  const save = (patch: Partial<Plan>, what: string): void => {
+    if (!data) return
+    const { start } = data
+    const before: Partial<Plan> = {}
+    for (const key of Object.keys(patch) as (keyof Plan)[])
+      Object.assign(before, { [key]: data.plan[key] })
+    void window.api.tracking.setPlan(workspace, start, patch).then((result) => {
+      if (!result.ok) return
+      pushUndo({
+        label: `change to ${what}`,
+        undo: async () => {
+          const back = await window.api.tracking.setPlan(workspace, start, before)
+          if (!back.ok) throw new Error('The plan could not be put back.')
+        }
+      })
+    })
   }
   const id = `hours-${workspace}`
 
@@ -88,7 +103,7 @@ function PlanBlock({ workspace }: { workspace: HoursWorkspace }): React.JSX.Elem
               value={data.plan.hoursPerWeek}
               format={data.plan.weekAim ? formatAimHours : formatHours}
               parse={data.plan.weekAim ? parseAimHours : parseWeekHours}
-              onCommit={(hoursPerWeek) => save({ hoursPerWeek })}
+              onCommit={(hoursPerWeek) => save({ hoursPerWeek }, 'hours per week')}
             />
           )}
           {!data.plan.weekAim && (
@@ -107,7 +122,7 @@ function PlanBlock({ workspace }: { workspace: HoursWorkspace }): React.JSX.Elem
                       className={styles.day}
                       aria-pressed={on}
                       disabled={next === null}
-                      onClick={() => next && save({ workDays: next })}
+                      onClick={() => next && save({ workDays: next }, 'days worked')}
                     >
                       {label}
                     </button>
@@ -123,7 +138,7 @@ function PlanBlock({ workspace }: { workspace: HoursWorkspace }): React.JSX.Elem
               value={data.plan.allowanceDays}
               format={String}
               parse={parseAllowance}
-              onCommit={(allowanceDays) => save({ allowanceDays })}
+              onCommit={(allowanceDays) => save({ allowanceDays }, 'days off a year')}
             />
           )}
         </>
