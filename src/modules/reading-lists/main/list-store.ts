@@ -22,6 +22,7 @@ import {
   type ReadingListRef,
   type ReadingListWorkspace
 } from '../shared/types'
+import { isUntouchedList } from '../shared/untouched'
 import { idFromFileName, listBaseName, listPath, nameMatchesTitle } from './file-name'
 import { buildIndexRow } from './index-row'
 import { deleteListRow, listListIds, upsertList } from './repository'
@@ -172,6 +173,19 @@ export class ReadingListStore {
     await this.trash(path)
     deleteListRow(this.db, ref.workspace, ref.id)
     return note.content
+  }
+
+  /**
+   * Remove a list nothing was written in (see `isUntouchedList`), judged from the file as it is now, the way every delete goes (the
+   * Trash). A missing file is not an error here. Resolves with whether it was removed.
+   */
+  async discardIfUntouched(ref: ReadingListRef): Promise<boolean> {
+    const note = await readNoteFile(this.pathOf(ref))
+    if (!note.exists) return false
+    const { head, body } = splitNote(note.content)
+    if (!isUntouchedList(parseMeta(head).meta, body)) return false
+    await this.delete(ref)
+    return true
   }
 
   /**

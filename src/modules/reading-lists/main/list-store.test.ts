@@ -1,5 +1,13 @@
 import Database from 'better-sqlite3'
-import { mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from 'fs'
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  writeFileSync
+} from 'fs'
 import { tmpdir } from 'os'
 import { basename, join } from 'path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -188,5 +196,22 @@ describe('mutation checks', () => {
     writeFileSync(file('Precious'), 'not to be touched')
     await store.create({ workspace: 'research', title: 'Precious' })
     expect(disk('Precious')).toBe('not to be touched')
+  })
+})
+
+describe('discardIfUntouched', () => {
+  it('moves a list nothing was written in to the Trash, and keeps one with a title or text', async () => {
+    const empty = await store.create({ workspace: 'research' })
+    expect(await store.discardIfUntouched(empty.ref)).toBe(true)
+    expect(existsSync(file(empty.ref.id))).toBe(false)
+    expect(existsSync(join(trashDir, `${empty.ref.id}.md`))).toBe(true)
+    expect(listListRows(db, 'research')).toHaveLength(0)
+
+    const titled = await store.create({ workspace: 'research', title: 'Methods' })
+    expect(await store.discardIfUntouched(titled.ref)).toBe(false)
+    const text = await store.create({ workspace: 'research' })
+    await store.save(text.ref, { body: '## Week 1\n' }, text.note.hash)
+    expect(await store.discardIfUntouched(text.ref)).toBe(false)
+    expect(await store.discardIfUntouched(ref('missing'))).toBe(false)
   })
 })

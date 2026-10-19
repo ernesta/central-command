@@ -7,10 +7,12 @@ import {
 import type { TrainingChangedEvent, TrainingFile, TrainingSaveResult } from '../shared/api'
 import { parseTrainingMeta, splitNote, type TrainingChanges } from '../shared/front-matter'
 import type { TrainingMeta, TrainingRef } from '../shared/types'
+import { isUntouchedTraining } from '../shared/untouched'
 
 /** The slice of the Training API an entry session needs. */
 export interface TrainingSessionApi extends EntrySessionApi<TrainingRef, TrainingMeta> {
   read(ref: TrainingRef): Promise<TrainingFile>
+  discardIfUntouched(ref: TrainingRef): Promise<boolean>
   save(ref: TrainingRef, changes: TrainingChanges, baseHash: string): Promise<TrainingSaveResult>
   onChanged(listener: (event: TrainingChangedEvent) => void): () => void
 }
@@ -40,10 +42,14 @@ export const EMPTY_TRAINING_META: TrainingMeta = {
  * `EntrySession` for the rules that protect the user's writing).
  */
 export class TrainingSession extends EntrySession<TrainingRef, TrainingMeta> {
-  constructor(ref: TrainingRef, api: TrainingSessionApi, options: EntrySessionOptions = {}) {
+  constructor(
+    ref: TrainingRef,
+    private readonly training: TrainingSessionApi,
+    options: EntrySessionOptions = {}
+  ) {
     super(
       ref,
-      api,
+      training,
       {
         emptyMeta: EMPTY_TRAINING_META,
         parseDisk: (note) => {
@@ -55,5 +61,13 @@ export class TrainingSession extends EntrySession<TrainingRef, TrainingMeta> {
       },
       options
     )
+  }
+
+  protected override isUntouched(meta: TrainingMeta, body: string): boolean {
+    return isUntouchedTraining(meta, body)
+  }
+
+  protected override discardFile(): Promise<boolean> {
+    return this.training.discardIfUntouched(this.getRef())
   }
 }

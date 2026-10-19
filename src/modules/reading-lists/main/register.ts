@@ -76,6 +76,9 @@ function register({ db, paths }: MainContext): () => void {
     }
   )
   ipcMain.handle(READING_LISTS_IPC.delete, (_event, ref: unknown) => store.delete(asRef(ref)))
+  ipcMain.handle(READING_LISTS_IPC.discardIfUntouched, (_event, ref: unknown) =>
+    store.discardIfUntouched(asRef(ref))
+  )
   ipcMain.handle(READING_LISTS_IPC.restore, (_event, ref: unknown, content: unknown) => {
     if (typeof content !== 'string') throw new Error('Not a note')
     return store.restore(asRef(ref), content)

@@ -126,6 +126,7 @@ const api: Api = {
     list: (workspace) => ipcRenderer.invoke(TRAINING_IPC.list, workspace),
     save: (ref, changes, baseHash) => ipcRenderer.invoke(TRAINING_IPC.save, ref, changes, baseHash),
     delete: (ref) => ipcRenderer.invoke(TRAINING_IPC.delete, ref),
+    discardIfUntouched: (ref) => ipcRenderer.invoke(TRAINING_IPC.discardIfUntouched, ref),
     restore: (ref, content) => ipcRenderer.invoke(TRAINING_IPC.restore, ref, content),
     exportPdf: (year) => ipcRenderer.invoke(TRAINING_IPC.exportPdf, year),
     files: {
@@ -199,6 +200,7 @@ const api: Api = {
     save: (ref, changes, baseHash) =>
       ipcRenderer.invoke(READING_LISTS_IPC.save, ref, changes, baseHash),
     delete: (ref) => ipcRenderer.invoke(READING_LISTS_IPC.delete, ref),
+    discardIfUntouched: (ref) => ipcRenderer.invoke(READING_LISTS_IPC.discardIfUntouched, ref),
     restore: (ref, content) => ipcRenderer.invoke(READING_LISTS_IPC.restore, ref, content),
     forReading: (citekey) => ipcRenderer.invoke(READING_LISTS_IPC.forReading, citekey),
     onChanged: (listener) => {

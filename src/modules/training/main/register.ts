@@ -77,6 +77,9 @@ function register({ db, paths, settings }: MainContext): () => void {
     return store.save(asRef(ref), asObject(changes, 'changes') as TrainingChanges, baseHash)
   })
   ipcMain.handle(TRAINING_IPC.delete, (_event, ref: unknown) => store.delete(asRef(ref)))
+  ipcMain.handle(TRAINING_IPC.discardIfUntouched, (_event, ref: unknown) =>
+    store.discardIfUntouched(asRef(ref))
+  )
   ipcMain.handle(TRAINING_IPC.restore, (_event, ref: unknown, content: unknown) => {
     if (typeof content !== 'string') throw new Error('Not a note')
     return store.restore(asRef(ref), content)

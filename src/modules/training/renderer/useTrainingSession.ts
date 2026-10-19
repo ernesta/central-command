@@ -22,7 +22,7 @@ export function useTrainingSession(
     const onPageHide = (): void => void session.flush()
     window.addEventListener('pagehide', onPageHide)
     // Also saved when the window is closed or the app quits (see App).
-    const unregister = registerFlushable(() => session.flush())
+    const unregister = registerFlushable(() => session.settle())
     return () => {
       unregister()
       window.removeEventListener('pagehide', onPageHide)

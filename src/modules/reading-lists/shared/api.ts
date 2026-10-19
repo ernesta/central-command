@@ -68,6 +68,8 @@ export interface ReadingListsApi {
   save(ref: ReadingListRef, changes: ListChanges, baseHash: string): Promise<ReadingListSaveResult>
   /** Move the list's file to the Trash. It resolves with the file's content, which `restore` takes to bring it back. */
   delete(ref: ReadingListRef): Promise<string>
+  /** Remove the list if it is still exactly what New list made, judged from the file itself. Resolves with whether it did. */
+  discardIfUntouched(ref: ReadingListRef): Promise<boolean>
   /** Undo of `delete`: write the content it returned back as the same file (refused when something is there now). */
   restore(ref: ReadingListRef, content: string): Promise<void>
   /** Every list (in every workspace) that names this reading, for its own page. */
@@ -82,6 +84,7 @@ export const READING_LISTS_IPC = {
   list: 'reading-lists:list',
   save: 'reading-lists:save',
   delete: 'reading-lists:delete',
+  discardIfUntouched: 'reading-lists:discard-if-untouched',
   restore: 'reading-lists:restore',
   forReading: 'reading-lists:for-reading',
   changed: 'reading-lists:changed'

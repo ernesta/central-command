@@ -116,6 +116,8 @@ export interface TrainingApi {
   save(ref: TrainingRef, changes: TrainingChanges, baseHash: string): Promise<TrainingSaveResult>
   /** Move the entry's file to the Trash. It resolves with the file's content, which `restore` takes to bring it back. */
   delete(ref: TrainingRef): Promise<string>
+  /** Remove the entry if it is still exactly what New training entry made, judged from the file itself. Resolves with whether it did. */
+  discardIfUntouched(ref: TrainingRef): Promise<boolean>
   /** Undo of `delete`: write the content it returned back as the same file (refused when something is there now). */
   restore(ref: TrainingRef, content: string): Promise<void>
   files: TrainingFilesApi
@@ -132,6 +134,7 @@ export const TRAINING_IPC = {
   list: 'training:list',
   save: 'training:save',
   delete: 'training:delete',
+  discardIfUntouched: 'training:discard-if-untouched',
   restore: 'training:restore',
   exportPdf: 'training:export-pdf',
   filesList: 'training:files-list',

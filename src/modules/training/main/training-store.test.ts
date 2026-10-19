@@ -438,3 +438,29 @@ describe('a self-study task', () => {
     expect(disk('2025-12-11 Plain')).toBe(plain)
   })
 })
+
+describe('discardIfUntouched', () => {
+  const NEW = { workspace: 'research', title: 'Untitled', date: '2026-10-19' } as const
+
+  it('moves an entry nothing was written in to the Trash', async () => {
+    const e = await store.create(NEW)
+    expect(await store.discardIfUntouched(e.ref)).toBe(true)
+    expect(existsSync(file(e.ref.id))).toBe(false)
+    expect(readFileSync(join(trashDir, `${e.ref.id}.md`), 'utf8')).toContain('title: Untitled')
+    expect(getTrainingRow(db, 'research', e.ref.id)).toBeNull()
+  })
+
+  it('keeps an entry with a title, a series, a time, a text or a task', async () => {
+    const titled = await store.create({ ...NEW, title: 'Plotly' })
+    const series = await store.create({ ...NEW, series: 'PS5210' })
+    const timed = await store.create({ ...NEW, start: '10:00', end: '11:00' })
+    const tasked = await store.create({ ...NEW, task: 'abc12345' })
+    const typed = await store.create(NEW)
+    await store.save(typed.ref, { body: '## Summary\n## Notes\nhello\n' }, typed.note.hash)
+    for (const e of [titled, series, timed, tasked, typed]) {
+      expect(await store.discardIfUntouched(e.ref)).toBe(false)
+      expect(existsSync(file(e.ref.id))).toBe(true)
+    }
+    expect(await store.discardIfUntouched(ref('missing'))).toBe(false)
+  })
+})

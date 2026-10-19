@@ -137,7 +137,11 @@ function EntryView({
     setDeleting(true)
     setDeleteError(null)
     try {
-      await session.dispose() // saves anything pending first
+      await session.dispose() // saves anything pending first; an entry nothing was written in is removed by it
+      if (session.wasDiscarded()) {
+        void navigate(trainingBase(workspace), { replace: true })
+        return
+      }
       const ref = session.getRef()
       const content = await window.api.training.delete(ref)
       // The lecture's tasks go with it (to the Tasks trash; the series' self-study task stays); the hours tracked on them stay in Hours.

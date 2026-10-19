@@ -20,7 +20,7 @@ export function useListSession(
     void session.start()
     const onPageHide = (): void => void session.flush()
     window.addEventListener('pagehide', onPageHide)
-    const unregister = registerFlushable(() => session.flush())
+    const unregister = registerFlushable(() => session.settle())
     return () => {
       unregister()
       window.removeEventListener('pagehide', onPageHide)

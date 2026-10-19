@@ -27,6 +27,7 @@ import {
   type TrainingRef,
   type TrainingWorkspace
 } from '../shared/types'
+import { isUntouchedTraining } from '../shared/untouched'
 import { isSafeRelativeFolder } from './files'
 import { idFromFileName, trainingBaseName, trainingPath } from './file-name'
 import { buildTrainingIndexRow } from './index-row'
@@ -240,6 +241,19 @@ export class TrainingStore {
     await this.trash(path)
     deleteTrainingRow(this.db, ref.workspace, ref.id)
     return note.content
+  }
+
+  /**
+   * Remove an entry nothing was written in (see `isUntouchedTraining`), judged from the file as it is now, the way every delete
+   * goes (the Trash). A missing file is not an error here. Resolves with whether it was removed.
+   */
+  async discardIfUntouched(ref: TrainingRef): Promise<boolean> {
+    const note = await readNoteFile(this.pathOf(ref))
+    if (!note.exists) return false
+    const { head, body } = splitNote(note.content)
+    if (!isUntouchedTraining(parseTrainingMeta(head).meta, body)) return false
+    await this.delete(ref)
+    return true
   }
 
   /**

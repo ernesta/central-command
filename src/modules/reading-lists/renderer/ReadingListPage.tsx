@@ -72,7 +72,11 @@ function ListView({
     setDeleting(true)
     setDeleteError(null)
     try {
-      await session.dispose()
+      await session.dispose() // an untouched list is removed by it
+      if (session.wasDiscarded()) {
+        void navigate(readingListsBase, { replace: true })
+        return
+      }
       const ref = session.getRef()
       const content = await window.api.readingLists.delete(ref)
       if (!untouched) {

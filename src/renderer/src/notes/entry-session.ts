@@ -291,13 +291,58 @@ export class EntrySession<R extends { id: string; workspace: string }, M> {
     })
   }
 
-  /** Stop listening and save anything pending. Safe to call more than once; `start()` can revive it. */
+  /**
+   * Stop listening and save anything pending. Safe to call more than once; `start()` can revive it. A kind of entry that is removed
+   * when left with nothing written in it (see `isUntouched`) is removed here, so back, another page, a workspace switch all do it.
+   */
   async dispose(): Promise<void> {
+    if (this.disposed) return
+    this.removed = false
+    await this.disposeKeeping()
+    // React Strict Mode (dev) cleans up and starts again at once: a session that was revived is still being used.
+    if (!this.disposed) return
+    await this.discardIfUntouched()
+  }
+
+  /** Saves anything pending and stops, without removing the entry (it is being moved, not left). */
+  async disposeKeeping(): Promise<void> {
     if (this.disposed) return
     this.disposed = true
     this.unsubscribe?.()
     this.unsubscribe = null
     await this.flush()
+  }
+
+  /** True once leaving the page removed the entry because nothing was written in it. */
+  wasDiscarded = (): boolean => this.removed
+
+  /** The window is closing or the app quitting: saved, and an untouched entry removed, as on leaving the page. */
+  async settle(): Promise<void> {
+    await this.flush()
+    await this.discardIfUntouched()
+  }
+
+  private removed = false
+
+  private async discardIfUntouched(): Promise<void> {
+    const { status, conflict, meta, body } = this.snapshot
+    if (status !== 'ready' || conflict || !this.isUntouched(meta, body)) return
+    try {
+      this.removed = await this.discardFile()
+    } catch (error) {
+      console.error(`Could not remove the untouched ${this.config.noun}:`, error)
+    }
+  }
+
+  /** Whether the page is still exactly what New … made. A kind that is never removed leaves this false. */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected isUntouched(_meta: M, _body: string): boolean {
+    return false
+  }
+
+  /** Has the main process check the file itself and remove it; resolves with whether it did. */
+  protected discardFile(): Promise<boolean> {
+    return Promise.resolve(false)
   }
 
   private diskVersion(note: NoteContent): DiskVersion<M> {

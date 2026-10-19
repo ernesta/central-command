@@ -12,10 +12,12 @@ import type {
 } from '../shared/api'
 import { parseMeta, splitNote } from '../shared/front-matter'
 import type { ReadingListMeta, ReadingListRef } from '../shared/types'
+import { isUntouchedList } from '../shared/untouched'
 
 /** The slice of the Reading lists API a list session needs. */
 export interface ListSessionApi extends EntrySessionApi<ReadingListRef, ReadingListMeta> {
   read(ref: ReadingListRef): Promise<ReadingListFile>
+  discardIfUntouched(ref: ReadingListRef): Promise<boolean>
   save(ref: ReadingListRef, changes: ListChanges, baseHash: string): Promise<ReadingListSaveResult>
   onChanged(listener: (event: ReadingListChangedEvent) => void): () => void
 }
@@ -26,10 +28,14 @@ export const EMPTY_LIST_META: ReadingListMeta = { title: '' }
 
 /** One reading list being edited: its title and its body (sections and entries) together, as one file. */
 export class ListSession extends EntrySession<ReadingListRef, ReadingListMeta> {
-  constructor(ref: ReadingListRef, api: ListSessionApi, options: EntrySessionOptions = {}) {
+  constructor(
+    ref: ReadingListRef,
+    private readonly lists: ListSessionApi,
+    options: EntrySessionOptions = {}
+  ) {
     super(
       ref,
-      api,
+      lists,
       {
         emptyMeta: EMPTY_LIST_META,
         parseDisk: (note) => {
@@ -41,5 +47,13 @@ export class ListSession extends EntrySession<ReadingListRef, ReadingListMeta> {
       },
       options
     )
+  }
+
+  protected override isUntouched(meta: ReadingListMeta, body: string): boolean {
+    return isUntouchedList(meta, body)
+  }
+
+  protected override discardFile(): Promise<boolean> {
+    return this.lists.discardIfUntouched(this.getRef())
   }
 }

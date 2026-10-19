@@ -46,8 +46,6 @@ const EMPTY_META: MeetingMeta = {
  * TODOs (adds only) before the note is shown.
  */
 export class MeetingSession extends EntrySession<MeetingRef, MeetingMeta> {
-  private removed = false
-
   constructor(
     ref: MeetingRef,
     private readonly meetings: MeetingSessionApi,
@@ -76,40 +74,11 @@ export class MeetingSession extends EntrySession<MeetingRef, MeetingMeta> {
     return sync.status === 'saved' && sync.added > 0 ? this.meetings.read(this.ref) : file
   }
 
-  /** True once leaving the page removed the meeting because nothing was written in it. */
-  wasDiscarded = (): boolean => this.removed
-
-  /**
-   * Leaving the page (back, another workspace, any link): saves anything pending, then removes the meeting if it is still exactly what
-   * New meeting made, with its own task. The main process checks the file itself, so a meeting that was changed is never removed.
-   */
-  override async dispose(): Promise<void> {
-    if (this.isDisposed()) return
-    this.removed = false
-    await super.dispose()
-    // React Strict Mode (dev) cleans up and starts again at once: a session that was revived is still being used.
-    if (!this.isDisposed()) return
-    await this.discardIfUntouched()
+  protected override isUntouched(meta: MeetingMeta, body: string): boolean {
+    return isUntouchedMeeting(meta, body)
   }
 
-  /** Saves anything pending and stops, without removing the meeting (it is being moved, not left). */
-  async disposeKeeping(): Promise<void> {
-    await super.dispose()
-  }
-
-  /** The window is closing or the app quitting: saved, and an untouched meeting removed, as on leaving the page. */
-  async settle(): Promise<void> {
-    await this.flush()
-    await this.discardIfUntouched()
-  }
-
-  private async discardIfUntouched(): Promise<void> {
-    const { status, conflict, meta, body } = this.getSnapshot()
-    if (status !== 'ready' || conflict || !isUntouchedMeeting(meta, body)) return
-    try {
-      this.removed = await this.meetings.discardIfUntouched(this.getRef())
-    } catch (error) {
-      console.error('Could not remove the untouched meeting:', error)
-    }
+  protected override discardFile(): Promise<boolean> {
+    return this.meetings.discardIfUntouched(this.getRef())
   }
 }
