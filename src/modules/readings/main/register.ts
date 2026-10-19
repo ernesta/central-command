@@ -11,6 +11,7 @@ import { backlinkFolders } from '../../../main/ipc/entities'
 import { collectMentionedReadingKeys } from '../../../main/entities/reading-mentions'
 import {
   dismissRenameSuggestion,
+  undismissRenameSuggestion,
   getCounts,
   getReadingByCitekey,
   linkRenameSuggestion,
@@ -52,6 +53,10 @@ function register({ db, paths, settings }: MainContext): () => void {
   ipcMain.handle(READINGS_IPC.renameSuggestionsDismiss, (_event, id: unknown) => {
     if (typeof id !== 'number') throw new Error('Invalid suggestion id')
     dismissRenameSuggestion(db, id)
+  })
+  ipcMain.handle(READINGS_IPC.renameSuggestionsUndismiss, (_event, id: unknown) => {
+    if (typeof id !== 'number') throw new Error('Invalid suggestion id')
+    undismissRenameSuggestion(db, id)
   })
 
   // Push status changes to every open window.

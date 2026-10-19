@@ -76,7 +76,8 @@ const api: Api = {
     renameSuggestions: {
       list: () => ipcRenderer.invoke(READINGS_IPC.renameSuggestionsList),
       link: (id) => ipcRenderer.invoke(READINGS_IPC.renameSuggestionsLink, id),
-      dismiss: (id) => ipcRenderer.invoke(READINGS_IPC.renameSuggestionsDismiss, id)
+      dismiss: (id) => ipcRenderer.invoke(READINGS_IPC.renameSuggestionsDismiss, id),
+      undismiss: (id) => ipcRenderer.invoke(READINGS_IPC.renameSuggestionsUndismiss, id)
     },
     notes: {
       read: (citekey) => ipcRenderer.invoke(READINGS_IPC.notesRead, citekey),

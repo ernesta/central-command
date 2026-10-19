@@ -47,7 +47,7 @@ grid for a note and its panels, used by all five pages) and `NoteOutline` moved 
 
 **Real-library editor gate fixed (11 Oct 2026): 10 of 10 pass.** The four failures were the gate lagging behind shipped behaviour, not editor bugs (`docs/DECISIONS.md`, "The real-library gate caught up").
 
-**Undo, second round (19 Oct 2026): built, committed, not pushed, not installed** (`docs/DECISIONS.md`, "Undo, second round"). Timer Discard and Archive a person (toast + Cmd-Z); chips, contract Save, Time off edit, Hours typed time and workspace moves (Cmd-Z only). Open: Readings rename-suggestion Dismiss has no undo (asked what it is; no answer yet). To check by hand: the contract Save, Time off edit and Hours time undos.
+**Undo, second round (19 Oct 2026): built, committed, not pushed, not installed** (`docs/DECISIONS.md`, "Undo, second round"). Timer Discard and Archive a person (toast + Cmd-Z); chips, contract Save, Time off edit, Hours typed time and workspace moves (Cmd-Z only). Dismissing a Readings rename suggestion also undoes with Cmd-Z. To check by hand: the Dismiss undo, the contract Save, Time off edit and Hours time undos.
 
 **Delete without asking, with Undo (19 Oct 2026): built, committed, not pushed, not installed** (`docs/DECISIONS.md`, "Delete goes at once, with Undo"). People (someone nobody mentions), task page, Time off, Hours rows, contracts, and the meeting, training, note and reading list pages: no confirmation, a toast with Undo, Cmd-Z. Left as dialogs: Archive/Merge for a mentioned person (a choice). Still asking first, not covered: Settings chips and other removals not listed here.
 

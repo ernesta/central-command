@@ -8,6 +8,7 @@ import {
   applySync,
   deleteOrphanedFlagged,
   dismissRenameSuggestion,
+  undismissRenameSuggestion,
   findOrphanedFlagged,
   getCounts,
   getReadingByCitekey,
@@ -504,6 +505,19 @@ describe('applySync: suggested rename matching by title/authors/year (stage 4)',
     expect(get('oldKey').missingFromSource).toBe(true)
     expect(get('oldKey').hasNotes).toBe(true)
     expect(get('newKey')).toBeTruthy()
+  })
+
+  it('a dismissal can be taken back, and only a dismissed one', () => {
+    applySync(db, [taY('oldKey')], T1)
+    attachNotes('oldKey')
+    applySync(db, [taY('newKey')], T2)
+    const { id } = listPendingRenameSuggestions(db)[0]
+    undismissRenameSuggestion(db, id) // still pending: nothing changes
+    expect(listPendingRenameSuggestions(db)).toHaveLength(1)
+    dismissRenameSuggestion(db, id)
+    expect(listPendingRenameSuggestions(db)).toEqual([])
+    undismissRenameSuggestion(db, id)
+    expect(listPendingRenameSuggestions(db).map((s) => s.id)).toEqual([id])
   })
 
   it('does not resurface a dismissed pair even when the match is recomputed on a later sync', () => {

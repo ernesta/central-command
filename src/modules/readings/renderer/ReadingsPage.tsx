@@ -6,6 +6,7 @@ import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { SearchInput } from '@renderer/components/SearchInput'
+import { pushUndo } from '@renderer/components/undo-store'
 import { Segmented } from '@renderer/components/Segmented'
 import { Select } from '@renderer/components/Select'
 import { readingListsBase } from '@modules/reading-lists/renderer/reading-lists-paths'
@@ -58,6 +59,14 @@ export function ReadingsPage(): React.JSX.Element {
   const dismissSuggestion = async (id: number): Promise<void> => {
     await window.api.readings.renameSuggestions.dismiss(id)
     setActionVersion((v) => v + 1)
+    // Cmd-Z brings the suggestion back (the page refreshes if it is still open).
+    pushUndo({
+      label: 'dismissal',
+      undo: async () => {
+        await window.api.readings.renameSuggestions.undismiss(id)
+        setActionVersion((v) => v + 1)
+      }
+    })
   }
 
   const open = (reading: Reading): void => {

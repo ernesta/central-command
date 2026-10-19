@@ -3842,5 +3842,6 @@ The user's answers to "what else would be expected to undo": a toast **and** Cmd
 - **Archive a person**: toast; Undo is `people.restore`.
 - **Chips and links** (`PeopleField`, `SkillsField`, `TagsField`, `PersonLinks`) share `useUndoableRemoval`: Cmd-Z puts the item back at its old position into the list as it is by then (so later edits are kept). New `isStale` on an `UndoEntry`: `undoLast` drops entries whose field is unmounted, so Cmd-Z never edits a note that was left.
 - **Cmd-Z only**: a contract's Save (each change that went through is reversed, newest first, including a client rename), a Time off day's edit, an Hours row's typed time, moving a note or meeting to the other workspace (it moves back and is shown there).
-- Not done, left for the user: dismissing a Readings rename suggestion (permanent for the pair, no way to bring it back yet); renaming an Hours task; adding things.
+- **Readings rename suggestion, Dismiss**: Cmd-Z only (the user's "sure, why not"); `undismissRenameSuggestion` sets a dismissed one back to pending (the row was always kept). Unit-tested; not driven in the app (needs a Zotero rename to produce a suggestion).
+- Not done: renaming an Hours task; adding things.
 - Driven in the built app on a scratch library: Discard + Undo (same start second), attendee chip + Cmd-Z (saved to the note), Archive + Undo and Cmd-Z, meeting move to Work and Cmd-Z back. **Not driven**: the contract Save, Time off edit and Hours time edit undos (typecheck and lint only).

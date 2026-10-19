@@ -24,6 +24,8 @@ export interface ReadingsApi {
     link(id: number): Promise<boolean>
     /** Permanent for this exact old/new pair; touches neither reading. */
     dismiss(id: number): Promise<void>
+    /** Bring a dismissed suggestion back (the Undo of `dismiss`). */
+    undismiss(id: number): Promise<void>
   }
   notes: {
     read(citekey: string): Promise<NoteContent>
@@ -48,6 +50,7 @@ export const READINGS_IPC = {
   renameSuggestionsList: 'readings:rename-suggestions-list',
   renameSuggestionsLink: 'readings:rename-suggestions-link',
   renameSuggestionsDismiss: 'readings:rename-suggestions-dismiss',
+  renameSuggestionsUndismiss: 'readings:rename-suggestions-undismiss',
   notesRead: 'readings:notes-read',
   notesWrite: 'readings:notes-write',
   notesChanged: 'readings:notes-changed'

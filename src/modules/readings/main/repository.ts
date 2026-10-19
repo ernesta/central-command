@@ -481,6 +481,13 @@ export function dismissRenameSuggestion(db: Database, id: number): void {
   db.prepare("UPDATE rename_suggestions SET status = 'dismissed' WHERE id = ?").run(id)
 }
 
+/** Take a dismissal back (the Undo of `dismissRenameSuggestion`): the suggestion is pending again, if it is still dismissed. */
+export function undismissRenameSuggestion(db: Database, id: number): void {
+  db.prepare(
+    "UPDATE rename_suggestions SET status = 'pending' WHERE id = ? AND status = 'dismissed'"
+  ).run(id)
+}
+
 export interface OrphanedFlaggedReading {
   citekey: string
   shortCitation: string
