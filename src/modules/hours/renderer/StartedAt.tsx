@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { FieldError } from '@renderer/components/FieldError'
 import { TimeInput } from '@renderer/components/TimeInput'
-import type { RunningTimer } from '@shared/tracking/api'
+import { pushUndo } from '@renderer/components/undo-store'
+import type { RunningTimer, TimerResult } from '@shared/tracking/api'
 import { formatHours } from '@shared/tracking/format'
 import styles from './StartedAt.module.css'
 
@@ -9,6 +10,26 @@ const REASONS: Record<string, string> = {
   'in-future': 'That is later than now.',
   'covers-entry': 'That would cover an earlier entry.',
   stale: 'This timer is from an earlier day.'
+}
+
+/**
+ * Change when the running timer started. Cmd-Z puts the start back (an earlier entry the change trimmed stays trimmed), while that
+ * session still runs.
+ */
+async function changeStart(running: RunningTimer, time: string): Promise<TimerResult> {
+  const { workspace, year, session } = running
+  const result = await window.api.tracking.setStart(workspace, year, session.id, time)
+  if (result.ok) {
+    const was = session.start
+    pushUndo({
+      label: 'change of the start time',
+      undo: async () => {
+        const back = await window.api.tracking.setStart(workspace, year, session.id, was)
+        if (!back.ok) throw new Error(REASONS[back.reason] ?? 'The timer is not running any more.')
+      }
+    })
+  }
+  return result
 }
 
 /**
@@ -35,13 +56,7 @@ export function StartedAt({
   const pending = useRef<() => void>(() => {})
   useEffect(() => {
     pending.current = () => {
-      if (draft !== null && draft !== saved)
-        void window.api.tracking.setStart(
-          running.workspace,
-          running.year,
-          session.id,
-          `${draft}:00`
-        )
+      if (draft !== null && draft !== saved) void changeStart(running, `${draft}:00`)
     }
   })
   useEffect(() => () => pending.current(), [])
@@ -51,14 +66,12 @@ export function StartedAt({
       setDraft(null)
       return
     }
-    void window.api.tracking
-      .setStart(running.workspace, running.year, session.id, `${draft}:00`)
-      .then((result) => {
-        if (result.ok) {
-          setDraft(null)
-          setRefused(null)
-        } else setRefused(REASONS[result.reason] ?? 'Couldn’t change the start.')
-      })
+    void changeStart(running, `${draft}:00`).then((result) => {
+      if (result.ok) {
+        setDraft(null)
+        setRefused(null)
+      } else setRefused(REASONS[result.reason] ?? 'Couldn’t change the start.')
+    })
   }
 
   return (
