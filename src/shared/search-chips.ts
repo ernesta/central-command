@@ -81,3 +81,29 @@ export function chipLabel(chip: string): string {
 export function joinQuery(chips: readonly string[], text: string): string {
   return [...chips, text].filter((part) => part.trim() !== '').join(' ')
 }
+
+/** The text with a paste put over the selection (line breaks become spaces), and where the caret goes. */
+export function insertPaste(
+  text: string,
+  start: number,
+  end: number,
+  pasted: string
+): { text: string; caret: number } {
+  const flat = pasted.replace(/\s*[\r\n]+\s*/g, ' ')
+  return { text: text.slice(0, start) + flat + text.slice(end), caret: start + flat.length }
+}
+
+/**
+ * Whether Backspace takes the last chip out: the caret sits at the very start of the field with nothing selected, a chip is
+ * there, and no input method is composing text (the key then belongs to the composition).
+ */
+export function backspaceRemovesChip(state: {
+  chips: number
+  selectionStart: number | null
+  selectionEnd: number | null
+  composing: boolean
+}): boolean {
+  return (
+    state.chips > 0 && !state.composing && state.selectionStart === 0 && state.selectionEnd === 0
+  )
+}

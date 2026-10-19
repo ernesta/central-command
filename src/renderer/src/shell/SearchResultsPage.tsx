@@ -7,7 +7,7 @@ import { CompletionList } from './CompletionList'
 import { searchEverywhere, type SearchOutcome } from './run-search'
 import { useSearchSources } from './search-sources'
 import { SearchNotices } from './SearchNotices'
-import { useSearchCompletion } from './useSearchCompletion'
+import { useSearchCompletion, useUserValues } from './useSearchCompletion'
 import styles from './SearchResultsPage.module.css'
 
 const RESULTS_LIMIT = 40
@@ -57,7 +57,8 @@ export function SearchResultsPage(): React.JSX.Element {
       setQuery(value)
       setParams(value ? { q: value } : {}, { replace: true })
     },
-    inputRef
+    inputRef,
+    useUserValues()
   )
 
   // Search a moment after typing stops; an answer for words that have since changed is dropped.

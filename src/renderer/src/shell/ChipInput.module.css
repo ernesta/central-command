@@ -1,0 +1,57 @@
+.field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  padding: 4px 12px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.field:has(.input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.icon {
+  flex: none;
+  color: var(--text-muted);
+}
+.chips {
+  display: contents;
+}
+.inputWrap {
+  position: relative;
+  flex: 1 1 140px;
+  min-width: 140px;
+}
+.input,
+.mirror {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 10px 4px;
+  border: 0;
+  font: inherit;
+  font-size: var(--text-16);
+  line-height: 1.3;
+}
+.input {
+  position: relative;
+  display: block;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--ink);
+}
+.input:focus-visible {
+  outline: none;
+}
+/* The same text, invisible, with the ghost after it: it sits under the input so the grey starts where the typing ends. */
+.mirror {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: transparent;
+  pointer-events: none;
+  white-space: pre;
+}
+.ghost {
+  color: var(--text-muted);
+}

@@ -15,6 +15,8 @@ export interface SearchCompletion {
   completion: Completion | null
   /** The highlighted option, or -1. */
   active: number
+  /** Where the caret is in the field. */
+  caret: number
   /** Tell the hook where the caret is after the field changes or the caret moves. */
   track: (caret: number | null) => void
   /** The `name:value` word the caret is in, for the help row; null elsewhere. */
@@ -29,22 +31,9 @@ export interface SearchCompletion {
   onKeyDown: (event: KeyboardEvent) => boolean
 }
 
-/**
- * The completion list behind a search field: names of modifiers, then the values that exist (`docs/SEARCH_MODIFIERS_PLAN.md`,
- * stage 5). Arrow keys move through the options, Tab or Enter inserts the highlighted one (Tab the first when none is), and
- * Escape closes the list until the word changes. A list of names highlights nothing at first, so Enter still opens a result
- * for a plain word that only looks like the start of a modifier ("with").
- */
-export function useSearchCompletion(
-  query: string,
-  setQuery: (query: string) => void,
-  inputRef: RefObject<HTMLInputElement | null>
-): SearchCompletion {
+/** The user's own values for the completion list and for telling a person from a stranger, read once when the search opens. */
+export function useUserValues(): UserValues {
   const [values, setValues] = useState<UserValues>({})
-  const [caret, setCaret] = useState(0)
-  const [closed, setClosed] = useState<string | null>(null)
-  const [pick, setPick] = useState<{ key: string | null; index: number }>({ key: null, index: -1 })
-
   useEffect(() => {
     let cancelled = false
     void loadUserValues().then((loaded) => {
@@ -54,6 +43,24 @@ export function useSearchCompletion(
       cancelled = true
     }
   }, [])
+  return values
+}
+
+/**
+ * The completion list behind a search field: names of modifiers, then the values that exist (`docs/SEARCH_MODIFIERS_PLAN.md`,
+ * stage 5). Arrow keys move through the options, Tab or Enter inserts the highlighted one (Tab the first when none is), and
+ * Escape closes the list until the word changes. A list of names highlights nothing at first, so Enter still opens a result
+ * for a plain word that only looks like the start of a modifier ("with").
+ */
+export function useSearchCompletion(
+  query: string,
+  setQuery: (query: string) => void,
+  inputRef: RefObject<HTMLInputElement | null>,
+  values: UserValues
+): SearchCompletion {
+  const [caret, setCaret] = useState(0)
+  const [closed, setClosed] = useState<string | null>(null)
+  const [pick, setPick] = useState<{ key: string | null; index: number }>({ key: null, index: -1 })
 
   const found = useMemo(
     () => completionAt(query, Math.min(caret, query.length), values),
@@ -123,6 +130,7 @@ export function useSearchCompletion(
   return {
     completion,
     active,
+    caret,
     track: (c) => setCaret(c ?? query.length),
     typing,
     values,

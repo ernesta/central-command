@@ -1,14 +1,18 @@
-import { Search } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router'
 import type { SearchHit } from '@shared/search'
+import { ghostFor } from '@shared/search-complete'
+import { splitChips } from '@shared/search-chips'
+import { fold } from '@shared/text'
+import { ChipInput } from './ChipInput'
 import { CompletionList } from './CompletionList'
 import { searchEverywhere, type SearchOutcome } from './run-search'
 import { useSearchSources } from './search-sources'
 import { SearchHelp } from './SearchHelp'
 import { SearchNotices } from './SearchNotices'
-import { useSearchCompletion } from './useSearchCompletion'
+import { useChipQuery } from './useChipQuery'
+import { useSearchCompletion, useUserValues } from './useSearchCompletion'
 import styles from './GlobalSearch.module.css'
 
 const DELAY_MS = 120
@@ -24,7 +28,6 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
   const dialogRef = useRef<HTMLDialogElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const [query, setQuery] = useState('')
   const [result, setResult] = useState<{ query: string } & SearchOutcome>({
     query: '',
     groups: [],
@@ -35,7 +38,13 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
   const [active, setActive] = useState(0)
 
   const sources = useSearchSources()
-  const choices = useSearchCompletion(query, setQuery, inputRef)
+  const values = useUserValues()
+  const person = (folded: string): boolean =>
+    (values.with ?? []).some((o) => fold(o.label) === folded || fold(o.hint ?? '') === folded)
+  const chip = useChipQuery(person)
+  const query = chip.query
+  const choices = useSearchCompletion(chip.text, chip.setText, inputRef, values)
+  const ghost = ghostFor(chip.text, choices.caret, choices.completion)
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -93,6 +102,15 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
 
   const onKeyDown = (event: React.KeyboardEvent): void => {
     if (choices.onKeyDown(event)) return
+    if (event.key === 'Tab' && !event.shiftKey) {
+      // Nothing to complete: Tab finishes a modifier typed in full (`in:meetings`) into a chip.
+      const split = splitChips(chip.text, { complete: true, person })
+      if (split.chips.length > 0) {
+        event.preventDefault()
+        chip.setText(chip.text, { complete: true })
+      }
+      return
+    }
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault()
       if (hits.length === 0) return
@@ -119,36 +137,31 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
         if (event.target === dialogRef.current) onClose()
       }}
     >
-      <div className={styles.field}>
-        <Search size={16} strokeWidth={1.75} className={styles.icon} aria-hidden />
-        <input
-          className={styles.input}
-          type="text"
-          autoFocus
-          placeholder="Search, or type a command"
-          aria-label="Search"
-          role="combobox"
-          aria-expanded={hits.length > 0}
-          aria-controls={choices.completion ? 'global-search-filters' : 'global-search-results'}
-          aria-activedescendant={
-            choices.completion
-              ? choices.active >= 0
-                ? `global-search-filters-${choices.active}`
-                : undefined
-              : hits.length > 0
-                ? `global-search-${activeIndex}`
-                : undefined
-          }
-          ref={inputRef}
-          value={query}
-          onChange={(event) => {
-            setQuery(event.target.value)
-            choices.track(event.target.selectionStart)
-          }}
-          onSelect={(event) => choices.track(event.currentTarget.selectionStart)}
-          onKeyDown={onKeyDown}
-        />
-      </div>
+      <ChipInput
+        chips={chip.chips}
+        text={chip.text}
+        ghost={ghost}
+        caret={chip.caret}
+        inputRef={inputRef}
+        placeholder="Search, or type a command"
+        onText={chip.setText}
+        onRemove={chip.remove}
+        onKeyDown={onKeyDown}
+        onCaret={choices.track}
+        inputProps={{
+          'aria-label': 'Search',
+          role: 'combobox',
+          'aria-expanded': hits.length > 0,
+          'aria-controls': choices.completion ? 'global-search-filters' : 'global-search-results',
+          'aria-activedescendant': choices.completion
+            ? choices.active >= 0
+              ? `global-search-filters-${choices.active}`
+              : undefined
+            : hits.length > 0
+              ? `global-search-${activeIndex}`
+              : undefined
+        }}
+      />
       {choices.typing && (
         <SearchHelp
           modifier={choices.typing.modifier}

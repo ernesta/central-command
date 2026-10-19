@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { chipLabel, joinQuery, splitChips } from './search-chips'
+import { backspaceRemovesChip, chipLabel, insertPaste, joinQuery, splitChips } from './search-chips'
 
 const TODAY = '2026-10-19'
 const people = new Set(['ernesta orlovaite', 'eo', 'kathy rastle'])
@@ -76,5 +76,32 @@ describe('joinQuery', () => {
     expect(joinQuery(['in:notes', '-tag:x'], 'sample')).toBe('in:notes -tag:x sample')
     expect(joinQuery([], '  ')).toBe('')
     expect(joinQuery(['in:notes'], '')).toBe('in:notes')
+  })
+})
+
+describe('insertPaste', () => {
+  it('puts the paste over the selection and puts the caret after it', () => {
+    expect(insertPaste('abc def', 4, 7, 'by:"Kathy Rastle"')).toEqual({
+      text: 'abc by:"Kathy Rastle"',
+      caret: 21
+    })
+  })
+
+  it('turns line breaks into spaces', () => {
+    expect(insertPaste('', 0, 0, 'a\nb\r\n c').text).toBe('a b c')
+  })
+})
+
+describe('backspaceRemovesChip', () => {
+  const base = { chips: 2, selectionStart: 0, selectionEnd: 0, composing: false }
+  it('removes a chip only from the start of the field with nothing selected', () => {
+    expect(backspaceRemovesChip(base)).toBe(true)
+    expect(backspaceRemovesChip({ ...base, selectionStart: 1, selectionEnd: 1 })).toBe(false)
+    expect(backspaceRemovesChip({ ...base, selectionEnd: 3 })).toBe(false)
+    expect(backspaceRemovesChip({ ...base, chips: 0 })).toBe(false)
+  })
+
+  it('leaves the key to an input method that is composing', () => {
+    expect(backspaceRemovesChip({ ...base, composing: true })).toBe(false)
   })
 })
