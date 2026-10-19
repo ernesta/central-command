@@ -21,7 +21,7 @@ const KIND_ICON = {
 export function HomeDate(): React.JSX.Element {
   return (
     <span className={styles.date}>
-      {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
+      {new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}
     </span>
   )
 }
