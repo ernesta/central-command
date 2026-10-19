@@ -761,9 +761,9 @@ or found on the way:
   before typing.
 - **`in:` and the other modifiers: see "Search modifiers" below** (they replaced the first `in:`, `parseSearchQuery`, which let
   `in:meetings in:notes` search both and left an unknown `in:` word in the text silently).
-- **A "See all results" link** at the bottom of the window (shown once any group reaches its cap of six) opens `/search?q=…`, the
-  same search with a much higher cap (40) as a full page, grouped the same way, with the field still there to keep typing or add an
-  `in:` modifier.
+- **A "See all results" link** at the bottom of the window (shown once any group reaches its cap of six) **grows the same window**
+  (wider, taller, up to 40 a kind, with a count) rather than opening a page; since 19 Oct 2026 the `/search` page is gone (see
+  "Refinements" under "Search modifiers"). It was a full page with its own field until then.
 - **How results are ranked (`SEARCH_GROUP_ORDER` in `src/shared/search.ts`).** There is no relevance score across the whole app: a
   match is either "in the title" or "in the text", and beyond that, order is two simple, fixed rules, deliberately, so this is easy
   to reason about and to change later if it stops being good enough:
@@ -847,17 +847,61 @@ filtering sits beside its `renderer/search.ts` (tasks: `tasks/shared/search-filt
   window opens. A list of names highlights nothing (so Enter still opens a result for a plain word such as "with"); a list of values
   highlights the first. Arrow keys move, Enter inserts the highlighted one, Tab inserts the highlighted one or the first, Escape closes
   the list (and only the list: the next Escape closes the window), a click picks without taking focus from the field. Inserting a value
-  adds a space; a value with spaces is quoted. Same list in the Mod-K window (above the results) and on `/search` (under the field).
+  adds a space; a value with spaces is quoted. Same list in the Mod-K window and its grown form (under the help row, above the results).
   Listed in Settings ("Complete a search filter").
-- **Notices** show above the results in both places. They are hidden while the completion list is open: a notice about the word still
+- **Notices** show at the top, under the help row (since the refinements; they used to sit among the results). They are hidden while the completion list is open: a notice about the word still
   being typed (`with:c`, "needs a name from the people list") only flickered. _Found by driving the app._
 - **Not built, by decision:** `is:`, `title:`, `type:`, `mode:`, commas, `from:`/`@`, prefixes, academic years or contracts in dates.
 - **Checked in the built app and dev mode (StrictMode), light and dark, on a scratch library:** `experiments in:task`, status, priority,
   overdue, `with:` by initials, phrases, `has:todos`, readings by read state, `during:"this month"`, `workspace:work`, `-in:readings`, each
   notice, the completion list by keyboard (two letters, Tab, a value, arrows, Enter, Escape twice) and by mouse, and the same on
-  `/search` reached from "See all results".
+  `/search` reached from "See all results" (that page no longer exists; see "Refinements").
 - **Mutation-checked:** `every` to `some` in `passesFilters`, dropping the negation, `workspace:` ignoring unscoped sources, a negated
   modifier narrowing, `-in:` ignored and the repeat check off each fail tests.
+
+#### Refinements (19 Oct 2026; `docs/SEARCH_REFINEMENTS_PLAN.md`, built unattended, pushed, not installed)
+
+All of it the user's decisions from using the built feature. Code: `search-query.ts` (`isSearch`, `valueAccepted`), `search-complete.ts`
+(`isFinishedValue`, `modifierAt`, `ghostFor`), `search-help.ts` (the table), `search-chips.ts` (`splitChips`, `insertPaste`,
+`backspaceRemovesChip`), and in `renderer/src/shell/`: `ChipInput`, `useChipQuery`, `ModifierChip`, `SearchHelp`, `SearchSettings`, `GlobalSearch`.
+
+- **Order, top to bottom:** field (chips and text), the grown window's count and × (only when grown), one help row for the modifier being
+  typed, the notice, the completion list, the results. The help row never sits below the results.
+- **What counts as a search (`isSearch`, `ParsedSearch.plainWords`).** Plain words, a phrase, or a modifier with an accepted value. Not a
+  search, so never "No results.": a modifier with no value (`in:`), an unknown one (`person:`, whose token is in `text` but is not a
+  plain word) and a known one with a value it does not take (`in:home`). They show the help row or the notice. `SearchOutcome.searched`
+  carries it to the window. `in:meetings workspace:work` with no text is a search.
+- **No list over a finished value (`isFinishedValue`).** A quoted value with its closing quote, a value the modifier takes as it stands
+  (`in:meeting`, `status:done`, a date), or the exact name, initials or label of one of the user's own values. `with:Ern` and
+  `workspace:re` are not finished. (The old rule only closed the list when exactly one option equalled the text, so `in:meeting` and a
+  quoted person still opened it.)
+- **Chips (`splitChips`).** The field is chips plus a plain `<input>`: `name:value` words that are complete and valid move out of the
+  text into chips once the typist is past them (a space follows), or at once for a paste ending the text, or on Tab. A plain input was chosen over a
+  contentEditable because the caret, selection and input methods stay the browser's: IME composition is not split until it ends,
+  and Backspace is left to the composition. Consequences: chips sit before the text, so a query's modifier order is not kept (they
+  AND, so it does not matter), and `with:`/`by:` become chips only for a person in the list (otherwise they stay text and get
+  their notice). Backspace at the start of the field (nothing selected) removes the last chip whole; each chip has a × too (not in
+  the Tab order). A negated chip shows its minus; quotes are not shown. Picking from the list, a help chip, Tab and paste all go through the same split.
+- **Ghost text (`ghostFor`).** Exactly one completion, the caret at the end, and what is typed is the start of its label: the rest is
+  drawn grey after the caret (a mirror of the input's text under it); Tab takes it (the same action as picking the one item).
+  Escape, a second match, or moving the caret clears it. The list stays up beside it.
+- **The table (`MODIFIER_HELP`, `summarise`).** One place for each modifier's hint, what it filters and its accepted forms; the
+  completion list's hints, the help row and the Settings page read it, and a test checks it covers `MODIFIER_NAMES`. Fixed sets
+  (`in`, `workspace`, `status`, `priority`, `has`) are chips that fill the value in when clicked; the rest are one muted line, and
+  `with:`/`by:` also offer four people as chips. Settings → **Search** lists every modifier the same way.
+- **The grown window replaces the page.** "See all results" sets `expanded` in the same dialog (same field, help, rows; 920px wide, up to
+  40 a kind, headings with their counts, "N results · up to 40 of each kind"). Escape, a click outside and × close it, focus goes
+  back to what had it, and the page behind never changed. Emptying the query keeps it open and lists the modifiers' names as chips
+  (a state of the window, not a page). `/search?q=` is kept only as a redirect that opens the window with the query in it
+  (`SearchRedirect`); `SearchResultsPage` is deleted. Found by driving it: clicking "See all results" took focus off the field, so
+  the next keystroke (Cmd-A) selected the page; the button no longer takes focus (and the field is focused again).
+- **Not changed:** the keys (Settings' "Complete a search filter" note now mentions grey text and chips); no "Did you mean" for an unknown modifier (declined).
+- **Mutation-checked:** `isSearch` counting unknown tokens as words, `isFinishedValue` without its quoted, listed and fixed-accepted
+  cases, `splitChips` taking an unterminated word and ignoring the people check each fail a test.
+- **Driven** on a scratch library (a copy of the notes), production build and dev mode (StrictMode), light and dark, with real keystrokes
+  and the clipboard: each state the plan lists, plus pick-with-Tab, paste (`by:"Kathy Rastle"`, mixed, plain), Backspace over chips, a
+  help chip click, IME composition (Chromium's `Input.imeSetComposition`) with and without a chip in front, quitting right after typing,
+  the focus ring on "See all results", Escape / outside click / ×.
 
 ## Dark mode (Theme: System, Light or Dark, in Settings)
 

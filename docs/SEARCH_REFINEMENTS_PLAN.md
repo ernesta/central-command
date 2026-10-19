@@ -1,6 +1,9 @@
 # Search refinements: plan
 
-Status: **planned 19 Oct 2026, not built.** The user's review of the search modifiers (`docs/SEARCH_MODIFIERS_PLAN.md`), collected in conversation while using the
+Status: **built 19 Oct 2026 in one unattended run, all five steps, pushed, not installed.** What differed from the plan: (1) the chip field is a plain `<input>` after the chips (not a
+contentEditable), so chips always sit before the text and the modifier order is not kept; (2) a `with:`/`by:` word is a chip only for a person in the list; (3) Tab also turns a
+modifier typed in full into a chip, and each chip has a × (outside the Tab order); (4) the grown window's empty state lists the modifiers' names as chips; (5) `/search?q=` stays as a
+redirect that opens the window (`SearchRedirect`) instead of being removed; (6) the Settings tab is "Search" and reads `search-help.ts`. Details: `docs/DECISIONS.md`, "Search modifiers", "Refinements". Original plan follows. The user's review of the search modifiers (`docs/SEARCH_MODIFIERS_PLAN.md`), collected in conversation while using the
 built feature. Every point below is the user's decision ("agreed with the user": do not re-ask). Read with `CLAUDE.md`, `docs/DECISIONS.md` ("Global search",
 "Search modifiers") and `docs/SEARCH_MODIFIERS_PLAN.md`. Code today: `src/shared/search-query.ts` (tokenizer, notices), `src/renderer/src/shell/GlobalSearch.tsx`
 (Mod-K), `SearchResultsPage.tsx` (`/search`), `CompletionList.tsx`, `SearchNotices.tsx`, `search-values.ts`, `search-sources.ts`, `run-search.ts`.
