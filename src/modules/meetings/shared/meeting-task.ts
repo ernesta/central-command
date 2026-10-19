@@ -78,17 +78,27 @@ export interface MeetingNote {
   date: string
 }
 
-/** The title a meeting's subtask has: its series task and the date ("Supervision · Oct 12, 2026"). */
+/** The title a meeting's subtask has: its series task and the date ("Supervision · 12 Oct 2026", as the Mac's region writes it). */
 export function meetingTaskTitle(parentTitle: string, date: string): string {
   return `${parentTitle.trim()} · ${formatDate(date)}`
 }
 
-/** A title this module made: it ends in " · Oct 12, 2026". Anything else on a meeting is a task the user chose, never renamed. */
-const DATED_TITLE = / · [A-Z][a-z]{2} \d{1,2}, \d{4}$/
+/**
+ * A title made before tasks carried a marker: it ends in " · " and a date as some region writes it ("Oct 12, 2026", "12 Oct 2026",
+ * "12. Okt. 2026", "2026年10月12日", "2026-10-12"), so a year, a day and nothing else but letters and punctuation. `formatDate`
+ * follows the Mac's region and changed once (commit 6ddc65e), so the shape is matched, not one region's spelling.
+ */
+const LEGACY_TITLE =
+  / · (?=[^·]{6,32}$)(?=.*(?<!\d)\d{4}(?!\d))(?=.*(?<!\d)\d{1,2}(?!\d))[\p{L}\p{N}\p{M}.,\s年月日년월일/-]+$/u
 
-/** A subtask this module made for a meeting (so it may follow the note, and goes to the trash with it). */
+/**
+ * A subtask this module made for a meeting (so it may follow the note, and goes to the trash with it): marked `meeting` when the
+ * app made it, or, for one made before the marker and not marked yet by the repair script, a subtask titled the old way. A task the
+ * user chose for a meeting has no marker and no such title, and is never renamed or moved.
+ */
 export function isOwnMeetingTask(task: Task): boolean {
-  return !!task.parentUid && DATED_TITLE.test(task.title)
+  if (task.ownKind) return task.ownKind === 'meeting'
+  return !!task.parentUid && LEGACY_TITLE.test(task.title)
 }
 
 function target(proposal: TaskProposal): MeetingParent {

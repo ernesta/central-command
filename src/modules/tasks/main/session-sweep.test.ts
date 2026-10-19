@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { runMigrations } from '../../../main/db/migrate'
 import { meetingsMigrations } from '../../meetings/main/migrations'
 import { trainingMigrations } from '../../training/main/migrations'
+import { withLocale } from '@shared/with-locale.testing'
 import { settleSessionTasks } from './session-sweep'
 import { tasksMigrations } from './migrations'
 import { TasksStore } from './tasks-store'
@@ -45,6 +46,29 @@ describe('settleSessionTasks', () => {
     expect(store.get(sub.uid)).toMatchObject({ status: 'done', due: '2026-10-10' })
     expect(store.get(parent.uid)).toMatchObject({ status: 'todo', due: null })
     expect(settleSessionTasks(db, store, now).size).toBe(0)
+  })
+
+  it("dates and closes a meeting's own subtask whatever region its title was written in", () => {
+    for (const locale of ['en-GB', 'de-DE']) {
+      const parent = store.create({ workspace: 'research', title: 'Rastle Lab', list: 'Meetings' })
+      const title = withLocale(
+        locale,
+        () =>
+          `Rastle Lab · ${new Date(Date.UTC(2026, 9, 10)).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}`
+      )
+      const marked = store.create({
+        workspace: 'research',
+        title,
+        parentUid: parent.uid,
+        ownKind: 'meeting'
+      })
+      const unmarked = store.create({ workspace: 'research', title, parentUid: parent.uid })
+      meeting(marked.uid, '2026-10-10', '11:00')
+      meeting(unmarked.uid, '2026-10-10', '11:00')
+      settleSessionTasks(db, store, now)
+      expect(store.get(marked.uid)).toMatchObject({ status: 'done', due: '2026-10-10' })
+      expect(store.get(unmarked.uid)).toMatchObject({ status: 'done', due: '2026-10-10' })
+    }
   })
 
   it('does not close a session that has not ended, but dates it', () => {

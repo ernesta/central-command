@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { Task } from '../../tasks/shared/types'
-import { meetingTaskTitle, planMeetingTask, proposeMeetingTask } from './meeting-task'
+import { MANY_LOCALES, TEST_LOCALES, withLocale } from '@shared/with-locale.testing'
+import {
+  isOwnMeetingTask,
+  meetingTaskTitle,
+  planMeetingTask,
+  proposeMeetingTask
+} from './meeting-task'
 
 const task = (over: Partial<Task>): Task =>
   ({
@@ -9,6 +15,7 @@ const task = (over: Partial<Task>): Task =>
     title: 'Supervision',
     list: 'Meetings',
     parentUid: null,
+    ownKind: null,
     ...over
   }) as Task
 
@@ -177,6 +184,88 @@ describe('planMeetingTask', () => {
   it('a task that is gone is not made again by itself', () => {
     expect(planMeetingTask('research', { ...note, task: 'gone' }, null, [series])).toEqual({
       kind: 'none'
+    })
+  })
+})
+
+describe('a meeting task is recognised in every region (the bug of 19 Oct 2026)', () => {
+  const dates = ['2026-01-05', '2026-03-31', '2026-10-19', '2026-12-31']
+  const series = task({ uid: 's', title: 'Supervision', list: 'Meetings' })
+
+  it.each(TEST_LOCALES)('%s: the title the app writes is its own, marked or not', (locale) => {
+    withLocale(locale, () => {
+      for (const date of dates) {
+        const title = meetingTaskTitle('Supervision', date)
+        expect(isOwnMeetingTask(task({ title, parentUid: 's', list: '' }))).toBe(true)
+        expect(
+          isOwnMeetingTask(task({ title: 'whatever', parentUid: 's', ownKind: 'meeting' }))
+        ).toBe(true)
+      }
+    })
+  })
+
+  it.each(MANY_LOCALES)(
+    '%s: an unmarked title the app wrote in that region is still its own',
+    (locale) => {
+      withLocale(locale, () => {
+        for (const date of dates) {
+          const title = meetingTaskTitle('Supervision', date)
+          expect(isOwnMeetingTask(task({ title, parentUid: 's', list: '' }))).toBe(true)
+        }
+      })
+    }
+  )
+
+  it('ISO and US titles from before are still its own', () => {
+    expect(isOwnMeetingTask(task({ title: 'Supervision · 2026-10-19', parentUid: 's' }))).toBe(true)
+    expect(isOwnMeetingTask(task({ title: 'Supervision · Oct 19, 2026', parentUid: 's' }))).toBe(
+      true
+    )
+  })
+
+  it('a task the user chose is not its own: no marker, no date title, or no parent', () => {
+    for (const title of [
+      'Prepare for the supervision',
+      'Supervision · notes',
+      'Supervision · 2026'
+    ]) {
+      expect(isOwnMeetingTask(task({ title, parentUid: 's' }))).toBe(false)
+    }
+    expect(isOwnMeetingTask(task({ title: 'Supervision · 19 Oct 2026', parentUid: null }))).toBe(
+      false
+    )
+  })
+
+  it('the marker decides: a marked lecture or self-study task is not a meeting task, whatever its title', () => {
+    const title = 'Supervision · 19 Oct 2026'
+    expect(isOwnMeetingTask(task({ title, parentUid: 's', ownKind: 'lecture' }))).toBe(false)
+    expect(isOwnMeetingTask(task({ title, parentUid: 's', ownKind: 'self-study' }))).toBe(false)
+  })
+
+  it.each(TEST_LOCALES)('%s: the subtask follows a changed series and date', (locale) => {
+    withLocale(locale, () => {
+      const own = task({
+        uid: 'm',
+        title: meetingTaskTitle('Supervision', '2026-10-19'),
+        list: '',
+        parentUid: 's',
+        due: '2026-10-19',
+        ownKind: 'meeting'
+      })
+      const other = task({ uid: 'o', title: 'Meetings', list: 'Meetings' })
+      const plan = planMeetingTask(
+        'research',
+        { task: 'm', series: 'Other', date: '2026-10-20' },
+        null,
+        [series, other, own]
+      )
+      expect(plan).toEqual({
+        kind: 'sync',
+        uid: 'm',
+        title: meetingTaskTitle('Meetings', '2026-10-20'),
+        parent: { uid: 'o' },
+        due: '2026-10-20'
+      })
     })
   })
 })
