@@ -6,6 +6,8 @@ export interface UndoEntry {
   /** What it was, for a failure message ("status change"). */
   label: string
   undo: () => Promise<void> | void
+  /** True once the thing it would change is gone (its page was left): Cmd-Z then skips it instead of acting on nothing. */
+  isStale?: () => boolean
 }
 
 const LIMIT = 50
@@ -30,6 +32,7 @@ export async function undoEntry(entry: UndoEntry): Promise<void> {
 
 /** Cmd-Z: take back the latest change. Resolves with whether there was one. */
 export async function undoLast(): Promise<boolean> {
+  stack = stack.filter((e) => !e.isStale?.())
   const entry = stack[stack.length - 1]
   if (!entry) return false
   clearToast()

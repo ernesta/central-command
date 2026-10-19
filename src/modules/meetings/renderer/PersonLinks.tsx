@@ -1,6 +1,7 @@
 import { Link2, Plus, X } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@renderer/components/Button'
+import { useUndoableRemoval } from '@renderer/components/useUndoableRemoval'
 import { isSafeLinkUrl, type PersonLink } from '@shared/people'
 import styles from './PersonLinks.module.css'
 
@@ -26,13 +27,17 @@ export function PersonLinks({
     onChange([...links, { label: label.trim(), url: url.trim() }])
     reset()
   }
-  const remove = (i: number): void => onChange(links.filter((_, j) => j !== i))
+  const remove = useUndoableRemoval(
+    links,
+    onChange,
+    (a, b) => a.label === b.label && a.url === b.url
+  )
 
   return (
     <div className={styles.section}>
       <p className={styles.label}>Links</p>
       <div className={styles.pills}>
-        {links.map((link, i) => (
+        {links.map((link) => (
           <span key={`${link.label}-${link.url}`} className={styles.pill}>
             <a className={styles.link} href={link.url} target="_blank" rel="noreferrer">
               <Link2 size={13} strokeWidth={1.75} aria-hidden />
@@ -42,7 +47,7 @@ export function PersonLinks({
               type="button"
               className={styles.remove}
               aria-label={`Remove ${link.label}`}
-              onClick={() => remove(i)}
+              onClick={() => remove(link)}
             >
               <X size={13} strokeWidth={1.75} aria-hidden />
             </button>

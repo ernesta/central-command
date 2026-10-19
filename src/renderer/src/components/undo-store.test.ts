@@ -25,6 +25,15 @@ describe('undo store', () => {
     expect(undo).toHaveBeenCalledTimes(1)
   })
 
+  it('skips an entry whose page is gone', async () => {
+    const calls: string[] = []
+    pushUndo({ label: 'a', undo: () => void calls.push('a') })
+    pushUndo({ label: 'b', undo: () => void calls.push('b'), isStale: () => true })
+    expect(await undoLast()).toBe(true)
+    expect(await undoLast()).toBe(false)
+    expect(calls).toEqual(['a'])
+  })
+
   it('keeps going when an undo fails', async () => {
     pushUndoWithToast('x', {
       label: 'x',
