@@ -114,6 +114,15 @@ export function planLectureTask(note: LectureNote, tasks: readonly Task[]): Lect
 }
 
 /**
+ * Whether a task a training note's `task:` names is the lecture's own, so the app may date, close and hide it: marked `lecture`, a
+ * subtask, or a top-level task in Training with nothing under it. Anything else is a task the user pointed the note at.
+ */
+export function isLectureOwn(own: Task, tasks: readonly Task[]): boolean {
+  if (own.ownKind === 'lecture' || own.parentUid) return true
+  return fold(own.list) === fold(TRAINING_LIST) && !tasks.some((t) => t.parentUid === own.uid)
+}
+
+/**
  * A series task this note's page made a moment ago (while the series was still being typed) that the lecture has now left, with
  * nothing else in it: the one to put in the trash. Only a task in `made` is ever named, so a task the user made is never touched,
  * and the trash is restorable. `tasks` is every live task of the workspace.
