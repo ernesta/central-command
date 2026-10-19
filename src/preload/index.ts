@@ -166,6 +166,7 @@ const api: Api = {
     restore: (uid) => ipcRenderer.invoke(TASKS_IPC.restore, uid),
     trash: () => ipcRenderer.invoke(TASKS_IPC.trash),
     snapshot: () => ipcRenderer.invoke(TASKS_IPC.snapshot),
+    sessionTaskUids: (workspace) => ipcRenderer.invoke(TASKS_IPC.sessionTaskUids, workspace),
     discardIfEmpty: (uid) => ipcRenderer.invoke(TASKS_IPC.discardIfEmpty, uid),
     onChanged: (listener) => {
       const handler = (_event: Electron.IpcRendererEvent, event: TasksChangedEvent): void =>

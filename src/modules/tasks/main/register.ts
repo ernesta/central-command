@@ -24,7 +24,7 @@ import { writeTasksSnapshot } from './snapshot'
 import { TrackingStore } from '../../../main/tracking/store'
 import { trackingMoment } from '@shared/time'
 import { workClients } from '../shared/work-lists'
-import { localMoment, settleSessionTasks } from './session-sweep'
+import { localMoment, sessionTaskUids, settleSessionTasks } from './session-sweep'
 import { TasksStore } from './tasks-store'
 
 /** One readable copy of the tasks per day, taken when the app starts (nothing is written while there are no tasks). */
@@ -200,6 +200,9 @@ function register(context: MainContext): () => void {
         'manual'
       )
     )
+  )
+  ipcMain.handle(TASKS_IPC.sessionTaskUids, (_event, workspace: unknown) =>
+    sessionTaskUids(context.db, store, asWorkspace(workspace))
   )
   ipcMain.handle(TASKS_IPC.discardIfEmpty, (_event, uid: unknown) =>
     changing(asUid(uid), () => store.discardIfEmpty(asUid(uid)))

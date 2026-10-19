@@ -4,8 +4,10 @@ import { runMigrations } from '../../../main/db/migrate'
 import { meetingsMigrations } from '../../meetings/main/migrations'
 import { trainingMigrations } from '../../training/main/migrations'
 import { withLocale } from '@shared/with-locale.testing'
-import { settleSessionTasks } from './session-sweep'
+import { pickerOptions, suggestedTasks } from '../../hours/shared/start-picker'
+import { sessionTaskUids, settleSessionTasks } from './session-sweep'
 import { tasksMigrations } from './migrations'
+import { listTasks } from './repository'
 import { TasksStore } from './tasks-store'
 
 let db: Database.Database
@@ -111,5 +113,110 @@ describe('settleSessionTasks', () => {
     meeting('auto', '2026-10-10', '11:00')
     training('', '2026-10-10', '11:00')
     expect(settleSessionTasks(db, store, now).size).toBe(0)
+  })
+})
+
+describe('sessionTaskUids: what the timer and Hours do not offer', () => {
+  const setup = (): Record<string, string> => {
+    const meetings = store.create({ workspace: 'research', title: 'Supervision', list: 'Meetings' })
+    const own = store.create({
+      workspace: 'research',
+      title: 'Supervision · 19 Oct 2026',
+      parentUid: meetings.uid,
+      ownKind: 'meeting'
+    })
+    const olderOwn = store.create({
+      workspace: 'research',
+      title: 'Supervision · Oct 12, 2026',
+      parentUid: meetings.uid
+    })
+    const chosen = store.create({
+      workspace: 'research',
+      title: 'Prepare supervision slides',
+      list: 'Writing'
+    })
+    const series = store.create({ workspace: 'research', title: 'PS5210', list: 'Training' })
+    const lecture = store.create({
+      workspace: 'research',
+      title: 'Lecture 1',
+      parentUid: series.uid,
+      ownKind: 'lecture'
+    })
+    const study = store.create({
+      workspace: 'research',
+      title: 'Lecture 1 self-study',
+      list: 'Training',
+      ownKind: 'self-study'
+    })
+    const ordinary = store.create({ workspace: 'research', title: 'Read', list: 'Reading' })
+    const work = store.create({ workspace: 'work', title: 'Impact meetings', list: 'Impact' })
+    const workOwn = store.create({
+      workspace: 'work',
+      title: 'Impact meetings · 19 Oct 2026',
+      parentUid: work.uid,
+      ownKind: 'meeting'
+    })
+    meeting(own.uid, '2026-10-19', null)
+    meeting(olderOwn.uid, '2026-10-12', null)
+    meeting(chosen.uid, '2026-10-20', null)
+    training(lecture.uid, '2026-10-21', null)
+    db.prepare(
+      `INSERT INTO meetings (workspace, meeting_id, task, series, date, end_time, content_hash)
+       VALUES ('work', 'w', @task, 'Impact', '2026-10-19', NULL, 'h')`
+    ).run({ task: workOwn.uid })
+    return {
+      own: own.uid,
+      olderOwn: olderOwn.uid,
+      chosen: chosen.uid,
+      lecture: lecture.uid,
+      study: study.uid,
+      ordinary: ordinary.uid,
+      series: series.uid,
+      meetings: meetings.uid,
+      workOwn: workOwn.uid
+    }
+  }
+
+  it("is the meeting's own tasks (marked or older) and the lectures' own, in their workspace", () => {
+    const id = setup()
+    expect(new Set(sessionTaskUids(db, store, 'research'))).toEqual(
+      new Set([id.own, id.olderOwn, id.lecture])
+    )
+    expect(sessionTaskUids(db, store, 'work')).toEqual([id.workOwn])
+    expect(sessionTaskUids(db, store, 'life')).toEqual([])
+  })
+
+  it('leaves out the tasks the picker must still offer: self-study, ordinary, series, and one chosen for a meeting', () => {
+    const id = setup()
+    const hidden = new Set(sessionTaskUids(db, store, 'research'))
+    for (const uid of [id.study, id.ordinary, id.series, id.meetings, id.chosen]) {
+      expect(hidden.has(uid)).toBe(false)
+    }
+  })
+
+  it('takes a session task out of the suggestions and out of typed search, and nothing else', () => {
+    const id = setup()
+    const hidden = new Set(sessionTaskUids(db, store, 'research'))
+    const open = listTasks(db, 'research').filter((t) => !hidden.has(t.uid))
+    const year = {
+      sessions: ['own', 'olderOwn', 'lecture', 'study', 'ordinary', 'chosen'].map((k, n) => ({
+        task: `cc://task/${id[k]}`,
+        date: '2026-10-17',
+        start: `0${n + 1}:00:00`
+      })),
+      adjusts: []
+    } as never
+    const suggested = suggestedTasks(year, open, '2026-10-17', 10).map((t) => t.uid)
+    expect(new Set(suggested)).toEqual(new Set([id.study, id.ordinary, id.chosen]))
+    expect(new Set(pickerOptions(open, 'supervision').tasks.map((t) => t.uid))).toEqual(
+      new Set([id.meetings, id.chosen])
+    )
+    expect(pickerOptions(open, 'lecture 1').tasks.map((t) => t.uid)).toEqual([id.study])
+  })
+
+  it('a task is not hidden once it is not a meeting task any more (unmarked and not titled as one)', () => {
+    const id = setup()
+    store.update(id.own, { ownKind: null, title: 'Supervision prep' })
+    expect(sessionTaskUids(db, store, 'research')).not.toContain(id.own)
   })
 })

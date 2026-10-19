@@ -63,6 +63,11 @@ export interface TasksApi {
   trash(): Promise<{ task: Task; deletedAt: string }[]>
   /** Write a readable copy of every task now (the app also writes one a day). Resolves with the file's name. */
   snapshot(): Promise<string>
+  /**
+   * The uids of the workspace's session tasks: a meeting's own task and a training lecture's own task. Hours does not offer them
+   * (their time is typed in the note); a task the user chose for a meeting is not one.
+   */
+  sessionTaskUids(workspace: TaskWorkspace): Promise<string[]>
   /** Subscribe to changes. Returns an unsubscribe function. */
   onChanged(listener: (event: TasksChangedEvent) => void): () => void
 }
@@ -79,6 +84,7 @@ export const TASKS_IPC = {
   restore: 'tasks:restore',
   trash: 'tasks:trash',
   snapshot: 'tasks:snapshot',
+  sessionTaskUids: 'tasks:session-task-uids',
   discardIfEmpty: 'tasks:discard-if-empty',
   changed: 'tasks:changed'
 } as const
