@@ -1,7 +1,5 @@
 import { useState } from 'react'
 import { Play, Square, Trash2 } from 'lucide-react'
-import { Button } from '@renderer/components/Button'
-import { Dialog } from '@renderer/components/Dialog'
 import { Select } from '@renderer/components/Select'
 import { pushUndoWithToast } from '@renderer/components/undo-store'
 import { useNewRowKeys } from '@renderer/components/useNewRowKeys'
@@ -23,7 +21,7 @@ interface TaskListProps {
   clients?: readonly string[]
   /** Moves a row to another client (`from` is its client now). */
   onSetClient?: (label: string, from: string | undefined, to: string) => void
-  /** Deletes a task's saved time for the day, once confirmed. Not offered for a running row or one with nothing to remove. */
+  /** Deletes a task's saved time for the day. Not offered for a running row or one with nothing to remove. */
   onDelete?: (label: string, client?: string) => void
   /** Start (or switch to) a task and stop it: given on Today only. */
   onStart?: (row: TaskRow) => void
@@ -53,7 +51,6 @@ export function TaskList({
   const [draft, setDraft] = useState(0)
   const [renaming, setRenaming] = useState<string | null>(null)
   const [name, setName] = useState('')
-  const [deleting, setDeleting] = useState<TaskRow | null>(null)
   const [problem, setProblem] = useState('')
   const entering = useNewRowKeys(rows.map((row) => rowKey(row).toLowerCase()))
   if (rows.length === 0) return null
@@ -184,7 +181,17 @@ export function TaskList({
                     type="button"
                     className={styles.delete}
                     aria-label={`Delete ${row.label || 'task'}`}
-                    onClick={() => setDeleting(row)}
+                    onClick={() => {
+                      const { label, client, minutes, task } = row
+                      onDelete(label, client)
+                      pushUndoWithToast(
+                        `Deleted “${label || 'Untitled'}” (${formatHours(minutes)}).`,
+                        {
+                          label: 'deletion',
+                          undo: () => onSetMinutes(label, minutes, client, task)
+                        }
+                      )
+                    }}
                   >
                     <Trash2 size={14} strokeWidth={1.75} aria-hidden />
                   </button>
@@ -197,37 +204,6 @@ export function TaskList({
         <p role="alert" className={styles.problem}>
           {problem}
         </p>
-      )}
-      {deleting && onDelete && (
-        <Dialog
-          title="Delete this time?"
-          onCancel={() => setDeleting(null)}
-          actions={
-            <>
-              <Button size="small" onClick={() => setDeleting(null)} autoFocus>
-                Cancel
-              </Button>
-              <Button
-                size="small"
-                variant="danger"
-                onClick={() => {
-                  const { label, client, minutes, task } = deleting
-                  onDelete(label, client)
-                  setDeleting(null)
-                  pushUndoWithToast(`Deleted “${label || 'Untitled'}” (${formatHours(minutes)}).`, {
-                    label: 'deletion',
-                    undo: () => onSetMinutes(label, minutes, client, task)
-                  })
-                }}
-              >
-                Delete
-              </Button>
-            </>
-          }
-        >
-          {formatHours(deleting.minutes)} on {deleting.label || 'No task yet'} will be removed from
-          this day, and from the task&apos;s tracked time.
-        </Dialog>
       )}
     </>
   )
