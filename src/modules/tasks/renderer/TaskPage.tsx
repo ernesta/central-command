@@ -1,7 +1,6 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
-import { Dialog } from '@renderer/components/Dialog'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
 import { Segmented } from '@renderer/components/Segmented'
@@ -93,7 +92,6 @@ function TaskView({
   const { tracked, running, yearFor, clientFor, months } = useTaskTime(workspace)
   const lectures = useLectureTaskUids()
   const [error, setError] = useState<string | null>(null)
-  const [confirmDelete, setConfirmDelete] = useState(false)
   const [busy, setBusy] = useState(false)
 
   const update = (changes: TaskChanges): void => {
@@ -142,21 +140,13 @@ function TaskView({
     } catch (e) {
       setError(ipcErrorMessage(e))
       setBusy(false)
-      setConfirmDelete(false)
     }
   }
-
-  const untouchedNow = titleText === '' && bodyText.trim() === '' && row.kids.length === 0
 
   return (
     <div className={styles.page}>
       <div className={styles.top}>
-        <Button
-          size="small"
-          variant="danger-outline"
-          disabled={busy}
-          onClick={() => (untouchedNow ? void remove() : setConfirmDelete(true))}
-        >
+        <Button size="small" variant="danger-outline" disabled={busy} onClick={() => void remove()}>
           Delete task
         </Button>
       </div>
@@ -307,33 +297,6 @@ function TaskView({
           />
         </aside>
       </div>
-
-      {confirmDelete && (
-        <Dialog
-          title="Delete this task?"
-          busy={busy}
-          onCancel={() => setConfirmDelete(false)}
-          actions={
-            <>
-              <Button
-                size="small"
-                autoFocus
-                disabled={busy}
-                onClick={() => setConfirmDelete(false)}
-              >
-                Cancel
-              </Button>
-              <Button size="small" variant="danger" disabled={busy} onClick={() => void remove()}>
-                Delete task
-              </Button>
-            </>
-          }
-        >
-          {row.kids.length === 0
-            ? 'It goes to the trash; you can undo right after.'
-            : `It and its ${row.kids.length} ${row.kids.length === 1 ? 'subtask' : 'subtasks'} go to the trash; you can undo right after.`}
-        </Dialog>
-      )}
     </div>
   )
 }
