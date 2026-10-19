@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
 import { Play } from 'lucide-react'
 import { Select } from '@renderer/components/Select'
+import { showToast } from '@renderer/components/toast-store'
+import { pushUndoWithToast } from '@renderer/components/undo-store'
 import { TopBarPortal } from '@renderer/shell/top-bar-slot'
 import { useQuickActionWorkspace } from '@renderer/shell/useQuickActionWorkspace'
 import { WORKSPACE_LABELS } from '@renderer/shell/workspaces'
@@ -87,10 +89,27 @@ function TimerPopover({
     if (session.task) onClose()
   }
 
-  /** A timer started by mistake: drop it, saving nothing. */
+  /** A timer started by mistake: drop it, saving nothing. Undo starts it again from the same moment. */
   const discard = async (): Promise<void> => {
-    await tracking.deleteSession(running.workspace, running.year, session.id)
+    const { workspace, year } = running
+    const { label, task, client, start } = session
+    await tracking.deleteSession(workspace, year, session.id)
     onClose()
+    pushUndoWithToast('Timer discarded.', {
+      label: 'discard',
+      undo: async () => {
+        if (await tracking.running()) return showToast('Another timer is running.')
+        const again = await tracking.start(workspace, label, task, client)
+        if (!again.ok || !again.running) return showToast('Couldn’t bring the timer back.')
+        const back = await tracking.setStart(
+          again.running.workspace,
+          again.running.year,
+          again.running.session.id,
+          start
+        )
+        if (!back.ok) showToast('The timer is back, but it started now: its first time was lost.')
+      }
+    })
   }
 
   return (
