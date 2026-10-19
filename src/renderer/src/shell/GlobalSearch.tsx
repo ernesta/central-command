@@ -183,7 +183,7 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
             })}
           </div>
         ))}
-        {answered && <SearchNotices notices={result.notices} />}
+        {answered && <SearchNotices notices={choices.completion ? [] : result.notices} />}
         {answered && hits.length === 0 && !result.impossible && (
           <p className={styles.empty}>No results.</p>
         )}

@@ -114,7 +114,7 @@ export function SearchResultsPage(): React.JSX.Element {
           />
         )}
       </div>
-      {answered && <SearchNotices notices={result.notices} />}
+      {answered && <SearchNotices notices={choices.completion ? [] : result.notices} />}
       {answered && total === 0 && !result.impossible && query.trim() !== '' && (
         <EmptyState heading="No results" message={`Nothing matches “${query.trim()}”.`} />
       )}
