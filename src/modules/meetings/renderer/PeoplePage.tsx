@@ -5,7 +5,7 @@ import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { LandingHeader, LandingPage } from '@renderer/components/Landing'
 import { Notice } from '@renderer/components/Notice'
-import { pushUndoWithToast } from '@renderer/components/undo-store'
+import { pushUndo, pushUndoWithToast } from '@renderer/components/undo-store'
 import type { RemoveHow } from '../shared/api'
 import type { PersonPatch } from '../shared/people'
 import type { Person } from '../shared/types'
@@ -102,9 +102,26 @@ export function PeoplePage(): React.JSX.Element {
               )
             }
             onAddDone={() => setAdding(false)}
-            onSave={async (name: string, patch: PersonPatch) =>
-              report(await run(window.api.meetings.people.update(name, patch)))
-            }
+            onSave={async (name: string, patch: PersonPatch) => {
+              const refused = report(await run(window.api.meetings.people.update(name, patch)))
+              // Only "which one is me" is undone here: a name or initials change rewrites notes and keeps its dialog.
+              if (refused === null && patch.me !== undefined && Object.keys(patch).length === 1) {
+                const before = people.find((p) => p.me)
+                pushUndo({
+                  label: 'change of who is you',
+                  undo: async () => {
+                    // Setting someone as me cleared the one who was; unsetting is put back on the same person.
+                    const back = patch.me
+                      ? before
+                        ? { who: before.name, me: true }
+                        : { who: name, me: false }
+                      : { who: name, me: true }
+                    report(await run(window.api.meetings.people.update(back.who, { me: back.me })))
+                  }
+                })
+              }
+              return refused
+            }}
             onRemove={(person) => {
               const used = usage.find((u) => u.name === person.name)
               if (!used || used.meetings + used.trainings === 0) void removeUnmentioned(person)
