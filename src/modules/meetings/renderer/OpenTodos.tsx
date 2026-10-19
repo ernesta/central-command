@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { Notice } from '@renderer/components/Notice'
+import { pushUndo } from '@renderer/components/undo-store'
 import { markdownToExcerpt } from '@shared/text'
 import type { OpenTodo } from '../shared/open-todos'
 import { formatShortDate } from '../shared/time'
@@ -31,8 +32,24 @@ export function OpenTodos({
   const tick = (todo: OpenTodo, key: string): void => {
     setError(null)
     setTicked((s) => new Set(s).add(key))
+    const ref = { workspace, id: todo.meetingId }
     window.api.meetings
-      .tickTodo({ workspace, id: todo.meetingId }, { owners: todo.owners, text: todo.text })
+      .tickTodo(ref, { owners: todo.owners, text: todo.text })
+      .then(({ previousBody, hash }) => {
+        // Cmd-Z writes the body back, only while nothing else has changed the meeting since.
+        pushUndo({
+          label: 'tick of a TODO',
+          undo: async () => {
+            const back = await window.api.meetings.save(ref, { body: previousBody }, hash)
+            if (back.status === 'conflict') throw new Error('The meeting changed since')
+            setTicked((s) => {
+              const next = new Set(s)
+              next.delete(key)
+              return next
+            })
+          }
+        })
+      })
       .catch((e: unknown) => {
         setTicked((s) => {
           const next = new Set(s)

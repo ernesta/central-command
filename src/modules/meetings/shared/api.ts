@@ -41,6 +41,12 @@ export interface MeetingFile {
 }
 
 /** The result of saving a meeting. Changing the date or series renames the file, and says so. */
+/** What ticking a TODO leaves for its Undo: the body as it was and the file's hash right after, to `save` the body back only while nothing else changed it. */
+export interface TickTodoResult {
+  previousBody: string
+  hash: string
+}
+
 export type MeetingSaveResult =
   | {
       status: 'saved'
@@ -108,7 +114,7 @@ export interface MeetingsApi {
    * Tick a TODO in the meeting where it is listed (a plain-text TODO becomes a checkbox first). Reads the file afresh and
    * changes only the lines of that TODO; rejects when the TODO is no longer there or the file changed while it ran.
    */
-  tickTodo(ref: MeetingRef, todo: { owners: string[]; text: string }): Promise<void>
+  tickTodo(ref: MeetingRef, todo: { owners: string[]; text: string }): Promise<TickTodoResult>
   /**
    * Ask where to save, then write the workspace's meetings log of a year (its start date) as
    * a PDF. Research's is filtered to the Supervision series; Work's covers every meeting.

@@ -591,10 +591,20 @@ describe('tickTodo', () => {
       date: '2026-09-24',
       body: 'Intro\n**TODO(EO)**: write it\n- [ ] **TODO(KR)**: read it\nOutro\n'
     })
-    await store.tickTodo(m.ref, { owners: ['EO'], text: 'write it' })
+    const ticked = await store.tickTodo(m.ref, { owners: ['EO'], text: 'write it' })
     expect(splitNote(disk('2026-09-24 Supervision')).body).toBe(
       'Intro\n- [x] **TODO(EO)**: write it\n- [ ] **TODO(KR)**: read it\nOutro\n'
     )
+    // What Undo needs: the body as it was, put back under the hash the tick left.
+    expect(ticked.previousBody).toBe(
+      'Intro\n**TODO(EO)**: write it\n- [ ] **TODO(KR)**: read it\nOutro\n'
+    )
+    const back = await store.save(m.ref, { body: ticked.previousBody }, ticked.hash)
+    expect(back.status).toBe('saved')
+    expect(splitNote(disk('2026-09-24 Supervision')).body).toBe(ticked.previousBody)
+    const stale = await store.save(m.ref, { body: 'x' }, ticked.hash)
+    expect(stale.status).toBe('conflict')
+    await store.tickTodo(m.ref, { owners: ['EO'], text: 'write it' })
     const row = getMeetingRow(db, 'research', '2026-09-24 Supervision')
     expect(row?.todos.filter((t) => !t.done).map((t) => t.text)).toEqual(['read it'])
   })

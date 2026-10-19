@@ -25,7 +25,8 @@ import type {
   CreateMeetingInput,
   MeetingFile,
   MeetingSaveResult,
-  SyncPreviousResult
+  SyncPreviousResult,
+  TickTodoResult
 } from '../shared/api'
 import { tickTodo } from '../shared/todo-boxes'
 import {
@@ -212,12 +213,16 @@ export class MeetingsStore {
   }
 
   /** See `MeetingsApi.tickTodo`. */
-  async tickTodo(ref: MeetingRef, todo: { owners: string[]; text: string }): Promise<void> {
+  async tickTodo(
+    ref: MeetingRef,
+    todo: { owners: string[]; text: string }
+  ): Promise<TickTodoResult> {
     const file = await this.read(ref)
     const body = tickTodo(file.body, todo)
     if (body === null) throw new MeetingError('That TODO is no longer in the meeting')
     const result = await this.save(ref, { body }, file.note.hash)
     if (result.status === 'conflict') throw new MeetingError('The meeting changed; try again')
+    return { previousBody: file.body, hash: result.hash }
   }
 
   /**
