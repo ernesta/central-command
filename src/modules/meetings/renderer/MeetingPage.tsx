@@ -111,7 +111,7 @@ function MeetingView({
 
   const toggleTopic = (text: string): void => {
     const has = meta.discussed.includes(text)
-    session.setMeta({
+    session.setMetaUndoable({
       discussed: has ? meta.discussed.filter((t) => t !== text) : [...meta.discussed, text]
     })
   }
@@ -301,7 +301,7 @@ function MeetingView({
         seriesSuggestions={seriesOptions(meetingRows ?? [], fixedSeries(meetingRef.workspace))}
         meta={meta}
         people={people}
-        onChange={(patch) => session.setMeta(patch)}
+        onChange={(patch) => session.setMetaUndoable(patch)}
         onAddPerson={addPerson}
       />
       <MeetingHoursNote workspace={meetingRef.workspace} id={currentId} meta={meta} />

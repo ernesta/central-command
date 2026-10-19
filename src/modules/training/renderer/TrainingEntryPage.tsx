@@ -256,7 +256,7 @@ function EntryView({
         people={people}
         seriesSuggestions={seriesUsed}
         institutionSuggestions={institutionsUsed}
-        onChange={(patch) => session.setMeta(patch)}
+        onChange={(patch) => session.setMetaUndoable(patch)}
         onAddPerson={addPerson}
         workspace={workspace}
         lectureTaskTo={
@@ -293,7 +293,10 @@ function EntryView({
         side={
           <>
             <NoteOutline text={body} docRef={docRef} />
-            <FilesPanel folder={meta.folder} onChange={(folder) => session.setMeta({ folder })} />
+            <FilesPanel
+              folder={meta.folder}
+              onChange={(folder) => session.setMetaUndoable({ folder })}
+            />
           </>
         }
       >

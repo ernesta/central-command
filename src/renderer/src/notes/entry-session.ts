@@ -1,5 +1,6 @@
 import type { NoteContent } from '@shared/notes'
 import { friendlyFileError, ipcErrorMessage } from '@renderer/lib/ipc-error'
+import { pushUndo } from '@renderer/components/undo-store'
 import type { SaveState } from './notes-session'
 
 /** An entry (meeting, training entry…) as read from disk, split into its parts. */
@@ -104,6 +105,8 @@ export class EntrySession<R extends { id: string; workspace: string }, M> {
   private inflight: Promise<void> | null = null
   private saveAgain = false
   private disposed = false
+  private lastUndoKeys = ''
+  private lastUndoAt = 0
   private unsubscribe: (() => void) | null = null
 
   /** Hash of the file version our next save builds on. */
@@ -206,6 +209,28 @@ export class EntrySession<R extends { id: string; workspace: string }, M> {
     if (this.disposed || this.snapshot.status !== 'ready') return
     this.pendingMeta = { ...this.pendingMeta, ...patch }
     this.markDirty({ meta: { ...this.snapshot.meta, ...patch }, reloadedFromDisk: false })
+  }
+
+  /**
+   * `setMeta` for a change made with a control (a date, a mode, a chip): Cmd-Z puts the fields back while this page is open. The
+   * same fields changed again within a second (a date typed digit by digit) stay one step.
+   */
+  setMetaUndoable(patch: Partial<M>): void {
+    if (this.disposed || this.snapshot.status !== 'ready') return
+    const keys = Object.keys(patch) as (keyof M)[]
+    const same = keys.join() === this.lastUndoKeys && Date.now() - this.lastUndoAt < 1000
+    if (!same) {
+      const before: Partial<M> = {}
+      for (const key of keys) before[key] = this.snapshot.meta[key]
+      pushUndo({
+        label: `change to ${keys.map(String).join(', ')}`,
+        isStale: () => this.disposed,
+        undo: () => this.setMeta(before)
+      })
+    }
+    this.lastUndoKeys = keys.join()
+    this.lastUndoAt = Date.now()
+    this.setMeta(patch)
   }
 
   /** Replace the whole note text (for example after adding a topic) and recreate the editor with it. */

@@ -186,7 +186,7 @@ function NoteView({
             group={meta.group}
             subgroup={meta.subgroup}
             groups={groups}
-            onChange={(value) => session.setMeta(value)}
+            onChange={(value) => session.setMetaUndoable(value)}
           />
           <Button
             size="small"
@@ -201,7 +201,7 @@ function NoteView({
                 aria-hidden
               />
             }
-            onClick={() => session.setMeta({ pinned: !meta.pinned })}
+            onClick={() => session.setMetaUndoable({ pinned: !meta.pinned })}
           >
             {meta.pinned ? 'Pinned' : 'Pin'}
           </Button>
