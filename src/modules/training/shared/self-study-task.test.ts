@@ -9,6 +9,7 @@ import {
 
 const task = (uid: string, title: string, over: Partial<Task> = {}): Task => ({
   uid,
+  ownKind: null,
   workspace: 'research',
   title,
   description: '',

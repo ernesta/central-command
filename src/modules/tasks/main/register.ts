@@ -6,9 +6,11 @@ import type { MainContext, MainModule } from '../../main-registry'
 import { TASKS_IPC, type CreateTaskInput, type TasksChangedEvent } from '../shared/api'
 import { isValidRecurrence } from '../shared/recurrence'
 import {
+  OWN_KINDS,
   TASK_PRIORITIES,
   TASK_STATUSES,
   TASK_WORKSPACES,
+  type OwnKind,
   type TaskChanges,
   type TaskPriority,
   type TaskStatus,
@@ -67,6 +69,14 @@ function asRecurrence(value: unknown): CreateTaskInput['recurrence'] {
   if (value === undefined || value === null) return value
   if (!isValidRecurrence(value)) throw new Error('Invalid repeat rule')
   return { every: value.every, unit: value.unit }
+}
+
+function asOwnKind(value: unknown): OwnKind | null | undefined {
+  if (value === undefined || value === null) return value
+  if (typeof value !== 'string' || !(OWN_KINDS as readonly string[]).includes(value)) {
+    throw new Error('Invalid task kind')
+  }
+  return value as OwnKind
 }
 
 function register(context: MainContext): () => void {
@@ -131,7 +141,8 @@ function register(context: MainContext): () => void {
       due: dateOrNull(o.due),
       parentUid: o.parentUid === null || o.parentUid === undefined ? null : asUid(o.parentUid),
       recurrence: asRecurrence(o.recurrence),
-      tags: asTags(o.tags)
+      tags: asTags(o.tags),
+      ownKind: asOwnKind(o.ownKind)
     })
     broadcast(task.workspace)
     return task

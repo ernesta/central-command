@@ -2,7 +2,9 @@ import type { Database } from 'better-sqlite3'
 import { isValidRecurrence } from '../shared/recurrence'
 import {
   TASK_PRIORITIES,
+  OWN_KINDS,
   TASK_STATUSES,
+  type OwnKind,
   type Recurrence,
   type Task,
   type TaskPriority,
@@ -27,12 +29,13 @@ interface TaskRecord {
   series_uid: string | null
   earlier_minutes: number
   source_id: string | null
+  own_kind: string | null
   created_at: string
   updated_at: string
 }
 
 const COLUMNS = `uid, workspace, title, description, status, priority, due, completed_at, list, sublist, parent_uid,
-  position, recurrence, series_uid, earlier_minutes, source_id, created_at, updated_at`
+  position, recurrence, series_uid, earlier_minutes, source_id, own_kind, created_at, updated_at`
 
 function parseRecurrence(json: string | null): Recurrence | null {
   if (!json) return null
@@ -67,6 +70,9 @@ function toTask(record: TaskRecord, tags: string[]): Task {
     earlierMinutes: record.earlier_minutes,
     sourceId: record.source_id,
     tags,
+    ownKind: (OWN_KINDS as readonly string[]).includes(record.own_kind ?? '')
+      ? (record.own_kind as OwnKind)
+      : null,
     createdAt: record.created_at,
     updatedAt: record.updated_at
   }
@@ -145,13 +151,13 @@ export function writeTask(db: Database, task: Task): void {
   db.prepare(
     `INSERT INTO tasks (${COLUMNS})
      VALUES (@uid, @workspace, @title, @description, @status, @priority, @due, @completedAt, @list, @sublist,
-       @parentUid, @position, @recurrence, @seriesUid, @earlierMinutes, @sourceId, @createdAt, @updatedAt)
+       @parentUid, @position, @recurrence, @seriesUid, @earlierMinutes, @sourceId, @ownKind, @createdAt, @updatedAt)
      ON CONFLICT (uid) DO UPDATE SET
        workspace = excluded.workspace, title = excluded.title, description = excluded.description,
        status = excluded.status, priority = excluded.priority, due = excluded.due,
        completed_at = excluded.completed_at, list = excluded.list, sublist = excluded.sublist,
        parent_uid = excluded.parent_uid, position = excluded.position, recurrence = excluded.recurrence,
-       series_uid = excluded.series_uid, updated_at = excluded.updated_at`
+       series_uid = excluded.series_uid, own_kind = excluded.own_kind, updated_at = excluded.updated_at`
   ).run({ ...task, recurrence: task.recurrence ? JSON.stringify(task.recurrence) : null })
   db.prepare('DELETE FROM task_tags WHERE task_uid = ?').run(task.uid)
   const insert = db.prepare('INSERT OR IGNORE INTO task_tags (task_uid, tag) VALUES (?, ?)')

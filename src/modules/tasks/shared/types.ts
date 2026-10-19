@@ -17,6 +17,13 @@ export interface Recurrence {
   unit: RecurrenceUnit
 }
 
+/**
+ * What the app made a task for, when it made it for a session: a meeting's own subtask, a training lecture's own task, or a lecture's
+ * self-study task. Set when the app creates the task, never inferred from the title; a task the user chose has none.
+ */
+export const OWN_KINDS = ['meeting', 'lecture', 'self-study'] as const
+export type OwnKind = (typeof OWN_KINDS)[number]
+
 /** One task. A subtask has a `parentUid` and only one level exists: a subtask never has subtasks. */
 export interface Task {
   /** The key mentions use (`cc://task/<uid>`). */
@@ -46,6 +53,8 @@ export interface Task {
   /** The ClickUp id, so a second import cannot duplicate. */
   sourceId: string | null
   tags: string[]
+  /** Set only on a task the app made for a meeting or training session (see `OwnKind`). */
+  ownKind: OwnKind | null
   createdAt: string
   updatedAt: string
 }
@@ -64,6 +73,7 @@ export interface NewTask {
   parentUid?: string | null
   recurrence?: Recurrence | null
   tags?: string[]
+  ownKind?: OwnKind | null
   /** Importer only. */
   earlierMinutes?: number
   sourceId?: string | null
@@ -82,6 +92,8 @@ export interface TaskChanges {
   sublist?: string
   recurrence?: Recurrence | null
   tags?: string[]
+  /** Only the repair script and the session pages set this. */
+  ownKind?: OwnKind | null
   /**
    * Move a subtask under another top-level task of the same workspace; make a top-level task with no subtasks a subtask; or, with
    * `null` (and a `list`), make a subtask a top-level task.

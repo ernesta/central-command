@@ -20,7 +20,7 @@ describe('tasks/0002_life', () => {
     db.prepare('INSERT INTO task_tags (task_uid, tag) VALUES (?, ?)').run('a', 'stats')
     expect(() => insert.run('x', 'life', 'Nope', 'Home', null, null)).toThrow()
 
-    expect(runMigrations(db, tasksMigrations)).toEqual(['tasks/0002_life'])
+    expect(runMigrations(db, tasksMigrations.slice(0, 2))).toEqual(['tasks/0002_life'])
 
     const before = db.prepare('SELECT uid, parent_uid, source_id FROM tasks ORDER BY uid').all()
     expect(before).toEqual([
@@ -31,6 +31,7 @@ describe('tasks/0002_life', () => {
     expect(db.prepare('SELECT * FROM task_tags').all()).toEqual([{ task_uid: 'a', tag: 'stats' }])
     expect(db.pragma('foreign_key_check')).toEqual([])
 
+    runMigrations(db, tasksMigrations)
     const store = new TasksStore(db)
     const life = store.create({ workspace: 'life', title: 'Renew passport', list: 'Admin' })
     expect(listTasks(db, 'life').map((t) => t.title)).toEqual(['Renew passport'])
@@ -47,5 +48,32 @@ describe('tasks/0002_life', () => {
     expect(indexes).toEqual(
       expect.arrayContaining(['tasks_workspace', 'tasks_parent', 'tasks_series'])
     )
+  })
+})
+
+describe('tasks/0003_own_kind', () => {
+  it('adds the marker, empty on every task there was, and a task keeps what it is made with', () => {
+    const db = new Database(':memory:')
+    db.pragma('foreign_keys = ON')
+    runMigrations(db, [tasksMigrations[0], tasksMigrations[1]])
+    db.prepare(
+      `INSERT INTO tasks (uid, workspace, title, list, created_at, updated_at)
+       VALUES ('before', 'research', 'Read', 'Reading', '2026-10-01T00:00:00.000Z', '2026-10-01T00:00:00.000Z')`
+    ).run()
+
+    expect(runMigrations(db, tasksMigrations)).toEqual(['tasks/0003_own_kind'])
+    const store = new TasksStore(db)
+    expect(store.get('before')?.ownKind).toBeNull()
+
+    const parent = store.create({ workspace: 'research', title: 'Supervision', list: 'Meetings' })
+    const sub = store.create({
+      workspace: 'research',
+      title: 'Supervision · 19 Oct 2026',
+      parentUid: parent.uid,
+      ownKind: 'meeting'
+    })
+    expect(store.get(sub.uid)?.ownKind).toBe('meeting')
+    expect(store.update(sub.uid, { title: 'Supervision · 20 Oct 2026' }).ownKind).toBe('meeting')
+    expect(store.update(sub.uid, { ownKind: null }).ownKind).toBeNull()
   })
 })

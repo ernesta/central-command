@@ -1,4 +1,5 @@
 import type {
+  OwnKind,
   Recurrence,
   Task,
   TaskChanges,
@@ -22,6 +23,8 @@ export interface CreateTaskInput {
   parentUid?: string | null
   recurrence?: Recurrence | null
   tags?: string[]
+  /** Set by the page that makes a meeting's or lecture's task, so the app knows it is the session's own. */
+  ownKind?: OwnKind | null
 }
 
 /** The result of changing a task's status: the next occurrence of a recurring task, when completing it started one. */

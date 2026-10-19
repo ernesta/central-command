@@ -52,6 +52,7 @@ export function useLectureTask(
             workspace: 'research',
             title: plan.title,
             status: 'doing',
+            ownKind: 'lecture',
             ...(plan.due ? { due: plan.due } : {}),
             ...(plan.parent
               ? { parentUid: await parentUid(plan.parent, made.current) }

@@ -43,6 +43,7 @@ export function draftSelfStudyTask(note: SelfStudyNote): Task {
     earlierMinutes: 0,
     sourceId: null,
     tags: [],
+    ownKind: 'self-study',
     createdAt: '',
     updatedAt: ''
   }
@@ -68,6 +69,7 @@ export async function makeSelfStudyTask(
     workspace: 'research',
     title: plan.title,
     status: 'doing',
+    ownKind: 'self-study',
     ...(plan.parent
       ? { parentUid: await parentUid(api, plan.parent, made) }
       : { list: TRAINING_LIST })

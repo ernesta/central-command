@@ -46,6 +46,7 @@ export function useMeetingTask(
             workspace,
             title: plan.title,
             status: 'doing',
+            ownKind: 'meeting',
             due: plan.due,
             parentUid: await parentUid(workspace, plan.parent)
           })
