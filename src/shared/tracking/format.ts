@@ -6,7 +6,7 @@ export function formatHours(totalMinutes: number): string {
   const hours = Math.floor(rounded / 60)
   const minutes = rounded % 60
   const sign = totalMinutes < 0 && rounded > 0 ? '−' : ''
-  return `${sign}${hours.toLocaleString('en-US')}:${String(minutes).padStart(2, '0')}`
+  return `${sign}${hours.toLocaleString()}:${String(minutes).padStart(2, '0')}`
 }
 
 /** A balance: "+2:30", "−2:30", and "0:00" when there is none. */
