@@ -3833,3 +3833,14 @@ The user: "instead of showing a prompt to confirm, delete right away, but show a
 - **A person who notes mention** still gets the Archive / Merge dialog: that is a choice, not a confirmation (Archive is itself undone by Restore). Undo of a plain delete adds the person back with the same name, initials, `me` flag and links.
 - **Undo of a deleted note file**: Electron's `shell.trashItem` does not say where in the Trash the file went, so Undo cannot move it back. `delete` now resolves with the file's exact content and `restore(ref, content)` (Meetings, Training, Notes, Reading lists) writes it back with `createNoteFileExclusive`: byte for byte, reindexed, and refused (nothing written) when a file is at that name by then, so it never overwrites. The trashed copy stays in the Trash. A meeting's own task and a training entry's lecture and self-study tasks, trashed with it, are restored by Undo too. Undo does not navigate: the item reappears in its list.
 - Tests: one `restore` test per store (round trip, index row, never replaces). Driven in the built app on a scratch library: each of the four pages and People, toast shown, Undo button and Cmd-Z both bring the item back with its text. Not checked in dev mode.
+
+### Undo, second round (19 Oct 2026)
+
+The user's answers to "what else would be expected to undo": a toast **and** Cmd-Z only for losing things (Timer Discard, Archive a person); **Cmd-Z only, no toast** for edits and chip removals; Merge keeps its dialog.
+
+- **Timer Discard** (`TimerChip.tsx`): toast; Undo starts the same task again and sets the start back to the discarded one's (`setStart`). Refused with a message when another timer runs by then; if `setStart` is refused the timer runs from now and says so.
+- **Archive a person**: toast; Undo is `people.restore`.
+- **Chips and links** (`PeopleField`, `SkillsField`, `TagsField`, `PersonLinks`) share `useUndoableRemoval`: Cmd-Z puts the item back at its old position into the list as it is by then (so later edits are kept). New `isStale` on an `UndoEntry`: `undoLast` drops entries whose field is unmounted, so Cmd-Z never edits a note that was left.
+- **Cmd-Z only**: a contract's Save (each change that went through is reversed, newest first, including a client rename), a Time off day's edit, an Hours row's typed time, moving a note or meeting to the other workspace (it moves back and is shown there).
+- Not done, left for the user: dismissing a Readings rename suggestion (permanent for the pair, no way to bring it back yet); renaming an Hours task; adding things.
+- Driven in the built app on a scratch library: Discard + Undo (same start second), attendee chip + Cmd-Z (saved to the note), Archive + Undo and Cmd-Z, meeting move to Work and Cmd-Z back. **Not driven**: the contract Save, Time off edit and Hours time edit undos (typecheck and lint only).
