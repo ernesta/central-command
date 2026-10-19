@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   applyCompletion,
   completionAt,
+  ghostFor,
   isFinishedValue,
   type Completion,
   type UserValues
@@ -169,5 +170,46 @@ describe('completionAt: finished values', () => {
     expect(at('in:')).not.toBeNull()
     expect(at('workspace:re')).not.toBeNull()
     expect(at('with:Ern', { with: [{ label: 'Ernesta Orlovaitė', insert: 'x' }] })).not.toBeNull()
+  })
+})
+
+describe('ghostFor', () => {
+  const user: UserValues = {
+    with: [
+      { label: 'Ernesta Orlovaitė', insert: '"Ernesta Orlovaitė"', hint: 'EO' },
+      { label: 'Kathy Rastle', insert: '"Kathy Rastle"', hint: 'KR' }
+    ]
+  }
+  const ghost = (text: string, caret = text.length): string =>
+    ghostFor(text, caret, completionAt(text, caret, user))
+
+  it('greys out the rest of the one value that matches', () => {
+    expect(ghost('workspace:re')).toBe('search')
+    expect(ghost('with:Ern')).toBe('esta Orlovaitė')
+    expect(ghost('with:"kat')).toBe('hy Rastle')
+    expect(ghost('-workspace:w')).toBe('ork')
+  })
+
+  it('greys out the rest of a modifier name when only one starts so', () => {
+    expect(ghost('wo')).toBe('rkspace:')
+    expect(ghost('st')).toBe('atus:')
+    expect(ghost('experiments -wor')).toBe('kspace:')
+  })
+
+  it('shows nothing with two or more matches', () => {
+    expect(ghost('workspace:')).toBe('')
+    expect(ghost('in:t')).toBe('')
+    expect(ghost('with:e')).toBe('')
+  })
+
+  it('shows nothing when the caret is not at the end, nothing is typed to continue, or the value is finished', () => {
+    expect(ghost('workspace:re x', 12)).toBe('')
+    expect(ghost('workspace:research')).toBe('')
+    expect(ghost('person:x')).toBe('')
+    expect(ghost('hello')).toBe('')
+  })
+
+  it('shows nothing for a match inside the label rather than at its start', () => {
+    expect(ghost('with:rastl')).toBe('')
   })
 })

@@ -183,3 +183,20 @@ export function applyCompletion(
   const next = `${text.slice(0, completion.from)}${insert}${rest}`
   return { text: next, caret: completion.from + insert.length }
 }
+
+/**
+ * The grey text after the caret: when exactly one completion matches what is typed and the caret is at the end of the text, the
+ * rest of its label (`workspace:re` leaves `search`). Empty when there are two or more, none, the caret is elsewhere, or the typed
+ * part is not the start of the label (a match inside it is listed, not greyed in).
+ */
+export function ghostFor(text: string, caret: number, completion: Completion | null): string {
+  if (!completion || completion.options.length !== 1 || caret !== text.length) return ''
+  const label = completion.options[0].label
+  const word = text.slice(completion.from, caret)
+  const typed =
+    completion.kind === 'name'
+      ? word.replace(/^-/, '')
+      : word.slice(word.indexOf(':') + 1).replace(/^"/, '')
+  if (typed.length >= label.length || fold(label.slice(0, typed.length)) !== fold(typed)) return ''
+  return label.slice(typed.length)
+}
