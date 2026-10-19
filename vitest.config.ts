@@ -11,6 +11,7 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
+    env: { LC_ALL: 'en_US.UTF-8', LANG: 'en_US.UTF-8' },
     include: ['src/**/*.test.ts', 'tests/**/*.test.ts']
   }
 })
