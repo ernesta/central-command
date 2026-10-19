@@ -759,18 +759,15 @@ or found on the way:
   group and date, a meeting's summary, a reading's short citation, how often a person is mentioned). Arrow keys move through all the
   results as one list, Enter opens or runs one, Escape or Mod-K again closes. "No results." when nothing matches; nothing at all
   before typing.
-- **`in:` modifiers, Gmail- and Slack-style** (`src/shared/search.ts`, `parseSearchQuery`): `in:meetings luminos` searches only
-  Meetings; `in:notes`, `in:training`, `in:readings` and `in:people` do the same for the others (singular or plural, either works;
-  `in:meetings in:notes` searches both). Naming a source with nothing else lists everything in it (an empty search string is not
-  the same as "search nothing" once a source is named). An `in:` word that names nothing recognised (`in:progress`) is left as
-  ordinary text, so it is never silently swallowed.
+- **`in:` and the other modifiers: see "Search modifiers" below** (they replaced the first `in:`, `parseSearchQuery`, which let
+  `in:meetings in:notes` search both and left an unknown `in:` word in the text silently).
 - **A "See all results" link** at the bottom of the window (shown once any group reaches its cap of six) opens `/search?q=…`, the
   same search with a much higher cap (40) as a full page, grouped the same way, with the field still there to keep typing or add an
   `in:` modifier.
 - **How results are ranked (`SEARCH_GROUP_ORDER` in `src/shared/search.ts`).** There is no relevance score across the whole app: a
   match is either "in the title" or "in the text", and beyond that, order is two simple, fixed rules, deliberately, so this is easy
   to reason about and to change later if it stops being good enough:
-  1. **Which group, fixed:** Actions (when any command matches), People, Notes, Meetings, Training, Readings. This is why searching
+  1. **Which group, fixed:** Actions (when any command matches), People, Notes, Meetings, Tasks, Training, Readings, Reading lists. This is why searching
      "Kathy" shows the person first, then any note mentioning her, then meetings, before her papers as a co-author: it is not a
      judgement that a meeting matters more than a paper, just that Meetings is ordered before Readings.
   2. **Within a group, whatever that module's own list already sorts by:** Notes and Meetings and Training entries are most recent
@@ -802,6 +799,65 @@ or found on the way:
   the button, Mod-K from inside the editor, an `in:` modifier, a command actually running (New note), "See all results" reaching
   the full page, and a person hit landing on their highlighted row. The field is a plain text input (a search input clears itself
   on the first Escape).
+
+### Search modifiers (19 Oct 2026; `docs/SEARCH_MODIFIERS_PLAN.md`, all five stages built, pushed, not installed)
+
+The design is the user's (Slack-style, one session, answered the same day). Code: `src/shared/search-query.ts` (the registry
+`MODIFIERS`, `parseSearch`, `planSources`, `resolvePeople`, `passesFilters`), `search-dates.ts`, `search-complete.ts`; each source's own
+filtering sits beside its `renderer/search.ts` (tasks: `tasks/shared/search-filters.ts`). A search is `{ text, phrases, filters[], notices[] }`.
+
+- **AND only, no OR, no commas.** Different modifiers AND, and so does a repeated one (`tag:a tag:b` needs both). **This replaces the old
+  `in:meetings in:notes` (both sources).** Two different values of a modifier an item has one of cannot match: "No item has two sources."
+  (also statuses, priorities, due dates, lists, series, workspaces, days, periods; `in:task in:tasks` is one value). It searches nothing and the
+  notice stands in for "No results.". The plan named `in:`, `status:`, `priority:` and `series:`; the rule ("an item can only have one value")
+  was applied to the others that are likewise one-valued.
+- **Only the listed values, case and accents ignored, nothing else.** No prefixes (`in:tr`), no `priority:1`, no `Oct 3`. A known modifier
+  with a value it does not take shows a notice naming the accepted values and leaves its text out of the search (the rest still runs);
+  an unknown `name:value` stays in the text with "Not a filter: …"; a modifier typed with no value yet is ignored; an address
+  (`https://…`) or a time (`10:30`) is not a modifier. `with:`/`by:` need a name or initials from the people list (`people-aliases.json` is
+  not used); one that names nobody gets a notice and is left out.
+- **`in:` has tasks** (`task`/`tasks`), and Tasks is in `SEARCH_GROUP_ORDER` after Meetings. The search that started this,
+  `experiments in:task`, finds tasks mentioning "experiments".
+- **`workspace:` never narrows to the sources that have the field.** Sources carry a workspace (`Searchable.workspace`; a module's own
+  workspace, so the Work and Life copies of notes and tasks are Work's and Life's): `workspace:work` keeps Work's items **and every
+  source with no workspace** (people, readings, the commands). `-workspace:work` leaves Work's out and keeps the rest. Readings are
+  unscoped (`searchUnscoped` in the manifest) until the user tags them with a workspace (`docs/ROADMAP.md`, "For the user").
+  Reading lists are Research's.
+- **A negated modifier is NOT(positive match)** and never narrows to the sources that have the field: `-tag:x` keeps meetings, a task
+  with no due date matches `-due:today`, `-in:readings` leaves only readings out. A positive modifier a source lacks (or a value it does
+  not take: `status:done` on a reading) leaves that source out. The commands answer plain words only: any modifier (positive) or no
+  words leaves them out; a plan of Training (`planHits`) has none of the fields, so a positive filter leaves it out.
+- **Values, read from the app.** Task status uses the app's own labels, **`"to do"`, `"in progress"`, `done`, `open`** (the plan said
+  "not started"; the app says "To do", and the plan's own rule is "as labelled"). Readings: `read`, `"to read"` (their pills say Read and
+  To Read; an unset reading is neither). `priority:` P1/P2/P3 are the marks the table shows (high, normal, low). `overdue` is an open
+  task due before today (a done task is not overdue); `week` is today plus six days.
+- **What `with:` and `by:` look at.** Meetings: attendees; training: the leads (`by:` the same as `with:`); readings: authors (the same name,
+  or the same family name and given initial: Zotero often holds only "Rastle, K."); notes: the person's full name in the note's text (chips
+  are written with the full name since 12 Oct 2026; the notes index holds no mentions, and adding one was not worth a migration).
+- **Dates.** `YYYY-MM-DD`, `YYYY-MM`, `YYYY`, `today`, `yesterday` for `before:`/`after:`/`on:`; `during:` takes a month, a year, today,
+  yesterday and this/last week (Monday to Sunday), month, year. The item's date is: a note's last-edited day, a meeting's and an
+  entry's date, a task's due date, a reading's year. A reading covers its whole year, so `before:`/`after:` need it wholly before/after
+  and `on:`/`during:` wholly inside (`during:2026-05` never matches a 2026 reading). An item with no date (a planned meeting, a task
+  with no due date, a reading with no year) matches no positive date modifier.
+- **Quoted phrases** (`"effect size"`) must be found as written, in the same text the words are looked for in (a reading's title,
+  authors, tags and notes).
+- **The completion list** (`search-complete.ts`, `useSearchCompletion`, `CompletionList`): after two letters of a modifier's name, or `-`
+  and a letter, it lists the names; after `name:` it lists the values, from the fixed lists and the user's own data (people with their
+  initials, task lists and `list/sublist`, task and reading tags, the skills list, series of meetings and training), read once when the
+  window opens. A list of names highlights nothing (so Enter still opens a result for a plain word such as "with"); a list of values
+  highlights the first. Arrow keys move, Enter inserts the highlighted one, Tab inserts the highlighted one or the first, Escape closes
+  the list (and only the list: the next Escape closes the window), a click picks without taking focus from the field. Inserting a value
+  adds a space; a value with spaces is quoted. Same list in the Mod-K window (above the results) and on `/search` (under the field).
+  Listed in Settings ("Complete a search filter").
+- **Notices** show above the results in both places. They are hidden while the completion list is open: a notice about the word still
+  being typed (`with:c`, "needs a name from the people list") only flickered. *Found by driving the app.*
+- **Not built, by decision:** `is:`, `title:`, `type:`, `mode:`, commas, `from:`/`@`, prefixes, academic years or contracts in dates.
+- **Checked in the built app and dev mode (StrictMode), light and dark, on a scratch library:** `experiments in:task`, status, priority,
+  overdue, `with:` by initials, phrases, `has:todos`, readings by read state, `during:"this month"`, `workspace:work`, `-in:readings`, each
+  notice, the completion list by keyboard (two letters, Tab, a value, arrows, Enter, Escape twice) and by mouse, and the same on
+  `/search` reached from "See all results".
+- **Mutation-checked:** `every` to `some` in `passesFilters`, dropping the negation, `workspace:` ignoring unscoped sources, a negated
+  modifier narrowing, `-in:` ignored and the repeat check off each fail tests.
 
 ## Dark mode (Theme: System, Light or Dark, in Settings)
 

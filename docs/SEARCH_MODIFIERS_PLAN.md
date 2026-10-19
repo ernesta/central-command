@@ -1,6 +1,6 @@
 # Search modifiers: plan
 
-Status: **designed with the user on 19 Oct 2026, nothing built.** Read with `CLAUDE.md` and `docs/DECISIONS.md`, "Global search". Code today:
+Status: **built 19 Oct 2026, all five stages, in one unattended run (pushed, not installed).** Designed with the user on 19 Oct 2026. What differed from the plan is under "Built" at the end; the decisions are in `docs/DECISIONS.md`, "Search modifiers". Read with `CLAUDE.md` and `docs/DECISIONS.md`, "Global search". Code today:
 `src/shared/search.ts` (`parseSearchQuery`, `SOURCE_ALIASES`, `SEARCH_GROUP_ORDER`), `src/renderer/src/shell/run-search.ts` (`searchEverywhere`),
 `GlobalSearch.tsx` (Mod-K) and `SearchResultsPage.tsx` (`/search`); each module's `search` is in its manifest.
 
@@ -76,7 +76,7 @@ list names come from the user's own data, so the values are read from it, never 
 | `-in:readings sample` | "sample", readings left out |
 | `workspace:work report` | Work items, plus people and readings, mentioning "report" |
 
-## Stages (stop after each and ask; the user clears context between them)
+## Stages (the user waived the stop after each stage for this run)
 
 1. **`in:` and the rules.** A modifier registry (name, accepted values, which sources have it) replaces `SOURCE_ALIASES`; tasks becomes a source in
    `SEARCH_GROUP_ORDER`; tokenizer returns `{ text, phrases, filters[], notices[] }` (filters `{ name, value, negated }`); `-` exclusion;
@@ -92,3 +92,19 @@ one commit per standalone part; record decisions in `docs/DECISIONS.md`.
 ## TODO for the user (add to `docs/ROADMAP.md`, "For the user")
 
 - Tag readings with a workspace so readings can be scoped to one too. Until then readings are unscoped and appear in a search of any workspace.
+
+## Built (19 Oct 2026)
+
+All five stages as written, with these choices where the plan was open or differed:
+
+- **Task status values are the app's own labels:** `"to do"`, `"in progress"`, `done`, `open` (the plan said `"not started"`; the UI says "To do").
+  Readings: `read`, `"to read"`.
+- **More single-valued modifiers than the four named:** `workspace`, `due`, `list`, `on` and `during` also give "No item has two …" for two
+  different values.
+- **Dates:** an item covers a range (a reading its year); `on:`/`during:` need the item inside the range, `before:`/`after:` wholly outside it.
+  A note's date is its last-edited day.
+- **`with:` for notes** is the person's full name found in the note's text (the index holds no mentions).
+- **Commands** (the Actions group) answer words only and drop out when a positive modifier is used.
+- **Notices are hidden while the completion list is open.** Names are completed from two letters; a name list highlights nothing.
+- **Not done:** nothing from the plan. `check:work-lists`-style Work tasks were not seeded in the scratch library (a Work task needs a contract
+  client); Work's task filtering uses the same code as Research's and Life's.
