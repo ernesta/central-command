@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
-import { DeleteDialog } from '@renderer/components/DeleteDialog'
 import { isUntouchedBody } from '@renderer/components/untouched'
 import { NEW_MEETING_BODY } from '../shared/front-matter'
 import { EmptyState } from '@renderer/components/EmptyState'
@@ -9,6 +8,7 @@ import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { WorkspaceSelect } from '@renderer/components/WorkspaceSelect'
+import { pushUndoWithToast } from '@renderer/components/undo-store'
 import { liveViewIn, placeCursorOnLine } from '@renderer/editor/live-outline'
 import { DocSplit } from '@renderer/notes/DocSplit'
 import { EditorCard } from '@renderer/notes/EditorCard'
@@ -72,7 +72,6 @@ function MeetingView({
   const { session, snapshot } = useMeetingSession(meetingRef, onRenamed)
   const { rows: meetingRows } = useMeetingsList(meetingRef.workspace)
   const [people, setPeople] = useState<Person[]>([])
-  const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const editorRef = useRef<HTMLDivElement>(null)
@@ -168,26 +167,37 @@ function MeetingView({
   // A page nothing was typed into goes without asking.
   const untouched = isUntouchedBody(body, NEW_MEETING_BODY)
 
-  const confirmAndDelete = async (): Promise<void> => {
+  const removeNote = async (): Promise<void> => {
     setDeleting(true)
     setDeleteError(null)
     try {
       await session.dispose() // saves anything pending first
       // The meeting's own subtask goes with it (to the Tasks trash); the hours tracked on it stay in Hours.
       const own = tasks?.find((t) => t.uid === meta.task)
+      let trashedTask: string | null = null
       if (own && isOwnMeetingTask(own)) {
         try {
           await window.api.tasks.delete(own.uid)
+          trashedTask = own.uid
         } catch (e) {
           console.error('Could not delete the meeting task:', e)
         }
       }
-      await window.api.meetings.delete(session.getRef())
+      const ref = session.getRef()
+      const content = await window.api.meetings.delete(ref)
+      if (!untouched) {
+        pushUndoWithToast(`Deleted “${heading}”.`, {
+          label: 'deletion',
+          undo: async () => {
+            await window.api.meetings.restore(ref, content)
+            if (trashedTask) await window.api.tasks.restore(trashedTask)
+          }
+        })
+      }
       void navigate(meetingsBase(meetingRef.workspace), { replace: true })
     } catch (e) {
       setDeleteError(ipcErrorMessage(e))
       setDeleting(false)
-      setConfirmDelete(false)
       void session.start()
     }
   }
@@ -220,7 +230,8 @@ function MeetingView({
           <Button
             size="small"
             variant="danger-outline"
-            onClick={() => (untouched ? void confirmAndDelete() : setConfirmDelete(true))}
+            disabled={deleting}
+            onClick={() => void removeNote()}
           >
             Delete meeting
           </Button>
@@ -320,15 +331,6 @@ function MeetingView({
           />
         </EditorCard>
       </DocSplit>
-
-      <DeleteDialog
-        open={confirmDelete}
-        heading={heading}
-        noun="meeting"
-        busy={deleting}
-        onCancel={() => setConfirmDelete(false)}
-        onConfirm={() => void confirmAndDelete()}
-      />
     </div>
   )
 }
