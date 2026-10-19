@@ -101,6 +101,9 @@ export function registerTrackingIpc(store: TrackingStore): void {
       text(to)
     )
   )
+  h(TRACKING_IPC.removeAdjust, (_e, ws, year, id) =>
+    store.removeAdjust(workspace(ws), text(year), text(id))
+  )
   h(TRACKING_IPC.addTime, (_e, ws, year, date, label, minutes, client, task) =>
     store.addTime(
       workspace(ws),

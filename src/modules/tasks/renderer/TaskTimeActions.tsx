@@ -2,6 +2,7 @@ import { Play, Plus, Square } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { Select } from '@renderer/components/Select'
+import { pushUndo } from '@renderer/components/undo-store'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useOpenContracts } from '@renderer/state/use-open-contracts'
 import { QUARTER } from '@shared/tracking/rounding'
@@ -100,6 +101,15 @@ export function TaskTimeActions({
       )
       if (!result.ok) setError(`Couldn’t add the time (${result.reason}).`)
       else {
+        // Cmd-Z takes back exactly this piece of time (it is the last one added).
+        const added = result.year.adjusts[result.year.adjusts.length - 1]
+        pushUndo({
+          label: `added time on “${goes.title || 'Untitled'}”`,
+          undo: async () => {
+            const back = await window.api.tracking.removeAdjust(workspace, year, added.id)
+            if (!back.ok) throw new Error('The time was changed since.')
+          }
+        })
         setAdding(false)
         setMinutes(0)
         setError(null)

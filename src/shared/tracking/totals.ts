@@ -263,6 +263,12 @@ export function addTime(
   return { ok: true, year: { ...year, adjusts: [...year.adjusts, adjust] } }
 }
 
+/** Take back one piece of typed time by its id (the Undo of `addTime`); nothing else moves. */
+export function removeAdjust(year: TrackingYear, id: string): Change {
+  if (!year.adjusts.some((a) => a.id === id)) return { ok: false, reason: 'not-found' }
+  return { ok: true, year: { ...year, adjusts: year.adjusts.filter((a) => a.id !== id) } }
+}
+
 /** A day's short note. An empty one removes it; a day left with nothing is dropped. */
 export function setDayNote(year: TrackingYear, date: string, note: string): Change {
   if (!inYear(date, year.start, year.weeks)) return { ok: false, reason: 'outside-year' }

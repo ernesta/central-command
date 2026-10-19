@@ -102,6 +102,8 @@ export interface TrackingApi {
     /** The task (`cc://task/<uid>`) the time is for. */
     task?: string
   ): Promise<YearResult>
+  /** Take back one piece of typed time by its id (the last of `adjusts` after `addTime`); the Undo of `addTime`. */
+  removeAdjust(workspace: Workspace, year: string, id: string): Promise<YearResult>
   setNote(workspace: Workspace, year: string, date: string, note: string): Promise<YearResult>
   setPlan(workspace: Workspace, year: string, plan: Partial<Plan>): Promise<YearResult>
   addTimeOff(
@@ -162,6 +164,7 @@ export const TRACKING_IPC = {
   renameTask: 'tracking:rename-task',
   setClient: 'tracking:set-client',
   addTime: 'tracking:add-time',
+  removeAdjust: 'tracking:remove-adjust',
   setNote: 'tracking:set-note',
   setPlan: 'tracking:set-plan',
   addTimeOff: 'tracking:add-time-off',

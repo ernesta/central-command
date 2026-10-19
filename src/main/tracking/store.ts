@@ -19,7 +19,13 @@ import {
 } from '@shared/tracking/timer'
 import { linkEntries } from './import/work-task-links'
 import { applyEntryLinks, markEarlier } from './import/work-links-apply'
-import { addTime, deleteTaskTime, setDayNote, setTaskMinutes } from '@shared/tracking/totals'
+import {
+  addTime,
+  deleteTaskTime,
+  removeAdjust,
+  setDayNote,
+  setTaskMinutes
+} from '@shared/tracking/totals'
 import { addTimeOff, editTimeOff, removeTimeOff } from '@shared/tracking/timeoff'
 import type {
   RunningTimer,
@@ -339,6 +345,10 @@ export class TrackingStore {
     return this.mutate(workspace, year, (y) =>
       addTime(y, date, label, minutes, this.newId(), client, task)
     )
+  }
+
+  removeAdjust(workspace: Workspace, year: string, id: string): YearResult {
+    return this.mutate(workspace, year, (y) => removeAdjust(y, id))
   }
 
   /** Link imported history to tasks (a one-off; see `linkEntries`). */

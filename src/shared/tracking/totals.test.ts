@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   addTime,
+  removeAdjust,
   dayMinutes,
   dayRows,
   deleteTaskTime,
@@ -66,6 +67,18 @@ describe('a day shows one row per task', () => {
     expect(dayRows(y, D)).toEqual([])
     expect(dayRows(y, '2026-09-30')).toEqual([])
     expect(dayRows(y, '2020-01-01')).toEqual([])
+  })
+})
+
+describe('removeAdjust', () => {
+  it('takes back exactly the typed time it names', () => {
+    let y = ok(addTime(year(), D, 'B', 30, 'one'))
+    y = ok(addTime(y, D, 'B', 15, 'two'))
+    expect(dayMinutes(y, D)).toBe(45)
+    y = ok(removeAdjust(y, 'two'))
+    expect(dayMinutes(y, D)).toBe(30)
+    expect(y.adjusts.map((a) => a.id)).toEqual(['one'])
+    expect(removeAdjust(y, 'two')).toEqual({ ok: false, reason: 'not-found' })
   })
 })
 
