@@ -1,3 +1,4 @@
+import { pushUndo } from '@renderer/components/undo-store'
 import type { Workspace } from '@shared/settings'
 import { taskUidOf } from '@modules/tasks/shared/tracked'
 
@@ -18,4 +19,12 @@ export async function renameRow(
   if (!title) return
   if (uid) await window.api.tasks.update(uid, { title })
   else await window.api.tracking.renameTask(workspace, year, date, row.label, title, row.client)
+  // Cmd-Z gives it its old name back (not when a name already used that day merged the two: the entries cannot be told apart).
+  pushUndo({
+    label: `rename of “${row.label}”`,
+    undo: async () => {
+      if (uid) await window.api.tasks.update(uid, { title: row.label })
+      else await window.api.tracking.renameTask(workspace, year, date, title, row.label, row.client)
+    }
+  })
 }
