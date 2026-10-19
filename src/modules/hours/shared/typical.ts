@@ -16,9 +16,13 @@ export interface TypicalDay {
 /**
  * The year's typical week: for each weekday, the average time over its days so far. Today is left out (it is
  * not over) and so are days off, so a holiday does not drag its weekday down. Weekends are kept: a day that is
- * not worked still counts, at zero when nothing was tracked.
+ * not worked still counts, at zero when nothing was tracked. The days run from `firstDay` (1 Monday to 7 Sunday).
  */
-export function typicalWeek(year: TrackingYear, now: Moment): TypicalDay[] {
+export function typicalWeek(
+  year: TrackingYear,
+  now: Moment,
+  firstDay = weekdayOf(year.start)
+): TypicalDay[] {
   const minutes = minutesByDate(year, now)
   const off = new Set(year.timeOff.map((t) => t.date))
   const sums = Array.from({ length: 7 }, () => ({ total: 0, days: 0 }))
@@ -32,8 +36,8 @@ export function typicalWeek(year: TrackingYear, now: Moment): TypicalDay[] {
     s.total += minutes.get(date) ?? 0
     s.days++
   }
-  // In the order of the year's own weeks: from the weekday it starts on.
-  const first = weekdayOf(year.start) - 1
+  // From `firstDay` (the weekday a week starts on; the year's own start by default).
+  const first = firstDay - 1
   return Array.from({ length: 7 }, (_, k) => {
     const i = (first + k) % 7
     const s = sums[i]

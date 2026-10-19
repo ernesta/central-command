@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useElementWidth } from '@renderer/state/use-element-width'
-import { weekdayName } from '@shared/locale-names'
+import { firstWeekday, weekdayName } from '@shared/locale-names'
 import { formatHours } from '@shared/tracking/format'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
 import { columnPath, niceAxis, slotAt } from '../shared/chart'
@@ -18,7 +18,7 @@ const STEP = 120 // a tick every 2 hours
 export function TypicalWeek({ data, now }: { data: TrackingYear; now: Moment }): React.JSX.Element {
   const { ref, width } = useElementWidth()
   const [active, setActive] = useState<number | null>(null)
-  const week = typicalWeek(data, now)
+  const week = typicalWeek(data, now, firstWeekday())
 
   const plotW = Math.max(width - PAD.left - PAD.right, 0)
   const plotH = HEIGHT - PAD.top - PAD.bottom

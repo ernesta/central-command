@@ -30,3 +30,18 @@ describe('typicalWeek', () => {
     expect(week[5].aim).toBeNull()
   })
 })
+
+describe('typicalWeek, first day', () => {
+  const friday = emptyYear('2026-09-25') // a Friday
+  const now = { date: '2026-10-20', time: '10:00:00' }
+  const order = (firstDay?: number): number[] =>
+    typicalWeek(friday, now, firstDay).map((d) => d.weekday)
+
+  it('runs from the weekday asked for, not the one the year starts on', () => {
+    expect(order(1)).toEqual([1, 2, 3, 4, 5, 6, 7])
+    expect(order(7)).toEqual([7, 1, 2, 3, 4, 5, 6])
+  })
+  it('runs from the weekday the year starts on when none is asked for', () => {
+    expect(order()).toEqual([5, 6, 7, 1, 2, 3, 4])
+  })
+})
