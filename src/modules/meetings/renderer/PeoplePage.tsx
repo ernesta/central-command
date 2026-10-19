@@ -136,7 +136,14 @@ export function PeoplePage(): React.JSX.Element {
           onConfirm={(how: RemoveHow) => {
             const name = removing.name
             setRemoving(null)
-            void run(window.api.meetings.people.remove(name, how)).then(report)
+            void run(window.api.meetings.people.remove(name, how)).then((result) => {
+              report(result)
+              if (how.how !== 'archive' || result.error !== null) return
+              pushUndoWithToast(`Archived ${name}.`, {
+                label: 'archive',
+                undo: async () => void report(await run(window.api.meetings.people.restore(name)))
+              })
+            })
           }}
         />
       )}
