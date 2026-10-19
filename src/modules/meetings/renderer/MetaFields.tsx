@@ -73,7 +73,7 @@ export function MetaFields({
         <ComboField
           id="meeting-series"
           label="Series"
-          placeholder="For example Supervision"
+          placeholder="Choose series"
           options={seriesSuggestions}
           value={draft ?? meta.series}
           onChange={(text) => {

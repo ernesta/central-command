@@ -35,8 +35,8 @@ export function parseMeta(head: string): ParsedMeta {
   }
   if (!parsed) problems.push('No front matter')
 
+  // No series is allowed: a new meeting has only its date until one is chosen.
   const series = asText(value('series')).trim()
-  if (!series) problems.push('Missing series')
 
   const date = asText(value('date')).trim()
   const dateOk = isValidDate(date)
@@ -109,6 +109,8 @@ export function updateHead(head: string, patch: MetaPatch): string {
   // An empty date removes the key: the meeting is planned, with no date yet.
   let changes: Record<string, Value | undefined> = { ...patch }
   if ('date' in patch && patch.date === '') changes = { ...changes, date: null }
+  // An empty series removes the key: the meeting has none yet.
+  if ('series' in patch && patch.series === '') changes = { ...changes, series: null }
   // An empty task removes the key: the meeting has no task.
   if ('task' in patch && patch.task === '') changes = { ...changes, task: null }
   return updateHeadKeys(head, changes, {

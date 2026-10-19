@@ -154,7 +154,7 @@ describe('parseMeta', () => {
       'Invalid start time: 25:00',
       'Unknown mode: hybrid'
     ])
-    expect(parseMeta('---\nx: 1\n---\n').problems).toEqual(['Missing series'])
+    expect(parseMeta('---\nx: 1\n---\n').problems).toEqual([])
   })
 
   it('keeps an unknown series as written', () => {
@@ -168,6 +168,16 @@ describe('parseMeta', () => {
       parseMeta('---\nseries: Other\ndate: 2026-01-02\nattendees: Kathy Rastle\n---\n').meta
         .attendees
     ).toEqual(['Kathy Rastle'])
+  })
+})
+
+describe('updateHead with no series', () => {
+  it('writes only the date for a new meeting and removes a cleared series line', () => {
+    expect(updateHead('', { date: '2026-10-19' })).not.toContain('series')
+    expect(updateHead('', { series: '', date: '2026-10-19' })).not.toContain('series')
+    expect(
+      updateHead('---\nseries: Luminos\ndate: 2026-10-19\n---\n', { series: '' })
+    ).not.toContain('series')
   })
 })
 

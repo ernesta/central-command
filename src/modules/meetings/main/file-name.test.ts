@@ -3,9 +3,28 @@ import {
   dateFromBaseName,
   idFromFileName,
   isSafeMeetingId,
+  isUntitledName,
   meetingBaseName,
   meetingPath
 } from './file-name'
+
+describe('meetingBaseName with no series', () => {
+  it('is "<date> Untitled", numbered for repeats, "Planned Untitled" with no date', () => {
+    expect(meetingBaseName('2026-10-19', '', [])).toBe('2026-10-19 Untitled')
+    expect(meetingBaseName('2026-10-19', '  ', ['2026-10-19 Untitled'])).toBe(
+      '2026-10-19 Untitled 2'
+    )
+    expect(meetingBaseName('', '', [])).toBe('Planned Untitled')
+  })
+  it('knows the names it gave, and no others', () => {
+    for (const id of ['2026-10-19 Untitled', '2026-10-19 Untitled 3', 'Planned Untitled']) {
+      expect(isUntitledName(id)).toBe(true)
+    }
+    for (const id of ['2026-10-19 Supervision', 'Untitled', '2026-10-19 Untitled notes']) {
+      expect(isUntitledName(id)).toBe(false)
+    }
+  })
+})
 
 describe('meetingBaseName', () => {
   it('is the date and series', () => {
@@ -39,7 +58,7 @@ describe('meetingBaseName', () => {
     const name = meetingBaseName('2026-09-24', '../../etc/passwd', [])
     expect(isSafeMeetingId(name)).toBe(true)
     expect(name).not.toContain('/')
-    expect(meetingBaseName('2026-09-24', '   ', [])).toBe('2026-09-24 Other')
+    expect(meetingBaseName('2026-09-24', '   ', [])).toBe('2026-09-24 Untitled')
   })
 })
 

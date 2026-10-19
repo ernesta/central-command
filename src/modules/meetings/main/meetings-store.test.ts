@@ -223,7 +223,7 @@ describe('create', () => {
 
   it('refuses invalid input without writing anything', async () => {
     const base = { workspace: 'research', series: 'Supervision', date: '2026-09-24' } as const
-    await expect(store.create({ ...base, series: '' })).rejects.toThrow(MeetingError)
+    await expect(store.create({ ...base, series: '  ' })).rejects.toThrow(MeetingError)
     await expect(store.create({ ...base, date: '2026-13-01' })).rejects.toThrow('Invalid date')
     await expect(store.create({ ...base, start: '9:00' })).rejects.toThrow('Invalid start')
     await expect(store.create({ ...base, mode: 'hybrid' as never })).rejects.toThrow('Unknown mode')
@@ -747,5 +747,44 @@ describe('a deleted meeting takes its own task with it', () => {
     })
     await expect(store.delete(meeting)).rejects.toThrow('Trash unavailable')
     expect(trashedTasks).toEqual([])
+  })
+})
+
+describe('a meeting with no series (New meeting: only today’s date)', () => {
+  const NONE = { workspace: 'research', date: '2026-10-19', task: 'auto' } as const
+
+  it('is filed as "<date> Untitled", with no series line, and repeats are numbered', async () => {
+    const a = await store.create(NONE)
+    const b = await store.create(NONE)
+    expect(a.ref.id).toBe('2026-10-19 Untitled')
+    expect(b.ref.id).toBe('2026-10-19 Untitled 2')
+    expect(disk(a.ref.id)).not.toContain('series:')
+    expect(a.meta).toMatchObject({ series: '', date: '2026-10-19', task: 'auto' })
+    expect(a.problems).toEqual([])
+    expect(getMeetingRow(db, 'research', a.ref.id)?.series).toBe('')
+  })
+
+  it('is renamed when its series is chosen, and when its date changes first', async () => {
+    const m = await store.create(NONE)
+    const moved = await store.save(m.ref, { meta: { date: '2026-10-20' } }, m.note.hash)
+    expect(moved).toMatchObject({ status: 'saved', renamedTo: '2026-10-20 Untitled' })
+    const again = await store.read({ workspace: 'research', id: '2026-10-20 Untitled' })
+    const chosen = await store.save(again.ref, { meta: { series: 'Luminos' } }, again.note.hash)
+    expect(chosen).toMatchObject({ renamedTo: '2026-10-20 Luminos' })
+    expect(disk('2026-10-20 Luminos')).toContain('series: Luminos')
+  })
+
+  it('refuses an empty series on a save, and leaves a hand-made file with no series under its own name', async () => {
+    const m = await store.create(NONE)
+    await expect(store.save(m.ref, { meta: { series: '  ' } }, m.note.hash)).rejects.toThrow(
+      MeetingError
+    )
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(file('my own name'), '---\ndate: 2026-10-01\n---\nhello\n')
+    const own = await store.read({ workspace: 'research', id: 'my own name' })
+    const result = await store.save(own.ref, { meta: { date: '2026-10-02' } }, own.note.hash)
+    expect(result.status).toBe('saved')
+    expect('renamedTo' in result).toBe(false)
+    expect(existsSync(file('my own name'))).toBe(true)
   })
 })

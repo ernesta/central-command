@@ -66,7 +66,7 @@ export function MeetingsLanding(): React.JSX.Element {
     to: meetingRoute(workspace, row.id),
     date: row.date ? formatDate(row.date) : 'No date yet',
     badge: isUpcoming(row, today) ? (row.date ? 'Upcoming' : 'Planned') : undefined,
-    title: row.series,
+    title: row.series || 'Meeting',
     people: row.attendees.map((name) => ({ name, initials: initialsFor(name, people) })),
     note: noteFor(row, today)
   }))

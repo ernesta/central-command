@@ -14,8 +14,18 @@ const MAX_SERIES_LENGTH = 60
  * already in use; comparison ignores case because macOS file systems do.
  */
 export function meetingBaseName(date: string, series: string, taken: Iterable<string>): string {
-  return datedBaseName(date, series, taken, { fallback: 'Other', maxLength: MAX_SERIES_LENGTH })
+  return datedBaseName(date, series.trim() === '' ? UNTITLED : series, taken, {
+    fallback: 'Other',
+    maxLength: MAX_SERIES_LENGTH
+  })
 }
+
+/** What a meeting with no series is filed as: `YYYY-MM-DD Untitled`, `… Untitled 2` for repeats. */
+export const UNTITLED = 'Untitled'
+
+/** A name this module gave a meeting with no series (`2026-10-19 Untitled`, `Planned Untitled 2`), which a new series may rename. */
+export const isUntitledName = (id: string): boolean =>
+  /^(?:\d{4}-\d{2}-\d{2}|Planned) Untitled(?: \d+)?$/.test(id)
 
 export { dateFromBaseName }
 

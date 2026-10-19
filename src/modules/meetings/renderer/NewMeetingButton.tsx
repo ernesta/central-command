@@ -1,10 +1,9 @@
 import { useNavigate } from 'react-router'
 import { CreateButton } from '@renderer/components/CreateButton'
-import { defaultSeries } from '../shared/types'
 import { meetingRoute, todayIso, useMeetingsWorkspace } from './meetings-paths'
 
 /**
- * "New meeting": creates a meeting for today at once and opens its page, where the series, date, times and
+ * "New meeting": creates a meeting with only today's date at once and opens its page, where the series, times and
  * everything else are filled in at leisure.
  */
 export function NewMeetingButton(): React.JSX.Element {
@@ -16,7 +15,6 @@ export function NewMeetingButton(): React.JSX.Element {
       create={async () => {
         const file = await window.api.meetings.create({
           workspace,
-          series: defaultSeries(workspace),
           date: todayIso(),
           task: 'auto'
         })

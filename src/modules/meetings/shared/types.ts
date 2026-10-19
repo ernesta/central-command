@@ -4,14 +4,9 @@ import type { TodoItem } from './todos'
 export const MEETING_WORKSPACES = ['research', 'work'] as const
 export type MeetingWorkspace = (typeof MEETING_WORKSPACES)[number]
 
-/** The fixed list of series for now. Every meeting has exactly one. */
+/** The fixed list of series for now. A meeting has one, or none until the user chooses it (a new meeting starts with only its date). */
 export const SERIES = ['Supervision', 'Rastle Lab', 'Luminos', 'Other'] as const
 export type Series = (typeof SERIES)[number]
-
-/** Research's fixed series aren't Work's; 'Other' is the one sensible shared default there, edited right after. */
-export function defaultSeries(workspace: MeetingWorkspace): Series {
-  return workspace === 'research' ? SERIES[0] : 'Other'
-}
 
 /** The series offered before any meeting has them: Research's fixed list; Work starts with none and grows its own. */
 export function fixedSeries(workspace: MeetingWorkspace): readonly string[] {
@@ -31,7 +26,7 @@ export type MeetingMode = (typeof MEETING_MODES)[number]
  * file never crashes the app); `problems` on the parse result says what was off.
  */
 export interface MeetingMeta {
-  /** Normally one of SERIES; kept as written when it is not, and flagged. */
+  /** Normally one of SERIES; kept as written when it is not. '' while the meeting has none (a new meeting, until one is chosen). */
   series: string
   /** YYYY-MM-DD, or '' when missing or malformed. */
   date: string

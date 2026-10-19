@@ -14,8 +14,8 @@ import type {
 
 export interface CreateMeetingInput {
   workspace: MeetingWorkspace
-  /** One of SERIES. */
-  series: string
+  /** One of SERIES; leave out for a new meeting that has none yet. */
+  series?: string
   /** YYYY-MM-DD; leave out (or '') for a meeting that is planned but not yet scheduled. */
   date?: string
   start?: string | null

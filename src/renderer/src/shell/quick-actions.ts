@@ -1,6 +1,5 @@
 import type { NavigateFunction } from 'react-router'
 import { meetingRoute } from '@modules/meetings/renderer/meetings-paths'
-import { defaultSeries } from '@modules/meetings/shared/types'
 import { stopTimer } from '@modules/hours/renderer/start-request'
 import { noteRoute } from '@modules/notes/renderer/notes-paths'
 import { entryRoute } from '@modules/training/renderer/training-paths'
@@ -59,7 +58,6 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
       const workspace = researchOrWork(current)
       const file = await window.api.meetings.create({
         workspace,
-        series: defaultSeries(workspace),
         date: todayIso(),
         task: 'auto'
       })

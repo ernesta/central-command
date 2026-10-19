@@ -35,7 +35,7 @@ import {
   type MeetingRef,
   type MeetingWorkspace
 } from '../shared/types'
-import { idFromFileName, meetingBaseName, meetingPath } from './file-name'
+import { idFromFileName, isUntitledName, meetingBaseName, meetingPath } from './file-name'
 import { buildIndexRow } from './index-row'
 import { deleteMeetingRow, listMeetingIds, listMeetingRows, upsertMeeting } from './repository'
 
@@ -125,7 +125,7 @@ export class MeetingsStore {
   async create(input: CreateMeetingInput): Promise<MeetingFile> {
     const workspace = checkWorkspace(input.workspace)
     const patch: MetaPatch = {
-      series: input.series,
+      ...(input.series ? { series: input.series } : {}),
       date: input.date ?? '',
       start: input.start ?? null,
       end: input.end ?? null,
@@ -140,7 +140,7 @@ export class MeetingsStore {
     // Names already taken, from the folder itself (not just the index) so nothing is ever replaced.
     for (let attempt = 0; attempt < 50; attempt++) {
       const taken = await this.baseNamesOnDisk(workspace)
-      const id = meetingBaseName(input.date ?? '', input.series, taken)
+      const id = meetingBaseName(input.date ?? '', input.series ?? '', taken)
       const body = input.body ?? NEW_MEETING_BODY
       if (await createNoteFileExclusive(meetingPath(dir, id), head + body)) {
         await this.reindex({ workspace, id })
@@ -196,7 +196,8 @@ export class MeetingsStore {
    */
   private async renameToMatch(ref: MeetingRef, content: string): Promise<string | null> {
     const { meta } = parseMeta(splitNote(content).head)
-    if (!meta.series) return null
+    // A meeting with no series is only renamed when this module named it (a hand-made file keeps the user's name).
+    if (!meta.series && !isUntitledName(ref.id)) return null
     const dir = this.dirFor(ref.workspace)
     try {
       for (let attempt = 0; attempt < 50; attempt++) {

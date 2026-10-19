@@ -30,13 +30,14 @@ describe('runQuickAction', () => {
     expect(create).toHaveBeenCalledWith({ workspace: 'life' })
   })
 
-  it('starts a meeting in Work with the series Other', async () => {
-    const create = vi.fn(async () => ({ ref: { id: 'm1' } }))
+  it('starts a meeting in Work with only today’s date, and no series', async () => {
+    const create = vi.fn(async (...input: unknown[]) => ({ input, ref: { id: 'm1' } }))
     ;(window as unknown as { api: unknown }).api = { meetings: { create } }
     await runQuickAction('new-meeting', vi.fn(), 'work')
     expect(create).toHaveBeenCalledWith(
-      expect.objectContaining({ workspace: 'work', series: 'Other' })
+      expect.objectContaining({ workspace: 'work', task: 'auto' })
     )
+    expect(create.mock.lastCall?.[0]).not.toHaveProperty('series')
   })
 
   it('starts a training entry in Life with no lecture task, and in Research with one', async () => {
