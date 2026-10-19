@@ -800,7 +800,7 @@ or found on the way:
   the full page, and a person hit landing on their highlighted row. The field is a plain text input (a search input clears itself
   on the first Escape).
 
-### Search modifiers (19 Oct 2026; `docs/SEARCH_MODIFIERS_PLAN.md`, all five stages built, pushed, not installed)
+### Search modifiers (19 Oct 2026; `docs/SEARCH_MODIFIERS_PLAN.md`, all five stages built, pushed and installed the same day)
 
 The design is the user's (Slack-style, one session, answered the same day). Code: `src/shared/search-query.ts` (the registry
 `MODIFIERS`, `parseSearch`, `planSources`, `resolvePeople`, `passesFilters`), `search-dates.ts`, `search-complete.ts`; each source's own

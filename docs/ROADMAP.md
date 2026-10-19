@@ -324,7 +324,7 @@ Choices the plan left open, made conservatively; change any of them by telling C
 
 ### For the user (review and decisions)
 
-- **Tag readings with a workspace so readings can be scoped to one too; until then readings are unscoped and appear in a search of any workspace** (`workspace:` keeps them whichever it names; `docs/SEARCH_MODIFIERS_PLAN.md`, `docs/DECISIONS.md`, "Search modifiers"). Search modifiers (`in:task`, `status:`, `with:`, dates, quoted phrases, a completion list) were built unattended on 19 Oct 2026, pushed and not installed.
+- **Tag readings with a workspace so readings can be scoped to one too; until then readings are unscoped and appear in a search of any workspace** (`workspace:` keeps them whichever it names; `docs/SEARCH_MODIFIERS_PLAN.md`, `docs/DECISIONS.md`, "Search modifiers"). Search modifiers (`in:task`, `status:`, `with:`, dates, quoted phrases, a completion list) were built unattended on 19 Oct 2026, pushed and installed.
 
 **Meeting and training tasks: due date and done (17 Oct 2026, the user's request; built, not driven in the app, not installed).** The tasks the app makes for meetings and trainings are due on the note's date (`planMeetingTask`, `planLectureTask`) and are marked done once the session is over: its end time, or the end of its day when the note has no end time. A sweep in the main process (`src/modules/tasks/main/session-sweep.ts`) does it for every note at launch and every minute, so tasks already made are caught up too (no script needed). Only the session's own task: a meeting's dated subtask, a training's subtask or its top-level task in Training with nothing under it; a task you chose and a series task are never touched.
 

@@ -1,6 +1,6 @@
 # Search modifiers: plan
 
-Status: **built 19 Oct 2026, all five stages, in one unattended run (pushed, not installed).** Designed with the user on 19 Oct 2026. What differed from the plan is under "Built" at the end; the decisions are in `docs/DECISIONS.md`, "Search modifiers". Read with `CLAUDE.md` and `docs/DECISIONS.md`, "Global search". Code today:
+Status: **built 19 Oct 2026, all five stages, in one unattended run (pushed and installed the same day).** Designed with the user on 19 Oct 2026. What differed from the plan is under "Built" at the end; the decisions are in `docs/DECISIONS.md`, "Search modifiers". Read with `CLAUDE.md` and `docs/DECISIONS.md`, "Global search". Code today:
 `src/shared/search.ts` (`parseSearchQuery`, `SOURCE_ALIASES`, `SEARCH_GROUP_ORDER`), `src/renderer/src/shell/run-search.ts` (`searchEverywhere`),
 `GlobalSearch.tsx` (Mod-K) and `SearchResultsPage.tsx` (`/search`); each module's `search` is in its manifest.
 
