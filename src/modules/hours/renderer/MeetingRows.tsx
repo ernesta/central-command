@@ -4,6 +4,7 @@ import { formatHours } from '@shared/tracking/format'
 import { derivedRows } from '@shared/tracking/derived'
 import { timeToSeconds } from '@shared/tracking/rounding'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
+import { formatTimeRange } from '../../meetings/shared/query'
 import { meetingRoute } from '../../meetings/renderer/meetings-paths'
 import { entryRoute } from '../../training/renderer/training-paths'
 import {
@@ -67,9 +68,7 @@ export function MeetingRows({
               aria-label={`Open the ${lecture ? 'lecture' : 'meeting'} ${row.id}`}
             >
               <span className={styles.title}>{row.label}</span>
-              <span className={styles.when}>
-                {row.start}–{row.end}
-              </span>
+              <span className={styles.when}>{formatTimeRange(row.start, row.end)}</span>
               {row.client && <span className={styles.client}>{row.client}</span>}
             </Link>
             {clashes.length > 0 && (
