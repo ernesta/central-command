@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Button } from '@renderer/components/Button'
-import { Dialog } from '@renderer/components/Dialog'
 import { Input } from '@renderer/components/Input'
 import { FieldError } from '@renderer/components/FieldError'
 import { Select } from '@renderer/components/Select'
@@ -131,7 +130,6 @@ export function TimeOffList({
 }): React.JSX.Element | null {
   const rows = timeOffRows(data, today)
   const [editing, setEditing] = useState<string | null>(null)
-  const [deleting, setDeleting] = useState<TimeOffRow | null>(null)
   const entering = useNewRowKeys(rows.map((row) => `${row.date}|${row.type}`))
   if (rows.length === 0) return null
 
@@ -169,27 +167,8 @@ export function TimeOffList({
                   )
                   return result.ok ? null : (REFUSED[result.reason] ?? 'Couldn’t save that day.')
                 }}
-                onDelete={() => setDeleting(row)}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {deleting && (
-        <Dialog
-          title="Delete this day?"
-          onCancel={() => setDeleting(null)}
-          actions={
-            <>
-              <Button size="small" onClick={() => setDeleting(null)} autoFocus>
-                Cancel
-              </Button>
-              <Button
-                size="small"
-                variant="danger"
-                onClick={() => {
-                  const { date, type } = deleting
-                  setDeleting(null)
+                onDelete={() => {
+                  const { date, type } = row
                   void window.api.tracking
                     .removeTimeOff(workspace, data.start, date)
                     .then((result) => {
@@ -209,15 +188,11 @@ export function TimeOffList({
                       })
                     })
                 }}
-              >
-                Delete
-              </Button>
-            </>
-          }
-        >
-          {formatDay(deleting.date)} will be removed from your time off.
-        </Dialog>
-      )}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   )
 }
