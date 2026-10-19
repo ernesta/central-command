@@ -26,7 +26,7 @@ interface MeetingRowsProps {
 }
 
 /**
- * A day's meetings and lectures, read-only: the task's title, the note's times and the hours it reports, linking to the note, which
+ * A day's meetings and trainings, read-only: the task's title, the note's times and the hours it reports, linking to the note, which
  * is where they are changed. A line that overlaps a timer block or another meeting says so and changes nothing.
  */
 export function MeetingRows({
@@ -36,7 +36,7 @@ export function MeetingRows({
   now
 }: MeetingRowsProps): React.JSX.Element | null {
   const rows = derivedRows(data, date)
-  // Life has no meetings or lectures: nothing is derived there.
+  // Life has no meetings or trainings: nothing is derived there.
   if (rows.length === 0 || shown === 'life') return null
   const workspace = shown
   const sessions = occupiedBySessions(data.sessions, date)
@@ -57,15 +57,15 @@ export function MeetingRows({
           seconds,
           noteKey(row.kind, workspace, row.id)
         )
-        const lecture = row.kind === 'training'
-        const Icon = lecture ? GraduationCap : CalendarClock
+        const training = row.kind === 'training'
+        const Icon = training ? GraduationCap : CalendarClock
         return (
           <li key={`${row.kind}:${row.id}`} className={styles.row}>
             <Icon size={16} strokeWidth={1.75} className={styles.icon} aria-hidden />
             <Link
               className={styles.name}
-              to={lecture ? entryRoute(row.id) : meetingRoute(workspace, row.id)}
-              aria-label={`Open the ${lecture ? 'lecture' : 'meeting'} ${row.id}`}
+              to={training ? entryRoute(row.id) : meetingRoute(workspace, row.id)}
+              aria-label={`Open the ${training ? 'training' : 'meeting'} ${row.id}`}
             >
               <span className={styles.title}>{row.label}</span>
               <span className={styles.when}>{formatTimeRange(row.start, row.end)}</span>

@@ -5,7 +5,7 @@
   display: grid;
   gap: 2px;
 }
-/* Meetings and lectures follow the tasks as one list: close the container's gap (`--stack-gap`) to the rows' own. */
+/* Meetings and trainings follow the tasks as one list: close the container's gap (`--stack-gap`) to the rows' own. */
 .list + .list {
   margin-top: calc(2px - var(--stack-gap, 0px));
 }

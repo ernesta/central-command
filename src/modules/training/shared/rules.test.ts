@@ -222,8 +222,8 @@ describe('entriesInYearOrPlanned', () => {
   })
 })
 
-describe('a lecture total (session plus self-study, one number)', () => {
-  const lecture = (
+describe('a training total (session plus self-study, one number)', () => {
+  const training = (
     date: string,
     task: string,
     over: Partial<TrainingIndexRow> = {}
@@ -232,9 +232,9 @@ describe('a lecture total (session plus self-study, one number)', () => {
 
   it('is the session alone for a note with no self-study or no task: the same numbers as before', () => {
     const rows = [
-      lecture('2026-01-01', 'k1'),
-      lecture('2026-01-02', ''),
-      lecture('2026-01-03', 'auto')
+      training('2026-01-01', 'k1'),
+      training('2026-01-02', ''),
+      training('2026-01-03', 'auto')
     ]
     const plain = trainingHours(rows, '2025-09-22', TODAY, 200)
     expect(trainingHours(rows, '2025-09-22', TODAY, 200, new Map())).toEqual(plain)
@@ -242,8 +242,8 @@ describe('a lecture total (session plus self-study, one number)', () => {
     expect(plain.minutes).toBe(180)
   })
 
-  it('adds the self-study of the lecture to its session, in the total and in every skill', () => {
-    const rows = [lecture('2026-01-01', 'k1'), lecture('2026-01-02', 'k2')]
+  it('adds the self-study of the training to its session, in the total and in every skill', () => {
+    const rows = [training('2026-01-01', 'k1'), training('2026-01-02', 'k2')]
     const hours = trainingHours(rows, '2025-09-22', TODAY, 200, study)
     expect(hours.minutes).toBe(60 + 45 + 60)
     expect(hours.perSkill).toEqual([{ skill: 'Networking (RP)', minutes: 165 }])
@@ -259,8 +259,8 @@ describe('a lecture total (session plus self-study, one number)', () => {
     ).toBe(60)
   })
 
-  it('counts self-study on a lecture with no times, and says nothing is missing', () => {
-    const rows = [lecture('2026-01-01', 'k1', { start: null, end: null })]
+  it('counts self-study on a training with no times, and says nothing is missing', () => {
+    const rows = [training('2026-01-01', 'k1', { start: null, end: null })]
     const hours = trainingHours(rows, '2025-09-22', TODAY, 200, study)
     expect(hours.minutes).toBe(45)
     expect(hours.withoutTimes).toBe(0)
@@ -270,15 +270,15 @@ describe('a lecture total (session plus self-study, one number)', () => {
 
   it('counts a series upcoming entries apart from the ones that happened', () => {
     const rows = [
-      lecture('2026-01-01', 'k1', { series: 'Intro' }),
-      lecture('2099-01-01', 'k2', { series: 'Intro' }),
-      lecture('2099-02-01', 'k3', { series: 'Intro' })
+      training('2026-01-01', 'k1', { series: 'Intro' }),
+      training('2099-01-01', 'k2', { series: 'Intro' }),
+      training('2099-02-01', 'k3', { series: 'Intro' })
     ]
     expect(seriesSummaries(rows, TODAY)).toMatchObject([{ series: 'Intro', count: 1, upcoming: 2 }])
   })
 
-  it('totals each series with its lectures self-study', () => {
-    const rows = [lecture('2026-01-01', 'k1'), lecture('2026-01-02', 'k2')]
+  it('totals each series with its trainings self-study', () => {
+    const rows = [training('2026-01-01', 'k1'), training('2026-01-02', 'k2')]
     expect(seriesSummaries(rows, TODAY, study)).toMatchObject([
       { series: 'Intro', count: 2, minutes: 165 }
     ])
@@ -288,10 +288,10 @@ describe('a lecture total (session plus self-study, one number)', () => {
   })
 })
 
-describe('a lecture total with a self-study task of its own', () => {
+describe('a training total with a self-study task of its own', () => {
   const both = { start: '10:00', end: '11:00', task: 'k1', selfStudy: 'k7' }
 
-  it('is the session plus the time on the lecture task plus the time on the self-study task', () => {
+  it('is the session plus the time on the training task plus the time on the self-study task', () => {
     expect(entryMinutes(both, new Map([['k1', 15]]))).toBe(75)
     expect(entryMinutes(both, new Map([['k7', 30]]))).toBe(90)
     expect(
@@ -310,7 +310,7 @@ describe('a lecture total with a self-study task of its own', () => {
     expect(entryMinutes(both, new Map([['other', 99]]))).toBe(60)
   })
 
-  it('counts self-study alone on a note with no times or lecture task', () => {
+  it('counts self-study alone on a note with no times or training task', () => {
     const open = { start: null, end: null, task: '', selfStudy: 'k7' }
     expect(entryMinutes(open, new Map([['k7', 30]]))).toBe(30)
     expect(entryMinutes(open, new Map())).toBeNull()
@@ -376,7 +376,7 @@ describe('a lecture total with a self-study task of its own', () => {
 
 describe('entryParts and the split of a series', () => {
   const row = { start: '09:00', end: '12:00', task: 'l1', selfStudy: 's1' }
-  it('splits the session and the lecture task from the self-study, and entryMinutes is their sum', () => {
+  it('splits the session and the training task from the self-study, and entryMinutes is their sum', () => {
     const tracked = new Map([
       ['l1', 15],
       ['s1', 75]

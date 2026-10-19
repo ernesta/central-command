@@ -76,7 +76,7 @@ function shownYearOf(
   if (!inYear(now.date, stored.start, stored.weeks)) return null
   return shownYear(stored, {
     meetings: listMeetingRows(db, workspace),
-    lectures: workspace === 'research' ? listTrainingRows(db, 'research') : [],
+    trainings: workspace === 'research' ? listTrainingRows(db, 'research') : [],
     tasks: listTasks(db, workspace),
     clients: workspace === 'work' ? workClients(files.map((f) => f.plan)) : null,
     today: now.date
@@ -110,7 +110,7 @@ export interface CollectDeps {
 
 /**
  * Read everything Home needs from the database and the tracking files, then let the pure builder decide. Meeting and
- * lecture subtasks are left out of the task lists: their time is the meeting's or lecture's own, and the event is
+ * training subtasks are left out of the task lists: their time is the meeting's or training's own, and the event is
  * already in "coming up".
  */
 export function collectHomeSummary(deps: CollectDeps): HomeSummary {

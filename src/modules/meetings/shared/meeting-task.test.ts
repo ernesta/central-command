@@ -245,7 +245,7 @@ describe('a meeting task is recognised in every region (the bug of 19 Oct 2026)'
     )
   })
 
-  it('the marker decides: a marked lecture or self-study task is not a meeting task, whatever its title', () => {
+  it('the marker decides: a marked training or self-study task is not a meeting task, whatever its title', () => {
     const title = 'Supervision · 19 Oct 2026'
     expect(isOwnMeetingTask(task({ title, parentUid: 's', ownKind: 'training' }))).toBe(false)
     expect(isOwnMeetingTask(task({ title, parentUid: 's', ownKind: 'self-study' }))).toBe(false)

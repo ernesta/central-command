@@ -1,6 +1,6 @@
 import type { Database } from 'better-sqlite3'
 import { isOwnMeetingTask } from '../../meetings/shared/meeting-task'
-import { TRAINING_LIST } from '../../training/shared/lecture-task'
+import { TRAINING_LIST } from '../../training/shared/training-task'
 import { sessionTaskChanges, type LocalMoment, type SessionTimes } from '../shared/session-task'
 import type { Task, TaskWorkspace } from '../shared/types'
 import type { TasksStore } from './tasks-store'
@@ -69,9 +69,9 @@ export function settleSessionTasks(
 }
 
 /**
- * The uids of a workspace's session tasks: the task the app made for a meeting, and a training lecture's own task. They are not
+ * The uids of a workspace's session tasks: the task the app made for a meeting, and a training's own task. They are not
  * offered for tracking time (the timer's suggestions, typed search, Start and Add time on the task's page): the session's time is
- * typed in its note, and a lecture's study time goes to its self-study task. A task the user chose for a meeting is not one of them,
+ * typed in its note, and a training's study time goes to its self-study task. A task the user chose for a meeting is not one of them,
  * so it stays offered. Time already tracked on them stays in Hours.
  */
 export function sessionTaskUids(

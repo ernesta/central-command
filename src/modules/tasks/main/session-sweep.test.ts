@@ -136,15 +136,15 @@ describe('sessionTaskUids: what the timer and Hours do not offer', () => {
       list: 'Writing'
     })
     const series = store.create({ workspace: 'research', title: 'PS5210', list: 'Training' })
-    const lecture = store.create({
+    const trainingTask = store.create({
       workspace: 'research',
-      title: 'Lecture 1',
+      title: 'Training 1',
       parentUid: series.uid,
       ownKind: 'training'
     })
     const study = store.create({
       workspace: 'research',
-      title: 'Lecture 1 self-study',
+      title: 'Training 1 self-study',
       list: 'Training',
       ownKind: 'self-study'
     })
@@ -159,7 +159,7 @@ describe('sessionTaskUids: what the timer and Hours do not offer', () => {
     meeting(own.uid, '2026-10-19', null)
     meeting(olderOwn.uid, '2026-10-12', null)
     meeting(chosen.uid, '2026-10-20', null)
-    training(lecture.uid, '2026-10-21', null)
+    training(trainingTask.uid, '2026-10-21', null)
     db.prepare(
       `INSERT INTO meetings (workspace, meeting_id, task, series, date, end_time, content_hash)
        VALUES ('work', 'w', @task, 'Impact', '2026-10-19', NULL, 'h')`
@@ -168,7 +168,7 @@ describe('sessionTaskUids: what the timer and Hours do not offer', () => {
       own: own.uid,
       olderOwn: olderOwn.uid,
       chosen: chosen.uid,
-      lecture: lecture.uid,
+      training: trainingTask.uid,
       study: study.uid,
       ordinary: ordinary.uid,
       series: series.uid,
@@ -177,10 +177,10 @@ describe('sessionTaskUids: what the timer and Hours do not offer', () => {
     }
   }
 
-  it("is the meeting's own tasks (marked or older) and the lectures' own, in their workspace", () => {
+  it("is the meeting's own tasks (marked or older) and the trainings' own, in their workspace", () => {
     const id = setup()
     expect(new Set(sessionTaskUids(db, store, 'research'))).toEqual(
-      new Set([id.own, id.olderOwn, id.lecture])
+      new Set([id.own, id.olderOwn, id.training])
     )
     expect(sessionTaskUids(db, store, 'work')).toEqual([id.workOwn])
     expect(sessionTaskUids(db, store, 'life')).toEqual([])
@@ -199,7 +199,7 @@ describe('sessionTaskUids: what the timer and Hours do not offer', () => {
     const hidden = new Set(sessionTaskUids(db, store, 'research'))
     const open = listTasks(db, 'research').filter((t) => !hidden.has(t.uid))
     const year = {
-      sessions: ['own', 'olderOwn', 'lecture', 'study', 'ordinary', 'chosen'].map((k, n) => ({
+      sessions: ['own', 'olderOwn', 'training', 'study', 'ordinary', 'chosen'].map((k, n) => ({
         task: `cc://task/${id[k]}`,
         date: '2026-10-17',
         start: `0${n + 1}:00:00`
@@ -211,7 +211,7 @@ describe('sessionTaskUids: what the timer and Hours do not offer', () => {
     expect(new Set(pickerOptions(open, 'supervision').tasks.map((t) => t.uid))).toEqual(
       new Set([id.meetings, id.chosen])
     )
-    expect(pickerOptions(open, 'lecture 1').tasks.map((t) => t.uid)).toEqual([id.study])
+    expect(pickerOptions(open, 'training 1').tasks.map((t) => t.uid)).toEqual([id.study])
   })
 
   it('a task is not hidden once it is not a meeting task any more (unmarked and not titled as one)', () => {

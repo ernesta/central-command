@@ -17,7 +17,7 @@ import styles from './TaskPage.module.css'
  * The two ways to put time on a task: Start a timer on it, or Add time that was not tracked, on a day. One component for every
  * place that offers them (the task page's Time card, a training note), so a task is the same everywhere. Time lives in Hours; a
  * task only names it (`cc://task/<uid>`). When the task has subtasks (`parts`), Add time can go to one of them instead: a
- * series' lectures keep their own time. A task that does not exist yet (`uid` ''; a lecture's self-study) is made by `ensure` the
+ * series' trainings keep their own time. A task that does not exist yet (`uid` ''; a training's self-study) is made by `ensure` the
  * moment Start or Add time is pressed, and the time goes to the task it returns.
  */
 export function TaskTimeActions({

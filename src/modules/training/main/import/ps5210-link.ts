@@ -4,7 +4,7 @@ import { randomBytes } from 'crypto'
 import type Database from 'better-sqlite3'
 import { writeFileAtomicSync } from '../../../../main/atomic-write'
 import { TasksStore } from '../../../tasks/main/tasks-store'
-import { TRAINING_LIST } from '../../shared/lecture-task'
+import { TRAINING_LIST } from '../../shared/training-task'
 import { applyTrainingChanges, parseTrainingMeta, splitNote } from '../../shared/front-matter'
 
 /**

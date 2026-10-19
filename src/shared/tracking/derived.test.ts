@@ -145,7 +145,7 @@ describe('withDerived', () => {
   })
 })
 
-describe('a lecture next to a meeting', () => {
+describe('a training next to a meeting', () => {
   it('keeps its kind, so a row links to the right note, and counts like any other block', () => {
     const shown = withDerived(year(), [
       entry({ kind: 'training', id: 'same', start: '10:00', end: '11:30', label: 'Plotly' }),

@@ -73,7 +73,7 @@ describe('trainingReportHtml', () => {
     expect(trainingReportHtml(input([row('2025-10-01')]))).not.toContain('of meetings')
   })
 
-  it('counts the lecture task and the self-study task in each row, the total and each skill', () => {
+  it('counts the training task and the self-study task in each row, the total and each skill', () => {
     const rows = [
       row('2025-10-01', { task: 'k1', selfStudy: 'k7', skills: ['Networking (RP)'] }),
       row('2025-10-02', { task: '', selfStudy: '', skills: ['Networking (RP)'] })
@@ -105,7 +105,7 @@ describe('trainingReportHtml', () => {
 
 describe('trainingReportHtml with self-study', () => {
   const rows = [
-    row('2025-10-01', { title: 'Lecture', task: 'k1' }),
+    row('2025-10-01', { title: 'Training', task: 'k1' }),
     row('2025-10-02', { title: 'Other' })
   ]
   it('is the same page when there is no self-study', () => {
@@ -113,7 +113,7 @@ describe('trainingReportHtml with self-study', () => {
       trainingReportHtml(input(rows))
     )
   })
-  it('shows a lecture as one total: its session plus the time tracked on it', () => {
+  it('shows a training as one total: its session plus the time tracked on it', () => {
     const html = trainingReportHtml({ ...input(rows), selfStudy: new Map([['k1', 45]]) })
     // A 90-minute session plus 45 minutes of self-study is 2:15; the other entry stays 1:30, 3:45 in all.
     expect(html).toContain('<td class="nw r">2:15</td>')

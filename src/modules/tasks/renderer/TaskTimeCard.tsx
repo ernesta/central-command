@@ -44,7 +44,7 @@ export function TaskTimeCard({
   list: string
   /** The open subtasks Add time may go to. */
   parts: readonly Task[]
-  /** False for a training lecture's own task: nothing is started or added on it. */
+  /** False for a training's own task: nothing is started or added on it. */
   actions?: boolean
 }): React.JSX.Element {
   return (

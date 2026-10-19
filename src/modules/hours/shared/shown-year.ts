@@ -2,7 +2,7 @@ import { withDerived, type DerivedEntry } from '@shared/tracking/derived'
 import type { TrackingYear } from '@shared/tracking/types'
 import { meetingEntries, type TaskInfo } from '../../meetings/shared/meeting-entries'
 import type { MeetingIndexRow } from '../../meetings/shared/types'
-import { lectureEntries } from '../../training/shared/lecture-entries'
+import { trainingEntries } from '../../training/shared/training-entries'
 import type { TrainingIndexRow } from '../../training/shared/types'
 import type { Task } from '../../tasks/shared/types'
 
@@ -10,7 +10,7 @@ import type { Task } from '../../tasks/shared/types'
 export interface DerivedSources {
   meetings: readonly MeetingIndexRow[]
   /** Research's training notes; none in the other workspaces. */
-  lectures: readonly TrainingIndexRow[]
+  trainings: readonly TrainingIndexRow[]
   /** Every task of the workspace, subtasks too. */
   tasks: readonly Task[]
   /** Work's clients (its task lists); null where a workspace has none (Research). */
@@ -20,7 +20,7 @@ export interface DerivedSources {
 }
 
 /**
- * The hours the notes derive (`meetingEntries`, and a lecture's own session, `lectureEntries`), the same everywhere hours are
+ * The hours the notes derive (`meetingEntries`, and a training's own session, `trainingEntries`), the same everywhere hours are
  * counted: the Hours page, Home, the main process's Home summary. Nothing is stored: this is the notes' date, start and end every time.
  */
 export function derivedEntries(sources: DerivedSources): DerivedEntry[] {
@@ -34,7 +34,7 @@ export function derivedEntries(sources: DerivedSources): DerivedEntry[] {
   }
   return [
     ...meetingEntries(sources.meetings, taskOf, sources.today, sources.clients),
-    ...lectureEntries(sources.lectures, taskOf, sources.today)
+    ...trainingEntries(sources.trainings, taskOf, sources.today)
   ]
 }
 

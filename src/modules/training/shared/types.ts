@@ -146,12 +146,12 @@ export interface TrainingMeta {
   organisation: string | null
   points: string | null
   /**
-   * The lecture's task: a task uid (the subtask its hours belong to), `auto` for a note made after lectures got tasks that has none
+   * The training's task: a task uid (the subtask its hours belong to), `auto` for a note made after trainings got tasks that has none
    * yet (it gets its subtask when a series is chosen), '' for a note with none: every older note, which is left alone.
    */
   task: string
   /**
-   * The task the lecture's self-study hours go to (`selfstudy:`): a task uid, '' while none was made. Nothing is made in advance:
+   * The task the training's self-study hours go to (`selfstudy:`): a task uid, '' while none was made. Nothing is made in advance:
    * Start or Add time on the note makes it.
    */
   selfStudy: string

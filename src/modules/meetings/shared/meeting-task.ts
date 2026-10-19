@@ -108,7 +108,7 @@ function target(proposal: TaskProposal): MeetingParent {
 }
 
 /**
- * What a meeting note's task needs. Like a training's lecture task, with no clicking:
+ * What a meeting note's task needs. Like a training's own task, with no clicking:
  *
  * - An older note (`task` empty) is left alone, always.
  * - A marked note (`auto`) gets a subtask once it has a date and its series names a task (`proposeMeetingTask`: found, or made).

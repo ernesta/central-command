@@ -30,7 +30,7 @@
   align-items: center;
   gap: 4px;
 }
-/* A wide one-line card (the lecture's Task): label, then the content, wrapping when it runs out of room. */
+/* A wide one-line card (the training's Task): label, then the content, wrapping when it runs out of room. */
 .row {
   display: flex;
   flex-wrap: wrap;

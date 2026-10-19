@@ -4,8 +4,8 @@ import { trackedByTask } from '../../tasks/shared/tracked'
 import type { SelfStudy } from '../shared/rules'
 
 /**
- * The minutes Hours holds on each task (by uid) in Research, from the real year files only: a lecture's self-study, its timers and
- * typed time. The lecture's own session is not here (it comes from the note). Read again whenever a year file changes.
+ * The minutes Hours holds on each task (by uid) in Research, from the real year files only: a training's self-study, its timers and
+ * typed time. The training's own session is not here (it comes from the note). Read again whenever a year file changes.
  */
 export function useSelfStudy(): SelfStudy {
   const [years, setYears] = useState<TrackingYear[]>([])

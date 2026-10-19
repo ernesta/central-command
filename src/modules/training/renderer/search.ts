@@ -15,7 +15,7 @@ import { formatShortDate } from '@shared/time'
 import { DEFAULT_TRAINING_QUERY, haystack, queryTraining } from '../shared/rules'
 import { planKey } from '../shared/plan'
 import type { TrainingIndexRow, TrainingWorkspace } from '../shared/types'
-import { lectureLabel } from '../shared/lecture-entries'
+import { trainingLabel } from '../shared/training-entries'
 import { entryRoute, trainingPlanRoute } from './training-paths'
 
 const DEFAULT_LIMIT = 6
@@ -53,7 +53,7 @@ export function trainingHits(
       const details = row.date ? formatShortDate(row.date) : 'No date yet'
       return {
         key: row.id,
-        title: lectureLabel(row.series, row.title || 'Untitled'),
+        title: trainingLabel(row.series, row.title || 'Untitled'),
         detail: (!inTitle && snippet(row.excerpt, terms)) || details,
         route: entryRoute(row.id, row.workspace)
       }

@@ -13,7 +13,7 @@ import type { TaskWorkspace } from '../shared/types'
 
 /**
  * What Hours holds for each task of a workspace (minutes by task uid, every year, a running timer counted in whole minutes, and the
- * hours its meetings and lectures derive, the same minutes the Hours page counts) and which task has a timer running. Read again whenever a year file changes. ClickUp's earlier time is not here (it is on the task).
+ * hours its meetings and trainings derive, the same minutes the Hours page counts) and which task has a timer running. Read again whenever a year file changes. ClickUp's earlier time is not here (it is on the task).
  */
 export function useTaskTime(workspace: TaskWorkspace): {
   tracked: ReadonlyMap<string, number>

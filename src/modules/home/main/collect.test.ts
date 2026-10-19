@@ -79,16 +79,16 @@ describe('collectHomeSummary: tasks', () => {
     expect(s.tasks.overdue.map((t) => t.uid)).toEqual(['late'])
   })
 
-  it('leaves out the subtask a meeting or a lecture owns', () => {
+  it('leaves out the subtask a meeting or a training owns', () => {
     task('own-meeting')
-    task('own-lecture')
+    task('own-training')
     task('ordinary')
     db.prepare(
       `INSERT INTO meetings (workspace, meeting_id, series, date, content_hash, task) VALUES ('research', 'm1', 'Supervision', '2026-10-20', 'h', 'own-meeting')`
     ).run()
     db.prepare(
       `INSERT INTO training (workspace, entry_id, date, title, skills, leads, summary, excerpt, has_notes, problems, content_hash, task)
-       VALUES ('research', 't1', '2026-10-21', 'R day', '[]', '[]', '', '', 0, '[]', 'h', 'own-lecture')`
+       VALUES ('research', 't1', '2026-10-21', 'R day', '[]', '[]', '', '', 0, '[]', 'h', 'own-training')`
     ).run()
     const s = collect()
     expect(s.tasks.today.map((t) => t.uid)).toEqual(['ordinary'])
@@ -229,7 +229,7 @@ describe('collectHomeSummary: hours are the Hours page’s hours', () => {
        VALUES (@workspace, @id, 'Supervision', @date, @start, @end, 'h', @task)`
     ).run({ workspace: w, id, task, date: '2026-10-14', start: '14:00', end: '15:00', ...over })
   }
-  const insertLecture = (id: string, task: string, over: Partial<TrainingIndexRow> = {}): void =>
+  const insertTraining = (id: string, task: string, over: Partial<TrainingIndexRow> = {}): void =>
     upsertTraining(db, {
       workspace: 'research',
       id,
@@ -269,11 +269,11 @@ describe('collectHomeSummary: hours are the Hours page’s hours', () => {
   const hours = (years: Record<string, TrackingYear>): ReturnType<typeof collect>['hours'] =>
     collect(source(years)).hours
 
-  it('counts a meeting and a lecture that have a task and times, as the Hours page does', () => {
+  it('counts a meeting and a training that have a task and times, as the Hours page does', () => {
     task('m1', { due: null, title: 'Supervision' })
     task('l1', { due: null, title: 'Plotly' })
     insertMeeting('research', 'm', 'm1')
-    insertLecture('l', 'l1')
+    insertTraining('l', 'l1')
     const h = hours({ research })
     expect(h.research?.minutes).toBe(30 + 60 + 90)
     expect(h.research?.todayMinutes).toBe(30)
@@ -286,7 +286,7 @@ describe('collectHomeSummary: hours are the Hours page’s hours', () => {
     insertMeeting('research', 'gone', 'nope')
     insertMeeting('research', 'noend', 'm1', { end: null })
     insertMeeting('research', 'future', 'm1', { date: '2026-10-16' })
-    insertLecture('autoonly', 'auto')
+    insertTraining('autoonly', 'auto')
     expect(hours({ research }).research?.minutes).toBe(30)
   })
 
@@ -310,9 +310,9 @@ describe('collectHomeSummary: hours are the Hours page’s hours', () => {
     expect(hours({ research: linked }).research?.minutes).toBe(30 + 60)
   })
 
-  it('a time tracked on the lecture’s self-study task and its session both count', () => {
+  it('a time tracked on the training’s self-study task and its session both count', () => {
     task('l1', { due: null })
-    insertLecture('l', 'l1')
+    insertTraining('l', 'l1')
     const studied: TrackingYear = {
       ...research,
       adjusts: [

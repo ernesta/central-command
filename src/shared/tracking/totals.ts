@@ -218,7 +218,7 @@ export function setTaskMinutes(
 
 /**
  * Delete a task's saved time for a day: its ended sessions and its typed time. A running session is never touched (Discard
- * is for that), nor is a derived block (a meeting or lecture, edited in its note), and history linked to a task (`earlier`) is kept, since the task's ClickUp time holds it. Nothing is recalculated:
+ * is for that), nor is a derived block (a meeting or training, edited in its note), and history linked to a task (`earlier`) is kept, since the task's ClickUp time holds it. Nothing is recalculated:
  * every other session keeps its frozen minutes, so the carry does not move. `client` is the row's own, as shown.
  */
 export function deleteTaskTime(

@@ -32,7 +32,7 @@ export interface Session {
   earlier?: true
 }
 
-/** Where derived time comes from: a meeting note, or a training note (a lecture's own session). */
+/** Where derived time comes from: a meeting note, or a training note (a training's own session). */
 export type DerivedKind = 'meeting' | 'training'
 
 /** Typed time for a task on a day, signed, in multiples of 15 minutes. */

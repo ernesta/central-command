@@ -53,7 +53,7 @@ const meeting = (over: Partial<MeetingIndexRow> = {}): MeetingIndexRow => ({
   ...over
 })
 
-const lecture = (over: Partial<TrainingIndexRow> = {}): TrainingIndexRow => ({
+const training = (over: Partial<TrainingIndexRow> = {}): TrainingIndexRow => ({
   workspace: 'research',
   id: '2026-10-13 Plotly',
   date: '2026-10-13',
@@ -79,7 +79,7 @@ const lecture = (over: Partial<TrainingIndexRow> = {}): TrainingIndexRow => ({
 
 const sources = (over: Partial<DerivedSources> = {}): DerivedSources => ({
   meetings: [meeting()],
-  lectures: [lecture()],
+  trainings: [training()],
   tasks: [task('m1', 'Supervision', { list: 'Meetings' }), task('l1', 'Plotly')],
   clients: null,
   today: now.date,
@@ -89,7 +89,7 @@ const sources = (over: Partial<DerivedSources> = {}): DerivedSources => ({
 const research = emptyYear('2026-09-14', DEFAULT_PLAN)
 
 describe('shownYear', () => {
-  it('adds a meeting’s and a lecture’s own session to the stored year, as ended sessions marked derived', () => {
+  it('adds a meeting’s and a training’s own session to the stored year, as ended sessions marked derived', () => {
     const year = shownYear(research, sources())
     expect(year.sessions.map((s) => [s.date, s.start, s.end, s.derived?.kind])).toEqual([
       ['2026-10-14', '14:00:00', '15:00:00', 'meeting'],
@@ -103,7 +103,7 @@ describe('shownYear', () => {
     const before = JSON.stringify(research)
     shownYear(research, sources())
     expect(JSON.stringify(research)).toBe(before)
-    expect(shownYear(research, sources({ meetings: [], lectures: [] }))).toBe(research)
+    expect(shownYear(research, sources({ meetings: [], trainings: [] }))).toBe(research)
   })
 
   it('leaves out what has not happened, has no task, no end time, or whose task is gone', () => {
@@ -116,7 +116,7 @@ describe('shownYear', () => {
           meeting({ id: 'open', end: null }),
           meeting({ id: 'gone', task: 'nope' })
         ],
-        lectures: []
+        trainings: []
       })
     )
     expect(year).toBe(research)
@@ -132,7 +132,7 @@ describe('shownYear', () => {
       work,
       sources({
         meetings: [meeting({ workspace: 'work' })],
-        lectures: [],
+        trainings: [],
         tasks,
         clients: ['Impact', 'Luminos']
       })
@@ -144,7 +144,7 @@ describe('shownYear', () => {
       work,
       sources({
         meetings: [meeting({ workspace: 'work' })],
-        lectures: [],
+        trainings: [],
         tasks: [task('m1', 'Planning', { workspace: 'work', list: 'Elsewhere' })],
         clients: ['Impact', 'Luminos']
       })
@@ -166,12 +166,12 @@ describe('shownYear', () => {
         }
       ]
     }
-    const shown = shownYear(earlier, sources({ lectures: [] }))
+    const shown = shownYear(earlier, sources({ trainings: [] }))
     expect(shown.sessions).toHaveLength(0)
     expect(dayMinutes(shown, '2026-10-14', now)).toBe(60)
   })
 
-  it('keeps a lecture’s session and the time typed on its self-study task apart: both count', () => {
+  it('keeps a training’s session and the time typed on its self-study task apart: both count', () => {
     const typed = {
       ...research,
       adjusts: [
@@ -190,10 +190,10 @@ describe('shownYear', () => {
 })
 
 describe('derivedEntries', () => {
-  it('has a lecture only when the workspace gave lectures, and labels it “Series: title”', () => {
+  it('has a training only when the workspace gave trainings, and labels it “Series: title”', () => {
     const entries = derivedEntries(sources({ meetings: [] }))
     expect(entries).toHaveLength(1)
     expect(entries[0].label).toBe('PS5210: Plotly')
-    expect(derivedEntries(sources({ meetings: [], lectures: [] }))).toEqual([])
+    expect(derivedEntries(sources({ meetings: [], trainings: [] }))).toEqual([])
   })
 })

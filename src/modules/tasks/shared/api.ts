@@ -23,7 +23,7 @@ export interface CreateTaskInput {
   parentUid?: string | null
   recurrence?: Recurrence | null
   tags?: string[]
-  /** Set by the page that makes a meeting's or lecture's task, so the app knows it is the session's own. */
+  /** Set by the page that makes a meeting's or training's task, so the app knows it is the session's own. */
   ownKind?: OwnKind | null
 }
 
@@ -64,7 +64,7 @@ export interface TasksApi {
   /** Write a readable copy of every task now (the app also writes one a day). Resolves with the file's name. */
   snapshot(): Promise<string>
   /**
-   * The uids of the workspace's session tasks: a meeting's own task and a training lecture's own task. Hours does not offer them
+   * The uids of the workspace's session tasks: a meeting's own task and a training's own task. Hours does not offer them
    * (their time is typed in the note); a task the user chose for a meeting is not one.
    */
   sessionTaskUids(workspace: TaskWorkspace): Promise<string[]>

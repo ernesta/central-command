@@ -34,7 +34,7 @@ export function MeetingHoursNote({
 }: {
   workspace: HoursWorkspace
   id: string
-  /** What it needs of a note: a meeting's, or a lecture's (`task` is its uid, '' for none). */
+  /** What it needs of a note: a meeting's, or a training's (`task` is its uid, '' for none). */
   meta: Pick<MeetingMeta, 'task' | 'date' | 'start' | 'end'>
   kind?: DerivedKind
   /** `clashes`: only the overlap (a training entry draws it apart from its task card, where `HoursLine` goes). */

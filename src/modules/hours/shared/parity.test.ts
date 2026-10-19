@@ -64,7 +64,7 @@ const meeting = (over: Partial<MeetingIndexRow> = {}): MeetingIndexRow => ({
   ...over
 })
 
-const lecture = (over: Partial<TrainingIndexRow> = {}): TrainingIndexRow => ({
+const training = (over: Partial<TrainingIndexRow> = {}): TrainingIndexRow => ({
   workspace: 'research',
   id: '2026-10-13 Plotly',
   date: '2026-10-13',
@@ -91,7 +91,7 @@ const lecture = (over: Partial<TrainingIndexRow> = {}): TrainingIndexRow => ({
 const stored = {
   ...emptyYear('2026-09-21', DEFAULT_PLAN),
   adjusts: [
-    // self-study on the lecture's own task, and an hour of something else
+    // self-study on the training's own task, and an hour of something else
     {
       id: 's',
       date: '2026-10-13',
@@ -105,7 +105,7 @@ const stored = {
 
 const sources = (over: Partial<DerivedSources> = {}): DerivedSources => ({
   meetings: [meeting()],
-  lectures: [lecture()],
+  trainings: [training()],
   tasks: [
     task('m1', 'Supervision', { list: 'Meetings' }),
     task('l1', 'Plotly', { parentUid: 'p', list: '' }),
@@ -129,7 +129,7 @@ describe('hours counted the same way everywhere (Research)', () => {
   it('the Hours page’s days add up to its week, and Home’s figure is that week', () => {
     const days = week(shown).map((d) => dayMinutes(shown, d, now))
     expect(days.reduce((a, b) => a + b, 0)).toBe(weekMinutes(shown, thisWeek(shown, now), now))
-    // 60 meeting + 90 lecture + 30 self-study + 60 typed
+    // 60 meeting + 90 training + 30 self-study + 60 typed
     expect(weekMinutes(shown, thisWeek(shown, now), now)).toBe(240)
     const home = periodFigures(shown, now)
     expect(home.minutes).toBe(240)
@@ -149,11 +149,11 @@ describe('hours counted the same way everywhere (Research)', () => {
     ])
   })
 
-  it('a task’s Time (the shown year) and the training total (the stored year) give the lecture the same hours', () => {
+  it('a task’s Time (the shown year) and the training total (the stored year) give the training the same hours', () => {
     const onTasks = trackedByTask([shown])
     const study = trackedByTask([stored])
-    const row = lecture()
-    // task Time of the lecture task + the self-study task = the note's total
+    const row = training()
+    // task Time of the training task + the self-study task = the note's total
     expect(entryMinutes(row, study)).toBe(120)
     expect((onTasks.get('l1') ?? 0) + (onTasks.get('s1') ?? 0)).toBe(120)
     // the training year total, per skill and per series agree with it
@@ -171,10 +171,10 @@ describe('hours counted the same way everywhere (Research)', () => {
     expect(onTasks.get('l1')).toBe(90)
   })
 
-  it('a lecture that is not a whole number of quarter hours: Hours and the training log both report to the quarter', () => {
+  it('a training that is not a whole number of quarter hours: Hours and the training log both report to the quarter', () => {
     // Once a known difference (docs/DECISIONS.md, "Meetings' derived hours"); since 18 Oct 2026 every report of time is to the quarter hour,
     // the session's length included.
-    const odd = lecture({
+    const odd = training({
       id: '2026-10-12 Odd',
       date: '2026-10-12',
       start: '09:00',
@@ -184,7 +184,7 @@ describe('hours counted the same way everywhere (Research)', () => {
     })
     const withOdd = shownYear(
       stored,
-      sources({ lectures: [odd], tasks: [...sources().tasks, task('l2', 'Odd')] })
+      sources({ trainings: [odd], tasks: [...sources().tasks, task('l2', 'Odd')] })
     )
     const hoursPage = trackedByTask([withOdd]).get('l2')
     const trainingLog = entryMinutes(odd, trackedByTask([stored]))
@@ -205,7 +205,7 @@ describe('hours counted the same way everywhere (Work)', () => {
     work,
     sources({
       meetings: [meeting({ workspace: 'work', date: '2026-10-13' })],
-      lectures: [],
+      trainings: [],
       tasks: [task('m1', 'Planning', { workspace: 'work', list: 'Luminos' })],
       clients: ['Impact', 'Luminos']
     })

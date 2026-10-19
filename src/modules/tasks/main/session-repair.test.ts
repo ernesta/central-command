@@ -34,7 +34,7 @@ const meeting = (
 const training = (id: string, over: Record<string, string | null> = {}): void => {
   const row = {
     id,
-    title: 'Lecture 1',
+    title: 'Training 1',
     series: 'PS5210',
     date: '2026-10-21',
     end: null,
@@ -175,7 +175,7 @@ describe('planRepair: trainings are left alone', () => {
     const series = store.create({ workspace: 'research', title: 'PS5210', list: 'Training' })
     const study = store.create({
       workspace: 'research',
-      title: 'Lecture 4 self-study',
+      title: 'Training 4 self-study',
       parentUid: series.uid
     })
     training('a', { selfStudy: study.uid })

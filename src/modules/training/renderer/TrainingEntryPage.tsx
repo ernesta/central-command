@@ -16,16 +16,16 @@ import type { Person } from '@shared/people'
 import { formatDate } from '@shared/time'
 import { institutionOptions, seriesOptions } from '../shared/rules'
 import type { TrainingRef } from '../shared/types'
-import { lectureLabel, lectureTaskUid } from '../shared/lecture-entries'
+import { trainingLabel, trainingTaskUid } from '../shared/training-entries'
 import { MeetingHoursNote } from '../../meetings/renderer/MeetingHoursNote'
 import { FilesPanel } from './FilesPanel'
-import { LectureHours } from './LectureHours'
-import { LectureTask } from './LectureTask'
+import { TrainingHours } from './TrainingHours'
+import { TrainingTask } from './TrainingTask'
 import { draftSelfStudyTask } from './self-study-sync'
 import { taskRoute } from '../../tasks/renderer/tasks-paths'
 import { entryRoute, trainingBase, useTrainingWorkspace } from './training-paths'
 import { TrainingMetaFields } from './TrainingMetaFields'
-import { useLectureTask } from './useLectureTask'
+import { useTrainingTask } from './useTrainingTask'
 import { useSelfStudyTask } from './useSelfStudyTask'
 import { useTrainingSession } from './useTrainingSession'
 import styles from './TrainingEntryPage.module.css'
@@ -72,7 +72,7 @@ function EntryView({
   const navigate = useNavigate()
   const location = useLocation()
   const { workspace } = entryRef
-  // Life has no lecture task (an hours subtask in Tasks), no type and no skills.
+  // Life has no training task (an hours subtask in Tasks), no type and no skills.
   const research = workspace === 'research'
   const { session, snapshot } = useTrainingSession(entryRef, onRenamed)
   const [people, setPeople] = useState<Person[]>([])
@@ -109,12 +109,12 @@ function EntryView({
   }, [ready])
 
   const { meta, body, save, error, conflict, reloadedFromDisk, problems, updatedAt } = snapshot
-  const { tasks } = useLectureTask(meta, ready, (task) => session.setMeta({ task }))
+  const { tasks } = useTrainingTask(meta, ready, (task) => session.setMeta({ task }))
   const { ensure } = useSelfStudyTask(meta, ready, tasks, (selfStudyTask) =>
     session.setMeta({ selfStudy: selfStudyTask })
   )
-  const lectureUid = lectureTaskUid(meta.task)
-  const lectureTask = lectureUid ? tasks?.find((t) => t.uid === lectureUid) : undefined
+  const trainingUid = trainingTaskUid(meta.task)
+  const trainingTask = trainingUid ? tasks?.find((t) => t.uid === trainingUid) : undefined
   useDocumentTitle(meta.title)
 
   // Back goes to wherever the user came from (the list); with no history, the list.
@@ -144,15 +144,15 @@ function EntryView({
       }
       const ref = session.getRef()
       const content = await window.api.training.delete(ref)
-      // The lecture's tasks go with it (to the Tasks trash; the series' self-study task stays); the hours tracked on them stay in Hours.
+      // The training's tasks go with it (to the Tasks trash; the series' self-study task stays); the hours tracked on them stay in Hours.
       const trashedTasks: string[] = []
-      for (const uid of [lectureUid, meta.selfStudy]) {
+      for (const uid of [trainingUid, meta.selfStudy]) {
         if (!uid) continue
         try {
           await window.api.tasks.delete(uid)
           trashedTasks.push(uid)
         } catch (e) {
-          console.error('Could not delete the lecture task:', e)
+          console.error('Could not delete the training task:', e)
         }
       }
       if (!untouched) {
@@ -184,7 +184,7 @@ function EntryView({
     )
   }
 
-  const heading = `${lectureLabel(meta.series, meta.title || 'Untitled')} · ${meta.date ? formatDate(meta.date) : 'No date yet'}`
+  const heading = `${trainingLabel(meta.series, meta.title || 'Untitled')} · ${meta.date ? formatDate(meta.date) : 'No date yet'}`
 
   return (
     <div className={styles.page}>
@@ -263,8 +263,8 @@ function EntryView({
         onChange={(patch) => session.setMetaUndoable(patch)}
         onAddPerson={addPerson}
         workspace={workspace}
-        lectureTaskTo={
-          research && lectureTask ? taskRoute(lectureTask.workspace, lectureTask.uid) : undefined
+        trainingTaskTo={
+          research && trainingTask ? taskRoute(trainingTask.workspace, trainingTask.uid) : undefined
         }
       />
 
@@ -278,7 +278,7 @@ function EntryView({
       />
 
       {research && meta.task && (
-        <LectureTask
+        <TrainingTask
           task={meta.task}
           series={meta.series}
           tasks={tasks}
@@ -286,8 +286,8 @@ function EntryView({
           selfStudy={tasks?.find((t) => t.uid === meta.selfStudy)}
           draft={draftSelfStudyTask(meta)}
         >
-          <LectureHours meta={meta} tasks={tasks} ensure={ensure} />
-        </LectureTask>
+          <TrainingHours meta={meta} tasks={tasks} ensure={ensure} />
+        </TrainingTask>
       )}
 
       <DocSplit

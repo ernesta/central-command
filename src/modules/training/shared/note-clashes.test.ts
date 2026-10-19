@@ -120,7 +120,7 @@ describe('notesOverlapping', () => {
     expect(notesOverlapping(spans, self('x'), '2026-10-20', '10:00', '09:00')).toEqual([])
   })
 
-  it('labels a lecture with its series', () => {
+  it('labels a training with its series', () => {
     const spans = noteSpans([], [training({ series: 'PS5210', title: 'fNIRS' })])
     expect(clash(spans, 'x', '2026-10-20', '09:00', '10:00')).toEqual(['PS5210: fNIRS'])
   })

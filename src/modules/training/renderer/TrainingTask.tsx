@@ -3,14 +3,14 @@ import { Button } from '@renderer/components/Button'
 import { Panel } from '@renderer/components/Panel'
 import { taskRoute } from '../../tasks/renderer/tasks-paths'
 import type { Task } from '../../tasks/shared/types'
-import styles from './LectureTask.module.css'
+import styles from './TrainingTask.module.css'
 
 /**
- * The task a lecture's hours go to: its self-study task (made when Start or Add time is first pressed; the lecture's own task, the
- * session, is made and kept in step automatically by `useLectureTask` and linked from the note's details). A note made before
- * lectures had tasks shows nothing. One whose lecture task was deleted says so and offers to make it again; nothing is remade by itself.
+ * The task a training's hours go to: its self-study task (made when Start or Add time is first pressed; the training's own task, the
+ * session, is made and kept in step automatically by `useTrainingTask` and linked from the note's details). A note made before
+ * trainings had tasks shows nothing. One whose training task was deleted says so and offers to make it again; nothing is remade by itself.
  */
-export function LectureTask({
+export function TrainingTask({
   task,
   series,
   tasks,
@@ -24,11 +24,11 @@ export function LectureTask({
   series: string | null
   tasks: readonly Task[] | null
   onRemake: () => void
-  /** The lecture's self-study task, once it exists. */
+  /** The training's self-study task, once it exists. */
   selfStudy?: Task
   /** The self-study task as it will be made, shown (not linked) until Start or Add time makes it. */
   draft: Task
-  /** The lecture's hours, on the same line as its task. */
+  /** The training's hours, on the same line as its task. */
   children?: React.ReactNode
 }): React.JSX.Element | null {
   if (!task || tasks === null) return null

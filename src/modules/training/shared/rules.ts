@@ -4,7 +4,7 @@ import { formatDate, durationMinutes } from '@shared/time'
 import { formatHours, minutesPerSkill } from '@shared/skills'
 import { findByName } from '@shared/people'
 import type { Person } from '@shared/people'
-import { lectureTaskUid } from './lecture-entries'
+import { trainingTaskUid } from './training-entries'
 import { TRAINING_MODE_LABELS, type TrainingIndexRow, type TrainingMode } from './types'
 
 /** An entry that has not happened yet: after `today` (YYYY-MM-DD), or planned with no date yet. */
@@ -30,11 +30,11 @@ export function entriesInYear(rows: readonly TrainingIndexRow[], year: string): 
   return rows.filter((r) => inYear(r.date, year))
 }
 
-/** Minutes tracked on each task (by uid) in Hours: the timers and typed time on a lecture's tasks. */
+/** Minutes tracked on each task (by uid) in Hours: the timers and typed time on a training's tasks. */
 export type SelfStudy = ReadonlyMap<string, number>
 
 /**
- * A lecture's hours as one total, with no split: the note's own session (its start and end), plus everything tracked on its lecture
+ * A training's hours as one total, with no split: the note's own session (its start and end), plus everything tracked on its training
  * task (older notes keep theirs) and on its self-study task. A note with neither task has only its session, exactly as before.
  * Null when there is nothing (no times, no tracked time).
  */
@@ -48,17 +48,17 @@ export function entryMinutes(
 
 /**
  * The same hours in two parts, for the places that show them apart (cards, rows, the table): `training` is the session plus
- * what is tracked on the lecture's own task, `selfStudy` what is tracked on its self-study task. Null when there is nothing.
+ * what is tracked on the training's own task, `selfStudy` what is tracked on its self-study task. Null when there is nothing.
  */
 export function entryParts(
   row: Pick<TrainingIndexRow, 'start' | 'end' | 'task' | 'selfStudy'>,
   tracked?: SelfStudy
 ): { training: number; selfStudy: number } | null {
   const session = durationMinutes(row.start, row.end)
-  const lecture = lectureTaskUid(row.task)
+  const training = trainingTaskUid(row.task)
   const study = row.selfStudy || null
-  const own = lecture ? (tracked?.get(lecture) ?? 0) : 0
-  const selfStudy = study && study !== lecture ? (tracked?.get(study) ?? 0) : 0
+  const own = training ? (tracked?.get(training) ?? 0) : 0
+  const selfStudy = study && study !== training ? (tracked?.get(study) ?? 0) : 0
   return session === null && own + selfStudy === 0
     ? null
     : { training: (session ?? 0) + own, selfStudy }

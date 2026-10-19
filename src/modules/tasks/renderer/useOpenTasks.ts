@@ -5,7 +5,7 @@ import { TASK_WORKSPACES, type Task, type TaskWorkspace } from '../shared/types'
 
 /**
  * The tasks that are not done in a workspace (top-level and subtasks), for Hours to offer by name and to link time to. A session task
- * (a meeting's own task, a training lecture's own task) is left out: its time is typed in the note, and a lecture's study hours go to
+ * (a meeting's own task, a training's own task) is left out: its time is typed in the note, and a training's study hours go to
  * its self-study task. Empty for a workspace without tasks. Read again when the tasks change.
  */
 export function useOpenTasks(workspace: Workspace): Task[] {

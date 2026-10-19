@@ -47,13 +47,13 @@
   font-size: var(--text-14);
   font-variant-numeric: tabular-nums;
 }
-/* Duration and, beside it, the way to the lecture's own task (the session). */
+/* Duration and, beside it, the way to the training's own task (the session). */
 .durationRow {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-/* The lecture's own task, as an icon. */
+/* The training's own task, as an icon. */
 .taskLink {
   display: inline-flex;
   align-items: center;

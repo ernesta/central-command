@@ -33,7 +33,7 @@ export function TrainingTable({
   rows: TrainingIndexRow[]
   people: Person[]
   today: string
-  /** Minutes tracked on each lecture's task, so a duration is the lecture's total. */
+  /** Minutes tracked on each training's task, so a duration is the training's total. */
   selfStudy?: SelfStudy
   /** Life's log has no type or skills columns (they are Inkpath's). */
   workspace?: TrainingWorkspace

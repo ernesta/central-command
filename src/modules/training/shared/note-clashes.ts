@@ -2,7 +2,7 @@ import type { DerivedKind } from '@shared/tracking/types'
 import { noteKey, overlapping, type Occupied } from '../../meetings/shared/meeting-entries'
 import type { MeetingIndexRow } from '../../meetings/shared/types'
 import type { HoursWorkspace } from '../../hours/shared/workspaces'
-import { lectureLabel } from './lecture-entries'
+import { trainingLabel } from './training-entries'
 import type { TrainingIndexRow } from './types'
 
 /** A meeting or training note on the clock: needs a date and both times, nothing else (no task, no series, any date). */
@@ -45,7 +45,7 @@ export function noteSpans(
         date: t.date,
         start: t.start,
         end: t.end,
-        label: lectureLabel(t.series, t.title || 'Untitled')
+        label: trainingLabel(t.series, t.title || 'Untitled')
       })
     }
   }

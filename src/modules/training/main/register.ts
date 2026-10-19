@@ -55,7 +55,7 @@ function asRef(value: unknown): TrainingRef {
 }
 
 function register({ db, paths, settings }: MainContext): () => void {
-  // Read only: the Hours files, for the time tracked on each lecture's task (its self-study) in the PDF.
+  // Read only: the Hours files, for the time tracked on each training's task (its self-study) in the PDF.
   const tracking = new TrackingStore(paths.time, {
     starts: () => settings.get().yearStarts,
     now: trackingMoment

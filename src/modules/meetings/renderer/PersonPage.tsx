@@ -11,7 +11,7 @@ import {
 import { formatDate } from '@shared/time'
 import { PersonTasks } from '@modules/tasks/renderer/PersonTasks'
 import { entryRoute } from '@modules/training/renderer/training-paths'
-import { lectureLabel } from '@modules/training/shared/lecture-entries'
+import { trainingLabel } from '@modules/training/shared/training-entries'
 import { rowTimeLine } from '@modules/training/shared/row-time'
 import { TRAINING_MODE_LABELS } from '@modules/training/shared/types'
 import { meetingRoute } from './meetings-paths'
@@ -53,7 +53,7 @@ export function PersonPage(): React.JSX.Element {
     key: t.id,
     to: entryRoute(t.id),
     date: t.date ? formatDate(t.date) : 'No date yet',
-    title: lectureLabel(t.series, t.title || 'Untitled'),
+    title: trainingLabel(t.series, t.title || 'Untitled'),
     people: [],
     note: rowTimeLine(t, t.mode ? TRAINING_MODE_LABELS[t.mode] : null)
   }))

@@ -40,7 +40,7 @@ describe('runQuickAction', () => {
     expect(create.mock.lastCall?.[0]).not.toHaveProperty('series')
   })
 
-  it('starts a training entry in Life with no lecture task, and in Research with one', async () => {
+  it('starts a training entry in Life with no training task, and in Research with one', async () => {
     const create = vi.fn(async (...input: unknown[]) => ({ input, ref: { id: 'e1' } }))
     ;(window as unknown as { api: unknown }).api = { training: { create } }
     const navigate = vi.fn()

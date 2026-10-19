@@ -57,7 +57,7 @@ export function withDerived(year: TrackingYear, entries: readonly DerivedEntry[]
   return added.length === 0 ? year : { ...year, sessions: [...year.sessions, ...added] }
 }
 
-/** One read-only line of a day: a meeting or a lecture, with the minutes it reports. */
+/** One read-only line of a day: a meeting or a training, with the minutes it reports. */
 export interface DerivedRow {
   kind: DerivedKind
   /** The note. */

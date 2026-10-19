@@ -3,7 +3,7 @@ import { selfStudyTaskChanges, type LocalMoment } from '../../tasks/shared/sessi
 import { listTasks } from '../../tasks/main/repository'
 import type { TasksStore } from '../../tasks/main/tasks-store'
 import type { Task } from '../../tasks/shared/types'
-import { TRAINING_LIST, type ParentTarget } from '../shared/lecture-task'
+import { TRAINING_LIST, type ParentTarget } from '../shared/training-task'
 import { isSelfStudyOwn, planSelfStudyTask } from '../shared/self-study-task'
 import type { TrainingRef } from '../shared/types'
 import { listTrainingRows } from './repository'

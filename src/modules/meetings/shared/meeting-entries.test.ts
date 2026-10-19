@@ -142,15 +142,15 @@ describe('occupiedByMeetings', () => {
   })
 })
 
-describe('a meeting and a lecture of one name', () => {
+describe('a meeting and a training of one name', () => {
   const e = { id: 'a', date: '2026-09-24', start: '14:00', end: '15:00', label: 'Same' }
 
   it('are two things: a note is never taken for its twin of the other kind', () => {
     const [meeting] = occupiedByMeetings([e], '2026-09-24', 'research')
-    const [lecture] = occupiedByMeetings([{ ...e, kind: 'training' }], '2026-09-24', 'research')
-    expect(meeting?.meeting).not.toBe(lecture?.meeting)
-    // The lecture does not overlap itself, but it does overlap the meeting at the same time.
-    expect(overlapping('14:00', '15:00', [lecture!], 0, lecture!.meeting)).toEqual([])
-    expect(overlapping('14:00', '15:00', [meeting!], 0, lecture!.meeting)).toEqual([meeting])
+    const [training] = occupiedByMeetings([{ ...e, kind: 'training' }], '2026-09-24', 'research')
+    expect(meeting?.meeting).not.toBe(training?.meeting)
+    // The training does not overlap itself, but it does overlap the meeting at the same time.
+    expect(overlapping('14:00', '15:00', [training!], 0, training!.meeting)).toEqual([])
+    expect(overlapping('14:00', '15:00', [meeting!], 0, training!.meeting)).toEqual([meeting])
   })
 })

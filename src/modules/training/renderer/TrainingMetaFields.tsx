@@ -30,8 +30,8 @@ interface TrainingMetaFieldsProps {
   onAddPerson: (name: string) => Promise<Person>
   /** Life's entries have no type or skills (they are Inkpath's). */
   workspace?: TrainingWorkspace
-  /** Where the lecture's own task (the session) is, once it exists: shown as a small icon link. */
-  lectureTaskTo?: string
+  /** Where the training's own task (the session) is, once it exists: shown as a small icon link. */
+  trainingTaskTo?: string
 }
 
 const MODE_OPTIONS = TRAINING_MODES.map((value) => ({
@@ -48,7 +48,7 @@ export function TrainingMetaFields({
   onChange,
   onAddPerson,
   workspace = 'research',
-  lectureTaskTo
+  trainingTaskTo
 }: TrainingMetaFieldsProps): React.JSX.Element {
   const research = workspace === 'research'
   const duration = durationMinutes(meta.start, meta.end)
@@ -115,10 +115,10 @@ export function TrainingMetaFields({
           <output className={styles.calc} aria-labelledby="training-duration-label">
             {duration === null ? '—' : formatDuration(duration)}
           </output>
-          {lectureTaskTo && (
+          {trainingTaskTo && (
             <Link
               className={styles.taskLink}
-              to={lectureTaskTo}
+              to={trainingTaskTo}
               aria-label="Open task"
               title="Open task"
             >

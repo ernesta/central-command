@@ -1,6 +1,6 @@
 import type { TasksApi } from '../../tasks/shared/api'
 import type { Task } from '../../tasks/shared/types'
-import { strandedParent, TRAINING_LIST, type ParentTarget } from '../shared/lecture-task'
+import { strandedParent, TRAINING_LIST, type ParentTarget } from '../shared/training-task'
 import {
   planSelfStudyTask,
   selfStudyTitle,
@@ -50,7 +50,7 @@ export function draftSelfStudyTask(note: SelfStudyNote): Task {
 }
 
 /**
- * Makes the lecture's self-study task, because time is being put on it: the series' task if it is missing, then the subtask (or a
+ * Makes the training's self-study task, because time is being put on it: the series' task if it is missing, then the subtask (or a
  * top-level task when the note has no series). Resolves with the task that now exists. One that exists already is returned as it is.
  */
 export async function makeSelfStudyTask(
@@ -79,7 +79,7 @@ export async function makeSelfStudyTask(
 
 /**
  * Brings an existing self-study task in step with the note (its title, and the series task it sits under). A series task this page
- * made that the lecture has now left, with nothing else in it, goes to the (restorable) trash.
+ * made that the training has now left, with nothing else in it, goes to the (restorable) trash.
  */
 export async function syncSelfStudyTask(
   api: SelfStudyTasksApi,

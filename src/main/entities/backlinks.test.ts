@@ -75,14 +75,14 @@ describe('contextOf', () => {
     mkdirSync(join(root, 'training'))
     put(
       'training',
-      'Lecture.md',
-      '---\ntitle: Lecture 1\nseries: PS5210\n---\n\n[Kathy](cc://person/Kathy%20Rastle)\n'
+      'Training.md',
+      '---\ntitle: Training 1\nseries: PS5210\n---\n\n[Kathy](cc://person/Kathy%20Rastle)\n'
     )
     put('training', 'Bare.md', '---\ntitle: Workshop\n---\n\n[Kathy](cc://person/Kathy%20Rastle)\n')
     const found = await findBacklinks(TARGET, [
       { kind: 'training', workspace: 'research', dir: join(root, 'training') }
     ])
-    expect(found.map((f) => f.title)).toEqual(['PS5210: Lecture 1', 'Workshop'])
+    expect(found.map((f) => f.title)).toEqual(['PS5210: Training 1', 'Workshop'])
   })
 
   it('shortens a long line and drops markdown marks', () => {

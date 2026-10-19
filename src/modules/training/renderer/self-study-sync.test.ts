@@ -65,7 +65,7 @@ describe('makeSelfStudyTask', () => {
     expect(made.has(f.tasks[0].uid)).toBe(true)
   })
 
-  it('puts a second lecture under the same series task', async () => {
+  it('puts a second training under the same series task', async () => {
     const f = fake([])
     const made = new Set<string>()
     await makeSelfStudyTask(f.api, note, made)
@@ -74,7 +74,7 @@ describe('makeSelfStudyTask', () => {
     expect(second.parentUid).toBe(f.tasks[0].uid)
   })
 
-  it('makes a top-level task in Training for a lecture with no series', async () => {
+  it('makes a top-level task in Training for a training with no series', async () => {
     const f = fake([])
     const task = await makeSelfStudyTask(f.api, { ...note, series: null }, new Set())
     expect(task).toMatchObject({ title: 'Plotly self-study', list: 'Training', parentUid: null })
@@ -123,7 +123,7 @@ describe('syncSelfStudyTask', () => {
     expect(f.deleted).toEqual([old])
   })
 
-  it('keeps a series task it did not make, and one that still has other lectures', async () => {
+  it('keeps a series task it did not make, and one that still has other trainings', async () => {
     const f = await setup()
     const mine = f.tasks[0].uid
     await makeSelfStudyTask(f.api, { ...note, title: 'Dash' }, f.made)

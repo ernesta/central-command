@@ -283,7 +283,7 @@ describe("deleting a task's time for a day", () => {
     ])
   })
 
-  it('has no row for a meeting or lecture: derived time is not a task row, and is never removed', () => {
+  it('has no row for a meeting or training: derived time is not a task row, and is never removed', () => {
     let y = worked(D, [['Deck', '09:00:00', '09:30:00']])
     y = withDerived(y, [
       { id: 'm1', date: D, start: '11:00', end: '12:00', label: 'Deck', task: 'cc://task/t1' }

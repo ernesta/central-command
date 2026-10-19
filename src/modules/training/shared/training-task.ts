@@ -12,18 +12,18 @@ export const bareTitle = (title: string): string => {
   return fold(trimmed).startsWith(fold(COMPLETE)) ? trimmed.slice(COMPLETE.length).trim() : trimmed
 }
 
-/** The series task a lecture sits under: one that exists, or the one to create. */
+/** The series task a training sits under: one that exists, or the one to create. */
 export type ParentTarget = { uid: string } | { title: string; list: string }
 
 /** What a training note's task needs done now. Pure: it only says, the page does it. */
-export type LecturePlan =
+export type TrainingPlan =
   | { kind: 'none' }
   /** A marked note with no task yet: make it, under the series task, or on its own (`parent: null`) in Training. */
   | { kind: 'create'; title: string; parent: ParentTarget | null; due?: string }
   /** The task follows the note: its title, and where it sits (under the series task, or `parent: null` for top level in Training). */
   | { kind: 'sync'; uid: string; title?: string; parent?: ParentTarget | null; due?: string }
 
-export interface LectureNote {
+export interface TrainingNote {
   /** The note's `task:` value: a task uid, `auto` or ''. */
   task: string
   series: string | null
@@ -42,11 +42,11 @@ export function parentFor(series: string, tasks: readonly Task[]): ParentTarget 
   return found ? { uid: found.uid } : { title: name, list: TRAINING_LIST }
 }
 
-/** A title that names a lecture: not empty, not the placeholder. */
+/** A title that names a training: not empty, not the placeholder. */
 const named = (title: string): boolean => title !== '' && title !== 'Untitled'
 
 /**
- * What a training note's lecture task needs. The task is always in step with the note, with no clicking:
+ * What a training note's training task needs. The task is always in step with the note, with no clicking:
  *
  * - An older note (`task` empty) is left alone, always.
  * - A marked note (`auto`) gets its task once it has a series (a subtask under the series task) or a title (a task of its own, top
@@ -54,12 +54,12 @@ const named = (title: string): boolean => title !== '' && title !== 'Untitled'
  * - The task takes the note's title, is a subtask under the task its series names, and is a task of its own while the note has no
  *   series: adding a series moves it under the series task, clearing it takes it back out.
  * - The task is due on the note's date, and follows it.
- * - A task that is not the lecture's own is never renamed or moved: a subtask is always the lecture's, a top-level task only when
+ * - A task that is not the training's own is never renamed or moved: a subtask is always the training's, a top-level task only when
  *   it is in Training with nothing under it. A task that is gone is not made again by itself.
  *
  * `tasks` is every task of the workspace (subtasks too).
  */
-export function planLectureTask(note: LectureNote, tasks: readonly Task[]): LecturePlan {
+export function planTrainingTask(note: TrainingNote, tasks: readonly Task[]): TrainingPlan {
   const series = (note.series ?? '').trim()
   const title = note.title.trim()
   const due = note.date || undefined
@@ -114,16 +114,16 @@ export function planLectureTask(note: LectureNote, tasks: readonly Task[]): Lect
 }
 
 /**
- * Whether a task a training note's `task:` names is the lecture's own, so the app may date, close and hide it: marked `lecture`, a
+ * Whether a task a training note's `task:` names is the training's own, so the app may date, close and hide it: marked `training`, a
  * subtask, or a top-level task in Training with nothing under it. Anything else is a task the user pointed the note at.
  */
-export function isLectureOwn(own: Task, tasks: readonly Task[]): boolean {
+export function isTrainingOwn(own: Task, tasks: readonly Task[]): boolean {
   if (own.ownKind === 'training' || own.parentUid) return true
   return fold(own.list) === fold(TRAINING_LIST) && !tasks.some((t) => t.parentUid === own.uid)
 }
 
 /**
- * A series task this note's page made a moment ago (while the series was still being typed) that the lecture has now left, with
+ * A series task this note's page made a moment ago (while the series was still being typed) that the training has now left, with
  * nothing else in it: the one to put in the trash. Only a task in `made` is ever named, so a task the user made is never touched,
  * and the trash is restorable. `tasks` is every live task of the workspace.
  */

@@ -81,7 +81,7 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
         workspace,
         title: 'Untitled',
         date: todayIso(),
-        // Research's entries make their own subtask for the lecture's hours; Life has none.
+        // Research's entries make their own subtask for the training's hours; Life has none.
         ...(workspace === 'research' ? { task: 'auto' as const } : {})
       })
       navigate(entryRoute(file.ref.id, workspace), { state: { isNew: true } })

@@ -20,7 +20,7 @@ export interface TrainingReportInput {
   aimHours: number
   /** Minutes of meetings in the same year, mentioned in one quiet line; 0 to leave it out. */
   meetingMinutes: number
-  /** Minutes tracked on each lecture's subtask; each line is a lecture's total. Left out: sessions only. */
+  /** Minutes tracked on each training's subtask; each line is a training's total. Left out: sessions only. */
   selfStudy?: SelfStudy
 }
 

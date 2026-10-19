@@ -361,7 +361,7 @@ describe('isSafeRelativeFolder', () => {
   })
 })
 
-describe('a lecture task', () => {
+describe('a training task', () => {
   it('a note made with task auto carries the marker; one made without carries none', async () => {
     const marked = await make({ task: 'auto', title: 'Marked' })
     expect(marked.meta.task).toBe('auto')

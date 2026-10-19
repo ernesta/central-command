@@ -10,14 +10,14 @@ import type { HoursWorkspace } from '../shared/workspaces'
 
 /**
  * A workspace's meetings, training notes and tasks, read again whenever any changes, and from them the hours they derive
- * (`meetingEntries`, and in Research `lectureEntries`: a lecture's own session). Nothing is stored: this is the notes' date, start
+ * (`meetingEntries`, and in Research `trainingEntries`: a training's own session). Nothing is stored: this is the notes' date, start
  * and end every time.
  */
 export function useMeetingEntries(workspace: HoursWorkspace, today: string): DerivedEntry[] {
   const [loaded, setLoaded] = useState<{
     workspace: HoursWorkspace
     rows: MeetingIndexRow[]
-    lectures: TrainingIndexRow[]
+    trainings: TrainingIndexRow[]
     tasks: Task[]
   } | null>(null)
   const clients = useWorkClients(workspace)
@@ -30,8 +30,8 @@ export function useMeetingEntries(workspace: HoursWorkspace, today: string): Der
         workspace === 'life' ? Promise.resolve([]) : window.api.meetings.list(workspace),
         workspace === 'research' ? window.api.training.list('research') : Promise.resolve([]),
         window.api.tasks.list(workspace)
-      ]).then(([rows, lectures, tasks]) => {
-        if (!cancelled) setLoaded({ workspace, rows, lectures, tasks })
+      ]).then(([rows, trainings, tasks]) => {
+        if (!cancelled) setLoaded({ workspace, rows, trainings, tasks })
       })
     }
     load()
@@ -52,7 +52,7 @@ export function useMeetingEntries(workspace: HoursWorkspace, today: string): Der
     if (!loaded || loaded.workspace !== workspace) return []
     return derivedEntries({
       meetings: loaded.rows,
-      lectures: loaded.lectures,
+      trainings: loaded.trainings,
       tasks: loaded.tasks,
       clients,
       today

@@ -20,7 +20,7 @@ export interface RowTimeParts {
 /**
  * What every "recent and upcoming" row says about when and how, upcoming or past, training or meeting: the range, the duration and
  * the type of attendance. An end without a start is no time; a start without an end shows the start. `minutes` is the row's total where it has
- * more than its session (a lecture's self-study); it defaults to the session's own length; `selfStudy` follows it as "+ … self-study".
+ * more than its session (a training's self-study); it defaults to the session's own length; `selfStudy` follows it as "+ … self-study".
  */
 export function rowTimeParts(
   row: { start: string | null; end: string | null },

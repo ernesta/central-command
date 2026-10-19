@@ -1,19 +1,19 @@
 import { fold } from '@shared/text'
 import type { Task } from '../../tasks/shared/types'
-import { bareTitle, TRAINING_LIST, type ParentTarget } from './lecture-task'
+import { bareTitle, TRAINING_LIST, type ParentTarget } from './training-task'
 
 const SUFFIX = ' self-study'
 
 /** A title folded, with the first version's middle dot taken out (`PS5210 · self-study`), so tasks made then are still found. */
 const plain = (title: string): string => fold(bareTitle(title)).replace(' · self-study', SUFFIX)
 
-/** The title of a self-study task: the series' own, or a lecture's (`<series> self-study`, `<note title> self-study`). */
+/** The title of a self-study task: the series' own, or a training's (`<series> self-study`, `<note title> self-study`). */
 export const selfStudyTitle = (name: string): string => `${name.trim()}${SUFFIX}`
 
 /** What a training note's self-study task needs done now. Pure: it only says, the page does it. */
 export type SelfStudyPlan =
   | { kind: 'none' }
-  /** Make the lecture's self-study task, under the series' (found or made), or on its own (`parent: null`) in Training. */
+  /** Make the training's self-study task, under the series' (found or made), or on its own (`parent: null`) in Training. */
   | { kind: 'create'; title: string; parent: ParentTarget | null; due?: string }
   /** The task follows the note: its title, where it sits (`parent: null` takes it out of the series for top level in Training), and its date. */
   | { kind: 'sync'; uid: string; title?: string; parent?: ParentTarget | null; due?: string }
@@ -37,10 +37,10 @@ export function selfStudyParentFor(series: string, tasks: readonly Task[]): Pare
   return found ? { uid: found.uid } : { title: name, list: TRAINING_LIST }
 }
 
-/** A title that names a lecture: not empty, not the placeholder. */
+/** A title that names a training: not empty, not the placeholder. */
 const named = (title: string): boolean => title !== '' && title !== 'Untitled'
 
-/** Whether a task is a series' self-study task: the parent a lecture's self-study subtask hangs under. */
+/** Whether a task is a series' self-study task: the parent a training's self-study subtask hangs under. */
 const isSeriesTask = (t: Task | undefined): boolean =>
   !!t && !t.parentUid && fold(t.title).endsWith(fold(SUFFIX))
 

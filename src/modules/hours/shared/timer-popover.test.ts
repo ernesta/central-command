@@ -8,7 +8,7 @@ const task = (uid: string, title: string, extra: Partial<Task> = {}): Task =>
 
 const open = [
   task('1', 'Daily admin'),
-  task('2', 'Lecture', { list: '', parentUid: '1' }),
+  task('2', 'Training', { list: '', parentUid: '1' }),
   task('3', 'Finished', { list: 'Archive', status: 'done' })
 ]
 
@@ -24,7 +24,7 @@ describe('popoverHead', () => {
   })
 
   it("a subtask shows its parent's list; a done task still shows its list; an unknown one shows none", () => {
-    expect(popoverHead({ task: taskKey('2'), label: 'Lecture' }, open, false).line).toBe('Admin')
+    expect(popoverHead({ task: taskKey('2'), label: 'Training' }, open, false).line).toBe('Admin')
     expect(popoverHead({ task: taskKey('3'), label: 'Finished' }, open, false).line).toBe('Archive')
     expect(popoverHead({ task: taskKey('9'), label: 'Gone' }, open, false).line).toBeNull()
   })

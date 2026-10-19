@@ -58,7 +58,7 @@ describe('selfStudyParentFor', () => {
       list: 'Training'
     })
   })
-  it('still finds a series task made with the first version’s middle dot, and renames its lecture task', () => {
+  it('still finds a series task made with the first version’s middle dot, and renames its training task', () => {
     const old = task('p1', 'PS5210 · self-study')
     expect(selfStudyParentFor('PS5210', [old])).toEqual({ uid: 'p1' })
     const oldMine = task('s1', 'Plotly · self-study', { list: '', parentUid: 'p1' })
