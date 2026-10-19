@@ -19,6 +19,7 @@ export const readingsModule: LiveModuleManifest = {
   ],
   landingCard: ReadingsCard,
   search: searchReadings,
+  searchUnscoped: true,
   entities: [readingEntities],
   settingsSection: SyncSummary
 }
