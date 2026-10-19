@@ -1,7 +1,6 @@
 import { normaliseTime } from './front-matter'
+import { localeDate } from './locale-names'
 import { QUARTER } from './tracking/rounding'
-
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 function minutes(time: string | null): number | null {
   const t = time ? normaliseTime(time) : null
@@ -25,11 +24,9 @@ export function formatDuration(totalMinutes: number): string {
   return minutes === 0 ? `${hours} h` : `${hours} h ${minutes} min`
 }
 
-/** "2026-09-24" as "Sep 24, 2026", with no time zone involved. Anything else is returned as it is. */
+/** "2026-09-24" as "Sep 24, 2026" (or "24 Sept 2026"), in the Mac's region, with no time zone involved. Anything else is returned as it is. */
 export function formatDate(date: string): string {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date)
-  if (!m) return date
-  return `${MONTHS[Number(m[2]) - 1] ?? m[2]} ${Number(m[3])}, ${m[1]}`
+  return localeDate(date, { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 /** The page heading: "Series · Sep 24, 2026". */
@@ -39,8 +36,7 @@ export function meetingHeading(series: string, date: string): string {
 
 /** "2026-09-24" as "Sep 24" (no year), for compact labels. Anything else is returned as it is. */
 export function formatShortDate(date: string): string {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date)
-  return m ? `${MONTHS[Number(m[2]) - 1] ?? m[2]} ${Number(m[3])}` : date
+  return localeDate(date, { month: 'short', day: 'numeric' })
 }
 
 /** Today's date in local time as YYYY-MM-DD. */
