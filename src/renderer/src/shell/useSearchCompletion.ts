@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState, type KeyboardEvent, type RefObject } from
 import {
   applyCompletion,
   completionAt,
+  modifierAt,
+  type ModifierWord,
   type Completion,
   type CompletionOption,
   type UserValues
@@ -15,6 +17,12 @@ export interface SearchCompletion {
   active: number
   /** Tell the hook where the caret is after the field changes or the caret moves. */
   track: (caret: number | null) => void
+  /** The `name:value` word the caret is in, for the help row; null elsewhere. */
+  typing: ModifierWord | null
+  /** The user's own values (people, tags, …). */
+  values: UserValues
+  /** Put a value in place of the value being typed (a help chip clicked). */
+  fill: (insert: string) => void
   /** Insert an option in place of the word. */
   accept: (option: CompletionOption) => void
   /** Call first in the field's key handler; true when the key was used. */
@@ -63,13 +71,25 @@ export function useSearchCompletion(
           ? 0
           : -1
 
-  const accept = (option: CompletionOption): void => {
-    if (!completion) return
-    const next = applyCompletion(query, completion, option)
+  const typing = useMemo(() => modifierAt(query, Math.min(caret, query.length)), [query, caret])
+
+  const place = (at: Completion, option: CompletionOption): void => {
+    const next = applyCompletion(query, at, option)
     setQuery(next.text)
     setCaret(next.caret)
     // The field has the new text once React has rendered it.
     setTimeout(() => inputRef.current?.setSelectionRange(next.caret, next.caret), 0)
+  }
+
+  const accept = (option: CompletionOption): void => {
+    if (completion) place(completion, option)
+  }
+
+  const fill = (insert: string): void => {
+    if (!typing) return
+    const at: Completion = { from: typing.from, to: typing.to, kind: 'value', options: [] }
+    place(at, { label: insert, insert: `${typing.minus}${typing.modifier}:${insert}` })
+    inputRef.current?.focus()
   }
 
   const onKeyDown = (event: KeyboardEvent): boolean => {
@@ -100,5 +120,14 @@ export function useSearchCompletion(
     return false
   }
 
-  return { completion, active, track: (c) => setCaret(c ?? query.length), accept, onKeyDown }
+  return {
+    completion,
+    active,
+    track: (c) => setCaret(c ?? query.length),
+    typing,
+    values,
+    fill,
+    accept,
+    onKeyDown
+  }
 }

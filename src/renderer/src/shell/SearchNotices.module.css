@@ -6,4 +6,5 @@
   list-style: none;
   color: var(--text-secondary);
   font-size: var(--text-13);
+  border-bottom: 1px solid var(--border-soft);
 }

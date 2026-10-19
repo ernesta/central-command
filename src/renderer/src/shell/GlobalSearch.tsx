@@ -6,6 +6,7 @@ import type { SearchHit } from '@shared/search'
 import { CompletionList } from './CompletionList'
 import { searchEverywhere, type SearchOutcome } from './run-search'
 import { useSearchSources } from './search-sources'
+import { SearchHelp } from './SearchHelp'
 import { SearchNotices } from './SearchNotices'
 import { useSearchCompletion } from './useSearchCompletion'
 import styles from './GlobalSearch.module.css'
@@ -148,6 +149,14 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
           onKeyDown={onKeyDown}
         />
       </div>
+      {choices.typing && (
+        <SearchHelp
+          modifier={choices.typing.modifier}
+          values={choices.values}
+          onFill={choices.fill}
+        />
+      )}
+      {answered && <SearchNotices notices={choices.completion ? [] : result.notices} />}
       {choices.completion && (
         <CompletionList
           id="global-search-filters"
@@ -184,7 +193,6 @@ export function GlobalSearch({ onClose }: { onClose: () => void }): React.JSX.El
             })}
           </div>
         ))}
-        {answered && <SearchNotices notices={choices.completion ? [] : result.notices} />}
         {answered && result.searched && hits.length === 0 && (
           <p className={styles.empty}>No results.</p>
         )}

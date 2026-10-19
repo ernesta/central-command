@@ -1,0 +1,15 @@
+.help {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin: 0;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-muted);
+  font-size: var(--text-13);
+}
+.name {
+  color: var(--text-secondary);
+  font-weight: 500;
+}

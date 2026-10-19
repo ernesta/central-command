@@ -6,6 +6,7 @@ import {
   valueAccepted,
   type ModifierName
 } from './search-query'
+import { MODIFIER_HELP } from './search-help'
 import { todayIso } from './time'
 
 export interface CompletionOption {
@@ -27,25 +28,6 @@ export interface Completion {
   /** The modifier whose value is being completed. */
   modifier?: ModifierName
   options: CompletionOption[]
-}
-
-const HINTS: Record<ModifierName, string> = {
-  in: 'one kind of item',
-  workspace: 'one workspace',
-  with: 'a person',
-  by: 'author or lead',
-  status: 'task or reading',
-  priority: 'tasks',
-  due: 'tasks',
-  list: 'tasks',
-  tag: 'tasks, readings',
-  skill: 'training, meetings',
-  series: 'meetings, training',
-  has: 'it has this',
-  before: 'a date',
-  after: 'a date',
-  on: 'a date',
-  during: 'a period'
 }
 
 /** The values to offer that come from the user's own data, by modifier. */
@@ -121,6 +103,32 @@ function rank(options: readonly CompletionOption[], typed: string): CompletionOp
   return [...starts, ...inside]
 }
 
+/** The `name:value` word the caret is in or at the end of, as typed (a minus in front included); null for any other word. */
+export interface ModifierWord {
+  from: number
+  to: number
+  minus: '' | '-'
+  modifier: ModifierName
+  rawValue: string
+}
+
+export function modifierAt(text: string, caret: number): ModifierWord | null {
+  const from = wordStart(text, caret)
+  let to = caret
+  while (to < text.length && !/\s/.test(text[to])) to++
+  const match = /^(-?)([A-Za-z]+):(.*)$/s.exec(text.slice(from, caret))
+  if (!match) return null
+  const modifier = match[2].toLowerCase()
+  if (!(MODIFIER_NAMES as readonly string[]).includes(modifier)) return null
+  return {
+    from,
+    to,
+    minus: match[1] as '' | '-',
+    modifier: modifier as ModifierName,
+    rawValue: match[3]
+  }
+}
+
 /**
  * What could finish the word at `caret`: a modifier's name (two letters in, or after a minus), or the value after `name:` from
  * the fixed lists and the user's own data. Null when there is nothing to offer, including when the value is already complete.
@@ -143,7 +151,7 @@ export function completionAt(
     const options = MODIFIER_NAMES.filter((n) => n.startsWith(name.toLowerCase())).map((n) => ({
       label: `${n}:`,
       insert: `${minus}${n}:`,
-      hint: HINTS[n]
+      hint: MODIFIER_HELP[n].hint
     }))
     if (options.length === 0) return null
     return { from, to, kind: 'name', options: options.slice(0, MAX_OPTIONS) }
