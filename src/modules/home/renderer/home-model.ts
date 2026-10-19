@@ -1,3 +1,4 @@
+import { formatClock } from '@shared/locale-names'
 import { formatShortDate } from '@shared/time'
 import { daysFrom } from '../shared/summary'
 import type { HomeEvent, HomeSummary, HomeTask, HomeWorkspace } from '../shared/types'
@@ -32,7 +33,7 @@ const isHere = (workspace: HomeWorkspace, route: string): boolean =>
 /** "Today 14:00", "Tomorrow", "In 4 days 11:00": when something dated happens, for a list sorted by date. */
 export function whenLabel(inDays: number, time: string | null): string {
   const day = inDays <= 0 ? 'Today' : inDays === 1 ? 'Tomorrow' : `In ${inDays} days`
-  return time ? `${day} ${time}` : day
+  return time ? `${day} ${formatClock(time)}` : day
 }
 
 /** The one workspace's share of the summary, which holds both: its tasks, what is dated in the next 7 days, its next meeting. */
