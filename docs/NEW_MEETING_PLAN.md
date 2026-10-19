@@ -1,5 +1,7 @@
 # New meeting and meeting tasks: two bugs, one fix (19 Oct 2026)
 
+**Fixed 19 Oct 2026, together with `docs/MEETING_TASKS_PLAN.md`** (`docs/DECISIONS.md`, "Meetings, trainings and the timer"). The diagnosis below is as written before the fix.
+
 Found by the user on 19 Oct 2026; diagnosed, not yet fixed. Nothing here has been applied to the real library.
 
 ## Bug 1: New meeting is prefilled, and leaves a meeting behind each click

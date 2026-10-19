@@ -1,5 +1,7 @@
 # Meetings, trainings and the timer: one combined fix (plan, 19 Oct 2026)
 
+**Built and driven 19 Oct 2026** (eight steps, eleven commits; `docs/DECISIONS.md`, "Meetings, trainings and the timer"). Not pushed, not installed, nothing applied to the real library; the repair script was dry-run only.
+
 Extends `docs/NEW_MEETING_PLAN.md` (bugs 1 and 2, steps 1 to 7: follow them). Adds what the user raised after reading that plan's
 prompt. **Run as one unattended session: the user's explicit exception to the CLAUDE.md "stop at every stage" rule (19 Oct 2026).**
 Still one small commit per standalone part; test, lint and typecheck pass before each commit; nothing pushed; never `--apply` on the
