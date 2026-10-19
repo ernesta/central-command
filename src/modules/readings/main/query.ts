@@ -2,7 +2,7 @@ import { fold } from '@shared/text'
 import type { Reading, ReadingStatus } from '../shared/types'
 import type { ReadingSort, ReadingsQuery, TagCount } from '../shared/query'
 
-const collator = new Intl.Collator('en', { sensitivity: 'base', numeric: true })
+const collator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true })
 
 export { fold }
 
