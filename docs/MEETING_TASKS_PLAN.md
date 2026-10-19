@@ -38,13 +38,13 @@ real library; commit only your own files (another session has uncommitted search
 
 Interpretation (the user's words, "the hours tracker", with the screenshot being the timer's Suggested list): the **timer pickers**
 (top-bar suggestions, `suggestedTasks`, and typed search, `pickerOptions` in `hours/shared/start-picker.ts`, used by `TimerChip.tsx`
-and `TaskPicker.tsx`) and the Hours page's task lists stop offering a meeting's own task or a training lecture's own session task.
+and `TaskPicker.tsx`) and the Hours page's task lists stop offering a meeting's own task or a training's own session task.
 Time on them is typed in the note (start and end), as the self-study plan already says. **Not changed:** the hours the notes derive
 into the Hours totals (`useMeetingHours`, `derivedEntries`) and the read-only `MeetingRows` list of a day's sessions, because
 Work's billable totals depend on them. If the user meant those too, that is a one-line follow-up in `MeetingRows`, not a redesign:
 write that in `docs/ROADMAP.md` and do not remove them.
 
-- A task is a "session task" when it carries the marker from B (own meeting task, own lecture session task).
+- A task is a "session task" when it carries the marker from B (own meeting task, own training session task).
   Build one `sessionTaskUids(workspace)` in the Tasks main module (it already reads both tables in `session-sweep.ts`
   `sessionRows`), expose it through a typed `window.api` method (add to `Api` and `IPC` in `src/shared/api.ts`; nothing generic),
   and have the picker filter with it. Keep it a small filter, no cross-module machinery; tests: a meeting's task is absent from
@@ -55,9 +55,9 @@ write that in `docs/ROADMAP.md` and do not remove them.
 
 ## Part 3: a self-study task for every training entry, always
 
-This **replaces** `SELF_STUDY_PLAN.md` decisions "Nothing is made in advance", "no due date, status `doing`" and "a lecture never
+This **replaces** `SELF_STUDY_PLAN.md` decisions "Nothing is made in advance", "no due date, status `doing`" and "a training never
 studied for has no self-study task" (the user's instruction of 19 Oct 2026 wins; record it in DECISIONS.md and update that plan's
-header). Everything else in that plan stands (titles, `<series> · self-study` parent in Training, lecture subtask under it,
+header). Everything else in that plan stands (titles, `<series> · self-study` parent in Training, training subtask under it,
 `selfstudy:` front matter key, `entryMinutes`, trash on delete).
 
 - Made by the app, not the page: when a training entry is created, and for a no-series entry the top-level fallback, so it exists
@@ -104,6 +104,6 @@ read every line, show the user. Never `--apply`.
 (`CENTRAL_COMMAND_HOME`, never the real `~/CentralCommand`), dev mode and production build, real clicks, screenshots: click New
 meeting several times (one untouched meeting remains per click until leaving; leaving removes it and its task), choose a series,
 change series and date and watch the task title follow, delete one and check the task is in the trash, open the timer popover and
-check no meeting or lecture task is suggested or found by typing, create a training entry with a date and check its self-study task
-appears with the due date and is offered by the timer (the lecture's own session task is not), and move the entry's date so the
+check no meeting or training task is suggested or found by typing, create a training entry with a date and check its self-study task
+appears with the due date and is offered by the timer (the training's own session task is not), and move the entry's date so the
 one-week completion can be seen.

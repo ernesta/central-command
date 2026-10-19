@@ -118,8 +118,8 @@ workspaces are Life, Research and Work, data lives in `~/CentralCommand/`, and t
   (`docs/TIMER_TASKS_PLAN.md`, stages 1 to 4 done; stage 5, Research's historical data, waits for the user's answers); meetings and trainings make their own
   subtasks by themselves (`task: auto`).
 - Meetings, trainings and the timer (19 Oct 2026, `docs/MEETING_TASKS_PLAN.md`): tasks the app makes for a session carry `own_kind` (`meeting`, `training`, `self-study`); a new meeting has only today's date and is removed with its task when left untouched; deleting a meeting trashes its own task in the main process; the timer's pickers hide session tasks; every titled, dated Research training entry gets its self-study task from the main-process sweep (due on its date, done a week after its end; history by the repair script). Built, not pushed.
-- Self-study tasks for trainings (`docs/SELF_STUDY_PLAN.md`; revised 19 Oct 2026, see the line above): Start and Add time on a training note go to the lecture's own `<title> · self-study` subtask under one
-  `<series> · self-study` task per series, made when first pressed (`selfstudy:` in the note); the lecture's own task is the session and has no Start. `entryMinutes`
+- Self-study tasks for trainings (`docs/SELF_STUDY_PLAN.md`; revised 19 Oct 2026, see the line above): Start and Add time on a training note go to the training's own `<title> · self-study` subtask under one
+  `<series> · self-study` task per series, made when first pressed (`selfstudy:` in the note); the training's own task is the session and has no Start. `entryMinutes`
   counts the session plus both tasks.
 - Hours counted the same way everywhere (`docs/HOURS_CONSISTENCY_PLAN.md`): one shown year (`hours/shared/shown-year.ts`), one year choice (`yearToShow`) and one set of
   Home figures (`periodFigures`) serve the Hours page, Home, the Home summary and `snapshot.json` (`week` and `work`). Every report of time is to the quarter hour (18 Oct 2026): a note's start and end sit on 00/15/30/45 in `TimeInput`, and `durationMinutes` rounds, so Hours and the training log agree.

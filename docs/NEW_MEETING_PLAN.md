@@ -32,7 +32,7 @@ Found by the user on 19 Oct 2026; diagnosed, not yet fixed. Nothing here has bee
    `formatDate` can produce plus the US one and ISO. Decide with the user if it is a real trade-off. Existing own tasks (US and
    regional titles) must still be recognised.
 2. Tests under en-GB, en-US and de-DE for `isOwnMeetingTask`, `planMeetingTask` sync and the delete path, with a mutation check.
-   Check training's lecture and self-study tasks and `word-sources.ts:77` (`DATE_LINE`) for the same assumption.
+   Check training's training and self-study tasks and `word-sources.ts:77` (`DATE_LINE`) for the same assumption.
 3. A meeting can have no series. New meeting creates one with only today's date. Types, `create` (repository, store), front matter,
    `file-name.ts` (`YYYY-MM-DD Untitled.md`, ` 2` for repeats), `meetingHeading` ("Untitled · date" or similar), the series select
    (empty "Choose series" state), the landing's series filter and cards.
