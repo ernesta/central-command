@@ -3813,3 +3813,13 @@ The user (from a screenshot): the text of a table row sat tight against the divi
 - **Fix** (`LiveEditor.module.css`, `.live-table-row`): the grid rows have `padding: 6px 4px` (was inline padding only), so every row, the header included, has 6px above and below its text. The line of dashes under the header still takes no height.
 - **Not matched in the text view:** a table the cursor is in shows as plain Markdown, which keeps its one-row-high lines. The user: tables look so different as text that the rows jumping when the cursor enters is fine.
 - **Not driven in the app:** a CSS change only; the user judges the look as they use it.
+
+## Dates, times and numbers follow the Mac's region (19 Oct 2026)
+
+The user: "follow Mac" for every display format; APA references stay as they are.
+
+- **Rule:** text the app shows is formatted with the default locale (`toLocaleDateString(undefined, …)`), never a named one (`'en-GB'`, `'en-US'`). The helpers are in `src/shared/locale-names.ts`: `localeDate` (a `YYYY-MM-DD` date, no time zone), `monthName`, `weekdayName` (1 Monday to 7 Sunday), `firstWeekday`, `formatClock`, `uses12HourClock`. `formatDate`, `formatShortDate`, `formatDay`, `formatRange`, `formatTimeRange`, Home's `whenLabel` and `detailText`, `formatHours`'s separator, the word count, the task time months, the Readings collator and the page's `lang` (set from `navigator.language`) all go through them. The date picker's month title, weekday letters and first column follow the region too.
+- **Not display, so unchanged:** the notes' own text (times are stored as 24-hour `HH:MM`), APA month names (APA style), the import scripts' English month names (they read the user's old text), and the app's week order. The year starts on the day set in the app (Monday, Friday for Work), so Hours' weeks, the heat map and the typical week keep that order; only their day names follow the region.
+- **Time field** (`TimeInput`): in a 12-hour region it has a third part, AM or PM (A, P, Up and Down set it; hours take 1 to 12); the value it reports is still 24-hour. Driven in the built app with `--lang=en-US` (typing, arrows, the end following the start) and `--lang=en-GB` (unchanged).
+- **Tests run in US English** (`vitest.config.ts` sets `LC_ALL`), so expected text such as "Sep 24, 2026" and "2:00 PM" is the same on every machine. On the user's Mac (British English) the same text reads "24 Sept 2026" and "14:00".
+- **Not driven:** the Hours pages, Home and the date picker's first column in the app; unit tests cover them. The user judges the look as they use it.
