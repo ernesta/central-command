@@ -3845,3 +3845,14 @@ The user's answers to "what else would be expected to undo": a toast **and** Cmd
 - **Readings rename suggestion, Dismiss**: Cmd-Z only (the user's "sure, why not"); `undismissRenameSuggestion` sets a dismissed one back to pending (the row was always kept). Unit-tested; not driven in the app (needs a Zotero rename to produce a suggestion).
 - Not done: renaming an Hours task; adding things.
 - Driven in the built app on a scratch library: Discard + Undo (same start second), attendee chip + Cmd-Z (saved to the note), Archive + Undo and Cmd-Z, meeting move to Work and Cmd-Z back. **Not driven**: the contract Save, Time off edit and Hours time edit undos (typecheck and lint only).
+
+## One rule for undo (19 Oct 2026)
+
+Reviewed after the first two rounds ("Delete goes at once, with Undo", "Undo, second round"): the user's answers already formed one pattern, so it is written down here and at the top of `undo-store.ts`, and Settings' shortcut help for Cmd-Z was brought up to date (it still said "Task changes, deletions and removals").
+
+1. **A record goes away** (a row, page, person, contract, a discarded timer): at once, a toast with Undo, and Cmd-Z (`pushUndoWithToast`).
+2. **A value changes in place** (an edit, a chip, a status, a move, a plan): at once, Cmd-Z only, silent (`pushUndo`).
+3. **Something is added, or it is routine** (new, start, stop): no undo; deleting is the undo. A page nothing was typed into goes without a word.
+4. **A dialog only where nothing could be undone**: Merge a person, and a name or initials change (it rewrites notes).
+
+Cmd-Z now always says what it undid ("Undid the move to Work."), since a silent change may be off screen. Every entry's `label` is a noun phrase, used in both that message and "Couldn't undo the …"; before, a task change passed a verb phrase ("change the due date"), so a failure read "Couldn't undo the change the due date". Not shown when the toast's own Undo button is pressed (the result is in front of the person). The stack is still one list for the whole app: Cmd-Z takes back the latest change wherever it was made (entries of a page that was left are skipped, `isStale`).
