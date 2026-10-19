@@ -5,7 +5,7 @@ import { TaskTimeActions } from './TaskTimeActions'
 import styles from './TaskPage.module.css'
 
 const monthLabel = (month: string): string =>
-  new Date(`${month}-01T00:00:00Z`).toLocaleString('en-GB', {
+  new Date(`${month}-01T00:00:00Z`).toLocaleString(undefined, {
     month: 'short',
     year: 'numeric',
     timeZone: 'UTC'
