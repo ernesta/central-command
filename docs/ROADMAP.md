@@ -47,7 +47,7 @@ grid for a note and its panels, used by all five pages) and `NoteOutline` moved 
 
 **Real-library editor gate fixed (11 Oct 2026): 10 of 10 pass.** The four failures were the gate lagging behind shipped behaviour, not editor bugs (`docs/DECISIONS.md`, "The real-library gate caught up").
 
-**Undo, one rule and third round (19 Oct 2026): built, committed, not pushed, not installed** (`docs/DECISIONS.md`, "One rule for undo", "Undo, third round"). The rule is in `undo-store.ts`; Cmd-Z says what it undid; TODO ticks, Add time, timer start, Hours settings, row rename, "me" and the meeting/training/note fields are undoable. To check by hand: undoing a timer's start change, and the Readings Dismiss undo.
+**Undo, one rule and third round (19 Oct 2026): built, committed, not pushed, not installed** (`docs/DECISIONS.md`, "One rule for undo", "Undo, third round"). The rule is in `undo-store.ts`; Cmd-Z says what it undid; TODO ticks, Add time, timer start, Hours settings, row rename, "me" and the meeting/training/note fields are undoable. To check by hand: undoing a timer's start change in the popover (the restore itself is driven), and the Readings Dismiss undo.
 
 **Undo, second round (19 Oct 2026): built, committed, not pushed, not installed** (`docs/DECISIONS.md`, "Undo, second round"). Timer Discard and Archive a person (toast + Cmd-Z); chips, contract Save, Time off edit, Hours typed time and workspace moves (Cmd-Z only). Dismissing a Readings rename suggestion also undoes with Cmd-Z. To check by hand: the Dismiss undo, the contract Save, Time off edit and Hours time undos.
 
