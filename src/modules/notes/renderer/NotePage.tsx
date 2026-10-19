@@ -6,7 +6,7 @@ import { isUntouchedBody } from '@renderer/components/untouched'
 import { NEW_NOTE_BODY } from '../shared/front-matter'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
-import { pushUndoWithToast } from '@renderer/components/undo-store'
+import { pushUndo, pushUndoWithToast } from '@renderer/components/undo-store'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { DocSplit } from '@renderer/notes/DocSplit'
@@ -104,8 +104,17 @@ function NoteView({
     setMoveError(null)
     try {
       await session.dispose() // saves anything pending first
+      const from = session.getRef().workspace
       const moved = await window.api.notes.move(session.getRef(), target)
       void navigate(noteRoute(moved.ref.workspace, moved.ref.id), { replace: true })
+      // Cmd-Z moves it back and shows it there.
+      pushUndo({
+        label: 'move',
+        undo: async () => {
+          const back = await window.api.notes.move(moved.ref, from)
+          void navigate(noteRoute(back.ref.workspace, back.ref.id), { replace: true })
+        }
+      })
     } catch (e) {
       setMoveError(ipcErrorMessage(e))
       setMoving(false)

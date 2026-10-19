@@ -8,7 +8,7 @@ import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { WorkspaceSelect } from '@renderer/components/WorkspaceSelect'
-import { pushUndoWithToast } from '@renderer/components/undo-store'
+import { pushUndo, pushUndoWithToast } from '@renderer/components/undo-store'
 import { liveViewIn, placeCursorOnLine } from '@renderer/editor/live-outline'
 import { DocSplit } from '@renderer/notes/DocSplit'
 import { EditorCard } from '@renderer/notes/EditorCard'
@@ -155,8 +155,17 @@ function MeetingView({
     setMoveError(null)
     try {
       await session.dispose() // saves anything pending first
+      const from = session.getRef().workspace
       const moved = await window.api.meetings.move(session.getRef(), target)
       void navigate(meetingRoute(moved.ref.workspace, moved.ref.id), { replace: true })
+      // Cmd-Z moves it back and shows it there.
+      pushUndo({
+        label: 'move',
+        undo: async () => {
+          const back = await window.api.meetings.move(moved.ref, from)
+          void navigate(meetingRoute(back.ref.workspace, back.ref.id), { replace: true })
+        }
+      })
     } catch (e) {
       setMoveError(ipcErrorMessage(e))
       setMoving(false)
