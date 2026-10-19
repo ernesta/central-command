@@ -11,10 +11,13 @@ export function shiftMonth(month: string, by: number): string {
   return `${Math.floor(index / 12)}-${String((index % 12) + 1).padStart(2, '0')}`
 }
 
-/** The days a month's calendar shows: whole weeks from Monday, so it starts and ends with days of the neighbouring months. */
-export function monthGrid(month: string): string[] {
+/**
+ * The days a month's calendar shows: whole weeks from `firstDay` (1 Monday to 7 Sunday), so it starts and ends with days
+ * of the neighbouring months.
+ */
+export function monthGrid(month: string, firstDay = 1): string[] {
   const first = `${month}-01`
-  let day = addDays(first, 1 - weekdayOf(first))
+  let day = addDays(first, -((weekdayOf(first) - firstDay + 7) % 7))
   const days: string[] = []
   do {
     days.push(day)

@@ -27,3 +27,14 @@ export function weekdayName(weekday: number, style: 'narrow' | 'short' | 'long' 
     timeZone: 'UTC'
   })
 }
+
+/** The weekday a calendar's weeks start on in the Mac's region, 1 (Monday) to 7 (Sunday); Monday when the region does not say. */
+export function firstWeekday(): number {
+  const locale = new Intl.Locale(
+    new Intl.DateTimeFormat().resolvedOptions().locale
+  ) as Intl.Locale & {
+    getWeekInfo?: () => { firstDay: number }
+    weekInfo?: { firstDay: number }
+  }
+  return locale.getWeekInfo?.().firstDay ?? locale.weekInfo?.firstDay ?? 1
+}

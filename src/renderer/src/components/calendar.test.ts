@@ -12,6 +12,12 @@ describe('calendar', () => {
     expect(grid.at(-1)).toBe('2026-11-01')
     expect(grid.length % 7).toBe(0)
   })
+  it('starts the weeks on the day the region says', () => {
+    expect(monthGrid('2026-10', 7)[0]).toBe('2026-09-27')
+    expect(monthGrid('2026-10', 7).at(-1)).toBe('2026-10-31')
+    expect(monthGrid('2026-03', 1)[0]).toBe('2026-02-23')
+    expect(monthGrid('2026-03', 7)[0]).toBe('2026-03-01')
+  })
   it('does not add a spare week when the month ends on a Sunday', () => {
     expect(monthGrid('2026-05').at(-1)).toBe('2026-05-31')
   })

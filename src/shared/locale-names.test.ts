@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { localeDate, monthName, weekdayName } from './locale-names'
+import { firstWeekday, localeDate, monthName, weekdayName } from './locale-names'
 
 // The tests run in US English (vitest.config.ts), so the expected text is fixed.
 describe('locale names', () => {
@@ -21,5 +21,11 @@ describe('locale names', () => {
     expect(weekdayName(1)).toBe('Mon')
     expect(weekdayName(7, 'long')).toBe('Sunday')
     expect([1, 2, 3, 4, 5, 6, 7].map((d) => weekdayName(d, 'narrow')).join('')).toBe('MTWTFSS')
+  })
+})
+
+describe('firstWeekday', () => {
+  it('is Sunday for US English', () => {
+    expect(firstWeekday()).toBe(7)
   })
 })

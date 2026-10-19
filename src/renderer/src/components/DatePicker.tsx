@@ -1,6 +1,6 @@
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { localeDate, weekdayName } from '@shared/locale-names'
+import { firstWeekday, localeDate, weekdayName } from '@shared/locale-names'
 import { formatDate, formatShortDate } from '@shared/time'
 import { monthGrid, monthOf, popoverPlace, shiftMonth } from './calendar'
 import styles from './DatePicker.module.css'
@@ -33,6 +33,7 @@ export function DatePicker({
   /** Days that cannot be chosen are drawn dimmed and do nothing. */
   isDisabled?: (date: string) => boolean
 }): React.JSX.Element {
+  const first = firstWeekday()
   const [open, setOpen] = useState(false)
   const [month, setMonth] = useState(monthOf(value ?? today))
   const wrapRef = useRef<HTMLSpanElement>(null)
@@ -139,12 +140,14 @@ export function DatePicker({
             </button>
           </div>
           <div className={styles.grid}>
-            {[1, 2, 3, 4, 5, 6, 7].map((d) => (
-              <span key={d} className={styles.weekday} aria-hidden>
-                {weekdayName(d, 'narrow')}
-              </span>
-            ))}
-            {monthGrid(month).map((day) => (
+            {[0, 1, 2, 3, 4, 5, 6]
+              .map((i) => ((first - 1 + i) % 7) + 1)
+              .map((d) => (
+                <span key={d} className={styles.weekday} aria-hidden>
+                  {weekdayName(d, 'narrow')}
+                </span>
+              ))}
+            {monthGrid(month, first).map((day) => (
               <button
                 key={day}
                 type="button"
