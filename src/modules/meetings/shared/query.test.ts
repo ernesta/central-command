@@ -197,8 +197,8 @@ describe('helpers', () => {
     ).toEqual(['A A', 'B B'])
   })
   it('formatTimeRange', () => {
-    expect(formatTimeRange('14:00', '15:00')).toBe('14:00–15:00')
-    expect(formatTimeRange('14:00', null)).toBe('14:00')
+    expect(formatTimeRange('14:00', '15:00')).toBe('2:00 PM–3:00 PM')
+    expect(formatTimeRange('14:00', null)).toBe('2:00 PM')
     expect(formatTimeRange(null, null)).toBe('—')
     expect(formatTimeRange(null, '15:00')).toBe('—')
   })

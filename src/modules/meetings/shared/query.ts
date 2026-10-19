@@ -1,3 +1,4 @@
+import { formatClock } from '@shared/locale-names'
 import { fold } from '@shared/text'
 import { deriveInitials, findByName } from './people'
 import { formatDate } from './time'
@@ -141,8 +142,8 @@ export function attendeeNames(rows: readonly MeetingIndexRow[]): string[] {
   return [...new Set(rows.flatMap((r) => r.attendees))].sort((a, b) => a.localeCompare(b))
 }
 
-/** "14:00–15:00", "14:00" or "—". */
+/** "14:00–15:00", "14:00" or "—" (or "2:00 PM–3:00 PM", as the Mac's region writes a time). */
 export function formatTimeRange(start: string | null, end: string | null): string {
-  if (start && end) return `${start}–${end}`
-  return start ?? '—'
+  if (start && end) return `${formatClock(start)}–${formatClock(end)}`
+  return start ? formatClock(start) : '—'
 }
