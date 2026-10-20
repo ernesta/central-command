@@ -4042,3 +4042,10 @@ The user saw, on a week's day list, the day's imported time (1:45) sitting 32px 
 ## Hours: the "Imported" row gets ClickUp's mark (20 Oct 2026)
 
 The user asked for an icon on "Imported" that looks like ClickUp's, in the app's own style. Lucide has no brand icons, so `hours/renderer/ImportedIcon.tsx` draws the mark (an up chevron over a curve) as a 16px line icon with the same stroke (1.75, round caps) and muted colour as the meeting and training icons. It sits in the shared 32px lead column of the row (`WeekCard.tsx`). Checked: typecheck, lint, and the SVG rendered alone; not driven in the app.
+
+## A panel's last action: its tooltip lines up with the card's right edge (20 Oct 2026)
+
+The user saw "Change folder", the last icon button in the Files panel of a training, cut off at the right. `IconButton`'s tooltip is centred under its button, and the side column (`.side` in `DocSplit.module.css`, `overflow: auto`, so it can scroll) clips whatever leaves the card.
+
+- `.actions > :last-child [role='tooltip']` in `Panel.module.css` sets `left: auto; right: 0; transform: none`, so the last action's tooltip grows leftwards inside the card. It applies to every panel's actions, not only Files. `IconButton` is unchanged; tooltips elsewhere stay centred.
+- Checked: lint, Prettier. Not driven in the app (the user checks looks as they use it).
