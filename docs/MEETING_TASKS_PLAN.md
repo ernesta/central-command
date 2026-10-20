@@ -51,7 +51,7 @@ write that in `docs/ROADMAP.md` and do not remove them.
   suggestions and search, a self-study task and an ordinary task are present, and a series task a user chose for a meeting stays
   offered (only a task the app made for the session, by the marker, is hidden).
 - Task page Start / Add time on a session task: leave as is unless one clean check hides it; if not, record in ROADMAP as left.
-- Time already tracked on those tasks stays in Hours (nothing moved).
+- Time already tracked on those tasks stays in Hours (nothing moved). **Superseded 20 Oct 2026:** deleting now takes the time with it (`docs/DECISIONS.md`, "Deleting a task takes its hours with it").
 
 ## Part 3: a self-study task for every training entry, always
 

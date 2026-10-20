@@ -35,7 +35,7 @@ them, and finish with the push and the install. Still one small commit per stand
 5. **A deleted self-study task** is made again silently by the next Start or Add time (no "Make it again" line: it only exists to receive time). Time already
    tracked under its name stays in Hours.
 6. **Deleting a training** also puts its self-study subtask in the trash (restorable), like its training subtask. The series self-study task is never touched.
-   The delete dialog's wording about self-study time stays true ("that time stays in Hours").
+   The delete dialog's wording about self-study time stays true ("that time stays in Hours"). **Superseded 20 Oct 2026:** deleting now takes the time with it (`docs/DECISIONS.md`, "Deleting a task takes its hours with it").
 7. **Due date and status.** The self-study subtask has no due date and status `doing`; the sweep never touches it (it only reads the note's `task:`).
 
 ## Data
