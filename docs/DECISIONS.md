@@ -4021,3 +4021,13 @@ The user deleted a task and its tracked time stayed in Hours, to be deleted by h
 ## Research's imported daily totals for 22 and 23 Sep 2026 reduced (20 Oct 2026, the user's request; applied)
 
 The user asked for 6:00 off Tue 22 Sep and 2:00 off Wed 23 Sep of the imported time. Both are the unlabelled daily totals in `~/CentralCommand/time/research/2026-27.json` (`days`): 22 Sep 7:45 (465) → 1:45 (105), 23 Sep 4:15 (255) → 2:15 (135). Edited by a one-off Python edit (asserted the old values first, wrote atomically; the app's other process was running, the file was re-read just before writing); backup `~/CentralCommand/backups/research-days-sep22-23-<timestamp>/2026-27.json`, and a diff against it shows only those two lines changed. Work has no entry on 22 Sep; its only 23 Sep row (the 2:15 "Document automation: Developer proposal review" adjustment) was left alone. Tasks' `earlier_minutes` were not touched. No code changed; no script, so nothing to re-run.
+
+## Hours: one leading column for tasks, meetings and trainings (20 Oct 2026)
+
+The user saw rows on Hours that were still editable and had no icon (1 Oct's four hand-laid sessions: a label and times, no `cc://task/<uid>` link, so they render as plain rows with an inline-editable name), and asked for the lists to be consistent.
+
+- **No task icon in a tasks-only list.** Every row in `TaskList` is a task, so the `ListTodo` icon went; the title is the link when the row has a task. Meeting and training rows keep their calendar and cap icons, because they sit beside the tasks.
+- **The first column is shared.** `TaskList` and `MeetingRows` both use a 32px lead column and a 14px gap: Today puts the Start button there, the week's day lists put the task's status circle (editable, `StatusButton`, now in `tasks/renderer/` and used by Home too), a row with no task leaves it empty, and a meeting or training puts its icon there, centred. Titles and the hours column line up.
+- **Search draws no icons** (the status circles the user remembered are in the Tasks table and on Home). Left as it was: the `@` picker, hover card and "Mentioned in" still use the task list icon, since they mix kinds. Whether they should show a (read-only) status circle is the user's call, asked 20 Oct 2026.
+- **Not changed, still open:** the four rows of 1 Oct have no task link; the one-script repair for every such migration leftover is in `docs/ROADMAP.md` ("one repair for every migration leftover"), not started.
+- **Driven** in the production build on a scratch library (Today and a week's day list with a task of each status, a typed-label row and a meeting); dev mode, a running timer and Work's client menu not checked.
