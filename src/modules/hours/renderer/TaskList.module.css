@@ -11,22 +11,19 @@
 }
 .row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
   gap: 14px;
   align-items: center;
   padding: 10px 12px;
   border-radius: var(--radius-card);
 }
-/* With a round button the first column is the button's. */
-.row:has(.round) {
-  grid-template-columns: 32px minmax(0, 1fr) auto;
-}
-/* With a client's menu there is one more column, between the name and the time. */
+/* The first column is the start button's, or the task's status (or nothing): meetings below use it for their icon. */
 .row:has(.client) {
-  grid-template-columns: minmax(0, 1fr) auto auto;
-}
-.row:has(.round):has(.client) {
   grid-template-columns: 32px minmax(0, 1fr) auto auto;
+}
+.lead {
+  display: grid;
+  place-items: center;
 }
 .client {
   max-width: 190px;

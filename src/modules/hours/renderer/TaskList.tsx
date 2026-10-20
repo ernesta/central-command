@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { Play, Square, Trash2 } from 'lucide-react'
 import { Select } from '@renderer/components/Select'
@@ -9,7 +9,9 @@ import { formatHours } from '@shared/tracking/format'
 import type { TaskRow } from '@shared/tracking/totals'
 import { QUARTER } from '@shared/tracking/rounding'
 import { taskUidOf } from '@modules/tasks/shared/tracked'
+import { StatusButton } from '@modules/tasks/renderer/StatusButton'
 import { taskRoute } from '@modules/tasks/renderer/tasks-paths'
+import { useTasksList } from '@modules/tasks/renderer/useTasksList'
 import type { HoursWorkspace } from '../shared/workspaces'
 import { DurationField } from './DurationField'
 import styles from './TaskList.module.css'
@@ -59,6 +61,8 @@ export function TaskList({
   const [renaming, setRenaming] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [problem, setProblem] = useState('')
+  const { tasks } = useTasksList(workspace)
+  const statusOf = useMemo(() => new Map(tasks?.map((t) => [t.uid, t.status])), [tasks])
   const entering = useNewRowKeys(rows.map((row) => rowKey(row).toLowerCase()))
   if (rows.length === 0) return null
 
@@ -92,135 +96,142 @@ export function TaskList({
   return (
     <>
       <ul className={styles.list}>
-        {rows.map((row) => (
-          <li
-            key={rowKey(row).toLowerCase()}
-            className={[styles.row, entering.has(rowKey(row).toLowerCase()) && styles.entering]
-              .filter(Boolean)
-              .join(' ')}
-            data-live={row.running}
-          >
-            {onStart && onStop && (
-              <button
-                type="button"
-                className={styles.round}
-                aria-label={
-                  row.running ? `Stop ${row.label || 'task'}` : `Start ${row.label || 'task'}`
-                }
-                disabled={!row.running && !canStart}
-                onClick={() => (row.running ? onStop() : onStart(row))}
-              >
-                {row.running ? (
-                  <Square size={12} strokeWidth={1.75} fill="currentColor" aria-hidden />
-                ) : (
-                  <Play size={12} strokeWidth={1.75} fill="currentColor" aria-hidden />
-                )}
-              </button>
-            )}
-            {taskUidOf(row.task) ? (
-              <Link
-                className={styles.taskLink}
-                to={taskRoute(workspace, taskUidOf(row.task) ?? '')}
-                aria-label={`Open the task ${row.label || 'task'}`}
-              >
-                <span className={styles.taskTitle}>{row.label}</span>
-              </Link>
-            ) : renaming === rowKey(row) ? (
-              <input
-                className={styles.rename}
-                aria-label={`Name of ${row.label || 'task'}`}
-                autoFocus
-                value={name}
-                onChange={(event) => setName(event.target.value.replace(/[\r\n]/g, ''))}
-                onFocus={(event) => event.target.select()}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault()
-                    commitName(row)
-                  } else if (event.key === 'Escape') {
-                    event.preventDefault()
-                    event.stopPropagation()
-                    setRenaming(null)
+        {rows.map((row) => {
+          const status = statusOf.get(taskUidOf(row.task) ?? '')
+          return (
+            <li
+              key={rowKey(row).toLowerCase()}
+              className={[styles.row, entering.has(rowKey(row).toLowerCase()) && styles.entering]
+                .filter(Boolean)
+                .join(' ')}
+              data-live={row.running}
+            >
+              {onStart && onStop ? (
+                <button
+                  type="button"
+                  className={styles.round}
+                  aria-label={
+                    row.running ? `Stop ${row.label || 'task'}` : `Start ${row.label || 'task'}`
                   }
-                }}
-                onBlur={() => commitName(row)}
-              />
-            ) : (
-              <button
-                type="button"
-                className={styles.nameButton}
-                data-empty={row.label === '' || undefined}
-                aria-label={`Rename ${row.label || 'task'}`}
-                onClick={() => {
-                  setRenaming(rowKey(row))
-                  setName(row.label)
-                }}
-              >
-                {row.label || 'No task yet'}
-              </button>
-            )}
-            {clients.length > 0 && onSetClient && (
-              <Select
-                compact
-                className={styles.client}
-                label={`Client of ${row.label || 'task'}`}
-                value={row.client ?? ''}
-                options={[
-                  ...(row.client === undefined ? [{ value: '', label: 'No client' }] : []),
-                  ...clients.map((c) => ({ value: c, label: c }))
-                ]}
-                onChange={(to) => to && onSetClient(row.label, row.client, to)}
-              />
-            )}
-            <span className={styles.end}>
-              {row.running ? (
-                <span className={styles.time}>{formatHours(row.minutes)}</span>
-              ) : editing === rowKey(row) ? (
-                <DurationField
+                  disabled={!row.running && !canStart}
+                  onClick={() => (row.running ? onStop() : onStart(row))}
+                >
+                  {row.running ? (
+                    <Square size={12} strokeWidth={1.75} fill="currentColor" aria-hidden />
+                  ) : (
+                    <Play size={12} strokeWidth={1.75} fill="currentColor" aria-hidden />
+                  )}
+                </button>
+              ) : (
+                <span className={styles.lead}>
+                  {status && <StatusButton uid={taskUidOf(row.task) ?? ''} status={status} />}
+                </span>
+              )}
+              {taskUidOf(row.task) ? (
+                <Link
+                  className={styles.taskLink}
+                  to={taskRoute(workspace, taskUidOf(row.task) ?? '')}
+                  aria-label={`Open the task ${row.label || 'task'}`}
+                >
+                  <span className={styles.taskTitle}>{row.label}</span>
+                </Link>
+              ) : renaming === rowKey(row) ? (
+                <input
+                  className={styles.rename}
+                  aria-label={`Name of ${row.label || 'task'}`}
                   autoFocus
-                  label={`Time on ${row.label || 'task'}`}
-                  value={draft}
-                  onChange={setDraft}
-                  onEnter={() => commit(row)}
-                  onEscape={() => setEditing(null)}
-                  onBlur={() => commit(row)}
+                  value={name}
+                  onChange={(event) => setName(event.target.value.replace(/[\r\n]/g, ''))}
+                  onFocus={(event) => event.target.select()}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault()
+                      commitName(row)
+                    } else if (event.key === 'Escape') {
+                      event.preventDefault()
+                      event.stopPropagation()
+                      setRenaming(null)
+                    }
+                  }}
+                  onBlur={() => commitName(row)}
                 />
               ) : (
                 <button
                   type="button"
-                  className={styles.timeButton}
-                  aria-label={`Edit time on ${row.label || 'task'}`}
-                  onClick={() => begin(row)}
+                  className={styles.nameButton}
+                  data-empty={row.label === '' || undefined}
+                  aria-label={`Rename ${row.label || 'task'}`}
+                  onClick={() => {
+                    setRenaming(rowKey(row))
+                    setName(row.label)
+                  }}
                 >
-                  {formatHours(row.minutes)}
+                  {row.label || 'No task yet'}
                 </button>
               )}
-              {onDelete &&
-                (row.running || !row.removable ? (
-                  <span className={styles.delete} aria-hidden />
+              {clients.length > 0 && onSetClient && (
+                <Select
+                  compact
+                  className={styles.client}
+                  label={`Client of ${row.label || 'task'}`}
+                  value={row.client ?? ''}
+                  options={[
+                    ...(row.client === undefined ? [{ value: '', label: 'No client' }] : []),
+                    ...clients.map((c) => ({ value: c, label: c }))
+                  ]}
+                  onChange={(to) => to && onSetClient(row.label, row.client, to)}
+                />
+              )}
+              <span className={styles.end}>
+                {row.running ? (
+                  <span className={styles.time}>{formatHours(row.minutes)}</span>
+                ) : editing === rowKey(row) ? (
+                  <DurationField
+                    autoFocus
+                    label={`Time on ${row.label || 'task'}`}
+                    value={draft}
+                    onChange={setDraft}
+                    onEnter={() => commit(row)}
+                    onEscape={() => setEditing(null)}
+                    onBlur={() => commit(row)}
+                  />
                 ) : (
                   <button
                     type="button"
-                    className={styles.delete}
-                    aria-label={`Delete ${row.label || 'task'}`}
-                    onClick={() => {
-                      const { label, client, minutes, task } = row
-                      onDelete(label, client)
-                      pushUndoWithToast(
-                        `Deleted “${label || 'Untitled'}” (${formatHours(minutes)}).`,
-                        {
-                          label: `deletion of “${label || 'Untitled'}” (${formatHours(minutes)})`,
-                          undo: () => onSetMinutes(label, minutes, client, task)
-                        }
-                      )
-                    }}
+                    className={styles.timeButton}
+                    aria-label={`Edit time on ${row.label || 'task'}`}
+                    onClick={() => begin(row)}
                   >
-                    <Trash2 size={14} strokeWidth={1.75} aria-hidden />
+                    {formatHours(row.minutes)}
                   </button>
-                ))}
-            </span>
-          </li>
-        ))}
+                )}
+                {onDelete &&
+                  (row.running || !row.removable ? (
+                    <span className={styles.delete} aria-hidden />
+                  ) : (
+                    <button
+                      type="button"
+                      className={styles.delete}
+                      aria-label={`Delete ${row.label || 'task'}`}
+                      onClick={() => {
+                        const { label, client, minutes, task } = row
+                        onDelete(label, client)
+                        pushUndoWithToast(
+                          `Deleted “${label || 'Untitled'}” (${formatHours(minutes)}).`,
+                          {
+                            label: `deletion of “${label || 'Untitled'}” (${formatHours(minutes)})`,
+                            undo: () => onSetMinutes(label, minutes, client, task)
+                          }
+                        )
+                      }}
+                    >
+                      <Trash2 size={14} strokeWidth={1.75} aria-hidden />
+                    </button>
+                  ))}
+              </span>
+            </li>
+          )
+        })}
       </ul>
       {problem && (
         <p role="alert" className={styles.problem}>
