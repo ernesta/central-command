@@ -155,3 +155,30 @@ button.delete:hover {
     background-color: transparent;
   }
 }
+
+/* A row with a task: the task's icon and title, opening the task. */
+.taskLink {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  justify-self: start;
+  max-width: 100%;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius-control);
+}
+.taskIcon {
+  flex: none;
+  align-self: center;
+  color: var(--text-muted);
+}
+.row[data-live='true'] .taskIcon {
+  color: inherit;
+}
+.taskLink:hover .taskTitle {
+  text-decoration: underline;
+}
+.taskTitle {
+  overflow-wrap: anywhere;
+}

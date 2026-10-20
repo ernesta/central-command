@@ -87,6 +87,7 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
       </header>
       {stale && <StaleTimer running={stale} now={now} />}
       <TaskList
+        workspace={workspace}
         rows={rows}
         canStart={!stale}
         onStart={start}

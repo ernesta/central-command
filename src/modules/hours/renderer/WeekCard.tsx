@@ -131,6 +131,7 @@ export function WeekCard({
                       </div>
                     )}
                     <TaskList
+                      workspace={workspace}
                       rows={rows}
                       clients={data.plan.clients}
                       onSetClient={(label, from, to) =>

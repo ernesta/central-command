@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Play, Square, Trash2 } from 'lucide-react'
+import { Link } from 'react-router'
+import { ListTodo, Play, Square, Trash2 } from 'lucide-react'
 import { Select } from '@renderer/components/Select'
 import { pushUndo, pushUndoWithToast } from '@renderer/components/undo-store'
 import { useNewRowKeys } from '@renderer/components/useNewRowKeys'
@@ -7,15 +8,20 @@ import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { formatHours } from '@shared/tracking/format'
 import type { TaskRow } from '@shared/tracking/totals'
 import { QUARTER } from '@shared/tracking/rounding'
+import { taskUidOf } from '@modules/tasks/shared/tracked'
+import { taskRoute } from '@modules/tasks/renderer/tasks-paths'
+import type { HoursWorkspace } from '../shared/workspaces'
 import { DurationField } from './DurationField'
 import styles from './TaskList.module.css'
 
 interface TaskListProps {
   rows: readonly TaskRow[]
+  /** The workspace the rows belong to: a row's task opens in its Tasks. */
+  workspace: HoursWorkspace
   /** Saves a task's time for the day, in minutes. */
   onSetMinutes: (label: string, minutes: number, client?: string, task?: string) => void
   /** Renames a task for the day (the row's blocks and typed time with it). */
-  /** `task` is the row's task (`cc://task/<uid>`), when it has one: renaming the row renames that task too. */
+  /** Only offered for a row with no task: a task is renamed on its own page. */
   onRename: (label: string, name: string, client?: string, task?: string) => void | Promise<void>
   /** The plan's clients (Work): each row then shows its client and offers the others. */
   clients?: readonly string[]
@@ -38,6 +44,7 @@ function rowKey(row: TaskRow): string {
 /** One row per task for a day: its time (click to type another) and, on Today, a round button to start or stop it. */
 export function TaskList({
   rows,
+  workspace,
   onSetMinutes,
   onRename,
   clients = [],
@@ -110,7 +117,16 @@ export function TaskList({
                 )}
               </button>
             )}
-            {renaming === rowKey(row) ? (
+            {taskUidOf(row.task) ? (
+              <Link
+                className={styles.taskLink}
+                to={taskRoute(workspace, taskUidOf(row.task) ?? '')}
+                aria-label={`Open the task ${row.label || 'task'}`}
+              >
+                <ListTodo size={16} strokeWidth={1.75} className={styles.taskIcon} aria-hidden />
+                <span className={styles.taskTitle}>{row.label}</span>
+              </Link>
+            ) : renaming === rowKey(row) ? (
               <input
                 className={styles.rename}
                 aria-label={`Name of ${row.label || 'task'}`}
