@@ -1,13 +1,19 @@
 .quiet {
-  display: inline-flex;
+  /* The task rows' columns (lead 32px, name), so the plus sits with the row icons and "Add" with the names. */
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
   align-items: center;
-  gap: 6px;
-  padding: 7px 10px;
+  gap: 14px;
+  padding: 7px 12px;
+  text-align: left;
   border: 0;
   border-radius: var(--radius-control);
   background: transparent;
   color: var(--text-muted);
   font-size: var(--text-14);
+}
+.quiet svg {
+  justify-self: center;
 }
 .quiet:hover {
   background: var(--hover-tint);
