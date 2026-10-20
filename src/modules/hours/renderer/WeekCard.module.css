@@ -167,8 +167,8 @@
   padding: 10px 12px;
   color: var(--text-muted);
 }
-.imported > :first-child {
-  grid-column: 2;
+.importedIcon {
+  justify-self: center;
 }
 .importedTime {
   padding: 2px 40px 2px 8px;

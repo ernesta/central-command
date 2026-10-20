@@ -12,6 +12,7 @@ import type { HoursWorkspace } from '../shared/workspaces'
 import { AddTime } from './AddTime'
 import { PeriodSummary } from './PeriodSummary'
 import { MeetingRows } from './MeetingRows'
+import { ImportedIcon } from './ImportedIcon'
 import { TaskList } from './TaskList'
 import { renameRow } from './rename-row'
 import styles from './WeekCard.module.css'
@@ -126,6 +127,7 @@ export function WeekCard({
                   <>
                     {imported > 0 && (
                       <div className={styles.imported}>
+                        <ImportedIcon className={styles.importedIcon} />
                         <span>Imported</span>
                         <span className={styles.importedTime}>{formatHours(imported)}</span>
                       </div>

@@ -4038,3 +4038,7 @@ The user saw, on a week's day list, the day's imported time (1:45) sitting 32px 
 
 - `.imported` in `WeekCard.module.css` is now the same grid (32px lead, name, time), centred vertically; the label sits in the name column and `.importedTime` has the same `2px 40px 2px 8px` padding as the meetings' time. Layout only; no logic changed.
 - Checked: test, lint, typecheck. Not driven in the app (the user checks looks as they use it).
+
+## Hours: the "Imported" row gets ClickUp's mark (20 Oct 2026)
+
+The user asked for an icon on "Imported" that looks like ClickUp's, in the app's own style. Lucide has no brand icons, so `hours/renderer/ImportedIcon.tsx` draws the mark (an up chevron over a curve) as a 16px line icon with the same stroke (1.75, round caps) and muted colour as the meeting and training icons. It sits in the shared 32px lead column of the row (`WeekCard.tsx`). Checked: typecheck, lint, and the SVG rendered alone; not driven in the app.
