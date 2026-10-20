@@ -343,6 +343,15 @@ export class TrackingStore {
    * derived block (a meeting or training, edited in its note) and entries with no link stay. Returns the minutes removed.
    */
   removeTaskTime(tasks: string[]): number {
+    return this.taskTime(tasks, true)
+  }
+
+  /** The minutes `removeTaskTime` would remove, without removing anything. */
+  taskTimeMinutes(tasks: string[]): number {
+    return this.taskTime(tasks, false)
+  }
+
+  private taskTime(tasks: string[], remove: boolean): number {
     let minutes = 0
     for (const task of tasks) {
       const kept: KeptTime[] = []
@@ -352,18 +361,20 @@ export class TrackingStore {
           if (!year) continue
           const mine = takeTaskTime(year, task)
           if (!mine) continue
-          const result = this.mutate(workspace, start, (y) => {
-            const part = takeTaskTime(y, task)
-            return { ok: true, year: part ? part.rest : y }
-          })
-          if (!result.ok) continue
-          kept.push({ workspace, year: start, sessions: mine.sessions, adjusts: mine.adjusts })
+          if (remove) {
+            const result = this.mutate(workspace, start, (y) => {
+              const part = takeTaskTime(y, task)
+              return { ok: true, year: part ? part.rest : y }
+            })
+            if (!result.ok) continue
+            kept.push({ workspace, year: start, sessions: mine.sessions, adjusts: mine.adjusts })
+          }
           minutes +=
             mine.sessions.reduce((sum, s) => sum + reportedMinutes(s), 0) +
             mine.adjusts.reduce((sum, a) => sum + a.minutes, 0)
         }
       }
-      if (kept.length > 0)
+      if (remove && kept.length > 0)
         writeFileAtomicSync(this.keptPath(task), JSON.stringify(kept, null, 2) + '\n')
     }
     return minutes

@@ -58,6 +58,8 @@ export interface TasksApi {
    * resolves with the minutes removed. The caller asks the user first, unless the task is untouched.
    */
   delete(uid: string, keepTime?: boolean): Promise<number>
+  /** The minutes of saved time deleting the task (and its subtasks) would remove from Hours. */
+  timeOn(uid: string): Promise<number>
   /** Bring a deleted task back, with the subtasks deleted with it. */
   restore(uid: string): Promise<Task>
   /** Remove a task nobody wrote in, for real. Resolves with whether it was removed. */
@@ -84,6 +86,7 @@ export const TASKS_IPC = {
   setStatus: 'tasks:set-status',
   setDue: 'tasks:set-due',
   delete: 'tasks:delete',
+  timeOn: 'tasks:time-on',
   restore: 'tasks:restore',
   trash: 'tasks:trash',
   snapshot: 'tasks:snapshot',

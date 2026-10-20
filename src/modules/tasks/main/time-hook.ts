@@ -5,6 +5,8 @@
 export interface TaskTimeHook {
   /** Take the saved time of these tasks (`cc://task/<uid>` keys) out of Hours, keeping it for a restore. Returns the minutes removed. */
   remove(tasks: string[]): number
+  /** The minutes `remove` would take, changing nothing. */
+  minutes(tasks: string[]): number
   /** Put back what `remove` kept for these tasks. */
   restore(tasks: string[]): void
 }
@@ -17,6 +19,10 @@ export function setTaskTimeHook(next: TaskTimeHook | null): void {
 
 export function removeTaskTime(tasks: string[]): number {
   return hook?.remove(tasks) ?? 0
+}
+
+export function taskTimeMinutes(tasks: string[]): number {
+  return hook?.minutes(tasks) ?? 0
 }
 
 export function restoreTaskTime(tasks: string[]): void {

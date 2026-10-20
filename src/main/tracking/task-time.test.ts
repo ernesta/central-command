@@ -37,6 +37,12 @@ describe('time that goes with a deleted task', () => {
     expect(year.adjusts).toHaveLength(0)
   })
 
+  it('says what it would remove without removing it', () => {
+    track('Write', A, 60)
+    expect(store.taskTimeMinutes([A])).toBe(60)
+    expect(yearMinutes(store.get('research', '2026-09-21'))).toBe(60)
+  })
+
   it('puts all of it back on restore, and keeps no copy', () => {
     track('Write', A, 60)
     store.addTime('research', '2026-09-21', '2026-09-29', 'Write', 30, undefined, A)

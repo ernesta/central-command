@@ -17,6 +17,7 @@ import { subtaskProgress, taskTime, type TaskRow } from '../shared/views'
 import { DebouncedSaver } from './debounced-saver'
 import { DueField } from './DueField'
 import { ListField } from './ListField'
+import { DeleteTaskDialog } from './DeleteTaskDialog'
 import { deletedMessage, setTaskStatus, STATUS_LABELS, updateTaskUndoable } from './task-actions'
 import { PRIORITY_OPTIONS } from './task-labels'
 import { StatusIcon } from './TaskIcons'
@@ -121,7 +122,8 @@ function TaskView({
   // Leaving after a delete goes where the visitor came from, as Back does.
   const leave = (): void => void navigate(-1)
 
-  const remove = async (): Promise<void> => {
+  const [ask, setAsk] = useState<number | null>(null)
+  const remove = async (confirmed = false): Promise<void> => {
     setBusy(true)
     try {
       await Promise.all([title.flush(), description.flush()])
@@ -130,6 +132,15 @@ function TaskView({
       if (untouched && (await window.api.tasks.discardIfEmpty(task.uid))) {
         leave()
         return
+      }
+      // A task with saved time asks first: the time leaves Hours with it.
+      if (!confirmed) {
+        const saved = await window.api.tasks.timeOn(task.uid)
+        if (saved > 0) {
+          setAsk(saved)
+          setBusy(false)
+          return
+        }
       }
       const minutes = await window.api.tasks.delete(task.uid)
       leave()
@@ -151,6 +162,15 @@ function TaskView({
         <Button size="small" variant="danger-outline" disabled={busy} onClick={() => void remove()}>
           Delete task
         </Button>
+        {ask !== null && (
+          <DeleteTaskDialog
+            title={title.current}
+            minutes={ask}
+            busy={busy}
+            onCancel={() => setAsk(null)}
+            onConfirm={() => void remove(true)}
+          />
+        )}
       </div>
 
       {error && (

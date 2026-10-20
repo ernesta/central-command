@@ -164,6 +164,7 @@ const api: Api = {
     setStatus: (uid, status) => ipcRenderer.invoke(TASKS_IPC.setStatus, uid, status),
     setDue: (uids, due) => ipcRenderer.invoke(TASKS_IPC.setDue, uids, due),
     delete: (uid, keepTime) => ipcRenderer.invoke(TASKS_IPC.delete, uid, keepTime),
+    timeOn: (uid) => ipcRenderer.invoke(TASKS_IPC.timeOn, uid),
     restore: (uid) => ipcRenderer.invoke(TASKS_IPC.restore, uid),
     trash: () => ipcRenderer.invoke(TASKS_IPC.trash),
     snapshot: () => ipcRenderer.invoke(TASKS_IPC.snapshot),

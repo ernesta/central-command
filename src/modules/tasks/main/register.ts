@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'fs'
 import { notifyTitleChanged } from './title-hook'
-import { removeTaskTime, restoreTaskTime } from './time-hook'
+import { removeTaskTime, restoreTaskTime, taskTimeMinutes } from './time-hook'
 import { taskKey } from '../shared/tracked'
 import { join } from 'path'
 import { ipcMain } from 'electron'
@@ -193,6 +193,9 @@ function register(context: MainContext): () => void {
     changing(asUid(uid), () => store.delete(asUid(uid)))
     return keepTime === true ? 0 : removeTaskTime(keys)
   })
+  ipcMain.handle(TASKS_IPC.timeOn, (_event, uid: unknown) =>
+    taskTimeMinutes(withKids(asUid(uid)).map(taskKey))
+  )
   ipcMain.handle(TASKS_IPC.restore, (_event, uid: unknown) => {
     const task = store.restore(asUid(uid))
     restoreTaskTime(withKids(task.uid).map(taskKey))

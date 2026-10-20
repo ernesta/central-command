@@ -32,6 +32,7 @@ import {
   updateTaskUndoable,
   deletedMessage
 } from './task-actions'
+import { DeleteTaskDialog } from './DeleteTaskDialog'
 import { PriorityBadge, StatusIcon } from './TaskIcons'
 import { PRIORITY_LABELS } from './task-labels'
 import { ListField } from './ListField'
@@ -495,6 +496,17 @@ function TaskRowView({
   const isKid = item.type === 'kid'
   const due = isKid ? task.due : effectiveDue(task, kids)
   const minutes = taskTime({ task, kids }, tracked).total
+  // A task with saved time asks before it goes: the time leaves Hours with it.
+  const [ask, setAsk] = useState<number | null>(null)
+  const startRemove = async (): Promise<void> => {
+    try {
+      const saved = await window.api.tasks.timeOn(task.uid)
+      if (saved > 0) setAsk(saved)
+      else await removeTask(task)
+    } catch (error) {
+      showToast(`Couldn’t delete it: ${ipcErrorMessage(error)}`)
+    }
+  }
   const classes = [
     styles.row,
     isKid && !flat && styles.kid,
@@ -632,10 +644,23 @@ function TaskRowView({
             className={[styles.iconButton, styles.remove].join(' ')}
             aria-label={`Delete ${task.title || 'Untitled'}`}
             title="Delete"
-            onClick={() => void removeTask(task)}
+            onClick={() => void startRemove()}
           >
             <Trash2 size={16} strokeWidth={1.75} aria-hidden />
           </button>
+          {ask !== null && (
+            <span {...stopRow}>
+              <DeleteTaskDialog
+                title={task.title}
+                minutes={ask}
+                onCancel={() => setAsk(null)}
+                onConfirm={() => {
+                  setAsk(null)
+                  void removeTask(task)
+                }}
+              />
+            </span>
+          )}
         </span>
       </td>
     </tr>

@@ -219,6 +219,7 @@ app.whenReady().then(async () => {
   // A task in the trash takes its hours with it; they are kept and come back with the task.
   setTaskTimeHook({
     remove: (tasks) => tracking.removeTaskTime(tasks),
+    minutes: (tasks) => tracking.taskTimeMinutes(tasks),
     restore: (tasks) => tracking.restoreTaskTime(tasks)
   })
   const disposers = mainModules
