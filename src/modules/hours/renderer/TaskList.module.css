@@ -156,7 +156,7 @@ button.delete:hover {
   }
 }
 
-/* A row with a task: the task's icon and title, opening the task. */
+/* A row with a task: its title, opening the task (every row here is a task, so no icon). */
 .taskLink {
   display: flex;
   align-items: baseline;
@@ -167,14 +167,6 @@ button.delete:hover {
   color: inherit;
   text-decoration: none;
   border-radius: var(--radius-control);
-}
-.taskIcon {
-  flex: none;
-  align-self: center;
-  color: var(--text-muted);
-}
-.row[data-live='true'] .taskIcon {
-  color: inherit;
 }
 .taskLink:hover .taskTitle {
   text-decoration: underline;

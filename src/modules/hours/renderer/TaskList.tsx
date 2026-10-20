@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { ListTodo, Play, Square, Trash2 } from 'lucide-react'
+import { Play, Square, Trash2 } from 'lucide-react'
 import { Select } from '@renderer/components/Select'
 import { pushUndo, pushUndoWithToast } from '@renderer/components/undo-store'
 import { useNewRowKeys } from '@renderer/components/useNewRowKeys'
@@ -123,7 +123,6 @@ export function TaskList({
                 to={taskRoute(workspace, taskUidOf(row.task) ?? '')}
                 aria-label={`Open the task ${row.label || 'task'}`}
               >
-                <ListTodo size={16} strokeWidth={1.75} className={styles.taskIcon} aria-hidden />
                 <span className={styles.taskTitle}>{row.label}</span>
               </Link>
             ) : renaming === rowKey(row) ? (

@@ -334,6 +334,10 @@ Choices the plan left open, made conservatively; change any of them by telling C
 
 - **Hours counted the same way everywhere (17 Oct 2026; built and driven, `docs/HOURS_CONSISTENCY_PLAN.md`, `docs/DECISIONS.md`).** The Home summary and the widget file now count the Hours page's hours (derived hours, Work, the page's year). **Your call:** a note's own session is reported to the quarter hour on Hours, Home and a task's Time (10:00–11:10 is 1:15) but kept to the exact minute in the training log and its PDF (1:10), as the meeting counters are. They differ only for sessions that are not a multiple of 15 minutes. Say if the training log should report to the quarter too.
 
+### For Claude: one repair for every migration leftover (20 Oct 2026, the user's request; not started)
+
+- **One script (dry run first) that finds and fixes all the loose ends migrations left, at once:** time sessions and entries with only a label and no `cc://task/<uid>` link (they show on Hours as editable rows with no link; 1 Oct's four hand-laid sessions are the known case), tasks with no time that should have it, and any other unconnected pair. Match by label to an existing task, make the missing tasks (every hour has a task), back up first, apply only with the app closed and the user's word.
+
 ### For Claude: low-involvement queue (11 Oct 2026, the user's go-ahead; one item per session, then stop)
 
 Order agreed: A, B, D, E, then C. For each: do it on a scratch library (never the real one), test/lint/typecheck pass, write up in `docs/DECISIONS.md`, small commits, push (the user allowed pushing for these), tick it here, then stop and give the user the prompt for the next one. No decisions for the user unless a fix needs a UI choice.
