@@ -4031,3 +4031,10 @@ The user saw rows on Hours that were still editable and had no icon (1 Oct's fou
 - **Search draws no icons** (the status circles the user remembered are in the Tasks table and on Home). Left as it was: the `@` picker, hover card and "Mentioned in" still use the task list icon, since they mix kinds. Whether they should show a (read-only) status circle is the user's call, asked 20 Oct 2026.
 - **Not changed, still open:** the four rows of 1 Oct have no task link; the one-script repair for every such migration leftover is in `docs/ROADMAP.md` ("one repair for every migration leftover"), not started.
 - **Driven** in the production build on a scratch library (Today and a week's day list with a task of each status, a typed-label row and a meeting); dev mode, a running timer and Work's client menu not checked.
+
+## Hours: the "Imported" row shares the task rows' columns (20 Oct 2026)
+
+The user saw, on a week's day list, the day's imported time (1:45) sitting 32px to the right of the task and training times below it (6:00), with its label and time at different heights. Cause: the other rows keep 40px to the right of their time (a delete column of 24px, a gap of 8px and the time's own padding of 8px) and are grids with a 32px lead column; "Imported" was a flex row with 8px of padding and its label at the left edge.
+
+- `.imported` in `WeekCard.module.css` is now the same grid (32px lead, name, time), centred vertically; the label sits in the name column and `.importedTime` has the same `2px 40px 2px 8px` padding as the meetings' time. Layout only; no logic changed.
+- Checked: test, lint, typecheck. Not driven in the app (the user checks looks as they use it).
