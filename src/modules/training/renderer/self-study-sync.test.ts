@@ -38,6 +38,7 @@ function fake(initial: Task[]): { api: SelfStudyTasksApi; tasks: Task[]; deleted
     delete: async (uid) => {
       state.deleted.push(uid)
       state.tasks = state.tasks.filter((t) => t.uid !== uid && t.parentUid !== uid)
+      return 0
     }
   }
   return {

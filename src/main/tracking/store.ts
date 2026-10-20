@@ -1,9 +1,9 @@
 import { createHash, randomUUID } from 'crypto'
-import { existsSync, readFileSync, readdirSync, renameSync } from 'fs'
+import { existsSync, readFileSync, readdirSync, renameSync, rmSync } from 'fs'
 import { join } from 'path'
 import { WORKSPACES, type Workspace } from '@shared/settings'
 import { parseYear, parsePlan } from '@shared/tracking/parse'
-import { carrySeconds } from '@shared/tracking/rounding'
+import { carrySeconds, reportedMinutes } from '@shared/tracking/rounding'
 import {
   assignTask,
   endSessionAt,
@@ -38,11 +38,13 @@ import type {
 import {
   defaultPlan,
   emptyYear,
+  type Adjust,
   type Change,
   type ContractTerms,
   type Invoice,
   type Moment,
   type Plan,
+  type Session,
   type TimeOffType,
   type TrackingYear
 } from '@shared/tracking/types'
@@ -91,6 +93,33 @@ interface Loaded {
   year: TrackingYear
   /** The file's text as read, or null when there was no file. */
   text: string | null
+}
+
+/** What was taken out of one year file with a deleted task, kept so the task's return can put it back. */
+interface KeptTime {
+  workspace: Workspace
+  year: string
+  sessions: Session[]
+  adjusts: Adjust[]
+}
+
+/** The ended sessions and typed entries of `task` in a year, and the year without them; null when there are none. */
+function takeTaskTime(
+  year: TrackingYear,
+  task: string
+): { sessions: Session[]; adjusts: Adjust[]; rest: TrackingYear } | null {
+  const sessions = year.sessions.filter((s) => s.task === task && s.end !== null && !s.derived)
+  const adjusts = year.adjusts.filter((a) => a.task === task)
+  if (sessions.length === 0 && adjusts.length === 0) return null
+  return {
+    sessions,
+    adjusts,
+    rest: {
+      ...year,
+      sessions: year.sessions.filter((s) => !sessions.includes(s)),
+      adjusts: year.adjusts.filter((a) => !adjusts.includes(a))
+    }
+  }
 }
 
 const sha = (text: string): string => createHash('sha1').update(text, 'utf8').digest('hex')
@@ -306,6 +335,73 @@ export class TrackingStore {
     return this.mutate(workspace, year, (y) =>
       setTaskMinutes(y, date, label, minutes, this.newId(), client, task)
     )
+  }
+
+  /**
+   * Tasks were deleted: take every saved session and typed entry that carries one of them (`cc://task/<uid>`) out of Hours, in
+   * every workspace and year, and keep them in `removed-with-task/<uid>.json` for `restoreTaskTime`. A running session, a
+   * derived block (a meeting or training, edited in its note) and entries with no link stay. Returns the minutes removed.
+   */
+  removeTaskTime(tasks: string[]): number {
+    let minutes = 0
+    for (const task of tasks) {
+      const kept: KeptTime[] = []
+      for (const workspace of WORKSPACES) {
+        for (const start of this.fileStarts(workspace)) {
+          const year = this.peek(workspace, start)
+          if (!year) continue
+          const mine = takeTaskTime(year, task)
+          if (!mine) continue
+          const result = this.mutate(workspace, start, (y) => {
+            const part = takeTaskTime(y, task)
+            return { ok: true, year: part ? part.rest : y }
+          })
+          if (!result.ok) continue
+          kept.push({ workspace, year: start, sessions: mine.sessions, adjusts: mine.adjusts })
+          minutes +=
+            mine.sessions.reduce((sum, s) => sum + reportedMinutes(s), 0) +
+            mine.adjusts.reduce((sum, a) => sum + a.minutes, 0)
+        }
+      }
+      if (kept.length > 0)
+        writeFileAtomicSync(this.keptPath(task), JSON.stringify(kept, null, 2) + '\n')
+    }
+    return minutes
+  }
+
+  /** The Undo of `removeTaskTime`: put back what was kept for these tasks, then drop the kept copy. */
+  restoreTaskTime(tasks: string[]): void {
+    for (const task of tasks) {
+      const path = this.keptPath(task)
+      if (!existsSync(path)) continue
+      let kept: KeptTime[]
+      try {
+        kept = JSON.parse(readFileSync(path, 'utf8')) as KeptTime[]
+      } catch {
+        continue
+      }
+      const left: KeptTime[] = []
+      for (const part of kept) {
+        const result = this.mutate(part.workspace, part.year, (y) => {
+          const have = new Set([...y.sessions.map((s) => s.id), ...y.adjusts.map((a) => a.id)])
+          return {
+            ok: true,
+            year: {
+              ...y,
+              sessions: [...y.sessions, ...part.sessions.filter((s) => !have.has(s.id))],
+              adjusts: [...y.adjusts, ...part.adjusts.filter((a) => !have.has(a.id))]
+            }
+          }
+        })
+        if (!result.ok) left.push(part)
+      }
+      if (left.length > 0) writeFileAtomicSync(path, JSON.stringify(left, null, 2) + '\n')
+      else rmSync(path, { force: true })
+    }
+  }
+
+  private keptPath(task: string): string {
+    return join(this.root, 'removed-with-task', `${task.replace(/[^A-Za-z0-9-]/g, '_')}.json`)
   }
 
   /** A task was renamed in Tasks: every hours entry on it, in every workspace and year, takes the new title. */

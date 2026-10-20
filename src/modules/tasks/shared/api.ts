@@ -53,8 +53,11 @@ export interface TasksApi {
   setStatus(uid: string, status: TaskStatus): Promise<TaskStatusResult>
   /** Set (or clear, with null) the due date of several tasks at once. */
   setDue(uids: string[], due: string | null): Promise<void>
-  /** Move a task and its subtasks to the trash. The caller asks the user first, unless the task is untouched. */
-  delete(uid: string): Promise<void>
+  /**
+   * Move a task and its subtasks to the trash. Their saved time leaves Hours with them (kept for a restore) unless `keepTime`;
+   * resolves with the minutes removed. The caller asks the user first, unless the task is untouched.
+   */
+  delete(uid: string, keepTime?: boolean): Promise<number>
   /** Bring a deleted task back, with the subtasks deleted with it. */
   restore(uid: string): Promise<Task>
   /** Remove a task nobody wrote in, for real. Resolves with whether it was removed. */

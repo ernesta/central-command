@@ -2,8 +2,14 @@ import { showToast } from '@renderer/components/toast-store'
 import { pushUndo } from '@renderer/components/undo-store'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { formatDate } from '@shared/time'
+import { formatDuration } from '@shared/time'
 import { describeRecurrence } from '../shared/recurrence'
 import type { Task, TaskChanges, TaskStatus } from '../shared/types'
+
+/** The toast after a delete; the time that left Hours with the task is said, since Undo brings it back. */
+export function deletedMessage(title: string, minutes: number): string {
+  return `Deleted “${title || 'Untitled'}”${minutes > 0 ? ` and ${formatDuration(minutes)} of time` : ''}.`
+}
 
 /** To do, in progress, done, and round again. */
 export const NEXT_STATUS: Record<TaskStatus, TaskStatus> = {

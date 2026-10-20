@@ -4002,3 +4002,12 @@ Built unattended in one session (the user's explicit exception to "stop at every
 The skills menu (`SkillsField`, used by Training and Meetings) took arrow keys only, so reaching a skill meant walking about twenty rows. Now typing filters it: `skillMatches` (`src/shared/skills.ts`) keeps a skill whose name or Inkpath spelling contains the text, ignoring case and extra spaces. The first match is highlighted, so a few letters and Enter add it; arrows, Home/End and Tab work as before; Backspace edits the text, the first Escape clears it, the second closes the menu; Space is a character once typing has started. Empty groups disappear and "No match" shows when nothing fits.
 
 The popover stays a `div` that captures keys (no input), so its look is unchanged: the typed text shows in a small row at the top only once there is some. Checked in the built app on a scratch library (type, Enter, no match, Escape); dev mode not checked. Unit test: `skills.test.ts`.
+
+## Deleting a task takes its hours with it (20 Oct 2026)
+
+The user deleted a task and its tracked time stayed in Hours, to be deleted by hand. Agreed with the user: the time goes with the task.
+
+- **Rule (`TrackingStore.removeTaskTime` / `restoreTaskTime`, `tasks/main/time-hook.ts`, called from the `tasks:delete` and `tasks:restore` handlers):** deleting a task removes every ended session and typed entry that carries `cc://task/<uid>` (the task and its subtasks, every workspace and year, history linked to a task included) and resolves with the minutes removed; the toast says so ("Deleted “X” and 1 h 15 min of time."). Kept: a running session, derived blocks (meetings, trainings) and entries with no link (matched by label only).
+- **Undo and Settings → Tasks → Restore bring it back.** What was removed is kept in `<time>/removed-with-task/<uid>.json` and put back (by id, never twice) when the task is restored; the file is then removed. It stays until the task is restored.
+- **Exception, as decided before:** deleting a training entry passes `keepTime` and its tasks' hours stay in Hours (see the training lecture decision). Meeting tasks are trashed in the main process and are not touched.
+- Tests: `src/main/tracking/task-time.test.ts` (mutation-checked: without the put-back the restore test fails). **Not driven in the app yet.**

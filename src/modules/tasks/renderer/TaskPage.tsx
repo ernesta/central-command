@@ -17,7 +17,7 @@ import { subtaskProgress, taskTime, type TaskRow } from '../shared/views'
 import { DebouncedSaver } from './debounced-saver'
 import { DueField } from './DueField'
 import { ListField } from './ListField'
-import { setTaskStatus, STATUS_LABELS, updateTaskUndoable } from './task-actions'
+import { deletedMessage, setTaskStatus, STATUS_LABELS, updateTaskUndoable } from './task-actions'
 import { PRIORITY_OPTIONS } from './task-labels'
 import { StatusIcon } from './TaskIcons'
 import { RecurrenceField } from './RecurrenceField'
@@ -131,9 +131,9 @@ function TaskView({
         leave()
         return
       }
-      await window.api.tasks.delete(task.uid)
+      const minutes = await window.api.tasks.delete(task.uid)
       leave()
-      pushUndoWithToast(`Deleted “${title.current || 'Untitled'}”.`, {
+      pushUndoWithToast(deletedMessage(title.current, minutes), {
         label: `deletion of “${title.current || 'Untitled'}”`,
         undo: async () => {
           await window.api.tasks.restore(task.uid)

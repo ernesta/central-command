@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow, Menu, clipboard, nativeTheme, screen } from 
 import { taskKey } from '@modules/tasks/shared/tracked'
 import { putStartedTaskInProgress, reopenSelfStudyTask } from '@modules/tasks/main/task-started'
 import { setTitleChanged } from '@modules/tasks/main/title-hook'
+import { setTaskTimeHook } from '@modules/tasks/main/time-hook'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { APP_NAME } from '@shared/app-info'
@@ -215,6 +216,11 @@ app.whenReady().then(async () => {
   })
   // A task renamed in Tasks renames its hours entries.
   setTitleChanged((uid, title) => tracking.relabelTask(taskKey(uid), title))
+  // A task in the trash takes its hours with it; they are kept and come back with the task.
+  setTaskTimeHook({
+    remove: (tasks) => tracking.removeTaskTime(tasks),
+    restore: (tasks) => tracking.restoreTaskTime(tasks)
+  })
   const disposers = mainModules
     .map((m) => m.register({ db, paths, settings }))
     .filter((d): d is () => void => typeof d === 'function')

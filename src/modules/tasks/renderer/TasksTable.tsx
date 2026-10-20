@@ -29,7 +29,8 @@ import {
   STATUS_LABELS,
   nextStatus,
   setTaskStatus,
-  updateTaskUndoable
+  updateTaskUndoable,
+  deletedMessage
 } from './task-actions'
 import { PriorityBadge, StatusIcon } from './TaskIcons'
 import { PRIORITY_LABELS } from './task-labels'
@@ -384,8 +385,8 @@ const setDue = (task: Task, due: string | null): Promise<void> =>
 /** To the trash, with an Undo in the toast (a task's subtasks go with it and come back with it). */
 async function removeTask(task: Task): Promise<void> {
   try {
-    await window.api.tasks.delete(task.uid)
-    pushUndoWithToast(`Deleted “${task.title || 'Untitled'}”.`, {
+    const minutes = await window.api.tasks.delete(task.uid)
+    pushUndoWithToast(deletedMessage(task.title, minutes), {
       label: `deletion of “${task.title || 'Untitled'}”`,
       undo: async () => {
         await window.api.tasks.restore(task.uid)

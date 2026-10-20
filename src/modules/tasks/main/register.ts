@@ -1,5 +1,7 @@
 import { existsSync, readdirSync } from 'fs'
 import { notifyTitleChanged } from './title-hook'
+import { removeTaskTime, restoreTaskTime } from './time-hook'
+import { taskKey } from '../shared/tracked'
 import { join } from 'path'
 import { ipcMain } from 'electron'
 import type { MainContext, MainModule } from '../../main-registry'
@@ -177,11 +179,23 @@ function register(context: MainContext): () => void {
     const list = uids.map(asUid)
     changing(list, () => store.setDue(list, dateOrNull(due) ?? null))
   })
-  ipcMain.handle(TASKS_IPC.delete, (_event, uid: unknown) =>
+  /** The task, its subtasks and every one of them as an Hours key. */
+  const withKids = (uid: string): string[] => [
+    uid,
+    ...(
+      context.db.prepare('SELECT uid FROM tasks WHERE parent_uid = ?').all(uid) as {
+        uid: string
+      }[]
+    ).map((r) => r.uid)
+  ]
+  ipcMain.handle(TASKS_IPC.delete, (_event, uid: unknown, keepTime: unknown) => {
+    const keys = withKids(asUid(uid)).map(taskKey)
     changing(asUid(uid), () => store.delete(asUid(uid)))
-  )
+    return keepTime === true ? 0 : removeTaskTime(keys)
+  })
   ipcMain.handle(TASKS_IPC.restore, (_event, uid: unknown) => {
     const task = store.restore(asUid(uid))
+    restoreTaskTime(withKids(task.uid).map(taskKey))
     broadcast(task.workspace)
     return task
   })
