@@ -13,7 +13,10 @@ import { EditorCard } from '@renderer/notes/EditorCard'
 import { LiveEditor } from '@renderer/editor/LiveEditor'
 import { NoteOutline } from '@renderer/notes/NoteOutline'
 import type { Person } from '@shared/people'
+import { DeleteTimeDialog } from '@renderer/components/DeleteTimeDialog'
 import { formatDate } from '@shared/time'
+import { durationMinutes } from '../../meetings/shared/time'
+import { deletedMessage, timeOnTasks } from '../../tasks/renderer/task-actions'
 import { institutionOptions, seriesOptions } from '../shared/rules'
 import type { TrainingRef } from '../shared/types'
 import { trainingLabel, trainingTaskUid } from '../shared/training-entries'
@@ -133,10 +136,23 @@ function EntryView({
   const untouched =
     (!meta.title || meta.title === 'Untitled') && isUntouchedBody(body, NEW_TRAINING_BODY)
 
-  const removeNote = async (): Promise<void> => {
+  // What deleting takes out of Hours: the note's own session and the time tracked on its two tasks.
+  const timeLeaving = async (): Promise<number> =>
+    (trainingUid ? (durationMinutes(meta.start, meta.end) ?? 0) : 0) +
+    (await timeOnTasks([trainingUid, meta.selfStudy]))
+  const [ask, setAsk] = useState<number | null>(null)
+
+  const removeNote = async (confirmed = false): Promise<void> => {
     setDeleting(true)
     setDeleteError(null)
     try {
+      const minutes = await timeLeaving()
+      // A training with time asks first: the time leaves Hours with it.
+      if (!confirmed && minutes > 0) {
+        setAsk(minutes)
+        setDeleting(false)
+        return
+      }
       await session.dispose() // saves anything pending first; an entry nothing was written in is removed by it
       if (session.wasDiscarded()) {
         void navigate(trainingBase(workspace), { replace: true })
@@ -144,19 +160,19 @@ function EntryView({
       }
       const ref = session.getRef()
       const content = await window.api.training.delete(ref)
-      // The training's tasks go with it (to the Tasks trash; the series' self-study task stays); the hours tracked on them stay in Hours.
+      // The training's tasks go with it (to the Tasks trash; the series' self-study task stays); the time tracked on them goes with them and Undo brings it back.
       const trashedTasks: string[] = []
       for (const uid of [trainingUid, meta.selfStudy]) {
         if (!uid) continue
         try {
-          await window.api.tasks.delete(uid, true)
+          await window.api.tasks.delete(uid)
           trashedTasks.push(uid)
         } catch (e) {
           console.error('Could not delete the training task:', e)
         }
       }
-      if (!untouched) {
-        pushUndoWithToast(`Deleted “${heading}”.`, {
+      if (!untouched || minutes > 0) {
+        pushUndoWithToast(deletedMessage(heading, minutes), {
           label: `deletion of “${heading}”`,
           undo: async () => {
             await window.api.training.restore(ref, content)
@@ -208,6 +224,18 @@ function EntryView({
           >
             Delete entry
           </Button>
+          {ask !== null && (
+            <DeleteTimeDialog
+              title={heading}
+              minutes={ask}
+              busy={deleting}
+              onCancel={() => setAsk(null)}
+              onConfirm={() => {
+                setAsk(null)
+                void removeNote(true)
+              }}
+            />
+          )}
         </div>
       </div>
 

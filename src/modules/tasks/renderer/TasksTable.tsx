@@ -32,7 +32,7 @@ import {
   updateTaskUndoable,
   deletedMessage
 } from './task-actions'
-import { DeleteTaskDialog } from './DeleteTaskDialog'
+import { DeleteTimeDialog } from '@renderer/components/DeleteTimeDialog'
 import { PriorityBadge, StatusIcon } from './TaskIcons'
 import { PRIORITY_LABELS } from './task-labels'
 import { ListField } from './ListField'
@@ -650,7 +650,7 @@ function TaskRowView({
           </button>
           {ask !== null && (
             <span {...stopRow}>
-              <DeleteTaskDialog
+              <DeleteTimeDialog
                 title={task.title}
                 minutes={ask}
                 onCancel={() => setAsk(null)}

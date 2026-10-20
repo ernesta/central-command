@@ -188,10 +188,10 @@ function register(context: MainContext): () => void {
       }[]
     ).map((r) => r.uid)
   ]
-  ipcMain.handle(TASKS_IPC.delete, (_event, uid: unknown, keepTime: unknown) => {
+  ipcMain.handle(TASKS_IPC.delete, (_event, uid: unknown) => {
     const keys = withKids(asUid(uid)).map(taskKey)
     changing(asUid(uid), () => store.delete(asUid(uid)))
-    return keepTime === true ? 0 : removeTaskTime(keys)
+    return removeTaskTime(keys)
   })
   ipcMain.handle(TASKS_IPC.timeOn, (_event, uid: unknown) =>
     taskTimeMinutes(withKids(asUid(uid)).map(taskKey))

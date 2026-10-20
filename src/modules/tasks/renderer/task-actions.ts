@@ -93,3 +93,10 @@ export async function updateTaskUndoable(
     }
   })
 }
+
+/** The minutes of saved time that deleting these tasks would take out of Hours (each counted once, with its subtasks). */
+export async function timeOnTasks(uids: readonly (string | null | undefined)[]): Promise<number> {
+  const unique = [...new Set(uids.filter((u): u is string => !!u && u !== 'auto'))]
+  const each = await Promise.all(unique.map((u) => window.api.tasks.timeOn(u)))
+  return each.reduce((sum, m) => sum + m, 0)
+}

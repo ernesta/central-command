@@ -17,7 +17,7 @@ import { subtaskProgress, taskTime, type TaskRow } from '../shared/views'
 import { DebouncedSaver } from './debounced-saver'
 import { DueField } from './DueField'
 import { ListField } from './ListField'
-import { DeleteTaskDialog } from './DeleteTaskDialog'
+import { DeleteTimeDialog } from '@renderer/components/DeleteTimeDialog'
 import { deletedMessage, setTaskStatus, STATUS_LABELS, updateTaskUndoable } from './task-actions'
 import { PRIORITY_OPTIONS } from './task-labels'
 import { StatusIcon } from './TaskIcons'
@@ -163,7 +163,7 @@ function TaskView({
           Delete task
         </Button>
         {ask !== null && (
-          <DeleteTaskDialog
+          <DeleteTimeDialog
             title={title.current}
             minutes={ask}
             busy={busy}

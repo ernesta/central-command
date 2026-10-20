@@ -2,8 +2,8 @@ import { Button } from '@renderer/components/Button'
 import { Dialog } from '@renderer/components/Dialog'
 import { formatDuration } from '@shared/time'
 
-/** Asked only for a task with saved time: the time leaves Hours with it (Undo brings it back). */
-export function DeleteTaskDialog({
+/** Asked only for a task, meeting or training with time: the time leaves Hours with it (Undo brings it back). */
+export function DeleteTimeDialog({
   title,
   minutes,
   busy = false,
@@ -32,7 +32,7 @@ export function DeleteTaskDialog({
         </>
       }
     >
-      <p>{formatDuration(minutes)} of tracked time will be removed from Hours with it.</p>
+      <p>{formatDuration(minutes)} of time will be removed from Hours with it.</p>
     </Dialog>
   )
 }

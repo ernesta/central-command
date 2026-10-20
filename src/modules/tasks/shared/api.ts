@@ -54,10 +54,10 @@ export interface TasksApi {
   /** Set (or clear, with null) the due date of several tasks at once. */
   setDue(uids: string[], due: string | null): Promise<void>
   /**
-   * Move a task and its subtasks to the trash. Their saved time leaves Hours with them (kept for a restore) unless `keepTime`;
-   * resolves with the minutes removed. The caller asks the user first, unless the task is untouched.
+   * Move a task and its subtasks to the trash. Their saved time leaves Hours with them (kept for a restore); resolves with
+   * the minutes removed. The caller asks the user first, unless the task is untouched.
    */
-  delete(uid: string, keepTime?: boolean): Promise<number>
+  delete(uid: string): Promise<number>
   /** The minutes of saved time deleting the task (and its subtasks) would remove from Hours. */
   timeOn(uid: string): Promise<number>
   /** Bring a deleted task back, with the subtasks deleted with it. */

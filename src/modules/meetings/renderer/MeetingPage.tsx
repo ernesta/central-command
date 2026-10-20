@@ -14,7 +14,10 @@ import { DocSplit } from '@renderer/notes/DocSplit'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { LiveEditor } from '@renderer/editor/LiveEditor'
 import { seriesOptions } from '../shared/query'
-import { meetingHeading } from '../shared/time'
+import { DeleteTimeDialog } from '@renderer/components/DeleteTimeDialog'
+import { deletedMessage, timeOnTasks } from '../../tasks/renderer/task-actions'
+import { isOwnMeetingTask } from '../shared/meeting-task'
+import { durationMinutes, meetingHeading } from '../shared/time'
 import { appendTopic, parseTopics, topicOffset, type Topic } from '../shared/topics'
 import { fixedSeries, type MeetingRef, type MeetingWorkspace, type Person } from '../shared/types'
 import { meetingRoute, meetingsBase, useMeetingsWorkspace } from './meetings-paths'
@@ -172,21 +175,37 @@ function MeetingView({
   // A page nothing was typed into goes without asking.
   const untouched = isUntouchedBody(body, NEW_MEETING_BODY)
 
-  const removeNote = async (): Promise<void> => {
+  // What deleting takes out of Hours: the note's own hours (its start and end, once it has a task) and the time tracked on its own task.
+  const timeLeaving = async (): Promise<number> => {
+    const session =
+      meta.task && meta.task !== 'auto' ? (durationMinutes(meta.start, meta.end) ?? 0) : 0
+    const own = meta.task && meta.task !== 'auto' ? await window.api.tasks.get(meta.task) : null
+    return session + (own && isOwnMeetingTask(own) ? await timeOnTasks([own.uid]) : 0)
+  }
+  const [ask, setAsk] = useState<number | null>(null)
+
+  const removeNote = async (confirmed = false): Promise<void> => {
     setDeleting(true)
     setDeleteError(null)
     try {
+      const minutes = await timeLeaving()
+      // A meeting with time asks first: the time leaves Hours with it.
+      if (!confirmed && minutes > 0) {
+        setAsk(minutes)
+        setDeleting(false)
+        return
+      }
       await session.dispose() // saves anything pending first; a meeting nothing was written in is removed by it
       if (session.wasDiscarded()) {
         void navigate(meetingsBase(meetingRef.workspace), { replace: true })
         return
       }
-      // The main process puts the meeting's own subtask in the Tasks trash with it (the hours tracked on it stay in Hours), and
-      // restoring the meeting brings it back.
+      // The main process puts the meeting's own subtask in the Tasks trash with it (the time tracked on it leaves Hours too), and
+      // restoring the meeting brings both back.
       const ref = session.getRef()
       const content = await window.api.meetings.delete(ref)
-      if (!untouched) {
-        pushUndoWithToast(`Deleted “${heading}”.`, {
+      if (!untouched || minutes > 0) {
+        pushUndoWithToast(deletedMessage(heading, minutes), {
           label: `deletion of “${heading}”`,
           undo: () => window.api.meetings.restore(ref, content)
         })
@@ -232,6 +251,18 @@ function MeetingView({
           >
             Delete meeting
           </Button>
+          {ask !== null && (
+            <DeleteTimeDialog
+              title={heading}
+              minutes={ask}
+              busy={deleting}
+              onCancel={() => setAsk(null)}
+              onConfirm={() => {
+                setAsk(null)
+                void removeNote(true)
+              }}
+            />
+          )}
         </div>
       </div>
 

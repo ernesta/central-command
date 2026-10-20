@@ -25,6 +25,8 @@ import { listTrainingRows } from '../../training/main/repository'
 import { TRAINING_WORKSPACES } from '../../training/shared/types'
 import { broadcastTasksChanged } from '../../tasks/main/broadcast'
 import { restoreOwnMeetingTask, trashOwnMeetingTask } from '../../tasks/main/session-tasks'
+import { removeTaskTime, restoreTaskTime } from '../../tasks/main/time-hook'
+import { taskKey } from '../../tasks/shared/tracked'
 import { TasksStore } from '../../tasks/main/tasks-store'
 import { PeopleService } from './people-service'
 import { PeopleStore } from './people-store'
@@ -71,11 +73,18 @@ function register({ db, paths }: MainContext): () => void {
     // A deleted meeting takes its own task to the Tasks trash, and Undo brings both back (the task rule is the Tasks module's).
     trashTask: (uid) => {
       const trashed = trashOwnMeetingTask(tasks, uid)
-      if (trashed) broadcastTasksChanged(trashed.workspace)
+      if (trashed) {
+        // The time tracked on it leaves Hours with it, and comes back with Undo.
+        removeTaskTime([taskKey(uid)])
+        broadcastTasksChanged(trashed.workspace)
+      }
     },
     restoreTask: (uid) => {
       const restored = restoreOwnMeetingTask(db, tasks, uid)
-      if (restored) broadcastTasksChanged(restored.workspace)
+      if (restored) {
+        restoreTaskTime([taskKey(uid)])
+        broadcastTasksChanged(restored.workspace)
+      }
     }
   })
   const people = new PeopleStore(paths.people)
