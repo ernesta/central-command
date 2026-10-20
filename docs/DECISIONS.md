@@ -3996,3 +3996,9 @@ Built unattended in one session (the user's explicit exception to "stop at every
 
 - **Applied to the real library at the user's word** (`npm run repair:session-tasks -- --apply`, app closed, backup `~/CentralCommand/backups/session-tasks-2026-10-19T12-00-08-998Z`): 5 meeting tasks marked, 3 renamed, dated or re-parented (among them "Other · 20 Oct 2026", now "Meetings · 20 Oct 2026", due 20 Oct, under Meetings), the 3 leftover "Supervision · 19 Oct 2026" tasks put in the Tasks trash (restorable). A dry run now finds nothing. Trainings were not touched. The tasks migrations `0003` and `0004` ran on the real database with it.
 - **Pushed and installed the same day** (`npm run build:mac`; the old `/Applications/Central Command.app` went to the Trash, the new one was copied from `dist/mac-arm64`; not launched from here). The sweep, the untouched-removal and the timer rules are therefore live from the next launch; not driven in the installed copy, only in the built app and dev mode on a scratch library.
+
+## Skills menu: type to filter (20 Oct 2026)
+
+The skills menu (`SkillsField`, used by Training and Meetings) took arrow keys only, so reaching a skill meant walking about twenty rows. Now typing filters it: `skillMatches` (`src/shared/skills.ts`) keeps a skill whose name or Inkpath spelling contains the text, ignoring case and extra spaces. The first match is highlighted, so a few letters and Enter add it; arrows, Home/End and Tab work as before; Backspace edits the text, the first Escape clears it, the second closes the menu; Space is a character once typing has started. Empty groups disappear and "No match" shows when nothing fits.
+
+The popover stays a `div` that captures keys (no input), so its look is unchanged: the typed text shows in a small row at the top only once there is some. Checked in the built app on a scratch library (type, Enter, no match, Escape); dev mode not checked. Unit test: `skills.test.ts`.
