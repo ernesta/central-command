@@ -6,6 +6,7 @@ import {
   SKILL_TAG_LABELS,
   SKILL_TAG_ORDER,
   findSkill,
+  skillMatches,
   sortSkills
 } from '@shared/skills'
 import styles from './SkillsField.module.css'
@@ -23,6 +24,7 @@ export function SkillsField({ skills, onChange }: SkillsFieldProps): React.JSX.E
   const listId = useId()
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(-1)
+  const [query, setQuery] = useState('')
   const popRef = useRef<HTMLDivElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
   const addRef = useRef<HTMLButtonElement>(null)
@@ -46,15 +48,20 @@ export function SkillsField({ skills, onChange }: SkillsFieldProps): React.JSX.E
   const chosen = new Set(skills)
   // The menu's options in the order shown, so the arrows walk them across the groups.
   const flat = SKILL_TAG_ORDER.flatMap((tag) =>
-    SKILLS.filter((s) => s.tag === tag && !chosen.has(s.name))
+    SKILLS.filter((s) => s.tag === tag && !chosen.has(s.name) && skillMatches(s, query))
   )
   const pick = (index: number): void => {
     if (!flat[index]) return
     onChange([...skills, flat[index].name])
     close()
   }
+  const type = (next: string): void => {
+    setQuery(next)
+    setActive(next ? 0 : -1)
+  }
   const close = (): void => {
     setOpen(false)
+    setQuery('')
     addRef.current?.focus()
   }
 
@@ -90,6 +97,7 @@ export function SkillsField({ skills, onChange }: SkillsFieldProps): React.JSX.E
             title={full ? `Up to ${MAX_SKILLS} skills` : undefined}
             onClick={() => {
               setActive(-1)
+              setQuery('')
               setOpen((o) => !o)
             }}
           >
@@ -116,21 +124,38 @@ export function SkillsField({ skills, onChange }: SkillsFieldProps): React.JSX.E
             else if (event.key === 'ArrowUp') move(active < 0 ? last : active - 1)
             else if (event.key === 'Home') move(0)
             else if (event.key === 'End') move(last)
-            else if (event.key === 'Enter' || event.key === ' ') {
+            else if (event.key === 'Enter' || (event.key === ' ' && !query)) {
               event.preventDefault()
               pick(active)
             } else if (event.key === 'Tab') {
               // Tab takes the highlighted skill and moves on.
               if (!event.shiftKey && flat[active]) onChange([...skills, flat[active].name])
               setOpen(false)
+              setQuery('')
             } else if (event.key === 'Escape') {
               event.stopPropagation()
-              close()
+              if (query) type('')
+              else close()
+            } else if (event.key === 'Backspace') {
+              event.preventDefault()
+              type(query.slice(0, -1))
+            } else if (
+              event.key.length === 1 &&
+              !event.metaKey &&
+              !event.ctrlKey &&
+              !event.altKey
+            ) {
+              event.preventDefault()
+              type(query + event.key)
             }
           }}
         >
+          {query && <p className={styles.query}>{query}</p>}
+          {query && flat.length === 0 && <p className={styles.none}>No match</p>}
           {SKILL_TAG_ORDER.map((tag) => {
-            const options = SKILLS.filter((s) => s.tag === tag && !chosen.has(s.name))
+            const options = SKILLS.filter(
+              (s) => s.tag === tag && !chosen.has(s.name) && skillMatches(s, query)
+            )
             if (options.length === 0) return null
             return (
               <div key={tag} role="group" aria-label={SKILL_TAG_LABELS[tag]}>

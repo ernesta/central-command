@@ -106,3 +106,15 @@
 .option[data-active='true'] {
   background: var(--hover-tint);
 }
+.query {
+  margin: 0;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: var(--text-14);
+}
+.none {
+  margin: 0;
+  padding: 4px 8px;
+  color: var(--text-muted);
+  font-size: var(--text-14);
+}
