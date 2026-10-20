@@ -30,6 +30,12 @@
   align-items: center;
   gap: 4px;
 }
+/* The last action sits at the card's edge, where the side column clips a centred tooltip: line the tooltip up with its right edge. */
+.actions > :last-child [role='tooltip'] {
+  left: auto;
+  right: 0;
+  transform: none;
+}
 /* A wide one-line card (the training's Task): label, then the content, wrapping when it runs out of room. */
 .row {
   display: flex;
