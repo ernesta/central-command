@@ -1,0 +1,15 @@
+.status {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  margin: -3px;
+  padding: 3px;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-control);
+}
+.status:hover {
+  background: var(--selected-bg);
+}
