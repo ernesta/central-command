@@ -1,5 +1,7 @@
 # Roadmap
 
+**Self-study names, due dates, locked titles and icon links (23 Oct 2026, `docs/SELF_STUDY_NAMES_PLAN.md`): decided, written up, not built.** Next: build, repair the real library (dry run first), install.
+
 **Editor: Backspace on an empty bullet (23 Oct 2026, `docs/EDITOR_LIST_FIXES_PLAN.md`, `docs/DECISIONS.md`, "Backspace at the start of a list item leaves the list"): fixed, gate passed, driven in dev and the production build, pushed and installed.** The cursor now stays on the emptied line instead of dropping one. The paste-a-URL report (stage 2) is dropped: the user could not reproduce it; if it comes back, ask which shortcut and what was selected.
 
 **Search refinements (19 Oct 2026, `docs/SEARCH_REFINEMENTS_PLAN.md`): built unattended, pushed and installed.** Help row at the top with chips, a Settings → Search page, "No results." only after a real search, no list over a finished value, chips and ghost text in the field, and "See all results" grows the Mod-K window (the `/search` page is gone). Driven in dev mode and the production build, light and dark. Nothing to decide; try it and say what to change (`docs/DECISIONS.md`, "Search modifiers", "Refinements").
