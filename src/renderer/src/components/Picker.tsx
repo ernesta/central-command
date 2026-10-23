@@ -343,7 +343,9 @@ export function PickerPopup<T extends string>({
             </Fragment>
           )
         })}
-        {matches.length === 0 && !addRow && <p className={styles.none}>No match</p>}
+        {matches.length === 0 && !addRow && (
+          <p className={styles.none}>{options.length === 0 ? 'Nothing to choose' : 'No match'}</p>
+        )}
         {addRow && add && (
           <div className={matches.length > 0 ? styles.divided : undefined}>
             <div
