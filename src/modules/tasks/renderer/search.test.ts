@@ -24,6 +24,15 @@ describe('taskHits', () => {
     expect(hits[1].detail).toContain('methods')
     expect(taskHits(tasks, req('kid'), 6)[0].detail).toBe('Subtask of Write methods')
   })
+  it('shows a self-study subtask with its series in front', () => {
+    const rows = [
+      task({ uid: 'p', title: 'Simulating Social Worlds self-study' }),
+      task({ uid: 'c', title: 'Day 2 self-study', parentUid: 'p', ownKind: 'self-study' })
+    ]
+    expect(taskHits(rows, req('day 2'), 6)[0].title).toBe(
+      'Simulating Social Worlds › Day 2 self-study'
+    )
+  })
   it('respects the limit', () => {
     expect(taskHits(tasks, req('write'), 2)).toHaveLength(2)
   })

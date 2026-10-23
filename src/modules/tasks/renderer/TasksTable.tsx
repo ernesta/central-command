@@ -37,6 +37,7 @@ import { PriorityBadge, StatusIcon } from './TaskIcons'
 import { PRIORITY_LABELS } from './task-labels'
 import { ListField } from './ListField'
 import { TagsField } from './TagsField'
+import { TaskName } from './TaskName'
 import { useTasksList } from './useTasksList'
 import { TaskMenu, type MenuGroup } from './TaskMenu'
 import { taskRoute } from './tasks-paths'
@@ -405,7 +406,7 @@ const stopRow = {
 }
 
 /** The title: a click edits it in place (Return or leaving saves, Escape undoes); an empty title is not saved. */
-function TitleCell({ task }: { task: Task }): React.JSX.Element {
+function TitleCell({ task, parent }: { task: Task; parent: Task | undefined }): React.JSX.Element {
   const [editing, setEditing] = useState(false)
   const [text, setText] = useState(task.title)
   const classes = [styles.title, task.status === 'done' && styles.titleDone].filter(Boolean)
@@ -419,7 +420,7 @@ function TitleCell({ task }: { task: Task }): React.JSX.Element {
           setEditing(true)
         }}
       >
-        {task.title || 'Untitled'}
+        <TaskName task={task} parent={parent} title={task.title || 'Untitled'} />
       </span>
     )
   }
@@ -553,7 +554,10 @@ function TaskRowView({
       </td>
       <td>
         <div className={styles.titleLine}>
-          <TitleCell task={task} />
+          <TitleCell
+            task={task}
+            parent={isKid ? allRows.find((r) => r.task.uid === task.parentUid)?.task : undefined}
+          />
           {task.recurrence && (
             <span className={styles.repeat} title={describeRecurrence(task.recurrence)}>
               <Repeat
