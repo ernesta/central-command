@@ -3,7 +3,7 @@ import type { Task } from '../../tasks/shared/types'
 import { strandedParent, TRAINING_LIST, type ParentTarget } from '../shared/training-task'
 import {
   planSelfStudyTask,
-  selfStudyTitle,
+  selfStudyTaskTitle,
   type SelfStudyNote,
   type SelfStudyPlan
 } from '../shared/self-study-task'
@@ -28,7 +28,7 @@ export function draftSelfStudyTask(note: SelfStudyNote): Task {
   return {
     uid: '',
     workspace: 'research',
-    title: selfStudyTitle(note.title || 'Untitled'),
+    title: selfStudyTaskTitle(note.title || 'Untitled', note.series),
     description: '',
     status: 'doing',
     priority: 'normal',

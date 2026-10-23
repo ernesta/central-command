@@ -68,17 +68,17 @@ const linked = async (ref: TrainingRef): Promise<string> =>
 
 describe('settleSelfStudyTasks', () => {
   it.each(TEST_LOCALES)(
-    '%s: makes the series task and the entry subtask, due on the entry date, and links the note',
+    '%s: makes the series task and the entry subtask, named after the entry and due a week after it, and links the note',
     async (locale) => {
       await withLocale(locale, async () => {
         const ref = await entry()
         expect(await sweep()).toBe(true)
         const [parent] = byTitle('PS5210 self-study')
-        const [sub] = byTitle('Training 1 self-study')
+        const [sub] = byTitle('Training 1')
         expect(parent).toMatchObject({ list: 'Training', parentUid: null, ownKind: null })
         expect(sub).toMatchObject({
           parentUid: parent.uid,
-          due: '2026-10-21',
+          due: '2026-10-28',
           status: 'doing',
           ownKind: 'self-study'
         })
@@ -94,7 +94,7 @@ describe('settleSelfStudyTasks', () => {
     await sweep()
     expect(await sweep()).toBe(false)
     expect(await sweep()).toBe(false)
-    expect(byTitle('Training 1 self-study')).toHaveLength(1)
+    expect(byTitle('Training 1')).toHaveLength(1)
     expect(byTitle('PS5210 self-study')).toHaveLength(1)
   })
 
@@ -109,7 +109,7 @@ describe('settleSelfStudyTasks', () => {
         .filter((t) => t.parentUid === parent.uid)
         .map((t) => t.title)
         .sort()
-    ).toEqual(['Training 1 self-study', 'Training 2 self-study'])
+    ).toEqual(['Training 1', 'Training 2'])
   })
 
   it('an entry with no series gets a task of its own in Training', async () => {
@@ -126,13 +126,13 @@ describe('settleSelfStudyTasks', () => {
     const file = await training.read(dateless)
     await training.save(dateless, { meta: { date: '2026-10-22' } }, file.note.hash)
     await sweep()
-    expect(byTitle('Training 1 self-study')).toHaveLength(1)
+    expect(byTitle('Training 1')).toHaveLength(1)
   })
 
   it('follows a renamed entry, a changed series and a changed date', async () => {
     let ref = await entry()
     await sweep()
-    const [sub] = byTitle('Training 1 self-study')
+    const [sub] = byTitle('Training 1')
     let file = await training.read(ref)
     const renamed = await training.save(
       ref,
@@ -142,7 +142,7 @@ describe('settleSelfStudyTasks', () => {
     if (renamed.status === 'saved' && renamed.renamedTo) ref = { ...ref, id: renamed.renamedTo }
     await sweep()
     const moved = tasks.get(sub.uid)
-    expect(moved).toMatchObject({ title: 'Training One self-study', due: '2026-10-23' })
+    expect(moved).toMatchObject({ title: 'Training One', due: '2026-10-30' })
     const newParent = byTitle('PS5300 self-study')[0]
     expect(moved?.parentUid).toBe(newParent.uid)
     expect(all().filter((t) => t.title.endsWith('self-study') && !t.parentUid)).toHaveLength(2)
@@ -157,15 +157,15 @@ describe('settleSelfStudyTasks', () => {
     await training.save(ref, { meta: { selfStudy: chosen.uid } }, file.note.hash)
     await sweep()
     expect(tasks.get(chosen.uid)).toMatchObject({ title: 'My own task', due: null, status: 'todo' })
-    expect(byTitle('Training 1 self-study')).toHaveLength(0)
+    expect(byTitle('Training 1')).toHaveLength(0)
   })
 
   it('does not make a task again once the user has deleted it', async () => {
     await entry()
     await sweep()
-    tasks.delete(byTitle('Training 1 self-study')[0].uid)
+    tasks.delete(byTitle('Training 1')[0].uid)
     expect(await sweep()).toBe(false)
-    expect(byTitle('Training 1 self-study')).toHaveLength(0)
+    expect(byTitle('Training 1')).toHaveLength(0)
   })
 
   it('leaves a note edited a moment ago for the next run', async () => {
@@ -182,7 +182,7 @@ describe('settleSelfStudyTasks', () => {
     expect(await sweep(NOW, { training: failing })).toBe(true)
     expect(all().filter((t) => t.title.endsWith('self-study'))).toHaveLength(0)
     expect(await sweep()).toBe(true)
-    expect(byTitle('Training 1 self-study')).toHaveLength(1)
+    expect(byTitle('Training 1')).toHaveLength(1)
   })
 
   it('leaves every older entry alone: no task for one made before the app made tasks, however recent', async () => {
@@ -205,43 +205,44 @@ describe('settleSelfStudyTasks', () => {
     })
     await entry({ title: 'Training 3', task: own.uid })
     await sweep()
-    expect(byTitle('Training 3 self-study')).toHaveLength(1)
+    // The session's task and the self-study subtask are both named after the entry now.
+    expect(byTitle('Training 3').map((t) => t.ownKind)).toEqual(['training', 'self-study'])
   })
 
   describe('done a week after the entry ends', () => {
     it('not the minute before, done at the minute (an end time)', async () => {
       await entry({ date: '2026-10-10', start: '09:00', end: '11:00' })
       await sweep({ date: '2026-10-17', time: '10:59' })
-      expect(byTitle('Training 1 self-study')[0].status).toBe('doing')
+      expect(byTitle('Training 1')[0].status).toBe('doing')
       await sweep({ date: '2026-10-17', time: '11:00' })
-      expect(byTitle('Training 1 self-study')[0]).toMatchObject({
+      expect(byTitle('Training 1')[0]).toMatchObject({
         status: 'done',
-        due: '2026-10-10'
+        due: '2026-10-17'
       })
     })
 
     it('not a day early, and done the day after', async () => {
       await entry({ date: '2026-10-10', start: '09:00', end: '11:00' })
       await sweep({ date: '2026-10-16', time: '23:59' })
-      expect(byTitle('Training 1 self-study')[0].status).toBe('doing')
+      expect(byTitle('Training 1')[0].status).toBe('doing')
       await sweep({ date: '2026-10-18', time: '00:00' })
-      expect(byTitle('Training 1 self-study')[0].status).toBe('done')
+      expect(byTitle('Training 1')[0].status).toBe('done')
     })
 
     it('no end time: the end of the date’s day, a week on', async () => {
       await entry({ date: '2026-10-10' })
       await sweep({ date: '2026-10-17', time: '23:58' })
-      expect(byTitle('Training 1 self-study')[0].status).toBe('doing')
+      expect(byTitle('Training 1')[0].status).toBe('doing')
       await sweep({ date: '2026-10-17', time: '23:59' })
-      expect(byTitle('Training 1 self-study')[0].status).toBe('done')
+      expect(byTitle('Training 1')[0].status).toBe('done')
     })
 
     it('an entry made in the app gets its task already done when its week is over', async () => {
       await entry({ date: '2026-08-01' })
       await sweep()
-      expect(byTitle('Training 1 self-study')[0]).toMatchObject({
+      expect(byTitle('Training 1')[0]).toMatchObject({
         status: 'done',
-        due: '2026-08-01'
+        due: '2026-08-08'
       })
     })
 
@@ -249,7 +250,7 @@ describe('settleSelfStudyTasks', () => {
       await entry({ date: '2026-10-10', start: '09:00', end: '11:00' })
       await sweep({ date: '2026-10-17', time: '10:00' })
       await sweep({ date: '2026-10-17', time: '11:00' })
-      const uid = byTitle('Training 1 self-study')[0].uid
+      const uid = byTitle('Training 1')[0].uid
       expect(tasks.get(uid)?.status).toBe('done')
       tasks.setStatus(uid, 'doing')
       await sweep({ date: '2026-10-17', time: '11:05' })
@@ -260,13 +261,13 @@ describe('settleSelfStudyTasks', () => {
     it('moving the date back past the week closes it; a done task is never reopened', async () => {
       const ref = await entry({ date: '2026-10-21' })
       await sweep()
-      expect(byTitle('Training 1 self-study')[0].status).toBe('doing')
+      expect(byTitle('Training 1')[0].status).toBe('doing')
       const file = await training.read(ref)
       await training.save(ref, { meta: { date: '2026-10-01' } }, file.note.hash)
       await sweep()
-      expect(byTitle('Training 1 self-study')[0]).toMatchObject({
+      expect(byTitle('Training 1')[0]).toMatchObject({
         status: 'done',
-        due: '2026-10-01'
+        due: '2026-10-08'
       })
     })
   })
@@ -290,6 +291,11 @@ describe('the tracked time on a self-study task is kept', () => {
     await training.save(ref, { meta: { selfStudy: old.uid } }, file.note.hash)
     await sweep()
     expect(byTitle('Training 1 self-study')).toHaveLength(1)
-    expect(tasks.get(old.uid)).toMatchObject({ due: '2026-10-21', parentUid: parent.uid })
+    // The sweep follows the date and the series task but leaves a title that differs only in its ending to the repair.
+    expect(tasks.get(old.uid)).toMatchObject({
+      title: 'Training 1 self-study',
+      due: '2026-10-28',
+      parentUid: parent.uid
+    })
   })
 })

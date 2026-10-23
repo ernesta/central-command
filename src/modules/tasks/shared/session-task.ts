@@ -54,6 +54,9 @@ export const SELF_STUDY_DONE_AFTER_DAYS = 7
 /** The time of day a training with no end time is taken to end (the end of its day). */
 export const END_OF_DAY = '23:59'
 
+/** The day a training's self-study task is due (the user's rule, 23 Oct 2026): the moment it is done, a week after the training. */
+export const selfStudyDue = (date: string): string => addDays(date, SELF_STUDY_DONE_AFTER_DAYS)
+
 /**
  * The moment a training's self-study task is done: `SELF_STUDY_DONE_AFTER_DAYS` after its date, at its end time (the end of the day
  * when it has none). Null without a date.
@@ -67,8 +70,8 @@ export function selfStudyDoneAt(session: SessionTimes): LocalMoment | null {
 }
 
 /**
- * What a training's self-study task needs from the clock and the note: due on the training's date, done once a week has passed since
- * its end (at that minute, not the one before). Pure. A done task stays done and is never reopened here; like `sessionTaskChanges`, an
+ * What a training's self-study task needs from the clock and the note: due a week after the training (`selfStudyDue`), done at that
+ * moment, the training's end time that day (at that minute, not the one before). Pure. A done task stays done and is never reopened here; like `sessionTaskChanges`, an
  * open one that is past its moment is closed again on the next run.
  */
 export function selfStudyTaskChanges(
@@ -79,7 +82,7 @@ export function selfStudyTaskChanges(
   const changes: SessionTaskChanges = {}
   const doneAt = selfStudyDoneAt(session)
   if (!doneAt) return changes
-  if (task.due !== session.date) changes.due = session.date
+  if (task.due !== doneAt.date) changes.due = doneAt.date
   const reached = now.date !== doneAt.date ? now.date > doneAt.date : now.time >= doneAt.time
   if (task.status !== 'done' && reached) changes.done = true
   return changes

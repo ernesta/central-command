@@ -3,6 +3,7 @@ import {
   END_OF_DAY,
   SELF_STUDY_DONE_AFTER_DAYS,
   selfStudyDoneAt,
+  selfStudyDue,
   selfStudyTaskChanges,
   seriesChanges,
   sessionOver,
@@ -74,26 +75,26 @@ describe('selfStudyDoneAt', () => {
 
 describe('selfStudyTaskChanges', () => {
   const session = { date: '2026-10-10', end: '11:00' }
-  it('is due on the date and open until a week has passed since the end, to the minute', () => {
+  it('is due a week after the date and done at that moment (the end time), to the minute', () => {
     expect(selfStudyTaskChanges(task(), session, at('2026-10-17', '10:59'))).toEqual({
-      due: '2026-10-10'
+      due: '2026-10-17'
     })
     expect(selfStudyTaskChanges(task(), session, at('2026-10-17', '11:00'))).toEqual({
-      due: '2026-10-10',
+      due: '2026-10-17',
       done: true
     })
     expect(selfStudyTaskChanges(task(), session, at('2026-10-16', '23:59'))).toEqual({
-      due: '2026-10-10'
+      due: '2026-10-17'
     })
     expect(selfStudyTaskChanges(task(), session, at('2026-10-18', '00:00'))).toEqual({
-      due: '2026-10-10',
+      due: '2026-10-17',
       done: true
     })
   })
   it('does nothing to a task already dated and done, and nothing without a date', () => {
     expect(
       selfStudyTaskChanges(
-        task({ status: 'done', due: '2026-10-10' }),
+        task({ status: 'done', due: '2026-10-17' }),
         session,
         at('2026-11-01', '00:00')
       )
@@ -129,5 +130,12 @@ describe('seriesChanges', () => {
       {}
     )
     expect(seriesChanges({ ...series, due: '2026-10-10' }, [])).toEqual({})
+  })
+})
+
+describe('selfStudyDue', () => {
+  it('is a week after the training', () => {
+    expect(selfStudyDue('2026-10-10')).toBe('2026-10-17')
+    expect(selfStudyDue('2026-12-28')).toBe('2027-01-04')
   })
 })

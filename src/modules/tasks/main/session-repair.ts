@@ -8,7 +8,7 @@ import {
 } from '../../meetings/shared/meeting-task'
 import type { MeetingWorkspace } from '../../meetings/shared/types'
 import { TRAINING_LIST } from '../../training/shared/training-task'
-import { seriesChanges } from '../shared/session-task'
+import { selfStudyDue, seriesChanges } from '../shared/session-task'
 import { TASK_WORKSPACES, type OwnKind, type Task, type TaskStatus } from '../shared/types'
 import { listTasks, listTrash } from './repository'
 import { TasksStore } from './tasks-store'
@@ -133,12 +133,30 @@ export interface SeriesLine {
   newStatus?: TaskStatus
 }
 
+/** A self-study subtask whose title or due date the repair would change (the user's rules of 23 Oct 2026). */
+export interface StudyLine {
+  uid: string
+  /** The training note that names it. */
+  noteId: string
+  title: string
+  parentTitle: string
+  due: string | null
+  /** The title without its ending ("Introduction self-study" → "Introduction"). */
+  newTitle?: string
+  /** The training's date plus a week. */
+  newDue?: string
+  /** The sibling that already has the new title: the rename is listed and left alone. */
+  collidesWith?: string
+}
+
 export interface RepairReport {
   meetings: MeetingLine[]
   orphans: OrphanLine[]
   trainings: TrainingLine[]
   /** Training notes that name no task at all (`task:` empty). */
   noTask: { id: string; title: string; date: string }[]
+  /** Self-study subtasks whose names or due dates are not the new way yet (only those that differ are listed). */
+  selfStudy: StudyLine[]
   /** Series tasks that are out of step with their subtasks (every series is checked; only these are listed). */
   series: SeriesLine[]
 }
@@ -265,7 +283,73 @@ export function planRepair(
   for (const m of meetings) if (m.fix?.mark) marks.set(m.fix.uid, m.fix.mark)
   const { trainings, noTask } = planTrainings(input, live, byUid)
   for (const t of trainings) if (t.state === 'mark') marks.set(t.task, t.kind)
-  return { meetings, orphans, trainings, noTask, series: planSeries(live, marks) }
+  const selfStudy = planSelfStudy(input, trainings, live, byUid)
+  // The series task follows the dates the subtasks will have.
+  const due = new Map(selfStudy.filter((l) => l.newDue).map((l) => [l.uid, l.newDue as string]))
+  const dated = live.map((t) => (due.has(t.uid) ? { ...t, due: due.get(t.uid) as string } : t))
+  return { meetings, orphans, trainings, noTask, selfStudy, series: planSeries(dated, marks) }
+}
+
+/** The ending a self-study task's title loses: ` self-study`, or the first version's ` · self-study`. */
+const STUDY_ENDING = /\s*·?\s*self-study$/i
+
+/**
+ * The self-study subtasks the Research training notes name, as they stand against the rules of 23 Oct 2026: named after the training
+ * alone (the series task above says `<series> self-study`), and due the training's date plus a week. A title that would then equal a
+ * sibling's (or another renamed one's) is listed and left alone. Pure.
+ */
+function planSelfStudy(
+  input: RepairInput,
+  trainings: readonly TrainingLine[],
+  live: readonly RepairTask[],
+  byUid: ReadonlyMap<string, RepairTask>
+): StudyLine[] {
+  const fold = (text: string): string => text.trim().toLowerCase()
+  const candidates: { task: RepairTask; parent: RepairTask; noteId: string; date: string }[] = []
+  for (const line of trainings) {
+    if (line.kind !== 'self-study' || (line.state !== 'in-step' && line.state !== 'mark')) continue
+    const task = byUid.get(line.task)
+    const parent = task?.parentUid ? byUid.get(task.parentUid) : undefined
+    if (!task || task.deletedAt !== null || !parent || parent.deletedAt !== null) continue
+    if (!STUDY_ENDING.test(parent.title)) continue
+    if (task.ownKind !== 'self-study' && line.state !== 'mark') continue
+    const date = input.training.find((n) => n.id === line.id)?.date ?? ''
+    candidates.push({ task, parent, noteId: line.id, date })
+  }
+  const stripped = (t: RepairTask): string | null => {
+    const bare = t.title.replace(STUDY_ENDING, '').trim()
+    return bare !== '' && bare !== t.title ? bare : null
+  }
+  // Titles as they would stand, per series task, to find the ones that meet.
+  const wanted = new Map<string, number>()
+  const key = (parentUid: string, title: string): string => `${parentUid}\u0000${fold(title)}`
+  const renamed = new Map(candidates.map((c) => [c.task.uid, stripped(c.task)]))
+  for (const t of live) {
+    if (!t.parentUid) continue
+    const title = renamed.get(t.uid) ?? t.title
+    wanted.set(key(t.parentUid, title), (wanted.get(key(t.parentUid, title)) ?? 0) + 1)
+  }
+  const lines: StudyLine[] = []
+  for (const c of candidates) {
+    const newTitle = renamed.get(c.task.uid) ?? undefined
+    const newDue = c.date ? selfStudyDue(c.date) : undefined
+    const line: StudyLine = {
+      uid: c.task.uid,
+      noteId: c.noteId,
+      title: c.task.title,
+      parentTitle: c.parent.title,
+      due: c.task.due
+    }
+    if (newTitle !== undefined) {
+      if ((wanted.get(key(c.parent.uid, newTitle)) ?? 0) > 1) {
+        line.collidesWith = newTitle
+      } else line.newTitle = newTitle
+    }
+    if (newDue !== undefined && newDue !== c.task.due) line.newDue = newDue
+    if (line.newTitle !== undefined || line.newDue !== undefined || line.collidesWith)
+      lines.push(line)
+  }
+  return lines
 }
 
 /** Each task a Research training note names, and whether it gets the marker (the sweep's own rule for what is the training's own). */
@@ -443,6 +527,23 @@ export function formatRepairReport(report: RepairReport, region: string): string
   for (const n of report.noTask) say(`    ${n.id} (${n.date || 'no date'}) "${n.title}"`)
 
   say()
+  const renames = report.selfStudy.filter((l) => l.newTitle !== undefined)
+  const moves = report.selfStudy.filter((l) => l.newDue !== undefined)
+  const collisions = report.selfStudy.filter((l) => l.collidesWith !== undefined)
+  say(
+    `SELF-STUDY SUBTASKS (named after the training alone, due a week after it): rename ${renames.length}, move the due date ${moves.length}, ` +
+      `name already taken (left alone) ${collisions.length}`
+  )
+  for (const l of report.selfStudy) {
+    const parts: string[] = []
+    if (l.newTitle !== undefined) parts.push(`rename to "${l.newTitle}"`)
+    if (l.collidesWith !== undefined)
+      parts.push(`"${l.collidesWith}" is already taken under the same series task (left alone)`)
+    if (l.newDue !== undefined) parts.push(`due ${l.due ?? 'none'} → ${l.newDue}`)
+    say(`  ${l.noteId}: "${l.title}" under "${l.parentTitle}": ${parts.join('; ')}`)
+  }
+
+  say()
   say(
     `SERIES TASKS out of step with their subtasks: ${report.series.length} (date = latest subtask, Done once all are)`
   )
@@ -523,6 +624,15 @@ export function applyRepair(
       store.update(t.task, { ownKind: t.kind })
       marked++
     }
+    // Self-study subtasks: named after the training alone, due a week after it.
+    for (const l of report.selfStudy) {
+      if (l.newTitle === undefined && l.newDue === undefined) continue
+      store.update(l.uid, {
+        ...(l.newTitle !== undefined ? { title: l.newTitle } : {}),
+        ...(l.newDue !== undefined ? { due: l.newDue } : {})
+      })
+      changed++
+    }
     // Series tasks follow their subtasks (updating a subtask settles its series; the rest are settled here).
     for (const s of planRepair(readRepairInput(db), clients, tracked).series) {
       if (store.settleSeries(s.uid)) changed++
@@ -538,6 +648,7 @@ export function applyRepair(
       after.meetings.filter((m) => m.fix).length +
       after.orphans.filter((o) => o.trackedMinutes === 0).length +
       after.trainings.filter((t) => t.state === 'mark').length +
+      after.selfStudy.filter((l) => l.newTitle !== undefined || l.newDue !== undefined).length +
       after.series.length
     if (left > 0)
       throw new Error(`Refusing to write: ${left} item(s) would still need repair afterwards`)

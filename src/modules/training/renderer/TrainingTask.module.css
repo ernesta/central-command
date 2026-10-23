@@ -22,7 +22,3 @@
 .plain {
   color: var(--ink);
 }
-/* The series in front of a self-study task's name, muted like TaskName's. */
-.series {
-  color: var(--text-muted);
-}

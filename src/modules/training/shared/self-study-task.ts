@@ -1,4 +1,5 @@
 import { fold } from '@shared/text'
+import { selfStudyDue } from '../../tasks/shared/session-task'
 import type { Task } from '../../tasks/shared/types'
 import { bareTitle, TRAINING_LIST, type ParentTarget } from './training-task'
 
@@ -7,8 +8,20 @@ const SUFFIX = ' self-study'
 /** A title folded, with the first version's middle dot taken out (`PS5210 · self-study`), so tasks made then are still found. */
 const plain = (title: string): string => fold(bareTitle(title)).replace(' · self-study', SUFFIX)
 
-/** The title of a self-study task: the series' own, or a training's (`<series> self-study`, `<note title> self-study`). */
+/** The title of a series' self-study task, or of a training's own when it has no series: `<series> self-study`, `<note title> self-study`. */
 export const selfStudyTitle = (name: string): string => `${name.trim()}${SUFFIX}`
+
+/**
+ * The title of a training's self-study task (the user's rule, 23 Oct 2026): a subtask is named after the training alone ("Introduction"),
+ * because the series task above it says what the work is; with no series there is no parent to say it, so the top-level task keeps
+ * `<title> self-study`.
+ */
+export const selfStudyTaskTitle = (title: string, series: string | null): string =>
+  (series ?? '').trim() ? title.trim() : selfStudyTitle(title)
+
+/** A title folded and without either ending (` self-study`, ` · self-study`): the name of the training a self-study task is for. */
+export const studyStem = (title: string): string =>
+  fold(bareTitle(title)).replace(/(?: · | )self-study$/, '')
 
 /** What a training note's self-study task needs done now. Pure: it only says, the page does it. */
 export type SelfStudyPlan =
@@ -23,7 +36,7 @@ export interface SelfStudyNote {
   selfStudy: string
   series: string | null
   title: string
-  /** YYYY-MM-DD, or '' / left out while the note has none: the task is due that day, and follows it. */
+  /** YYYY-MM-DD, or '' / left out while the note has none: the task is due a week after it (`selfStudyDue`), and follows it. */
   date?: string
 }
 
@@ -61,8 +74,8 @@ export function isSelfStudyOwn(own: Task, tasks: readonly Task[]): boolean {
  *
  * - The task is a subtask under the series' `<series> self-study` task, and a task of its own (top level, in Training) while the note
  *   has no series; adding a series moves it under the series' task, clearing it takes it back out.
- * - The task takes the note's title (`<title> self-study`), and is due on the note's date, following it when it changes (no date: no
- *   due date set or changed).
+ * - The task takes the note's title (`selfStudyTaskTitle`), and is due a week after the note's date, following it when it changes
+ *   (no date: no due date set or changed).
  * - A task that is not the note's own is never renamed or moved: a subtask is the note's only under a self-study series task, and a
  *   top-level task only when it is in Training with nothing under it.
  *
@@ -71,17 +84,18 @@ export function isSelfStudyOwn(own: Task, tasks: readonly Task[]): boolean {
 export function planSelfStudyTask(
   note: SelfStudyNote,
   tasks: readonly Task[],
-  asked = false
+  asked = false,
+  keepForm = false
 ): SelfStudyPlan {
   const series = (note.series ?? '').trim()
   const title = note.title.trim()
-  const due = note.date || undefined
+  const due = note.date ? selfStudyDue(note.date) : undefined
   const own = note.selfStudy ? tasks.find((t) => t.uid === note.selfStudy) : undefined
   if (!own) {
     if (!asked) return { kind: 'none' }
     return {
       kind: 'create',
-      title: selfStudyTitle(title || 'Untitled'),
+      title: selfStudyTaskTitle(title || 'Untitled', series),
       parent: series ? selfStudyParentFor(series, tasks) : null,
       ...(due ? { due } : {})
     }
@@ -115,8 +129,10 @@ export function planSelfStudyTask(
     }
   }
   if (named(title) || own.parentUid) {
-    const wanted = selfStudyTitle(title || 'Untitled')
-    if (title && own.title !== wanted) plan.title = wanted
+    const wanted = selfStudyTaskTitle(title || 'Untitled', series)
+    // `keepForm`: the sweep leaves a title that differs only in its ending alone (the repair renames those, the user having asked).
+    const sameForm = keepForm && studyStem(own.title) === studyStem(wanted)
+    if (title && own.title !== wanted && !sameForm) plan.title = wanted
   }
   if (due && own.due !== due) plan.due = due
   return plan.title === undefined && plan.parent === undefined && plan.due === undefined

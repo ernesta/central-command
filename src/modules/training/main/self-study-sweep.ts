@@ -57,7 +57,7 @@ async function link(training: TrainingStore, ref: TrainingRef, uid: string): Pro
 /**
  * Every Research training entry with a title and a date has its self-study task (the user's rule, 19 Oct 2026): made here, in the main
  * process, so it exists whether or not the note is ever opened. The task is a subtask under the series' `<series> self-study` task (a
- * top-level task in Training for an entry with no series), is due on the entry's date, follows its title and series, and is marked
+ * top-level task in Training for an entry with no series), is due a week after the entry's date, follows its title and series, and is marked
  * done a week after the entry ends. Only for an entry made in the app (see `madeInApp`); older ones are the user's to map by hand. Idempotent: the uid is written into the note, and an entry that has one never gets a second. A
  * task the note names that is gone (the user deleted it) is not made again by itself. Returns whether any task changed.
  */
@@ -127,7 +127,7 @@ export async function settleSelfStudyTasks(options: SelfStudySweepOptions): Prom
 
     const own = all.find((t) => t.uid === meta.selfStudy)
     if (!own || !isSelfStudyOwn(own, all)) continue
-    const plan = planSelfStudyTask(note, all)
+    const plan = planSelfStudyTask(note, all, false, true)
     if (plan.kind === 'sync' && (plan.title !== undefined || plan.parent !== undefined)) {
       const made: string[] = []
       tasks.update(own.uid, {

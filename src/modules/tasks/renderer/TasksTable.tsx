@@ -38,7 +38,6 @@ import { PriorityBadge, StatusIcon } from './TaskIcons'
 import { PRIORITY_LABELS } from './task-labels'
 import { ListField } from './ListField'
 import { TagsField } from './TagsField'
-import { TaskName } from './TaskName'
 import { useTasksList } from './useTasksList'
 import { TaskMenu, type MenuGroup } from './TaskMenu'
 import { taskRoute } from './tasks-paths'
@@ -418,24 +417,12 @@ const stopRow = {
 }
 
 /** The title: a click edits it in place (Return or leaving saves, Escape undoes); an empty title is not saved. */
-function TitleCell({
-  task,
-  parent,
-  locked
-}: {
-  task: Task
-  parent: Task | undefined
-  locked: boolean
-}): React.JSX.Element {
+function TitleCell({ task, locked }: { task: Task; locked: boolean }): React.JSX.Element {
   const [editing, setEditing] = useState(false)
   const [text, setText] = useState(task.title)
   const classes = [styles.title, task.status === 'done' && styles.titleDone].filter(Boolean)
   if (locked) {
-    return (
-      <span className={classes.filter(Boolean).join(' ')}>
-        <TaskName task={task} parent={parent} title={task.title || 'Untitled'} />
-      </span>
-    )
+    return <span className={classes.filter(Boolean).join(' ')}>{task.title || 'Untitled'}</span>
   }
   if (!editing) {
     return (
@@ -447,7 +434,7 @@ function TitleCell({
           setEditing(true)
         }}
       >
-        <TaskName task={task} parent={parent} title={task.title || 'Untitled'} />
+        {task.title || 'Untitled'}
       </span>
     )
   }
@@ -590,11 +577,8 @@ function TaskRowView({
       </td>
       <td>
         <div className={styles.titleLine}>
-          <TitleCell
-            locked={textLocked}
-            task={task}
-            parent={isKid ? allRows.find((r) => r.task.uid === task.parentUid)?.task : undefined}
-          />
+          {/* A subtask's parent is always in view here, so its name stands alone ("Introduction", not "Series › Introduction"). */}
+          <TitleCell locked={textLocked} task={task} />
           {task.recurrence && (
             <span className={styles.repeat} title={describeRecurrence(task.recurrence)}>
               <Repeat

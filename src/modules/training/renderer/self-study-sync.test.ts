@@ -59,7 +59,7 @@ describe('makeSelfStudyTask', () => {
     const task = await makeSelfStudyTask(f.api, note, made)
     expect(f.tasks.map((t) => [t.title, t.parentUid ? 'sub' : t.list])).toEqual([
       ['PS5210 self-study', 'Training'],
-      ['Plotly self-study', 'sub']
+      ['Plotly', 'sub']
     ])
     expect(task.parentUid).toBe(f.tasks[0].uid)
     expect(task.status).toBe('doing')
@@ -112,7 +112,7 @@ describe('syncSelfStudyTask', () => {
   it('follows a renamed title', async () => {
     const f = await setup()
     await run(f, { title: 'Plotly 2' })
-    expect(f.tasks.find((t) => t.uid === f.uid)?.title).toBe('Plotly 2 self-study')
+    expect(f.tasks.find((t) => t.uid === f.uid)?.title).toBe('Plotly 2')
   })
 
   it('moves under another series and trashes the series task it made and left empty', async () => {

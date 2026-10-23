@@ -261,6 +261,91 @@ describe('planRepair: trainings', () => {
   })
 })
 
+describe('planRepair and applyRepair: self-study subtasks', () => {
+  /** A `<series> self-study` task with subtasks named the old way, each named by a training note. */
+  function studies(): { series: string; a: string; b: string; c: string } {
+    const series = store.create({
+      workspace: 'research',
+      title: 'PS5210 self-study',
+      list: 'Training'
+    })
+    const kid = (title: string, due: string | null = null): string =>
+      store.create({
+        workspace: 'research',
+        title,
+        parentUid: series.uid,
+        due,
+        ownKind: 'self-study'
+      }).uid
+    const a = kid('Introduction self-study', '2026-10-01')
+    const b = kid('fNIRS · self-study', '2026-10-08')
+    const c = kid('Day 2', '2026-10-10')
+    training('a', { selfStudy: a, title: 'Introduction', date: '2026-10-01' })
+    training('b', { selfStudy: b, title: 'fNIRS', date: '2026-10-08' })
+    training('c', { selfStudy: c, title: 'Day 2', date: '2026-10-08' })
+    return { series: series.uid, a, b, c }
+  }
+
+  it('renames to the training alone (both endings) and moves the date to a week after the training', () => {
+    const id = studies()
+    const report = planRepair(readRepairInput(db), null, NONE)
+    const line = (uid: string): unknown => report.selfStudy.find((l) => l.uid === uid)
+    expect(line(id.a)).toMatchObject({ newTitle: 'Introduction', newDue: '2026-10-08' })
+    expect(line(id.b)).toMatchObject({ newTitle: 'fNIRS', newDue: '2026-10-15' })
+    // Already named the new way: only the date moves.
+    expect(line(id.c)).toMatchObject({ newDue: '2026-10-15' })
+    expect(line(id.c)).not.toHaveProperty('newTitle')
+    const text = formatRepairReport(report, 'test')
+    expect(text).toContain('rename 2, move the due date 3')
+    expect(text).toContain('rename to "Introduction"')
+  })
+
+  it('lists a title that is already taken under the same series task and leaves it alone', () => {
+    const id = studies()
+    store.update(id.c, { title: 'Introduction' })
+    const report = planRepair(readRepairInput(db), null, NONE)
+    expect(report.selfStudy.find((l) => l.uid === id.a)).toMatchObject({
+      collidesWith: 'Introduction'
+    })
+    expect(report.selfStudy.find((l) => l.uid === id.a)).not.toHaveProperty('newTitle')
+    applyRepair(db, null, NONE)
+    expect(store.get(id.a)?.title).toBe('Introduction self-study')
+    expect(store.get(id.a)?.due).toBe('2026-10-08')
+    expect(store.get(id.b)?.title).toBe('fNIRS')
+    expect(formatRepairReport(planRepair(readRepairInput(db), null, NONE), 'test')).toContain(
+      'name already taken (left alone) 1'
+    )
+  })
+
+  it('leaves a top-level `<title> self-study` task and one under a task that is not a series task', () => {
+    const alone = store.create({
+      workspace: 'research',
+      title: 'Plotly self-study',
+      list: 'Training'
+    })
+    const parent = store.create({ workspace: 'research', title: 'Taxes', list: 'Money' })
+    const stray = store.create({
+      workspace: 'research',
+      title: 'File it self-study',
+      parentUid: parent.uid
+    })
+    training('a', { selfStudy: alone.uid, date: '2026-10-01' })
+    training('b', { selfStudy: stray.uid, date: '2026-10-01' })
+    expect(planRepair(readRepairInput(db), null, NONE).selfStudy).toEqual([])
+  })
+
+  it('applies the renames and dates, the series follows, and a second run changes nothing', () => {
+    const id = studies()
+    const done = applyRepair(db, null, NONE)
+    expect(done.changed).toBeGreaterThanOrEqual(3)
+    expect(store.get(id.a)).toMatchObject({ title: 'Introduction', due: '2026-10-08' })
+    expect(store.get(id.b)).toMatchObject({ title: 'fNIRS', due: '2026-10-15' })
+    expect(store.get(id.series)?.due).toBe('2026-10-15')
+    expect(applyRepair(db, null, NONE)).toEqual({ marked: 0, changed: 0, trashed: 0 })
+    expect(planRepair(readRepairInput(db), null, NONE).selfStudy).toEqual([])
+  })
+})
+
 describe('applyRepair', () => {
   it('marks, renames, dates and re-parents, trashes the orphans with no time, and leaves the chosen task, and a second look finds nothing', () => {
     const id = scenario()

@@ -2,7 +2,6 @@ import { Button } from '@renderer/components/Button'
 import { EntityLink } from '@renderer/components/EntityLink'
 import { Panel } from '@renderer/components/Panel'
 import { taskRoute } from '../../tasks/renderer/tasks-paths'
-import { studySeries } from '../../tasks/shared/study-label'
 import type { Task } from '../../tasks/shared/types'
 import styles from './TrainingTask.module.css'
 
@@ -59,37 +58,17 @@ export function TrainingTask({
   }
   const shown = selfStudy ?? draft
   const parent = shown.parentUid ? tasks.find((t) => t.uid === shown.parentUid) : undefined
-  // The series reads in front of the name ("Series › Day 2 self-study"), from the parent task or, before it exists, the note's series.
-  const prefix = studySeries(shown, parent) ?? (parent ? null : series)
   const list = parent ? parent.list : shown.list
-  // A link to the series task once it exists (the name's own link goes to the task itself); plain text before that.
-  const lead = prefix ? (
-    <span className={styles.series}>
-      {parent ? (
-        <EntityLink kind="task" to={taskRoute(parent.workspace, parent.uid)}>
-          {prefix}
-        </EntityLink>
-      ) : (
-        prefix
-      )}{' '}
-      ›{' '}
-    </span>
-  ) : null
+  // The subtask shows its own name (the user's rule, 23 Oct 2026): the series task above it says what the work is, and its list is here.
   return (
     <Panel label="Task" row>
       <div className={styles.name}>
         {selfStudy ? (
-          <span>
-            {lead}
-            <EntityLink kind="task" to={taskRoute(selfStudy.workspace, selfStudy.uid)}>
-              {selfStudy.title}
-            </EntityLink>
-          </span>
+          <EntityLink kind="task" to={taskRoute(selfStudy.workspace, selfStudy.uid)}>
+            {selfStudy.title}
+          </EntityLink>
         ) : (
-          <span className={styles.plain}>
-            {lead}
-            {draft.title}
-          </span>
+          <span className={styles.plain}>{draft.title}</span>
         )}
         <span className={styles.list}>{list}</span>
       </div>

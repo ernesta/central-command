@@ -5,7 +5,9 @@ import {
   planSelfStudyTask,
   type SelfStudyNote,
   selfStudyParentFor,
-  selfStudyTitle
+  selfStudyTaskTitle,
+  selfStudyTitle,
+  studyStem
 } from './self-study-task'
 
 const task = (uid: string, title: string, over: Partial<Task> = {}): Task => ({
@@ -33,7 +35,7 @@ const task = (uid: string, title: string, over: Partial<Task> = {}): Task => ({
 })
 
 const seriesTask = task('p1', 'PS5210 self-study')
-const mine = task('s1', 'Plotly self-study', { list: '', parentUid: 'p1' })
+const mine = task('s1', 'Plotly', { list: '', parentUid: 'p1' })
 const note = (over: Partial<SelfStudyNote> = {}): SelfStudyNote => ({
   selfStudy: 's1',
   series: 'PS5210',
@@ -65,7 +67,7 @@ describe('selfStudyParentFor', () => {
     expect(planSelfStudyTask(note(), [old, oldMine])).toEqual({
       kind: 'sync',
       uid: 's1',
-      title: 'Plotly self-study'
+      title: 'Plotly'
     })
   })
   it('prefers the Training list', () => {
@@ -84,7 +86,7 @@ describe('planSelfStudyTask', () => {
   it('when asked, makes the subtask under the series task that exists', () => {
     expect(planSelfStudyTask(note({ selfStudy: '' }), [seriesTask], true)).toEqual({
       kind: 'create',
-      title: 'Plotly self-study',
+      title: 'Plotly',
       parent: { uid: 'p1' }
     })
   })
@@ -92,7 +94,7 @@ describe('planSelfStudyTask', () => {
   it('when asked, says the series task is to be made when there is none', () => {
     expect(planSelfStudyTask(note({ selfStudy: '' }), [], true)).toEqual({
       kind: 'create',
-      title: 'Plotly self-study',
+      title: 'Plotly',
       parent: { title: 'PS5210 self-study', list: 'Training' }
     })
   })
@@ -127,7 +129,29 @@ describe('planSelfStudyTask', () => {
     expect(planSelfStudyTask(note({ title: 'Plotly 2' }), [seriesTask, mine])).toEqual({
       kind: 'sync',
       uid: 's1',
-      title: 'Plotly 2 self-study'
+      title: 'Plotly 2'
+    })
+  })
+
+  it('a series-less training keeps the top-level `<title> self-study`; the subtask never has the ending', () => {
+    expect(selfStudyTaskTitle('Plotly', null)).toBe('Plotly self-study')
+    expect(selfStudyTaskTitle(' Plotly ', '  ')).toBe('Plotly self-study')
+    expect(selfStudyTaskTitle(' Plotly ', 'PS5210')).toBe('Plotly')
+    const alone = task('s1', 'Plotly self-study')
+    expect(planSelfStudyTask(note({ series: null }), [alone])).toEqual({ kind: 'none' })
+  })
+
+  it('studyStem reads both title forms, and the sweep leaves a form-only difference alone', () => {
+    expect(studyStem('Plotly self-study')).toBe('plotly')
+    expect(studyStem('Plotly · self-study')).toBe('plotly')
+    expect(studyStem('Plotly')).toBe('plotly')
+    const old = task('s1', 'Plotly self-study', { list: '', parentUid: 'p1' })
+    expect(planSelfStudyTask(note(), [seriesTask, old])).toMatchObject({ title: 'Plotly' })
+    expect(planSelfStudyTask(note(), [seriesTask, old], false, true)).toEqual({ kind: 'none' })
+    expect(planSelfStudyTask(note({ title: 'Plotly 2' }), [seriesTask, old], false, true)).toEqual({
+      kind: 'sync',
+      uid: 's1',
+      title: 'Plotly 2'
     })
   })
 
@@ -153,6 +177,7 @@ describe('planSelfStudyTask', () => {
     expect(planSelfStudyTask(note({ series: null }), [seriesTask, mine])).toEqual({
       kind: 'sync',
       uid: 's1',
+      title: 'Plotly self-study',
       parent: null
     })
   })
@@ -162,6 +187,7 @@ describe('planSelfStudyTask', () => {
     expect(planSelfStudyTask(note(), [seriesTask, alone])).toEqual({
       kind: 'sync',
       uid: 's1',
+      title: 'Plotly',
       parent: { uid: 'p1' }
     })
     expect(planSelfStudyTask(note({ series: null }), [alone])).toEqual({ kind: 'none' })
@@ -172,6 +198,7 @@ describe('planSelfStudyTask', () => {
     expect(planSelfStudyTask(note({ title: 'PS5210' }), [alone])).toEqual({
       kind: 'sync',
       uid: 's1',
+      title: 'PS5210',
       parent: { title: 'PS5210 self-study', list: 'Training' }
     })
   })
@@ -190,7 +217,7 @@ describe('planSelfStudyTask', () => {
   })
 
   it('another note’s subtask is left alone: only the uid in the note is ever planned', () => {
-    const neighbour = task('s2', 'Dash self-study', { list: '', parentUid: 'p1' })
+    const neighbour = task('s2', 'Dash', { list: '', parentUid: 'p1' })
     const plan = planSelfStudyTask(note({ title: 'Plotly 2' }), [seriesTask, mine, neighbour])
     expect(plan).toMatchObject({ kind: 'sync', uid: 's1' })
   })
@@ -201,10 +228,10 @@ describe('planSelfStudyTask', () => {
 })
 
 describe('the self-study task follows the note’s date', () => {
-  it('a new task is made due on the date; one with no date is made with none', () => {
+  it('a new task is made due a week after the date; one with no date is made with none', () => {
     expect(planSelfStudyTask(note({ selfStudy: '', date: '2026-10-21' }), [], true)).toMatchObject({
       kind: 'create',
-      due: '2026-10-21'
+      due: '2026-10-28'
     })
     expect(planSelfStudyTask(note({ selfStudy: '' }), [], true)).not.toHaveProperty('due')
   })
@@ -213,21 +240,21 @@ describe('the self-study task follows the note’s date', () => {
     expect(planSelfStudyTask(note({ date: '2026-10-21' }), [seriesTask, mineDue(null)])).toEqual({
       kind: 'sync',
       uid: 's1',
-      due: '2026-10-21'
+      due: '2026-10-28'
     })
     expect(
-      planSelfStudyTask(note({ date: '2026-10-22' }), [seriesTask, mineDue('2026-10-21')])
+      planSelfStudyTask(note({ date: '2026-10-22' }), [seriesTask, mineDue('2026-10-28')])
     ).toEqual({
       kind: 'sync',
       uid: 's1',
-      due: '2026-10-22'
+      due: '2026-10-29'
     })
     expect(
-      planSelfStudyTask(note({ date: '2026-10-21' }), [seriesTask, mineDue('2026-10-21')])
+      planSelfStudyTask(note({ date: '2026-10-21' }), [seriesTask, mineDue('2026-10-28')])
     ).toEqual({
       kind: 'none'
     })
-    expect(planSelfStudyTask(note(), [seriesTask, mineDue('2026-10-21')])).toEqual({ kind: 'none' })
+    expect(planSelfStudyTask(note(), [seriesTask, mineDue('2026-10-28')])).toEqual({ kind: 'none' })
   })
 })
 
