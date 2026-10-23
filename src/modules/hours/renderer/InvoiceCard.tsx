@@ -67,13 +67,13 @@ export function InvoiceCard({
           >
             <ChevronRight size={16} strokeWidth={1.75} aria-hidden />
           </button>
-          {current && current !== month && (
-            <BackToToday
-              label={`This ${unit}`}
-              onClick={() => onWeekChange(defaultWeek(data.start, now.date, data.weeks))}
-            />
-          )}
         </div>
+        {current && current !== month && (
+          <BackToToday
+            label={`This ${unit}`}
+            onClick={() => onWeekChange(defaultWeek(data.start, now.date, data.weeks))}
+          />
+        )}
       </header>
       {begun &&
         (aimed ? (

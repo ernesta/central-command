@@ -37,6 +37,10 @@
   --tooltip-text: light-dark(#edeff2, #1b222b);
   /* The accent as it reads on the tooltip/toast background (the opposite pair of --accent). */
   --accent-on-tooltip: light-dark(#86aad0, #35577a);
+  /* The toast stays dark in both themes (a light pill in dark mode glares): a raised dark surface, with the same accent. */
+  --toast-bg: light-dark(#1b222b, #2b343f);
+  --toast-text: #edeff2;
+  --accent-on-toast: #86aad0;
 
   /* Type */
   --font-display: 'Newsreader', Georgia, serif;

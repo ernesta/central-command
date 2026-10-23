@@ -17,7 +17,7 @@
   gap: 8px;
 }
 .label {
-  min-width: 26ch;
+  min-width: 20ch;
   text-align: center;
   font-variant-numeric: tabular-nums;
 }

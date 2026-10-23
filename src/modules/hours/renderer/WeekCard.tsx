@@ -85,8 +85,8 @@ export function WeekCard({
           >
             <ChevronRight size={16} strokeWidth={1.75} aria-hidden />
           </button>
-          {away && <BackToToday label="This week" onClick={() => onWeekChange(thisWeek)} />}
         </div>
+        {away && <BackToToday label="This week" onClick={() => onWeekChange(thisWeek)} />}
       </header>
       {aimed ? (
         <PeriodSummary minutes={worked} aim={aim} />

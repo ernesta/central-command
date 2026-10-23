@@ -10,7 +10,12 @@ function stubApi(next: unknown): void {
     ...globalThis.window,
     api: {
       tasks: {
-        get: async () => ({ status: 'todo' }),
+        get: async () => ({
+          status: 'todo',
+          title: 'Write intro',
+          workspace: 'research',
+          uid: 'a'
+        }),
         setStatus: async () => ({ task: {}, next })
       }
     }
@@ -65,6 +70,19 @@ describe('Undo of a status change', () => {
     await undoLast()
     expect(setStatus).toHaveBeenLastCalledWith('a', 'todo')
     expect(update).toHaveBeenCalledWith('a', { due: null })
+  })
+
+  it('says which task and what changed, with an Open chip that goes to it', async () => {
+    const go = vi.fn()
+    setNavigator(go)
+    stub({ status: 'todo', due: '2026-11-01', title: 'Write intro', workspace: 'work', uid: 'a' })
+    await setTaskStatus({ uid: 'a' }, 'done')
+    await undoLast()
+    const toast = currentToast()
+    expect(toast?.text).toBe('Undid the status change of “Write intro” from To do to Done.')
+    expect(toast?.action?.label).toBe('Open')
+    toast?.action?.run()
+    expect(go).toHaveBeenCalledWith('/work/tasks/t/a')
   })
 
   it('leaves a dated task alone', async () => {

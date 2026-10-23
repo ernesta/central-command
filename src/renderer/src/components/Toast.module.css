@@ -11,9 +11,11 @@
   padding: 8px 8px 9px 16px;
   transform: translateX(-50%);
   border-radius: var(--radius-control);
-  background: var(--tooltip-bg);
-  color: var(--tooltip-text);
+  background: var(--toast-bg);
+  color: var(--toast-text);
   box-shadow: var(--shadow-float);
+  outline: 1px solid color-mix(in srgb, var(--toast-text) 10%, transparent);
+  outline-offset: -1px;
   font-size: var(--text-14);
   animation: toast-in var(--transition-base);
 }
@@ -49,14 +51,14 @@
   padding: 3px 10px;
   border: 0;
   border-radius: var(--radius-control);
-  background: color-mix(in srgb, var(--accent-on-tooltip) 22%, transparent);
-  color: var(--accent-on-tooltip);
+  background: color-mix(in srgb, var(--accent-on-toast) 22%, transparent);
+  color: var(--accent-on-toast);
   font-weight: 600;
   text-decoration: none;
 }
 
 .action:hover {
-  background: color-mix(in srgb, var(--accent-on-tooltip) 34%, transparent);
+  background: color-mix(in srgb, var(--accent-on-toast) 34%, transparent);
 }
 
 .bar {
@@ -65,7 +67,7 @@
   bottom: 0;
   left: 0;
   height: 2px;
-  background: var(--accent-on-tooltip);
+  background: var(--accent-on-toast);
   transform-origin: left;
   animation: toast-bar linear forwards;
 }

@@ -18,6 +18,8 @@ interface SelectProps<T extends string> {
   noun?: string
   /** Always search, however few the options (a list of more than seven searches by itself). */
   search?: boolean
+  /** The open list's least width in px; by default the field's width or 200, whichever is more. */
+  minWidth?: number
 }
 
 /**

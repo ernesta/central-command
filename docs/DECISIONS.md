@@ -4191,3 +4191,11 @@ The user found four behaviours for one job (Skills' menu searched without showin
 - **Enter on a `new:<kind>` makes the empty thing and opens it** (`shell/new-kind.ts`, called from `GlobalSearch`), through the same `QUICK_ACTIONS` the buttons use. The workspace is the page's (`quickActionWorkspace`), or the one a `workspace:` word names (`workspaceFilter`); each kind then takes the nearest workspace it has (meeting: Research or Work, training: Life or Research, task: Research or Work, reading list: Research).
 - **`new-task`**: an ordinary task (never an `ownKind`), no title, due today, in the list used last (`tasks-last-list-<workspace>`, else the busiest, in Work a client), and the page opens with the title focused. Left with nothing written in it, the page removes it (`discardIfEmpty`, after a tick so StrictMode's cleanup-and-setup does not remove it while it is still open). The old New task dialog stays switched off.
 - Tests: the parser, chips, help table, `runNewKind`, and both new quick actions. Driven in a scratch library (production and dev, light and dark): completion list, chip, Enter for each kind, `workspace:work`, an untouched task gone and a titled one kept, `new:person` gives its notice.
+
+### After the check (23 Oct 2026, the user's first look at the installed round)
+
+- **Toast** stays dark in both themes (`--toast-bg`, a raised dark surface in dark mode; the tooltip keeps its inverted pair). Cmd-Z's toast names the task and the change ("Undid the status change of “X” from To do to Done.") and has an **Open** chip (`UndoEntry.open`).
+- **The training note's Task row** shows a self-study task's series in front ("Series › Day 2 self-study"), also before the task exists.
+- **Selects:** the task page's List field is 260px, not the row's rest; the Year list is as wide as its options (`Select minWidth`). Time off passes its workspace to `YearSelect`, so Work reads "Contract".
+- **"This week" / "This month"** is a small button at the far end of the card header; the label's minimum width is 20ch.
+- Open (the user decides): Work's Meetings pages still use academic years, not contracts; the older training and meeting tasks (e.g. PS5210's 24 subtasks) have no `own_kind`, so they are not locked; `new:` carries only `workspace:`.

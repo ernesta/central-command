@@ -24,7 +24,7 @@ export function TimeOffPage(): React.JSX.Element {
         title="Time off"
         actions={
           <div className={styles.actions}>
-            <YearSelect year={year} years={years} onChange={setYear} />
+            <YearSelect year={year} years={years} onChange={setYear} workspace={workspace} />
             <Button
               variant="primary"
               icon={<Plus size={16} strokeWidth={1.75} aria-hidden />}

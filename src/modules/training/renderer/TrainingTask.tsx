@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { Panel } from '@renderer/components/Panel'
 import { taskRoute } from '../../tasks/renderer/tasks-paths'
+import { studySeries } from '../../tasks/shared/study-label'
 import type { Task } from '../../tasks/shared/types'
 import styles from './TrainingTask.module.css'
 
@@ -58,19 +59,27 @@ export function TrainingTask({
   }
   const shown = selfStudy ?? draft
   const parent = shown.parentUid ? tasks.find((t) => t.uid === shown.parentUid) : undefined
+  // The series reads in front of the name ("Series › Day 2 self-study"), from the parent task or, before it exists, the note's series.
+  const prefix = studySeries(shown, parent) ?? (parent ? null : series)
+  const list = parent ? parent.list : shown.list
+  const lead = prefix ? <span className={styles.series}>{prefix} › </span> : null
   return (
     <Panel label="Task" row>
       <div className={styles.name}>
         {selfStudy ? (
-          <Link className={styles.title} to={taskRoute(selfStudy.workspace, selfStudy.uid)}>
-            {selfStudy.title}
-          </Link>
+          <span>
+            {lead}
+            <Link className={styles.title} to={taskRoute(selfStudy.workspace, selfStudy.uid)}>
+              {selfStudy.title}
+            </Link>
+          </span>
         ) : (
-          <span className={styles.plain}>{draft.title}</span>
+          <span className={styles.plain}>
+            {lead}
+            {draft.title}
+          </span>
         )}
-        <span className={styles.list}>
-          {parent ? `${parent.title} · ${parent.list}` : shown.list}
-        </span>
+        <span className={styles.list}>{list}</span>
       </div>
       {children}
     </Panel>

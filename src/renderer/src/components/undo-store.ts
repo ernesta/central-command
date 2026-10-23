@@ -20,6 +20,8 @@ export interface UndoEntry {
   undo: () => Promise<void> | void
   /** True once the thing it would change is gone (its page was left): Cmd-Z then skips it instead of acting on nothing. */
   isStale?: () => boolean
+  /** Goes to what the change was made to, for the Open button on Cmd-Z's toast (the change may be off screen). */
+  open?: () => void
 }
 
 const LIMIT = 50
@@ -56,7 +58,10 @@ export async function undoLast(): Promise<boolean> {
   const entry = stack[stack.length - 1]
   if (!entry) return false
   clearToast()
-  if (await undoEntry(entry)) showToast(`Undid the ${entry.label}.`)
+  if (await undoEntry(entry)) {
+    const { open } = entry
+    showToast(`Undid the ${entry.label}.`, open ? { label: 'Open', run: open } : undefined)
+  }
   return true
 }
 

@@ -1,4 +1,4 @@
-import styles from './BackToToday.module.css'
+import { Button } from '@renderer/components/Button'
 
 interface BackToTodayProps {
   /** "This week" or "This month". */
@@ -6,11 +6,11 @@ interface BackToTodayProps {
   onClick: () => void
 }
 
-/** A quiet button beside the arrows that returns to the current period; the caller renders it only while away from it. */
+/** A small button at the card header's far end that returns to the current period; the caller renders it only while away from it. */
 export function BackToToday({ label, onClick }: BackToTodayProps): React.JSX.Element {
   return (
-    <button type="button" className={styles.button} onClick={onClick}>
+    <Button size="small" onClick={onClick}>
       {label}
-    </button>
+    </Button>
   )
 }

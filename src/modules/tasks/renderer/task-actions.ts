@@ -8,6 +8,32 @@ import { describeRecurrence } from '../shared/recurrence'
 import { taskRoute } from './tasks-paths'
 import type { Task, TaskChanges, TaskStatus } from '../shared/types'
 
+/** A task's title for a toast: the first 40 characters, or Untitled. */
+function shortTitle(title: string | undefined): string {
+  const t = (title ?? '').trim() || 'Untitled'
+  return t.length > 40 ? `${t.slice(0, 39)}…` : t
+}
+
+const FIELD_NAMES: Partial<Record<keyof TaskChanges, string>> = {
+  due: 'due date change',
+  list: 'list change',
+  sublist: 'list change',
+  priority: 'priority change',
+  recurrence: 'repeat change',
+  title: 'title change',
+  tags: 'tag change',
+  parentUid: 'move',
+  description: 'notes change'
+}
+
+/** What a change to a task is called, from the fields it touches ("due date change"); a mixed one is just a "change". */
+function changeName(changes: TaskChanges): string {
+  const names = new Set(
+    (Object.keys(changes) as (keyof TaskChanges)[]).map((k) => FIELD_NAMES[k] ?? 'change')
+  )
+  return names.size === 1 ? [...names][0] : 'change'
+}
+
 /** The toast after a delete; the time that left Hours with the task is said, since Undo brings it back. */
 export function deletedMessage(title: string, minutes: number): string {
   return `Deleted “${title || 'Untitled'}”${minutes > 0 ? ` and ${formatDuration(minutes)} of time` : ''}.`
@@ -50,7 +76,8 @@ export async function setTaskStatus(
     const { next } = await window.api.tasks.setStatus(task.uid, status)
     if (before && before.status !== status) {
       pushUndo({
-        label: 'status change',
+        label: `status change of “${shortTitle(before.title)}” from ${STATUS_LABELS[before.status]} to ${STATUS_LABELS[status]}`,
+        open: () => openRoute(taskRoute(before.workspace, before.uid)),
         undo: async () => {
           await window.api.tasks.setStatus(task.uid, before.status)
           // Finishing a task with no date gave it today; taking the finish back takes that with it.
@@ -91,9 +118,11 @@ export async function updateTaskUndoable(
   label: string
 ): Promise<void> {
   const before = previousValues(task, changes)
+  const named = label === 'task change' ? changeName(changes) : label
   await window.api.tasks.update(task.uid, changes)
   pushUndo({
-    label,
+    label: `${named} on “${shortTitle(task.title)}”`,
+    open: () => openRoute(taskRoute(task.workspace, task.uid)),
     undo: async () => {
       await window.api.tasks.update(task.uid, before)
     }
