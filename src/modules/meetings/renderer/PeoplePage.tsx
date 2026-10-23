@@ -1,3 +1,4 @@
+import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useLocation } from 'react-router'
 import { sortPeople } from '@shared/people'
@@ -70,10 +71,11 @@ export function PeoplePage(): React.JSX.Element {
         actions={
           <Button
             variant="primary"
+            icon={<Plus size={14} strokeWidth={2} aria-hidden />}
             disabled={people === null || adding}
             onClick={() => setAdding(true)}
           >
-            Add person
+            New person
           </Button>
         }
       />

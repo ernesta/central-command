@@ -114,7 +114,7 @@ describe('Contracts table in Settings, Work', () => {
   it('adds a contract from a row at the top of the table', async () => {
     const host = await show(contract({ aim: true, invoice: 'month' }))
     expect(host.querySelector('input[aria-label="Name"]')).toBeNull()
-    press(host, 'New contract')
+    press(host, 'Add contract')
     expect(host.querySelector('tbody tr:first-child input[aria-label="Name"]')).not.toBeNull()
     const add = [...host.querySelectorAll('button')].find((b) => b.textContent === 'Add')!
     expect(add.disabled).toBe(true)

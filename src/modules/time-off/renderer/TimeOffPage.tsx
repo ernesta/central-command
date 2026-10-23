@@ -31,7 +31,7 @@ export function TimeOffPage(): React.JSX.Element {
               disabled={adding}
               onClick={() => setAdding(true)}
             >
-              Add
+              New time off
             </Button>
           </div>
         }

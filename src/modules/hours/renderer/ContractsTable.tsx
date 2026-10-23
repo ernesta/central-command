@@ -478,7 +478,7 @@ export function ContractsTable({
             icon={<Plus size={14} strokeWidth={2} aria-hidden />}
             onClick={() => setAdding(true)}
           >
-            New contract
+            Add contract
           </Button>
         </div>
       )}
