@@ -62,7 +62,12 @@ export function TrainingTask({
   // The series reads in front of the name ("Series › Day 2 self-study"), from the parent task or, before it exists, the note's series.
   const prefix = studySeries(shown, parent) ?? (parent ? null : series)
   const list = parent ? parent.list : shown.list
-  const lead = prefix ? <span className={styles.series}>{prefix} › </span> : null
+  // A link to the series task once it exists (the name's own link goes to the task itself); plain text before that.
+  const lead = prefix ? (
+    <span className={styles.series}>
+      {parent ? <Link to={taskRoute(parent.workspace, parent.uid)}>{prefix}</Link> : prefix} ›{' '}
+    </span>
+  ) : null
   return (
     <Panel label="Task" row>
       <div className={styles.name}>

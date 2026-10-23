@@ -261,11 +261,6 @@ function TaskView({
               }}
             />
             {lock && <LockLine lock={lock} source={source} />}
-            <TagsField
-              tags={task.tags}
-              suggestions={tagsIn(rows)}
-              onChange={(tags) => update({ tags })}
-            />
             <div className={styles.metaRow}>
               {statusLocked ? (
                 <div className={styles.field}>
@@ -293,6 +288,14 @@ function TaskView({
                 options={PRIORITY_OPTIONS}
                 onChange={(priority) => update({ priority })}
               />
+              <div className={styles.field}>
+                <span className={styles.label}>Tags</span>
+                <TagsField
+                  tags={task.tags}
+                  suggestions={tagsIn(rows)}
+                  onChange={(tags) => update({ tags })}
+                />
+              </div>
             </div>
             <div className={styles.metaRow}>
               <div className={styles.field}>
