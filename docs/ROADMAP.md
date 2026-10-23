@@ -71,6 +71,8 @@ grid for a note and its panels, used by all five pages) and `NoteOutline` moved 
 
 **Polish round step 9, Home: Today holds events (23 Oct 2026): built, driven, pushed, not installed** (item 10; `docs/DECISIONS.md`, "Polish round"). Today lists today's meetings and trainings (time range, "Meeting · with KR", "Training · Online"), then the tasks; Coming up starts tomorrow; one row component. Next: step 10, item 6 (self-study labels).
 
+**Polish round step 10, self-study labels (23 Oct 2026): built, driven, pushed, not installed** (item 6; `docs/DECISIONS.md`, "Polish round"). A self-study subtask reads "Series › Day 2 self-study" (series muted) in the table, search, the timer's picker and popover and Hours' rows; display only. Next: step 11, item 2 (locked session tasks).
+
 **Undo, one rule and third round (19 Oct 2026): built, pushed, installed** (`docs/DECISIONS.md`, "One rule for undo", "Undo, third round"). The rule is in `undo-store.ts`; Cmd-Z says what it undid; TODO ticks, Add time, timer start, Hours settings, row rename, "me" and the meeting/training/note fields are undoable. To check by hand: undoing a timer's start change in the popover (the restore itself is driven), and the Readings Dismiss undo.
 
 **Undo, second round (19 Oct 2026): built, pushed, installed** (`docs/DECISIONS.md`, "Undo, second round"). Timer Discard and Archive a person (toast + Cmd-Z); chips, contract Save, Time off edit, Hours typed time and workspace moves (Cmd-Z only). Dismissing a Readings rename suggestion also undoes with Cmd-Z. To check by hand: the Dismiss undo, the contract Save, Time off edit and Hours time undos.
