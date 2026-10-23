@@ -1,4 +1,4 @@
-import { inYear } from '@shared/year'
+import { YEAR_WEEKS, inYear } from '@shared/year'
 import { minutesPerSkill } from '@shared/skills'
 import { isUpcoming } from './query'
 import { durationMinutes } from './time'
@@ -11,9 +11,16 @@ export interface MeetingHours {
   perSkill: { skill: string; minutes: number }[]
 }
 
-/** The meetings dated within a year (its start date), upcoming ones included. */
-export function meetingsInYear(rows: readonly MeetingIndexRow[], year: string): MeetingIndexRow[] {
-  return rows.filter((r) => inYear(r.date, year))
+/**
+ * The meetings dated within a year (its start date), upcoming ones included. Work's period is a contract, which has its own
+ * length in `weeks`.
+ */
+export function meetingsInYear(
+  rows: readonly MeetingIndexRow[],
+  year: string,
+  weeks = YEAR_WEEKS
+): MeetingIndexRow[] {
+  return rows.filter((r) => inYear(r.date, year, weeks))
 }
 
 /**
@@ -23,10 +30,11 @@ export function meetingsInYear(rows: readonly MeetingIndexRow[], year: string): 
 export function meetingsInYearOrPlanned(
   rows: readonly MeetingIndexRow[],
   year: string,
-  today: string
+  today: string,
+  weeks = YEAR_WEEKS
 ): MeetingIndexRow[] {
-  const showPlanned = inYear(today, year)
-  return rows.filter((r) => (r.date === '' ? showPlanned : inYear(r.date, year)))
+  const showPlanned = inYear(today, year, weeks)
+  return rows.filter((r) => (r.date === '' ? showPlanned : inYear(r.date, year, weeks)))
 }
 
 /**
@@ -36,9 +44,10 @@ export function meetingsInYearOrPlanned(
 export function meetingHours(
   rows: readonly MeetingIndexRow[],
   year: string,
-  today: string
+  today: string,
+  weeks = YEAR_WEEKS
 ): MeetingHours {
-  const timed = meetingsInYear(rows, year)
+  const timed = meetingsInYear(rows, year, weeks)
     .filter((r) => !isUpcoming(r, today))
     .map((r) => ({ skills: r.skills, minutes: durationMinutes(r.start, r.end) }))
     .filter((t) => t.minutes)

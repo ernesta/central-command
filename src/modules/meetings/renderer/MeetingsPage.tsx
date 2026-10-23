@@ -6,12 +6,11 @@ import { ExportButton } from '@renderer/components/ExportButton'
 import { FilterRow } from '@renderer/components/FilterRow'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
-import { yearLabel } from '@shared/year'
 import { skillFilterOptions, skillsIn } from '@shared/skills'
 import { YearSelect } from '@renderer/components/YearSelect'
 import { SearchInput } from '@renderer/components/SearchInput'
 import { Select } from '@renderer/components/Select'
-import { useYear } from '@renderer/state/use-year'
+import { usePeriod } from '@renderer/state/use-period'
 import {
   DEFAULT_MEETINGS_QUERY,
   MODE_LABELS,
@@ -54,11 +53,13 @@ export function MeetingsPage(): React.JSX.Element {
 
   const today = todayIso()
   const everything = rows ?? []
-  const { year, years, setYear } = useYear(
+  const period = usePeriod(
+    workspace,
     everything.map((r) => r.date),
     today
   )
-  const all = meetingsInYearOrPlanned(everything, year, today)
+  const { year, years, setYear, weeks } = period
+  const all = meetingsInYearOrPlanned(everything, year, today, weeks)
   // A remembered series or attendee that no longer exists in the files must not hide everything.
   const query =
     rows === null
@@ -81,11 +82,11 @@ export function MeetingsPage(): React.JSX.Element {
     setExporting(true)
     setExportNotice(null)
     try {
-      const result = await window.api.meetings.exportPdf(workspace, year)
+      const result = await window.api.meetings.exportPdf(workspace, year, period.contract)
       if (result.status === 'saved') {
         setExportNotice({
           tone: 'info',
-          text: `Saved the ${workspace === 'research' ? 'supervision' : 'meetings'} log for ${yearLabel(year)} to ${result.path}`
+          text: `Saved the ${workspace === 'research' ? 'supervision' : 'meetings'} log for ${period.label} to ${result.path}`
         })
       }
     } catch (e) {
@@ -96,15 +97,15 @@ export function MeetingsPage(): React.JSX.Element {
   }
 
   let content: React.ReactNode = null
-  if (rows === null) content = null
+  if (rows === null || !period.loaded) content = null
   else if (all.length === 0) {
     content =
       everything.length === 0 ? (
         <EmptyState heading="No meetings yet" message="Create a meeting to start keeping notes." />
       ) : (
         <EmptyState
-          heading={`No meetings in ${yearLabel(year)}`}
-          message="Create a meeting, or choose another year."
+          heading={`No meetings in ${period.label}`}
+          message={`Create a meeting, or choose another ${workspace === 'work' ? 'contract' : 'year'}.`}
         />
       )
   } else if (visible.length === 0) {
@@ -133,24 +134,26 @@ export function MeetingsPage(): React.JSX.Element {
           <ExportButton
             busy={exporting}
             disabled={rows === null}
-            title={`Exports the ${workspace === 'research' ? 'Supervision' : 'meetings'} log for ${yearLabel(year)} as a PDF, oldest first, without upcoming meetings`}
+            title={`Exports the ${workspace === 'research' ? 'Supervision' : 'meetings'} log for ${period.label} as a PDF, oldest first, without upcoming meetings`}
             onClick={() => void exportPdf()}
           />
           <NewMeetingButton />
         </div>
       </header>
 
-      {rows !== null && (
+      {rows !== null && period.loaded && (
         <MeetingsHours
           rows={everything}
           year={year}
+          weeks={weeks}
+          label={period.label}
           today={today}
           showSkills={tracksSkills(workspace)}
         />
       )}
 
       <FilterRow>
-        <YearSelect year={year} years={years} onChange={setYear} />
+        <YearSelect year={year} years={years} onChange={setYear} workspace={workspace} />
         <SearchInput
           label="Search meetings"
           value={query.search}

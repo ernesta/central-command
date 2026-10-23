@@ -63,6 +63,22 @@ function asRef(value: unknown): MeetingRef {
   return { workspace: o.workspace as MeetingWorkspace, id: o.id }
 }
 
+/** A contract's length and label as the renderer sends them for the report; undefined means the 52-week year. */
+function asContract(value: unknown): { weeks: number; label: string } | undefined {
+  if (value === undefined || value === null) return undefined
+  const v = value as { weeks?: unknown; label?: unknown }
+  if (
+    typeof v.weeks !== 'number' ||
+    !Number.isInteger(v.weeks) ||
+    v.weeks < 1 ||
+    v.weeks > 156 ||
+    typeof v.label !== 'string' ||
+    v.label.length > 200
+  )
+    throw new Error('Invalid contract')
+  return { weeks: v.weeks, label: v.label }
+}
+
 function register({ db, paths }: MainContext): () => void {
   const dirFor = (workspace: MeetingWorkspace): string => join(paths.meetingsNotes, workspace)
   const tasks = new TasksStore(db)
@@ -124,7 +140,12 @@ function register({ db, paths }: MainContext): () => void {
   )
   ipcMain.handle(
     MEETINGS_IPC.exportPdf,
-    async (event, workspace: unknown, year: unknown): Promise<MeetingsExportResult> => {
+    async (
+      event,
+      workspace: unknown,
+      year: unknown,
+      contract: unknown
+    ): Promise<MeetingsExportResult> => {
       if (
         typeof workspace !== 'string' ||
         !(MEETING_WORKSPACES as readonly string[]).includes(workspace)
@@ -134,16 +155,19 @@ function register({ db, paths }: MainContext): () => void {
       if (typeof year !== 'string' || dayNumber(year) === null) {
         throw new Error('Invalid year')
       }
+      const period = asContract(contract)
       const seriesFilter = workspace === 'research' ? REPORT_SERIES : undefined
       return exportHtmlAsPdf(event.sender, {
         html: meetingsReportHtml({
           rows: listMeetingRows(db, workspace as MeetingWorkspace),
           year,
+          weeks: period?.weeks,
+          label: period?.label,
           today: todayIso(),
           seriesFilter
         }),
         dialogTitle: seriesFilter ? 'Export the supervision log' : 'Export the meetings log',
-        fileName: reportFileName(year, seriesFilter)
+        fileName: reportFileName(year, seriesFilter, period?.label)
       })
     }
   )

@@ -80,3 +80,28 @@ describe('meetingsInYearOrPlanned', () => {
     ])
   })
 })
+
+describe('a Work contract as the period', () => {
+  // A contract of 26 weeks from Fri 1 May 2026 ends Thu 29 Oct 2026; the 52-week year would run on to April 2027.
+  const rows = [row('2026-05-01'), row('2026-10-29'), row('2026-10-30'), row('2026-04-30'), row('')]
+  it('keeps the meetings between its first and last day', () => {
+    expect(meetingsInYear(rows, '2026-05-01', 26).map((r) => r.date)).toEqual([
+      '2026-05-01',
+      '2026-10-29'
+    ])
+    expect(meetingsInYear(rows, '2026-05-01').map((r) => r.date)).toContain('2026-10-30')
+  })
+  it('shows the undated plans only while it holds today', () => {
+    const planned = (today: string): number =>
+      meetingsInYearOrPlanned(rows, '2026-05-01', today, 26).filter((r) => r.date === '').length
+    expect(planned('2026-10-29')).toBe(1)
+    expect(planned('2026-10-30')).toBe(0)
+  })
+  it('counts only its own meetings in the hours', () => {
+    const timed = [
+      row('2026-06-01', { start: '10:00', end: '11:00' }),
+      row('2026-11-02', { start: '10:00', end: '11:00' })
+    ]
+    expect(meetingHours(timed, '2026-05-01', '2026-12-01', 26).minutes).toBe(60)
+  })
+})

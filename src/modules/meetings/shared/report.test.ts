@@ -78,3 +78,21 @@ describe('meetingsReportHtml', () => {
     expect(reportFileName('2025-09-22')).toBe('Meetings log 2025-26.pdf')
   })
 })
+
+describe('a contract’s report', () => {
+  it('names the file and the page after the contract, and keeps to its length', () => {
+    expect(reportFileName('2026-05-01', undefined, 'Luminos · May 1, 2026 – Oct 29, 2026')).toBe(
+      'Meetings log Luminos · May 1, 2026 - Oct 29, 2026.pdf'
+    )
+    const html = meetingsReportHtml({
+      rows: [row('2026-06-01', { summary: 'inside' }), row('2026-11-02', { summary: 'outside' })],
+      year: '2026-05-01',
+      weeks: 26,
+      label: 'Luminos 1',
+      today: '2026-12-01'
+    })
+    expect(html).toContain('Luminos 1')
+    expect(html).toContain('inside')
+    expect(html).not.toContain('outside')
+  })
+})

@@ -14,7 +14,7 @@ import {
   type RecentRow
 } from '@renderer/components/Landing'
 import { Segmented } from '@renderer/components/Segmented'
-import { useYear } from '@renderer/state/use-year'
+import { usePeriod } from '@renderer/state/use-period'
 import { recentAndUpcoming, seriesLine, seriesSummaries } from '../shared/landing'
 import { meetingsInYear, meetingsInYearOrPlanned } from '../shared/hours'
 import { mine, openTodos } from '../shared/open-todos'
@@ -54,12 +54,17 @@ export function MeetingsLanding(): React.JSX.Element {
   const all = rows ?? []
   const open = openTodos(all)
   const shown = whose === 'mine' && me ? mine(open, me.initials) : open
-  const { year, years, setYear } = useYear(
+  const period = usePeriod(
+    workspace,
     all.map((r) => r.date),
     today
   )
-  const { upcoming, recent } = recentAndUpcoming(meetingsInYearOrPlanned(all, year, today), today)
-  const summaries = seriesSummaries(meetingsInYear(all, year), today, fixedSeries(workspace))
+  const { year, years, setYear, weeks } = period
+  const { upcoming, recent } = recentAndUpcoming(
+    meetingsInYearOrPlanned(all, year, today, weeks),
+    today
+  )
+  const summaries = seriesSummaries(meetingsInYear(all, year, weeks), today, fixedSeries(workspace))
 
   const recentRows: RecentRow[] = [...[...upcoming].reverse(), ...recent].map((row) => ({
     key: row.id,
@@ -75,7 +80,7 @@ export function MeetingsLanding(): React.JSX.Element {
     <LandingPage>
       <LandingHeader title="Meetings" actions={<NewMeetingButton />} />
 
-      {rows === null ? null : (
+      {rows === null || !period.loaded ? null : (
         <>
           <LandingSection
             id="open-todos"
@@ -111,11 +116,15 @@ export function MeetingsLanding(): React.JSX.Element {
             id="year"
             label="Year"
             labelHidden
-            aside={<YearSelect year={year} years={years} onChange={setYear} />}
+            aside={
+              <YearSelect year={year} years={years} onChange={setYear} workspace={workspace} />
+            }
           >
             <MeetingsHours
               rows={all}
               year={year}
+              weeks={weeks}
+              label={period.label}
               today={today}
               showSkills={tracksSkills(workspace)}
             />

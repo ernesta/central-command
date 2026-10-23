@@ -13,17 +13,21 @@ const MODE_LABELS = { 'in-person': 'In person', online: 'Online' } as const
 
 export interface MeetingsReportInput {
   rows: readonly MeetingIndexRow[]
-  /** The year's start date. */
+  /** The year's start date (a contract's first day in Work). */
   year: string
+  /** The period's length, when it is not the 52-week year (a contract's). */
+  weeks?: number
+  /** What the period is called in the report, when it is not "2026–27" (a contract's name and dates). */
+  label?: string
   today: string
   /** Only meetings of this series, titled "<seriesFilter> log"; omitted, every meeting, titled "Meetings log". */
   seriesFilter?: string
 }
 
 /** The file name suggested for the export, for example "Supervision log 2025-26.pdf". */
-export function reportFileName(year: string, seriesFilter?: string): string {
+export function reportFileName(year: string, seriesFilter?: string, label?: string): string {
   const title = seriesFilter ?? 'Meetings'
-  return `${title} log ${yearLabel(year).replace('–', '-')}.pdf`
+  return `${title} log ${(label ?? yearLabel(year)).replace('–', '-').replace(/[/:]/g, '-')}.pdf`
 }
 
 /**
@@ -31,13 +35,13 @@ export function reportFileName(year: string, seriesFilter?: string): string {
  * Meetings that have not happened yet are left out. Pure: the same input gives the same HTML.
  */
 export function meetingsReportHtml(input: MeetingsReportInput): string {
-  const { year, today, seriesFilter } = input
+  const { year, today, seriesFilter, weeks } = input
   const included = seriesFilter ? input.rows.filter((r) => r.series === seriesFilter) : input.rows
-  const rows = meetingsInYear(included, year)
+  const rows = meetingsInYear(included, year, weeks)
     .filter((r) => !isUpcoming(r, today) && durationMinutes(r.start, r.end))
     .sort((a, b) => -compareNewestFirst(a, b))
-  const hours = meetingHours(included, year, today)
-  const label = yearLabel(year)
+  const hours = meetingHours(included, year, today, weeks)
+  const label = input.label ?? yearLabel(year)
   const title = seriesFilter ?? 'Meetings'
 
   const body = rows
