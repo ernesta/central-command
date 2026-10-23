@@ -2,7 +2,15 @@
 import { act, createElement } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { clearToast, showToast, useToast } from './toast-store'
+import {
+  TOAST_ACTION_MS,
+  TOAST_MS,
+  clearToast,
+  pauseToast,
+  resumeToast,
+  showToast,
+  useToast
+} from './toast-store'
 
 let host: HTMLElement
 let root: Root
@@ -62,6 +70,27 @@ describe('toast', () => {
     await act(() => showToast('Deleted.', { label: 'Undo', run: () => {} }))
     expect(host.textContent).toBe('Deleted. (Undo)')
     await act(() => clearToast())
+    expect(host.textContent).toBe('—')
+  })
+
+  it('stays longer when it has a button, and the clock holds while paused', async () => {
+    await mount()
+    await act(() => showToast('Plain'))
+    await act(() => vi.advanceTimersByTime(TOAST_MS - 1))
+    expect(host.textContent).toBe('Plain')
+    await act(() => vi.advanceTimersByTime(1))
+    expect(host.textContent).toBe('—')
+    await act(() => showToast('Deleted.', { label: 'Undo', run: () => {} }))
+    await act(() => vi.advanceTimersByTime(TOAST_MS + 1))
+    expect(host.textContent).toBe('Deleted. (Undo)')
+    await act(() => vi.advanceTimersByTime(TOAST_ACTION_MS - TOAST_MS - 1001))
+    pauseToast()
+    await act(() => vi.advanceTimersByTime(60000))
+    expect(host.textContent).toBe('Deleted. (Undo)')
+    await act(() => resumeToast())
+    await act(() => vi.advanceTimersByTime(999))
+    expect(host.textContent).toBe('Deleted. (Undo)')
+    await act(() => vi.advanceTimersByTime(1))
     expect(host.textContent).toBe('—')
   })
 })
