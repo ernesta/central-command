@@ -29,6 +29,8 @@ export interface MeetingInput {
   date: string
   start: string | null
   end: string | null
+  attendees: string[]
+  mode: string | null
 }
 
 export interface TrainingInput {
@@ -37,6 +39,8 @@ export interface TrainingInput {
   title: string
   date: string
   start: string | null
+  end: string | null
+  mode: string | null
 }
 
 export interface HomeInputs {
@@ -159,6 +163,11 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
     .sort((a, b) => a.date.localeCompare(b.date) || (a.start ?? '').localeCompare(b.start ?? ''))
   const nextMeeting = meetings[0] ? toMeeting(meetings[0]) : null
 
+  // A training that is over today drops out the same way a meeting does.
+  const trainings = input.trainings.filter(
+    (t) => t.date > today || (t.date === today && minutesOf(t.end ?? t.start) >= input.nowMinutes)
+  )
+
   const events: HomeEvent[] = []
   for (const t of dated) {
     const inDays = daysFrom(today, t.due)
@@ -183,13 +192,16 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
       kind: 'meeting',
       date: m.date,
       time: m.start,
-      title: m.series || 'Meeting',
-      detail: m.workspace === 'work' ? 'Work' : 'Research',
+      end: m.end,
+      attendees: m.attendees,
+      mode: m.mode,
+      title: m.series || 'Untitled meeting',
+      detail: '',
       route: meetingRoute(m.workspace, m.id),
       inDays
     })
   }
-  for (const t of input.trainings) {
+  for (const t of trainings) {
     const inDays = daysFrom(today, t.date)
     if (inDays < 0 || inDays > TRAININGS_AHEAD_DAYS) continue
     events.push({
@@ -197,8 +209,10 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
       kind: 'training',
       date: t.date,
       time: t.start,
-      title: t.title,
-      detail: 'Training',
+      end: t.end,
+      mode: t.mode,
+      title: t.title || 'Untitled training',
+      detail: '',
       route: trainingRoute(t.id),
       inDays
     })
@@ -247,7 +261,11 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
       todayTotal: dueToday.length
     },
     meetings: { next: nextMeeting, openTodos: input.openMeetingTodos },
-    upcoming: events.slice(0, SHOWN_UPCOMING),
+    // Everything dated today is kept (Home's "Today" lists it); the rest fills the days ahead.
+    upcoming: [
+      ...events.filter((e) => e.inDays <= 0),
+      ...events.filter((e) => e.inDays > 0).slice(0, SHOWN_UPCOMING)
+    ],
     watch: input.watch
       ? { counts: input.watch.counts, relevant: input.watch.relevant.slice(0, SHOWN_WATCH) }
       : null,

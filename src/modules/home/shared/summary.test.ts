@@ -101,7 +101,9 @@ describe('meetings', () => {
     series: 'Supervision',
     date,
     start,
-    end
+    end,
+    attendees: ['Ada Lovelace'],
+    mode: 'online'
   })
 
   it('the next meeting is the soonest one not over yet', () => {
@@ -154,7 +156,9 @@ describe('upcoming', () => {
           series: 'Impact',
           date: '2026-10-16',
           start: '09:30',
-          end: '10:00'
+          end: '10:00',
+          attendees: [],
+          mode: null
         }
       ],
       trainings: [
@@ -163,9 +167,19 @@ describe('upcoming', () => {
           id: '2026-10-15 R',
           title: 'R workshop',
           date: '2026-10-15',
-          start: '10:00'
+          start: '10:00',
+          end: '12:00',
+          mode: 'in-person'
         },
-        { workspace: 'research', id: 'far', title: 'Far away', date: '2027-03-01', start: null }
+        {
+          workspace: 'research',
+          id: 'far',
+          title: 'Far away',
+          date: '2027-03-01',
+          start: null,
+          end: null,
+          mode: null
+        }
       ],
       timeOff: [
         { date: '2026-10-19', type: 'leave' },
@@ -192,6 +206,50 @@ describe('upcoming', () => {
     ])
     expect(s.upcoming[4].detail).toBe('3 days, to 2026-10-21')
     expect(s.upcoming[3].route).toBe('https://ex.org/c')
+  })
+
+  it("carries a session's end, attendees and format, and no workspace name", () => {
+    const s = buildHomeSummary({
+      ...base,
+      nowMinutes: 9 * 60,
+      meetings: [
+        {
+          workspace: 'research',
+          id: 'a',
+          series: '',
+          date: '2026-10-15',
+          start: '13:45',
+          end: '15:00',
+          attendees: ['Ada Lovelace'],
+          mode: 'online'
+        }
+      ]
+    })
+    expect(s.upcoming[0]).toMatchObject({
+      title: 'Untitled meeting',
+      detail: '',
+      end: '15:00',
+      attendees: ['Ada Lovelace'],
+      mode: 'online'
+    })
+  })
+
+  it('drops a training that is over today, keeps one under way, and keeps all of today past the cap', () => {
+    const tr = (id: string, start: string, end: string): HomeInputs['trainings'][number] => ({
+      workspace: 'research',
+      id,
+      title: id,
+      date: '2026-10-15',
+      start,
+      end,
+      mode: null
+    })
+    const s = buildHomeSummary({
+      ...base,
+      nowMinutes: 11 * 60,
+      trainings: [tr('over', '09:00', '10:00'), tr('now', '10:30', '12:00')]
+    })
+    expect(s.upcoming.map((e) => e.id)).toEqual(['training:now'])
   })
 
   it('does not repeat today\'s tasks as "coming up"', () => {

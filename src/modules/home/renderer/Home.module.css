@@ -71,6 +71,7 @@
 }
 .icon {
   flex: none;
+  margin: 0 2px; /* as wide as a task's status circle, so titles line up down the list */
   color: var(--text-muted);
 }
 .chip {

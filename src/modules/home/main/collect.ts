@@ -132,14 +132,16 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
   const meetings = (
     db
       .prepare(
-        `SELECT workspace, meeting_id AS id, series, date, start_time AS start, end_time AS end
+        `SELECT workspace, meeting_id AS id, series, date, start_time AS start, end_time AS end, mode, attendees
          FROM meetings WHERE date >= ? AND date != '' ORDER BY date, start_time`
       )
-      .all(now.date) as MeetingInput[]
-  ).filter((m) => m.workspace === 'research' || m.workspace === 'work')
+      .all(now.date) as (Omit<MeetingInput, 'attendees'> & { attendees: string })[]
+  )
+    .filter((m) => m.workspace === 'research' || m.workspace === 'work')
+    .map((m): MeetingInput => ({ ...m, attendees: JSON.parse(m.attendees) as string[] }))
   const trainings = db
     .prepare(
-      `SELECT workspace, entry_id AS id, title, date, start_time AS start
+      `SELECT workspace, entry_id AS id, title, date, start_time AS start, end_time AS end, mode
        FROM training WHERE date >= ? ORDER BY date, start_time`
     )
     .all(now.date) as TrainingInput[]

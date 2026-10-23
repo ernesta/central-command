@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { HomeEvent, HomeSummary, HomeTask } from '../shared/types'
-import { detailText, homeView, whenLabel } from './home-model'
+import { detailText, eventDetail, homeView, timeRange, whenLabel } from './home-model'
 
 const task = (uid: string, workspace: 'research' | 'work', daysLate = 0): HomeTask => ({
   uid,
@@ -72,17 +72,71 @@ describe('homeView', () => {
     expect(homeView(s, 'work').comingUp.map((e) => e.id)).toEqual(['m2'])
   })
 
+  it("puts today's events in Today, timed first in time order, and starts Coming up tomorrow", () => {
+    const at = (
+      id: string,
+      time: string | null,
+      inDays: number,
+      kind: HomeEvent['kind'] = 'meeting'
+    ): HomeEvent => ({
+      ...event(id, kind, `/research/x/${id}`, inDays),
+      time
+    })
+    const s: HomeSummary = {
+      ...base,
+      upcoming: [
+        at('off', null, 0, 'time-off'),
+        at('late', '15:00', 0),
+        at('early', '09:00', 0, 'training'),
+        at('next', '08:00', 1)
+      ]
+    }
+    const view = homeView(s, 'research')
+    expect(view.todayEvents.map((e) => e.id)).toEqual(['early', 'late', 'off'])
+    expect(view.comingUp.map((e) => e.id)).toEqual(['next'])
+  })
+
   it('has no next-meeting card or TODO count (removed 23 Oct 2026)', () => {
     const view = homeView(base, 'research')
-    expect(Object.keys(view).sort()).toEqual(['comingUp', 'tasks'])
+    expect(Object.keys(view).sort()).toEqual(['comingUp', 'tasks', 'todayEvents'])
   })
 })
 
 describe('whenLabel', () => {
-  it('names today and tomorrow and counts the rest', () => {
-    expect(whenLabel(0, '14:00')).toBe('Today 2:00 PM')
+  it('says only the time for today, and names tomorrow and counts the rest', () => {
+    expect(whenLabel(0, '14:00')).toBe('2:00 PM')
+    expect(whenLabel(0, '13:45', '15:00')).toBe('1:45 PM–3:00 PM')
+    expect(whenLabel(0, null)).toBe('')
     expect(whenLabel(1, null)).toBe('Tomorrow')
+    expect(whenLabel(1, '09:00', '10:30')).toBe('Tomorrow 9:00 AM–10:30 AM')
     expect(whenLabel(4, '11:00')).toBe('In 4 days 11:00 AM')
+  })
+
+  it('writes a range only when the end differs from the start', () => {
+    expect(timeRange('09:00', '09:00')).toBe('9:00 AM')
+    expect(timeRange('09:00', null)).toBe('9:00 AM')
+  })
+})
+
+describe('eventDetail', () => {
+  const initials = (n: string): string | null => (n === 'Me Myself' ? null : n.slice(0, 2))
+  const ev = (over: Partial<HomeEvent>): HomeEvent => ({
+    ...event('x', 'meeting', '/r', 0),
+    ...over
+  })
+
+  it("names a meeting's attendees (without the user) and a training's format", () => {
+    expect(eventDetail(ev({ attendees: ['Ada L', 'Me Myself', 'Bo C'] }), initials)).toBe(
+      'Meeting · with Ad, Bo'
+    )
+    expect(eventDetail(ev({ attendees: [] }), initials)).toBe('Meeting')
+    expect(eventDetail(ev({ kind: 'training', mode: 'online' }), initials)).toBe(
+      'Training · Online'
+    )
+    expect(eventDetail(ev({ kind: 'training', mode: null }), initials)).toBe('Training')
+    expect(eventDetail(ev({ kind: 'time-off', detail: '3 days, to 2026-10-21' }), initials)).toBe(
+      '3 days, to Oct 21'
+    )
   })
 })
 

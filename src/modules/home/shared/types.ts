@@ -42,6 +42,12 @@ export interface HomeEvent {
   route: string
   /** Days from today (0 = today). */
   inDays: number
+  /** HH:MM it ends, when known (a meeting or a training). */
+  end?: string | null
+  /** A meeting's attendees (full names), for "Meeting · with …". */
+  attendees?: string[]
+  /** A meeting's or training's format: `in-person` or `online`. */
+  mode?: string | null
   /** Set on a task: what its status circle and priority mark show. */
   task?: { uid: string; status: 'todo' | 'doing'; priority: 'high' | 'normal' | 'low' }
 }
