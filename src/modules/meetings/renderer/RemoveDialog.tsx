@@ -60,7 +60,7 @@ export function RemoveDialog({
         <Select
           label="Merge into"
           search
-          noun="meetings"
+          noun="people"
           className={styles.select}
           value={into}
           options={[
