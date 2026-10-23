@@ -35,6 +35,8 @@
   /* Always the opposite of --ink/--bg, so a tooltip reads the same in both themes. */
   --tooltip-bg: light-dark(#1b222b, #e6eaee);
   --tooltip-text: light-dark(#edeff2, #1b222b);
+  /* The accent as it reads on the tooltip/toast background (the opposite pair of --accent). */
+  --accent-on-tooltip: light-dark(#86aad0, #35577a);
 
   /* Type */
   --font-display: 'Newsreader', Georgia, serif;

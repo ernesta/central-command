@@ -3,8 +3,12 @@
   bottom: 20px;
   left: 50%;
   z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
   max-width: min(560px, calc(100vw - 32px));
-  padding: 8px 16px;
+  padding: 8px 8px 9px 16px;
   transform: translateX(-50%);
   border-radius: var(--radius-control);
   background: var(--tooltip-bg);
@@ -21,12 +25,57 @@
   }
 }
 
+/* One line, always: only the quoted title gives way. */
+.row {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.fixed {
+  flex: none;
+}
+
+.title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .action {
-  margin-left: 12px;
-  padding: 0;
+  flex: none;
+  padding: 3px 10px;
   border: 0;
-  background: none;
-  color: inherit;
+  border-radius: var(--radius-control);
+  background: color-mix(in srgb, var(--accent-on-tooltip) 22%, transparent);
+  color: var(--accent-on-tooltip);
   font-weight: 600;
-  text-decoration: underline;
+  text-decoration: none;
+}
+
+.action:hover {
+  background: color-mix(in srgb, var(--accent-on-tooltip) 34%, transparent);
+}
+
+.bar {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: var(--accent-on-tooltip);
+  transform-origin: left;
+  animation: toast-bar linear forwards;
+}
+
+.toast:hover .bar {
+  animation-play-state: paused;
+}
+
+@keyframes toast-bar {
+  to {
+    transform: scaleX(0);
+  }
 }
