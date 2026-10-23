@@ -1,8 +1,10 @@
 import type { NavigateFunction } from 'react-router'
-import { workspaceFilter, type ParsedSearch } from '@shared/search-query'
+import { workspaceFilter, type CreateRequest, type ParsedSearch } from '@shared/search-query'
+import { showToast } from '@renderer/components/toast-store'
+import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { runQuickAction, type QuickActionId, type QuickActionWorkspace } from './quick-actions'
 
-const ACTION: Record<NonNullable<ParsedSearch['create']>, QuickActionId> = {
+const ACTION: Record<CreateRequest['kind'], QuickActionId> = {
   note: 'new-note',
   task: 'new-task',
   meeting: 'new-meeting',
@@ -20,5 +22,15 @@ export async function runNewKind(
   pageWorkspace: QuickActionWorkspace
 ): Promise<void> {
   if (!parsed.create) return
-  await runQuickAction(ACTION[parsed.create], navigate, workspaceFilter(parsed) ?? pageWorkspace)
+  try {
+    await runQuickAction(
+      ACTION[parsed.create.kind],
+      navigate,
+      workspaceFilter(parsed) ?? pageWorkspace,
+      parsed.create
+    )
+  } catch (error) {
+    // Work's rule about lists comes back here as a refusal from the main process.
+    showToast(`Couldn’t make it: ${ipcErrorMessage(error)}`)
+  }
 }

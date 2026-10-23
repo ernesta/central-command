@@ -55,7 +55,8 @@ export const MODIFIER_HELP: Record<ModifierName, ModifierHelp> = {
   },
   new: {
     hint: 'create one',
-    filters: 'Enter makes a new note, task, meeting, training or reading list'
+    filters:
+      'Enter makes a new note, task, meeting, training or reading list; words, list:, due:, priority: and tag: fill it in'
   }
 }
 

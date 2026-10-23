@@ -7,6 +7,7 @@ import { readingListRoute } from '@modules/reading-lists/renderer/reading-lists-
 import { taskRoute } from '@modules/tasks/renderer/tasks-paths'
 import { defaultList } from '@modules/tasks/shared/query'
 import type { DockActionId } from '@shared/api'
+import type { CreateRequest } from '@shared/search-query'
 import { todayIso } from '@shared/time'
 
 /** The ids the Dock menu can send (`DockActionId`) and the two only the palette and `new:` make: one list of "start something now" actions. */
@@ -16,7 +17,12 @@ export interface QuickAction {
   id: QuickActionId
   title: string
   detail: string
-  go: (navigate: NavigateFunction, workspace: QuickActionWorkspace) => void | Promise<void>
+  go: (
+    navigate: NavigateFunction,
+    workspace: QuickActionWorkspace,
+    /** What a `new:` query said besides the kind (title, list, due date, …); absent for a plain button. */
+    fields?: CreateRequest
+  ) => void | Promise<void>
 }
 
 /** Where a quick action starts things: the workspace being looked at, Research anywhere else. */
@@ -48,8 +54,11 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
     id: 'new-note',
     title: 'New note',
     detail: 'Starts now, in the group you are looking at.',
-    go: async (navigate, workspace) => {
-      const file = await window.api.notes.create({ workspace })
+    go: async (navigate, workspace, fields) => {
+      const file = await window.api.notes.create({
+        workspace,
+        ...(fields?.title ? { title: fields.title } : {})
+      })
       navigate(noteRoute(workspace, file.ref.id), { state: { focus: 'body' } })
     }
   },
@@ -71,7 +80,7 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
     id: 'new-task',
     title: 'New task',
     detail: 'An empty task, in the list you used last.',
-    go: async (navigate, current) => {
+    go: async (navigate, current, fields) => {
       const workspace = current === 'work' ? 'work' : 'research'
       const [tasks, clients, settings] = await Promise.all([
         window.api.tasks.list(workspace),
@@ -85,14 +94,19 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
         sublist: typeof saved?.sublist === 'string' ? saved.sublist : ''
       }
       const rows = tasks.filter((t) => !t.parentUid).map((task) => ({ task, kids: [] }))
-      const where = defaultList(rows, { last, clients })
+      const where = fields?.list
+        ? { list: fields.list, sublist: fields.sublist }
+        : defaultList(rows, { last, clients })
       // An ordinary task (never one the app made for a session); the page removes it if nothing is written in it.
+      // In Work the main process refuses a list that is no client.
       const task = await window.api.tasks.create({
         workspace,
-        title: '',
+        title: fields?.title ?? '',
         list: where.list,
         sublist: where.sublist,
-        due: todayIso()
+        due: fields?.due ?? todayIso(),
+        ...(fields?.priority ? { priority: fields.priority } : {}),
+        ...(fields?.tags.length ? { tags: fields.tags } : {})
       })
       navigate(taskRoute(workspace, task.uid), { state: { isNew: true } })
     }
@@ -102,8 +116,11 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
     title: 'New reading list',
     // Reading lists live in Research only.
     detail: 'An untitled list, filled in at leisure.',
-    go: async (navigate) => {
-      const file = await window.api.readingLists.create({ workspace: 'research' })
+    go: async (navigate, _workspace, fields) => {
+      const file = await window.api.readingLists.create({
+        workspace: 'research',
+        ...(fields?.title ? { title: fields.title } : {})
+      })
       navigate(readingListRoute(file.ref.id), { state: { isNew: true } })
     }
   },
@@ -118,11 +135,11 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
     title: 'New training',
     // Training has no Work: it starts in Life when looking at Life, else in Research.
     detail: 'Starts today, filled in at leisure.',
-    go: async (navigate, current) => {
+    go: async (navigate, current, fields) => {
       const workspace = current === 'life' ? 'life' : 'research'
       const file = await window.api.training.create({
         workspace,
-        title: 'Untitled',
+        title: fields?.title || 'Untitled',
         date: todayIso(),
         // Research's entries make their own subtask for the training's hours; Life has none.
         ...(workspace === 'research' ? { task: 'auto' as const } : {})
@@ -135,7 +152,8 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
 export function runQuickAction(
   id: QuickActionId,
   navigate: NavigateFunction,
-  workspace: QuickActionWorkspace = 'research'
+  workspace: QuickActionWorkspace = 'research',
+  fields?: CreateRequest
 ): void | Promise<void> {
-  return QUICK_ACTIONS.find((a) => a.id === id)?.go(navigate, workspace)
+  return QUICK_ACTIONS.find((a) => a.id === id)?.go(navigate, workspace, fields)
 }

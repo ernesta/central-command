@@ -2,7 +2,7 @@ import type { Person } from './people'
 import type { Workspace } from './settings'
 import { fold } from './text'
 import { todayIso } from './time'
-import { dateMatches, parseDateRange, parsePeriod, type DayRange } from './search-dates'
+import { addDays, dateMatches, parseDateRange, parsePeriod, type DayRange } from './search-dates'
 
 /** Every place the global search can look, by the id its module (or the shell) registers. */
 export const SOURCE_IDS = [
@@ -132,8 +132,30 @@ export interface ParsedSearch {
   notices: string[]
   /** Two different values of a single-valued modifier: nothing can match. */
   impossible: boolean
-  /** What a `new:` word asks to create; null when there is none. It is not a search, so it is not in `filters`. */
-  create: NewKind | null
+  /** What a `new:` word asks to create, with what else the query says; null when there is none. It is not a search, so none of it is in `filters`. */
+  create: CreateRequest | null
+}
+
+/** A `new:<kind>` query: the plain words are the title, and `list:`, `due:`, `priority:` and `tag:` fill a task in instead of filtering. */
+export interface CreateRequest {
+  kind: NewKind
+  /** The plain words and quoted phrases, as typed; empty when there are none. */
+  title: string
+  /** As typed (`Training` or `Training/Day 2`): checked against the lists where the thing is made. */
+  list: string
+  sublist: string
+  /** The date a `due:` word names (`today`, `tomorrow`, `week` is six days on); null when there is none. */
+  due: string | null
+  priority: 'high' | 'normal' | 'low' | null
+  tags: string[]
+}
+
+/** What `due:` takes when it creates: a date to give, not a range to match (no `overdue`). */
+const DUE_TO_CREATE = ['today', 'tomorrow', 'week']
+const PRIORITY_TO_CREATE: Record<string, 'high' | 'normal' | 'low'> = {
+  p1: 'high',
+  p2: 'normal',
+  p3: 'low'
 }
 
 /** What a source is asked: the parsed search with today's date, and only the filters it can apply. */
@@ -221,8 +243,24 @@ export function parseSearch(raw: string, today = todayIso()): ParsedSearch {
   const phrases: string[] = []
   const filters: SearchFilter[] = []
   const notices: string[] = []
-  let create: NewKind | null = null
+  let kind: NewKind | null = null
   let unknown = 0
+  // `new:` is looked for first: with it the words around it make the thing instead of searching.
+  for (const match of raw.matchAll(TOKEN)) {
+    const [, minus, rawName, quoted, bare] = match
+    const value = fold(quoted ?? bare ?? '')
+      .replace(/\s+/g, ' ')
+      .trim()
+    if (minus !== '-' && rawName?.toLowerCase() === 'new' && valueAccepted('new', value, today))
+      kind = value as NewKind
+  }
+  const made: Omit<CreateRequest, 'kind' | 'title'> = {
+    list: '',
+    sublist: '',
+    due: null,
+    priority: null,
+    tags: []
+  }
   for (const match of raw.matchAll(TOKEN)) {
     const [token, minus, rawName, quoted, bare, phrase, word] = match
     if (rawName !== undefined) {
@@ -237,8 +275,29 @@ export function parseSearch(raw: string, today = todayIso()): ParsedSearch {
       } else if (value.trim() !== '') {
         const folded = fold(value).replace(/\s+/g, ' ').trim()
         if (name === 'new' && minus === '-') notices.push('new: cannot be excluded')
-        else if (name === 'new' && valueAccepted(name, folded, today)) create = folded as NewKind
-        else if (valueAccepted(name, folded, today))
+        else if (name === 'new' && valueAccepted(name, folded, today)) continue
+        else if (
+          kind &&
+          minus !== '-' &&
+          (name === 'list' || name === 'due' || name === 'priority' || name === 'tag')
+        ) {
+          if (name === 'list') {
+            const [list, ...rest] = value.split('/')
+            made.list = list.trim()
+            made.sublist = rest.join('/').trim()
+          } else if (name === 'tag') {
+            made.tags.push(value.trim())
+          } else if (name === 'due') {
+            if (!DUE_TO_CREATE.includes(folded))
+              notices.push(`due: accepts ${DUE_TO_CREATE.join(', ')} here`)
+            else
+              made.due = folded === 'today' ? today : addDays(today, folded === 'tomorrow' ? 1 : 6)
+          } else if (PRIORITY_TO_CREATE[folded]) {
+            made.priority = PRIORITY_TO_CREATE[folded]
+          } else {
+            notices.push('priority: accepts P1, P2, P3')
+          }
+        } else if (valueAccepted(name, folded, today))
           filters.push({ name, value: folded, negated: minus === '-' })
         else notices.push(`${name}: accepts ${acceptedValues(name)}`)
       }
@@ -265,7 +324,7 @@ export function parseSearch(raw: string, today = todayIso()): ParsedSearch {
     plainWords: words.length - unknown,
     notices,
     impossible: repeated.length > 0,
-    create
+    create: kind ? { kind, title: [...words, ...phrases].join(' ').trim(), ...made } : null
   }
 }
 
@@ -275,6 +334,8 @@ export function parseSearch(raw: string, today = todayIso()): ParsedSearch {
  * help or notice instead of "No results.".
  */
 export function isSearch(parsed: ParsedSearch): boolean {
+  // `new:` makes something; the words with it are its title, not a search.
+  if (parsed.create) return false
   return parsed.plainWords > 0 || parsed.phrases.length > 0 || parsed.filters.length > 0
 }
 

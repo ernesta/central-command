@@ -265,11 +265,11 @@ describe('passesFilters', () => {
 describe('new:', () => {
   it('asks to create a kind and is not a filter or a search', () => {
     const parsed = parse('new:task')
-    expect(parsed.create).toBe('task')
+    expect(parsed.create?.kind).toBe('task')
     expect(parsed.filters).toEqual([])
     expect(isSearch(parsed)).toBe(false)
     for (const kind of ['note', 'task', 'meeting', 'training', 'reading-list'])
-      expect(parse(`new:${kind}`).create).toBe(kind)
+      expect(parse(`new:${kind}`).create?.kind).toBe(kind)
   })
 
   it('keeps workspace: beside it, and says what it accepts for another value', () => {
@@ -279,6 +279,42 @@ describe('new:', () => {
     const bad = parse('new:person')
     expect(bad.create).toBeNull()
     expect(bad.notices[0]).toContain('new: accepts')
+  })
+
+  it('takes the plain words as the title and list:, due:, priority:, tag: as fields, not filters or notices', () => {
+    const parsed = parse(
+      'new:task Write the intro list:Training/Day-2 due:tomorrow priority:p1 tag:Draft tag:paper'
+    )
+    expect(parsed.create).toEqual({
+      kind: 'task',
+      title: 'Write the intro',
+      list: 'Training',
+      sublist: 'Day-2',
+      due: '2026-10-20',
+      priority: 'high',
+      tags: ['Draft', 'paper']
+    })
+    expect(parsed.filters).toEqual([])
+    expect(parsed.notices).toEqual([])
+    expect(isSearch(parsed)).toBe(false)
+    expect(parse('new:task due:week').create?.due).toBe('2026-10-25')
+    expect(parse('new:task due:today').create?.due).toBe('2026-10-19')
+  })
+
+  it('refuses due:overdue and an unknown priority with a notice, and ignores them', () => {
+    const parsed = parse('new:task x due:overdue priority:p9')
+    expect(parsed.create?.due).toBeNull()
+    expect(parsed.create?.priority).toBeNull()
+    expect(parsed.notices).toEqual([
+      'due: accepts today, tomorrow, week here',
+      'priority: accepts P1, P2, P3'
+    ])
+  })
+
+  it('leaves them filters when there is no new:', () => {
+    const parsed = parse('words list:Training')
+    expect(parsed.create).toBeNull()
+    expect(parsed.filters).toEqual([f('list', 'training')])
   })
 
   it('cannot be excluded', () => {
