@@ -1,9 +1,9 @@
-# Polish round (23 Oct 2026): 13 items
+# Polish round (23 Oct 2026): 13 items and one side note (14)
 
 The user's list of 23 Oct 2026, agreed in conversation. Each item is one feature: implement in full, test (`npm test`, `lint`, `typecheck`), drive it in a
 scratch library (see CLAUDE.md, "Testing the app for real"), add a "Polish round" entry to `docs/DECISIONS.md`, commit (one commit per standalone part),
 then go on. The user is away: no questions between items. **Stop and give the user a prompt for the next item only where marked "STOP"** (the
-big ones, so they can clear context). At the end: a very brief list of the 13 things done, run `npm run build:mac`, install in `/Applications`
+big ones, so they can clear context). At the end: a very brief list of the 14 things done, run `npm run build:mac`, install in `/Applications`
 (quit the app first), nothing pushed unless the user says so.
 
 ## Decisions already made (do not re-ask)
@@ -30,12 +30,15 @@ big ones, so they can clear context). At the end: a very brief list of the 13 th
 
 ## Defaults I propose (the user did not object; they can correct at the check)
 
-- **Item 2, locked session tasks (the user's answer, 23 Oct 2026).** A task with `own_kind` (meeting, training, self-study) and the series
-  parent tasks the app makes for them: title, **due date**, repeat, list and delete are shown as plain text with a quiet line "Made by the meeting
-  <title>" (a link to the note). The due date is set only by `session-sweep.ts` from the note's date, so it is locked on the task and on its subtask
-  rows (the series task's subtask list shows dates as text). Status, priority, tags, notes and time (Start, Add time) stay editable. Deleting
-  happens through the meeting or training. Enforce in the main process too (the IPC update ignores locked fields for such tasks; the sweep's own
-  writes go through the store, not that handler), not only in the renderer. Test: an update of a locked field is refused; a sweep still sets due.
+- **Item 2, locked session tasks (the user's answers, 23 Oct 2026).** Session tasks: a meeting's or training's own task, its self-study task, and
+  the subtasks of a series (meeting, training, self-study). Their **title, list, due date, status, repeat and delete are locked** (plain text, a
+  quiet line "Made by the meeting <title>" linking to the note): the note says when the session happened and `session-sweep.ts` sets both due
+  date and done from it. Priority, tags, notes and time (Start, Add time) stay editable. **The series parent task** (e.g. "Supervision",
+  "<series> · self-study"): title, list, repeat and delete locked; **no due date** (the user's choice of 23 Oct 2026: a series' end is unknown, and
+  the subtasks carry the real dates), shown as plain "No date"; **status stays editable** (the user closes a series by hand; the app never marks
+  a parent done). If a parent now has a due date, the repair/sweep clears it (a dry-run report line first). Enforce in the main process too
+  (the IPC update ignores locked fields for such tasks; the sweep's own writes go through the store, not that handler). Tests: an update of a
+  locked field is refused; the sweep still sets due and status; a parent's status can change.
 - **Item 3, buttons and year layout.** "New training entry" becomes "New training" (also `quick-actions.ts`, the comments, tests, Settings and
   docs). Audit every "New …" / "Add …" button for one pattern: `New <thing>` in the page header (training, meeting, note, task, reading list,
   person), `Add <thing>` only inside lists; list the changes in DECISIONS. The "YEAR" label and its dropdown sit together at the left, label
@@ -55,6 +58,13 @@ big ones, so they can clear context). At the end: a very brief list of the 13 th
 - **Item 12.** The default toast time goes from 6 s to 9 s (`showToast`'s `ms`), 12 s for toasts with an action; check every caller that passes
   its own `ms`.
 
+## Item 14 (side note, 23 Oct 2026): done with no date gets today
+
+Marking any task or subtask done when it has no due date sets its due date to today (in the one place status changes, in the main process, so the
+table, the page, the board, the timer and the sweep all agree). Reopening leaves the date; Undo of the status change (right after) restores "no
+date". Recurring tasks always have a date. Not for locked session tasks (their status is the sweep's). Tests, then a driven check. Place it
+after item 11 (also a done-toast item); one commit.
+
 ## Item 7 (the user's answer: wrapping)
 
 The toast `Deleted "Attend and present at …" (3:45). Undo` wrapped onto two lines. Covered by item 4 (always one line, title ellipsised); add a
@@ -62,7 +72,7 @@ test or a driven check with a very long title, and with the "(3:45)" and an acti
 
 ## Order and stops
 
-1. Item 12 + item 4 (toast, with item 7's wrapping check), item 11 (Open link on recurring done). Commit each.
+1. Item 12 + item 4 (toast, with item 7's wrapping check), item 11 (Open link on recurring done), item 14 (done with no date gets today). Commit each.
 2. Item 3 (button names, year layout), item 5 (back to today), item 8 (clipped borders), item 9 (stray dot). Commit each.
 3. Item 13 (remove card), then item 10 (Home). **STOP** after item 10, with a prompt for the next.
 4. Item 6 (self-study label), item 2 (locked session tasks). **STOP** after item 2.
