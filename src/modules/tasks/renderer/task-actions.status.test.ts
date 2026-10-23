@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { clearUndoStack, undoLast } from '@renderer/components/undo-store'
 import { clearToast, currentToast } from '@renderer/components/toast-store'
 import { setNavigator } from '@renderer/shell/navigate-store'
 import { setTaskStatus } from './task-actions'
@@ -39,5 +40,37 @@ describe('setTaskStatus on a recurring task', () => {
     stubApi(null)
     await setTaskStatus({ uid: 'a' }, 'done')
     expect(currentToast()).toBeNull()
+  })
+})
+
+describe('Undo of a status change', () => {
+  afterEach(() => clearUndoStack())
+
+  function stub(before: unknown): {
+    setStatus: ReturnType<typeof vi.fn>
+    update: ReturnType<typeof vi.fn>
+  } {
+    const setStatus = vi.fn(async () => ({ task: {}, next: null }))
+    const update = vi.fn(async () => ({}))
+    vi.stubGlobal('window', {
+      ...globalThis.window,
+      api: { tasks: { get: async () => before, setStatus, update } }
+    })
+    return { setStatus, update }
+  }
+
+  it('puts "no date" back for a task that had none', async () => {
+    const { setStatus, update } = stub({ status: 'todo', due: null })
+    await setTaskStatus({ uid: 'a' }, 'done')
+    await undoLast()
+    expect(setStatus).toHaveBeenLastCalledWith('a', 'todo')
+    expect(update).toHaveBeenCalledWith('a', { due: null })
+  })
+
+  it('leaves a dated task alone', async () => {
+    const { update } = stub({ status: 'todo', due: '2026-11-01' })
+    await setTaskStatus({ uid: 'a' }, 'done')
+    await undoLast()
+    expect(update).not.toHaveBeenCalled()
   })
 })

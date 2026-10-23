@@ -105,6 +105,28 @@ describe('update', () => {
 })
 
 describe('setStatus and recurrence', () => {
+  it('gives a task with no date today when it is done, and leaves the date on reopening', () => {
+    today = '2026-10-23'
+    const t = make('A')
+    expect(store.setStatus(t.uid, 'done').task.due).toBe('2026-10-23')
+    expect(store.setStatus(t.uid, 'todo').task.due).toBe('2026-10-23')
+    const dated = make('B', { due: '2026-11-01' })
+    expect(store.setStatus(dated.uid, 'done').task.due).toBe('2026-11-01')
+  })
+
+  it('gives a subtask and the open subtasks of a finished parent today, but not session tasks', () => {
+    today = '2026-10-23'
+    const p = make('P')
+    const a = store.create({ workspace: 'research', title: 'A', parentUid: p.uid })
+    store.setStatus(a.uid, 'done')
+    expect(store.get(a.uid)?.due).toBe('2026-10-23')
+    const b = store.create({ workspace: 'research', title: 'B', parentUid: p.uid })
+    store.setStatus(p.uid, 'done')
+    expect(store.get(b.uid)?.due).toBe('2026-10-23')
+    const s = make('Session', { ownKind: 'meeting' })
+    expect(store.setStatus(s.uid, 'done').task.due).toBeNull()
+  })
+
   it('sets and clears completedAt', () => {
     const t = make('A')
     expect(store.setStatus(t.uid, 'done').task.completedAt).not.toBeNull()

@@ -53,6 +53,9 @@ export async function setTaskStatus(
         label: 'status change',
         undo: async () => {
           await window.api.tasks.setStatus(task.uid, before.status)
+          // Finishing a task with no date gave it today; taking the finish back takes that with it.
+          if (!before.due && before.status !== 'done')
+            await window.api.tasks.update(task.uid, { due: null })
           // Finishing a recurring task started the next one; taking the finish back takes that with it.
           if (next) await window.api.tasks.delete(next.uid)
         }

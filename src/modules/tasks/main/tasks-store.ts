@@ -250,8 +250,11 @@ export class TasksStore {
       const task = this.require(uid)
       const now = this.clock.now()
       const wasDone = task.status === 'done'
+      // Done with no date gets today, for everything but the app's own session tasks (their status is the sweep's).
+      const finishing = status === 'done' && !wasDone
       const updated: Task = {
         ...task,
+        due: finishing && !task.due && !task.ownKind ? this.clock.today() : task.due,
         status,
         completedAt: status === 'done' ? (wasDone ? task.completedAt : now) : null,
         updatedAt: now
@@ -276,7 +279,13 @@ export class TasksStore {
       if (status === 'done' && !wasDone && !task.parentUid) {
         for (const sub of listSubtasks(this.db, task.uid)) {
           if (sub.status !== 'done') {
-            writeTask(this.db, { ...sub, status: 'done', completedAt: now, updatedAt: now })
+            writeTask(this.db, {
+              ...sub,
+              due: sub.due ?? (sub.ownKind ? null : this.clock.today()),
+              status: 'done',
+              completedAt: now,
+              updatedAt: now
+            })
           }
         }
       }
