@@ -76,13 +76,6 @@ export function findSkill(name: string): Skill | null {
   return SKILLS.find((s) => s.name.toLowerCase() === key || s.inkpath.toLowerCase() === key) ?? null
 }
 
-/** Whether a skill's name contains what was typed, (or its Inkpath spelling), ignoring case and extra spaces. */
-export function skillMatches(skill: Skill, query: string): boolean {
-  const norm = (text: string): string => text.toLowerCase().replace(/\s+/g, ' ').trim()
-  const q = norm(query)
-  return q === '' || norm(skill.name).includes(q) || norm(skill.inkpath).includes(q)
-}
-
 /** Hours and minutes as "1:30" or "12:00", never decimals (the same as the Hours pages). */
 export const formatHours = formatTrackedHours
 

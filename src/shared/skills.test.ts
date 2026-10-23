@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { SKILLS, findSkill, formatHours, minutesPerSkill, skillMatches, sortSkills } from './skills'
+import { SKILLS, findSkill, formatHours, minutesPerSkill, sortSkills } from './skills'
 
 describe('skills', () => {
   it('has the 19 skills of the Inkpath log, each with a distinct name and Inkpath spelling', () => {
@@ -61,14 +61,5 @@ describe('skills', () => {
       'Networking (RP)',
       'Zebra (Live)'
     ])
-  })
-
-  it('matches typed text anywhere in a name, ignoring case', () => {
-    const names = (q: string): string[] =>
-      SKILLS.filter((s) => skillMatches(s, q)).map((s) => s.name)
-    expect(names('')).toHaveLength(SKILLS.length)
-    expect(names('PROP')).toEqual(['Intellectual property rights (GS)'])
-    expect(names('  qua ').length).toBeGreaterThan(1)
-    expect(names('zzz')).toEqual([])
   })
 })
