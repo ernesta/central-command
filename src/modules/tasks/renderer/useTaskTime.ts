@@ -10,6 +10,7 @@ import { useMeetingEntries } from '../../hours/renderer/useMeetingHours'
 import { elapsedMinutes } from '../../hours/shared/timer'
 import { hoursByMonth, taskUidOf, trackedByTask } from '../shared/tracked'
 import type { TaskWorkspace } from '../shared/types'
+import { useTasksList } from './useTasksList'
 
 /**
  * What Hours holds for each task of a workspace (minutes by task uid, every year, a running timer counted in whole minutes, and the
@@ -52,7 +53,12 @@ export function useTaskTime(workspace: TaskWorkspace): {
     }
   }, [workspace])
 
-  const base = useMemo(() => trackedByTask(shown), [shown])
+  const { tasks } = useTasksList(workspace)
+  // Each task's ClickUp time, so history marked `earlier` that it does not hold still counts on its page.
+  const base = useMemo(
+    () => trackedByTask(shown, new Map((tasks ?? []).map((t) => [t.uid, t.earlierMinutes]))),
+    [shown, tasks]
+  )
   return useMemo(() => {
     const tracked = new Map(base)
     const active = new Set<string>()

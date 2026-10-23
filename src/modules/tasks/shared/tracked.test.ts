@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { deleteTaskTime } from '@shared/tracking/totals'
 import { year as baseYear } from '@shared/tracking/test-utils'
 import type { TrackingYear } from '@shared/tracking/types'
+import { taskTime } from './views'
+import { task } from './test-utils'
 import { hoursByMonth, taskKey, taskUidOf, trackedByTask } from './tracked'
 
 const year = (over: Partial<TrackingYear>): TrackingYear => baseYear(over)
@@ -179,5 +181,38 @@ describe("deleting a task's time for a day", () => {
     const gone = deleteTaskTime(after, '2026-09-30', 'A')
     expect(trackedByTask([gone]).get('t1')).toBeUndefined()
     expect(hoursByMonth([gone], 't1')).toEqual([])
+  })
+})
+
+describe('trackedByTask with the tasks’ ClickUp time', () => {
+  // PS5210's "Introduction": a subtask under a series task, made after the import, with 2:00 typed on it and marked `earlier`.
+  const intro = year({
+    adjusts: [
+      {
+        id: 'a',
+        date: '2026-09-30',
+        label: 'Introduction',
+        minutes: 120,
+        task: taskKey('sxbn2jqc'),
+        earlier: true
+      }
+    ]
+  })
+  it('counts earlier history that the task’s ClickUp time does not hold', () => {
+    expect(trackedByTask([intro]).get('sxbn2jqc')).toBeUndefined()
+    expect(trackedByTask([intro], new Map([['sxbn2jqc', 0]])).get('sxbn2jqc')).toBe(120)
+  })
+  it('counts only the part ClickUp’s time falls short of', () => {
+    expect(trackedByTask([intro], new Map([['sxbn2jqc', 90]])).get('sxbn2jqc')).toBe(30)
+  })
+  it('leaves earlier history alone when ClickUp’s time holds it', () => {
+    expect(trackedByTask([intro], new Map([['sxbn2jqc', 120]])).get('sxbn2jqc')).toBeUndefined()
+  })
+  it('shows on the subtask’s page and in the series total once', () => {
+    const tracked = trackedByTask([intro], new Map([['sxbn2jqc', 0]]))
+    const parent = task({ uid: 'jkabweh5' })
+    const sub = task({ uid: 'sxbn2jqc', parentUid: 'jkabweh5', ownKind: 'training' })
+    expect(taskTime({ task: sub, kids: [] }, tracked).total).toBe(120)
+    expect(taskTime({ task: parent, kids: [sub] }, tracked).total).toBe(120)
   })
 })
