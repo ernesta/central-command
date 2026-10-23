@@ -24,7 +24,6 @@ import { MeetingHoursNote } from '../../meetings/renderer/MeetingHoursNote'
 import { FilesPanel } from './FilesPanel'
 import { TrainingHours } from './TrainingHours'
 import { TrainingTask } from './TrainingTask'
-import { draftSelfStudyTask } from './self-study-sync'
 import { taskRoute } from '../../tasks/renderer/tasks-paths'
 import { entryRoute, trainingBase, useTrainingWorkspace } from './training-paths'
 import { TrainingMetaFields } from './TrainingMetaFields'
@@ -312,7 +311,6 @@ function EntryView({
           tasks={tasks}
           onRemake={() => session.setMeta({ task: 'auto' })}
           selfStudy={tasks?.find((t) => t.uid === meta.selfStudy)}
-          draft={draftSelfStudyTask(meta)}
         >
           <TrainingHours meta={meta} tasks={tasks} ensure={ensure} />
         </TrainingTask>
