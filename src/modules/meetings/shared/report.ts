@@ -34,7 +34,7 @@ export function meetingsReportHtml(input: MeetingsReportInput): string {
   const { year, today, seriesFilter } = input
   const included = seriesFilter ? input.rows.filter((r) => r.series === seriesFilter) : input.rows
   const rows = meetingsInYear(included, year)
-    .filter((r) => !isUpcoming(r, today))
+    .filter((r) => !isUpcoming(r, today) && durationMinutes(r.start, r.end))
     .sort((a, b) => -compareNewestFirst(a, b))
   const hours = meetingHours(included, year, today)
   const label = yearLabel(year)
@@ -64,7 +64,7 @@ export function meetingsReportHtml(input: MeetingsReportInput): string {
   return reportPageHtml({
     title: `${title} log ${label}`,
     subtitle: `Generated ${formatDate(today)}. Meetings that have not happened yet are not included.`,
-    totalsHtml: `<strong>${escapeHtml(formatHours(hours.minutes))}</strong> in ${hours.meetings} ${hours.meetings === 1 ? 'meeting' : 'meetings'}${hours.withoutTimes > 0 ? ` (${hours.withoutTimes} without times, counted as 0)` : ''}.${skills ? `<br>Hours per skill (a meeting counts towards each of its skills): ${skills}` : ''}`,
+    totalsHtml: `<strong>${escapeHtml(formatHours(hours.minutes))}</strong> in ${hours.meetings} ${hours.meetings === 1 ? 'meeting' : 'meetings'}.${skills ? `<br>Hours per skill (a meeting counts towards each of its skills): ${skills}` : ''}`,
     headHtml:
       '<th>Date</th><th>Time</th><th class="r">Hours</th><th>Type</th><th>Summary</th><th>Skills</th><th>Attendees</th>',
     bodyHtml: body

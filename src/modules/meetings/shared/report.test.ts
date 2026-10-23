@@ -61,14 +61,15 @@ describe('meetingsReportHtml', () => {
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt; &amp; &quot;x&quot;')
   })
 
-  it('reports meetings without times and totals hours per skill', () => {
+  it('leaves out meetings without times and totals hours per skill', () => {
     const html = meetingsReportHtml(
       input([
         row('2025-10-01', { skills: ['Communication'] }),
         row('2025-10-08', { start: null, end: null, skills: ['Communication'] })
       ])
     )
-    expect(html).toContain('(1 without times, counted as 0)')
+    expect(html).toContain('in 1 meeting.')
+    expect(html).not.toContain('without times')
     expect(html).toContain('Communication: 1:00')
   })
 

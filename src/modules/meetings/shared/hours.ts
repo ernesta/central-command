@@ -5,11 +5,9 @@ import { durationMinutes } from './time'
 import type { MeetingIndexRow } from './types'
 
 export interface MeetingHours {
-  /** Meetings counted: in the year and not upcoming. */
+  /** Meetings counted: in the year, not upcoming, and with some time. */
   meetings: number
   minutes: number
-  /** Counted meetings with no usable start and end, which add nothing. */
-  withoutTimes: number
   perSkill: { skill: string; minutes: number }[]
 }
 
@@ -33,22 +31,20 @@ export function meetingsInYearOrPlanned(
 
 /**
  * Hours for one year, from the start and end times. Upcoming meetings are left out (they have
- * not happened), and a meeting without both times counts as zero and is reported.
+ * not happened), and so is a meeting with no time: it is kept, but not counted as done.
  */
 export function meetingHours(
   rows: readonly MeetingIndexRow[],
   year: string,
   today: string
 ): MeetingHours {
-  const counted = meetingsInYear(rows, year).filter((r) => !isUpcoming(r, today))
-  const timed = counted.map((r) => ({
-    skills: r.skills,
-    minutes: durationMinutes(r.start, r.end)
-  }))
+  const timed = meetingsInYear(rows, year)
+    .filter((r) => !isUpcoming(r, today))
+    .map((r) => ({ skills: r.skills, minutes: durationMinutes(r.start, r.end) }))
+    .filter((t) => t.minutes)
   return {
-    meetings: counted.length,
+    meetings: timed.length,
     minutes: timed.reduce((n, t) => n + (t.minutes ?? 0), 0),
-    withoutTimes: timed.filter((t) => t.minutes === null).length,
     perSkill: minutesPerSkill(timed)
   }
 }

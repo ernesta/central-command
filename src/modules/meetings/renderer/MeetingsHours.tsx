@@ -16,12 +16,7 @@ export function MeetingsHours({
   showSkills: boolean
 }): React.JSX.Element {
   const hours = meetingHours(rows, year, today)
-  const note = [
-    `${hours.meetings} done`,
-    hours.withoutTimes > 0 ? `${hours.withoutTimes} without times, counted as 0` : ''
-  ]
-    .filter(Boolean)
-    .join(' · ')
+  const note = `${hours.meetings} done`
   return (
     <HoursStrip
       title={`Hours of meetings, ${yearLabel(year)}`}

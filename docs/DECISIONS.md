@@ -4065,3 +4065,8 @@ The user (23 Oct 2026): a Research training with no time (no start/end, no track
 
 - `trainingHours` counts only entries with some time (`entries`; `withoutTimes` is gone); `trainingReportHtml` lists only those and has no `meetingMinutes`. Tracked self-study time makes an entry count again. Supersedes "plus N h of meetings" above and in `docs/TRAINING_PLAN.md`.
 - Checked: test, lint, typecheck, Prettier. Not driven in the app.
+
+The same for meetings (23 Oct 2026, the user's request): a meeting with no time is not "done", is not mentioned in the Hours strip as "N without times, counted as 0" and is left out of the PDF's rows and count.
+
+- `meetingHours` counts only meetings with some time (`meetings`; `withoutTimes` is gone); `meetingsReportHtml` lists only those.
+- Checked: test, lint, typecheck, Prettier. Not driven in the app.

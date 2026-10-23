@@ -43,15 +43,14 @@ describe('meetingHours', () => {
     expect(hours.minutes).toBe(60)
   })
 
-  it('counts a meeting without times as zero and says how many there are', () => {
+  it('leaves out a meeting without times, neither done nor mentioned', () => {
     const hours = meetingHours(
       [row('2026-01-01', { start: null, end: null }), row('2026-01-02', { end: '09:00' })],
       '2025-09-22',
       TODAY
     )
     expect(hours.minutes).toBe(0)
-    expect(hours.withoutTimes).toBe(2)
-    expect(hours.meetings).toBe(2)
+    expect(hours.meetings).toBe(0)
   })
 
   it('counts a meeting towards every one of its skills', () => {

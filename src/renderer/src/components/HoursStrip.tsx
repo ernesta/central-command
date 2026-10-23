@@ -5,7 +5,7 @@ interface HoursStripProps {
   /** What the total is of, for example "Hours of meetings, 2025–26". */
   title: string
   minutes: number
-  /** One quiet line under the total, for example "12 meetings · 2 without times". */
+  /** One quiet line under the total, for example "12 done". */
   note?: string
   perSkill: readonly { skill: string; minutes: number }[]
   /** A yearly aim: shows "of N h" and a thin bar. `progress` is the fraction done (it can pass 1). */
