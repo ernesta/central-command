@@ -33,7 +33,8 @@ export const MODIFIER_NAMES = [
   'before',
   'after',
   'on',
-  'during'
+  'during',
+  'new'
 ] as const
 export type ModifierName = (typeof MODIFIER_NAMES)[number]
 
@@ -57,6 +58,10 @@ const IN_VALUES: Record<string, SourceId> = {
 
 /** What `in:` is shown to accept (one form each; the singular works too). */
 const IN_SHOWN = ['tasks', 'notes', 'meetings', 'training', 'readings', 'lists', 'people']
+
+/** What `new:` creates (Enter on the chip makes the empty thing and opens it): not a filter, no source has the field. */
+export const NEW_VALUES = ['note', 'task', 'meeting', 'training', 'reading-list'] as const
+export type NewKind = (typeof NEW_VALUES)[number]
 
 export const WORKSPACE_VALUES: readonly Workspace[] = ['research', 'work', 'life']
 
@@ -100,7 +105,8 @@ export const MODIFIERS: Record<ModifierName, Modifier> = {
   before: { sources: DATED() },
   after: { sources: DATED() },
   on: { sources: DATED(), single: 'days' },
-  during: { sources: DATED('period'), single: 'periods' }
+  during: { sources: DATED('period'), single: 'periods' },
+  new: { sources: {}, single: 'things to create' }
 }
 
 function DATED(spec: Spec = 'date'): Partial<Record<SourceId, Spec>> {
@@ -126,6 +132,8 @@ export interface ParsedSearch {
   notices: string[]
   /** Two different values of a single-valued modifier: nothing can match. */
   impossible: boolean
+  /** What a `new:` word asks to create; null when there is none. It is not a search, so it is not in `filters`. */
+  create: NewKind | null
 }
 
 /** What a source is asked: the parsed search with today's date, and only the filters it can apply. */
@@ -142,6 +150,7 @@ export function plainRequest(text: string): SearchRequest {
     plainWords: text.split(/\s+/).filter(Boolean).length,
     notices: [],
     impossible: false,
+    create: null,
     today: todayIso()
   }
 }
@@ -159,6 +168,7 @@ function isModifier(name: string): name is ModifierName {
 export function valueAccepted(name: ModifierName, folded: string, today: string): boolean {
   if (name === 'in') return folded in IN_VALUES
   if (name === 'workspace') return (WORKSPACE_VALUES as readonly string[]).includes(folded)
+  if (name === 'new') return (NEW_VALUES as readonly string[]).includes(folded)
   return Object.values(MODIFIERS[name].sources).some((spec) => specAccepts(spec, folded, today))
 }
 
@@ -179,6 +189,7 @@ export function sourceAccepts(source: string, filter: SearchFilter, today: strin
 export function modifierValues(name: ModifierName): string[] {
   if (name === 'in') return [...IN_SHOWN]
   if (name === 'workspace') return [...WORKSPACE_VALUES]
+  if (name === 'new') return [...NEW_VALUES]
   const lists = [...new Set(Object.values(MODIFIERS[name].sources).filter(Array.isArray).flat())]
   return name === 'priority' ? lists.map((v) => v.toUpperCase()) : lists
 }
@@ -210,6 +221,7 @@ export function parseSearch(raw: string, today = todayIso()): ParsedSearch {
   const phrases: string[] = []
   const filters: SearchFilter[] = []
   const notices: string[] = []
+  let create: NewKind | null = null
   let unknown = 0
   for (const match of raw.matchAll(TOKEN)) {
     const [token, minus, rawName, quoted, bare, phrase, word] = match
@@ -224,7 +236,9 @@ export function parseSearch(raw: string, today = todayIso()): ParsedSearch {
         notices.push(`Not a filter: ${token}`)
       } else if (value.trim() !== '') {
         const folded = fold(value).replace(/\s+/g, ' ').trim()
-        if (valueAccepted(name, folded, today))
+        if (name === 'new' && minus === '-') notices.push('new: cannot be excluded')
+        else if (name === 'new' && valueAccepted(name, folded, today)) create = folded as NewKind
+        else if (valueAccepted(name, folded, today))
           filters.push({ name, value: folded, negated: minus === '-' })
         else notices.push(`${name}: accepts ${acceptedValues(name)}`)
       }
@@ -250,7 +264,8 @@ export function parseSearch(raw: string, today = todayIso()): ParsedSearch {
     filters,
     plainWords: words.length - unknown,
     notices,
-    impossible: repeated.length > 0
+    impossible: repeated.length > 0,
+    create
   }
 }
 
@@ -261,6 +276,12 @@ export function parseSearch(raw: string, today = todayIso()): ParsedSearch {
  */
 export function isSearch(parsed: ParsedSearch): boolean {
   return parsed.plainWords > 0 || parsed.phrases.length > 0 || parsed.filters.length > 0
+}
+
+/** The workspace a `workspace:` filter names, if the search has a positive one (it overrides the page's for `new:`). */
+export function workspaceFilter(parsed: ParsedSearch): Workspace | null {
+  const f = parsed.filters.find((x) => x.name === 'workspace' && !x.negated)
+  return f ? (f.value as Workspace) : null
 }
 
 /** The person a `with:` or `by:` value names: a full name or initials, case and accents ignored. */

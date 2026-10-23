@@ -30,4 +30,14 @@ describe('search help table', () => {
     expect(summarise('by').people).toBe(true)
     expect(summarise('tag').people).toBe(false)
   })
+
+  it('gives new: the kinds it creates as chips', () => {
+    expect(summarise('new').chips.map((c) => c.label)).toEqual([
+      'note',
+      'task',
+      'meeting',
+      'training',
+      'reading-list'
+    ])
+  })
 })

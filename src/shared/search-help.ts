@@ -52,6 +52,10 @@ export const MODIFIER_HELP: Record<ModifierName, ModifierHelp> = {
     hint: 'a period',
     filters: 'Dated within this period',
     forms: 'YYYY-MM, YYYY, today, yesterday, this/last week, month, year'
+  },
+  new: {
+    hint: 'create one',
+    filters: 'Enter makes a new note, task, meeting, training or reading list'
   }
 }
 

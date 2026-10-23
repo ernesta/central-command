@@ -20,7 +20,10 @@ interface Command {
 /** Actions the search window offers alongside results, the way a command palette does. Each does what its own
  * button does elsewhere in the app; nothing here is a shortcut around a rule those buttons enforce. */
 const COMMANDS: Command[] = [
-  ...QUICK_ACTIONS.map((a): Command => (a.id === 'stop-timer' ? { ...a, whileRunning: true } : a)),
+  // `new-task` and `new-reading-list` are reached only by `new:task` and `new:reading-list`, not by plain words.
+  ...QUICK_ACTIONS.filter((a) => a.id !== 'new-task' && a.id !== 'new-reading-list').map(
+    (a): Command => (a.id === 'stop-timer' ? { ...a, whileRunning: true } : a)
+  ),
   {
     id: 'start-timer',
     title: 'Start timer',

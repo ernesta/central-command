@@ -1,5 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
-import { Link, Navigate, useNavigate, useParams } from 'react-router'
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
@@ -80,6 +80,10 @@ function useSaver(
   return { saver, state }
 }
 
+// A task made empty by `new:task` is removed when the page is left with nothing written in it. React StrictMode runs an effect's
+// cleanup and setup back to back, so the removal waits a tick and a setup in between cancels it.
+const pendingDiscard = new Map<string, ReturnType<typeof setTimeout>>()
+
 function TaskView({
   task,
   row,
@@ -92,6 +96,7 @@ function TaskView({
   workspace: TaskWorkspace
 }): React.JSX.Element {
   const navigate = useNavigate()
+  const isNew = (useLocation().state as { isNew?: boolean } | null)?.isNew === true
   const today = todayIso()
   const { tracked, running, yearFor, clientFor, months } = useTaskTime(workspace)
   const sessionTasks = useSessionTaskUids(workspace)
@@ -122,6 +127,24 @@ function TaskView({
   const [bodyText, setBodyText] = useState(task.description)
   const [startBody] = useState(task.description)
   useDocumentTitle(titleText)
+
+  useEffect(() => {
+    if (!isNew) return
+    clearTimeout(pendingDiscard.get(task.uid))
+    pendingDiscard.delete(task.uid)
+    return () => {
+      pendingDiscard.set(
+        task.uid,
+        setTimeout(() => {
+          pendingDiscard.delete(task.uid)
+          // The savers flush as the page unmounts; the store only removes a task nothing was written in.
+          void Promise.all([title.flush(), description.flush()]).then(() =>
+            window.api.tasks.discardIfEmpty(task.uid)
+          )
+        }, 50)
+      )
+    }
+  }, [isNew, task.uid, title, description])
 
   const time = taskTime(row, tracked)
   const own = taskTime({ task, kids: [] }, tracked)
@@ -220,6 +243,7 @@ function TaskView({
               aria-label="Title"
               placeholder="Untitled"
               readOnly={lock !== null}
+              autoFocus={isNew}
               value={titleText}
               onChange={(event) => {
                 const text = event.target.value.replace(/[\r\n]/g, ' ')

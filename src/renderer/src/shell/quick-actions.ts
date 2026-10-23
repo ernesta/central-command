@@ -3,11 +3,14 @@ import { meetingRoute } from '@modules/meetings/renderer/meetings-paths'
 import { stopTimer } from '@modules/hours/renderer/start-request'
 import { noteRoute } from '@modules/notes/renderer/notes-paths'
 import { entryRoute } from '@modules/training/renderer/training-paths'
+import { readingListRoute } from '@modules/reading-lists/renderer/reading-lists-paths'
+import { taskRoute } from '@modules/tasks/renderer/tasks-paths'
+import { defaultList } from '@modules/tasks/shared/query'
 import type { DockActionId } from '@shared/api'
 import { todayIso } from '@shared/time'
 
-/** The same three ids the Dock menu can send (`DockActionId`): one list of "start something now" actions. */
-export type QuickActionId = DockActionId
+/** The ids the Dock menu can send (`DockActionId`) and the two only the palette and `new:` make: one list of "start something now" actions. */
+export type QuickActionId = DockActionId | 'new-task' | 'new-reading-list'
 
 export interface QuickAction {
   id: QuickActionId
@@ -62,6 +65,46 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
         task: 'auto'
       })
       navigate(meetingRoute(workspace, file.ref.id))
+    }
+  },
+  {
+    id: 'new-task',
+    title: 'New task',
+    detail: 'An empty task, in the list you used last.',
+    go: async (navigate, current) => {
+      const workspace = current === 'work' ? 'work' : 'research'
+      const [tasks, clients, settings] = await Promise.all([
+        window.api.tasks.list(workspace),
+        window.api.tasks.clients(workspace),
+        window.api.settings.get()
+      ])
+      const saved = settings.ui.moduleState[`tasks-last-list-${workspace}`] as
+        { list?: unknown; sublist?: unknown } | undefined
+      const last = {
+        list: typeof saved?.list === 'string' ? saved.list : '',
+        sublist: typeof saved?.sublist === 'string' ? saved.sublist : ''
+      }
+      const rows = tasks.filter((t) => !t.parentUid).map((task) => ({ task, kids: [] }))
+      const where = defaultList(rows, { last, clients })
+      // An ordinary task (never one the app made for a session); the page removes it if nothing is written in it.
+      const task = await window.api.tasks.create({
+        workspace,
+        title: '',
+        list: where.list,
+        sublist: where.sublist,
+        due: todayIso()
+      })
+      navigate(taskRoute(workspace, task.uid), { state: { isNew: true } })
+    }
+  },
+  {
+    id: 'new-reading-list',
+    title: 'New reading list',
+    // Reading lists live in Research only.
+    detail: 'An untitled list, filled in at leisure.',
+    go: async (navigate) => {
+      const file = await window.api.readingLists.create({ workspace: 'research' })
+      navigate(readingListRoute(file.ref.id), { state: { isNew: true } })
     }
   },
   {

@@ -7,6 +7,7 @@ import {
   passesFilters,
   planSources,
   resolvePeople,
+  workspaceFilter,
   type SearchFilter
 } from './search-query'
 
@@ -258,5 +259,31 @@ describe('passesFilters', () => {
     expect(passesFilters([f('tag', 'no', true)], test)).toBe(true)
     expect(passesFilters([f('tag', 'yes', true)], test)).toBe(false)
     expect(passesFilters([], test)).toBe(true)
+  })
+})
+
+describe('new:', () => {
+  it('asks to create a kind and is not a filter or a search', () => {
+    const parsed = parse('new:task')
+    expect(parsed.create).toBe('task')
+    expect(parsed.filters).toEqual([])
+    expect(isSearch(parsed)).toBe(false)
+    for (const kind of ['note', 'task', 'meeting', 'training', 'reading-list'])
+      expect(parse(`new:${kind}`).create).toBe(kind)
+  })
+
+  it('keeps workspace: beside it, and says what it accepts for another value', () => {
+    expect(parse('new:meeting workspace:work').filters).toEqual([f('workspace', 'work')])
+    expect(workspaceFilter(parse('new:meeting workspace:work'))).toBe('work')
+    expect(workspaceFilter(parse('new:meeting'))).toBeNull()
+    const bad = parse('new:person')
+    expect(bad.create).toBeNull()
+    expect(bad.notices[0]).toContain('new: accepts')
+  })
+
+  it('cannot be excluded', () => {
+    const parsed = parse('-new:task')
+    expect(parsed.create).toBeNull()
+    expect(parsed.notices).toEqual(['new: cannot be excluded'])
   })
 })

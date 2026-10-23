@@ -105,3 +105,10 @@ describe('backspaceRemovesChip', () => {
     expect(backspaceRemovesChip({ ...base, composing: true })).toBe(false)
   })
 })
+
+describe('new: chips', () => {
+  it('is a chip for a kind it creates, and text for any other value', () => {
+    expect(split('new:reading-list ')).toMatchObject({ chips: ['new:reading-list'], rest: '' })
+    expect(split('new:person ')).toMatchObject({ chips: [], rest: 'new:person ' })
+  })
+})

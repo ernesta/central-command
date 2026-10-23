@@ -11,7 +11,9 @@ import { ChipInput } from './ChipInput'
 import { ModifierChip } from './ModifierChip'
 import { CompletionList } from './CompletionList'
 import { countResults, searchEverywhere, type SearchOutcome } from './run-search'
-import { MODIFIER_NAMES } from '@shared/search-query'
+import { MODIFIER_NAMES, parseSearch } from '@shared/search-query'
+import { runNewKind } from './new-kind'
+import { useQuickActionWorkspace } from './useQuickActionWorkspace'
 import { useSearchSources } from './search-sources'
 import { SearchHelp } from './SearchHelp'
 import { SearchNotices } from './SearchNotices'
@@ -41,6 +43,7 @@ export function GlobalSearch({
   initialExpanded?: boolean
 }): React.JSX.Element {
   const navigate = useNavigate()
+  const pageWorkspace = useQuickActionWorkspace()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -139,6 +142,13 @@ export function GlobalSearch({
       setActive((activeIndex + step + hits.length) % hits.length)
     } else if (event.key === 'Enter') {
       event.preventDefault()
+      // A `new:<kind>` makes the empty thing and opens it; it never searches.
+      const create = parseSearch(query)
+      if (create.create) {
+        onClose()
+        void runNewKind(create, navigate, pageWorkspace)
+        return
+      }
       const chosen = hits[activeIndex]
       if (chosen) open(chosen.hit)
     }
