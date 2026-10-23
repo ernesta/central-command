@@ -68,6 +68,8 @@
 .plain {
   min-height: 0;
   height: 24px;
+  /* The box sticks out 8px each side so the text lines up with the column; the 16px keeps the cell's width true. */
+  width: calc(100% + 16px);
   margin: 0 -8px;
   padding: 0 8px;
   border-color: transparent;

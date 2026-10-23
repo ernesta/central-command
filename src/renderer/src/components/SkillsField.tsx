@@ -75,6 +75,7 @@ export function SkillsField({ skills, onChange }: SkillsFieldProps): React.JSX.E
       {open && !full && (
         <PickerPopup
           anchorRef={addRef}
+          minWidth={280}
           options={options}
           label="Add a skill"
           noun="skills"

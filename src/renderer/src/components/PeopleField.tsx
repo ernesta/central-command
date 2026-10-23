@@ -75,6 +75,7 @@ export function PeopleField({
       {open && (
         <PickerPopup
           anchorRef={addRef}
+          minWidth={280}
           options={options}
           label={`Add ${noun === 'attendee' ? 'an' : 'a'} ${noun}`}
           noun={label.toLowerCase()}
