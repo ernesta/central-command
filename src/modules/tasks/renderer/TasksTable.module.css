@@ -396,3 +396,18 @@
 .tags:focus-within [data-tag-add] {
   opacity: 1;
 }
+/* A locked task's list or date: text where the others have a picker, in the same place. */
+.plainValue {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.iconButton[aria-disabled='true'] {
+  cursor: default;
+}
+.iconButton[aria-disabled='true']:hover {
+  background: transparent;
+}

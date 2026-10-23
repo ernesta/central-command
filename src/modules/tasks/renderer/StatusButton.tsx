@@ -6,16 +6,24 @@ import styles from './StatusButton.module.css'
 /** The task's status circle, as in Tasks: click moves it on (to do, in progress, done), Shift-click moves it back. */
 export function StatusButton({
   uid,
-  status
+  status,
+  locked = false
 }: {
   uid: string
   status: TaskStatus
+  /** A session task: its note and the clock set its status, so the circle only shows it. */
+  locked?: boolean
 }): React.JSX.Element {
   return (
     <button
       type="button"
-      className={styles.status}
-      title={`${STATUS_LABELS[status]} · click for ${STATUS_LABELS[NEXT_STATUS[status]]}`}
+      className={[styles.status, locked && styles.locked].filter(Boolean).join(' ')}
+      disabled={locked}
+      title={
+        locked
+          ? `${STATUS_LABELS[status]} · set by its meeting or training`
+          : `${STATUS_LABELS[status]} · click for ${STATUS_LABELS[NEXT_STATUS[status]]}`
+      }
       aria-label={`Status: ${STATUS_LABELS[status]}`}
       onClick={(event) => {
         // The row is a link to the task; the circle only changes the status.

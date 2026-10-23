@@ -147,3 +147,21 @@
   color: var(--ink);
   font-size: var(--text-13);
 }
+
+/* A locked task's value (status, date, repeat, list): text in the place of the control. */
+.lockedValue {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  color: var(--ink);
+}
+.lockLine {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+}
+.lockLine a {
+  color: inherit;
+  text-decoration: underline;
+}

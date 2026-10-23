@@ -13,3 +13,9 @@
 .status:hover {
   background: var(--selected-bg);
 }
+.status:hover:disabled {
+  background: transparent;
+}
+.locked {
+  cursor: default;
+}

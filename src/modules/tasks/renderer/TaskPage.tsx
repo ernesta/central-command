@@ -1,5 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
-import { Navigate, useNavigate, useParams } from 'react-router'
+import { Link, Navigate, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
@@ -7,11 +7,14 @@ import { Segmented } from '@renderer/components/Segmented'
 import { pushUndoWithToast } from '@renderer/components/undo-store'
 import { LiveEditor } from '@renderer/editor/LiveEditor'
 import { MentionedIn } from '@renderer/entities/MentionedIn'
+import { sourceTarget } from '@renderer/entities/source-routes'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { registerFlushable } from '@renderer/lib/flush-registry'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
-import { tagsIn } from '../shared/query'
+import { describeRecurrence } from '../shared/recurrence'
+import { fieldLocked, sessionLock, type SessionSource } from '../shared/session-lock'
+import { formatDue, tagsIn } from '../shared/query'
 import { TASK_STATUSES, type Task, type TaskChanges, type TaskWorkspace } from '../shared/types'
 import { subtaskProgress, taskTime, type TaskRow } from '../shared/views'
 import { DebouncedSaver } from './debounced-saver'
@@ -92,6 +95,10 @@ function TaskView({
   const today = todayIso()
   const { tracked, running, yearFor, clientFor, months } = useTaskTime(workspace)
   const sessionTasks = useSessionTaskUids(workspace)
+  // A meeting's or training's task, or the series task they sit under, is the notes' to keep (title, list, date, repeat, delete).
+  const lock = sessionLock(task, row.kids)
+  const statusLocked = fieldLocked(lock, 'status')
+  const source = useSessionSource(task.uid, lock === 'session')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -159,9 +166,16 @@ function TaskView({
   return (
     <div className={styles.page}>
       <div className={styles.top}>
-        <Button size="small" variant="danger-outline" disabled={busy} onClick={() => void remove()}>
-          Delete task
-        </Button>
+        {lock === null && (
+          <Button
+            size="small"
+            variant="danger-outline"
+            disabled={busy}
+            onClick={() => void remove()}
+          >
+            Delete task
+          </Button>
+        )}
         {ask !== null && (
           <DeleteTimeDialog
             title={title.current}
@@ -205,6 +219,7 @@ function TaskView({
               rows={1}
               aria-label="Title"
               placeholder="Untitled"
+              readOnly={lock !== null}
               value={titleText}
               onChange={(event) => {
                 const text = event.target.value.replace(/[\r\n]/g, ' ')
@@ -220,22 +235,33 @@ function TaskView({
                 }
               }}
             />
+            {lock && <LockLine lock={lock} source={source} />}
             <TagsField
               tags={task.tags}
               suggestions={tagsIn(rows)}
               onChange={(tags) => update({ tags })}
             />
             <div className={styles.metaRow}>
-              <Segmented
-                label="Status"
-                value={task.status}
-                options={TASK_STATUSES.map((s) => ({
-                  value: s,
-                  label: STATUS_LABELS[s],
-                  icon: <StatusIcon status={s} size={16} />
-                }))}
-                onChange={(status) => void setTaskStatus(task, status)}
-              />
+              {statusLocked ? (
+                <div className={styles.field}>
+                  <span className={styles.label}>Status</span>
+                  <span className={styles.lockedValue}>
+                    <StatusIcon status={task.status} size={16} />
+                    {STATUS_LABELS[task.status]}
+                  </span>
+                </div>
+              ) : (
+                <Segmented
+                  label="Status"
+                  value={task.status}
+                  options={TASK_STATUSES.map((s) => ({
+                    value: s,
+                    label: STATUS_LABELS[s],
+                    icon: <StatusIcon status={s} size={16} />
+                  }))}
+                  onChange={(status) => void setTaskStatus(task, status)}
+                />
+              )}
               <Segmented
                 label="Priority"
                 value={task.priority}
@@ -246,24 +272,42 @@ function TaskView({
             <div className={styles.metaRow}>
               <div className={styles.field}>
                 <span className={styles.label}>Due</span>
-                <DueField value={task.due} today={today} onChange={(due) => update({ due })} />
+                {lock ? (
+                  <span className={styles.lockedValue}>
+                    {lock === 'session' && task.due ? formatDue(task.due, today) : 'No date'}
+                  </span>
+                ) : (
+                  <DueField value={task.due} today={today} onChange={(due) => update({ due })} />
+                )}
               </div>
               <div className={styles.field}>
                 <span className={styles.label}>Repeats</span>
-                <RecurrenceField
-                  value={task.recurrence}
-                  onChange={(recurrence) => update({ recurrence })}
-                />
+                {lock ? (
+                  <span className={styles.lockedValue}>
+                    {task.recurrence ? describeRecurrence(task.recurrence) : 'Does not repeat'}
+                  </span>
+                ) : (
+                  <RecurrenceField
+                    value={task.recurrence}
+                    onChange={(recurrence) => update({ recurrence })}
+                  />
+                )}
               </div>
               <div className={[styles.field, styles.grow].join(' ')}>
                 <span className={styles.label}>List</span>
-                <ListField
-                  workspace={workspace}
-                  list={task.list}
-                  sublist={task.sublist}
-                  rows={rows}
-                  onChange={({ list, sublist }) => update({ list, sublist })}
-                />
+                {lock ? (
+                  <span className={styles.lockedValue}>
+                    {[task.list, task.sublist].filter(Boolean).join(' › ')}
+                  </span>
+                ) : (
+                  <ListField
+                    workspace={workspace}
+                    list={task.list}
+                    sublist={task.sublist}
+                    rows={rows}
+                    onChange={({ list, sublist }) => update({ list, sublist })}
+                  />
+                )}
               </div>
             </div>
           </section>
@@ -359,5 +403,42 @@ function Subtasks({
         running={new Set()}
       />
     </section>
+  )
+}
+
+/** The meeting or training whose note made a task (null until it is read, or for any other task). */
+function useSessionSource(uid: string, wanted: boolean): SessionSource | null {
+  const [source, setSource] = useState<SessionSource | null>(null)
+  useEffect(() => {
+    if (!wanted) return
+    let cancelled = false
+    void window.api.tasks.sessionSource(uid).then((found) => {
+      if (!cancelled) setSource(found)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [uid, wanted])
+  return wanted ? source : null
+}
+
+/** The quiet line on a locked task: who keeps it, with a link to the note. */
+function LockLine({
+  lock,
+  source
+}: {
+  lock: 'session' | 'series'
+  source: SessionSource | null
+}): React.JSX.Element {
+  if (lock === 'series') {
+    return <p className={styles.lockLine}>Meetings and trainings keep the tasks under this one.</p>
+  }
+  if (!source) return <p className={styles.lockLine}>Kept by its meeting or training.</p>
+  const kind = source.kind === 'meeting' ? 'meeting' : 'training'
+  const { route } = sourceTarget({ kind, workspace: source.workspace, id: source.id })
+  return (
+    <p className={styles.lockLine}>
+      Made by the {kind} <Link to={route}>{source.title}</Link>
+    </p>
   )
 }

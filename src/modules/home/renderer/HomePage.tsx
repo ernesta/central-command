@@ -94,7 +94,7 @@ function EventRow({
       to={event.route}
       lead={
         task ? (
-          <StatusButton uid={task.uid} status={task.status} />
+          <StatusButton uid={task.uid} status={task.status} locked />
         ) : (
           <Icon size={16} strokeWidth={1.75} className={styles.icon} aria-hidden />
         )

@@ -7,6 +7,7 @@ import { pushUndoWithToast } from '@renderer/components/undo-store'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { describeRecurrence } from '../shared/recurrence'
+import { fieldLocked, sessionLock } from '../shared/session-lock'
 import { dueTone, formatDue, formatTaskTime, tagsIn, type SortKey } from '../shared/query'
 import {
   TASK_PRIORITIES,
@@ -169,6 +170,10 @@ export function TasksTable({
 
   const menuGroups = (state: MenuState): MenuGroup[] => {
     const { task } = state
+    const lock = sessionLock(
+      task,
+      task.parentUid ? [] : (allRows?.find((r) => r.task.uid === task.uid)?.kids ?? [])
+    )
     const priority: MenuGroup = {
       label: 'Priority',
       items: TASK_PRIORITIES.map((p) => ({
@@ -180,6 +185,8 @@ export function TasksTable({
       }))
     }
     if (state.kind === 'priority') return [priority]
+    // A session task's status is its note's and the clock's.
+    if (fieldLocked(lock, 'status') && state.kind === 'status') return []
     const status: MenuGroup = {
       label: 'Status',
       items: TASK_STATUSES.map((s) => ({
@@ -190,9 +197,11 @@ export function TasksTable({
         onSelect: () => void setTaskStatus(task, s)
       }))
     }
-    if (state.kind === 'status' || task.parentUid) return [status]
+    const statusGroups = fieldLocked(lock, 'status') ? [] : [status]
+    if (state.kind === 'status' || task.parentUid)
+      return fieldLocked(lock, 'status') ? [priority] : [status]
     return [
-      status,
+      ...statusGroups,
       priority,
       {
         items: [
@@ -214,6 +223,8 @@ export function TasksTable({
     if (event.metaKey || event.ctrlKey || event.altKey) return
     if (event.key === ' ' && item.type !== 'add') {
       event.preventDefault()
+      const kids = item.type === 'task' ? item.kids : []
+      if (fieldLocked(sessionLock(item.task, kids), 'status')) return
       void setTaskStatus(item.task, nextStatus(item.task.status, event.shiftKey))
       return
     }
@@ -406,10 +417,25 @@ const stopRow = {
 }
 
 /** The title: a click edits it in place (Return or leaving saves, Escape undoes); an empty title is not saved. */
-function TitleCell({ task, parent }: { task: Task; parent: Task | undefined }): React.JSX.Element {
+function TitleCell({
+  task,
+  parent,
+  locked
+}: {
+  task: Task
+  parent: Task | undefined
+  locked: boolean
+}): React.JSX.Element {
   const [editing, setEditing] = useState(false)
   const [text, setText] = useState(task.title)
   const classes = [styles.title, task.status === 'done' && styles.titleDone].filter(Boolean)
+  if (locked) {
+    return (
+      <span className={classes.filter(Boolean).join(' ')}>
+        <TaskName task={task} parent={parent} title={task.title || 'Untitled'} />
+      </span>
+    )
+  }
   if (!editing) {
     return (
       <span
@@ -497,6 +523,10 @@ function TaskRowView({
   const isKid = item.type === 'kid'
   const due = isKid ? task.due : effectiveDue(task, kids)
   const minutes = taskTime({ task, kids }, tracked).total
+  // A task the app made for a meeting or training is the note's: shown, not edited (title, list, date, status, delete).
+  const lock = sessionLock(task, kids)
+  const statusLocked = fieldLocked(lock, 'status')
+  const textLocked = lock !== null
   // A task with saved time asks before it goes: the time leaves Hours with it.
   const [ask, setAsk] = useState<number | null>(null)
   const startRemove = async (): Promise<void> => {
@@ -542,11 +572,16 @@ function TaskRowView({
           type="button"
           tabIndex={-1}
           className={styles.iconButton}
-          title={`${STATUS_LABELS[task.status]} · click for ${STATUS_LABELS[NEXT_STATUS[task.status]]}, Shift-click for ${STATUS_LABELS[PREVIOUS_STATUS[task.status]]}`}
+          title={
+            statusLocked
+              ? `${STATUS_LABELS[task.status]} · set by its meeting or training`
+              : `${STATUS_LABELS[task.status]} · click for ${STATUS_LABELS[NEXT_STATUS[task.status]]}, Shift-click for ${STATUS_LABELS[PREVIOUS_STATUS[task.status]]}`
+          }
           aria-label={`Status: ${STATUS_LABELS[task.status]}`}
+          aria-disabled={statusLocked || undefined}
           onClick={(event) => {
             event.stopPropagation()
-            void setTaskStatus(task, nextStatus(task.status, event.shiftKey))
+            if (!statusLocked) void setTaskStatus(task, nextStatus(task.status, event.shiftKey))
           }}
         >
           <StatusIcon status={task.status} size={isKid && !flat ? 18 : 22} />
@@ -555,6 +590,7 @@ function TaskRowView({
       <td>
         <div className={styles.titleLine}>
           <TitleCell
+            locked={textLocked}
             task={task}
             parent={isKid ? allRows.find((r) => r.task.uid === task.parentUid)?.task : undefined}
           />
@@ -582,7 +618,8 @@ function TaskRowView({
       </td>
       {!flat && (
         <td className={[styles.nowrap, styles.list].join(' ')}>
-          {!isKid && (
+          {!isKid && textLocked && <span className={styles.plainValue}>{task.list}</span>}
+          {!isKid && !textLocked && (
             <span {...stopRow}>
               <ListField
                 plain
@@ -632,26 +669,34 @@ function TaskRowView({
               .filter(Boolean)
               .join(' ')}
           >
-            <DatePicker
-              label="Due"
-              plain
-              value={task.due}
-              // A parent with subtasks and no date of its own shows the earliest of theirs, as a placeholder.
-              placeholder={due ? formatDue(due, today) : 'Add date'}
-              today={today}
-              onChange={(next) => void setDue(task, next)}
-            />
+            {textLocked ? (
+              <span className={styles.plainValue}>
+                {lock === 'series' ? 'No date' : task.due ? formatDue(task.due, today) : 'No date'}
+              </span>
+            ) : (
+              <DatePicker
+                label="Due"
+                plain
+                value={task.due}
+                // A parent with subtasks and no date of its own shows the earliest of theirs, as a placeholder.
+                placeholder={due ? formatDue(due, today) : 'Add date'}
+                today={today}
+                onChange={(next) => void setDue(task, next)}
+              />
+            )}
           </span>
-          <button
-            type="button"
-            tabIndex={-1}
-            className={[styles.iconButton, styles.remove].join(' ')}
-            aria-label={`Delete ${task.title || 'Untitled'}`}
-            title="Delete"
-            onClick={() => void startRemove()}
-          >
-            <Trash2 size={16} strokeWidth={1.75} aria-hidden />
-          </button>
+          {!textLocked && (
+            <button
+              type="button"
+              tabIndex={-1}
+              className={[styles.iconButton, styles.remove].join(' ')}
+              aria-label={`Delete ${task.title || 'Untitled'}`}
+              title="Delete"
+              onClick={() => void startRemove()}
+            >
+              <Trash2 size={16} strokeWidth={1.75} aria-hidden />
+            </button>
+          )}
           {ask !== null && (
             <span {...stopRow}>
               <DeleteTimeDialog
