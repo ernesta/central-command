@@ -55,7 +55,9 @@ grid for a note and its panels, used by all five pages) and `NoteOutline` moved 
 
 **Polish round step 1, the toast (23 Oct 2026): built, driven, pushed, not installed** (`docs/POLISH_ROUND_PLAN.md`, `docs/DECISIONS.md`, "Polish round"). Longer (9 s, 12 s with a button), dark one-line pill, ellipsised title, Undo as a chip, shrinking time bar that pauses on hover.
 
-**Polish round step 2, Open on the recurring-done toast (23 Oct 2026): built, driven, pushed, not installed** (item 11; `docs/DECISIONS.md`, "Polish round"). The chip goes to the new task through `shell/navigate-store.ts`. Next: step 3, item 14 (done with no date gets today).
+**Polish round step 2, Open on the recurring-done toast (23 Oct 2026): built, driven, pushed, not installed** (item 11; `docs/DECISIONS.md`, "Polish round"). The chip goes to the new task through `shell/navigate-store.ts`. 
+
+**Polish round step 3, done with no date gets today (23 Oct 2026): built, driven, pushed, not installed** (item 14; `docs/DECISIONS.md`, "Polish round"). In `TasksStore.setStatus`; Undo restores no date. Next: step 4, item 3 ("New training", the button audit, the year/contract layout).
 
 **Undo, one rule and third round (19 Oct 2026): built, pushed, installed** (`docs/DECISIONS.md`, "One rule for undo", "Undo, third round"). The rule is in `undo-store.ts`; Cmd-Z says what it undid; TODO ticks, Add time, timer start, Hours settings, row rename, "me" and the meeting/training/note fields are undoable. To check by hand: undoing a timer's start change in the popover (the restore itself is driven), and the Readings Dismiss undo.
 
