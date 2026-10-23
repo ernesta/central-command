@@ -170,6 +170,10 @@ const api: Api = {
     snapshot: () => ipcRenderer.invoke(TASKS_IPC.snapshot),
     sessionTaskUids: (workspace) => ipcRenderer.invoke(TASKS_IPC.sessionTaskUids, workspace),
     discardIfEmpty: (uid) => ipcRenderer.invoke(TASKS_IPC.discardIfEmpty, uid),
+    updateForSession: (uid, changes) =>
+      ipcRenderer.invoke(TASKS_IPC.updateForSession, uid, changes),
+    deleteForSession: (uid) => ipcRenderer.invoke(TASKS_IPC.deleteForSession, uid),
+    sessionSource: (uid) => ipcRenderer.invoke(TASKS_IPC.sessionSource, uid),
     onChanged: (listener) => {
       const handler = (_event: Electron.IpcRendererEvent, event: TasksChangedEvent): void =>
         listener(event)

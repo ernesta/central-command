@@ -61,7 +61,7 @@ export function useTrainingTask(
           setTask(sub.uid)
         } else {
           const left = tasks.find((t) => t.uid === plan.uid)?.parentUid ?? null
-          await window.api.tasks.update(plan.uid, {
+          await window.api.tasks.updateForSession(plan.uid, {
             ...(plan.title !== undefined ? { title: plan.title } : {}),
             ...(plan.due !== undefined ? { due: plan.due } : {}),
             ...(plan.parent
@@ -76,7 +76,7 @@ export function useTrainingTask(
               left,
               await window.api.tasks.list('research')
             )
-            if (stranded) await window.api.tasks.delete(stranded)
+            if (stranded) await window.api.tasks.deleteForSession(stranded)
           }
         }
       } catch (error) {

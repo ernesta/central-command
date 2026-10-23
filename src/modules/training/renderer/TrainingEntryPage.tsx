@@ -165,7 +165,7 @@ function EntryView({
       for (const uid of [trainingUid, meta.selfStudy]) {
         if (!uid) continue
         try {
-          await window.api.tasks.delete(uid)
+          await window.api.tasks.deleteForSession(uid)
           trashedTasks.push(uid)
         } catch (e) {
           console.error('Could not delete the training task:', e)

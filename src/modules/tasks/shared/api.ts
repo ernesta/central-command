@@ -7,6 +7,7 @@ import type {
   TaskStatus,
   TaskWorkspace
 } from './types'
+import type { SessionSource } from './session-lock'
 
 /** What the app may ask for when it creates a task: nothing the importer alone sets. */
 export interface CreateTaskInput {
@@ -73,6 +74,15 @@ export interface TasksApi {
    * (their time is typed in the note); a task the user chose for a meeting is not one.
    */
   sessionTaskUids(workspace: TaskWorkspace): Promise<string[]>
+  /**
+   * What a meeting's or training's note does to its own task (title, date, series task), which the user cannot do by hand
+   * (`update` refuses those on a session task). Only the notes' sync calls it.
+   */
+  updateForSession(uid: string, changes: TaskChanges): Promise<Task>
+  /** Trash a session task as its note's sync does (`delete` refuses one). Resolves with the minutes removed. */
+  deleteForSession(uid: string): Promise<number>
+  /** The meeting or training whose note made this task, for the line on a locked task; null for any other. */
+  sessionSource(uid: string): Promise<SessionSource | null>
   /** Subscribe to changes. Returns an unsubscribe function. */
   onChanged(listener: (event: TasksChangedEvent) => void): () => void
 }
@@ -92,5 +102,8 @@ export const TASKS_IPC = {
   snapshot: 'tasks:snapshot',
   sessionTaskUids: 'tasks:session-task-uids',
   discardIfEmpty: 'tasks:discard-if-empty',
+  updateForSession: 'tasks:update-for-session',
+  deleteForSession: 'tasks:delete-for-session',
+  sessionSource: 'tasks:session-source',
   changed: 'tasks:changed'
 } as const

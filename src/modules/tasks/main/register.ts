@@ -13,6 +13,7 @@ import {
   TASK_STATUSES,
   TASK_WORKSPACES,
   type OwnKind,
+  type Task,
   type TaskChanges,
   type TaskPriority,
   type TaskStatus,
@@ -26,6 +27,13 @@ import { writeTasksSnapshot } from './snapshot'
 import { TrackingStore } from '../../../main/tracking/store'
 import { trackingMoment } from '@shared/time'
 import { workClients } from '../shared/work-lists'
+import {
+  guardDelete,
+  guardStatus,
+  guardUpdate,
+  sessionSource,
+  unlockedForDue
+} from './session-lock'
 import { localMoment, sessionTaskUids, settleSessionTasks } from './session-sweep'
 import { TasksStore } from './tasks-store'
 
@@ -164,19 +172,25 @@ function register(context: MainContext): () => void {
     for (const key of Object.keys(patch) as (keyof TaskChanges)[]) {
       if (patch[key] === undefined) delete patch[key]
     }
-    const updated = changing(asUid(uid), () => store.update(asUid(uid), patch))
+    guardUpdate(context.db, store, asUid(uid), patch)
+    return updateTask(asUid(uid), patch)
+  })
+  const updateTask = (uid: string, patch: TaskChanges): Task => {
+    const updated = changing(uid, () => store.update(uid, patch))
     if (patch.title !== undefined) notifyTitleChanged(updated.uid, updated.title)
     return updated
-  })
+  }
   ipcMain.handle(TASKS_IPC.setStatus, (_event, uid: unknown, status: unknown) => {
     if (typeof status !== 'string' || !(TASK_STATUSES as readonly string[]).includes(status)) {
       throw new Error('Invalid status')
     }
+    guardStatus(context.db, store, asUid(uid))
     return changing(asUid(uid), () => store.setStatus(asUid(uid), status as TaskStatus))
   })
   ipcMain.handle(TASKS_IPC.setDue, (_event, uids: unknown, due: unknown) => {
     if (!Array.isArray(uids)) throw new Error('Invalid tasks')
-    const list = uids.map(asUid)
+    // The dates of session tasks and series tasks are the notes', not the user's.
+    const list = unlockedForDue(context.db, store, uids.map(asUid))
     changing(list, () => store.setDue(list, dateOrNull(due) ?? null))
   })
   /** The task, its subtasks and every one of them as an Hours key. */
@@ -188,11 +202,34 @@ function register(context: MainContext): () => void {
       }[]
     ).map((r) => r.uid)
   ]
-  ipcMain.handle(TASKS_IPC.delete, (_event, uid: unknown) => {
-    const keys = withKids(asUid(uid)).map(taskKey)
-    changing(asUid(uid), () => store.delete(asUid(uid)))
+  const deleteTask = (uid: string): number => {
+    const keys = withKids(uid).map(taskKey)
+    changing(uid, () => store.delete(uid))
     return removeTaskTime(keys)
+  }
+  ipcMain.handle(TASKS_IPC.delete, (_event, uid: unknown) => {
+    guardDelete(context.db, store, asUid(uid))
+    return deleteTask(asUid(uid))
   })
+  // A meeting's or training's note keeps its own task in step: these are the calls that may touch what the user cannot.
+  ipcMain.handle(TASKS_IPC.updateForSession, (_event, uid: unknown, changes: unknown) => {
+    const o = asObject(changes, 'changes')
+    const patch: TaskChanges = {
+      title: text(o.title),
+      due: dateOrNull(o.due),
+      list: text(o.list),
+      parentUid:
+        o.parentUid === undefined ? undefined : o.parentUid === null ? null : asUid(o.parentUid)
+    }
+    for (const key of Object.keys(patch) as (keyof TaskChanges)[]) {
+      if (patch[key] === undefined) delete patch[key]
+    }
+    return updateTask(asUid(uid), patch)
+  })
+  ipcMain.handle(TASKS_IPC.deleteForSession, (_event, uid: unknown) => deleteTask(asUid(uid)))
+  ipcMain.handle(TASKS_IPC.sessionSource, (_event, uid: unknown) =>
+    sessionSource(context.db, asUid(uid))
+  )
   ipcMain.handle(TASKS_IPC.timeOn, (_event, uid: unknown) =>
     taskTimeMinutes(withKids(asUid(uid)).map(taskKey))
   )
