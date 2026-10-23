@@ -334,9 +334,10 @@ Choices the plan left open, made conservatively; change any of them by telling C
 
 - **Hours counted the same way everywhere (17 Oct 2026; built and driven, `docs/HOURS_CONSISTENCY_PLAN.md`, `docs/DECISIONS.md`).** The Home summary and the widget file now count the Hours page's hours (derived hours, Work, the page's year). **Your call:** a note's own session is reported to the quarter hour on Hours, Home and a task's Time (10:00–11:10 is 1:15) but kept to the exact minute in the training log and its PDF (1:10), as the meeting counters are. They differ only for sessions that are not a multiple of 15 minutes. Say if the training log should report to the quarter too.
 
-### For Claude: pickers, one type-to-search way to choose from a list (23 Oct 2026, the user's request and go-ahead; not started)
+### Pickers, one type-to-search way to choose from a list (23 Oct 2026, `docs/PICKERS_PLAN.md`: DONE, pushed, not installed)
 
-- **Build `docs/PICKERS_PLAN.md` in one run, all four stages without stopping, then push.** Option A (a search box inside the list, shown above 7 options) was chosen from the mockup `docs/design/picker-options-mockup.html`; `ComboField` becomes the same picker with an `Add "…"` row.
+- All four stages are built (`docs/DECISIONS.md`, "Pickers"). One `Picker`/`PickerPopup` with a search box in the list above seven options (type-ahead below), the same keys everywhere, an `Add "…"` row for Series and Institution; `Select` is a wrapper, and `DescribedSelect`, `ComboField` and the old menus are gone. Skills, People, the group field and the timer's task box share the look and keys.
+- **For you to look at in the installed app** (not driven: Work's Client select in a task row and the timer, Notes' and Meetings' filter rows, Time off's row Type, a narrow window): and say if **Enter should still take the first match in People** (it now offers to add the person when several names match and none is exact, the group field's old rule applied everywhere), and if the timer's Enter taking the only match is right.
 
 ### For Claude: one repair for every migration leftover (20 Oct 2026, the user's request; not started)
 

@@ -1,6 +1,6 @@
 # Pickers: one type-to-search way to choose from a list (plan)
 
-Status: **planned 23 Oct 2026, not started.** Every point below is the user's decision ("agreed with the user": do not re-ask). Mockup: `docs/design/picker-options-mockup.html`
+Status: **all four stages built 23 Oct 2026 in one run (the user's go-ahead), driven in the built app and dev mode on a scratch library, pushed; not installed.** Write-up and the choices the plan left open: `docs/DECISIONS.md`, "Pickers". Every point below is the user's decision ("agreed with the user": do not re-ask). Mockup: `docs/design/picker-options-mockup.html`
 (option A was chosen; B is kept for the record). Read with `CLAUDE.md` and `docs/DECISIONS.md`.
 
 ## What the user found
