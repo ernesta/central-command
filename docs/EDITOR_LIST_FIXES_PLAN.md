@@ -31,7 +31,9 @@ The code is intact (`live-paste.ts`, registered in `live-state.ts`; its 16 tests
 text in the first item of a bullet list, then could not repeat it. Possible causes: Cmd-Shift-V (plain on purpose, never links), a selection spanning
 lines, or a selection inside text that is already a link. Untested gap: no test pastes over a selection inside a list item.
 
-### Optional stage 2 (only if wanted)
+### Stage 2: dropped (23 Oct 2026, the user: cannot reproduce)
+
+Not to be built. If the user reports it again, ask which shortcut they used and what the selection was; the plan below is only for then.
 
 Add a `live-paste.test.ts` case for a selection in the first item of a bullet list and in a nested item, and drive the real app once with a real Cmd-V.
 If it fails, fix; if it passes, stop. If the user reports it again, ask which shortcut they used and what the selection was.
