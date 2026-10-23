@@ -79,6 +79,15 @@ describe('collectHomeSummary: tasks', () => {
     expect(s.tasks.overdue.map((t) => t.uid)).toEqual(['late'])
   })
 
+  it('gives a subtask its parent’s list and sublist, which it has none of itself', () => {
+    task('parent', { list: 'Thesis', due: null })
+    db.prepare("UPDATE tasks SET sublist = 'Methods' WHERE uid = 'parent'").run()
+    task('kid', { list: '' })
+    db.prepare("UPDATE tasks SET parent_uid = 'parent' WHERE uid = 'kid'").run()
+    const kid = collect().tasks.today.find((t) => t.uid === 'kid')
+    expect(kid?.list).toBe('Thesis › Methods')
+  })
+
   it('leaves out the subtask a meeting or a training owns', () => {
     task('own-meeting')
     task('own-training')

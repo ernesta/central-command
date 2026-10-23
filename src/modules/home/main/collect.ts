@@ -10,6 +10,7 @@ import { shownYear } from '../../hours/shared/shown-year'
 import { periodFigures } from '../../hours/shared/so-far'
 import { listMeetingRows } from '../../meetings/main/repository'
 import { listTasks } from '../../tasks/main/repository'
+import { listLabel } from '../../tasks/shared/query'
 import { workClients } from '../../tasks/shared/work-lists'
 import { listTrainingRows } from '../../training/main/repository'
 import { getCounts, listItems, upcoming } from '../../watch/main/repository'
@@ -115,14 +116,19 @@ export interface CollectDeps {
  */
 export function collectHomeSummary(deps: CollectDeps): HomeSummary {
   const { db, now } = deps
-  const tasks = db
-    .prepare(
-      `SELECT uid, title, workspace, list, due, priority, status FROM tasks
-       WHERE deleted_at IS NULL AND status != 'done' AND due IS NOT NULL
-         AND uid NOT IN (SELECT task FROM meetings WHERE task != '')
-         AND uid NOT IN (SELECT task FROM training WHERE task != '' AND task != 'auto')`
-    )
-    .all() as TaskInput[]
+  const tasks = (
+    db
+      .prepare(
+        `SELECT t.uid, t.title, t.workspace, t.due, t.priority, t.status,
+              CASE WHEN t.parent_uid IS NULL THEN t.list ELSE COALESCE(p.list, '') END AS list,
+              CASE WHEN t.parent_uid IS NULL THEN t.sublist ELSE COALESCE(p.sublist, '') END AS sublist
+       FROM tasks t LEFT JOIN tasks p ON p.uid = t.parent_uid
+       WHERE t.deleted_at IS NULL AND t.status != 'done' AND t.due IS NOT NULL
+         AND t.uid NOT IN (SELECT task FROM meetings WHERE task != '')
+         AND t.uid NOT IN (SELECT task FROM training WHERE task != '' AND task != 'auto')`
+      )
+      .all() as (TaskInput & { sublist: string })[]
+  ).map(({ sublist, ...t }) => ({ ...t, list: listLabel(t.list, sublist) }))
   const meetings = (
     db
       .prepare(

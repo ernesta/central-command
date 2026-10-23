@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import { Check, GraduationCap, Plane, Users } from 'lucide-react'
 import { Panel } from '@renderer/components/Panel'
 import { PriorityBadge } from '../../tasks/renderer/TaskIcons'
+import { taskLine } from '../../tasks/shared/query'
 import { tasksAllRoute } from '../../tasks/renderer/tasks-paths'
 import type { HomeEvent, HomeTask, HomeWorkspace } from '../shared/types'
 import { COMING_UP_DAYS, detailText, homeView, whenLabel, type HomeView } from './home-model'
@@ -34,7 +35,7 @@ function TaskRow({ task }: { task: HomeTask }): React.JSX.Element {
         <StatusButton uid={task.uid} status={task.status} />
         <span className={styles.grow}>
           <span className={styles.title}>{task.title}</span>
-          <span className={styles.small}>{task.list}</span>
+          {task.list && <span className={styles.small}>{task.list}</span>}
         </span>
         {task.daysLate > 0 && (
           <span className={`${styles.chip} ${styles.warn}`}>
@@ -105,7 +106,9 @@ function EventRow({ event }: { event: HomeEvent }): React.JSX.Element {
         <span className={styles.grow}>
           <span className={styles.title}>{event.title}</span>
           {task ? (
-            <span className={styles.small}>{`${event.detail} · due ${when.toLowerCase()}`}</span>
+            <span className={styles.small}>
+              {taskLine(event.detail, `due ${when.toLowerCase()}`)}
+            </span>
           ) : (
             event.detail && <span className={styles.small}>{detailText(event.detail)}</span>
           )}

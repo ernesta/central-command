@@ -72,6 +72,14 @@ export function listLabel(list: string, sublist = ''): string {
   return sublist ? `${list} › ${sublist}` : list
 }
 
+/**
+ * The second line of a task row: its parts joined with " · ", leaving out any that is empty, so a task with no list
+ * (or no date) never shows a stray dot. Every place that describes a task in one line uses this.
+ */
+export function taskLine(...parts: (string | false | null | undefined)[]): string {
+  return parts.filter(Boolean).join(' · ')
+}
+
 /** The lists in use, each with its sublists, most used first: the choices of a list filter and of the list field. */
 export interface ListChoice {
   list: string

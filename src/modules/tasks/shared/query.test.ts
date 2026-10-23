@@ -5,6 +5,7 @@ import {
   defaultList,
   dueTone,
   formatDue,
+  taskLine,
   formatTaskTime,
   listChoices,
   listValue,
@@ -213,5 +214,18 @@ describe('listChoices with clients', () => {
     const q = { ...DEFAULT_TASKS_QUERY, list: listValue('Royal Holloway') }
     expect(reconcileQuery(q, rows, ['Royal Holloway']).list).toBe(q.list)
     expect(reconcileQuery(q, rows).list).toBe('')
+  })
+})
+
+describe('taskLine', () => {
+  it('joins the parts with a middle dot', () => {
+    expect(taskLine('Thesis', 'due in 3 days')).toBe('Thesis · due in 3 days')
+  })
+
+  it('leaves out an empty part, so a task with no list has no leading dot', () => {
+    expect(taskLine('', 'due in 3 days')).toBe('due in 3 days')
+    expect(taskLine('Thesis', '')).toBe('Thesis')
+    expect(taskLine('Thesis', null, false)).toBe('Thesis')
+    expect(taskLine('', null)).toBe('')
   })
 })

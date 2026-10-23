@@ -1,7 +1,7 @@
 import { snippet, type SearchHit } from '@shared/search'
 import { passesFilters, searchNeedles, textMatches, type SearchRequest } from '@shared/search-query'
 import { fold } from '@shared/text'
-import { formatDue, listLabel } from '../shared/query'
+import { formatDue, listLabel, taskLine } from '../shared/query'
 import { taskMatches } from '../shared/search-filters'
 import type { Task, TaskWorkspace } from '../shared/types'
 import { taskRoute } from './tasks-paths'
@@ -40,7 +40,7 @@ export function taskHits(
       const where = parent
         ? `Subtask of ${parent.title || 'Untitled'}`
         : listLabel(t.list, t.sublist)
-      const details = [where, t.due ? formatDue(t.due, today) : ''].filter(Boolean).join(' · ')
+      const details = taskLine(where, t.due && formatDue(t.due, today))
       return {
         key: t.uid,
         title: t.title || 'Untitled',

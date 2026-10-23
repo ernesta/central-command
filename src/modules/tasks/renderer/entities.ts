@@ -2,7 +2,7 @@ import { ListTodo } from 'lucide-react'
 import { fold } from '@shared/text'
 import { nameFirst } from '@shared/search'
 import type { EntityProvider } from '@renderer/entities/registry'
-import { listLabel } from '../shared/query'
+import { listLabel, taskLine } from '../shared/query'
 import type { Task } from '../shared/types'
 import { allTasks } from './task-cache'
 import { taskRoute } from './tasks-paths'
@@ -13,7 +13,7 @@ function detailOf(task: Task, parent: Task | undefined): string {
   const where = parent
     ? `Subtask of ${parent.title || 'Untitled'}`
     : listLabel(task.list, task.sublist)
-  return `${where} · ${WORKSPACE_LABEL[task.workspace]}`
+  return taskLine(where, WORKSPACE_LABEL[task.workspace])
 }
 
 /** Tasks a note can mention, in either workspace, by their `uid`. Tasks not done come first. */

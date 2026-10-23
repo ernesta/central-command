@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { LandingBox, LandingSection } from '@renderer/components/Landing'
 import { findMentions } from '@shared/entities'
-import { formatDue, listLabel } from '../shared/query'
+import { formatDue, listLabel, taskLine } from '../shared/query'
 import type { Task } from '../shared/types'
 import { allTasks } from './task-cache'
 import { taskRoute, todayIso } from './tasks-paths'
@@ -50,12 +50,10 @@ export function PersonTasks({ name }: { name: string }): React.JSX.Element | nul
               <Link className={styles.row} to={taskRoute(t.workspace, t.uid)}>
                 <span>{t.title || 'Untitled'}</span>
                 <span className={styles.meta}>
-                  {[
+                  {taskLine(
                     t.parentUid ? '' : listLabel(t.list, t.sublist),
-                    t.due ? formatDue(t.due, today) : ''
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
+                    t.due && formatDue(t.due, today)
+                  )}
                 </span>
               </Link>
             </li>
