@@ -55,7 +55,7 @@ grid for a note and its panels, used by all five pages) and `NoteOutline` moved 
 
 **Polish round step 1, the toast (23 Oct 2026): built, driven, pushed, not installed** (`docs/POLISH_ROUND_PLAN.md`, `docs/DECISIONS.md`, "Polish round"). Longer (9 s, 12 s with a button), dark one-line pill, ellipsised title, Undo as a chip, shrinking time bar that pauses on hover.
 
-**Polish round step 2, Open on the recurring-done toast (23 Oct 2026): built, driven, pushed, not installed** (item 11; `docs/DECISIONS.md`, "Polish round"). The chip goes to the new task through `shell/navigate-store.ts`. 
+**Polish round step 2, Open on the recurring-done toast (23 Oct 2026): built, driven, pushed, not installed** (item 11; `docs/DECISIONS.md`, "Polish round"). The chip goes to the new task through `shell/navigate-store.ts`.
 
 **Polish round step 3, done with no date gets today (23 Oct 2026): built, driven, pushed, not installed** (item 14; `docs/DECISIONS.md`, "Polish round"). In `TasksStore.setStatus`; Undo restores no date.
 
