@@ -4,12 +4,13 @@ import { formatDay, formatHours, formatRange } from '@shared/tracking/format'
 import { dailyAim, hasAim } from '@shared/tracking/plan'
 import { dayRows, weekDaysMinutes } from '@shared/tracking/totals'
 import { invoiceOf, type Moment, type TrackingYear } from '@shared/tracking/types'
-import { addDays, weekNumberOf, yearEnd } from '@shared/year'
+import { addDays, inYear, weekNumberOf, yearEnd } from '@shared/year'
 import { periodOfWeek, periodsOf } from '../shared/periods'
 import { weekFigures } from '../shared/so-far'
-import { barFill, BAR_SCALE } from '../shared/week'
+import { barFill, BAR_SCALE, defaultWeek } from '../shared/week'
 import type { HoursWorkspace } from '../shared/workspaces'
 import { AddTime } from './AddTime'
+import { BackToToday } from './BackToToday'
 import { PeriodSummary } from './PeriodSummary'
 import { MeetingRows } from './MeetingRows'
 import { ImportedIcon } from './ImportedIcon'
@@ -50,6 +51,9 @@ export function WeekCard({
   const aimed = hasAim(data)
   const first = week <= data.start
   const last = addDays(week, 7) > yearEnd(data.start, data.weeks)
+  // Today's week, offered as a way back only while another week is shown (and today is inside the year).
+  const thisWeek = defaultWeek(data.start, now.date, data.weeks)
+  const away = inYear(now.date, data.start, data.weeks) && week !== thisWeek
   // Where weeks belong to invoice months they are numbered within the month.
   const number =
     data.plan.weekAim && invoiceOf(data) === 'month'
@@ -81,6 +85,7 @@ export function WeekCard({
           >
             <ChevronRight size={16} strokeWidth={1.75} aria-hidden />
           </button>
+          {away && <BackToToday label="This week" onClick={() => onWeekChange(thisWeek)} />}
         </div>
       </header>
       {aimed ? (
