@@ -70,13 +70,22 @@ after item 11 (also a done-toast item); one commit.
 The toast `Deleted "Attend and present at …" (3:45). Undo` wrapped onto two lines. Covered by item 4 (always one line, title ellipsised); add a
 test or a driven check with a very long title, and with the "(3:45)" and an action present. Done together with item 4.
 
-## Order and stops
+## Order and stops (the user's rule of 23 Oct 2026: one step per session)
 
-1. Item 12 + item 4 (toast, with item 7's wrapping check), item 11 (Open link on recurring done), item 14 (done with no date gets today). Commit each.
-2. Item 3 (button names, year layout), item 5 (back to today), item 8 (clipped borders), item 9 (stray dot). Commit each.
-3. Item 13 (remove card), then item 10 (Home). **STOP** after item 10, with a prompt for the next.
-4. Item 6 (self-study label), item 2 (locked session tasks). **STOP** after item 2.
-5. Item 1 (`new:` modifier). **STOP**.
-6. Last: `npm run build:mac`, install, the 13-line list.
+Each step: implement the whole thing, drive it in a scratch library, tests/lint/typecheck, write it up (DECISIONS.md "Polish round", ROADMAP,
+CLAUDE.md "What is built"), commit (small commits), **push**, then **stop and give the user the prompt for the next step** so they can clear
+context. The prompt names this file and the step, and repeats this rule. Nothing from a later step is started.
 
-Every stage: update `docs/ROADMAP.md`, and CLAUDE.md's "What is built" with one line at the end.
+1. Toast: item 12 (longer), item 4 (the redesign), and item 7's wrapping check.
+2. Item 11: "Open" on the recurring-done toast.
+3. Item 14: done with no date gets today.
+4. Item 3: "New training", the button audit, the year/contract layout.
+5. Item 5: back to today / this week.
+6. Item 8: clipped blue borders.
+7. Item 9: the stray dot, list names.
+8. Item 13: remove the Next meeting card.
+9. Item 10: Home (Today holds events, the rows, review of the whole page).
+10. Item 6: self-study labels.
+11. Item 2: locked session tasks.
+12. Item 1: the `new:` modifier. **Last step**: after it, `npm run build:mac`, install in `/Applications` (quit the app first), and give the user a very
+    brief list of the 13 things (and the 14th) so they can check each in the app. Its prompt says so.
