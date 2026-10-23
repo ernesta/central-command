@@ -4,7 +4,7 @@ import type { TrainingWorkspace } from '../shared/types'
 import { entryRoute, todayIso } from './training-paths'
 
 /**
- * "New training entry": creates an untitled entry for today at once and opens its page (with the title selected), where
+ * "New training": creates an untitled entry for today at once and opens its page (with the title selected), where
  * everything is filled in at leisure. Research's makes its own subtask for the training's hours; Life has no such task.
  */
 export function NewTrainingButton({
@@ -26,7 +26,7 @@ export function NewTrainingButton({
         void navigate(entryRoute(file.ref.id, workspace), { state: { isNew: true } })
       }}
     >
-      New training entry
+      New training
     </CreateButton>
   )
 }

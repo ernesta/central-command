@@ -72,7 +72,7 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
   },
   {
     id: 'new-training',
-    title: 'New training entry',
+    title: 'New training',
     // Training has no Work: it starts in Life when looking at Life, else in Research.
     detail: 'Starts today, filled in at leisure.',
     go: async (navigate, current) => {

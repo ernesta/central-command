@@ -9,7 +9,7 @@ const check = (text: string): boolean => {
 const NEW = `---\ndate: 2026-10-19\ntitle: Untitled\ntask: auto\n---\n${NEW_TRAINING_BODY}`
 
 describe('isUntouchedTraining', () => {
-  it('is what New training entry makes, whatever the date', () => {
+  it('is what New training makes, whatever the date', () => {
     expect(check(NEW)).toBe(true)
     expect(check(NEW.replace('2026-10-19', '2027-01-01'))).toBe(true)
     expect(check(NEW.replace('title: Untitled\n', ''))).toBe(true)

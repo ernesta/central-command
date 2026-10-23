@@ -9,7 +9,7 @@ const lines = (text: string): string =>
     .join('\n')
 
 /**
- * Whether a training entry is still exactly what New training entry made: no title (or "Untitled"), no times, series, type, format,
+ * Whether a training entry is still exactly what New training made: no title (or "Untitled"), no times, series, type, format,
  * skills, leads, institution, folder, organisation or points, no task made for it, and a body that is the template's headings only
  * (blank lines aside). The date is not a change (it is prefilled with today's). Leaving such an entry removes it.
  */

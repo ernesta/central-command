@@ -116,7 +116,7 @@ export interface TrainingApi {
   save(ref: TrainingRef, changes: TrainingChanges, baseHash: string): Promise<TrainingSaveResult>
   /** Move the entry's file to the Trash. It resolves with the file's content, which `restore` takes to bring it back. */
   delete(ref: TrainingRef): Promise<string>
-  /** Remove the entry if it is still exactly what New training entry made, judged from the file itself. Resolves with whether it did. */
+  /** Remove the entry if it is still exactly what New training made, judged from the file itself. Resolves with whether it did. */
   discardIfUntouched(ref: TrainingRef): Promise<boolean>
   /** Undo of `delete`: write the content it returned back as the same file (refused when something is there now). */
   restore(ref: TrainingRef, content: string): Promise<void>
