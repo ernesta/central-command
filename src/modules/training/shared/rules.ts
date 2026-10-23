@@ -1,7 +1,7 @@
 import { LANDING_DAYS, addDays, inYear, yearLabel } from '@shared/year'
 import { fold } from '@shared/text'
 import { formatDate, durationMinutes } from '@shared/time'
-import { formatHours, minutesPerSkill } from '@shared/skills'
+import { minutesPerSkill } from '@shared/skills'
 import { findByName } from '@shared/people'
 import type { Person } from '@shared/people'
 import { trainingTaskUid } from './training-entries'
@@ -65,11 +65,9 @@ export function entryParts(
 }
 
 export interface TrainingHours {
-  /** Entries counted: in the year and not upcoming. */
+  /** Entries counted: in the year, not upcoming, and with some time. */
   entries: number
   minutes: number
-  /** Counted entries with no usable start and end, which add nothing. */
-  withoutTimes: number
   perSkill: { skill: string; minutes: number }[]
   /** Minutes done as a fraction of the aim; can pass 1. 0 when the aim is not positive. */
   progress: number
@@ -77,7 +75,7 @@ export interface TrainingHours {
 
 /**
  * Hours for one year, from the start and end times. Upcoming entries are left out (they have
- * not happened), and an entry without both times counts as zero and is reported.
+ * not happened), and so is an entry with no time: it is kept to plan self-study, not counted as done.
  */
 export function trainingHours(
   rows: readonly TrainingIndexRow[],
@@ -86,16 +84,14 @@ export function trainingHours(
   aimHours: number,
   selfStudy?: SelfStudy
 ): TrainingHours {
-  const counted = entriesInYear(rows, year).filter((r) => !isUpcoming(r, today))
-  const timed = counted.map((r) => ({
-    skills: r.skills,
-    minutes: entryMinutes(r, selfStudy)
-  }))
+  const timed = entriesInYear(rows, year)
+    .filter((r) => !isUpcoming(r, today))
+    .map((r) => ({ skills: r.skills, minutes: entryMinutes(r, selfStudy) }))
+    .filter((t) => t.minutes)
   const minutes = timed.reduce((n, t) => n + (t.minutes ?? 0), 0)
   return {
-    entries: counted.length,
+    entries: timed.length,
     minutes,
-    withoutTimes: timed.filter((t) => t.minutes === null).length,
     perSkill: minutesPerSkill(timed),
     progress: aimHours > 0 ? minutes / (aimHours * 60) : 0
   }
@@ -239,11 +235,6 @@ export function leadNames(rows: readonly TrainingIndexRow[]): string[] {
 
 export function yearHoursTitle(year: string): string {
   return `Hours of training, ${yearLabel(year)}`
-}
-
-/** "plus 36.5 h of meetings, which Inkpath also counts" for the line under the Training total. */
-export function meetingsLine(meetingMinutes: number): string {
-  return `plus ${formatHours(meetingMinutes)} of meetings, which Inkpath also counts`
 }
 
 /**

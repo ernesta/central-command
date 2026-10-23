@@ -8,7 +8,6 @@ import {
   entriesInYearOrPlanned,
   isUpcoming,
   leadNames,
-  meetingsLine,
   normaliseTrainingQuery,
   queryTraining,
   reconcileTrainingQuery,
@@ -66,7 +65,7 @@ describe('trainingHours', () => {
     expect(hours.minutes).toBe(60)
   })
 
-  it('counts an entry without times as zero and says so; the times decide, not any typed hours', () => {
+  it('leaves out an entry without times, neither done nor mentioned; the times decide, not any typed hours', () => {
     const hours = trainingHours(
       [row('2026-01-01', { start: null, end: null }), row('2026-01-02', { end: '09:00' })],
       '2025-09-22',
@@ -74,7 +73,7 @@ describe('trainingHours', () => {
       200
     )
     expect(hours.minutes).toBe(0)
-    expect(hours.withoutTimes).toBe(2)
+    expect(hours.entries).toBe(0)
   })
 
   it('counts an entry fully towards each skill, so skills can add up to more than the total', () => {
@@ -203,10 +202,6 @@ describe('option lists', () => {
     ]
     expect(institutionOptions(rows)).toEqual(['Aston University', 'Royal Holloway'])
   })
-
-  it('words the meetings line', () => {
-    expect(meetingsLine(2190)).toBe('plus 36:30 of meetings, which Inkpath also counts')
-  })
 })
 
 describe('entriesInYearOrPlanned', () => {
@@ -259,12 +254,12 @@ describe('a training total (session plus self-study, one number)', () => {
     ).toBe(60)
   })
 
-  it('counts self-study on a training with no times, and says nothing is missing', () => {
+  it('counts self-study on a training with no times, which then counts as done', () => {
     const rows = [training('2026-01-01', 'k1', { start: null, end: null })]
     const hours = trainingHours(rows, '2025-09-22', TODAY, 200, study)
     expect(hours.minutes).toBe(45)
-    expect(hours.withoutTimes).toBe(0)
-    expect(trainingHours(rows, '2025-09-22', TODAY, 200).withoutTimes).toBe(1)
+    expect(hours.entries).toBe(1)
+    expect(trainingHours(rows, '2025-09-22', TODAY, 200).entries).toBe(0)
     expect(entryMinutes({ start: null, end: null, task: 'k2', selfStudy: '' }, study)).toBeNull()
   })
 

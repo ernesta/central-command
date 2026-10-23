@@ -4060,3 +4060,8 @@ The user saw the "Add" button under a day's rows out of line with the rows above
 
 - `.quiet` in `AddTime.module.css` is now a grid (32px lead, name) with 12px padding and a 14px gap; the plus is centred in the lead column and the label starts where the names start. The button still spans the row, so its hover tint does too.
 - Checked: test, lint, typecheck, Prettier. Not driven in the app (the user checks looks as they use it).
+
+The user (23 Oct 2026): a Research training with no time (no start/end, no tracked time, so 0 hours) is kept so self-study can be done for it, but it is not "done", is not mentioned as a special case and is not in the PDF. The Training strip no longer says "N without times, counted as 0" nor "plus N of meetings, which Inkpath also counts", and the PDF drops both too.
+
+- `trainingHours` counts only entries with some time (`entries`; `withoutTimes` is gone); `trainingReportHtml` lists only those and has no `meetingMinutes`. Tracked self-study time makes an entry count again. Supersedes "plus N h of meetings" above and in `docs/TRAINING_PLAN.md`.
+- Checked: test, lint, typecheck, Prettier. Not driven in the app.

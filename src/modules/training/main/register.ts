@@ -3,8 +3,6 @@ import { join } from 'path'
 import { BrowserWindow, ipcMain, shell } from 'electron'
 import { exportHtmlAsPdf } from '../../../main/export-pdf'
 import { readNoteFile } from '../../../main/notes/guarded-file'
-import { listMeetingRows } from '../../meetings/main/repository'
-import { meetingHours } from '../../meetings/shared/hours'
 import { todayIso, trackingMoment } from '@shared/time'
 import { dayNumber } from '@shared/year'
 import { NotesWatcher } from '../../../main/notes/watcher'
@@ -97,7 +95,6 @@ function register({ db, paths, settings }: MainContext): () => void {
         year,
         today,
         aimHours: settings.get().trainingAimHours,
-        meetingMinutes: meetingHours(listMeetingRows(db, 'research'), year, today).minutes,
         selfStudy: trackedByTask(tracking.years('research').map((y) => tracking.get('research', y)))
       })
       return exportHtmlAsPdf(event.sender, {

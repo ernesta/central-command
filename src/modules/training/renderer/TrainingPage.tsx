@@ -15,12 +15,10 @@ import { useSettings } from '@renderer/state/settings-context'
 import { yearLabel } from '@shared/year'
 import { skillFilterOptions, skillsIn } from '@shared/skills'
 import { initialsFor } from '@modules/meetings/shared/query'
-import { meetingHours } from '@modules/meetings/shared/hours'
 import {
   DEFAULT_TRAINING_QUERY,
   entriesInYearOrPlanned,
   leadNames,
-  meetingsLine,
   queryTraining,
   reconcileTrainingQuery,
   seriesOptions,
@@ -76,7 +74,6 @@ export function TrainingPage(): React.JSX.Element {
   const visible = queryTraining(all, query, people)
   const aim = settings.trainingAimHours
   const hours = trainingHours(everything, year, today, aim, selfStudy)
-  const meetingMinutes = meetingHours(meetings, year, today).minutes
 
   const exportPdf = async (): Promise<void> => {
     setExporting(true)
@@ -127,10 +124,7 @@ export function TrainingPage(): React.JSX.Element {
       />
     )
 
-  const noteParts = [
-    `${hours.entries} done`,
-    hours.withoutTimes > 0 ? `${hours.withoutTimes} without times, counted as 0` : ''
-  ].filter(Boolean)
+  const noteParts = [`${hours.entries} done`]
 
   return (
     <div className={styles.page}>
@@ -155,7 +149,6 @@ export function TrainingPage(): React.JSX.Element {
           minutes={hours.minutes}
           note={noteParts.join(' · ')}
           aim={research ? { hours: aim, progress: hours.progress } : undefined}
-          extra={research && meetingMinutes > 0 ? meetingsLine(meetingMinutes) : undefined}
           perSkill={research ? hours.perSkill : []}
         />
       )}

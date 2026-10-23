@@ -18,8 +18,6 @@ export interface TrainingReportInput {
   year: string
   today: string
   aimHours: number
-  /** Minutes of meetings in the same year, mentioned in one quiet line; 0 to leave it out. */
-  meetingMinutes: number
   /** Minutes tracked on each training's subtask; each line is a training's total. Left out: sessions only. */
   selfStudy?: SelfStudy
 }
@@ -35,9 +33,9 @@ export function reportFileName(year: string): string {
  * network resources, so it prints the same anywhere. Pure: the same input gives the same HTML.
  */
 export function trainingReportHtml(input: TrainingReportInput): string {
-  const { year, today, aimHours, meetingMinutes } = input
+  const { year, today, aimHours } = input
   const rows = entriesInYear(input.rows, year)
-    .filter((r) => !isUpcoming(r, today))
+    .filter((r) => !isUpcoming(r, today) && entryMinutes(r, input.selfStudy))
     .sort((a, b) => -compareNewestFirst(a, b))
   const hours = trainingHours(input.rows, year, today, aimHours, input.selfStudy)
   const label = yearLabel(year)
@@ -66,7 +64,7 @@ export function trainingReportHtml(input: TrainingReportInput): string {
   return reportPageHtml({
     title: `Training log ${label}`,
     subtitle: `Generated ${formatDate(today)}. Entries that have not happened yet are not included.`,
-    totalsHtml: `<strong>${escapeHtml(formatHours(hours.minutes))}</strong> of ${escapeHtml(formatHours(aimHours * 60))} in ${hours.entries} ${hours.entries === 1 ? 'entry' : 'entries'}${hours.withoutTimes > 0 ? ` (${hours.withoutTimes} without times, counted as 0)` : ''}.${meetingMinutes > 0 ? ` Plus ${escapeHtml(formatHours(meetingMinutes))} of meetings.` : ''}${skills ? `<br>Hours per skill (an entry counts towards each of its skills): ${skills}` : ''}`,
+    totalsHtml: `<strong>${escapeHtml(formatHours(hours.minutes))}</strong> of ${escapeHtml(formatHours(aimHours * 60))} in ${hours.entries} ${hours.entries === 1 ? 'entry' : 'entries'}.${skills ? `<br>Hours per skill (an entry counts towards each of its skills): ${skills}` : ''}`,
     headHtml:
       '<th>Date</th><th>Time</th><th class="r">Hours</th><th>Type</th><th>Title and summary</th><th>Skills</th><th>Leads</th>',
     bodyHtml: body

@@ -30,8 +30,7 @@ const input = (rows: TrainingIndexRow[]): Parameters<typeof trainingReportHtml>[
   rows,
   year: '2025-09-22',
   today: '2026-03-01',
-  aimHours: 200,
-  meetingMinutes: 0
+  aimHours: 200
 })
 
 describe('trainingReportHtml', () => {
@@ -62,15 +61,22 @@ describe('trainingReportHtml', () => {
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt; &amp; &quot;x&quot;')
   })
 
-  it('shows hours per skill, leads by full name and the meetings line only when there are meetings', () => {
-    const html = trainingReportHtml({
-      ...input([row('2025-10-01', { skills: ['Networking (RP)'], leads: ['Robert Darby'] })]),
-      meetingMinutes: 90
-    })
+  it('shows hours per skill and leads by full name, with no meetings line', () => {
+    const html = trainingReportHtml(
+      input([row('2025-10-01', { skills: ['Networking (RP)'], leads: ['Robert Darby'] })])
+    )
     expect(html).toContain('Networking (RP): 1:30')
     expect(html).toContain('Robert Darby')
-    expect(html).toContain('Plus 1:30 of meetings')
-    expect(trainingReportHtml(input([row('2025-10-01')]))).not.toContain('of meetings')
+    expect(html).not.toContain('of meetings')
+  })
+
+  it('leaves out an entry with no time, from the rows and the count', () => {
+    const html = trainingReportHtml(
+      input([row('2025-10-01'), row('2025-10-02', { title: 'Planned', start: null, end: null })])
+    )
+    expect(html).not.toContain('Planned')
+    expect(html).toContain('in 1 entry')
+    expect(html).not.toContain('without times')
   })
 
   it('counts the training task and the self-study task in each row, the total and each skill', () => {

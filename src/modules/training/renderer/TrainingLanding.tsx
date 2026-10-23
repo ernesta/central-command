@@ -17,12 +17,10 @@ import { useSettings } from '@renderer/state/settings-context'
 import { formatHours } from '@shared/skills'
 import { formatDate } from '@shared/time'
 import { initialsFor } from '@modules/meetings/shared/query'
-import { meetingHours } from '@modules/meetings/shared/hours'
 import {
   entriesInYear,
   entriesInYearOrPlanned,
   isUpcoming,
-  meetingsLine,
   recentAndUpcoming,
   entryParts,
   seriesSummaries,
@@ -72,14 +70,10 @@ export function TrainingLanding(): React.JSX.Element {
   )
   const aim = settings.trainingAimHours
   const hours = trainingHours(all, year, today, aim, selfStudy)
-  const meetingMinutes = meetingHours(meetings, year, today).minutes
   const { upcoming, recent } = recentAndUpcoming(entriesInYearOrPlanned(all, year, today), today)
   const summaries = seriesSummaries(entriesInYear(all, year), today, selfStudy)
 
-  const noteParts = [
-    `${hours.entries} done`,
-    hours.withoutTimes > 0 ? `${hours.withoutTimes} without times, counted as 0` : ''
-  ].filter(Boolean)
+  const noteParts = [`${hours.entries} done`]
 
   const recentRows: RecentRow[] = [...[...upcoming].reverse(), ...recent].map((row) => ({
     key: row.id,
@@ -115,7 +109,6 @@ export function TrainingLanding(): React.JSX.Element {
               minutes={hours.minutes}
               note={noteParts.join(' · ')}
               aim={research ? { hours: aim, progress: hours.progress } : undefined}
-              extra={research && meetingMinutes > 0 ? meetingsLine(meetingMinutes) : undefined}
               perSkill={research ? hours.perSkill : []}
             />
             <SeriesCards
