@@ -15,14 +15,6 @@
   min-width: 0;
   font-size: var(--text-14);
 }
-.title {
-  color: var(--ink);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.title:hover {
-  color: var(--text-secondary);
-}
 .list {
   color: var(--text-muted);
 }
@@ -33,12 +25,4 @@
 /* The series in front of a self-study task's name, muted like TaskName's. */
 .series {
   color: var(--text-muted);
-}
-.series a {
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.series a:hover {
-  color: var(--text-secondary);
 }

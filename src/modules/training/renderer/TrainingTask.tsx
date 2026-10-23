@@ -1,5 +1,5 @@
-import { Link } from 'react-router'
 import { Button } from '@renderer/components/Button'
+import { EntityLink } from '@renderer/components/EntityLink'
 import { Panel } from '@renderer/components/Panel'
 import { taskRoute } from '../../tasks/renderer/tasks-paths'
 import { studySeries } from '../../tasks/shared/study-label'
@@ -65,7 +65,14 @@ export function TrainingTask({
   // A link to the series task once it exists (the name's own link goes to the task itself); plain text before that.
   const lead = prefix ? (
     <span className={styles.series}>
-      {parent ? <Link to={taskRoute(parent.workspace, parent.uid)}>{prefix}</Link> : prefix} ›{' '}
+      {parent ? (
+        <EntityLink kind="task" to={taskRoute(parent.workspace, parent.uid)}>
+          {prefix}
+        </EntityLink>
+      ) : (
+        prefix
+      )}{' '}
+      ›{' '}
     </span>
   ) : null
   return (
@@ -74,9 +81,9 @@ export function TrainingTask({
         {selfStudy ? (
           <span>
             {lead}
-            <Link className={styles.title} to={taskRoute(selfStudy.workspace, selfStudy.uid)}>
+            <EntityLink kind="task" to={taskRoute(selfStudy.workspace, selfStudy.uid)}>
               {selfStudy.title}
-            </Link>
+            </EntityLink>
           </span>
         ) : (
           <span className={styles.plain}>

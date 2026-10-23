@@ -171,7 +171,3 @@
   color: var(--text-muted);
   font-size: var(--text-13);
 }
-.lockLine a {
-  color: inherit;
-  text-decoration: underline;
-}

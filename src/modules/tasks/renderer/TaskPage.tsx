@@ -1,5 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
-import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router'
+import { Navigate, useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { Notice } from '@renderer/components/Notice'
@@ -10,6 +10,7 @@ import { MentionedIn } from '@renderer/entities/MentionedIn'
 import { seriesTarget, sourceTarget } from '@renderer/entities/source-routes'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { registerFlushable } from '@renderer/lib/flush-registry'
+import { EntityLink } from '@renderer/components/EntityLink'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { describeRecurrence } from '../shared/recurrence'
@@ -469,17 +470,21 @@ function LockLine({
     return (
       <p className={styles.lockLine}>
         Made by the series{' '}
-        <Link
+        <EntityLink
+          kind={kind}
           to={source.series ? seriesTarget(source.kind, source.workspace, source.series) : route}
         >
           {source.series || source.title}
-        </Link>
+        </EntityLink>
       </p>
     )
   }
   return (
     <p className={styles.lockLine}>
-      Made by the {kind} <Link to={route}>{source.title}</Link>
+      Made by the {kind}{' '}
+      <EntityLink kind={kind} to={route}>
+        {source.title}
+      </EntityLink>
     </p>
   )
 }
