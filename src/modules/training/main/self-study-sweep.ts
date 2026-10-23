@@ -104,7 +104,7 @@ export async function settleSelfStudyTasks(options: SelfStudySweepOptions): Prom
       const task = tasks.create({
         workspace: 'research',
         title: plan.title,
-        status: 'doing',
+        status: 'todo',
         ownKind: 'self-study',
         ...(plan.due ? { due: plan.due } : {}),
         ...(plan.parent ? { parentUid: parentUid(plan.parent, made) } : { list: TRAINING_LIST })

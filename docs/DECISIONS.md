@@ -4226,6 +4226,10 @@ The user's decisions after looking at the installed app: a self-study subtask is
 - **Repair**: `StudyLine`, `planSelfStudy` in `session-repair.ts`; collisions (a sibling with the new name, or two renames meeting) listed and left alone.
 - Subtasks have no task page (they redirect to the parent's, existing behaviour), so "the locked page" is the series task's or a series-less training's.
 
+## Self-study stays To do until it is started (23 Oct 2026)
+
+The user's rule: a self-study task is not put In progress by the clock. The sweep makes it **To do** (it used to make it In progress); it becomes In progress when a timer is started on it (`putStartedTaskInProgress`, unchanged) or the user sets it, and **the app never moves it back to To do**. It is still closed automatically a week after the training ends, from To do or In progress (`selfStudyTaskChanges`, unchanged). A first attempt, In progress when the training's start time arrives, was dropped: a task set back to To do by hand would have been started again on the next sweep, and the user preferred the timer as the signal. Existing In progress tasks keep their status; no repair or migration. Tests: `self-study-sweep.test.ts`, "stays To do until the user starts it".
+
 ## Task links: icons, not chips
 
 23 Oct 2026, the user's call after seeing `EntityLink` in use (mockup: `docs/design/entity-link-alignment-mockup.html`). The chip sat out of line with its text (an inline-flex box whose first child is an icon hangs by the icon's bottom edge), long names would be worse, and an icon button was already the app's way to open something.

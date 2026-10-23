@@ -79,7 +79,7 @@ describe('settleSelfStudyTasks', () => {
         expect(sub).toMatchObject({
           parentUid: parent.uid,
           due: '2026-10-28',
-          status: 'doing',
+          status: 'todo',
           ownKind: 'self-study'
         })
         expect(await linked(ref)).toBe(sub.uid)
@@ -209,11 +209,32 @@ describe('settleSelfStudyTasks', () => {
     expect(byTitle('Training 3').map((t) => t.ownKind)).toEqual(['training', 'self-study'])
   })
 
+  describe('stays To do until the user starts it', () => {
+    it('made To do, and not moved to In progress by the clock', async () => {
+      await entry({ date: '2026-10-21', start: '09:00', end: '11:00' })
+      await sweep({ date: '2026-10-22', time: '08:00' })
+      expect(byTitle('Training 1')[0].status).toBe('todo')
+      await sweep({ date: '2026-10-23', time: '08:00' })
+      expect(byTitle('Training 1')[0].status).toBe('todo')
+    })
+
+    it('an In progress task is never moved back to To do, and is closed from either status', async () => {
+      await entry({ date: '2026-10-10', end: '11:00' })
+      await sweep({ date: '2026-10-11', time: '08:00' })
+      const uid = byTitle('Training 1')[0].uid
+      tasks.setStatus(uid, 'doing')
+      await sweep({ date: '2026-10-12', time: '08:00' })
+      expect(tasks.get(uid)?.status).toBe('doing')
+      await sweep({ date: '2026-10-17', time: '11:00' })
+      expect(tasks.get(uid)?.status).toBe('done')
+    })
+  })
+
   describe('done a week after the entry ends', () => {
     it('not the minute before, done at the minute (an end time)', async () => {
       await entry({ date: '2026-10-10', start: '09:00', end: '11:00' })
       await sweep({ date: '2026-10-17', time: '10:59' })
-      expect(byTitle('Training 1')[0].status).toBe('doing')
+      expect(byTitle('Training 1')[0].status).toBe('todo')
       await sweep({ date: '2026-10-17', time: '11:00' })
       expect(byTitle('Training 1')[0]).toMatchObject({
         status: 'done',
@@ -224,7 +245,7 @@ describe('settleSelfStudyTasks', () => {
     it('not a day early, and done the day after', async () => {
       await entry({ date: '2026-10-10', start: '09:00', end: '11:00' })
       await sweep({ date: '2026-10-16', time: '23:59' })
-      expect(byTitle('Training 1')[0].status).toBe('doing')
+      expect(byTitle('Training 1')[0].status).toBe('todo')
       await sweep({ date: '2026-10-18', time: '00:00' })
       expect(byTitle('Training 1')[0].status).toBe('done')
     })
@@ -232,7 +253,7 @@ describe('settleSelfStudyTasks', () => {
     it('no end time: the end of the date’s day, a week on', async () => {
       await entry({ date: '2026-10-10' })
       await sweep({ date: '2026-10-17', time: '23:58' })
-      expect(byTitle('Training 1')[0].status).toBe('doing')
+      expect(byTitle('Training 1')[0].status).toBe('todo')
       await sweep({ date: '2026-10-17', time: '23:59' })
       expect(byTitle('Training 1')[0].status).toBe('done')
     })
@@ -260,8 +281,8 @@ describe('settleSelfStudyTasks', () => {
 
     it('moving the date back past the week closes it; a done task is never reopened', async () => {
       const ref = await entry({ date: '2026-10-21' })
-      await sweep()
-      expect(byTitle('Training 1')[0].status).toBe('doing')
+      await sweep({ date: '2026-10-21', time: '09:00' })
+      expect(byTitle('Training 1')[0].status).toBe('todo')
       const file = await training.read(ref)
       await training.save(ref, { meta: { date: '2026-10-01' } }, file.note.hash)
       await sweep()
