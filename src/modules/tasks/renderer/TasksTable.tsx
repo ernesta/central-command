@@ -672,7 +672,7 @@ function TaskRowView({
           >
             {textLocked ? (
               <span className={styles.plainValue}>
-                {lock === 'series' ? 'No date' : task.due ? formatDue(task.due, today) : 'No date'}
+                {task.due ? formatDue(task.due, today) : 'No date'}
               </span>
             ) : (
               <DatePicker

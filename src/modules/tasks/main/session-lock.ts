@@ -5,7 +5,7 @@ import {
   type SessionLock,
   type SessionSource
 } from '../shared/session-lock'
-import type { Task, TaskChanges } from '../shared/types'
+import type { TaskChanges } from '../shared/types'
 import { listSubtasks } from './repository'
 import type { TasksStore } from './tasks-store'
 
@@ -17,7 +17,8 @@ export function lockOfUid(db: Database, store: TasksStore, uid: string): Session
 
 const WHY: Record<SessionLock, string> = {
   session: 'This task is kept by its meeting or training. Change it in the note.',
-  series: 'This task holds meeting or training tasks. Its title, list, date and repeat are fixed.'
+  series:
+    'This task holds meeting or training tasks. Its date and status follow them; its title, list and repeat are fixed.'
 }
 
 /**
@@ -37,7 +38,8 @@ export function guardUpdate(
 }
 
 export function guardStatus(db: Database, store: TasksStore, uid: string): void {
-  if (lockOfUid(db, store, uid) === 'session') throw new Error(WHY.session)
+  const lock = lockOfUid(db, store, uid)
+  if (lock) throw new Error(WHY[lock])
 }
 
 export function guardDelete(db: Database, store: TasksStore, uid: string): void {
@@ -50,8 +52,15 @@ export function unlockedForDue(db: Database, store: TasksStore, uids: readonly s
   return uids.filter((uid) => lockOfUid(db, store, uid) === null)
 }
 
-/** The meeting or training whose note made this task, or null. */
+/**
+ * The meeting or training whose note made this task, or null. For a series task (what such sessions sit under) it is one of its
+ * sessions, with the name of their series in `series`, so the page can link to the series.
+ */
 export function sessionSource(db: Database, uid: string): SessionSource | null {
+  return ownSource(db, uid) ?? seriesSource(db, uid)
+}
+
+function ownSource(db: Database, uid: string): SessionSource | null {
   const meeting = db
     .prepare(
       `SELECT workspace, meeting_id AS id, series, date FROM meetings WHERE task = ? LIMIT 1`
@@ -81,9 +90,21 @@ export function sessionSource(db: Database, uid: string): SessionSource | null {
   return null
 }
 
-/** A series task that has a due date: the sweep takes it away (its subtasks carry the real dates). */
-export function seriesWithDates(db: Database, tasks: readonly Task[]): Task[] {
-  return tasks.filter(
-    (t) => !t.parentUid && t.due !== null && sessionLock(t, listSubtasks(db, t.uid)) === 'series'
-  )
+function seriesSource(db: Database, uid: string): SessionSource | null {
+  const kids = db
+    .prepare(
+      'SELECT uid FROM tasks WHERE parent_uid = ? AND deleted_at IS NULL AND own_kind IS NOT NULL'
+    )
+    .all(uid) as { uid: string }[]
+  for (const kid of kids) {
+    const source = ownSource(db, kid.uid)
+    if (!source) continue
+    const table = source.kind === 'meeting' ? 'meetings' : 'training'
+    const idColumn = source.kind === 'meeting' ? 'meeting_id' : 'entry_id'
+    const row = db
+      .prepare(`SELECT series FROM ${table} WHERE workspace = ? AND ${idColumn} = ?`)
+      .get(source.workspace, source.id) as { series: string | null } | undefined
+    return { ...source, series: row?.series ?? '' }
+  }
+  return null
 }

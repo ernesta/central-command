@@ -8,7 +8,10 @@ import {
   StickyNote
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { meetingRoute } from '@modules/meetings/renderer/meetings-paths'
+import {
+  meetingRoute,
+  seriesRoute as meetingSeriesRoute
+} from '@modules/meetings/renderer/meetings-paths'
 import type { MeetingWorkspace } from '@modules/meetings/shared/types'
 import { noteRoute } from '@modules/notes/renderer/notes-paths'
 import type { NoteWorkspace } from '@modules/notes/shared/types'
@@ -16,7 +19,11 @@ import { readingListRoute } from '@modules/reading-lists/renderer/reading-lists-
 import { taskRoute } from '@modules/tasks/renderer/tasks-paths'
 import type { TaskWorkspace } from '@modules/tasks/shared/types'
 import { modulePath } from '@modules/types'
-import { entryRoute, trainingPlanRoute } from '@modules/training/renderer/training-paths'
+import {
+  entryRoute,
+  seriesRoute as trainingSeriesRoute,
+  trainingPlanRoute
+} from '@modules/training/renderer/training-paths'
 import type { TrainingWorkspace } from '@modules/training/shared/types'
 import type { BacklinkSource } from '@shared/entities'
 
@@ -52,4 +59,15 @@ export function sourceTarget(source: BacklinkSource): { route: string; icon: Luc
       }
     }
   }
+}
+
+/** The list of one series of meetings or trainings (Meetings and Training both open it filtered to the series). */
+export function seriesTarget(
+  kind: 'meeting' | 'training',
+  workspace: string,
+  series: string
+): string {
+  return kind === 'meeting'
+    ? meetingSeriesRoute(workspace as MeetingWorkspace, series)
+    : trainingSeriesRoute(series, undefined, workspace as TrainingWorkspace)
 }

@@ -44,7 +44,7 @@ export function localMoment(date = new Date()): LocalMoment {
 }
 
 /**
- * Gives every meeting's and training's own task its session's day as the due date, and marks it done once the session is over; takes the due date off a series task.
+ * Gives every meeting's and training's own task its session's day as the due date, and marks it done once the session is over; keeps every series task (what they sit under) in step with its subtasks: the latest due date, Done once all are done.
  * Returns the workspaces whose tasks changed. Run at launch and every minute while the app is open.
  */
 export function settleSessionTasks(
@@ -65,7 +65,7 @@ export function settleSessionTasks(
     if (changes.done) store.setStatus(task.uid, 'done')
     if (changes.due !== undefined || changes.done) changed.add(task.workspace)
   }
-  // A series task (what the sessions sit under) has no date of its own: its subtasks carry the real ones.
+  // A series task (what the sessions sit under) follows its subtasks (the user's rule, 23 Oct 2026).
   const parents = db
     .prepare(
       `SELECT DISTINCT parent_uid AS uid FROM tasks WHERE own_kind IS NOT NULL AND parent_uid IS NOT NULL AND deleted_at IS NULL`
@@ -73,9 +73,7 @@ export function settleSessionTasks(
     .all() as { uid: string }[]
   for (const { uid } of parents) {
     const parent = store.get(uid)
-    if (!parent || parent.parentUid || parent.due === null) continue
-    store.setDue([uid], null)
-    changed.add(parent.workspace)
+    if (parent && store.settleSeries(uid)) changed.add(parent.workspace)
   }
   return changed
 }

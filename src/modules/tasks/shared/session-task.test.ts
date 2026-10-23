@@ -4,6 +4,7 @@ import {
   SELF_STUDY_DONE_AFTER_DAYS,
   selfStudyDoneAt,
   selfStudyTaskChanges,
+  seriesChanges,
   sessionOver,
   sessionTaskChanges
 } from './session-task'
@@ -100,5 +101,33 @@ describe('selfStudyTaskChanges', () => {
     expect(
       selfStudyTaskChanges(task(), { date: '', end: null }, at('2026-11-01', '00:00'))
     ).toEqual({})
+  })
+})
+
+describe('seriesChanges', () => {
+  const series = task({ uid: 'p', due: null })
+  const kid = (over: Partial<Task>): Task =>
+    task({ uid: 'k', parentUid: 'p', ownKind: 'meeting', ...over })
+  it('takes the latest date and closes with the last open subtask', () => {
+    expect(seriesChanges(series, [kid({ due: '2026-10-10' }), kid({ due: '2026-10-24' })])).toEqual(
+      { due: '2026-10-24' }
+    )
+    expect(
+      seriesChanges({ ...series, due: '2026-10-10' }, [kid({ due: '2026-10-10', status: 'done' })])
+    ).toEqual({ status: 'done' })
+  })
+  it('opens a done series again as In progress', () => {
+    expect(
+      seriesChanges({ ...series, status: 'done', due: '2026-10-10' }, [
+        kid({ due: '2026-10-10', status: 'done' }),
+        kid({ due: '2026-10-10' })
+      ])
+    ).toEqual({ status: 'doing' })
+  })
+  it('leaves a task with no session subtask, and a series with no subtask, alone', () => {
+    expect(seriesChanges(series, [task({ uid: 'k', parentUid: 'p', due: '2026-10-10' })])).toEqual(
+      {}
+    )
+    expect(seriesChanges({ ...series, due: '2026-10-10' }, [])).toEqual({})
   })
 })

@@ -23,9 +23,11 @@ describe('sessionLock', () => {
 })
 
 describe('fieldLocked', () => {
-  it('locks status for a session task only', () => {
-    expect(fieldLocked('session', 'status')).toBe(true)
-    expect(fieldLocked('series', 'status')).toBe(false)
+  it('locks status and due date for a session task and a series', () => {
+    for (const lock of ['session', 'series'] as const) {
+      expect(fieldLocked(lock, 'status')).toBe(true)
+      expect(fieldLocked(lock, 'due')).toBe(true)
+    }
   })
   it('leaves priority, tags and notes free', () => {
     for (const f of ['priority', 'tags', 'description'] as const) {
@@ -42,8 +44,7 @@ describe('lockedChanges', () => {
   it('ignores a locked field set to its current value', () => {
     expect(lockedChanges(sub, 'session', { title: sub.title, due: sub.due })).toEqual([])
   })
-  it('lets a series lose its due date but never gain one', () => {
-    expect(lockedChanges(parent, 'series', { due: null })).toEqual([])
+  it('keeps a series’ due date and status the sweep’s', () => {
     expect(lockedChanges(parent, 'series', { due: '2026-11-01' })).toEqual(['due'])
   })
   it('allows anything on a free task', () => {

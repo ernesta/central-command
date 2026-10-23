@@ -23,6 +23,7 @@ import {
   writeTask
 } from './repository'
 import { listFor } from '../shared/work-lists'
+import { seriesChanges } from '../shared/session-task'
 import { normaliseTag } from '../shared/tag'
 
 export interface Clock {
@@ -151,6 +152,7 @@ export class TasksStore {
       updatedAt: now
     }
     writeTask(this.db, task)
+    this.settleSeries(parentUid)
     return task
   }
 
@@ -226,6 +228,8 @@ export class TasksStore {
       }
       writeTask(this.db, next)
       if (!task.parentUid) this.passDown(task, next.due)
+      this.settleSeries(task.parentUid)
+      if (next.parentUid !== task.parentUid) this.settleSeries(next.parentUid)
       return next
     })()
   }
@@ -289,6 +293,7 @@ export class TasksStore {
           }
         }
       }
+      this.settleSeries(task.parentUid)
       return { task: getTask(this.db, uid) as Task, next }
     })()
   }
@@ -306,6 +311,7 @@ export class TasksStore {
         const task = this.require(uid)
         writeTask(this.db, { ...task, due: value, updatedAt: this.clock.now() })
         if (!task.parentUid) this.passDown(task, value)
+        this.settleSeries(task.parentUid)
       }
     })()
   }
@@ -313,9 +319,10 @@ export class TasksStore {
   /** Put a task and its subtasks in the trash. */
   delete(uid: string): void {
     this.db.transaction(() => {
-      this.require(uid)
+      const task = this.require(uid)
       const kids = listSubtasks(this.db, uid).map((k) => k.uid)
       markDeleted(this.db, [uid, ...kids], this.clock.now())
+      this.settleSeries(task.parentUid)
     })()
   }
 
@@ -335,6 +342,7 @@ export class TasksStore {
           .all(uid, deletedAt) as { uid: string }[]
       ).map((r) => r.uid)
       markRestored(this.db, [uid, ...kids], this.clock.now())
+      this.settleSeries(task.parentUid)
       return getTask(this.db, uid) as Task
     })()
   }
@@ -358,6 +366,28 @@ export class TasksStore {
       purge(this.db, uid)
       return true
     })()
+  }
+
+  /**
+   * Keeps a series task (what meetings or trainings sit under) in step with its subtasks: the latest of their due dates, Done once
+   * they all are, open again when one is added or reopened (`seriesChanges`). Called after every change to a subtask, and by the
+   * sweep. Returns whether the series changed.
+   */
+  settleSeries(uid: string | null | undefined): boolean {
+    if (!uid) return false
+    const series = getTask(this.db, uid)
+    if (!series) return false
+    const changes = seriesChanges(series, listSubtasks(this.db, uid))
+    if (changes.due === undefined && changes.status === undefined) return false
+    const now = this.clock.now()
+    const next: Task = { ...series, updatedAt: now }
+    if (changes.due !== undefined) next.due = changes.due
+    if (changes.status !== undefined) {
+      next.status = changes.status
+      next.completedAt = changes.status === 'done' ? now : null
+    }
+    writeTask(this.db, next)
+    return true
   }
 
   private require(uid: string): Task {

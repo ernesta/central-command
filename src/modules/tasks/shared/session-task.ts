@@ -1,5 +1,5 @@
 import { addDays } from '@shared/year'
-import type { Task } from './types'
+import type { Task, TaskStatus } from './types'
 
 /** A meeting or training as far as its task cares: the day, and when it ended (null: it has no end time). */
 export interface SessionTimes {
@@ -82,5 +82,27 @@ export function selfStudyTaskChanges(
   if (task.due !== session.date) changes.due = session.date
   const reached = now.date !== doneAt.date ? now.date > doneAt.date : now.time >= doneAt.time
   if (task.status !== 'done' && reached) changes.done = true
+  return changes
+}
+
+export interface SeriesChanges {
+  due?: string | null
+  status?: TaskStatus
+}
+
+/**
+ * What a series task (the top-level task meetings or trainings sit under) needs from its subtasks (the user's rule, 23 Oct 2026):
+ * its due date is the latest of theirs, and it is done once all of them are done, and open again (In progress) when one is added or
+ * reopened. Pure. A task with no session subtask is no series and needs nothing; a series with no subtask left stays as it is.
+ */
+export function seriesChanges(series: Task, kids: readonly Task[]): SeriesChanges {
+  const changes: SeriesChanges = {}
+  if (series.parentUid || !kids.some((k) => k.ownKind)) return changes
+  const dates = kids.map((k) => k.due).filter((d): d is string => d !== null)
+  const latest = dates.length > 0 ? dates.reduce((a, b) => (b > a ? b : a)) : null
+  if (series.due !== latest) changes.due = latest
+  const allDone = kids.every((k) => k.status === 'done')
+  if (allDone && series.status !== 'done') changes.status = 'done'
+  else if (!allDone && series.status === 'done') changes.status = 'doing'
   return changes
 }

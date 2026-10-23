@@ -7,7 +7,7 @@ import { Segmented } from '@renderer/components/Segmented'
 import { pushUndoWithToast } from '@renderer/components/undo-store'
 import { LiveEditor } from '@renderer/editor/LiveEditor'
 import { MentionedIn } from '@renderer/entities/MentionedIn'
-import { sourceTarget } from '@renderer/entities/source-routes'
+import { seriesTarget, sourceTarget } from '@renderer/entities/source-routes'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { registerFlushable } from '@renderer/lib/flush-registry'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
@@ -100,10 +100,10 @@ function TaskView({
   const today = todayIso()
   const { tracked, running, yearFor, clientFor, months } = useTaskTime(workspace)
   const sessionTasks = useSessionTaskUids(workspace)
-  // A meeting's or training's task, or the series task they sit under, is the notes' to keep (title, list, date, repeat, delete).
+  // A meeting's or training's task, or the series task they sit under, is the notes' to keep (title, list, date, status, repeat, delete).
   const lock = sessionLock(task, row.kids)
   const statusLocked = fieldLocked(lock, 'status')
-  const source = useSessionSource(task.uid, lock === 'session')
+  const source = useSessionSource(task.uid, lock !== null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -299,7 +299,7 @@ function TaskView({
                 <span className={styles.label}>Due</span>
                 {lock ? (
                   <span className={styles.lockedValue}>
-                    {lock === 'session' && task.due ? formatDue(task.due, today) : 'No date'}
+                    {task.due ? formatDue(task.due, today) : 'No date'}
                   </span>
                 ) : (
                   <DueField value={task.due} today={today} onChange={(due) => update({ due })} />
@@ -455,12 +455,22 @@ function LockLine({
   lock: 'session' | 'series'
   source: SessionSource | null
 }): React.JSX.Element {
-  if (lock === 'series') {
-    return <p className={styles.lockLine}>Meetings and trainings keep the tasks under this one.</p>
-  }
   if (!source) return <p className={styles.lockLine}>Kept by its meeting or training.</p>
   const kind = source.kind === 'meeting' ? 'meeting' : 'training'
   const { route } = sourceTarget({ kind, workspace: source.workspace, id: source.id })
+  if (lock === 'series') {
+    // The series' own page when there is one, else the meeting or training under it.
+    return (
+      <p className={styles.lockLine}>
+        Made by the series{' '}
+        <Link
+          to={source.series ? seriesTarget(source.kind, source.workspace, source.series) : route}
+        >
+          {source.series || source.title}
+        </Link>
+      </p>
+    )
+  }
   return (
     <p className={styles.lockLine}>
       Made by the {kind} <Link to={route}>{source.title}</Link>
