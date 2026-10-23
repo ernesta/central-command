@@ -1,9 +1,11 @@
 import { showToast } from '@renderer/components/toast-store'
 import { pushUndo } from '@renderer/components/undo-store'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
+import { openRoute } from '@renderer/shell/navigate-store'
 import { formatDate } from '@shared/time'
 import { formatDuration } from '@shared/time'
 import { describeRecurrence } from '../shared/recurrence'
+import { taskRoute } from './tasks-paths'
 import type { Task, TaskChanges, TaskStatus } from '../shared/types'
 
 /** The toast after a delete; the time that left Hours with the task is said, since Undo brings it back. */
@@ -58,7 +60,8 @@ export async function setTaskStatus(
     }
     if (next?.due) {
       showToast(
-        `Done. The next one is due ${formatDate(next.due)}${task.recurrence ? ` (${describeRecurrence(task.recurrence).toLowerCase()})` : ''}.`
+        `Done. The next one is due ${formatDate(next.due)}${task.recurrence ? ` (${describeRecurrence(task.recurrence).toLowerCase()})` : ''}.`,
+        { label: 'Open', run: () => openRoute(taskRoute(next.workspace, next.uid)) }
       )
     }
   } catch (error) {
