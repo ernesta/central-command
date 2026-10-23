@@ -125,3 +125,8 @@
 .discard:hover {
   color: var(--text-secondary);
 }
+
+.series {
+  color: var(--text-muted);
+  font-weight: inherit;
+}

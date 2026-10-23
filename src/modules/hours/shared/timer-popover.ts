@@ -1,3 +1,4 @@
+import { parentIn, studySeries } from '../../tasks/shared/study-label'
 import { taskUidOf } from '../../tasks/shared/tracked'
 import type { Task } from '../../tasks/shared/types'
 import { listOfTask } from './start-picker'
@@ -8,6 +9,8 @@ export const STOP_NEEDS_TASK = 'Pick a task to stop the timer.'
 /** What the top block of the timer popover says and allows. */
 export interface PopoverHead {
   title: string
+  /** A self-study subtask's series, shown muted before the title; null otherwise. */
+  series: string | null
   /** The line under the title: the task's list, a nudge, or the reason Stop is off. Null when the list is not known. */
   line: string | null
   /** The line is a nudge or a reason, not a list (drawn quiet and italic). */
@@ -33,6 +36,7 @@ export function popoverHead(
     const task = uid ? tasks.find((t) => t.uid === uid) : undefined
     return {
       title: session.label || task?.title || 'No title',
+      series: task ? studySeries(task, parentIn(task, tasks)) : null,
       line: task ? listOfTask(task, tasks) || null : null,
       hint: false,
       stopDisabled: false,
@@ -42,6 +46,7 @@ export function popoverHead(
   return stopAfter
     ? {
         title: 'Which task was this?',
+        series: null,
         line: STOP_NEEDS_TASK,
         hint: true,
         stopDisabled: true,
@@ -49,6 +54,7 @@ export function popoverHead(
       }
     : {
         title: session.label || 'No task yet',
+        series: null,
         line: 'Pick one below',
         hint: true,
         stopDisabled: false,

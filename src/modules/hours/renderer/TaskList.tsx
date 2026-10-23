@@ -11,6 +11,7 @@ import { QUARTER } from '@shared/tracking/rounding'
 import { taskUidOf } from '@modules/tasks/shared/tracked'
 import { StatusButton } from '@modules/tasks/renderer/StatusButton'
 import { taskRoute } from '@modules/tasks/renderer/tasks-paths'
+import { TaskName } from '@modules/tasks/renderer/TaskName'
 import { useTasksList } from '@modules/tasks/renderer/useTasksList'
 import type { HoursWorkspace } from '../shared/workspaces'
 import { DurationField } from './DurationField'
@@ -62,6 +63,7 @@ export function TaskList({
   const [name, setName] = useState('')
   const [problem, setProblem] = useState('')
   const { tasks } = useTasksList(workspace)
+  const taskOf = useMemo(() => new Map(tasks?.map((t) => [t.uid, t])), [tasks])
   const statusOf = useMemo(() => new Map(tasks?.map((t) => [t.uid, t.status])), [tasks])
   const entering = useNewRowKeys(rows.map((row) => rowKey(row).toLowerCase()))
   if (rows.length === 0) return null
@@ -98,6 +100,7 @@ export function TaskList({
       <ul className={styles.list}>
         {rows.map((row) => {
           const status = statusOf.get(taskUidOf(row.task) ?? '')
+          const own = taskOf.get(taskUidOf(row.task) ?? '')
           return (
             <li
               key={rowKey(row).toLowerCase()}
@@ -133,7 +136,17 @@ export function TaskList({
                   to={taskRoute(workspace, taskUidOf(row.task) ?? '')}
                   aria-label={`Open the task ${row.label || 'task'}`}
                 >
-                  <span className={styles.taskTitle}>{row.label}</span>
+                  <span className={styles.taskTitle}>
+                    {own ? (
+                      <TaskName
+                        task={own}
+                        parent={own.parentUid ? taskOf.get(own.parentUid) : undefined}
+                        title={row.label}
+                      />
+                    ) : (
+                      row.label
+                    )}
+                  </span>
                 </Link>
               ) : renaming === rowKey(row) ? (
                 <input

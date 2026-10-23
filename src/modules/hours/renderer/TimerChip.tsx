@@ -115,7 +115,10 @@ function TimerPopover({
   return (
     <div className={styles.popover} role="dialog" aria-label="Timer">
       <div className={styles.head}>
-        <div className={styles.title}>{head.title}</div>
+        <div className={styles.title}>
+          {head.series && <span className={styles.series}>{head.series} › </span>}
+          {head.title}
+        </div>
         {head.line && <div className={head.hint ? styles.hint : styles.list}>{head.line}</div>}
       </div>
       {/* Only an older entry with a name but no task still needs its client chosen here. */}
