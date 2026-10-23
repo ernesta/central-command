@@ -4225,3 +4225,12 @@ The user's decisions after looking at the installed app: a self-study subtask is
 - **Prefix**: gone from the tasks table (nested rows and the parent's subtask list) and the training note's Task panel; kept in search, the timer's picker and Hours rows (`studyLabel`, `TaskName`). The training's own session task and its self-study subtask now share a name, so those places show the prefix on the subtask only.
 - **Repair**: `StudyLine`, `planSelfStudy` in `session-repair.ts`; collisions (a sibling with the new name, or two renames meeting) listed and left alone.
 - Subtasks have no task page (they redirect to the parent's, existing behaviour), so "the locked page" is the series task's or a series-less training's.
+
+## Task links: icons, not chips
+
+23 Oct 2026, the user's call after seeing `EntityLink` in use (mockup: `docs/design/entity-link-alignment-mockup.html`). The chip sat out of line with its text (an inline-flex box whose first child is an icon hangs by the icon's bottom edge), long names would be worse, and an icon button was already the app's way to open something.
+
+- **No chips and no hyperlinks for linking** in details and panels: a plain name and a ghost `IconButton` with a tooltip. `EntityLink` is deleted.
+- **A locked task** shows what made it as a field in the details row after List: `Series` (or `Meeting`, `Training`), the name as plain text and an "Open series" icon button (`MadeByField`, `TaskPage.tsx`). The "Made by …" sentence is gone.
+- **A training note** has no Task panel. The training's own task (the session) is an icon-only "Open task" button in the details row (`TrainingMetaFields`), after Duration, with no label drawn. The self-study tracking is a one-line "Self-study" card (`TrainingTask`) with the total, Start, Add time and, once the self-study task exists, an "Open self-study task" icon. The task's name and list are no longer shown there.
+- A subtask's page still redirects to its parent (`TaskPage.tsx`), so "Open self-study task" lands on the series task with the training's subtask listed.

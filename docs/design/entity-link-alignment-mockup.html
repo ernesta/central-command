@@ -1,0 +1,114 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Task links: buttons, not chips</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@500;600&display=swap">
+<style>
+/* Mockup, second round: no chips. The app already has three quiet ways to open something, and these options use only them:
+   1. a ghost icon button with a tooltip (IconButton, Panel `actions`), 2. the accent text link (Home's StyledLink: accent, underline on hover), 3. a row's title as the link (Hours' task rows).
+   Rows are the places; columns are "Now" and the options. Tokens mirror tokens.css. */
+:root {
+  --bg: #edeff2; --surface: #ffffff; --ink: #1b222b; --text-secondary: #3a4652; --text-muted: #5c6672; --border-soft: #d3d8de; --border-strong: #c3cad2;
+  --hover-tint: #f4f6f8; --selected-bg: #dce6ee; --selected-text: #1f3a52; --accent: #35577a; --tooltip-bg: #1b222b; --tooltip-text: #e6eaee;
+  --font-display: 'Newsreader', Georgia, serif; --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root { --bg: #14181d; --surface: #1f262e; --ink: #e6eaee; --text-secondary: #c2cad2; --text-muted: #98a3af; --border-soft: #2f3843; --border-strong: #3d4855; --hover-tint: #262e37; --selected-bg: #2a3b4d; --selected-text: #d3e3f2; --accent: #86aad0; --tooltip-bg: #e6eaee; --tooltip-text: #1b222b; color-scheme: dark; } }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.45 var(--font-body); margin: 0; padding: 24px 16px 64px; }
+.wrap { max-width: 1240px; margin: 0 auto; }
+h1 { font-family: var(--font-display); font-size: 28px; margin: 0 0 6px; }
+h2 { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin: 32px 0 8px; }
+.lead { color: var(--text-muted); margin: 0 0 8px; max-width: 84ch; }
+.grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.col { font-weight: 600; padding-bottom: 2px; }
+.col small { display: block; font-weight: 400; color: var(--text-muted); }
+.bad .col, .col.bad { color: #b3261e; }
+.muted { color: var(--text-muted); }
+
+/* the three quiet ways */
+.ib { position: relative; display: inline-grid; place-items: center; width: 28px; height: 28px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--text-secondary); flex: none; }
+.ib.hover { background: var(--hover-tint); color: var(--ink); }
+.ib .tip { position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); padding: 4px 8px; border-radius: 8px; background: var(--tooltip-bg); color: var(--tooltip-text); font-size: 12px; white-space: nowrap; box-shadow: 0 4px 12px rgb(0 0 0 / .25); z-index: 2; }
+.ib.edge .tip { left: auto; right: 0; transform: none; }
+.lk { color: var(--accent); text-decoration: none; }
+.lk.hover { text-decoration: underline; }
+.sbtn { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid var(--border-strong); border-radius: 8px; background: transparent; color: var(--text-secondary); font: inherit; font-size: 13px; }
+.chip-now { display: inline-flex; align-items: center; gap: 4px; padding: 1px 6px 1px 5px; border-radius: 6px; background: var(--selected-bg); color: var(--selected-text); }
+
+/* Task page header */
+.hd { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; padding: 16px 16px 14px; }
+.hd .title { font-family: var(--font-display); font-weight: 600; font-size: 24px; line-height: 1.2; margin: 0 0 8px; }
+.lock { display: flex; align-items: center; gap: 6px; margin: 0; min-height: 28px; color: var(--text-muted); font-size: 13px; white-space: nowrap; }
+.flabel { display: block; margin: 10px 0 0; color: var(--text-muted); font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; }
+
+/* Panel, a `row` Panel */
+.panel { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; padding: 10px 16px; display: flex; align-items: center; gap: 8px 20px; min-height: 52px; }
+.plabel { color: var(--text-muted); font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; }
+.plabel.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.name { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; font-size: 14px; }
+.panel.stack { display: grid; gap: 4px; align-items: start; padding: 12px 16px; }
+.panel .tag { color: var(--text-muted); font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; }
+.r2 { display: flex; align-items: center; gap: 10px; min-height: 30px; }
+.r2 .k { width: 78px; color: var(--text-muted); font-size: 13px; }
+
+/* details row */
+.meta { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 24px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; }
+.field { display: grid; align-content: end; gap: 6px; white-space: nowrap; }
+.field .l { color: var(--text-muted); font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; }
+.calc { display: flex; align-items: center; justify-content: space-between; gap: 6px; min-width: 80px; height: 36px; padding: 0 12px; border: 1px dashed var(--border-strong); border-radius: 8px; background: var(--hover-tint); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.calc .ib { width: 24px; height: 24px; margin-right: -8px; }
+.box { display: flex; align-items: center; height: 36px; min-width: 100px; padding: 0 12px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface); }
+.dur { display: flex; align-items: center; gap: 8px; }
+.iconbtn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border: 1px solid var(--border-strong); border-radius: 8px; color: var(--text-secondary); }
+@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+.total { font-family: var(--font-display); font-weight: 600; font-size: 20px; font-variant-numeric: tabular-nums; }
+.fv { display: flex; align-items: center; gap: 6px; min-height: 36px; }
+.metarow { display: flex; gap: 24px; align-items: flex-end; margin-top: 12px; flex-wrap: wrap; }
+.metarow .field .v { display: flex; align-items: center; gap: 6px; height: 28px; color: var(--ink); }
+.pb { display: flex; gap: 8px; margin-left: auto; align-items: center; }
+.panel.col2 { display: grid; gap: 2px; padding: 10px 16px; }
+.r3 { display: flex; align-items: center; gap: 10px; min-height: 36px; }
+.r3 .k { width: 84px; color: var(--text-muted); font-size: 13px; }
+.r3 .nm { min-width: 0; flex: 1; }
+
+.page { background: var(--bg); border: 1px dashed var(--border-strong); border-radius: 12px; padding: 16px; display: grid; gap: 12px; }
+.ptitle { font-family: var(--font-display); font-weight: 600; font-size: 26px; margin: 0; }
+.split { display: grid; grid-template-columns: minmax(0,1fr) 240px; gap: 12px; align-items: start; }
+.card { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; padding: 14px 16px; }
+.card h4 { margin: 0 0 8px; color: var(--text-muted); font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; }
+.note h5 { font-family: var(--font-display); font-size: 18px; margin: 10px 0 6px; }
+.note p { margin: 0 0 8px; }
+.lines span { display: block; height: 8px; border-radius: 4px; background: var(--hover-tint); margin: 8px 0; }
+.tv { display: flex; align-items: center; gap: 8px; height: 36px; }
+.btns { display: flex; gap: 8px; align-items: center; }
+.sidepanel { display: grid; gap: 12px; }
+.strip { display: flex; align-items: center; gap: 16px; background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; padding: 8px 16px; min-height: 48px; }
+.total { font-family: var(--font-display); font-weight: 600; font-variant-numeric: lining-nums tabular-nums; }
+.metarow { display: flex; gap: 24px; align-items: flex-end; flex-wrap: wrap; }
+.metarow .field .v { display: flex; align-items: center; gap: 6px; height: 28px; color: var(--ink); }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="tasks" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></symbol>
+  <symbol id="grad" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></symbol>
+</svg>
+
+<div class="wrap">
+<h1>Task links, round 4</h1>
+<p class="lead">No Task panel. The link to the training's own task goes in the details row with the other metadata (a labelled field, the name as the app's accent link). The self-study tracking is all that is left of the old panel, and it says what it is. Section 1 is the task page; section 2 is the training note.</p>
+
+<h2>1. Locked task page: a "Series" field</h2>
+<div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+  <div class="col">A. Name as the accent link<small>the label is the heading, the name opens the series</small></div>
+  <div class="col">B. Name plain, icon button after it<small>if links inside a field should stay quiet</small></div>
+  <div class="hd"><p class="title">Day 2 self-study</p><div class="metarow"><div class="field"><span class="l">Status</span><span class="v">Open</span></div><div class="field"><span class="l">Repeats</span><span class="v">Does not repeat</span></div><div class="field"><span class="l">List</span><span class="v">Training</span></div><div class="field"><span class="l">Series</span><span class="v"><a class="lk hover">Simulating Social Worlds</a></span></div></div></div><div class="hd"><p class="title">Day 2 self-study</p><div class="metarow"><div class="field"><span class="l">Status</span><span class="v">Open</span></div><div class="field"><span class="l">Repeats</span><span class="v">Does not repeat</span></div><div class="field"><span class="l">List</span><span class="v">Training</span></div><div class="field"><span class="l">Series</span><span class="v">Simulating Social Worlds <span class="ib hover"><svg width="16" height="16"><use href="#grad"/></svg><span class="tip">Open series</span></span></span></div></div></div>
+</div>
+
+<h2>2. Training note: where the self-study tracking goes</h2>
+<div class="col">A. A slim strip under the details<small>one line: "Self-study", the total, Start, Add time</small></div>
+<div class="page"><p class="ptitle">Day 2</p><div class="meta"><div class="field"><span class="l">Date</span><span class="box">21 Oct 2026</span></div><div class="field"><span class="l">Start</span><span class="box">09:30</span></div><div class="field"><span class="l">End</span><span class="box">15:00</span></div><div class="field"><span class="l">Duration</span><span class="calc">5h 30m</span></div><div class="field"><span class="l">Task</span><span class="tv"><a class="lk hover">Day 2</a></span></div><div class="field"><span class="l">Series</span><span class="box" style="min-width:190px">Simulating Social Worlds</span></div><div class="field"><span class="l">Type</span><span class="box" style="min-width:140px">Workshop</span></div></div><div class="strip"><span class="plabel">Self-study</span><span class="total" style="font-size:20px">0h</span><span class="btns"><span class="sbtn">Start</span><span class="sbtn">Add time</span></span></div><div class="split"><div class="card note"><h4 style="margin:0 0 6px">Note</h4><h5>Summary</h5><p class="muted">Introduction to agent-based models, setting up the simulation, first runs.</p><h5>Notes</h5><div class="lines"><span style="width:90%"></span><span style="width:75%"></span><span style="width:84%"></span></div></div><div class="sidepanel"><div class="card"><h4>Outline</h4><div class="lines"><span style="width:70%"></span><span style="width:55%"></span></div></div><div class="card"><h4>Files</h4><div class="lines"><span style="width:60%"></span></div></div></div></div></div>
+<div class="col" style="margin-top:20px">B. A panel in the side column (from scratch)<small>stays in view while you write the note, above Outline and Files</small></div>
+<div class="page"><p class="ptitle">Day 2</p><div class="meta"><div class="field"><span class="l">Date</span><span class="box">21 Oct 2026</span></div><div class="field"><span class="l">Start</span><span class="box">09:30</span></div><div class="field"><span class="l">End</span><span class="box">15:00</span></div><div class="field"><span class="l">Duration</span><span class="calc">5h 30m</span></div><div class="field"><span class="l">Task</span><span class="tv"><a class="lk hover">Day 2</a></span></div><div class="field"><span class="l">Series</span><span class="box" style="min-width:190px">Simulating Social Worlds</span></div><div class="field"><span class="l">Type</span><span class="box" style="min-width:140px">Workshop</span></div></div><div class="split"><div class="card note"><h4 style="margin:0 0 6px">Note</h4><h5>Summary</h5><p class="muted">Introduction to agent-based models, setting up the simulation, first runs.</p><h5>Notes</h5><div class="lines"><span style="width:90%"></span><span style="width:75%"></span><span style="width:84%"></span></div></div><div class="sidepanel"><div class="card"><h4>Self-study</h4><div class="total" style="font-size:26px">0h</div><div class="btns" style="margin-top:8px"><span class="sbtn">Start</span><span class="sbtn">Add time</span></div></div><div class="card"><h4>Outline</h4><div class="lines"><span style="width:70%"></span><span style="width:55%"></span></div></div><div class="card"><h4>Files</h4><div class="lines"><span style="width:60%"></span></div></div></div></div></div>
+<div class="col" style="margin-top:20px">C. In the details card (from scratch)<small>a last field of the one card; nothing between the details and the note</small></div>
+<div class="page"><p class="ptitle">Day 2</p><div class="meta"><div class="field"><span class="l">Date</span><span class="box">21 Oct 2026</span></div><div class="field"><span class="l">Start</span><span class="box">09:30</span></div><div class="field"><span class="l">End</span><span class="box">15:00</span></div><div class="field"><span class="l">Duration</span><span class="calc">5h 30m</span></div><div class="field"><span class="l">Task</span><span class="tv"><a class="lk hover">Day 2</a></span></div><div class="field"><span class="l">Self-study</span><span class="tv"><span class="total" style="font-size:18px">0h</span><span class="btns"><span class="sbtn">Start</span><span class="sbtn">Add time</span></span></span></div><div class="field"><span class="l">Series</span><span class="box" style="min-width:190px">Simulating Social Worlds</span></div><div class="field"><span class="l">Type</span><span class="box" style="min-width:140px">Workshop</span></div></div><div class="split"><div class="card note"><h4 style="margin:0 0 6px">Note</h4><h5>Summary</h5><p class="muted">Introduction to agent-based models, setting up the simulation, first runs.</p><h5>Notes</h5><div class="lines"><span style="width:90%"></span><span style="width:75%"></span><span style="width:84%"></span></div></div><div class="sidepanel"><div class="card"><h4>Outline</h4><div class="lines"><span style="width:70%"></span><span style="width:55%"></span></div></div><div class="card"><h4>Files</h4><div class="lines"><span style="width:60%"></span></div></div></div></div></div>
+</div>
