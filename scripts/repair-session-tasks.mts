@@ -1,6 +1,7 @@
 /**
- * The tasks the app makes for meetings, checked against the notes that name them (docs/MEETING_TASKS_PLAN.md). Trainings are left
- * alone: their tasks and hours are mapped by hand.
+ * The tasks the app makes for meetings and trainings, checked against the notes that name them (docs/MEETING_TASKS_PLAN.md,
+ * docs/POLISH_ROUND_2_PLAN.md item 3). A training's tasks and hours are mapped by hand; here a task a Research training note names
+ * only gets its marker (`own_kind`), so it is locked and linked to its note.
  * Dry run by default: the database is read through a throwaway copy, so nothing on disk is touched, and the report says, line by
  * line, what `--apply` would do.
  *
@@ -9,7 +10,8 @@
  *
  * It reports each meeting's task (exists, is its own, has the title, series task and due date the note calls for, shared by two
  * meetings, marker missing) and the own-looking subtasks no meeting names (orphans, with the time tracked on them). `--apply` marks
- * the meeting tasks, renames, dates and re-parents them, and puts the orphans with no time tracked in the Tasks trash (restorable);
+ * the meeting tasks, renames, dates and re-parents them, marks the tasks the training notes name (training, self-study), brings the
+ * series tasks in step with their subtasks (latest date, Done once all are), and puts the orphans with no time tracked in the Tasks trash (restorable);
  * it refuses to write unless a second look finds nothing left to repair.
  */
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'fs'

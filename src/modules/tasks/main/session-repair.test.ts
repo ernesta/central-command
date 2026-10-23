@@ -170,18 +170,94 @@ describe('planRepair: orphans', () => {
   })
 })
 
-describe('planRepair: trainings are left alone', () => {
-  it('reports nothing about trainings, and never counts a task a training names as an orphan', () => {
-    const series = store.create({ workspace: 'research', title: 'PS5210', list: 'Training' })
+describe('planRepair: trainings', () => {
+  /** The real shape of PS5210: a series task in Training with unmarked subtasks the notes name, 24 of them in the library. */
+  function ps5210(): {
+    series: string
+    intro: string
+    fnirs: string
+    plain: string
+    study: string
+  } {
+    const series = store.create({
+      workspace: 'research',
+      title: 'PS5210 Applied Neuroscience Methods',
+      list: 'Training'
+    })
+    const intro = store.create({
+      workspace: 'research',
+      title: 'Introduction',
+      parentUid: series.uid,
+      due: '2026-09-30',
+      status: 'done'
+    })
+    const fnirs = store.create({
+      workspace: 'research',
+      title: 'fNIRS',
+      parentUid: series.uid,
+      due: '2026-10-07'
+    })
+    const plain = store.create({ workspace: 'research', title: 'DataCamp: R', list: 'Reading' })
     const study = store.create({
       workspace: 'research',
-      title: 'Training 4 self-study',
+      title: 'Day 2 self-study',
       parentUid: series.uid
     })
-    training('a', { selfStudy: study.uid })
+    return {
+      series: series.uid,
+      intro: intro.uid,
+      fnirs: fnirs.uid,
+      plain: plain.uid,
+      study: study.uid
+    }
+  }
+
+  it('marks the subtasks the notes name, leaves a task you chose, and lists the notes with no task', () => {
+    const id = ps5210()
+    training('intro', { task: id.intro, title: 'Introduction' })
+    training('fnirs', { task: id.fnirs, selfStudy: id.study, title: 'fNIRS' })
+    training('datacamp', { task: id.plain, title: 'DataCamp: R' })
+    training('gone', { task: 'zzzzzzzz', title: 'Gone' })
+    training('none', { task: '', title: 'No task' })
     const report = planRepair(readRepairInput(db), null, NONE)
-    expect(Object.keys(report).sort()).toEqual(['meetings', 'orphans'])
-    expect(formatRepairReport(report, 'test')).not.toMatch(/TRAINING/i)
+    const state = (note: string, kind: string): string | undefined =>
+      report.trainings.find((t) => t.id === note && t.kind === kind)?.state
+    expect(state('intro', 'training')).toBe('mark')
+    expect(state('fnirs', 'training')).toBe('mark')
+    expect(state('fnirs', 'self-study')).toBe('mark')
+    expect(state('datacamp', 'training')).toBe('chosen')
+    expect(state('gone', 'training')).toBe('missing')
+    expect(report.noTask.map((n) => n.id)).toEqual(['none'])
+    const text = formatRepairReport(report, 'test')
+    expect(text).toContain('would be marked 3')
+    expect(text).toContain('under "PS5210 Applied Neuroscience Methods" → mark as training')
+    expect(text).toContain('does not exist')
+  })
+
+  it('leaves a task two notes name, and one in the trash', () => {
+    const id = ps5210()
+    training('a', { task: id.intro })
+    training('b', { task: id.intro })
+    store.delete(id.fnirs)
+    training('c', { task: id.fnirs })
+    const report = planRepair(readRepairInput(db), null, NONE)
+    expect(report.trainings.filter((t) => t.state === 'shared')).toHaveLength(2)
+    expect(report.trainings.find((t) => t.id === 'c')?.state).toBe('in-trash')
+  })
+
+  it('never counts a task a training names as an orphan', () => {
+    const id = ps5210()
+    training('a', { selfStudy: id.study })
+    expect(planRepair(readRepairInput(db), null, NONE).orphans).toEqual([])
+  })
+
+  it('says how the series task would change, as if the markers were on', () => {
+    const id = ps5210()
+    training('intro', { task: id.intro })
+    training('fnirs', { task: id.fnirs })
+    const report = planRepair(readRepairInput(db), null, NONE)
+    // Introduction is done, fNIRS open: the series takes the later date and stays open.
+    expect(report.series).toMatchObject([{ uid: id.series, due: null, newDue: '2026-10-07' }])
   })
 })
 
@@ -197,6 +273,21 @@ describe('applyRepair', () => {
     expect(store.get(id.left0)).toBeNull()
     const after = planRepair(readRepairInput(db), null, NONE)
     expect(after.meetings.filter((m) => m.fix)).toEqual([])
+    expect(applyRepair(db, null, NONE)).toEqual({ marked: 0, changed: 0, trashed: 0 })
+  })
+
+  it('marks the training tasks, locks them, and brings the series in step; a second run changes nothing', () => {
+    const series = store.create({ workspace: 'research', title: 'PS5210', list: 'Training' })
+    const kid = (title: string, due: string, status: 'done' | 'todo'): string =>
+      store.create({ workspace: 'research', title, parentUid: series.uid, due, status }).uid
+    const a = kid('Introduction', '2026-09-30', 'done')
+    const b = kid('fNIRS', '2026-10-07', 'done')
+    training('a', { task: a })
+    training('b', { task: b })
+    const done = applyRepair(db, null, NONE)
+    expect(done.marked).toBe(2)
+    expect(store.get(a)?.ownKind).toBe('training')
+    expect(store.get(series.uid)).toMatchObject({ due: '2026-10-07', status: 'done' })
     expect(applyRepair(db, null, NONE)).toEqual({ marked: 0, changed: 0, trashed: 0 })
   })
 
