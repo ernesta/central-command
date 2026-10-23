@@ -1,4 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
+import { CalendarDays, GraduationCap } from 'lucide-react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
@@ -10,7 +11,7 @@ import { MentionedIn } from '@renderer/entities/MentionedIn'
 import { seriesTarget, sourceTarget } from '@renderer/entities/source-routes'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { registerFlushable } from '@renderer/lib/flush-registry'
-import { EntityLink } from '@renderer/components/EntityLink'
+import { IconButton } from '@renderer/components/IconButton'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { describeRecurrence } from '../shared/recurrence'
@@ -264,7 +265,6 @@ function TaskView({
                 }}
               />
             )}
-            {lock && <LockLine lock={lock} source={source} />}
             <div className={styles.metaRow}>
               {statusLocked ? (
                 <div className={styles.field}>
@@ -325,7 +325,7 @@ function TaskView({
                   />
                 )}
               </div>
-              <div className={[styles.field, styles.grow].join(' ')}>
+              <div className={[styles.field, lock ? '' : styles.grow].join(' ')}>
                 <span className={styles.label}>List</span>
                 {lock ? (
                   <span className={styles.lockedValue}>
@@ -341,6 +341,7 @@ function TaskView({
                   />
                 )}
               </div>
+              {lock && <MadeByField lock={lock} source={source} />}
             </div>
           </section>
 
@@ -454,37 +455,47 @@ function useSessionSource(uid: string, wanted: boolean): SessionSource | null {
   return wanted ? source : null
 }
 
-/** The quiet line on a locked task: who keeps it, with a link to the note. */
-function LockLine({
+/** A locked task's link to what made it: the series, meeting or training, as a field like the others, its name plain and an icon button to open it. */
+function MadeByField({
   lock,
   source
 }: {
   lock: 'session' | 'series'
   source: SessionSource | null
 }): React.JSX.Element {
-  if (!source) return <p className={styles.lockLine}>Kept by its meeting or training.</p>
-  const kind = source.kind === 'meeting' ? 'meeting' : 'training'
-  const { route } = sourceTarget({ kind, workspace: source.workspace, id: source.id })
-  if (lock === 'series') {
-    // The series' own page when there is one, else the meeting or training under it.
+  const navigate = useNavigate()
+  if (!source) {
     return (
-      <p className={styles.lockLine}>
-        Made by the series{' '}
-        <EntityLink
-          kind={kind}
-          to={source.series ? seriesTarget(source.kind, source.workspace, source.series) : route}
-        >
-          {source.series || source.title}
-        </EntityLink>
-      </p>
+      <div className={styles.field}>
+        <span className={styles.label}>Made by</span>
+        <span className={styles.lockedValue}>Its meeting or training</span>
+      </div>
     )
   }
+  const kind = source.kind === 'meeting' ? 'meeting' : 'training'
+  const { route } = sourceTarget({ kind, workspace: source.workspace, id: source.id })
+  // A series task opens the series' own page when there is one, else the meeting or training under it.
+  const series = lock === 'series'
+  const to =
+    series && source.series ? seriesTarget(source.kind, source.workspace, source.series) : route
+  const name = series ? source.series || source.title : source.title
+  const noun = series ? 'series' : kind
+  const Icon = kind === 'meeting' ? CalendarDays : GraduationCap
   return (
-    <p className={styles.lockLine}>
-      Made by the {kind}{' '}
-      <EntityLink kind={kind} to={route}>
-        {source.title}
-      </EntityLink>
-    </p>
+    <div className={styles.field}>
+      <span className={styles.label}>
+        {series ? 'Series' : kind === 'meeting' ? 'Meeting' : 'Training'}
+      </span>
+      <span className={styles.lockedValue}>
+        {name}
+        <IconButton
+          label={`Open ${noun}`}
+          className={styles.openButton}
+          onClick={() => void navigate(to)}
+        >
+          <Icon size={16} strokeWidth={1.75} aria-hidden />
+        </IconButton>
+      </span>
+    </div>
   )
 }
