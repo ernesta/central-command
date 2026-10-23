@@ -4155,3 +4155,9 @@ The user found four behaviours for one job (Skills' menu searched without showin
 - Why "no list name": a subtask has no list of its own (it takes its parent's workspace and sits under its parent), and Home read `tasks.list` as it was, so a subtask's line was empty and Home's "coming up" row then wrote ` · due in 3 days`. Fix at the source: Home's query gives a subtask its parent's list and sublist (`Thesis › Methods`), `collect.ts`.
 - One line-builder, `taskLine(...parts)` in `tasks/shared/query.ts`: joins with " · " and leaves out any empty part, so nothing at all (no dot) shows where there is no list or no date. Used by Home (today and coming-up rows), the task search results, the `@` task picker and a person's open tasks. The tasks table keeps its list column (a subtask's cell stays empty there by design: it sits under its parent) and the landing shows list names only, with no second line, so neither has a dot to lose.
 - Tests: `taskLine` (empty parts), Home collect (a subtask gets its parent's list and sublist; mutation check: dropping the join fails it). Driven in the scratch library, production and dev: a subtask reads "Thesis › Methods · due in 2 days", a task with no list "due in 3 days".
+
+### Step 8: the Next meeting card is removed (23 Oct 2026, item 13)
+
+- The user called the "Next meeting / None booked" card unnecessary: meetings are in Today / Coming up. `NextMeetingCard`, `NextMeeting` and the `HomeView` fields only it used (`nextMeeting`, `openTodos`) are gone; the Home page's right column is the Hours card alone.
+- Its "Open TODOs" count (Research only) went with it. The count is still in the summary (`meetings.openTodos`) and `meetings.next` still feeds the notifications and the widget file, which are untouched.
+- Test: `homeView` has only `tasks` and `comingUp`. Driven in a scratch library, production and dev: the card is gone and nothing else moved.
