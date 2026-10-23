@@ -142,33 +142,7 @@ function ComingUpCard({ view }: { view: HomeView }): React.JSX.Element {
   )
 }
 
-function NextMeetingCard({ view }: { view: HomeView }): React.JSX.Element {
-  const { nextMeeting: meeting, openTodos } = view
-  return (
-    <Panel label="Next meeting">
-      {meeting ? (
-        <>
-          <Link className={styles.row} to={meeting.route}>
-            <span className={styles.grow}>
-              <span className={styles.title}>{meeting.title}</span>
-              <span className={styles.small}>{whenLabel(meeting.inDays, meeting.start)}</span>
-            </span>
-          </Link>
-          {openTodos !== null && (
-            <p className={styles.plain}>
-              <span className={styles.grow}>Open TODOs</span>
-              <span className={styles.chip}>{openTodos}</span>
-            </p>
-          )}
-        </>
-      ) : (
-        <None>None booked.</None>
-      )}
-    </Panel>
-  )
-}
-
-/** What a workspace opens on: today's tasks, what is dated in the next 7 days, the hours so far, the next meeting. */
+/** What a workspace opens on: today's tasks, what is dated in the next 7 days, and the hours so far. */
 export function HomePage({ workspace }: { workspace: HomeWorkspace }): React.JSX.Element | null {
   const summary = useHomeSummary()
   if (!summary) return null
@@ -182,7 +156,6 @@ export function HomePage({ workspace }: { workspace: HomeWorkspace }): React.JSX
         </div>
         <div className={styles.stack}>
           <HomeHours workspace={workspace} />
-          <NextMeetingCard view={view} />
         </div>
       </div>
     </section>

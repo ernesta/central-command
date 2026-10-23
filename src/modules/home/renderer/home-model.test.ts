@@ -72,30 +72,9 @@ describe('homeView', () => {
     expect(homeView(s, 'work').comingUp.map((e) => e.id)).toEqual(['m2'])
   })
 
-  it("takes this workspace's meeting from the list when the next one overall is the other's", () => {
-    const s: HomeSummary = {
-      ...base,
-      meetings: {
-        next: {
-          workspace: 'research',
-          id: '1',
-          series: 'Supervision',
-          date: '2026-10-16',
-          start: '10:00',
-          end: null,
-          route: '/research/meetings/m/1'
-        },
-        openTodos: 3
-      },
-      upcoming: [
-        event('meeting:research:1', 'meeting', '/research/meetings/m/1', 1),
-        event('meeting:work:2', 'meeting', '/work/meetings/m/2', 4)
-      ]
-    }
-    expect(homeView(s, 'research').nextMeeting).toMatchObject({ title: 'Supervision', inDays: 1 })
-    expect(homeView(s, 'work').nextMeeting).toMatchObject({ title: 'meeting:work:2', inDays: 4 })
-    expect(homeView(s, 'research').openTodos).toBe(3)
-    expect(homeView(s, 'work').openTodos).toBeNull()
+  it('has no next-meeting card or TODO count (removed 23 Oct 2026)', () => {
+    const view = homeView(base, 'research')
+    expect(Object.keys(view).sort()).toEqual(['comingUp', 'tasks'])
   })
 })
 
