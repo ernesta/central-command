@@ -176,6 +176,7 @@ function TaskView({
       leave()
       pushUndoWithToast(deletedMessage(title.current, minutes), {
         label: `deletion of “${title.current || 'Untitled'}”`,
+        message: `Brought back “${title.current || 'Untitled'}”.`,
         undo: async () => {
           await window.api.tasks.restore(task.uid)
         }

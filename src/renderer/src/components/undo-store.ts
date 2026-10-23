@@ -17,6 +17,8 @@ import { clearToast, showToast } from './toast-store'
 export interface UndoEntry {
   /** What it was, as a noun phrase: "Undid the {label}." and "Couldn’t undo the {label}" ("status change", "deletion of “X”"). */
   label: string
+  /** The whole sentence for Cmd-Z's toast ("Changed status of “X” back to To do."); without one it is "Undid the {label}.". */
+  message?: string
   undo: () => Promise<void> | void
   /** True once the thing it would change is gone (its page was left): Cmd-Z then skips it instead of acting on nothing. */
   isStale?: () => boolean
@@ -60,7 +62,7 @@ export async function undoLast(): Promise<boolean> {
   clearToast()
   if (await undoEntry(entry)) {
     const { open } = entry
-    showToast(`Undid the ${entry.label}.`, open ? { label: 'Open', run: open } : undefined)
+    showToast(entry.message ?? `Undid the ${entry.label}.`, open ? { label: 'Open', run: open } : undefined)
   }
   return true
 }

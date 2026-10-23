@@ -5,11 +5,12 @@ import { openRoute } from '@renderer/shell/navigate-store'
 import { formatDate } from '@shared/time'
 import { formatDuration } from '@shared/time'
 import { describeRecurrence } from '../shared/recurrence'
+import { PRIORITY_MARKS } from './task-labels'
 import { taskRoute } from './tasks-paths'
 import type { Task, TaskChanges, TaskStatus } from '../shared/types'
 
 /** A task's title for a toast: the first 40 characters, or Untitled. */
-function shortTitle(title: string | undefined): string {
+export function shortTitle(title: string | undefined): string {
   const t = (title ?? '').trim() || 'Untitled'
   return t.length > 40 ? `${t.slice(0, 39)}…` : t
 }
@@ -32,6 +33,45 @@ function changeName(changes: TaskChanges): string {
     (Object.keys(changes) as (keyof TaskChanges)[]).map((k) => FIELD_NAMES[k] ?? 'change')
   )
   return names.size === 1 ? [...names][0] : 'change'
+}
+
+/** Cmd-Z's toast for a task field put back: "Changed due date of “X” back to Oct 30, 2026." (an empty value reads "no date", "no list", …). */
+export function changedBackMessage(
+  title: string | undefined,
+  what: string,
+  value: string | null | undefined,
+  empty: string
+): string {
+  return `Changed ${what} of “${shortTitle(title)}” back to ${value ? value : empty}.`
+}
+
+/** The sentence for putting `before` back, when the change touched one thing; otherwise a general one. */
+function undoMessage(task: Task, changes: TaskChanges, before: TaskChanges): string {
+  const keys = Object.keys(changes) as (keyof TaskChanges)[]
+  const only = (...ks: (keyof TaskChanges)[]): boolean => keys.every((k) => ks.includes(k))
+  const b = before as Partial<Task>
+  if (only('due'))
+    return changedBackMessage(task.title, 'due date', b.due ? formatDate(b.due) : null, 'no date')
+  if (only('list', 'sublist'))
+    return changedBackMessage(
+      task.title,
+      'list',
+      [b.list, b.sublist].filter(Boolean).join(' / '),
+      'no list'
+    )
+  if (only('priority'))
+    return changedBackMessage(task.title, 'priority', b.priority && PRIORITY_MARKS[b.priority], '')
+  if (only('title')) return changedBackMessage(task.title, 'title', b.title, 'no title')
+  if (only('tags')) return changedBackMessage(task.title, 'tags', b.tags?.join(', '), 'no tags')
+  if (only('recurrence'))
+    return changedBackMessage(
+      task.title,
+      'repeat',
+      b.recurrence ? describeRecurrence(b.recurrence).toLowerCase() : null,
+      'no repeat'
+    )
+  if (only('description')) return `Changed the notes of “${shortTitle(task.title)}” back.`
+  return `Changed “${shortTitle(task.title)}” back.`
 }
 
 /** The toast after a delete; the time that left Hours with the task is said, since Undo brings it back. */
@@ -77,6 +117,7 @@ export async function setTaskStatus(
     if (before && before.status !== status) {
       pushUndo({
         label: `status change of “${shortTitle(before.title)}” from ${STATUS_LABELS[before.status]} to ${STATUS_LABELS[status]}`,
+        message: changedBackMessage(before.title, 'status', STATUS_LABELS[before.status], ''),
         open: () => openRoute(taskRoute(before.workspace, before.uid)),
         undo: async () => {
           await window.api.tasks.setStatus(task.uid, before.status)
@@ -122,6 +163,7 @@ export async function updateTaskUndoable(
   await window.api.tasks.update(task.uid, changes)
   pushUndo({
     label: `${named} on “${shortTitle(task.title)}”`,
+    message: undoMessage(task, changes, before),
     open: () => openRoute(taskRoute(task.workspace, task.uid)),
     undo: async () => {
       await window.api.tasks.update(task.uid, before)

@@ -401,6 +401,7 @@ async function removeTask(task: Task): Promise<void> {
     const minutes = await window.api.tasks.delete(task.uid)
     pushUndoWithToast(deletedMessage(task.title, minutes), {
       label: `deletion of “${task.title || 'Untitled'}”`,
+      message: `Brought back “${task.title || 'Untitled'}”.`,
       undo: async () => {
         await window.api.tasks.restore(task.uid)
       }

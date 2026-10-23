@@ -3,7 +3,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { clearUndoStack, undoLast } from '@renderer/components/undo-store'
 import { clearToast, currentToast } from '@renderer/components/toast-store'
 import { setNavigator } from '@renderer/shell/navigate-store'
-import { setTaskStatus } from './task-actions'
+import { setTaskStatus, updateTaskUndoable } from './task-actions'
+import type { Task } from '../shared/types'
+
+const asTask = (t: Record<string, unknown>): Task => t as unknown as Task
 
 function stubApi(next: unknown): void {
   vi.stubGlobal('window', {
@@ -79,7 +82,7 @@ describe('Undo of a status change', () => {
     await setTaskStatus({ uid: 'a' }, 'done')
     await undoLast()
     const toast = currentToast()
-    expect(toast?.text).toBe('Undid the status change of “Write intro” from To do to Done.')
+    expect(toast?.text).toBe('Changed status of “Write intro” back to To do.')
     expect(toast?.action?.label).toBe('Open')
     toast?.action?.run()
     expect(go).toHaveBeenCalledWith('/work/tasks/t/a')
@@ -90,5 +93,56 @@ describe('Undo of a status change', () => {
     await setTaskStatus({ uid: 'a' }, 'done')
     await undoLast()
     expect(update).not.toHaveBeenCalled()
+  })
+})
+
+describe('Cmd-Z messages for other task edits', () => {
+  afterEach(() => clearUndoStack())
+  const task = { uid: 'a', title: 'Write intro', workspace: 'work' }
+
+  function stubUpdate(): void {
+    vi.stubGlobal('window', {
+      ...globalThis.window,
+      api: { tasks: { update: vi.fn(async () => ({})) } }
+    })
+  }
+
+  it('names the due date put back, or "no date"', async () => {
+    stubUpdate()
+    await updateTaskUndoable(
+      asTask({ ...task, due: '2026-10-30' }),
+      { due: '2026-11-02' },
+      'task change'
+    )
+    await undoLast()
+    expect(currentToast()?.text).toBe('Changed due date of “Write intro” back to Oct 30, 2026.')
+    await updateTaskUndoable(asTask({ ...task, due: null }), { due: '2026-11-02' }, 'task change')
+    await undoLast()
+    expect(currentToast()?.text).toBe('Changed due date of “Write intro” back to no date.')
+  })
+
+  it('names the list and the priority put back', async () => {
+    stubUpdate()
+    await updateTaskUndoable(
+      asTask({ ...task, list: 'Training', sublist: null }),
+      { list: 'Work' },
+      'task change'
+    )
+    await undoLast()
+    expect(currentToast()?.text).toBe('Changed list of “Write intro” back to Training.')
+    await updateTaskUndoable(asTask({ ...task, priority: 'normal' }), { priority: 'high' }, 'x')
+    await undoLast()
+    expect(currentToast()?.text).toBe('Changed priority of “Write intro” back to P2.')
+  })
+
+  it('ellipsises a very long title', async () => {
+    stubUpdate()
+    await updateTaskUndoable(
+      asTask({ ...task, title: 'A'.repeat(80), priority: 'low' }),
+      { priority: 'high' },
+      'x'
+    )
+    await undoLast()
+    expect(currentToast()?.text).toBe(`Changed priority of “${'A'.repeat(39)}…” back to P3.`)
   })
 })
