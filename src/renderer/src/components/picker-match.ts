@@ -95,10 +95,13 @@ export function typeAhead(options: readonly PickerOption[], typed: string): numb
   return options.findIndex((o) => fold(o.label).startsWith(text))
 }
 
-/** Whether the text is exactly an option's label (so there is nothing new to add). */
+/**
+ * Whether the text is exactly an option's label (so there is nothing new to add). A nested option is a sub-item of the
+ * one above it, never the same value as the text, so it does not count.
+ */
 export function hasExactMatch(options: readonly PickerOption[], text: string): boolean {
   const wanted = fold(text.trim())
-  return options.some((o) => fold(o.label.trim()) === wanted)
+  return options.some((o) => !o.nested && fold(o.label.trim()) === wanted)
 }
 
 /**
@@ -116,7 +119,7 @@ export function defaultActive(
     return at
   }
   const wanted = fold(text.trim())
-  const exact = matches.findIndex((o) => fold(o.label.trim()) === wanted)
+  const exact = matches.findIndex((o) => !o.nested && fold(o.label.trim()) === wanted)
   if (exact >= 0) return exact
   if (options.addRow) return matches.length === 1 ? 0 : matches.length
   return matches.length > 0 ? 0 : -1

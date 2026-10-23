@@ -398,6 +398,10 @@ export interface PickerProps<T extends string> {
   className?: string
   disabled?: boolean
   title?: string
+  /** The narrowest the open list goes, when the control is small and the options are long. */
+  listMinWidth?: number
+  /** The list opened or closed (a field that keeps a draft while it is open clears it on close). */
+  onOpenChange?: (open: boolean) => void
 }
 
 /**
@@ -419,15 +423,21 @@ export function Picker<T extends string>({
   plain,
   className,
   disabled,
-  title
+  title,
+  listMinWidth,
+  onOpenChange
 }: PickerProps<T>): React.JSX.Element {
   const listId = useId()
-  const [open, setOpen] = useState(false)
+  const [open, setOpenState] = useState(false)
   const [typed, setTyped] = useState('')
   const buttonRef = useRef<HTMLButtonElement>(null)
   const selected = options.find((o) => o.value === value)
   const shown = text ?? selected?.label ?? ''
 
+  const setOpen = (next: boolean): void => {
+    setOpenState(next)
+    onOpenChange?.(next)
+  }
   const close = (reason: PickerCloseReason): void => {
     setOpen(false)
     setTyped('')
@@ -451,7 +461,7 @@ export function Picker<T extends string>({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={open ? listId : undefined}
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => setOpen(!open)}
         onKeyDown={(event) => {
           if (open) return
           if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
@@ -497,6 +507,7 @@ export function Picker<T extends string>({
           alwaysSearch={alwaysSearch || add !== undefined}
           add={add}
           initialText={typed}
+          minWidth={listMinWidth}
         />
       )}
     </div>

@@ -96,6 +96,9 @@ describe('hasExactMatch', () => {
     expect(hasExactMatch(list, ' summer school ')).toBe(true)
     expect(hasExactMatch(list, 'Summer')).toBe(false)
   })
+  it('does not count a nested option, which is a sub-item and not the same value', () => {
+    expect(hasExactMatch([o('Methods', { nested: true })], 'methods')).toBe(false)
+  })
 })
 
 describe('defaultActive', () => {
