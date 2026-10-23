@@ -77,6 +77,8 @@ grid for a note and its panels, used by all five pages) and `NoteOutline` moved 
 
 **Polish round step 12, the `new:` modifier (23 Oct 2026): built, driven, pushed** (item 1; `docs/DECISIONS.md`, "Polish round"). `new:note|task|meeting|training|reading-list` + Enter makes the empty thing and opens it. This was the last step; the round is installed (below).
 
+**Polish round 2 (23 Oct 2026): planned, not started** (`docs/POLISH_ROUND_2_PLAN.md`). The user's first look at the installed round: Work's year choice is always the contract, the Year list too wide, `new:` carries fields, old session tasks marked and locked (repair script, user authorised), series tasks take the latest subtask date and close with their subtasks, Introduction's missing time, tags off their own line, a lighter toast, a clearer Cmd-Z message. One job, one prompt.
+
 **Undo, one rule and third round (19 Oct 2026): built, pushed, installed** (`docs/DECISIONS.md`, "One rule for undo", "Undo, third round"). The rule is in `undo-store.ts`; Cmd-Z says what it undid; TODO ticks, Add time, timer start, Hours settings, row rename, "me" and the meeting/training/note fields are undoable. To check by hand: undoing a timer's start change in the popover (the restore itself is driven), and the Readings Dismiss undo.
 
 **Undo, second round (19 Oct 2026): built, pushed, installed** (`docs/DECISIONS.md`, "Undo, second round"). Timer Discard and Archive a person (toast + Cmd-Z); chips, contract Save, Time off edit, Hours typed time and workspace moves (Cmd-Z only). Dismissing a Readings rename suggestion also undoes with Cmd-Z. To check by hand: the Dismiss undo, the contract Save, Time off edit and Hours time undos.
