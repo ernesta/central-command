@@ -68,3 +68,7 @@
   background: var(--hover-tint);
   color: var(--ink);
 }
+
+.type {
+  min-width: 220px;
+}

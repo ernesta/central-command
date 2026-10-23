@@ -1,60 +1,29 @@
-import type { SelectHTMLAttributes } from 'react'
-import styles from './Select.module.css'
+import { Picker, type PickerOption } from './Picker'
 
-export interface SelectOption<T extends string> {
-  value: T
-  label: string
-  /** Options with the same group are listed together under its name. */
-  group?: string
-}
+/** An option of a select; a `description` shows as a quiet second line in the open list. */
+export type SelectOption<T extends string> = PickerOption<T>
 
-interface SelectProps<T extends string> extends Omit<
-  SelectHTMLAttributes<HTMLSelectElement>,
-  'value' | 'onChange'
-> {
+interface SelectProps<T extends string> {
   value: T
   options: readonly SelectOption<T>[]
   onChange: (value: T) => void
   /** Required: selects usually have no visible label of their own. */
   label: string
   compact?: boolean
+  className?: string
+  disabled?: boolean
+  id?: string
+  title?: string
+  /** The plural noun for the search placeholder: "types" gives "Search types". */
+  noun?: string
+  /** Always search, however few the options (a list of more than seven searches by itself). */
+  search?: boolean
 }
 
-export function Select<T extends string>({
-  value,
-  options,
-  onChange,
-  label,
-  className,
-  compact,
-  ...rest
-}: SelectProps<T>): React.JSX.Element {
-  return (
-    <select
-      aria-label={label}
-      className={[styles.select, compact && styles.small, className].filter(Boolean).join(' ')}
-      value={value}
-      onChange={(event) => onChange(event.target.value as T)}
-      {...rest}
-    >
-      {options
-        .filter((o) => !o.group)
-        .map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      {[...new Set(options.flatMap((o) => (o.group ? [o.group] : [])))].map((group) => (
-        <optgroup key={group} label={group}>
-          {options
-            .filter((o) => o.group === group)
-            .map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-        </optgroup>
-      ))}
-    </select>
-  )
+/**
+ * Choose one of a list. A thin wrapper over `Picker`, which every list in the app shares: a list of more than seven
+ * options (or one asked to `search`) opens with a search field, a shorter one is a plain list you can type a letter into.
+ */
+export function Select<T extends string>({ search, ...rest }: SelectProps<T>): React.JSX.Element {
+  return <Picker<T> {...rest} alwaysSearch={search} />
 }

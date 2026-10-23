@@ -5,7 +5,7 @@ import { endFollowingStart } from '@renderer/components/time-input'
 import { Segmented } from '@renderer/components/Segmented'
 import { PeopleField } from '@renderer/components/PeopleField'
 import { ComboField } from '@renderer/components/ComboField'
-import { DescribedSelect } from '@renderer/components/DescribedSelect'
+import { Select } from '@renderer/components/Select'
 import { SkillsField } from '@renderer/components/SkillsField'
 import { orderNames, type Person } from '@shared/people'
 import { durationMinutes, formatDuration } from '@shared/time'
@@ -145,9 +145,12 @@ export function TrainingMetaFields({
           <label className={styles.label} htmlFor="training-type">
             Type
           </label>
-          <DescribedSelect
+          <Select
             id="training-type"
             label="Type"
+            noun="types"
+            search
+            className={styles.type}
             value={meta.type ?? ''}
             options={typeOptions}
             onChange={(type) => onChange({ type: type || null })}
