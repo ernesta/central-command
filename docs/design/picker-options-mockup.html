@@ -1,0 +1,282 @@
+<title>Picker Options</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one column per option, each showing the same three real pickers, so the options compare row against row. */
+:root {
+  --bg: #edeff2; --panel: #e1e5ea; --surface: #ffffff; --text: #1b222b; --text-2: #3a4652; --muted: #5c6672;
+  --border: #d3d8de; --border-strong: #c3cad2; --hover: #f4f6f8; --accent: #35577a; --selected: #dce6ee;
+  --good: #2f6b4a; --shadow: 0 8px 24px rgba(27,34,43,.18);
+  --body: 'IBM Plex Sans', system-ui, sans-serif; --display: 'Newsreader', Georgia, serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #14181d; --panel: #1b2128; --surface: #1f262e; --text: #e6eaee; --text-2: #c2cad2; --muted: #98a3af;
+  --border: #2f3843; --border-strong: #3d4855; --hover: #262e37; --accent: #86aad0; --selected: #2a3b4d;
+  --good: #7fc59f; --shadow: 0 8px 24px rgba(0,0,0,.55); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #14181d; --panel: #1b2128; --surface: #1f262e; --text: #e6eaee; --text-2: #c2cad2; --muted: #98a3af;
+  --border: #2f3843; --border-strong: #3d4855; --hover: #262e37; --accent: #86aad0; --selected: #2a3b4d;
+  --good: #7fc59f; --shadow: 0 8px 24px rgba(0,0,0,.55); color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font: 14px/1.5 var(--body);
+  padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main { max-width: 1180px; margin: 0 auto; display: grid; gap: 28px; }
+h1 { font: 500 30px/1.15 var(--display); margin: 0; text-wrap: balance; }
+h2 { font: 500 21px/1.2 var(--display); margin: 0 0 4px; }
+h3 { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; font-weight: 600; }
+p { margin: 0; max-width: 70ch; color: var(--text-2); }
+.lead { display: grid; gap: 10px; }
+.found { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.found div { background: var(--panel); border-radius: 12px; padding: 12px 14px; }
+.found b { display: block; margin-bottom: 2px; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 16px; align-items: start; }
+.col { background: var(--panel); border-radius: 14px; padding: 18px; display: grid; gap: 16px; min-width: 0; }
+.col .tag { color: var(--good); font-weight: 600; font-size: 12px; }
+.demo { background: var(--bg); border-radius: 10px; padding: 12px 14px 14px; min-height: 92px; position: relative; }
+.demo.tall { min-height: 150px; }
+.counts { font-size: 12px; color: var(--muted); margin-top: 4px; }
+ul.steps { margin: 0; padding-left: 18px; color: var(--text-2); display: grid; gap: 2px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.wrap { overflow-x: auto; background: var(--surface); border-radius: 12px; }
+.rec { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 12px; padding: 16px 18px; display: grid; gap: 8px; }
+.rec ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; color: var(--text-2); }
+a { color: var(--accent); }
+.sources { font-size: 12px; color: var(--muted); }
+
+/* the pickers (the app's tokens, simplified) */
+.pk { position: relative; display: inline-block; }
+.trig, .fieldin { display: inline-flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 230px;
+  padding: 7px 12px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface);
+  font: inherit; color: var(--text); cursor: pointer; text-align: left; }
+.trig:focus-visible, .fieldin:focus, .chipadd:focus-visible, .chipin:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.fieldin { cursor: text; width: 100%; }
+.fieldin::placeholder { color: var(--text); opacity: 1; }
+.chev { width: 12px; height: 12px; color: var(--muted); flex: none; }
+.pop { position: absolute; z-index: 5; top: calc(100% + 4px); left: 0; min-width: 100%; width: max-content; max-width: 330px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); padding: 6px; }
+.pop[hidden] { display: none; }
+.sbox { display: flex; align-items: center; gap: 8px; padding: 6px 8px 8px; margin-bottom: 4px; border-bottom: 1px solid var(--border); color: var(--muted); }
+.sbox input { flex: 1; border: 0; background: transparent; color: var(--text); font: inherit; outline: 0; min-width: 0; }
+.sbox input:focus-visible { outline: 0; }
+.list { max-height: 232px; overflow-y: auto; scroll-padding: 4px; }
+.grp { padding: 8px 10px 3px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.opt { padding: 6px 10px; border-radius: 8px; cursor: default; display: grid; }
+.opt small { color: var(--muted); font-size: 12.5px; }
+.opt[data-on="true"] { background: var(--hover); }
+.opt[aria-selected="true"] { background: var(--selected); }
+.opt mark { background: transparent; color: var(--accent); font-weight: 600; }
+.none { padding: 8px 10px; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0; padding: 0; list-style: none; position: relative; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 6px 3px 10px; border-radius: 999px; background: var(--panel); border: 1px solid var(--border); font-size: 13px; }
+.chip button { border: 0; background: transparent; color: var(--muted); cursor: pointer; padding: 0 2px; font-size: 14px; line-height: 1; }
+.chipadd { padding: 3px 10px; border-radius: 999px; border: 1px dashed var(--border-strong); background: transparent; color: var(--muted); font: inherit; cursor: pointer; }
+.chipadd:hover { background: var(--hover); }
+.chipin { padding: 3px 10px; border-radius: 999px; border: 1px solid var(--accent); background: var(--surface); color: var(--text); font: inherit; width: 190px; }
+.chipwrap { position: relative; display: inline-block; }
+kbd { font: 12px var(--body); border: 1px solid var(--border-strong); border-radius: 5px; padding: 0 5px; background: var(--surface); }
+</style>
+
+<main>
+  <header class="lead">
+    <h1>One way to pick from a list</h1>
+    <p>Two ways to make every picker in the app type to search, shown on the three kinds you have today. Each demo works: click it, type, use the arrow keys and Enter.</p>
+  </header>
+
+  <section class="found">
+    <div><b>Today there are four behaviours</b>Skills searches without showing a field. People, Group and the timer show one. Training type and about 30 other selects can't search. Some are native, some custom.</div>
+    <div><b>Same job, different cost</b>Picking a type takes click, scan, click. Picking a skill takes click, then type if you happen to know it works.</div>
+    <div><b>Short lists don't need search</b>Year (3 options), Workspace (2) and the filter selects would only gain clutter from a search box.</div>
+  </section>
+
+  <section class="cols">
+    <article class="col" id="colA">
+      <div><h2>A. Search box in the list</h2><span class="tag">Recommended</span></div>
+      <p>Clicking opens the list with a search field at the top, already focused. The closed control stays as it is.</p>
+      <div><h3>Type with help text (11 options)</h3><div class="demo tall" id="a1"></div></div>
+      <div><h3>Skills (multi, 3 max)</h3><div class="demo tall" id="a2"></div></div>
+      <div><h3>Year (3 options)</h3><div class="demo" id="a3"></div></div>
+      <ul class="steps"><li>Open, type, <kbd>Enter</kbd>: 2 key presses after 1 click.</li><li>The search field says it is searchable, so nobody has to guess.</li></ul>
+    </article>
+
+    <article class="col" id="colB">
+      <div><h2>B. The control becomes the field</h2></div>
+      <p>Clicking turns the control itself into a text field and the list hangs under it. No second box; the current value shows as a hint until you type.</p>
+      <div><h3>Type with help text (11 options)</h3><div class="demo tall" id="b1"></div></div>
+      <div><h3>Skills (multi, 3 max)</h3><div class="demo tall" id="b2"></div></div>
+      <div><h3>Year (3 options)</h3><div class="demo" id="b3"></div></div>
+      <ul class="steps"><li>Same keys as A, one fewer box on screen.</li><li>A closed control and a text field look alike, so the search is less obvious until it opens.</li></ul>
+    </article>
+  </section>
+
+  <section class="wrap">
+    <table>
+      <thead><tr><th>Question</th><th>A. Search box in the list</th><th>B. Control becomes the field</th></tr></thead>
+      <tbody>
+        <tr><td>Clicks and keys to pick a known option</td><td>1 click, a few letters, Enter</td><td>1 click, a few letters, Enter</td></tr>
+        <tr><td>Obvious that you can type</td><td>Yes: a "Search" field with an icon</td><td>Partly: a blinking caret and a changed placeholder</td></tr>
+        <tr><td>Matches the people picker, Group and the timer</td><td>Yes, already how they look</td><td>No, those would change</td></tr>
+        <tr><td>Works with "+ add" chips</td><td>Yes: the same popover under the chip</td><td>Yes: the chip turns into an input</td></tr>
+        <tr><td>Fits the Mac habit of typing on a closed pop-up</td><td>Typing on the focused closed control opens the list with your letters</td><td>Same</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="rec">
+    <h2>What I would build under either option</h2>
+    <ul>
+      <li><b>One shared picker</b> replaces <code>DescribedSelect</code>, <code>SkillsField</code>'s menu, the people menu and Group's menu. Same open, filter, keys, highlight and empty text everywhere.</li>
+      <li><b>Search appears only above 7 options.</b> Short lists open as a plain list, still with arrow keys and type-ahead. Year, Workspace and the filter rows stay as quick as they are.</li>
+      <li><b>Matching letters are highlighted</b>, and each option keeps its help text and group heading.</li>
+      <li><b>Keys:</b> <kbd>↓</kbd><kbd>↑</kbd> move, <kbd>Enter</kbd> or <kbd>Tab</kbd> picks, <kbd>Esc</kbd> closes only the list. Typing on a focused closed control opens it with your letters already entered.</li>
+      <li><b>One text for the field:</b> "Search" plus what is being picked, e.g. "Search types". An unmatched search says "No match".</li>
+      <li><b>Creating</b> ("Create …") appears in the list only where a new value is allowed: people, groups, tasks.</li>
+    </ul>
+    <p class="counts">Choose A or B and I will list which of the ~30 selects get the search and which stay short, before changing anything.</p>
+  </section>
+
+  <p class="sources">Guidance read: <a href="https://design.pega.com/components/form-controls/select-combobox/">Pega on select and combobox</a> (use a combobox from 3 options up or when options are dynamic), <a href="https://www.sap.com/design-system/fiori-design-web/v1-148/foundations/best-practices/ui-elements/which-selection-control-to-use">SAP Fiori on which selection control to use</a>, <a href="https://www.saasui.design/blog/saas-dropdown-select-menu-ux-patterns">SaaS dropdown patterns</a>. My 7-option cutoff is a common rule of thumb, not from those pages.</p>
+</main>
+
+<script>
+const TYPES = [
+  { g: '', n: 'No type yet' },
+  { g: 'Courses', n: 'Research methods', d: 'Methods, statistics, research design, data and software' },
+  { g: 'Courses', n: 'Academic skills', d: 'Writing, presenting, publishing, CV' },
+  { g: 'Courses', n: 'General skills', d: 'Skills useful beyond research: wellbeing, leadership, careers' },
+  { g: 'Courses', n: 'Language', d: 'Learning a language' },
+  { g: 'Conferences', n: 'Attending', d: 'You went as a visitor' },
+  { g: 'Conferences', n: 'Presenting', d: 'A talk, poster or paper' },
+  { g: 'Conferences', n: 'Organising', d: 'You helped run it' },
+  { g: 'Work', n: 'Fieldwork', d: 'Collecting data in the field' },
+  { g: 'Work', n: 'Placement', d: 'A placement or a project done as work' }
+];
+const SKILLS = [
+  ['Research methods', 'Quantitative skills (RM)'], ['Research methods', 'Qualitative skills (RM)'],
+  ['General skills', 'Quantitative skills (GS)'], ['General skills', 'Qualitative skills (GS)'],
+  ['General skills', 'Data management and analysis (GS)'], ['General skills', 'Digital and bibliographic skills (GS)'],
+  ['General skills', 'Ethical and legal issues (GS)'], ['General skills', 'Impact of research (GS)'],
+  ['General skills', 'Language skills (GS)'], ['General skills', 'Project management (GS)'],
+  ['Subject skills', 'Quantitative skills (SS)'], ['Subject skills', 'Literature review (SS)']
+].map(([g, n]) => ({ g, n }));
+const YEARS = ['2025–26', '2026–27', '2027–28'].map((n) => ({ g: '', n }));
+const CHEV = '<svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m2 4 4 4 4-4"/></svg>';
+const SEARCH = '<svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg>';
+const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+const hl = (s, q) => { if (!q) return esc(s); const i = s.toLowerCase().indexOf(q.toLowerCase()); return i < 0 ? esc(s) : esc(s.slice(0, i)) + '<mark>' + esc(s.slice(i, i + q.length)) + '</mark>' + esc(s.slice(i + q.length)); };
+
+/* A list engine shared by every demo: filtering, groups, active row, keys. */
+function List(el, items, o) {
+  let q = '', on = 0, view = [];
+  const render = () => {
+    view = items.filter((i) => !o.taken?.().includes(i.n) && (!q || (i.n + ' ' + (i.d || '')).toLowerCase().includes(q.toLowerCase())));
+    on = Math.min(on, Math.max(0, view.length - 1));
+    let last = null, html = '';
+    view.forEach((i, k) => {
+      if (i.g && i.g !== last) html += '<div class="grp">' + esc(i.g) + '</div>';
+      last = i.g;
+      html += '<div class="opt" role="option" data-k="' + k + '" data-on="' + (k === on) + '" aria-selected="' + (i.n === o.value?.()) + '"><span>' + hl(i.n, q) + '</span>' + (i.d ? '<small>' + esc(i.d) + '</small>' : '') + '</div>';
+    });
+    el.innerHTML = html || '<div class="none">No match</div>';
+    el.querySelector('[data-on="true"]')?.scrollIntoView({ block: 'nearest' });
+  };
+  el.addEventListener('mousedown', (e) => e.preventDefault());
+  el.addEventListener('mousemove', (e) => { const r = e.target.closest('.opt'); if (r && +r.dataset.k !== on) { on = +r.dataset.k; render(); } });
+  el.addEventListener('click', (e) => { const r = e.target.closest('.opt'); if (r) o.pick(view[+r.dataset.k]); });
+  return {
+    set(v) { q = v; on = 0; render(); },
+    render,
+    key(e) {
+      if (e.key === 'ArrowDown') { on = Math.min(view.length - 1, on + 1); render(); return true; }
+      if (e.key === 'ArrowUp') { on = Math.max(0, on - 1); render(); return true; }
+      if ((e.key === 'Enter' || e.key === 'Tab') && view[on]) { if (e.key === 'Enter') e.preventDefault(); o.pick(view[on]); return true; }
+    }
+  };
+}
+const outside = (root, close) => document.addEventListener('mousedown', (e) => { if (!root.contains(e.target)) close(); });
+
+/* Option A, single */
+function singleA(host, items, value, label, searchMin) {
+  const root = document.createElement('div'); root.className = 'pk';
+  const search = items.length > searchMin;
+  root.innerHTML = '<button class="trig" type="button" aria-haspopup="listbox"><span></span>' + CHEV + '</button><div class="pop" hidden>' +
+    (search ? '<label class="sbox">' + SEARCH + '<input type="text" placeholder="Search ' + label + '" aria-label="Search ' + label + '" autocomplete="off"></label>' : '') + '<div class="list" role="listbox" tabindex="-1"></div></div>';
+  host.append(root);
+  const trig = root.querySelector('.trig'), pop = root.querySelector('.pop'), inp = root.querySelector('input'), box = root.querySelector('.list');
+  let v = value;
+  const paint = () => (trig.firstElementChild.textContent = v);
+  const L = List(box, items, { value: () => v, pick: (i) => { v = i.n; paint(); close(); trig.focus(); } });
+  const open = (seed = '') => { pop.hidden = false; if (inp) inp.value = seed; L.set(seed); (inp || box).focus(); };
+  const close = () => { pop.hidden = true; };
+  trig.onclick = () => (pop.hidden ? open() : close());
+  trig.onkeydown = (e) => { if (pop.hidden && e.key.length === 1 && search && !e.metaKey && !e.ctrlKey) { e.preventDefault(); open(e.key); } if (pop.hidden && (e.key === 'ArrowDown')) { e.preventDefault(); open(); } };
+  const keys = (e) => { if (e.key === 'Escape') { e.stopPropagation(); close(); trig.focus(); } else if (L.key(e)) e.preventDefault(); };
+  (inp || box).addEventListener('keydown', keys);
+  inp?.addEventListener('input', () => L.set(inp.value));
+  box.addEventListener('keydown', (e) => { if (!inp && e.key.length === 1) { /* type-ahead on short lists */ const i = items.findIndex((x) => x.n.toLowerCase().startsWith(e.key.toLowerCase())); if (i >= 0) { L.set(''); } } });
+  outside(root, close); paint();
+}
+/* Option B, single */
+function singleB(host, items, value, label, searchMin) {
+  const root = document.createElement('div'); root.className = 'pk';
+  const search = items.length > searchMin;
+  root.innerHTML = '<div style="position:relative"><input class="fieldin" type="text" role="combobox" aria-label="' + label + '" autocomplete="off" ' + (search ? '' : 'readonly') + '><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none">' + CHEV + '</span></div><div class="pop" hidden><div class="list" role="listbox"></div></div>';
+  host.append(root);
+  const inp = root.querySelector('input'), pop = root.querySelector('.pop'), box = root.querySelector('.list');
+  let v = value; inp.placeholder = v; inp.value = '';
+  const L = List(box, items, { value: () => v, pick: (i) => { v = i.n; inp.value = ''; inp.placeholder = v; close(); } });
+  const open = () => { pop.hidden = false; L.set(inp.value); };
+  const close = () => { pop.hidden = true; inp.value = ''; };
+  inp.addEventListener('focus', open); inp.addEventListener('click', () => pop.hidden && open());
+  inp.addEventListener('input', () => L.set(inp.value));
+  inp.addEventListener('keydown', (e) => { if (e.key === 'Escape') { close(); inp.blur(); } else if (pop.hidden && e.key === 'ArrowDown') open(); else if (L.key(e)) e.preventDefault(); });
+  outside(root, close);
+}
+/* Skills (multi) */
+function chipsA(host, items, start, max) {
+  const wrap = document.createElement('div'); host.append(wrap);
+  wrap.innerHTML = '<ul class="chips"></ul>'; const ul = wrap.firstChild;
+  let got = start.slice();
+  const draw = () => {
+    ul.innerHTML = got.map((n) => '<li class="chip">' + esc(n) + '<button type="button" aria-label="Remove ' + esc(n) + '" data-n="' + esc(n) + '">×</button></li>').join('') +
+      (got.length < max ? '<li class="chipwrap"><button class="chipadd" type="button">+ add</button><div class="pop" hidden><label class="sbox">' + SEARCH + '<input type="text" placeholder="Search skills" aria-label="Search skills" autocomplete="off"></label><div class="list" role="listbox"></div></div></li>' : '');
+    ul.querySelectorAll('.chip button').forEach((b) => (b.onclick = () => { got = got.filter((n) => n !== b.dataset.n); draw(); }));
+    const add = ul.querySelector('.chipadd'); if (!add) return;
+    const pop = ul.querySelector('.pop'), inp = ul.querySelector('input'), box = ul.querySelector('.list');
+    const L = List(box, items, { taken: () => got, pick: (i) => { got = [...got, i.n]; draw(); } });
+    const close = () => (pop.hidden = true);
+    add.onclick = () => { if (pop.hidden) { pop.hidden = false; inp.value = ''; L.set(''); inp.focus(); } else close(); };
+    inp.oninput = () => L.set(inp.value);
+    inp.onkeydown = (e) => { if (e.key === 'Escape') { e.stopPropagation(); close(); add.focus(); } else if (e.key === 'Backspace' && !inp.value) { /* nothing */ } else if (L.key(e)) e.preventDefault(); };
+    document.addEventListener('mousedown', function f(e) { if (!document.contains(pop)) return document.removeEventListener('mousedown', f); if (!pop.parentElement.contains(e.target)) close(); });
+  };
+  draw();
+}
+function chipsB(host, items, start, max) {
+  const wrap = document.createElement('div'); host.append(wrap);
+  wrap.innerHTML = '<ul class="chips"></ul>'; const ul = wrap.firstChild;
+  let got = start.slice(), editing = false;
+  const draw = () => {
+    ul.innerHTML = got.map((n) => '<li class="chip">' + esc(n) + '<button type="button" aria-label="Remove ' + esc(n) + '" data-n="' + esc(n) + '">×</button></li>').join('') +
+      (got.length < max ? '<li class="chipwrap">' + (editing ? '<input class="chipin" type="text" placeholder="Type a skill" aria-label="Skill" autocomplete="off"><div class="pop"><div class="list" role="listbox"></div></div>' : '<button class="chipadd" type="button">+ add</button>') + '</li>' : '');
+    ul.querySelectorAll('.chip button').forEach((b) => (b.onclick = () => { got = got.filter((n) => n !== b.dataset.n); draw(); }));
+    const add = ul.querySelector('.chipadd');
+    if (add) add.onclick = () => { editing = true; draw(); };
+    const inp = ul.querySelector('.chipin'); if (!inp) return;
+    const box = ul.querySelector('.list');
+    const L = List(box, items, { taken: () => got, pick: (i) => { got = [...got, i.n]; editing = false; draw(); } });
+    inp.focus(); L.set('');
+    inp.oninput = () => L.set(inp.value);
+    inp.onblur = () => setTimeout(() => { if (editing) { editing = false; draw(); } }, 120);
+    inp.onkeydown = (e) => { if (e.key === 'Escape') { e.stopPropagation(); editing = false; draw(); } else if (L.key(e)) e.preventDefault(); };
+  };
+  draw();
+}
+const MIN = 7;
+singleA(document.getElementById('a1'), TYPES, 'Research methods', 'types', MIN);
+chipsA(document.getElementById('a2'), SKILLS, ['Quantitative skills (SS)'], 3);
+singleA(document.getElementById('a3'), YEARS, '2026–27', 'years', MIN);
+singleB(document.getElementById('b1'), TYPES, 'Research methods', 'Type', MIN);
+chipsB(document.getElementById('b2'), SKILLS, ['Quantitative skills (SS)'], 3);
+singleB(document.getElementById('b3'), YEARS, '2026–27', 'Year', MIN);
+</script>
