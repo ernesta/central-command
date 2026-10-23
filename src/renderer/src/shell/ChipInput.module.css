@@ -6,9 +6,17 @@
   padding: 4px 12px;
   border-bottom: 1px solid var(--border-soft);
 }
-.field:has(.input:focus-visible) {
-  outline: 2px solid var(--accent);
-  outline-offset: -2px;
+/* The ring is drawn 4px inside the field: the window's rounded corners and its overflow clip anything on the field's own edge. */
+.field {
+  position: relative;
+}
+.field:has(.input:focus-visible)::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-control);
+  pointer-events: none;
 }
 .icon {
   flex: none;
