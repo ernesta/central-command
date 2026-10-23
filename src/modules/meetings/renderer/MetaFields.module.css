@@ -47,3 +47,7 @@
   font-size: var(--text-14);
   font-variant-numeric: tabular-nums;
 }
+
+.combo {
+  min-width: 300px;
+}

@@ -4,7 +4,8 @@ import { TimeInput } from '@renderer/components/TimeInput'
 import { endFollowingStart } from '@renderer/components/time-input'
 import { Segmented } from '@renderer/components/Segmented'
 import { PeopleField } from '@renderer/components/PeopleField'
-import { ComboField } from '@renderer/components/ComboField'
+import { Picker } from '@renderer/components/Picker'
+import { usedValueOptions } from '@renderer/components/picker-match'
 import { Select } from '@renderer/components/Select'
 import { SkillsField } from '@renderer/components/SkillsField'
 import { orderNames, type Person } from '@shared/people'
@@ -131,13 +132,17 @@ export function TrainingMetaFields({
         <label className={styles.label} htmlFor="training-series">
           Series
         </label>
-        <ComboField
+        <Picker
           id="training-series"
           label="Series"
+          noun="series"
+          className={styles.combo}
           placeholder="None"
-          options={seriesSuggestions}
+          options={usedValueOptions(seriesSuggestions, meta.series ?? '', 'None')}
           value={meta.series ?? ''}
+          text={meta.series ?? ''}
           onChange={(series) => onChange({ series: series || null })}
+          add={{ onAdd: (series) => onChange({ series }) }}
         />
       </div>
       {research && (
@@ -171,13 +176,17 @@ export function TrainingMetaFields({
         <label className={styles.label} htmlFor="training-institution">
           Institution
         </label>
-        <ComboField
+        <Picker
           id="training-institution"
           label="Institution"
+          noun="institutions"
+          className={styles.combo}
           placeholder="For example Royal Holloway"
-          options={institutionSuggestions}
+          options={usedValueOptions(institutionSuggestions, meta.institution ?? '', 'None')}
           value={meta.institution ?? ''}
+          text={meta.institution ?? ''}
           onChange={(institution) => onChange({ institution: institution || null })}
+          add={{ onAdd: (institution) => onChange({ institution }) }}
         />
       </div>
       <div className={styles.field}>

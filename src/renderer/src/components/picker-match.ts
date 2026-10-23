@@ -121,3 +121,21 @@ export function defaultActive(
   if (options.addRow) return matches.length === 1 ? 0 : matches.length
   return matches.length > 0 ? 0 : -1
 }
+
+/**
+ * The options of a field whose values are free text (Series, Institution): the values already used, once each and
+ * sorted, with the current one among them, and a row that clears it when there is a word for none.
+ */
+export function usedValueOptions(
+  used: readonly string[],
+  current: string,
+  none?: string
+): PickerOption[] {
+  const values = [...new Set([...used, current].map((v) => v.trim()).filter(Boolean))].sort(
+    (a, b) => a.localeCompare(b)
+  )
+  return [
+    ...(none ? [{ value: '', label: none }] : []),
+    ...values.map((value) => ({ value, label: value }))
+  ]
+}

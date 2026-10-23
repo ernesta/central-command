@@ -8,6 +8,7 @@ import {
   matchOptions,
   orderOptions,
   typeAhead,
+  usedValueOptions,
   type PickerOption
 } from './picker-match'
 
@@ -114,5 +115,17 @@ describe('defaultActive', () => {
     expect(defaultActive([list[0]], 'alp', { addRow: true })).toBe(0)
     expect(defaultActive([list[0], list[2]], 'alp', { addRow: true })).toBe(2)
     expect(defaultActive([], 'zz', { addRow: true })).toBe(0)
+  })
+})
+
+describe('usedValueOptions', () => {
+  it('lists each used value once, sorted, with the current one among them', () => {
+    expect(usedValueOptions(['b', 'a', 'b'], 'c').map((x) => x.value)).toEqual(['a', 'b', 'c'])
+  })
+  it('leads with a row that clears it when there is a word for none', () => {
+    expect(usedValueOptions(['a'], '', 'None')).toEqual([
+      { value: '', label: 'None' },
+      { value: 'a', label: 'a' }
+    ])
   })
 })

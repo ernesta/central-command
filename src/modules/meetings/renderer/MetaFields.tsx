@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { TimeInput } from '@renderer/components/TimeInput'
 import { endFollowingStart } from '@renderer/components/time-input'
 import {
@@ -11,7 +10,8 @@ import {
 import { isValidDate, type MetaPatch } from '../shared/front-matter'
 import { durationMinutes, formatDuration } from '../shared/time'
 import { Segmented } from '@renderer/components/Segmented'
-import { ComboField } from '@renderer/components/ComboField'
+import { Picker } from '@renderer/components/Picker'
+import { usedValueOptions } from '@renderer/components/picker-match'
 import { SkillsField } from '@renderer/components/SkillsField'
 import { orderNames } from '@shared/people'
 import { PeopleField } from '@renderer/components/PeopleField'
@@ -42,12 +42,9 @@ export function MetaFields({
   onChange,
   onAddPerson
 }: MetaFieldsProps): React.JSX.Element {
-  // Typing a new series would rename the file at every keystroke, so the text is kept here and the meeting
-  // gets it when a listed series is chosen or typed in full, or when the field is left.
-  const [draft, setDraft] = useState<string | null>(null)
+  // Choosing or adding a series renames the file, once: nothing is sent while the name is being typed.
   const commitSeries = (text: string): void => {
     const series = text.trim()
-    setDraft(null)
     if (series && series !== meta.series) onChange({ series })
   }
   const duration = durationMinutes(meta.start, meta.end)
@@ -70,17 +67,17 @@ export function MetaFields({
         <label className={styles.label} htmlFor="meeting-series">
           Series
         </label>
-        <ComboField
+        <Picker
           id="meeting-series"
           label="Series"
+          noun="series"
+          className={styles.combo}
           placeholder="Choose series"
-          options={seriesSuggestions}
-          value={draft ?? meta.series}
-          onChange={(text) => {
-            if (seriesSuggestions.includes(text)) commitSeries(text)
-            else setDraft(text)
-          }}
-          onBlur={() => commitSeries(draft ?? meta.series)}
+          options={usedValueOptions(seriesSuggestions, meta.series)}
+          value={meta.series}
+          text={meta.series}
+          onChange={commitSeries}
+          add={{ onAdd: commitSeries }}
         />
       </div>
       <div className={styles.field}>
