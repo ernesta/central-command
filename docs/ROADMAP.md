@@ -65,6 +65,8 @@ grid for a note and its panels, used by all five pages) and `NoteOutline` moved 
 
 **Polish round step 6, clipped blue borders (23 Oct 2026): built, driven, pushed, not installed** (item 8; `docs/DECISIONS.md`, "Polish round"). The Mod-K field's ring is drawn inside the field, clear of the window's rounded, clipping edge. Next: step 7, item 9 (the stray dot, list names).
 
+**Polish round step 7, the stray dot and list names (23 Oct 2026): built, driven, pushed, not installed** (item 9; `docs/DECISIONS.md`, "Polish round"). One `taskLine` builder; subtasks show their parent's list on Home. Next: step 8, item 13 (remove the Next meeting card).
+
 **Undo, one rule and third round (19 Oct 2026): built, pushed, installed** (`docs/DECISIONS.md`, "One rule for undo", "Undo, third round"). The rule is in `undo-store.ts`; Cmd-Z says what it undid; TODO ticks, Add time, timer start, Hours settings, row rename, "me" and the meeting/training/note fields are undoable. To check by hand: undoing a timer's start change in the popover (the restore itself is driven), and the Readings Dismiss undo.
 
 **Undo, second round (19 Oct 2026): built, pushed, installed** (`docs/DECISIONS.md`, "Undo, second round"). Timer Discard and Archive a person (toast + Cmd-Z); chips, contract Save, Time off edit, Hours typed time and workspace moves (Cmd-Z only). Dismissing a Readings rename suggestion also undoes with Cmd-Z. To check by hand: the Dismiss undo, the contract Save, Time off edit and Hours time undos.
