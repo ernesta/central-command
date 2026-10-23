@@ -1,6 +1,6 @@
 # Roadmap
 
-**Self-study names, due dates, locked titles and icon links (23 Oct 2026, `docs/SELF_STUDY_NAMES_PLAN.md`): decided, written up, not built.** Next: build, repair the real library (dry run first), install.
+**Self-study names, due dates, locked titles and icon links (23 Oct 2026, `docs/SELF_STUDY_NAMES_PLAN.md`): built, driven, repair applied to the real library, pushed and installed.** Nothing to decide; try it and say what to change.
 
 **Editor: Backspace on an empty bullet (23 Oct 2026, `docs/EDITOR_LIST_FIXES_PLAN.md`, `docs/DECISIONS.md`, "Backspace at the start of a list item leaves the list"): fixed, gate passed, driven in dev and the production build, pushed and installed.** The cursor now stays on the emptied line instead of dropping one. The paste-a-URL report (stage 2) is dropped: the user could not reproduce it; if it comes back, ask which shortcut and what was selected.
 

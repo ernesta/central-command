@@ -1,6 +1,6 @@
 # Self-study names, dates and the task screens (23 Oct 2026)
 
-The user's review of the installed app, three screenshots, then three decisions. Nothing here is built yet.
+The user's review of the installed app, three screenshots, then three decisions. Built, applied to the real library and installed 23 Oct 2026 (`docs/DECISIONS.md`, "Self-study names and dates").
 
 ## Decisions (the user's, 23 Oct 2026)
 
