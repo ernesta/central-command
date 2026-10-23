@@ -48,7 +48,7 @@ interface PickerPopupProps<T extends string> {
   add?: PickerAdd
   /** Letters already typed (the control was typed on while closed). */
   initialText?: string
-  /** The narrowest the list goes (default: as wide as the anchor, at least 200px). */
+  /** The narrowest the list goes (default: as wide as the anchor, at least 120px when there is a search field). */
   minWidth?: number
 }
 
@@ -138,7 +138,7 @@ export function PickerPopup<T extends string>({
     if (!popup || !anchor) return
     const rect = anchor.getBoundingClientRect()
     const margin = 8
-    popup.style.minWidth = `${minWidth ?? Math.max(rect.width, 200)}px`
+    popup.style.minWidth = `${minWidth ?? Math.max(rect.width, searchable ? 120 : 0)}px`
     const width = popup.offsetWidth
     // Kept as it opens, so the list does not narrow and widen as the search takes options away.
     popup.style.width = `${width}px`
@@ -152,7 +152,7 @@ export function PickerPopup<T extends string>({
     else popup.style.bottom = `${window.innerHeight - rect.top + 4}px`
     const left = rect.left + width > window.innerWidth - margin ? rect.right - width : rect.left
     popup.style.left = `${Math.max(margin, left)}px`
-  }, [anchorRef, minWidth])
+  }, [anchorRef, minWidth, searchable])
 
   useEffect(() => {
     const target = searchable ? inputRef.current : listRef.current

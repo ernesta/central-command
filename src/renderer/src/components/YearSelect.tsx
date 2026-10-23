@@ -47,8 +47,6 @@ export function YearSelect({
         value={year}
         options={years.map((y) => ({ value: y, label: label(y) }))}
         onChange={onChange}
-        // Two or three short options: the list is as wide as they are, not the 200px default.
-        minWidth={0}
       />
     </span>
   )

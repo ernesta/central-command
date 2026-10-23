@@ -114,6 +114,10 @@
 }
 .search {
   flex: none;
+  /* No width of its own, so the list is as wide as its options (or its field), not as an input's default. */
+  width: 0;
+  min-width: 100%;
+  box-sizing: border-box;
   margin-bottom: 6px;
   padding: 7px 10px;
   border: 1px solid var(--border-strong);

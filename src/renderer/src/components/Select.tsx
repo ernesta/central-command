@@ -18,7 +18,7 @@ interface SelectProps<T extends string> {
   noun?: string
   /** Always search, however few the options (a list of more than seven searches by itself). */
   search?: boolean
-  /** The open list's least width in px; by default the field's width or 200, whichever is more. */
+  /** The open list's least width in px; by default the field's width. */
   minWidth?: number
 }
 
@@ -26,6 +26,10 @@ interface SelectProps<T extends string> {
  * Choose one of a list. A thin wrapper over `Picker`, which every list in the app shares: a list of more than seven
  * options (or one asked to `search`) opens with a search field, a shorter one is a plain list you can type a letter into.
  */
-export function Select<T extends string>({ search, ...rest }: SelectProps<T>): React.JSX.Element {
-  return <Picker<T> {...rest} alwaysSearch={search} />
+export function Select<T extends string>({
+  search,
+  minWidth,
+  ...rest
+}: SelectProps<T>): React.JSX.Element {
+  return <Picker<T> {...rest} alwaysSearch={search} listMinWidth={minWidth} />
 }
