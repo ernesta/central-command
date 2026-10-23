@@ -162,6 +162,8 @@ export function TrainingPage(): React.JSX.Element {
         />
         <Select
           label="Filter by series"
+          search
+          noun="series"
           value={query.series}
           options={[
             { value: 'all', label: 'All series' },
@@ -173,6 +175,8 @@ export function TrainingPage(): React.JSX.Element {
           <>
             <Select
               label="Filter by type"
+              search
+              noun="types"
               value={query.type}
               options={[
                 { value: 'all', label: 'Any type' },
@@ -182,6 +186,8 @@ export function TrainingPage(): React.JSX.Element {
             />
             <Select
               label="Filter by skill"
+              search
+              noun="skills"
               value={query.skill}
               options={[
                 { value: 'all', label: 'Any skill' },
@@ -193,6 +199,8 @@ export function TrainingPage(): React.JSX.Element {
         )}
         <Select
           label="Filter by people"
+          search
+          noun="people"
           value={query.lead}
           options={[
             { value: 'all', label: 'Anyone' },

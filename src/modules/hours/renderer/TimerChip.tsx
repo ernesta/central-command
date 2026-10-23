@@ -123,6 +123,8 @@ function TimerPopover({
         <Select
           compact
           label="Client"
+          search
+          noun="clients"
           value={session.client ?? ''}
           options={[
             ...(session.client === undefined ? [{ value: '', label: 'No client' }] : []),

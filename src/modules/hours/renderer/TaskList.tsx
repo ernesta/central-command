@@ -174,6 +174,8 @@ export function TaskList({
                   compact
                   className={styles.client}
                   label={`Client of ${row.label || 'task'}`}
+                  search
+                  noun="clients"
                   value={row.client ?? ''}
                   options={[
                     ...(row.client === undefined ? [{ value: '', label: 'No client' }] : []),

@@ -182,6 +182,8 @@ export function TasksPage(): React.JSX.Element {
         />
         <Select
           label="Filter by list"
+          search
+          noun="lists"
           value={query.list}
           options={[
             { value: '', label: 'All lists' },
@@ -203,6 +205,8 @@ export function TasksPage(): React.JSX.Element {
         />
         <Select
           label="Filter by tag"
+          search
+          noun="tags"
           value={query.tag}
           options={[
             { value: '', label: 'Any tag' },

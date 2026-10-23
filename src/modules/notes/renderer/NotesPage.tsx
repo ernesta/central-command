@@ -101,6 +101,8 @@ export function NotesPage(): React.JSX.Element {
         />
         <Select
           label="Filter by group"
+          search
+          noun="groups"
           value={filterValue(query.group)}
           options={[
             { value: 'all', label: 'All groups' },

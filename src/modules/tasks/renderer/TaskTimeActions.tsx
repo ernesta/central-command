@@ -189,6 +189,8 @@ export function TaskTimeActions({
             <Select
               compact
               label="For"
+              search
+              noun="subtasks"
               value={target}
               options={[
                 { value: '', label: task.title || 'This task' },
