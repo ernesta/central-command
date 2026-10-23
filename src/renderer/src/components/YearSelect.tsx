@@ -4,6 +4,7 @@ import type { Workspace } from '@shared/settings'
 import type { TrackingYear } from '@shared/tracking/types'
 import { useYearFiles } from '../state/use-year-files'
 import { Select } from './Select'
+import styles from './YearSelect.module.css'
 
 function contractLabelOf(file: TrackingYear | undefined, start: string): string {
   return contractLabel(start, file?.weeks, file?.name)
@@ -11,7 +12,8 @@ function contractLabelOf(file: TrackingYear | undefined, start: string): string 
 
 /**
  * Chooses one of the years offered (newest first), by its start date, shown as "2026–27", or as a contract's first
- * and last day for a workspace with contracts. Hours, Time off and the charts share it.
+ * and last day for a workspace with contracts. Hours, Time off and the charts share it. It reads `Year [2026–27 ⌄]`
+ * (`Contract [...]` for a workspace with contracts): the label sits directly before the dropdown, wherever the select is placed.
  */
 export function YearSelect({
   year,
@@ -34,12 +36,18 @@ export function YearSelect({
           y
         )
       : yearLabel(y)
+  const name = contracts ? 'Contract' : 'Year'
   return (
-    <Select
-      label={contracts ? 'Contract' : 'Year'}
-      value={year}
-      options={years.map((y) => ({ value: y, label: label(y) }))}
-      onChange={onChange}
-    />
+    <span className={styles.field}>
+      <span className={styles.label} aria-hidden>
+        {name}
+      </span>
+      <Select
+        label={name}
+        value={year}
+        options={years.map((y) => ({ value: y, label: label(y) }))}
+        onChange={onChange}
+      />
+    </span>
   )
 }

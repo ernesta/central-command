@@ -110,6 +110,7 @@ export function MeetingsLanding(): React.JSX.Element {
           <LandingSection
             id="year"
             label="Year"
+            labelHidden
             aside={<YearSelect year={year} years={years} onChange={setYear} />}
           >
             <MeetingsHours

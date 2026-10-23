@@ -44,22 +44,33 @@ export function AllLink({
   )
 }
 
-/** A labelled section; `aside` sits at the right of the label (a selector, a "see all" link). */
+/**
+ * A labelled section; `aside` sits at the right of the label (a selector, a "see all" link). With `labelHidden` the
+ * label is for assistive technology only and `aside` starts at the left: for a control that carries its own visible
+ * label (the year choice, `YearSelect`).
+ */
 export function LandingSection({
   id,
   label,
   aside,
+  labelHidden = false,
   children
 }: {
   id: string
   label: string
   aside?: React.ReactNode
+  labelHidden?: boolean
   children: React.ReactNode
 }): React.JSX.Element {
   return (
     <section className={styles.section} aria-labelledby={id}>
-      <div className={styles.sectionHead}>
-        <h2 id={id} className={styles.label}>
+      <div
+        className={[styles.sectionHead, labelHidden && styles.headStart].filter(Boolean).join(' ')}
+      >
+        <h2
+          id={id}
+          className={[styles.label, labelHidden && styles.hidden].filter(Boolean).join(' ')}
+        >
           {label}
         </h2>
         {aside}
