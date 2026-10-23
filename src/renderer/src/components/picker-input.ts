@@ -21,6 +21,11 @@ export class PickerInput {
     return this.movedAlready
   }
 
+  /** Typing starts over: the arrows have not moved the highlight yet. */
+  reset(): void {
+    this.movedAlready = false
+  }
+
   markMoved(): void {
     this.movedAlready = true
   }

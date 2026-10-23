@@ -43,8 +43,7 @@
   cursor: default;
 }
 .option[data-active='true'] {
-  background: var(--selected-bg);
-  color: var(--selected-text);
+  background: var(--hover-tint);
 }
 .option {
   display: flex;
@@ -66,9 +65,6 @@
   text-align: right;
   color: var(--text-muted);
   font-size: var(--text-13);
-}
-.option[data-active='true'] .detail {
-  color: inherit;
 }
 .createRow {
   display: flex;

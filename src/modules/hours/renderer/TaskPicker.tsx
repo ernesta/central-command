@@ -3,6 +3,8 @@ import { Plus } from 'lucide-react'
 import { useOpenContracts } from '@renderer/state/use-open-contracts'
 import type { OpenContract } from '@shared/tracking/contracts'
 import { fold } from '@shared/text'
+import { Highlighted } from '@renderer/components/Picker'
+import { PickerInput } from '@renderer/components/picker-input'
 import { useTaskDefaults } from '../../tasks/renderer/useTaskDefaults'
 import { useOpenTasks } from '../../tasks/renderer/useOpenTasks'
 import { ListField } from '../../tasks/renderer/ListField'
@@ -74,6 +76,7 @@ export function TaskPicker({
   const rootRef = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(-1)
+  const [input] = useState(() => new PickerInput(''))
   const [asking, setAsking] = useState<{ item: Item; clients: string[] } | null>(null)
   const [busy, setBusy] = useState(false)
   const holding = useOpenContracts(workspace)
@@ -103,6 +106,24 @@ export function TaskPicker({
       : [])
   ]
   const shown = open && items.length > 0
+  // Where Enter goes with nothing chosen by the arrows: the exact task, else the only match, else Create (the group
+  // field's rule). It shows as the highlighted row, so what Enter does is never a surprise.
+  const typed = value.trim()
+  const exactAt = options.tasks.findIndex((t) => fold(t.title.trim()) === fold(typed))
+  const createAt = options.create !== null ? options.tasks.length : -1
+  const defaultAt =
+    typed === ''
+      ? -1
+      : exactAt >= 0
+        ? exactAt
+        : options.tasks.length === 1
+          ? 0
+          : createAt >= 0
+            ? createAt
+            : options.tasks.length > 0
+              ? 0
+              : -1
+  const current = active >= 0 ? Math.min(active, items.length - 1) : defaultAt
 
   const finish = async (item: Item, client: string | undefined): Promise<void> => {
     setBusy(true)
@@ -137,13 +158,11 @@ export function TaskPicker({
     else void finish(item, found.client)
   }
 
-  // Enter with nothing highlighted: the task whose title is exactly what was typed, else a new one.
+  // Enter with nothing chosen by the arrows: what is highlighted by default, or a new task when nothing fits.
   const submit = (): boolean => {
-    if (value.trim() === '') return false
-    const exact = options.tasks.find((t) => fold(t.title.trim()) === fold(value.trim()))
-    choose(
-      exact ? { kind: 'task', task: exact } : { kind: 'create', title: value.trim(), ...newList }
-    )
+    if (typed === '') return false
+    const at = shown ? defaultAt : -1
+    choose(at >= 0 && at < items.length ? items[at] : { kind: 'create', title: typed, ...newList })
     return true
   }
   useImperativeHandle(ref, () => ({ submit }))
@@ -152,15 +171,28 @@ export function TaskPicker({
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       if (!shown) return
       event.preventDefault()
+      input.markMoved()
       const step = event.key === 'ArrowDown' ? 1 : -1
-      setActive((a) => Math.min(items.length - 1, Math.max(0, a + step)))
+      setActive(
+        Math.min(
+          items.length - 1,
+          Math.max(0, (current < 0 && step < 0 ? items.length : current) + step)
+        )
+      )
     } else if (event.key === 'Enter') {
       event.preventDefault()
-      if (shown && active >= 0) choose(items[active])
+      if (shown && current >= 0) choose(items[current])
       else submit()
-    } else if (event.key === 'Tab' && !event.shiftKey && shown && !asking && active >= 0) {
-      // Tab takes the highlighted task and moves on.
-      choose(items[active])
+    } else if (
+      event.key === 'Tab' &&
+      !event.shiftKey &&
+      shown &&
+      !asking &&
+      current >= 0 &&
+      input.moved
+    ) {
+      // Tab takes the row the arrows led to (never a typed-for default: it could make a task) and moves on.
+      choose(items[current])
     } else if (event.key === 'Escape' && (shown || asking)) {
       // Only the list (or the question) closes, not the popover or form behind it.
       event.preventDefault()
@@ -178,7 +210,7 @@ export function TaskPicker({
         aria-label={label}
         aria-expanded={shown}
         aria-controls={shown ? listId : undefined}
-        aria-activedescendant={shown && active >= 0 ? `${listId}-${active}` : undefined}
+        aria-activedescendant={shown && current >= 0 ? `${listId}-${current}` : undefined}
         aria-autocomplete="list"
         placeholder={placeholder}
         autoFocus={autoFocus}
@@ -188,6 +220,7 @@ export function TaskPicker({
           setOpen(true)
           setActive(-1)
           setAsking(null)
+          input.reset()
         }}
         onKeyDown={keys}
         onBlur={(event) => {
@@ -210,18 +243,23 @@ export function TaskPicker({
               <div
                 id={`${listId}-${index}`}
                 role="option"
-                aria-selected={index === active}
-                data-active={index === active}
+                aria-selected={false}
+                data-active={index === current}
                 className={[styles.option, item.kind === 'create' && styles.create]
                   .filter(Boolean)
                   .join(' ')}
-                onMouseEnter={() => setActive(index)}
+                onMouseMove={(event) => {
+                  // Only a real pointer move highlights, as in every picker.
+                  if (input.pointerMoved(event.clientX, event.clientY)) setActive(index)
+                }}
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => choose(item)}
               >
                 {item.kind === 'task' ? (
                   <>
-                    <span className={styles.optionTitle}>{item.task.title}</span>
+                    <span className={styles.optionTitle}>
+                      <Highlighted label={item.task.title} query={value} />
+                    </span>
                     <span className={styles.detail} title={detailOfTask(item.task, tasks)}>
                       {detailOfTask(item.task, tasks)}
                     </span>

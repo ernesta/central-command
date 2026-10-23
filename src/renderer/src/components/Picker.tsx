@@ -55,7 +55,7 @@ interface PickerPopupProps<T extends string> {
 const addLabel = (text: string): string => `Add “${text}”`
 
 /** The matching letters of a label, in bold. */
-function Highlighted({ label, query }: { label: string; query: string }): React.JSX.Element {
+export function Highlighted({ label, query }: { label: string; query: string }): React.JSX.Element {
   const ranges = highlightRanges(label, query)
   if (ranges.length === 0) return <>{label}</>
   const parts: React.ReactNode[] = []
