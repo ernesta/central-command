@@ -311,6 +311,10 @@ press converted it), which made a bullet on a note's first line look impossible 
 `liftListItemAtStart` takes the item out of the list, or outdents a nested one, in one press. It
 is registered before the default keymaps and only acts at the very start of an item's first block.
 
+**Emptying the last bullet (23 Oct 2026).** Backspace on an empty top-level item removes the marker and leaves the cursor on that same line; the blank
+line that keeps a paragraph from running into the line above is added only when the item has text (an empty line already separates). Found by using the app
+(an empty fifth bullet; the cursor dropped a line). A bare `-` under a paragraph is not a list item in the parse, so that case is the ordinary Backspace.
+
 ## Polish pass (Stage 6): what was checked and what changed
 
 Checked in dev mode and the production build against scratch libraries.

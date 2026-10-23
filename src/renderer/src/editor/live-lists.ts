@@ -195,8 +195,8 @@ export const outdentItem: StateCommand = ({ state, dispatch }) => {
 
 /**
  * Backspace at the start of an item's text: a nested item moves out a level; a top-level one loses its bullet,
- * number or checkbox as one step and becomes a paragraph (with a blank line before it when it would otherwise
- * run into the line above). Just before the drawn marker, at the start of the line, it joins the line above,
+ * number or checkbox as one step and becomes a paragraph (with a blank line before it when it has text that would
+ * otherwise run into the line above). Just before the drawn marker, at the start of the line, it joins the line above,
  * text to text, as Delete does from the other side.
  */
 export const backspaceInItem: StateCommand = ({ state, dispatch }) => {
@@ -213,8 +213,10 @@ export const backspaceInItem: StateCommand = ({ state, dispatch }) => {
       return true
     }
     const above = line.number > 1 ? state.doc.line(line.number - 1) : null
+    // An item with no text leaves an empty line, which already separates it from the line above.
     const runsIntoAbove =
       above !== null &&
+      line.text.slice(contentStart(line, parts) - line.from).trim() !== '' &&
       !blankLine(parseLine(above.text)) &&
       enclosing(state, above.to, above.to, ['Paragraph']) !== null
     const at = prefixStart(line, parts)

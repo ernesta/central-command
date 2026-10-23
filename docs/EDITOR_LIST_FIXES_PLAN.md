@@ -14,7 +14,7 @@ line before a top-level item that loses its marker, when the line above is a par
 `Paragraph` in the parse, so `enclosing(above.to, ['Paragraph'])` is true when the line above is another bullet. The blank line goes in, the emptied line
 moves down one, and the cursor lands on it.
 
-### Stage 1
+### Stage 1 (done 23 Oct 2026: fixed, gate passed, driven in dev and production, tests, lint and typecheck pass)
 
 1. Reproduce first: a `live-lists.test.ts` case with `- a\n- b\n- |` and Backspace; expect `- a\n- b\n|` (cursor on the emptied line, no inserted line).
 2. Fix: no blank line when the item has no text (an empty line already separates). Check the other case, a non-empty item under another item (`- a\n- |b`

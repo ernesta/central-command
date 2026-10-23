@@ -180,6 +180,19 @@ describe('Backspace', () => {
     expect(after('text\n\n- |b', 'Backspace')).toBe('text\n\n|b')
   })
 
+  it('leaves the cursor on the same line when the emptied item has no text to run on', () => {
+    expect(after('- a\n- b\n- |', 'Backspace')).toBe('- a\n- b\n|')
+    expect(after('- a\n- |\n- c', 'Backspace')).toBe('- a\n|\n- c')
+    expect(after('1. a\n2. |', 'Backspace')).toBe('1. a\n|')
+    expect(after('- [ ] a\n- [ ] |', 'Backspace')).toBe('- [ ] a\n|')
+    expect(after('- a\n  - b\n- |', 'Backspace')).toBe('- a\n  - b\n|')
+    expect(after('> - a\n> - |', 'Backspace')).toBe('> - a\n> |')
+  })
+
+  it('moves a nested empty item out before leaving the list', () => {
+    expect(after('- a\n  - |', 'Backspace')).toBe('- a\n- |')
+  })
+
   it('keeps a quote round the paragraph it leaves', () => {
     expect(after('> - |a', 'Backspace')).toBe('> |a')
     expect(after('> x\n> - |a', 'Backspace')).toBe('> x\n>\n> |a')
@@ -260,6 +273,14 @@ describe('in a note with Windows line ends', () => {
     view.dispatch({ selection: { anchor: view.state.doc.line(2).from + 2 } })
     press(view, 'Backspace')
     expect(view.state.sliceDoc()).toBe(crlf('text\n\nb'))
+  })
+
+  it('Backspace on an empty last bullet adds no line in a Windows note', () => {
+    const { view } = openView(crlf('- a\n- '))
+    view.dispatch({ selection: { anchor: view.state.doc.length } })
+    press(view, 'Backspace')
+    expect(view.state.sliceDoc()).toBe(crlf('- a\n'))
+    expect(view.state.selection.main.head).toBe(view.state.doc.length)
   })
 })
 
