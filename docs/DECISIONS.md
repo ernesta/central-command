@@ -4142,3 +4142,10 @@ The user found four behaviours for one job (Skills' menu searched without showin
 - Not done, on purpose: the date picker's month arrows already have **Today** in the calendar; the shared year (`YearSelect`) is a dropdown, not a stepper. No shortcut was added: the Hours page has no arrow-key shortcuts for weeks (the chart and heat-map arrows are inside their own widgets), so Settings is unchanged.
 - Tests: `back-to-today.test.ts` (absent at the current week and month, present away, calls back with today's week, "This month" vs "This week" by unit).
 - Driven in a scratch library, production build (light and dark) and dev mode: Previous week shows the button on both cards, Enter on it returns both to the current week and it disappears.
+
+### Step 6: clipped blue borders (item 8)
+
+- What was cut: the Mod-K field's focus ring. It was an outline on the field's own edge (`outline-offset: -2px`), and the search window has rounded corners and `overflow: hidden`, so the corners and edges of the ring were shaved (most visible in dark). The highlighted result row, the completion list, the filter chips and the "See all" button were checked and are not clipped: the results list already has 4px padding and `scroll-padding`.
+- Fix: the ring is a `::after` of the field, 3px inside it (`inset: 3px`, 2px border, control radius), so nothing on the window's edge can clip it. `ChipInput.module.css`.
+- Measured in the production build (light and dark): every focusable element in the window, ring rectangle against each clipping ancestor, none clipped; screenshots in the palette, the modifier list and the "See all results" window. Dev mode checked the same.
+- Test: `chip-input-css.test.ts` (the ring is the inset pseudo-element, not an outline on the field's edge; a real ring check needs the driven app).
