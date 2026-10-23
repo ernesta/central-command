@@ -238,28 +238,31 @@ function TaskView({
       <div className={styles.cols}>
         <div className={styles.stack}>
           <section className={styles.box} aria-label="Details">
-            <textarea
-              className={styles.title}
-              rows={1}
-              aria-label="Title"
-              placeholder="Untitled"
-              readOnly={lock !== null}
-              autoFocus={isNew}
-              value={titleText}
-              onChange={(event) => {
-                const text = event.target.value.replace(/[\r\n]/g, ' ')
-                setTitleText(text)
-                title.change(text)
-              }}
-              onBlur={() => void title.flush()}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  event.preventDefault()
-                  void title.flush()
-                  event.currentTarget.blur()
-                }
-              }}
-            />
+            {lock ? (
+              <h1 className={styles.lockedTitle}>{titleText}</h1>
+            ) : (
+              <textarea
+                className={styles.title}
+                rows={1}
+                aria-label="Title"
+                placeholder="Untitled"
+                autoFocus={isNew}
+                value={titleText}
+                onChange={(event) => {
+                  const text = event.target.value.replace(/[\r\n]/g, ' ')
+                  setTitleText(text)
+                  title.change(text)
+                }}
+                onBlur={() => void title.flush()}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault()
+                    void title.flush()
+                    event.currentTarget.blur()
+                  }
+                }}
+              />
+            )}
             {lock && <LockLine lock={lock} source={source} />}
             <div className={styles.metaRow}>
               {statusLocked ? (
