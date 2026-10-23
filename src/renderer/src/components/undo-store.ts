@@ -62,7 +62,10 @@ export async function undoLast(): Promise<boolean> {
   clearToast()
   if (await undoEntry(entry)) {
     const { open } = entry
-    showToast(entry.message ?? `Undid the ${entry.label}.`, open ? { label: 'Open', run: open } : undefined)
+    showToast(
+      entry.message ?? `Undid the ${entry.label}.`,
+      open ? { label: 'Open', run: open } : undefined
+    )
   }
   return true
 }
