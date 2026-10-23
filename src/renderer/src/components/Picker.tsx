@@ -140,6 +140,8 @@ export function PickerPopup<T extends string>({
     const margin = 8
     popup.style.minWidth = `${minWidth ?? Math.max(rect.width, 200)}px`
     const width = popup.offsetWidth
+    // Kept as it opens, so the list does not narrow and widen as the search takes options away.
+    popup.style.width = `${width}px`
     const natural = popup.offsetHeight
     const below = window.innerHeight - rect.bottom - margin - 4
     const above = rect.top - margin - 4
