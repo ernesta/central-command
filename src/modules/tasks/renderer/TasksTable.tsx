@@ -8,6 +8,8 @@ import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { describeRecurrence } from '../shared/recurrence'
 import { fieldLocked, sessionLock } from '../shared/session-lock'
+import { LateChip } from './LateChip'
+import { daysLate } from '../shared/late'
 import { dueTone, formatDue, formatTaskTime, tagsIn, type SortKey } from '../shared/query'
 import {
   TASK_PRIORITIES,
@@ -648,7 +650,9 @@ function TaskRowView({
             className={[
               styles.dueDate,
               due
-                ? styles[`due_${task.status === 'done' ? 'normal' : dueTone(due, today)}`]
+                ? styles[
+                    `due_${task.status === 'done' || dueTone(due, today) === 'overdue' ? 'normal' : dueTone(due, today)}`
+                  ]
                 : undefined
             ]
               .filter(Boolean)
@@ -669,6 +673,9 @@ function TaskRowView({
                 onChange={(next) => void setDue(task, next)}
               />
             )}
+          </span>
+          <span className={styles.lateSlot}>
+            {due && task.status !== 'done' && <LateChip days={daysLate(due, today)} />}
           </span>
           {!textLocked && (
             <button

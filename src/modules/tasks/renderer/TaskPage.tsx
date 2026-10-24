@@ -16,6 +16,8 @@ import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { describeRecurrence } from '../shared/recurrence'
 import { fieldLocked, sessionLock, type SessionSource } from '../shared/session-lock'
+import { LateChip } from './LateChip'
+import { daysLate } from '../shared/late'
 import { formatDue, tagsIn } from '../shared/query'
 import { TASK_STATUSES, type Task, type TaskChanges, type TaskWorkspace } from '../shared/types'
 import { subtaskProgress, taskTime, type TaskRow } from '../shared/views'
@@ -304,13 +306,16 @@ function TaskView({
             <div className={styles.metaRow}>
               <div className={styles.field}>
                 <span className={styles.label}>Due</span>
-                {lock ? (
-                  <span className={styles.lockedValue}>
-                    {task.due ? formatDue(task.due, today) : 'No date'}
-                  </span>
-                ) : (
-                  <DueField value={task.due} today={today} onChange={(due) => update({ due })} />
-                )}
+                <span className={styles.dueValue}>
+                  {lock ? (
+                    <span className={styles.lockedValue}>
+                      {task.due ? formatDue(task.due, today) : 'No date'}
+                    </span>
+                  ) : (
+                    <DueField value={task.due} today={today} onChange={(due) => update({ due })} />
+                  )}
+                  {task.status !== 'done' && <LateChip days={daysLate(task.due, today)} />}
+                </span>
               </div>
               <div className={styles.field}>
                 <span className={styles.label}>Repeats</span>

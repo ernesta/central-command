@@ -75,6 +75,11 @@
   gap: 4px;
   min-width: 0;
 }
+.dueValue {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .grow {
   flex: 0 1 260px;
 }

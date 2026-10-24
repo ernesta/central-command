@@ -1,0 +1,11 @@
+.chip {
+  flex: none;
+  padding: 1px 10px;
+  color: var(--danger);
+  font-size: var(--text-12);
+  font-weight: 500;
+  white-space: nowrap;
+  background: transparent;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-pill);
+}

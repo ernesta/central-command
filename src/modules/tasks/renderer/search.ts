@@ -1,6 +1,7 @@
 import { snippet, type SearchHit } from '@shared/search'
 import { passesFilters, searchNeedles, textMatches, type SearchRequest } from '@shared/search-query'
 import { fold } from '@shared/text'
+import { daysLate } from '../shared/late'
 import { studyLabel } from '../shared/study-label'
 import { formatDue, listLabel, taskLine } from '../shared/query'
 import { taskMatches } from '../shared/search-filters'
@@ -46,6 +47,7 @@ export function taskHits(
         key: t.uid,
         title: studyLabel(t, parent),
         detail: (!inTitle && snippet(t.description, needles)) || details,
+        late: t.status === 'done' ? undefined : daysLate(t.due, today) || undefined,
         route: taskRoute(t.workspace, t.uid)
       }
     })

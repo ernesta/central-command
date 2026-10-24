@@ -33,6 +33,19 @@ describe('taskHits', () => {
       'Simulating Social Worlds › Day 2 self-study'
     )
   })
+  it('marks an open task whose date has passed as late, not a done one', () => {
+    const rows = [
+      task({ uid: 'l', title: 'Old open', due: '2026-10-01' }),
+      task({ uid: 'd', title: 'Old done', due: '2026-10-01', status: 'done' }),
+      task({ uid: 'n', title: 'Old soon', due: '2026-10-09' })
+    ]
+    const hits = taskHits(rows, req('old'), 6)
+    expect(hits.map((h) => [h.key, h.late])).toEqual([
+      ['l', 4],
+      ['n', undefined],
+      ['d', undefined]
+    ])
+  })
   it('respects the limit', () => {
     expect(taskHits(tasks, req('write'), 2)).toHaveLength(2)
   })

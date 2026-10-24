@@ -6,6 +6,7 @@ import type { SearchHit } from '@shared/search'
 import { ghostFor } from '@shared/search-complete'
 import { splitChips } from '@shared/search-chips'
 import { fold } from '@shared/text'
+import { LateChip } from '@modules/tasks/renderer/LateChip'
 import { IconButton } from '../components/IconButton'
 import { ChipInput } from './ChipInput'
 import { ModifierChip } from './ModifierChip'
@@ -265,7 +266,12 @@ export function GlobalSearch({
                   onClick={() => open(hit)}
                 >
                   <span className={styles.title}>{hit.title}</span>
-                  {hit.detail && <span className={styles.detail}>{hit.detail}</span>}
+                  {(hit.detail || hit.late) && (
+                    <span className={styles.detailRow}>
+                      {hit.detail && <span className={styles.detail}>{hit.detail}</span>}
+                      {hit.late ? <LateChip days={hit.late} /> : null}
+                    </span>
+                  )}
                 </button>
               )
             })}

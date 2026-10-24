@@ -67,7 +67,14 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.detailRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
 .detail {
+  min-width: 0;
   overflow: hidden;
   color: var(--text-secondary);
   font-size: var(--text-13);

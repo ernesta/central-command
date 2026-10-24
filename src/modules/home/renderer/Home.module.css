@@ -74,21 +74,6 @@
   margin: 0 2px; /* as wide as a task's status circle, so titles line up down the list */
   color: var(--text-muted);
 }
-.chip {
-  flex: none;
-  padding: 1px 10px;
-  color: var(--selected-text);
-  font-size: var(--text-12);
-  font-weight: 500;
-  white-space: nowrap;
-  background: var(--selected-bg);
-  border-radius: var(--radius-pill);
-}
-.warn {
-  color: var(--danger);
-  background: transparent;
-  border: 1px solid var(--danger);
-}
 .when {
   flex: none;
   min-width: 86px;

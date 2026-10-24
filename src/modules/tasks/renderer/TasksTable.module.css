@@ -37,10 +37,10 @@
 .colTime {
   width: 76px;
 }
-/* 12 padding + 81 date + 12 gap + 16 icon + 12 padding. The date is 81px so the widest ("May 28, 2027" in 13px Plex Sans, 80.4px)
+/* 12 padding + 81 date + 8 gap + 100 "N days late" slot + 12 gap + 16 icon + 12 padding. The date is 81px so the widest ("May 28, 2027" in 13px Plex Sans, 80.4px)
    fits and the trash never moves. */
 .colDue {
-  width: 133px;
+  width: 241px;
 }
 .th {
   padding: 11px 12px;
@@ -201,9 +201,11 @@
 .remove:focus-visible {
   opacity: 1;
 }
-.due_overdue {
-  color: var(--danger);
-  font-weight: 500;
+.lateSlot {
+  display: flex;
+  flex: none;
+  width: 100px;
+  margin-left: 8px;
 }
 .due_today {
   color: var(--accent);

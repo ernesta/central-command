@@ -9,6 +9,8 @@ export interface SearchHit {
   title: string
   /** One line: the part of the text that matched, or the details of the item. */
   detail: string
+  /** A task hit that is overdue: how many days late, shown as a chip beside the detail. */
+  late?: number
   /** Where clicking the result goes. Leave out for a hit that only ever `run`s. */
   route?: string
   /** Runs instead of navigating (a command: "New meeting" creates one, then goes to it itself). */

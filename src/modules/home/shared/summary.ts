@@ -1,4 +1,5 @@
 import type { TimeOffEntry } from '@shared/tracking/types'
+import { daysLate } from '../../tasks/shared/late'
 import type { WatchItem } from '../../watch/shared/types'
 import type {
   HomeEvent,
@@ -94,7 +95,7 @@ function toHomeTask(t: TaskInput, today: string): HomeTask | null {
     due: t.due,
     priority: t.priority,
     status: t.status,
-    daysLate: Math.max(0, daysFrom(t.due, today)),
+    daysLate: daysLate(t.due, today),
     route: taskRoute(t.workspace, t.uid)
   }
 }

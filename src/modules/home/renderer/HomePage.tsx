@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { Check, GraduationCap, Plane, Users } from 'lucide-react'
 import { Panel } from '@renderer/components/Panel'
+import { LateChip } from '../../tasks/renderer/LateChip'
 import { PriorityBadge } from '../../tasks/renderer/TaskIcons'
 import { taskLine } from '../../tasks/shared/query'
 import { tasksAllRoute } from '../../tasks/renderer/tasks-paths'
@@ -67,11 +68,7 @@ function TaskRow({ task }: { task: HomeTask }): React.JSX.Element {
       line={task.list}
       trailing={
         <>
-          {task.daysLate > 0 && (
-            <span className={`${styles.chip} ${styles.warn}`}>
-              {task.daysLate === 1 ? '1 day late' : `${task.daysLate} days late`}
-            </span>
-          )}
+          <LateChip days={task.daysLate} />
           <PriorityBadge priority={task.priority} />
         </>
       }
