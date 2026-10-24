@@ -11,8 +11,8 @@
 }
 .table {
   width: 100%;
-  min-width: 980px;
-  /* Fixed columns and rows: opening a row for editing changes neither widths nor heights. */
+  min-width: 1120px;
+  /* Fixed columns: opening a row for editing changes no width. A row grows to hold its client chips. */
   table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
@@ -50,7 +50,7 @@
   width: 148px;
 }
 .table th:nth-child(4) {
-  width: 22%;
+  width: 34%;
 }
 .table th:nth-child(5) {
   width: 120px;
@@ -68,9 +68,8 @@
   font-size: var(--text-14);
   white-space: nowrap;
 }
-.clients {
-  overflow: hidden;
-  text-overflow: ellipsis;
+.table td.clients {
+  white-space: normal;
 }
 .hidden {
   position: absolute;

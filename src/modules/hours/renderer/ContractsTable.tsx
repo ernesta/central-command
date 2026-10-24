@@ -8,7 +8,7 @@ import { Select } from '@renderer/components/Select'
 import { showToast } from '@renderer/components/toast-store'
 import { pushUndo, pushUndoWithToast } from '@renderer/components/undo-store'
 import { useNewRowKeys } from '@renderer/components/useNewRowKeys'
-import { ClientsField } from './ClientsField'
+import { ClientChips, ClientsField } from './ClientsField'
 import { DurationField } from './DurationField'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { formatDate, todayIso } from '@shared/time'
@@ -67,7 +67,6 @@ function ContractRow({
   const [newClients, setNewClients] = useState<string[]>(contract.plan.clients ?? [])
   const [problem, setProblem] = useState<string | null>(null)
   const savedClients = contract.plan.clients ?? []
-  const clients = savedClients.join(', ') || '–'
   const label = title(contract)
 
   if (!editing)
@@ -76,7 +75,9 @@ function ContractRow({
         <th scope="row">{contract.name ?? '–'}</th>
         <td>{formatDate(contract.start)}</td>
         <td>{formatDate(end)}</td>
-        <td className={styles.clients}>{clients}</td>
+        <td className={styles.clients}>
+          <ClientChips clients={savedClients} />
+        </td>
         <td>{formatAimHours(contract.plan.hoursPerWeek)}</td>
         <td>{INVOICE_LABELS[invoiceOf(contract)]}</td>
         <td className={styles.actions}>

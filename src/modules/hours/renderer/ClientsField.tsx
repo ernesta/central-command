@@ -4,6 +4,20 @@ import { PickerPopup } from '@renderer/components/Picker'
 import styles from '@renderer/components/SkillsField.module.css'
 import { addClient, MAX_CLIENTS } from '../shared/plan-settings'
 
+/** A contract's clients as chips, read only: the same chips the edit row shows. */
+export function ClientChips({ clients }: { clients: readonly string[] }): React.JSX.Element {
+  if (clients.length === 0) return <>–</>
+  return (
+    <ul className={styles.chips} aria-label="Clients" style={{ padding: 0 }}>
+      {clients.map((name) => (
+        <li key={name} className={styles.chip} style={{ paddingRight: 10 }}>
+          {name}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 /**
  * A contract's clients as chips with the shared picker, under "add", to choose from the clients the workspace's other
  * contracts already have; a name that is not there yet is added from the same list.
