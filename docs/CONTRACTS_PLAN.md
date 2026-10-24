@@ -1,5 +1,7 @@
 # Work contracts that overlap: plan (6 Oct 2026)
 
+> **24 Oct 2026: "whole weeks" is superseded.** A contract may now be any length, one day included; `weeks` is only the reporting grid and a contract has a real `end` (`docs/CONTRACT_SPAN_PLAN.md`, `docs/DECISIONS.md`, "Contracts of any length"). The text below is kept as written.
+
 Written with the user after they said: a new paid position (Research Assistant) is starting, to be tracked in Work, separately from
 Luminos. Read `docs/DECISIONS.md`, "Work's Hours: weeks, contracts and months" and "Work history import", and `CLAUDE.md`, before starting.
 
