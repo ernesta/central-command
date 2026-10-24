@@ -114,6 +114,16 @@
 .dayButton:focus-visible {
   outline-offset: 4px;
 }
+.partial {
+  margin: 0;
+  padding: 0 24px 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.day[data-outside='true'] td {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
 .muted {
   color: var(--text-muted);
 }

@@ -4,8 +4,8 @@ import { formatDay, formatHours, formatRange } from '@shared/tracking/format'
 import { dailyAim, hasAim } from '@shared/tracking/plan'
 import { dayRows, weekDaysMinutes } from '@shared/tracking/totals'
 import { invoiceOf, type Moment, type TrackingYear } from '@shared/tracking/types'
-import { addDays, weekNumberOf, yearEnd } from '@shared/year'
-import { inContract } from '@shared/tracking/workspace-weeks'
+import { addDays, weekNumberOf } from '@shared/year'
+import { contractEnd, inContract } from '@shared/tracking/workspace-weeks'
 import { periodOfWeek, periodsOf } from '../shared/periods'
 import { weekFigures } from '../shared/so-far'
 import { barFill, BAR_SCALE, defaultWeek } from '../shared/week'
@@ -51,7 +51,12 @@ export function WeekCard({
   const { aim, minutes: worked } = weekFigures(data, week, now)
   const aimed = hasAim(data)
   const first = week <= data.start
-  const last = addDays(week, 7) > yearEnd(data.start, data.weeks)
+  // The next report week exists when it starts on or before the contract's real last day.
+  const end = contractEnd(data)
+  const last = addDays(week, 7) > end
+  // The last report week may be partial: the days after the real end belong to no contract.
+  const lastDayShown = addDays(week, 6) > end ? end : addDays(week, 6)
+  const daysIn = days.filter((d) => d.date <= end).length
   // Today's week, offered as a way back only while another week is shown (and today is inside the year).
   const thisWeek = defaultWeek(data.start, now.date, data.weeks, data.end)
   const away = inContract(now.date, data) && week !== thisWeek
@@ -75,7 +80,7 @@ export function WeekCard({
             <ChevronLeft size={16} strokeWidth={1.75} aria-hidden />
           </button>
           <span className={styles.label}>
-            Week {number} · {formatRange(week, addDays(week, 6))}
+            Week {number} · {formatRange(week, lastDayShown)}
           </span>
           <button
             type="button"
@@ -94,6 +99,12 @@ export function WeekCard({
       ) : (
         <p className={styles.total}>{formatHours(worked)}</p>
       )}
+      {daysIn < 7 && (
+        <p className={styles.partial}>
+          {daysIn === 1 ? '1 day' : `${daysIn} days`}
+          {daysIn > 0 && ` · ${formatHours(worked / daysIn)} a day`}
+        </p>
+      )}
       <table className={styles.table}>
         <thead>
           <tr>
@@ -110,7 +121,8 @@ export function WeekCard({
         </thead>
         <tbody>
           {days.map(({ date, minutes }) => {
-            const past = date <= now.date
+            const outside = date > end
+            const past = date <= now.date && !outside
             const aim = dailyAim(data, date)
             const shown = open === date
             const rows = shown ? dayRows(data, date, now) : []
@@ -122,6 +134,7 @@ export function WeekCard({
                 date={date}
                 minutes={minutes}
                 past={past}
+                outside={outside}
                 today={date === now.date}
                 aim={aim}
                 perDay={perDay}
@@ -195,6 +208,7 @@ function DayRows({
   date,
   minutes,
   past,
+  outside,
   today,
   aim,
   perDay,
@@ -206,6 +220,8 @@ function DayRows({
   date: string
   minutes: number
   past: boolean
+  /** After the contract's real last day: in the week's grid, in no contract. */
+  outside: boolean
   today: boolean
   aim: number | null
   perDay: number
@@ -220,6 +236,7 @@ function DayRows({
       <tr
         className={styles.day}
         data-off={aim === null}
+        data-outside={outside || undefined}
         data-open={expanded}
         data-today={today || undefined}
         onClick={past ? onToggle : undefined}

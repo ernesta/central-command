@@ -1,7 +1,7 @@
 import { addDays, weeksOf } from '../year'
 import { provisionalMinutes, QUARTER, reportedMinutes, timeToSeconds } from './rounding'
 import { resolveClient, sameTask } from './timer'
-import { inContract } from './workspace-weeks'
+import { contractEnd, inContract } from './workspace-weeks'
 import type { Adjust, Change, Moment, Session, TrackingYear } from './types'
 
 export interface TaskRow {
@@ -139,16 +139,20 @@ export function weekMinutes(year: TrackingYear, weekStart: string, now?: Moment)
   return weekDaysMinutes(year, weekStart, now).reduce((sum, d) => sum + d.minutes, 0)
 }
 
-/** Every week of the year with its hours. */
+/**
+ * Every report week of the year with its hours. The weeks are the reporting grid (rounded up from the contract's length);
+ * the last may be partial, so its `to` stops at the contract's real last day.
+ */
 export function weeklyMinutes(
   year: TrackingYear,
   now?: Moment
 ): { number: number; from: string; to: string; minutes: number }[] {
   const map = minutesByDate(year, now)
+  const end = contractEnd(year)
   return weeksOf(year.start, year.weeks).map((w) => {
     let minutes = 0
     for (let i = 0; i < 7; i++) minutes += map.get(addDays(w.from, i)) ?? 0
-    return { ...w, minutes }
+    return { ...w, to: w.to > end ? end : w.to, minutes }
   })
 }
 

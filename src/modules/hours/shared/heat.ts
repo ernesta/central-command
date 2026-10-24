@@ -1,7 +1,8 @@
 import { dailyAim, hasAim } from '@shared/tracking/plan'
 import { minutesByDate } from '@shared/tracking/totals'
 import type { Moment, TimeOffType, TrackingYear } from '@shared/tracking/types'
-import { addDays, weekdayOf, YEAR_WEEKS } from '@shared/year'
+import { addDays, daysBetween, weekdayOf, YEAR_WEEKS } from '@shared/year'
+import { contractEnd } from '@shared/tracking/workspace-weeks'
 
 export interface HeatDay {
   date: string
@@ -27,14 +28,17 @@ export function heatLevel(minutes: number, reference: number): 0 | 1 | 2 | 3 {
   return share < 0.5 ? 1 : share < 1 ? 2 : 3
 }
 
-/** Every day of the year, oldest first (364 of them, or a contract's), with its time, its aim and whether it is a day off. */
+/**
+ * Every day of the year, oldest first (364 of them, or a contract's, to its real last day), with its time, its aim and whether it
+ * is a day off. Days after a contract's end in its last report week are not days: the grid leaves them empty.
+ */
 export function heatDays(year: TrackingYear, now: Moment): HeatDay[] {
   const minutes = minutesByDate(year, now)
   const off = new Map(year.timeOff.map((t) => [t.date, t.type]))
   const average =
     year.plan.workDays.length > 0 ? year.plan.hoursPerWeek / year.plan.workDays.length : 0
   const reference = hasAim(year) ? null : Math.max(0, ...minutes.values())
-  return Array.from({ length: (year.weeks ?? YEAR_WEEKS) * 7 }, (_, i) => {
+  return Array.from({ length: daysBetween(year.start, contractEnd(year)) + 1 }, (_, i) => {
     const date = addDays(year.start, i)
     const m = minutes.get(date) ?? 0
     const aim = dailyAim(year, date)

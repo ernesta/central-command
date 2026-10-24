@@ -1,6 +1,7 @@
 import { minutesByDate } from '@shared/tracking/totals'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
 import { addDays, daysBetween, weekdayOf } from '@shared/year'
+import { contractEnd } from '@shared/tracking/workspace-weeks'
 
 export interface TypicalDay {
   /** Monday is 1 and Sunday is 7. */
@@ -29,7 +30,8 @@ export function typicalWeek(
   const perDay =
     year.plan.workDays.length > 0 ? year.plan.hoursPerWeek / year.plan.workDays.length : 0
   const through = daysBetween(year.start, now.date) // days before today
-  for (let i = 0; i < through && i < (year.weeks ?? 52) * 7; i++) {
+  const last = daysBetween(year.start, contractEnd(year)) // the real last day, not the end of the last report week
+  for (let i = 0; i < through && i <= last; i++) {
     const date = addDays(year.start, i)
     if (off.has(date)) continue
     const s = sums[weekdayOf(date) - 1]
