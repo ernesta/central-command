@@ -1,11 +1,11 @@
 import { formatDate } from '../time'
-import { inYear } from '../year'
+import { inContract } from './workspace-weeks'
 import { defaultClient, lastUsedClient } from './timer'
 import type { TrackingYear } from './types'
 
 /** The contracts (years) that hold a date, in the order given (newest start first from the store). */
 export function holding(years: readonly TrackingYear[], date: string): TrackingYear[] {
-  return years.filter((y) => inYear(date, y.start, y.weeks))
+  return years.filter((y) => inContract(date, y))
 }
 
 /** The contract among `years` that holds `date` and has `client` (exact name, as the plan spells it). */

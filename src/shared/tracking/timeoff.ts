@@ -1,4 +1,5 @@
-import { addDays, daysBetween, inYear, weekdayOf } from '../year'
+import { addDays, daysBetween, weekdayOf } from '../year'
+import { inContract } from './workspace-weeks'
 import type { Change, TimeOffEntry, TimeOffType, TrackingYear } from './types'
 
 export interface TimeOffCounts {
@@ -14,7 +15,7 @@ export interface TimeOffCounts {
 
 /** A weekend date is never a day off that counts. */
 function counts(entry: TimeOffEntry, year: TrackingYear): boolean {
-  return inYear(entry.date, year.start, year.weeks) && weekdayOf(entry.date) <= 5
+  return inContract(entry.date, year) && weekdayOf(entry.date) <= 5
 }
 
 /** Counted from the rows inside the year, never typed in. */
@@ -73,8 +74,7 @@ export function addTimeOff(
   to: string,
   type: TimeOffType
 ): Change {
-  if (!inYear(from, year.start, year.weeks) || !inYear(to, year.start, year.weeks))
-    return { ok: false, reason: 'outside-year' }
+  if (!inContract(from, year) || !inContract(to, year)) return { ok: false, reason: 'outside-year' }
   if (daysBetween(from, to) < 0) return { ok: false, reason: 'backwards' }
   const added: TimeOffEntry[] = []
   for (let d = from; d <= to; d = addDays(d, 1))
@@ -108,7 +108,7 @@ export function editTimeOff(
 ): Change {
   if (!year.timeOff.some((e) => e.date === from)) return { ok: false, reason: 'missing' }
   if (to !== from) {
-    if (!inYear(to, year.start, year.weeks)) return { ok: false, reason: 'outside-year' }
+    if (!inContract(to, year)) return { ok: false, reason: 'outside-year' }
     if (weekdayOf(to) > 5) return { ok: false, reason: 'weekend' }
     if (year.timeOff.some((e) => e.date === to)) return { ok: false, reason: 'listed' }
   }

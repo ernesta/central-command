@@ -46,6 +46,21 @@ describe('parseYear', () => {
     expect(parseYear({ ...good(), plan })).toBeNull()
   })
 
+  it('takes an optional end whose report weeks match `weeks`, and reads a file with none as before', () => {
+    const base = { ...emptyYear('2026-10-30'), weeks: 2 }
+    expect(parseYear({ ...base, end: '2026-11-08' })?.end).toBe('2026-11-08')
+    expect(parseYear({ ...base, end: '2026-11-12' })?.end).toBe('2026-11-12')
+    expect(parseYear({ ...emptyYear('2026-10-30'), weeks: 1, end: '2026-10-30' })?.end).toBe(
+      '2026-10-30'
+    )
+    expect(parseYear(base)?.end).toBeUndefined()
+    // Not a date, before the start, or not the rounded-up grid of `weeks`: refused, never repaired.
+    expect(parseYear({ ...base, end: '2026-11-31' })).toBeNull()
+    expect(parseYear({ ...base, end: '2026-10-29' })).toBeNull()
+    expect(parseYear({ ...base, end: '2026-11-15' })).toBeNull()
+    expect(parseYear({ ...base, end: '2026-10-30', weeks: 2 })).toBeNull()
+  })
+
   it('keeps unknown keys, at the top and in entries', () => {
     const doc = {
       ...good(),

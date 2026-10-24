@@ -1,4 +1,4 @@
-import { inYear } from '../year'
+import { inContract } from './workspace-weeks'
 import { carrySeconds, exactSeconds, reportFor, timeToSeconds } from './rounding'
 import type { Change, Moment, Session, TrackingYear } from './types'
 
@@ -92,7 +92,7 @@ export function startSession(
   const name = label.trim()
   const chosen = resolveClient(year, client)
   if (!chosen.ok) return chosen
-  if (!inYear(now.date, year.start, year.weeks)) return { ok: false, reason: 'outside-year' }
+  if (!inContract(now.date, year)) return { ok: false, reason: 'outside-year' }
   if (timeToSeconds(now.time) === null) return { ok: false, reason: 'bad-time' }
   let current = year
   const running = runningSession(year)
@@ -243,7 +243,7 @@ export function renameTask(
 ): Change {
   const name = to.trim()
   if (!name) return { ok: false, reason: 'empty-label' }
-  if (!inYear(date, year.start, year.weeks)) return { ok: false, reason: 'outside-year' }
+  if (!inContract(date, year)) return { ok: false, reason: 'outside-year' }
   const hit = (e: { date: string; label: string; client?: string }): boolean =>
     e.date === date && sameTask(e, from, client)
   return {
@@ -284,7 +284,7 @@ export function setClient(
   from: string | undefined,
   to: string
 ): Change {
-  if (!inYear(date, year.start, year.weeks)) return { ok: false, reason: 'outside-year' }
+  if (!inContract(date, year)) return { ok: false, reason: 'outside-year' }
   if (!(year.plan.clients ?? []).includes(to)) return { ok: false, reason: 'bad-client' }
   const hit = (e: { date: string; label: string; client?: string }): boolean =>
     e.date === date && sameTask(e, label, from)

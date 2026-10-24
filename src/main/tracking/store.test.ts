@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSyn
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { emptyYear, type Moment, type TrackingYear } from '@shared/tracking/types'
+import { WORK_PLAN, emptyYear, type Moment, type TrackingYear } from '@shared/tracking/types'
 import { TrackingStore, yearFileName, type TrackingDeps } from './store'
 
 const STARTS = ['2025-09-22', '2026-09-21']
@@ -102,13 +102,17 @@ describe('Work contracts', () => {
     expect(store.years('work')).toEqual([START])
   })
 
-  it('refuses a start that is not a date and an end that does not make whole weeks', () => {
+  it('refuses a start that is not a date and an end before the start or past the longest contract', () => {
     const store = contract()
     expect(store.createContract('work', '2026-11-31', '2027-04-29')).toEqual({
       ok: false,
       reason: 'bad-start'
     })
-    expect(store.createContract('work', '2026-10-30', '2027-04-30')).toEqual({
+    expect(store.createContract('work', '2026-10-30', '2026-10-29')).toEqual({
+      ok: false,
+      reason: 'bad-end'
+    })
+    expect(store.createContract('work', '2026-10-30', '2029-11-30')).toEqual({
       ok: false,
       reason: 'bad-end'
     })
@@ -123,6 +127,105 @@ describe('Work contracts', () => {
     expect(store.createContract('work', '2025-10-01', '2026-03-31').ok).toBe(true)
     expect(store.years('work')).toEqual([START, '2025-10-01'])
     expect(store.get('work', '2025-10-01').weeks).toBe(26)
+  })
+
+  describe('any length', () => {
+    const oldFile = (end?: string): void => {
+      // A contract file written before `end` existed: whole weeks, only `weeks`.
+      mkdirSync(join(dir, 'work'), { recursive: true })
+      writeFileSync(
+        file('work', `${START}.json`),
+        JSON.stringify({ ...emptyYear(START, WORK_PLAN), weeks: 26, ...(end ? { end } : {}) })
+      )
+    }
+
+    it('makes a one-day contract and writes its real last day', () => {
+      const store = open()
+      expect(store.createContract('work', '2026-10-30', '2026-10-30').ok).toBe(true)
+      const year = read('work', '2026-10-30.json')
+      expect(year).toMatchObject({ weeks: 1, end: '2026-10-30' })
+    })
+
+    it('makes a 10-day contract with two report weeks and the real end', () => {
+      const store = open()
+      expect(store.createContract('work', '2026-10-30', '2026-11-08').ok).toBe(true)
+      expect(read('work', '2026-10-30.json')).toMatchObject({ weeks: 2, end: '2026-11-08' })
+    })
+
+    it('tracks on the last day but not on a day after it in the last report week', () => {
+      const store = open()
+      store.createContract('work', '2026-10-30', '2026-11-08')
+      at('2026-11-08', '10:00:00')
+      expect(store.start('work', 'A').ok).toBe(true)
+      store.stop()
+      at('2026-11-09', '10:00:00')
+      expect(store.start('work', 'A')).toEqual({ ok: false, reason: 'outside-year' })
+      expect(store.addTime('work', '2026-10-30', '2026-11-09', 'A', 30, 'Impact')).toEqual({
+        ok: false,
+        reason: 'outside-year'
+      })
+    })
+
+    it('a day after the end belongs to no contract, so a later contract may start on it', () => {
+      const store = open()
+      store.createContract('work', '2026-10-30', '2026-11-08')
+      expect(store.createContract('work', '2026-11-09', '2026-11-20').ok).toBe(true)
+    })
+
+    it('lets two contracts with a client share the report week when the real ends do not overlap', () => {
+      const store = open()
+      store.createContract('work', '2026-10-30', '2026-11-08')
+      // Inside the old grid (the second week runs to 12 Nov) but after the real end.
+      expect(store.createContract('work', '2026-11-10', '2026-11-12').ok).toBe(true)
+      // On the real end: refused.
+      expect(store.createContract('work', '2026-11-08', '2026-11-12')).toEqual({
+        ok: false,
+        reason: 'client-overlap'
+      })
+    })
+
+    it('sets the end of an old file that has none, and writes end and weeks together', () => {
+      oldFile()
+      const store = open()
+      expect(store.get('work', START).end).toBeUndefined()
+      expect(store.setContractEnd('work', START, '2026-05-10').ok).toBe(true)
+      expect(read('work', `${START}.json`)).toMatchObject({ weeks: 2, end: '2026-05-10' })
+    })
+
+    it('lengthens an old file to a day that is not the end of a week', () => {
+      oldFile()
+      const store = open()
+      expect(store.setContractEnd('work', START, '2026-11-02').ok).toBe(true)
+      expect(read('work', `${START}.json`)).toMatchObject({ weeks: 27, end: '2026-11-02' })
+    })
+
+    it('refuses shortening past time, counted by day and not by report week', () => {
+      oldFile()
+      const store = open()
+      at('2026-05-09', '10:00:00')
+      store.start('work', 'A')
+      at('2026-05-09', '10:30:00')
+      store.stop()
+      expect(store.setContractEnd('work', START, '2026-05-08')).toEqual({
+        ok: false,
+        reason: 'has-time-after'
+      })
+      expect(store.setContractEnd('work', START, '2026-05-09').ok).toBe(true)
+    })
+
+    it('reads an old file unchanged: its end is the last day of its last report week', () => {
+      oldFile()
+      const before = readFileSync(file('work', `${START}.json`), 'utf8')
+      const store = open()
+      const year = store.get('work', START)
+      expect(year.end).toBeUndefined()
+      expect(readFileSync(file('work', `${START}.json`), 'utf8')).toBe(before)
+      at('2026-10-29', '10:00:00')
+      expect(store.start('work', 'A').ok).toBe(true)
+      store.stop()
+      at('2026-10-30', '10:00:00')
+      expect(store.start('work', 'A')).toEqual({ ok: false, reason: 'outside-year' })
+    })
   })
 
   describe('overlap', () => {

@@ -1,4 +1,5 @@
-import { addDays, daysBetween, inYear, weekdayOf, weeksOf, yearEnd } from '../year'
+import { addDays, daysBetween, weekdayOf, weeksOf } from '../year'
+import { contractEnd, inContract } from './workspace-weeks'
 import { minutesByDate, weeklyMinutes } from './totals'
 import { unlistedAllowance } from './timeoff'
 import type { Moment, TrackingYear } from './types'
@@ -36,7 +37,7 @@ function plannedDaysComputed(year: TrackingYear, weekStart: string): number {
 /** Minutes aimed at on a planned day: the week's hours over the days worked. Null on any other day. */
 export function dailyAim(year: TrackingYear, date: string): number | null {
   const days = year.plan.workDays.length
-  if (year.plan.weekAim || days === 0 || !inYear(date, year.start, year.weeks)) return null
+  if (year.plan.weekAim || days === 0 || !inContract(date, year)) return null
   return isPlannedDay(year, offDates(year), date) ? year.plan.hoursPerWeek / days : null
 }
 
@@ -73,9 +74,9 @@ export function unlistedCredit(year: TrackingYear): number {
   return days === 0 ? 0 : (unlistedAllowance(year) * year.plan.hoursPerWeek) / days
 }
 
-/** The year's last day: the last day of its last week. */
+/** The year's last day: a contract's real end (a date), not the end of its last report week. */
 function lastDay(year: TrackingYear): string {
-  return yearEnd(year.start, year.weeks)
+  return contractEnd(year)
 }
 
 export interface YearTotals {

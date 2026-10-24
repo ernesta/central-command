@@ -48,8 +48,13 @@ import {
   type TimeOffType,
   type TrackingYear
 } from '@shared/tracking/types'
-import { dayNumber, inYear, yearEnd, yearLabel, yearStartOf, yearsPresent } from '@shared/year'
-import { contractWeeks, hasContracts } from '@shared/tracking/workspace-weeks'
+import { dayNumber, yearLabel, yearStartOf, yearsPresent } from '@shared/year'
+import {
+  contractEnd,
+  contractWeeks,
+  hasContracts,
+  inContract
+} from '@shared/tracking/workspace-weeks'
 import {
   contractForClient,
   contractIsEmpty,
@@ -608,7 +613,7 @@ export class TrackingStore {
   }
 
   /**
-   * Start a contract (a Work year): its first and last day are the user's, whole weeks. Contracts may overlap, but
+   * Start a contract (a Work year): its first and last day are the user's, any length. Contracts may overlap, but
    * never start on the same day (the file is named by it) and never share a client on any day (the client is how an
    * entry knows its contract). It has a plan of its own, not the previous contract's: `terms` say its clients and
    * weekly aim (0 is no fixed hours), and what they leave out comes from `defaultPlan`. Nothing is carried over, so
@@ -636,12 +641,13 @@ export class TrackingStore {
       ...(terms.weeklyMinutes !== undefined ? { hoursPerWeek: terms.weeklyMinutes } : {})
     })
     if (!plan) return { ok: false, reason: 'bad-plan' }
-    if (this.sharesClient(workspace, start, weeks.weeks, null, plan.clients ?? [])) {
+    if (this.sharesClient(workspace, start, end, null, plan.clients ?? [])) {
       return { ok: false, reason: 'client-overlap' }
     }
     const year: TrackingYear = {
       ...emptyYear(start, plan, 0),
       weeks: weeks.weeks,
+      end,
       ...(name ? { name } : {}),
       ...(terms.invoice ? { invoice: terms.invoice } : {})
     }
@@ -652,7 +658,8 @@ export class TrackingStore {
   }
 
   /**
-   * Move a contract's last day (whole weeks). Never past a day that holds time. It may run into another contract,
+   * Move a contract's last day (any day from the first day on). Never past a day that holds time. Works on a file with
+   * no `end` (it writes `end` and `weeks` together). It may run into another contract,
    * but not one that has a client of its own on the days gained.
    */
   setContractEnd(workspace: Workspace, start: string, end: string): YearResult {
@@ -660,15 +667,17 @@ export class TrackingStore {
     const weeks = contractWeeks(start, end)
     if (!weeks.ok) return weeks
     const own = this.peek(workspace, start)?.plan.clients ?? []
-    if (this.sharesClient(workspace, start, weeks.weeks, start, own)) {
+    if (this.sharesClient(workspace, start, end, start, own)) {
       return { ok: false, reason: 'client-overlap' }
     }
     return this.mutate(workspace, start, (y) => {
-      const last = yearEnd(start, weeks.weeks)
-      const used = [...y.sessions, ...y.adjusts].some((s) => s.date > last)
+      const used =
+        [...y.sessions, ...y.adjusts].some((s) => s.date > end) ||
+        Object.entries(y.days).some(([date, d]) => date > end && (d.minutes ?? 0) > 0)
+      // An older file has no `end`: it is written together with `weeks`, so the real last day is never derived again.
       return used
         ? { ok: false, reason: 'has-time-after' }
-        : { ok: true, year: { ...y, weeks: weeks.weeks } }
+        : { ok: true, year: { ...y, weeks: weeks.weeks, end } }
     })
   }
 
@@ -716,22 +725,21 @@ export class TrackingStore {
   }
 
   /**
-   * Whether another contract (`except` is left out) shares a day with one of `weeks` weeks from `start` and has one
+   * Whether another contract (`except` is left out) shares a day with one from `start` to `end` and has one
    * of `clients` (compared ignoring case).
    */
   private sharesClient(
     workspace: Workspace,
     start: string,
-    weeks: number,
+    end: string,
     except: string | null,
     clients: readonly string[]
   ): boolean {
     const mine = new Set(clients.map((c) => c.toLowerCase()))
-    const end = yearEnd(start, weeks)
     return this.fileStarts(workspace).some((s) => {
       if (s === except) return false
       const other = this.peek(workspace, s)
-      if (!other || s > end || yearEnd(s, other.weeks) < start) return false
+      if (!other || s > end || contractEnd(other) < start) return false
       return (other.plan.clients ?? []).some((c) => mine.has(c.toLowerCase()))
     })
   }
@@ -767,7 +775,7 @@ export class TrackingStore {
     const years: TrackingYear[] = []
     for (const start of this.fileStarts(workspace)) {
       const year = this.peek(workspace, start)
-      if (year && inYear(today, start, year.weeks)) years.push(year)
+      if (year && inContract(today, year)) years.push(year)
     }
     return years
   }

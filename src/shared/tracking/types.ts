@@ -103,6 +103,11 @@ export interface TrackingYear {
   start: string
   /** The length in weeks when it is not 52: a Work contract. */
   weeks?: number
+  /**
+   * A Work contract's real last day (ISO). `weeks` is only the reporting grid, rounded up from it; an old file has no
+   * `end` and ends on its last report week's last day (`contractEnd`).
+   */
+  end?: string
   /** A Work contract's name (Luminos, Research Assistant), shown with its dates. */
   name?: string
   /** How a Work contract is invoiced; absent reads as `month`. */

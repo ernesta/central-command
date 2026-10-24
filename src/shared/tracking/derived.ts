@@ -1,5 +1,5 @@
 import { fold } from '../text'
-import { inYear } from '../year'
+import { inContract } from './workspace-weeks'
 import { reportedMinutes } from './rounding'
 import type { DerivedKind, Session, TrackingYear } from './types'
 
@@ -35,7 +35,7 @@ export function withDerived(year: TrackingYear, entries: readonly DerivedEntry[]
   for (const s of year.sessions) if (s.earlier && s.task) counted.add(`${s.date} ${s.task}`)
   for (const a of year.adjusts) if (a.earlier && a.task) counted.add(`${a.date} ${a.task}`)
   for (const e of entries) {
-    if (!inYear(e.date, year.start, year.weeks)) continue
+    if (!inContract(e.date, year)) continue
     if (counted.has(`${e.date} ${e.task}`)) continue
     let client: string | undefined
     if (clients.length > 0) {

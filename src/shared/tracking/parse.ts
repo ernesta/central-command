@@ -1,4 +1,4 @@
-import { dayNumber } from '../year'
+import { YEAR_WEEKS, dayNumber, daysBetween } from '../year'
 import { timeToSeconds } from './rounding'
 import {
   DEFAULT_PLAN,
@@ -75,6 +75,12 @@ export function parseYear(raw: unknown): TrackingYear | null {
   if (!plan) return null
   if (raw.weeks !== undefined && (!isInt(raw.weeks) || raw.weeks < 1 || raw.weeks > 156))
     return null
+  if (raw.end !== undefined) {
+    // The real last day: on or after the start, and `weeks` is its rounded-up reporting grid.
+    if (!isDate(raw.end) || raw.end < raw.start) return null
+    const grid = Math.ceil((daysBetween(raw.start, raw.end) + 1) / 7)
+    if (grid !== (raw.weeks ?? YEAR_WEEKS)) return null
+  }
   if (
     raw.name !== undefined &&
     (!isString(raw.name) || raw.name.trim() === '' || raw.name !== raw.name.trim())

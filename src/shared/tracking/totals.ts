@@ -1,6 +1,7 @@
-import { addDays, inYear, weeksOf } from '../year'
+import { addDays, weeksOf } from '../year'
 import { provisionalMinutes, QUARTER, reportedMinutes, timeToSeconds } from './rounding'
 import { resolveClient, sameTask } from './timer'
+import { inContract } from './workspace-weeks'
 import type { Adjust, Change, Moment, Session, TrackingYear } from './types'
 
 export interface TaskRow {
@@ -28,7 +29,7 @@ function runningMinutes(s: Session, now: Moment | undefined): number {
  * row at 0:00 that is not running is left out.
  */
 export function dayRows(year: TrackingYear, date: string, now?: Moment): TaskRow[] {
-  if (!inYear(date, year.start, year.weeks)) return []
+  if (!inContract(date, year)) return []
   const rows: TaskRow[] = []
   const find = (label: string, client: string | undefined): TaskRow => {
     let row = rows.find((r) => sameTask(r, label, client))
@@ -75,8 +76,7 @@ export function dayRows(year: TrackingYear, date: string, now?: Moment): TaskRow
 export function minutesByDate(year: TrackingYear, now?: Moment): Map<string, number> {
   const map = new Map<string, number>()
   const add = (date: string, minutes: number): void => {
-    if (minutes !== 0 && inYear(date, year.start, year.weeks))
-      map.set(date, (map.get(date) ?? 0) + minutes)
+    if (minutes !== 0 && inContract(date, year)) map.set(date, (map.get(date) ?? 0) + minutes)
   }
   for (const s of year.sessions)
     add(s.date, s.end === null ? runningMinutes(s, now) : reportedMinutes(s))
@@ -97,7 +97,7 @@ export function minutesByClient(
 ): { client: string | null; minutes: number }[] {
   const sums = new Map<string | null, number>()
   const add = (date: string, client: string | undefined, minutes: number): void => {
-    if (minutes === 0 || date < from || date > to || !inYear(date, year.start, year.weeks)) return
+    if (minutes === 0 || date < from || date > to || !inContract(date, year)) return
     sums.set(client ?? null, (sums.get(client ?? null) ?? 0) + minutes)
   }
   for (const s of year.sessions)
@@ -181,7 +181,7 @@ export function setTaskMinutes(
 ): Change {
   const name = label.trim()
   if (!name) return { ok: false, reason: 'empty-label' }
-  if (!inYear(date, year.start, year.weeks)) return { ok: false, reason: 'outside-year' }
+  if (!inContract(date, year)) return { ok: false, reason: 'outside-year' }
   if (minutes < 0 || !validQuarter(minutes)) return { ok: false, reason: 'not-a-quarter' }
   let timer = 0
   for (const s of year.sessions)
@@ -248,7 +248,7 @@ export function addTime(
 ): Change {
   const name = label.trim()
   if (!name) return { ok: false, reason: 'empty-label' }
-  if (!inYear(date, year.start, year.weeks)) return { ok: false, reason: 'outside-year' }
+  if (!inContract(date, year)) return { ok: false, reason: 'outside-year' }
   if (minutes <= 0 || !validQuarter(minutes)) return { ok: false, reason: 'not-a-quarter' }
   const chosen = resolveClient(year, client)
   if (!chosen.ok) return chosen
@@ -301,7 +301,7 @@ export function restoreEntries(year: TrackingYear, before: EntryParts, after: En
 
 /** A day's short note. An empty one removes it; a day left with nothing is dropped. */
 export function setDayNote(year: TrackingYear, date: string, note: string): Change {
-  if (!inYear(date, year.start, year.weeks)) return { ok: false, reason: 'outside-year' }
+  if (!inContract(date, year)) return { ok: false, reason: 'outside-year' }
   const days = { ...year.days }
   const text = note.trim()
   const entry = { ...days[date] }
