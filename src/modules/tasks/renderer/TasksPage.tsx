@@ -24,6 +24,7 @@ import {
 import { TASK_PRIORITIES } from '../shared/types'
 import type { TaskView } from '../shared/views'
 import { PRIORITY_LABELS } from './task-labels'
+import { AddBar } from './AddBar'
 import { useWorkClients } from './useWorkClients'
 import { TasksTable } from './TasksTable'
 import { todayIso, useTasksWorkspace } from './tasks-paths'
@@ -173,6 +174,10 @@ export function TasksPage(): React.JSX.Element {
       <header className={styles.header}>
         <h1 className={styles.heading}>{heading}</h1>
       </header>
+
+      {rows !== null && (
+        <AddBar workspace={workspace} rows={all} today={today} listFilter={query.list} />
+      )}
 
       <FilterRow>
         <SearchInput
