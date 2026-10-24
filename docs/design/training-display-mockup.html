@@ -1,0 +1,84 @@
+<title>Training display mockups</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@500&display=swap">
+<style>
+  /* Layout: three running-timer cards side by side, each labelled, using Central Command's own tokens. */
+  :root {
+    --bg: #edeff2; --surface: #ffffff; --ink: #1b222b; --text-secondary: #3a4652; --text-muted: #5c6672;
+    --border-soft: #d3d8de; --border-strong: #c3cad2; --hover-tint: #f4f6f8;
+    --accent: #35577a; --accent-contrast: #ffffff; --selected-bg: #dce6ee; --selected-text: #1f3a52;
+    --shadow: rgba(27, 34, 43, 0.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14181d; --surface: #1f262e; --ink: #e6eaee; --text-secondary: #c2cad2; --text-muted: #98a3af;
+      --border-soft: #2f3843; --border-strong: #3d4855; --hover-tint: #262e37;
+      --accent: #86aad0; --accent-contrast: #0f1620; --selected-bg: #2a3b4d; --selected-text: #d3e3f2;
+      --shadow: rgba(0, 0, 0, 0.55); color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14181d; --surface: #1f262e; --ink: #e6eaee; --text-secondary: #c2cad2; --text-muted: #98a3af;
+    --border-soft: #2f3843; --border-strong: #3d4855; --hover-tint: #262e37;
+    --accent: #86aad0; --accent-contrast: #0f1620; --selected-bg: #2a3b4d; --selected-text: #d3e3f2;
+    --shadow: rgba(0, 0, 0, 0.55); color-scheme: dark;
+  }
+  body { background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', system-ui, sans-serif; padding-inline: 16px; padding-block: 28px; }
+  main { max-width: 1100px; margin: 0 auto; display: grid; gap: 24px; }
+  h1 { font-family: 'Newsreader', Georgia, serif; font-weight: 500; font-size: 28px; margin: 0; text-wrap: balance; }
+  .lead { margin: 0; color: var(--text-secondary); font-size: 15px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); gap: 20px; align-items: start; }
+  .option { display: grid; gap: 10px; min-width: 0; }
+  .option h2 { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+  .option p { margin: 0; font-size: 13px; color: var(--text-secondary); }
+  .stage { padding: 12px; border-radius: 14px; background: var(--hover-tint); }
+  .chip { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 3px 4px 3px 10px; border: 1px solid var(--border-strong); border-radius: 999px; background: var(--surface); font-size: 14px; font-variant-numeric: tabular-nums; color: var(--text-secondary); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .pill b { color: var(--ink); font-weight: 500; }
+  .pill i { font-style: normal; padding: 3px 10px; border-radius: 999px; background: var(--selected-bg); color: var(--selected-text); font-size: 12px; font-weight: 600; }
+  .card { width: min(420px, 100%); margin-left: auto; box-sizing: border-box; display: grid; gap: 12px; padding: 16px; background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; box-shadow: 0 8px 24px var(--shadow); font-size: 14px; }
+  .title { font-weight: 600; font-size: 15px; }
+  .list { font-size: 13px; color: var(--text-muted); }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .time { color: var(--text-muted); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 6px; }
+  .box { padding: 3px 8px; border: 1px solid var(--border-strong); border-radius: 8px; color: var(--ink); }
+  .btn { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); font-weight: 500; }
+  .quiet { font: inherit; font-size: 13px; padding: 0; border: 0; background: none; color: var(--text-muted); }
+  .rule { border: 0; border-top: 1px solid var(--border-faint, var(--border-soft)); margin: 0; }
+  .links { display: flex; gap: 16px; }
+  .btns { display: flex; gap: 8px; }
+  .more { margin-left: auto; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; color: var(--text-muted); border: 1px solid var(--border-soft); }
+  .menu { justify-self: end; display: grid; gap: 2px; padding: 4px; border: 1px solid var(--border-soft); border-radius: 8px; width: 140px; font-size: 13px; }
+  .menu span { padding: 5px 8px; border-radius: 6px; }
+  .menu span:first-child { background: var(--hover-tint); }
+  .ask { font-size: 15px; font-weight: 500; }
+
+
+  .sub { font-size: 13px; color: var(--text-muted); display: flex; min-width: 0; }
+  .sub .p { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 0 1 auto; }
+  .sub .l { flex: none; white-space: pre; }
+  .surface { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; padding: 4px; display: grid; gap: 2px; box-sizing: border-box; }
+  .r { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 8px 10px; border-radius: 8px; }
+  .r.on, .o.on { background: var(--hover-tint); }
+  .circle { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--text-muted); }
+  .r .t { font-size: 15px; color: var(--ink); }
+  .badge { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--selected-bg); color: var(--selected-text); }
+  .picker { width: 420px; max-width: 100%; }
+  .o { display: grid; gap: 1px; padding: 6px 8px; border-radius: 8px; font-size: 14px; color: var(--ink); min-width: 0; }
+  .o .t { overflow-wrap: anywhere; }
+  .o.side { grid-template-columns: minmax(0,1fr) auto; gap: 10px; align-items: baseline; }
+  .o.side .d { max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--text-muted); }
+  .heading { padding: 6px 8px 2px; font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+  .hrow { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 8px 10px; border-radius: 8px; font-size: 14px; }
+  .hrow .dur { font-variant-numeric: tabular-nums; color: var(--text-secondary); }
+  .rule-box { padding: 12px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border-soft); font-size: 14px; color: var(--text-secondary); }
+  .rule-box code { font-family: ui-monospace, monospace; color: var(--ink); }
+  .sect { display: grid; gap: 12px; }
+  .sect > h2 { margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 500; font-size: 22px; }
+  .ic { flex: none; align-self: center; margin-right: 4px; }
+  .sub .l2 { flex: none; white-space: pre; }
+  .tag { font-size: 12px; color: var(--accent); font-weight: 600; }
+</style>
+</head>
+<body><main><h1>How a training is shown today</h1><p class="lead">From the built app on a copy of your library. One training, "Day 2" of Example Training Series, appears under four names: Series: Title, Title, Series › Title, and "Series self-study".</p><section class="sect"><div class="grid"><div class="option"><h2>Training landing and list</h2><div class="stage"><div class="surface" style="max-width:520px"><div class="r"><span></span><div><div class="t">Example Training Series: Day 2</div><div class="sub"><span class="p">22 Oct 2026 · 10:00–15:00 · 5 h · In person</span></div></div><span class="badge">HI</span></div></div></div><p>Named <b>Series: Title</b>, with the date, time and leads.</p></div><div class="option"><h2>Training note (heading)</h2><div class="stage"><div class="surface" style="max-width:520px"><div class="r"><span></span><div><div class="t" style="font-family:Newsreader,Georgia,serif;font-size:26px;font-weight:500">Day 2</div><div class="sub"><span class="p">Series field: Example Training Series</span></div></div><span></span></div></div></div><p>Named <b>Title</b> only; the series sits in a field. Self-study is a card with Start / Add time.</p></div><div class="option"><h2>Home: Coming up</h2><div class="stage"><div class="surface" style="max-width:520px"><div class="r"><span class="circle"></span><div><div class="t">Day 1</div><div class="sub"><span class="p">Training · due in 4 days</span></div></div><span class="badge">P2</span></div></div></div><p>The training's own task: <b>Title</b> only, no series, "due" even though it is a session.</p></div><div class="option"><h2>Search (three hits for one training)</h2><div class="stage"><div class="surface" style="max-width:520px"><div class="r"><span></span><div><div class="t">Example Training Series: Day 2</div><div class="sub"><span class="p">22 Oct</span></div></div></div><div class="r"><span class="circle"></span><div><div class="t">Day 2</div><div class="sub"><span class="p">Subtask of Example Training Series · 22 Oct</span></div></div></div><div class="r"><span class="circle"></span><div><div class="t"><span style="color:var(--text-muted)">Example Training Series › </span>Day 2</div><div class="sub"><span class="p">Subtask of Example Training Series self-study · 29 Oct</span></div></div></div></div></div><p>The entry is <b>Series: Title</b>, its task is <b>Title</b>, its self-study task is <b>Series › Title</b>.</p></div><div class="option"><h2>Tasks table (series rows)</h2><div class="stage"><div class="surface" style="max-width:520px"><div class="r"><span class="circle"></span><div><div class="t">Example Training Series <span class="badge">2/2 ›</span></div></div><span>Training</span></div><div class="r"><span class="circle"></span><div><div class="t">Example Training Series self-study <span class="badge">2/2 ›</span></div></div><span>Training</span></div></div></div><p>A task per series and one "self-study" task per series; the sessions are subtasks inside.</p></div><div class="option"><h2>Hours and timer picker</h2><div class="stage"><div class="surface" style="max-width:520px"><div class="r"><span></span><div><div class="t"><span style="color:var(--text-muted)">Example Training Series › </span>Day 2</div><div class="sub"><span class="p">Training</span></div></div></div></div></div><p>Self-study only: <b>Series › Title</b>. The training's own task is hidden here.</p></div></div></section><section class="sect"><h2>Option 1: the prefix, everywhere ("Series › Title")</h2><p class="lead">What self-study has now, extended to the training's own task so Home says which series "Day 1" belongs to. Training: <code>Series › Title</code>; self-study: the same plus a second line saying so.</p><div class="grid"><div class="option"><h2>Search</h2><div class="stage"><div class="surface picker"><div class="r"><span></span><div><div class="t"><span style="color:var(--text-muted)">Example Training Series › </span>Day 2</div><div class="sub"><span class="p">Training · 22 Oct</span></div></div></div><div class="r"><span></span><div><div class="t"><span style="color:var(--text-muted)">Example Training Series › </span>Day 2</div><div class="sub"><span class="p">Self-study · Training · due 29 Oct</span></div></div></div></div></div></div><div class="option"><h2>Timer picker / Hours row</h2><div class="stage"><div class="surface picker"><div class="r"><span></span><div><div class="t"><span style="color:var(--text-muted)">Example Training Series › </span>Day 2</div><div class="sub"><span class="p">Self-study · Training</span></div></div></div></div></div></div><div class="option"><h2>Home: Coming up</h2><div class="stage"><div class="surface picker"><div class="r"><span class="circle"></span><div><div class="t"><span style="color:var(--text-muted)">Example Training Series › </span>Day 1</div><div class="sub"><span class="p">Training · due in 4 days</span></div></div></div></div></div></div></div></section><section class="sect"><h2>Option 2: the training's own name, a cap icon</h2><p class="lead">Both rows are named <code>Series: Title</code> exactly as the Training module names it, with the graduation-cap icon (already used on Home for trainings) in place of the circle or nothing. The second line says which part it is: <code>Session</code> or <code>Self-study</code>.</p><div class="grid"><div class="option"><h2>Search</h2><div class="stage"><div class="surface picker"><div class="r"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="margin:0;color:var(--text-muted)"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg><div><div class="t">Example Training Series: Day 2</div><div class="sub"><span class="p">Training · session · 22 Oct</span></div></div></div><div class="r"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="margin:0;color:var(--text-muted)"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg><div><div class="t">Example Training Series: Day 2</div><div class="sub"><span class="p">Training · self-study · due 29 Oct</span></div></div></div></div></div></div><div class="option"><h2>Timer picker / Hours row</h2><div class="stage"><div class="surface picker"><div class="r"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="margin:0;color:var(--text-muted)"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg><div><div class="t">Example Training Series: Day 2</div><div class="sub"><span class="p">Training · self-study</span></div></div></div></div></div></div><div class="option"><h2>Home: Coming up</h2><div class="stage"><div class="surface picker"><div class="r"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="margin:0;color:var(--text-muted)"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg><div><div class="t">Example Training Series: Day 1</div><div class="sub"><span class="p">Training · session · in 4 days</span></div></div></div></div></div></div></div></section><section class="sect"><p class="lead">Neither option touches ordinary subtasks: they keep <code>↳ parent · list</code> (7B).</p></section></main></body></html>
