@@ -1,0 +1,150 @@
+<title>Subtask with its parent mockups</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@500&display=swap">
+<style>
+  /* Layout: three running-timer cards side by side, each labelled, using Central Command's own tokens. */
+  :root {
+    --bg: #edeff2; --surface: #ffffff; --ink: #1b222b; --text-secondary: #3a4652; --text-muted: #5c6672;
+    --border-soft: #d3d8de; --border-strong: #c3cad2; --hover-tint: #f4f6f8;
+    --accent: #35577a; --accent-contrast: #ffffff; --selected-bg: #dce6ee; --selected-text: #1f3a52;
+    --shadow: rgba(27, 34, 43, 0.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14181d; --surface: #1f262e; --ink: #e6eaee; --text-secondary: #c2cad2; --text-muted: #98a3af;
+      --border-soft: #2f3843; --border-strong: #3d4855; --hover-tint: #262e37;
+      --accent: #86aad0; --accent-contrast: #0f1620; --selected-bg: #2a3b4d; --selected-text: #d3e3f2;
+      --shadow: rgba(0, 0, 0, 0.55); color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14181d; --surface: #1f262e; --ink: #e6eaee; --text-secondary: #c2cad2; --text-muted: #98a3af;
+    --border-soft: #2f3843; --border-strong: #3d4855; --hover-tint: #262e37;
+    --accent: #86aad0; --accent-contrast: #0f1620; --selected-bg: #2a3b4d; --selected-text: #d3e3f2;
+    --shadow: rgba(0, 0, 0, 0.55); color-scheme: dark;
+  }
+  body { background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', system-ui, sans-serif; padding-inline: 16px; padding-block: 28px; }
+  main { max-width: 1100px; margin: 0 auto; display: grid; gap: 24px; }
+  h1 { font-family: 'Newsreader', Georgia, serif; font-weight: 500; font-size: 28px; margin: 0; text-wrap: balance; }
+  .lead { margin: 0; color: var(--text-secondary); font-size: 15px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); gap: 20px; align-items: start; }
+  .option { display: grid; gap: 10px; min-width: 0; }
+  .option h2 { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+  .option p { margin: 0; font-size: 13px; color: var(--text-secondary); }
+  .stage { padding: 12px; border-radius: 14px; background: var(--hover-tint); }
+  .chip { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 3px 4px 3px 10px; border: 1px solid var(--border-strong); border-radius: 999px; background: var(--surface); font-size: 14px; font-variant-numeric: tabular-nums; color: var(--text-secondary); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .pill b { color: var(--ink); font-weight: 500; }
+  .pill i { font-style: normal; padding: 3px 10px; border-radius: 999px; background: var(--selected-bg); color: var(--selected-text); font-size: 12px; font-weight: 600; }
+  .card { width: min(420px, 100%); margin-left: auto; box-sizing: border-box; display: grid; gap: 12px; padding: 16px; background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; box-shadow: 0 8px 24px var(--shadow); font-size: 14px; }
+  .title { font-weight: 600; font-size: 15px; }
+  .list { font-size: 13px; color: var(--text-muted); }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .time { color: var(--text-muted); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 6px; }
+  .box { padding: 3px 8px; border: 1px solid var(--border-strong); border-radius: 8px; color: var(--ink); }
+  .btn { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); font-weight: 500; }
+  .quiet { font: inherit; font-size: 13px; padding: 0; border: 0; background: none; color: var(--text-muted); }
+  .rule { border: 0; border-top: 1px solid var(--border-faint, var(--border-soft)); margin: 0; }
+  .links { display: flex; gap: 16px; }
+  .btns { display: flex; gap: 8px; }
+  .more { margin-left: auto; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; color: var(--text-muted); border: 1px solid var(--border-soft); }
+  .menu { justify-self: end; display: grid; gap: 2px; padding: 4px; border: 1px solid var(--border-soft); border-radius: 8px; width: 140px; font-size: 13px; }
+  .menu span { padding: 5px 8px; border-radius: 6px; }
+  .menu span:first-child { background: var(--hover-tint); }
+  .ask { font-size: 15px; font-weight: 500; }
+
+
+  .sub { font-size: 13px; color: var(--text-muted); display: flex; min-width: 0; }
+  .sub .p { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 0 1 auto; }
+  .sub .l { flex: none; white-space: pre; }
+  .surface { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; padding: 4px; display: grid; gap: 2px; box-sizing: border-box; }
+  .r { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 8px 10px; border-radius: 8px; }
+  .r.on, .o.on { background: var(--hover-tint); }
+  .circle { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--text-muted); }
+  .r .t { font-size: 15px; color: var(--ink); }
+  .badge { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--selected-bg); color: var(--selected-text); }
+  .picker { width: 420px; max-width: 100%; }
+  .o { display: grid; gap: 1px; padding: 6px 8px; border-radius: 8px; font-size: 14px; color: var(--ink); min-width: 0; }
+  .o .t { overflow-wrap: anywhere; }
+  .o.side { grid-template-columns: minmax(0,1fr) auto; gap: 10px; align-items: baseline; }
+  .o.side .d { max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--text-muted); }
+  .heading { padding: 6px 8px 2px; font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+  .hrow { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 8px 10px; border-radius: 8px; font-size: 14px; }
+  .hrow .dur { font-variant-numeric: tabular-nums; color: var(--text-secondary); }
+  .rule-box { padding: 12px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border-soft); font-size: 14px; color: var(--text-secondary); }
+  .rule-box code { font-family: ui-monospace, monospace; color: var(--ink); }
+  .sect { display: grid; gap: 12px; }
+  .sect > h2 { margin: 0; font-family: 'Newsreader', Georgia, serif; font-weight: 500; font-size: 22px; }
+  .ic { flex: none; align-self: center; margin-right: 4px; }
+  .sub .l2 { flex: none; white-space: pre; }
+  .tag { font-size: 12px; color: var(--accent); font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>A subtask with its parent</h1>
+<p class="lead">One rule everywhere: the second line starts "Subtask of &lt;parent&gt;", then the list, always (search and Coming up add the due date). A long parent is cut with an ellipsis; what follows it never is. Titles are made up.</p>
+<div class="rule-box">Rule: <code>Subtask of {parent} · {list}</code>, plus the due date only where that place shows it today (search, Home's Coming up; not Today). The parent is never a link or a chip. The Tasks table already shows the parent, so it is unchanged. The person page's Tasks section is removed.</div>
+
+<section class="sect"><h2>1. Home: Today and Coming up</h2>
+<div class="surface" style="max-width:760px">
+  <div class="r"><span class="circle"></span><div><div class="t">Review the funder guidance and confirm approach with supervisors</div><div class="sub"><span class="p">Subtask of Publish Study A: analysis code</span><span class="l"> · Writing</span></div></div><span class="badge">P2</span></div>
+  <div class="r on"><span class="circle"></span><div><div class="t">Handle errors and missing data, recode variables</div><div class="sub"><span class="p">Subtask of Develop Study B: survey data processing pipeline</span><span class="l"> · Study B: Analysis</span> </div></div><span class="badge">P3</span></div>
+  <div class="r"><span class="circle"></span><div><div class="t">Daily admin</div><div class="sub"><span class="p">Admin &amp; Logistics</span></div></div><span class="badge">P2</span></div>
+</div>
+<p class="lead">Today shows no due date, as now; Coming up adds it after the list.</p></section>
+
+<section class="sect"><h2>2. Search (Mod-K)</h2>
+<div class="surface" style="max-width:560px">
+  <div class="r on"><span class="circle"></span><div><div class="t">Review the funder guidance and confirm approach with supervisors</div><div class="sub"><span class="p">Subtask of Publish Study A: analysis code</span><span class="l"> · Writing · due in 3 days</span></div></div><span></span></div>
+  <div class="r"><span class="circle"></span><div><div class="t">Create a GitHub repository</div><div class="sub"><span class="p">Subtask of Publish Study A: analysis code</span><span class="l"> · Writing · no date</span></div></div><span></span></div>
+</div>
+<p class="lead">Search is the one place that shows a due date, as it does today for every task. The change is only that a subtask now keeps its list as well.</p></section>
+
+<section class="sect"><h2>3. Timer picker (the popover widens from 380px to 420px; 4 is the same width)</h2>
+<div class="grid">
+  <div class="option"><h2>A. Two lines for every task <span class="tag">recommended</span></h2>
+  <div class="stage"><div class="surface picker">
+    <div class="heading">Suggested</div>
+    <div class="o"><div class="t">Set up Central Command for Research</div><div class="sub"><span class="p">Admin &amp; Logistics</span></div></div>
+    <div class="o"><div class="t">Daily admin</div><div class="sub"><span class="p">Admin &amp; Logistics</span></div></div>
+    <div class="o on"><div class="t">Review the funder guidance and confirm approach with supervisors</div><div class="sub"><span class="p">Subtask of Publish Study A: analysis code</span><span class="l"> · Writing</span></div></div>
+    <div class="o"><div class="t">Handle errors and missing data, recode variables</div><div class="sub"><span class="p">Subtask of Develop Study B: survey data processing pipeline</span><span class="l"> · Study B: Analysis</span></div></div>
+    <div class="o"><div class="t">Review articles in the reading list</div><div class="sub"><span class="p">Reading</span></div></div>
+  </div></div>
+  <p>The list moves under the title for every task and is never cut; a long parent is cut instead. No due date here. It is never squeezed to "Admin &amp; Logis…" again, and a subtask's parent sits in the same place as on Home.</p></div>
+
+  <div class="option"><h2>B. List stays on the right</h2>
+  <div class="stage"><div class="surface picker">
+    <div class="heading">Suggested</div>
+    <div class="o side"><div class="t">Set up Central Command for Research</div><div class="d">Admin &amp; Logis…</div></div>
+    <div class="o side"><div class="t">Daily admin</div><div class="d">Admin &amp; Logistics</div></div>
+    <div class="o side on"><div><div class="t">Review the funder guidance and confirm approach with supervisors</div><div class="sub"><span class="p">Subtask of Publish Study A: analysis code</span></div></div><div class="d">Writing</div></div>
+    <div class="o side"><div><div class="t">Handle errors and missing data, recode variables</div><div class="sub"><span class="p">Subtask of Develop Study B: survey data processing pipeline</span></div></div><div class="d">Study B: An…</div></div>
+  </div></div>
+  <p>Keeps today's look; only subtasks get a second line. The list stays cut off as it is now, and a subtask's list is now on the right while its parent is below, which reads twice over.</p></div>
+</div></section>
+
+<section class="sect"><h2>4. Timer popover (running a subtask)</h2>
+<div class="stage"><div class="card">
+  <div><div class="title">Review the funder guidance and confirm approach with supervisors</div><div class="sub"><span class="p">Subtask of Publish Study A: analysis code</span><span class="l"> · Writing</span></div></div>
+  <div class="row"><span class="time">Started <span class="box">10 : 19</span> · 0:12</span><span class="btns"><span class="btn primary">Stop</span><span class="quiet">Discard</span></span></div>
+</div></div>
+<p class="lead">The popover's list line (the grey one today) takes the same text.</p></section>
+
+<section class="sect"><h2>5. Hours: task rows</h2>
+<div class="surface" style="max-width:760px">
+  <div class="hrow"><span class="circle"></span><div><div>Review the funder guidance and confirm approach with supervisors</div><div class="sub"><span class="p">Subtask of Publish Study A: analysis code</span><span class="l"> · Writing</span></div></div><span class="dur">1:15</span></div>
+  <div class="hrow on"><span class="circle"></span><div><div>Daily admin</div><div class="sub"><span class="p">Admin &amp; Logistics</span></div></div><span class="dur">0:30</span></div>
+</div>
+<p class="lead">Hours rows have no second line today. Every task row gets one: its list, and for a subtask the parent first. Self-study rows: see 6.</p></section>
+<section class="sect"><h2>6. Self-study subtasks: now and new</h2><p class="lead">Only these four places show the "Series ›" prefix today. Home, the Tasks table, the task page and the training note never did, so they are not affected.</p><h3 style="margin:8px 0 0;font-size:15px">Search (Mod-K)</h3><div class="grid"><div class="option"><h2>Now</h2><div class="stage"><div class="surface" style="max-width:420px"><div class="hrow on"><span class="circle"></span><div><div><span style="color:var(--text-muted)">Example Training Series › </span>Day 2</div><div class="sub"><span class="p">Subtask of Example Training Series self-study · due in 3 days</span></div></div><span class="dur">0:45</span></div></div></div></div><div class="option"><h2>New</h2><div class="stage"><div class="surface" style="max-width:420px"><div class="hrow on"><span class="circle"></span><div><div>Day 2</div><div class="sub"><span class="p">Subtask of Example Training Series self-study</span><span class="l"> · Training · due in 3 days</span></div></div><span class="dur">0:45</span></div></div></div></div></div><p class="lead">Now it says the series twice, once as the prefix and once in "Subtask of". New: one place, plus the list.</p><h3 style="margin:8px 0 0;font-size:15px">Timer picker</h3><div class="grid"><div class="option"><h2>Now</h2><div class="stage"><div class="surface picker"><div class="o on"><div class="t"><span style="color:var(--text-muted)">Example Training Series › </span>Day 2</div><div class="sub"><span class="p">Training</span></div></div></div></div></div><div class="option"><h2>New</h2><div class="stage"><div class="surface picker"><div class="o on"><div class="t">Day 2</div><div class="sub"><span class="p">Subtask of Example Training Series self-study</span><span class="l"> · Training</span></div></div></div></div></div></div><p class="lead">Now the series is a prefix and the list is the only second-line text. New: the parent sits on the second line like every other subtask.</p><h3 style="margin:8px 0 0;font-size:15px">Timer popover</h3><div class="grid"><div class="option"><h2>Now</h2><div class="stage"><div class="card"><div><div class="title"><span style="color:var(--text-muted)">Example Training Series › </span>Day 2</div><div class="sub"><span class="p">Training</span></div></div><div class="row"><span class="time">Started <span class="box">10 : 19</span> · 0:12</span><span class="btns"><span class="btn primary">Stop</span></span></div></div></div></div><div class="option"><h2>New</h2><div class="stage"><div class="card"><div><div class="title">Day 2</div><div class="sub"><span class="p">Subtask of Example Training Series self-study</span><span class="l"> · Training</span></div></div><div class="row"><span class="time">Started <span class="box">10 : 19</span> · 0:12</span><span class="btns"><span class="btn primary">Stop</span></span></div></div></div></div></div><p class="lead">Same change as the picker.</p><h3 style="margin:8px 0 0;font-size:15px">Hours row</h3><div class="grid"><div class="option"><h2>Now</h2><div class="stage"><div class="surface" style="max-width:420px"><div class="hrow on"><span class="circle"></span><div><div><span style="color:var(--text-muted)">Example Training Series › </span>Day 2</div></div><span class="dur">0:45</span></div></div></div></div><div class="option"><h2>New</h2><div class="stage"><div class="surface" style="max-width:420px"><div class="hrow on"><span class="circle"></span><div><div>Day 2</div><div class="sub"><span class="p">Subtask of Example Training Series self-study</span><span class="l"> · Training</span></div></div><span class="dur">0:45</span></div></div></div></div></div><p class="lead">Now the prefix is the only context and the row is one line. New: the same second line as every other task.</p></section>
+<section class="sect"><h2>7. Shorter than "Subtask of"</h2><p class="lead">Same picker width (420px), same two subtasks and one plain task. The icon is Lucide's corner-down-right (the app uses no such icon yet).</p><div class="grid"><div class="option"><h2>A. Subtask of (now)</h2><div class="stage"><div class="surface picker"><div class="o on"><div class="t">Review the funder guidance and confirm approach with supervisors</div><div class="sub"><span class="p">Subtask of Publish Study A: analysis code</span><span class="l2"> · Writing</span></div></div><div class="o"><div class="t">Handle errors and missing data, recode variables</div><div class="sub"><span class="p">Subtask of Develop Study B: survey data processing pipeline</span><span class="l2"> · Study B: Analysis</span></div></div><div class="o"><div class="t">Daily admin</div><div class="sub"><span class="p">Admin &amp; Logistics</span></div></div></div></div><p>Clear in words, but about 11 characters of the line.</p></div><div class="option"><h2>B. Icon, then parent, then list <span class="tag">clear</span></h2><div class="stage"><div class="surface picker"><div class="o on"><div class="t">Review the funder guidance and confirm approach with supervisors</div><div class="sub"><svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 10l5 5-5 5"/><path d="M4 4v7a4 4 0 0 0 4 4h12"/></svg><span class="p">Publish Study A: analysis code</span><span class="l2"> · Writing</span></div></div><div class="o"><div class="t">Handle errors and missing data, recode variables</div><div class="sub"><svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 10l5 5-5 5"/><path d="M4 4v7a4 4 0 0 0 4 4h12"/></svg><span class="p">Develop Study B: survey data processing pipeline</span><span class="l2"> · Study B: Analysis</span></div></div><div class="o"><div class="t">Daily admin</div><div class="sub"><span class="p">Admin &amp; Logistics</span></div></div></div></div><p>The icon means "under". Parent is cut first; the list stays. Costs one icon's width.</p></div><div class="option"><h2>C. List first, then icon and parent <span class="tag">compact</span></h2><div class="stage"><div class="surface picker"><div class="o on"><div class="t">Review the funder guidance and confirm approach with supervisors</div><div class="sub"><span class="l2">Writing · </span><svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 10l5 5-5 5"/><path d="M4 4v7a4 4 0 0 0 4 4h12"/></svg><span class="p">Publish Study A: analysis code</span></div></div><div class="o"><div class="t">Handle errors and missing data, recode variables</div><div class="sub"><span class="l2">Study B: Analysis · </span><svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 10l5 5-5 5"/><path d="M4 4v7a4 4 0 0 0 4 4h12"/></svg><span class="p">Develop Study B: survey data processing pipeline</span></div></div><div class="o"><div class="t">Daily admin</div><div class="sub"><span class="p">Admin &amp; Logistics</span></div></div></div></div><p>The list is always the first thing on the line and never moves; the parent follows and the ellipsis falls at the end, so nothing needs special handling. Reads as "Writing, under Publish Study A…".</p></div><div class="option"><h2>D. "in" + parent</h2><div class="stage"><div class="surface picker"><div class="o on"><div class="t">Review the funder guidance and confirm approach with supervisors</div><div class="sub"><span class="p">in Publish Study A: analysis code</span><span class="l2"> · Writing</span></div></div><div class="o"><div class="t">Handle errors and missing data, recode variables</div><div class="sub"><span class="p">in Develop Study B: survey data processing pipeline</span><span class="l2"> · Study B: Analysis</span></div></div><div class="o"><div class="t">Daily admin</div><div class="sub"><span class="p">Admin &amp; Logistics</span></div></div></div></div><p>Shortest wording, but "in" next to a list name reads like another list.</p></div></div></section>
+<section class="sect"><h2>8. Meetings and trainings keep the prefix</h2><p class="lead">Tasks the app makes for a session keep "Series › Day 2" on the title line, as they do now, and have no "Subtask of" line. Only ordinary subtasks get the new line. Shown with option C.</p>
+<div class="grid"><div class="option"><h2>Self-study (as now)</h2><div class="stage"><div class="surface picker"><div class="o on"><div class="t"><span style="color:var(--text-muted)">Example Training Series › </span>Day 2</div><div class="sub"><span class="p">Training</span></div></div></div></div></div>
+<div class="option"><h2>Ordinary subtask (C)</h2><div class="stage"><div class="surface picker"><div class="o on"><div class="t">Review the funder guidance and confirm approach with supervisors</div><div class="sub"><span class="l2">Writing · </span><svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 10l5 5-5 5"/><path d="M4 4v7a4 4 0 0 0 4 4h12"/></svg><span class="p">Publish Study A: analysis code</span></div></div></div></div></div></div></section>
+</main>
+</body>
+</html>
