@@ -4238,3 +4238,9 @@ The user's rule: a self-study task is not put In progress by the clock. The swee
 - **A locked task** shows what made it as a field in the details row after List: `Series` (or `Meeting`, `Training`), the name as plain text and an "Open series" icon button (`MadeByField`, `TaskPage.tsx`). The "Made by …" sentence is gone.
 - **A training note** has no Task panel. The training's own task (the session) is an icon-only "Open task" button in the details row (`TrainingMetaFields`), after Duration, with no label drawn. The self-study tracking is a one-line "Self-study" card (`TrainingTask`) with the total, Start, Add time and, once the self-study task exists, an "Open self-study task" icon. The task's name and list are no longer shown there.
 - A subtask's page still redirects to its parent (`TaskPage.tsx`), so "Open self-study task" lands on the series task with the training's subtask listed.
+
+## Move to Today moves only what is overdue (24 Oct 2026)
+
+- **Bug (the user, 24 Oct 2026):** a task listed in Overdue only because of an overdue subtask was moved to today itself (its date was a month away), while the subtask stayed overdue.
+- **Decision:** Overdue's "Move to Today" sets the date of the overdue things only: a task whose own date is before today, and the overdue subtasks nested under a row. A parent's later date is never touched; Undo puts back the same dates (`TasksLanding.tsx`, `moveOverdueToToday`).
+- **Not tested in the app:** the handler lives in the component; typecheck, lint and unit tests pass.

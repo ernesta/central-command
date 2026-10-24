@@ -91,7 +91,11 @@ export function TasksLanding(): React.JSX.Element {
 
   const moveOverdueToToday = async (): Promise<void> => {
     try {
-      const moved = sections.overdue.map((r) => r.task)
+      // Only what is overdue: a row can be here because of a subtask, and its own (later) date stays
+      const moved = sections.overdue.flatMap((r) => [
+        ...(r.task.due !== null && r.task.due < today ? [r.task] : []),
+        ...r.nested
+      ])
       await window.api.tasks.setDue(
         moved.map((t) => t.uid),
         today
