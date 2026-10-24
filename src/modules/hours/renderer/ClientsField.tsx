@@ -1,16 +1,16 @@
 import { Plus, X } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { PickerPopup } from '@renderer/components/Picker'
-import styles from '@renderer/components/SkillsField.module.css'
+import styles from './ClientsField.module.css'
 import { addClient, MAX_CLIENTS } from '../shared/plan-settings'
 
 /** A contract's clients as chips, read only: the same chips the edit row shows. */
 export function ClientChips({ clients }: { clients: readonly string[] }): React.JSX.Element {
   if (clients.length === 0) return <>–</>
   return (
-    <ul className={styles.chips} aria-label="Clients" style={{ padding: 0 }}>
+    <ul className={styles.chips} aria-label="Clients">
       {clients.map((name) => (
-        <li key={name} className={styles.chip} style={{ paddingRight: 10 }}>
+        <li key={name} className={styles.chip}>
           {name}
         </li>
       ))}
@@ -47,14 +47,9 @@ export function ClientsField({
 
   return (
     <div className={styles.wrap}>
-      <ul
-        className={styles.chips}
-        aria-label={label}
-        aria-invalid={invalid || undefined}
-        style={{ padding: 0 }}
-      >
+      <ul className={styles.chips} aria-label={label} aria-invalid={invalid || undefined}>
         {clients.map((name) => (
-          <li key={name} className={styles.chip}>
+          <li key={name} className={`${styles.chip} ${styles.editing}`}>
             <span>{name}</span>
             <button
               type="button"
@@ -71,13 +66,14 @@ export function ClientsField({
             ref={addRef}
             type="button"
             className={styles.add}
+            aria-label="Add a client"
+            title="Add a client"
             aria-haspopup="listbox"
             aria-expanded={open}
             disabled={full}
             onClick={() => setOpen((o) => !o)}
           >
             <Plus size={12} strokeWidth={2} aria-hidden />
-            add
           </button>
         </li>
       </ul>

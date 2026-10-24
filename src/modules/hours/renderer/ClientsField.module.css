@@ -1,0 +1,63 @@
+/* Client chips in a contracts row: the same height reading and editing, and "add" a small round button so the row
+   keeps to one line for two or three clients. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  background: var(--panel);
+  color: var(--text-secondary);
+  font-size: var(--text-13);
+  white-space: nowrap;
+}
+.editing {
+  padding-right: 3px;
+}
+.remove {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 2px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-muted);
+}
+.remove:hover {
+  background: var(--border-soft);
+  color: var(--ink);
+}
+.add {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-muted);
+}
+.add:hover:not(:disabled) {
+  background: var(--hover-tint);
+  color: var(--ink);
+}
+.add:disabled {
+  opacity: 0.55;
+}
+.wrap {
+  position: relative;
+}
