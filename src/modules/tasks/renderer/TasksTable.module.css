@@ -389,6 +389,8 @@
 .tags [data-tag-add] {
   order: 4;
   margin-left: 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .tags [data-tag-add] {
   opacity: 0;
