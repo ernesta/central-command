@@ -2777,7 +2777,7 @@ left a non-attendee's repeat mentions, "first mention per note". So:
   violations.
 - **Effect**: 356 chips -> 66. 174 removals were someone in the meeting, 83 were the user, 32 were repeat mentions, and
   the rest were the earlier skip rules. 43 of the 66 survivors carry a first name as the label, 23 a full name.
-- **One hand-made chip was overridden, and the user was told.** Rule 3 removed the second of her two
+- **One hand-made chip was overridden, and the user confirmed it (24 Oct 2026).** Rule 3 removed the second of her two
   `[Caitlin Baron]` chips in the 5 Oct note. It is the rule working as asked, not a fault, but it is a change to
   something she typed herself. An earlier check of mine reported "all 10 hand-made chips survived"; that check used
   list membership instead of counting, so two identical chips both matched the one survivor. Corrected to 9 of 10 —
@@ -4261,7 +4261,7 @@ The user's decisions after the mockups (`docs/design/subtask-parent-mockup.html`
 
 ## Contracts table in Hours settings (24 Oct 2026, the user's list)
 
-- **New contract row (`NewContractRow`, `ContractsTable.tsx`):** the first day starts as today (it was the day after the latest contract). The last day follows the first until one is chosen, and is first day + 6: a contract is whole weeks (`contractWeeks`), so the user's "same date as start" would fail the check and leave Add disabled; the user was told. A chosen last day that no longer makes whole weeks is dropped back to the default.
+- **New contract row (`NewContractRow`, `ContractsTable.tsx`):** the first day starts as today (it was the day after the latest contract). The last day follows the first until one is chosen, and is first day + 6: a contract is whole weeks (`contractWeeks`), so the user's "same date as start" would fail the check and leave Add disabled; the user confirmed it (24 Oct 2026). A chosen last day that no longer makes whole weeks is dropped back to the default.
 - **Clients are chosen, not typed as a comma-separated list:** `ClientsField` (chips with "add", the Skills pattern, `PickerPopup` with `alwaysSearch`). It offers the clients the workspace's other contracts have, and a new name is an `add` row (`addClient` rules). Editing a contract uses the same field; `clientChange` still turns one name replaced by another into a rename. `parseClientList` is no longer used by the table.
 - **Hours a week is `DurationField`** (the hours:minutes field of Add time), in both rows; 0:00 is "none" (`parseContractHours` is no longer used by the table). Blank is no longer a thing to type.
 - **Layout:** fixed-width Starts/Ends (148px), Hours (120px), Invoiced (120px) and Actions (160px) columns, table min-width 980px; the Invoiced `Select` has `minWidth` 120 so "Month" does not wrap. The Add/Cancel buttons were past the card's edge. A narrow window scrolls the table sideways, as before.
