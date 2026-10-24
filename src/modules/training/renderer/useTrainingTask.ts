@@ -34,7 +34,7 @@ export function useTrainingTask(
   ready: boolean,
   setTask: (uid: string) => void
 ): { tasks: Task[] | null } {
-  const { tasks } = useTasksList('research')
+  const { tasks } = useTasksList('research', true)
   const busy = useRef(false)
   // Series tasks this page made: the series is typed letter by letter, so one may be left behind and is put in the trash.
   const made = useRef(new Set<string>())

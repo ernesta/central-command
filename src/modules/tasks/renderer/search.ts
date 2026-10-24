@@ -1,6 +1,7 @@
 import { snippet, type SearchHit } from '@shared/search'
 import { passesFilters, searchNeedles, textMatches, type SearchRequest } from '@shared/search-query'
 import { fold } from '@shared/text'
+import { visibleTasks } from '../shared/session-lock'
 import { daysLate } from '../shared/late'
 import { studyLabel } from '../shared/study-label'
 import { formatDue, listLabel, taskLine } from '../shared/query'
@@ -59,5 +60,6 @@ export function taskHits(
 export function searchTasks(
   workspace: TaskWorkspace
 ): (request: SearchRequest, limit?: number) => Promise<SearchHit[]> {
-  return async (request, limit) => taskHits(await window.api.tasks.list(workspace), request, limit)
+  return async (request, limit) =>
+    taskHits(visibleTasks(await window.api.tasks.list(workspace)), request, limit)
 }

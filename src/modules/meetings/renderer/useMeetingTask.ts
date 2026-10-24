@@ -28,7 +28,7 @@ export function useMeetingTask(
   ready: boolean,
   setTask: (uid: string) => void
 ): void {
-  const { tasks } = useTasksList(workspace)
+  const { tasks } = useTasksList(workspace, true)
   const clients = useWorkClients(workspace)
   const busy = useRef(false)
   const { task, series, date } = meta

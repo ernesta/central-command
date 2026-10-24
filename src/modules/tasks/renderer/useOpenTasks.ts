@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Workspace } from '@shared/settings'
+import { visibleTasks } from '../shared/session-lock'
 import { useSessionTaskUids } from './useSessionTaskUids'
 import { TASK_WORKSPACES, type Task, type TaskWorkspace } from '../shared/types'
 
@@ -17,7 +18,7 @@ export function useOpenTasks(workspace: Workspace): Task[] {
     const load = (): void => {
       void window.api.tasks.list(w).then((list) => {
         if (cancelled) return
-        setTasks(list.filter((t) => t.status !== 'done'))
+        setTasks(visibleTasks(list).filter((t) => t.status !== 'done'))
       })
     }
     load()

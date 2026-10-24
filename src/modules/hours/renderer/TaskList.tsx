@@ -65,7 +65,7 @@ export function TaskList({
   const [renaming, setRenaming] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [problem, setProblem] = useState('')
-  const { tasks } = useTasksList(workspace)
+  const { tasks } = useTasksList(workspace, true)
   const taskOf = useMemo(() => new Map(tasks?.map((t) => [t.uid, t])), [tasks])
   const statusOf = useMemo(() => new Map(tasks?.map((t) => [t.uid, t.status])), [tasks])
   const entering = useNewRowKeys(rows.map((row) => rowKey(row).toLowerCase()))

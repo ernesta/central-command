@@ -3,6 +3,7 @@ import { fold } from '@shared/text'
 import { nameFirst } from '@shared/search'
 import type { EntityProvider } from '@renderer/entities/registry'
 import { listLabel, taskLine } from '../shared/query'
+import { hiddenTaskUids } from '../shared/session-lock'
 import type { Task } from '../shared/types'
 import { allTasks } from './task-cache'
 import { taskRoute } from './tasks-paths'
@@ -25,8 +26,10 @@ export const taskEntities: EntityProvider = {
   async search(query, limit, self) {
     const tasks = await allTasks()
     const byUid = new Map(tasks.map((t) => [t.uid, t]))
+    const hidden = hiddenTaskUids(tasks)
     const terms = fold(query).split(/\s+/).filter(Boolean)
     const matching = tasks
+      .filter((t) => !hidden.has(t.uid))
       .filter((t) => !(self?.kind === 'task' && self.id === t.uid))
       .filter((t) => {
         const text = fold(`${t.title} ${t.tags.join(' ')}`)

@@ -11,6 +11,7 @@ import { periodFigures } from '../../hours/shared/so-far'
 import { listMeetingRows } from '../../meetings/main/repository'
 import { listTasks } from '../../tasks/main/repository'
 import { listLabel } from '../../tasks/shared/query'
+import { hiddenTaskUids } from '../../tasks/shared/session-lock'
 import { workClients } from '../../tasks/shared/work-lists'
 import { listTrainingRows } from '../../training/main/repository'
 import { getCounts, listItems, upcoming } from '../../watch/main/repository'
@@ -116,6 +117,8 @@ export interface CollectDeps {
  */
 export function collectHomeSummary(deps: CollectDeps): HomeSummary {
   const { db, now } = deps
+  // Meetings' and trainings' own tasks (and the series task over them) are never shown as tasks: their events are.
+  const hidden = hiddenTaskUids((['research', 'work'] as const).flatMap((w) => listTasks(db, w)))
   const tasks = (
     db
       .prepare(
@@ -129,7 +132,9 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
          AND t.uid NOT IN (SELECT task FROM training WHERE task != '' AND task != 'auto')`
       )
       .all() as (TaskInput & { sublist: string })[]
-  ).map(({ sublist, ...t }) => ({ ...t, list: listLabel(t.list, sublist) }))
+  )
+    .filter((t) => !hidden.has(t.uid))
+    .map(({ sublist, ...t }) => ({ ...t, list: listLabel(t.list, sublist) }))
   const meetings = (
     db
       .prepare(

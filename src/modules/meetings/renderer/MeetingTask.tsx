@@ -28,7 +28,7 @@ export function MeetingTask({
   task,
   onChange
 }: MeetingTaskProps): React.JSX.Element {
-  const { tasks } = useTasksList(workspace)
+  const { tasks } = useTasksList(workspace, true)
   const clients = useWorkClients(workspace)
   const [choosing, setChoosing] = useState(false)
   const [typed, setTyped] = useState('')

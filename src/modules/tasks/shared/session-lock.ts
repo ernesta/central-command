@@ -36,6 +36,32 @@ export function sessionLockIn(task: Task, tasks: readonly Task[]): SessionLock |
   )
 }
 
+/**
+ * The tasks no task view shows (the user's rule, 24 Oct 2026): a meeting's own task and a training's own session task, which are
+ * kept as records (every hour has a task, the notes' hours come from them, Work's totals depend on them) but are shown as the
+ * meeting or training, not as a task; and the plain series task whose every subtask is one of those. Self-study tasks stay
+ * visible, and so does a series task with any subtask the user made. Nothing about storage, hours or deletion changes.
+ */
+export function hiddenTaskUids(tasks: readonly Task[]): Set<string> {
+  const isSession = (t: Task): boolean => t.ownKind === 'meeting' || t.ownKind === 'training'
+  const hidden = new Set(tasks.filter(isSession).map((t) => t.uid))
+  const kids = new Map<string, Task[]>()
+  for (const t of tasks) {
+    if (t.parentUid) kids.set(t.parentUid, [...(kids.get(t.parentUid) ?? []), t])
+  }
+  for (const t of tasks) {
+    const under = kids.get(t.uid)
+    if (!t.parentUid && !t.ownKind && under && under.every(isSession)) hidden.add(t.uid)
+  }
+  return hidden
+}
+
+/** `tasks` without the hidden ones (`hiddenTaskUids`): the list every task view is built from. */
+export function visibleTasks<T extends Task>(tasks: readonly T[]): T[] {
+  const hidden = hiddenTaskUids(tasks)
+  return hidden.size === 0 ? [...tasks] : tasks.filter((t) => !hidden.has(t.uid))
+}
+
 /** Whether a field of a task in this lock is the note's (or the sweep's), not the user's. */
 export function fieldLocked(
   lock: SessionLock | null,

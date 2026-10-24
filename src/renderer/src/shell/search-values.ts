@@ -2,6 +2,7 @@ import type { CompletionOption, UserValues } from '@shared/search-complete'
 import { quoteValue } from '@shared/search-query'
 import { SKILLS } from '@shared/skills'
 import { fold } from '@shared/text'
+import { visibleTasks } from '@modules/tasks/shared/session-lock'
 import { TASK_WORKSPACES } from '@modules/tasks/shared/types'
 
 const option = (label: string, hint?: string): CompletionOption => ({
@@ -38,7 +39,7 @@ export async function loadUserValues(): Promise<UserValues> {
     safe(Promise.all((['research', 'work'] as const).map((w) => api.meetings.list(w))), []),
     safe(Promise.all((['research', 'life'] as const).map((w) => api.training.list(w))), [])
   ])
-  const allTasks = tasks.flat()
+  const allTasks = tasks.flatMap((list) => visibleTasks(list))
   const lists = allTasks
     .filter((t) => t.parentUid === null && t.list !== '')
     .flatMap((t) => (t.sublist ? [t.list, `${t.list}/${t.sublist}`] : [t.list]))

@@ -1,12 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Task, TaskWorkspace } from '../shared/types'
+import { visibleTasks } from '../shared/session-lock'
 import { groupTasks, type TaskRow } from '../shared/views'
 
 /**
- * Every task of a workspace (subtasks included), grouped into rows. Refreshed after any change to the tasks, from any page.
+ * Every task of a workspace (subtasks included) that a task view shows (not the meeting and training session tasks, `hiddenTaskUids`), grouped into rows. Refreshed after any change to the tasks, from any page.
  * `rows` is null until the first load.
  */
-export function useTasksList(workspace: TaskWorkspace): {
+export function useTasksList(
+  workspace: TaskWorkspace,
+  /** For the pages that must still find a hidden task (its own page, the note that made it, Hours). */
+  includeHidden = false
+): {
   tasks: Task[] | null
   rows: TaskRow[] | null
 } {
@@ -33,6 +38,10 @@ export function useTasksList(workspace: TaskWorkspace): {
     }
   }, [workspace])
 
-  const rows = useMemo(() => (tasks ? groupTasks(tasks) : null), [tasks])
-  return { tasks, rows }
+  const shown = useMemo(
+    () => (tasks && !includeHidden ? visibleTasks(tasks) : tasks),
+    [tasks, includeHidden]
+  )
+  const rows = useMemo(() => (shown ? groupTasks(shown) : null), [shown])
+  return { tasks: shown, rows }
 }

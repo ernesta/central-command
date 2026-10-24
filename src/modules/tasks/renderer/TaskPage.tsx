@@ -42,7 +42,7 @@ import styles from './TaskPage.module.css'
 export function TaskPage(): React.JSX.Element {
   const workspace = useTasksWorkspace()
   const { uid = '' } = useParams()
-  const { tasks, rows } = useTasksList(workspace)
+  const { tasks, rows } = useTasksList(workspace, true)
   if (tasks === null || rows === null) return <div className={styles.page} />
   const task = tasks.find((t) => t.uid === uid)
   if (!task) {

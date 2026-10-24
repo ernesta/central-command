@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { fieldLocked, lockedChanges, sessionLock, sessionLockIn } from './session-lock'
+import {
+  fieldLocked,
+  hiddenTaskUids,
+  lockedChanges,
+  sessionLock,
+  sessionLockIn,
+  visibleTasks
+} from './session-lock'
 import { task } from './test-utils'
 
 const sub = task({ uid: 's', parentUid: 'p', ownKind: 'meeting', due: '2026-10-10' })
@@ -49,5 +56,35 @@ describe('lockedChanges', () => {
   })
   it('allows anything on a free task', () => {
     expect(lockedChanges(plain, null, { title: 'x', due: '2026-11-01' })).toEqual([])
+  })
+})
+
+describe('hiddenTaskUids', () => {
+  const tasks = [
+    task({ uid: 'm', ownKind: 'meeting' }),
+    task({ uid: 'series' }),
+    task({ uid: 't1', parentUid: 'series', ownKind: 'training' }),
+    task({ uid: 't2', parentUid: 'series', ownKind: 'training' }),
+    task({ uid: 'study', title: 'S self-study' }),
+    task({ uid: 's1', parentUid: 'study', ownKind: 'self-study' }),
+    task({ uid: 'mixed' }),
+    task({ uid: 'x1', parentUid: 'mixed', ownKind: 'training' }),
+    task({ uid: 'x2', parentUid: 'mixed' }),
+    task({ uid: 'plain' })
+  ]
+
+  it('hides a meeting’s task, a training’s session tasks, and the series task over only those', () => {
+    expect([...hiddenTaskUids(tasks)].sort()).toEqual(['m', 'series', 't1', 't2', 'x1'])
+  })
+
+  it('keeps self-study tasks and their parent, a series task with a subtask the user made, and ordinary tasks', () => {
+    const shown = visibleTasks(tasks).map((t) => t.uid)
+    expect(shown).toHaveLength(5)
+    expect(shown).not.toContain('x1')
+    for (const uid of ['study', 's1', 'mixed', 'x2', 'plain']) expect(shown).toContain(uid)
+  })
+
+  it('never hides a childless task', () => {
+    expect(hiddenTaskUids([task({ uid: 'a' })]).size).toBe(0)
   })
 })

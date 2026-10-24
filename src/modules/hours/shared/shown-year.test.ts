@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { dayMinutes, weekMinutes } from '@shared/tracking/totals'
 import { DEFAULT_PLAN, emptyYear, WORK_PLAN, type Moment } from '@shared/tracking/types'
 import type { MeetingIndexRow } from '../../meetings/shared/types'
+import { visibleTasks } from '../../tasks/shared/session-lock'
 import type { Task } from '../../tasks/shared/types'
 import type { TrainingIndexRow } from '../../training/shared/types'
 import { derivedEntries, shownYear, type DerivedSources } from './shown-year'
@@ -97,6 +98,25 @@ describe('shownYear', () => {
     ])
     expect(dayMinutes(year, '2026-10-14', now)).toBe(60)
     expect(weekMinutes(year, '2026-10-12', now)).toBe(60 + 90)
+  })
+
+  it('counts the same whether the session tasks are hidden from task views or not (hiding is display only)', () => {
+    const plain = sources()
+    const session = sources({
+      tasks: [
+        task('m1', 'Supervision', { list: 'Meetings', ownKind: 'meeting' }),
+        task('l1', 'Plotly', { ownKind: 'training' })
+      ]
+    })
+    expect(visibleTasks(session.tasks)).toEqual([])
+    const totals = (src: DerivedSources): number[] => {
+      const year = shownYear(research, src)
+      return [dayMinutes(year, '2026-10-14', now), weekMinutes(year, '2026-10-12', now)]
+    }
+    expect(totals(session)).toEqual(totals(plain))
+    expect(totals(session)).toEqual([60, 150])
+    // The task views' list would lose them: Hours reads the unfiltered list.
+    expect(totals({ ...session, tasks: visibleTasks(session.tasks) })).toEqual([0, 0])
   })
 
   it('leaves the stored year alone (a copy, nothing written) and returns it as it is when nothing derives', () => {

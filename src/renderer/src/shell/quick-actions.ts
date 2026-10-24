@@ -6,6 +6,7 @@ import { entryRoute } from '@modules/training/renderer/training-paths'
 import { readingListRoute } from '@modules/reading-lists/renderer/reading-lists-paths'
 import { taskRoute } from '@modules/tasks/renderer/tasks-paths'
 import { defaultList } from '@modules/tasks/shared/query'
+import { visibleTasks } from '@modules/tasks/shared/session-lock'
 import type { DockActionId } from '@shared/api'
 import type { CreateRequest } from '@shared/search-query'
 import { todayIso } from '@shared/time'
@@ -93,7 +94,9 @@ export const QUICK_ACTIONS: readonly QuickAction[] = [
         list: typeof saved?.list === 'string' ? saved.list : '',
         sublist: typeof saved?.sublist === 'string' ? saved.sublist : ''
       }
-      const rows = tasks.filter((t) => !t.parentUid).map((task) => ({ task, kids: [] }))
+      const rows = visibleTasks(tasks)
+        .filter((t) => !t.parentUid)
+        .map((task) => ({ task, kids: [] }))
       const where = fields?.list
         ? { list: fields.list, sublist: fields.sublist }
         : defaultList(rows, { last, clients })

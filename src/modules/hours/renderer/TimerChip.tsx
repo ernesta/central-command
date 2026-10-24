@@ -59,7 +59,7 @@ function TimerPopover({
   const data = useYearFile(running.workspace, running.year)
   const open = useOpenTasks(running.workspace)
   // All tasks, so the list of a task since done or trashed still shows.
-  const { tasks: all } = useTasksList(running.workspace as TaskWorkspace)
+  const { tasks: all } = useTasksList(running.workspace as TaskWorkspace, true)
   const clients = data?.plan.clients ?? []
   const tracking = window.api.tracking
   const [name, setName] = useState(query)
