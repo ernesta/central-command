@@ -5,7 +5,7 @@ import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { formatHours } from '@shared/tracking/format'
 import { dailyAim } from '@shared/tracking/plan'
 import { dayMinutes } from '@shared/tracking/totals'
-import { inYear } from '@shared/year'
+import { inContract } from '@shared/tracking/workspace-weeks'
 import { hoursBase, useHoursWorkspace } from './hours-paths'
 import { useShownYear } from './useMeetingHours'
 import styles from './HoursCard.module.css'
@@ -17,7 +17,7 @@ export function HoursCard(): React.JSX.Element {
   const { running } = useRunningTimer()
   const now = useNow(running !== null)
   const data = useShownYear(workspace, stored, now.date)
-  const today = data && inYear(now.date, data.start, data.weeks) ? data : null
+  const today = data && inContract(now.date, data) ? data : null
   const aim = today ? dailyAim(today, now.date) : null
 
   return (

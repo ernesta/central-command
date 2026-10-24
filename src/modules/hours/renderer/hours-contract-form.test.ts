@@ -51,15 +51,12 @@ describe('the new-contract form', () => {
     expect(add(host).disabled).toBe(false)
   })
 
-  it('stays disabled for a last day that makes no whole weeks, unreadable hours or a blank name', () => {
+  it('stays disabled for unreadable hours or a blank name, and takes a last day of any length', () => {
     const host = mount(createElement(ContractFields, { workspace: 'work' }))
     fill(host)
-    // A day that makes no whole weeks is dimmed and cannot be picked.
+    // Any day on or after the first day can be picked, whole weeks or not.
     pickDate(host, 'Last day', '2027-04-02')
-    expect(add(host).disabled).toBe(true)
-    expect(
-      (host.querySelector('button[aria-label="Apr 2, 2027"]') as HTMLButtonElement).disabled
-    ).toBe(true)
+    expect(add(host).disabled).toBe(false)
     pickDate(host, 'Last day', '2027-09-26')
     expect(add(host).disabled).toBe(false)
     type(field(host, 'Weekly hours'), 'lots')

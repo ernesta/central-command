@@ -7,7 +7,7 @@ import { Segmented } from '@renderer/components/Segmented'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { todayIso } from '@shared/time'
 import { contractWeeks, dayAfterContract } from '@shared/tracking/workspace-weeks'
-import type { Invoice } from '@shared/tracking/types'
+import type { Invoice, TrackingYear } from '@shared/tracking/types'
 import {
   contractRefusal,
   MAX_CONTRACT_NAME_LENGTH,
@@ -25,13 +25,13 @@ const INVOICE_OPTIONS = [
 ] as const
 
 /** Where the next contract would start: the day after the latest one ends, nothing yet when there is none. */
-function nextStart(latest: { start: string; weeks?: number } | null): string {
-  return latest ? dayAfterContract(latest.start, latest.weeks ?? 52) : ''
+function nextStart(latest: Pick<TrackingYear, 'start' | 'weeks' | 'end'> | null): string {
+  return latest ? dayAfterContract(latest) : ''
 }
 
 /**
- * Adding a Work contract: its first and last day are whole weeks from the first (whatever weekday); the table above
- * edits the ones made.
+ * Adding a Work contract: its first and last day, any length from one day (whatever weekday); the table above edits
+ * the ones made.
  */
 export function ContractFields({ workspace }: { workspace: HoursWorkspace }): React.JSX.Element {
   const { data } = useTrackingYear(workspace)
@@ -102,7 +102,7 @@ export function ContractFields({ workspace }: { workspace: HoursWorkspace }): Re
               onChange={(day) =>
                 edit(() => {
                   setStart(day ?? '')
-                  // A last day that no longer makes whole weeks from the new first day is dropped.
+                  // A last day before the new first day is dropped.
                   if (!day || !contractWeeks(day, finish).ok) setFinish('')
                 })
               }

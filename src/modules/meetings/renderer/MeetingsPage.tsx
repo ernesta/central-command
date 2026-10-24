@@ -58,8 +58,8 @@ export function MeetingsPage(): React.JSX.Element {
     everything.map((r) => r.date),
     today
   )
-  const { year, years, setYear, weeks } = period
-  const all = meetingsInYearOrPlanned(everything, year, today, weeks)
+  const { year, years, setYear, weeks, end } = period
+  const all = meetingsInYearOrPlanned(everything, year, today, weeks, end)
   // A remembered series or attendee that no longer exists in the files must not hide everything.
   const query =
     rows === null
@@ -146,6 +146,7 @@ export function MeetingsPage(): React.JSX.Element {
           rows={everything}
           year={year}
           weeks={weeks}
+          end={end}
           label={period.label}
           today={today}
           showSkills={tracksSkills(workspace)}

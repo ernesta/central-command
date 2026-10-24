@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNow } from '@renderer/state/use-now'
 import { useRunningTimer } from '@renderer/state/use-running-timer'
 import { todayIso } from '@shared/time'
-import { inYear } from '@shared/year'
+import { inContract } from '@shared/tracking/workspace-weeks'
 import { withDerived } from '@shared/tracking/derived'
 import { clientForList, contractForClient } from '@shared/tracking/contracts'
 import type { TrackingYear } from '@shared/tracking/types'
@@ -72,7 +72,7 @@ export function useTaskTime(workspace: TaskWorkspace): {
     }
     const yearFor = (date: string, client?: string): string | null =>
       (client ? contractForClient(years, date, client) : undefined)?.start ??
-      years.find((y) => inYear(date, y.start, y.weeks))?.start ??
+      years.find((y) => inContract(date, y))?.start ??
       null
     const clientFor = (list: string, date: string): string | undefined =>
       clientForList(years, date, list)

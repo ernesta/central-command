@@ -7,7 +7,7 @@ import { Select } from './Select'
 import styles from './YearSelect.module.css'
 
 function contractLabelOf(file: TrackingYear | undefined, start: string): string {
-  return contractLabel(start, file?.weeks, file?.name)
+  return contractLabel(start, file?.weeks, file?.name, file?.end)
 }
 
 /**

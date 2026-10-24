@@ -128,7 +128,7 @@ export interface MeetingsApi {
     workspace: MeetingWorkspace,
     year: string,
     /** Work's period is a contract: its length and how the report names it. Omitted for the 52-week year. */
-    contract?: { weeks: number; label: string }
+    contract?: { weeks: number; end?: string; label: string }
   ): Promise<MeetingsExportResult>
   people: {
     list(): Promise<Person[]>

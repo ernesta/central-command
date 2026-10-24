@@ -4,6 +4,11 @@ import { isUpcoming } from './query'
 import { durationMinutes } from './time'
 import type { MeetingIndexRow } from './types'
 
+/** Whether a date is in the period: the year (or contract) from its first day for `weeks`, and not after a contract's real `end`. */
+function inPeriod(date: string, year: string, weeks: number, end?: string): boolean {
+  return inYear(date, year, weeks) && (end === undefined || date <= end)
+}
+
 export interface MeetingHours {
   /** Meetings counted: in the year, not upcoming, and with some time. */
   meetings: number
@@ -18,9 +23,10 @@ export interface MeetingHours {
 export function meetingsInYear(
   rows: readonly MeetingIndexRow[],
   year: string,
-  weeks = YEAR_WEEKS
+  weeks = YEAR_WEEKS,
+  end?: string
 ): MeetingIndexRow[] {
-  return rows.filter((r) => inYear(r.date, year, weeks))
+  return rows.filter((r) => inPeriod(r.date, year, weeks, end))
 }
 
 /**
@@ -31,10 +37,11 @@ export function meetingsInYearOrPlanned(
   rows: readonly MeetingIndexRow[],
   year: string,
   today: string,
-  weeks = YEAR_WEEKS
+  weeks = YEAR_WEEKS,
+  end?: string
 ): MeetingIndexRow[] {
-  const showPlanned = inYear(today, year, weeks)
-  return rows.filter((r) => (r.date === '' ? showPlanned : inYear(r.date, year, weeks)))
+  const showPlanned = inPeriod(today, year, weeks, end)
+  return rows.filter((r) => (r.date === '' ? showPlanned : inPeriod(r.date, year, weeks, end)))
 }
 
 /**
@@ -45,9 +52,10 @@ export function meetingHours(
   rows: readonly MeetingIndexRow[],
   year: string,
   today: string,
-  weeks = YEAR_WEEKS
+  weeks = YEAR_WEEKS,
+  end?: string
 ): MeetingHours {
-  const timed = meetingsInYear(rows, year, weeks)
+  const timed = meetingsInYear(rows, year, weeks, end)
     .filter((r) => !isUpcoming(r, today))
     .map((r) => ({ skills: r.skills, minutes: durationMinutes(r.start, r.end) }))
     .filter((t) => t.minutes)

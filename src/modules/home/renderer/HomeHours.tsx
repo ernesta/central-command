@@ -3,7 +3,7 @@ import { useNow } from '@renderer/state/use-now'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { formatHours } from '@shared/tracking/format'
 import { hasAim } from '@shared/tracking/plan'
-import { inYear } from '@shared/year'
+import { inContract } from '@shared/tracking/workspace-weeks'
 import { hoursBase } from '../../hours/renderer/hours-paths'
 import { PeriodSummary } from '../../hours/renderer/PeriodSummary'
 import { useShownYear } from '../../hours/renderer/useMeetingHours'
@@ -21,7 +21,7 @@ export function HomeHours({ workspace }: { workspace: HomeWorkspace }): React.JS
   const { data: stored } = useTrackingYear(workspace)
   const now = useNow(false)
   const data = useShownYear(workspace, stored, now.date)
-  if (!data || !inYear(now.date, data.start, data.weeks)) return null
+  if (!data || !inContract(now.date, data)) return null
 
   const { label, minutes, aim, today, clients } = periodFigures(data, now)
 

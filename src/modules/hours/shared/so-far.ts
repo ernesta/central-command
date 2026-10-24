@@ -19,7 +19,7 @@ export function weekFigures(
 
 /** The week the Hours page opens on, which is the one Home sums up. */
 export const thisWeek = (data: TrackingYear, now: Moment): string =>
-  defaultWeek(data.start, now.date, data.weeks)
+  defaultWeek(data.start, now.date, data.weeks, data.end)
 
 /** The invoice period (month, or week) of the week the Hours page opens on: the Invoice card's figures. Null outside the contract. */
 export function thisPeriod(data: TrackingYear, now: Moment): ContractPeriod | null {

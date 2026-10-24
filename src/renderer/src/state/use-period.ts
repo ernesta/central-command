@@ -10,12 +10,14 @@ export interface Period {
   year: string
   years: string[]
   setYear: (year: string) => void
-  /** Its length in weeks. */
+  /** Its length in report weeks. */
   weeks: number
+  /** A contract's real last day; undefined for the academic year (and while Work has no contract). */
+  end: string | undefined
   /** How a sentence names it: "2026–27", or "Luminos · 1 May 2026 – 29 Oct 2026". */
   label: string
   /** The contract's length and name for the PDF export; undefined for the academic year. */
-  contract: { weeks: number; label: string } | undefined
+  contract: { weeks: number; end?: string; label: string } | undefined
   /** False while a contract's file is being read: the page shows nothing rather than a wrong list. */
   loaded: boolean
 }
@@ -31,6 +33,7 @@ export function usePeriod(workspace: Workspace, dates: readonly string[], today:
     return {
       ...academic,
       weeks: YEAR_WEEKS,
+      end: undefined,
       label: yearLabel(academic.year),
       contract: undefined,
       loaded: true
@@ -38,14 +41,20 @@ export function usePeriod(workspace: Workspace, dates: readonly string[], today:
   }
   const weeks = tracked.data?.weeks
   const label =
-    tracked.year === '' ? 'any contract' : contractLabel(tracked.year, weeks, tracked.data?.name)
+    tracked.year === ''
+      ? 'any contract'
+      : contractLabel(tracked.year, weeks, tracked.data?.name, tracked.data?.end)
   return {
     year: tracked.year,
     years: tracked.years,
     setYear: tracked.setYear,
     weeks: weeks ?? 0,
+    end: tracked.data?.end,
     label,
-    contract: weeks === undefined ? undefined : { weeks, label },
+    contract:
+      weeks === undefined
+        ? undefined
+        : { weeks, ...(tracked.data?.end ? { end: tracked.data.end } : {}), label },
     loaded: tracked.loaded && (tracked.year === '' || tracked.data !== null)
   }
 }

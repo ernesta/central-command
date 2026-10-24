@@ -1,7 +1,7 @@
 import { hasAim, yearTotals } from '@shared/tracking/plan'
 import { timeOffCounts } from '@shared/tracking/timeoff'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
-import { yearEnd } from '@shared/year'
+import { contractEnd } from '@shared/tracking/workspace-weeks'
 
 export interface YearRow {
   start: string
@@ -33,7 +33,7 @@ export function yearRows(years: readonly TrackingYear[], now: Moment): YearRow[]
         ...(data.weeks !== undefined ? { weeks: data.weeks } : {}),
         ...(data.name ? { name: data.name } : {}),
         aimed: hasAim(data),
-        end: yearEnd(data.start, data.weeks),
+        end: contractEnd(data),
         minutes: totals.minutes,
         plan: totals.plan,
         balance: totals.balance,

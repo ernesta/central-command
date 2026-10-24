@@ -4,7 +4,8 @@ import { formatDay, formatHours, formatRange } from '@shared/tracking/format'
 import { dailyAim, hasAim } from '@shared/tracking/plan'
 import { dayRows, weekDaysMinutes } from '@shared/tracking/totals'
 import { invoiceOf, type Moment, type TrackingYear } from '@shared/tracking/types'
-import { addDays, inYear, weekNumberOf, yearEnd } from '@shared/year'
+import { addDays, weekNumberOf, yearEnd } from '@shared/year'
+import { inContract } from '@shared/tracking/workspace-weeks'
 import { periodOfWeek, periodsOf } from '../shared/periods'
 import { weekFigures } from '../shared/so-far'
 import { barFill, BAR_SCALE, defaultWeek } from '../shared/week'
@@ -52,8 +53,8 @@ export function WeekCard({
   const first = week <= data.start
   const last = addDays(week, 7) > yearEnd(data.start, data.weeks)
   // Today's week, offered as a way back only while another week is shown (and today is inside the year).
-  const thisWeek = defaultWeek(data.start, now.date, data.weeks)
-  const away = inYear(now.date, data.start, data.weeks) && week !== thisWeek
+  const thisWeek = defaultWeek(data.start, now.date, data.weeks, data.end)
+  const away = inContract(now.date, data) && week !== thisWeek
   // Where weeks belong to invoice months they are numbered within the month.
   const number =
     data.plan.weekAim && invoiceOf(data) === 'month'

@@ -17,6 +17,8 @@ export interface MeetingsReportInput {
   year: string
   /** The period's length, when it is not the 52-week year (a contract's). */
   weeks?: number
+  /** A contract's real last day, when it is not the end of its last report week. */
+  end?: string
   /** What the period is called in the report, when it is not "2026–27" (a contract's name and dates). */
   label?: string
   today: string
@@ -35,12 +37,12 @@ export function reportFileName(year: string, seriesFilter?: string, label?: stri
  * Meetings that have not happened yet are left out. Pure: the same input gives the same HTML.
  */
 export function meetingsReportHtml(input: MeetingsReportInput): string {
-  const { year, today, seriesFilter, weeks } = input
+  const { year, today, seriesFilter, weeks, end } = input
   const included = seriesFilter ? input.rows.filter((r) => r.series === seriesFilter) : input.rows
-  const rows = meetingsInYear(included, year, weeks)
+  const rows = meetingsInYear(included, year, weeks, end)
     .filter((r) => !isUpcoming(r, today) && durationMinutes(r.start, r.end))
     .sort((a, b) => -compareNewestFirst(a, b))
-  const hours = meetingHours(included, year, today, weeks)
+  const hours = meetingHours(included, year, today, weeks, end)
   const label = input.label ?? yearLabel(year)
   const title = seriesFilter ?? 'Meetings'
 

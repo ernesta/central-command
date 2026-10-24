@@ -5,10 +5,11 @@ import { resolveWeek } from '../shared/week'
 export function useWeek(
   yearStart: string,
   today: string,
-  weeks?: number
+  weeks?: number,
+  end?: string
 ): { week: string; setWeek: (week: string) => void } {
   const [params, setParams] = useSearchParams()
-  const week = resolveWeek(params.get('week'), yearStart, today, weeks)
+  const week = resolveWeek(params.get('week'), yearStart, today, weeks, end)
   const setWeek = (next: string): void =>
     setParams(
       (prev) => {

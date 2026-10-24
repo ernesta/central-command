@@ -64,19 +64,20 @@ function asRef(value: unknown): MeetingRef {
 }
 
 /** A contract's length and label as the renderer sends them for the report; undefined means the 52-week year. */
-function asContract(value: unknown): { weeks: number; label: string } | undefined {
+function asContract(value: unknown): { weeks: number; end?: string; label: string } | undefined {
   if (value === undefined || value === null) return undefined
-  const v = value as { weeks?: unknown; label?: unknown }
+  const v = value as { weeks?: unknown; end?: unknown; label?: unknown }
   if (
     typeof v.weeks !== 'number' ||
     !Number.isInteger(v.weeks) ||
     v.weeks < 1 ||
     v.weeks > 156 ||
     typeof v.label !== 'string' ||
-    v.label.length > 200
+    v.label.length > 200 ||
+    (v.end !== undefined && (typeof v.end !== 'string' || dayNumber(v.end) === null))
   )
     throw new Error('Invalid contract')
-  return { weeks: v.weeks, label: v.label }
+  return { weeks: v.weeks, ...(v.end ? { end: v.end as string } : {}), label: v.label }
 }
 
 function register({ db, paths }: MainContext): () => void {
@@ -162,6 +163,7 @@ function register({ db, paths }: MainContext): () => void {
           rows: listMeetingRows(db, workspace as MeetingWorkspace),
           year,
           weeks: period?.weeks,
+          end: period?.end,
           label: period?.label,
           today: todayIso(),
           seriesFilter

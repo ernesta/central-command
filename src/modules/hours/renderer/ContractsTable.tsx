@@ -12,10 +12,9 @@ import { ClientsField } from './ClientsField'
 import { DurationField } from './DurationField'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { formatDate, todayIso } from '@shared/time'
-import { addDays, yearEnd } from '@shared/year'
 import { contractIsEmpty } from '@shared/tracking/contracts'
 import { clientRefusal } from '@shared/tracking/client-names'
-import { contractWeeks } from '@shared/tracking/workspace-weeks'
+import { contractEnd, contractWeeks } from '@shared/tracking/workspace-weeks'
 import { invoiceOf, type Invoice, type TrackingYear } from '@shared/tracking/types'
 import {
   clientChange,
@@ -60,7 +59,7 @@ function ContractRow({
   onDone: () => void
   onDelete: () => void
 }): React.JSX.Element {
-  const end = yearEnd(contract.start, contract.weeks)
+  const end = contractEnd(contract)
   const [name, setName] = useState(contract.name ?? '')
   const [finish, setFinish] = useState(end)
   const [minutes, setMinutes] = useState(contract.plan.hoursPerWeek)
@@ -238,7 +237,7 @@ function ContractRow({
   )
 }
 
-/** The row a new contract is typed into: it starts today and, until the last day is chosen, ends with its first week (a contract is whole weeks). */
+/** The row a new contract is typed into: it starts today and, until the last day is chosen, ends the same day (a contract is any length). */
 function NewContractRow({
   workspace,
   known,
@@ -255,7 +254,7 @@ function NewContractRow({
   const [weeklyMinutes, setWeeklyMinutes] = useState(0)
   const [invoice, setInvoice] = useState<Invoice>('month')
   const [problem, setProblem] = useState<string | null>(null)
-  const finish = chosenFinish ?? (ISO.test(start) ? addDays(start, 6) : '')
+  const finish = chosenFinish ?? (ISO.test(start) ? start : '')
   const check = ISO.test(start) && ISO.test(finish) ? contractWeeks(start, finish) : null
   const ready = check?.ok === true && name.trim() !== '' && clients.length > 0
   const edit = (change: () => void): void => {
@@ -305,7 +304,7 @@ function NewContractRow({
           onChange={(day) =>
             edit(() => {
               setStart(day ?? '')
-              // A chosen last day that no longer makes whole weeks from the new first day is dropped.
+              // A chosen last day before the new first day is dropped.
               if (!day || (chosenFinish && !contractWeeks(day, chosenFinish).ok))
                 setChosenFinish(null)
             })
@@ -404,11 +403,10 @@ export function ContractsTable({
       pushUndoWithToast(`Removed ${title(contract)}.`, {
         label: `removal of ${title(contract)}`,
         undo: async () => {
-          const weeks = contract.weeks ?? 52
           const added = await window.api.tracking.createContract(
             workspace,
             contract.start,
-            yearEnd(contract.start, weeks),
+            contractEnd(contract),
             {
               ...(contract.name ? { name: contract.name } : {}),
               clients: contract.plan.clients ?? [],
@@ -450,6 +448,7 @@ export function ContractsTable({
                   contract.start,
                   contract.name,
                   contract.weeks,
+                  contract.end,
                   contract.invoice,
                   contract.plan.hoursPerWeek
                 ])}

@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { formatHours, formatRange } from '@shared/tracking/format'
 import { hasAim } from '@shared/tracking/plan'
-import { inYear } from '@shared/year'
+import { inContract } from '@shared/tracking/workspace-weeks'
 import { invoiceOf, type Moment, type TrackingYear } from '@shared/tracking/types'
 import { periodOfWeek, periodsOf } from '../shared/periods'
 import { defaultWeek } from '../shared/week'
@@ -37,8 +37,8 @@ export function InvoiceCard({
   const aimed = hasAim(data)
   const unit = byWeek ? 'week' : 'month'
   const index = periods.indexOf(month)
-  const current = inYear(now.date, data.start, data.weeks)
-    ? periodOfWeek(periods, defaultWeek(data.start, now.date, data.weeks))
+  const current = inContract(now.date, data)
+    ? periodOfWeek(periods, defaultWeek(data.start, now.date, data.weeks, data.end))
     : undefined
   const begun = month.from <= now.date
 
@@ -71,7 +71,7 @@ export function InvoiceCard({
         {current && current !== month && (
           <BackToToday
             label={`This ${unit}`}
-            onClick={() => onWeekChange(defaultWeek(data.start, now.date, data.weeks))}
+            onClick={() => onWeekChange(defaultWeek(data.start, now.date, data.weeks, data.end))}
           />
         )}
       </header>

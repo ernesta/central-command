@@ -4,7 +4,7 @@ import { timeOffRows } from '@shared/tracking/timeoff'
 import { openContracts } from '@shared/tracking/contracts'
 import { yearToShow } from '@shared/tracking/current-year'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
-import { inYear } from '@shared/year'
+import { inContract } from '@shared/tracking/workspace-weeks'
 import type { Workspace } from '@shared/settings'
 import { shownYear } from '../../hours/shared/shown-year'
 import { periodFigures } from '../../hours/shared/so-far'
@@ -91,7 +91,7 @@ function shownYearOf(
   })
   if (!start || !starts.includes(start)) return null
   const stored = files.find((f) => f.start === start) ?? tracking.get(workspace, start)
-  if (!inYear(now.date, stored.start, stored.weeks)) return null
+  if (!inContract(now.date, stored)) return null
   return shownYear(stored, {
     meetings: listMeetingRows(db, workspace),
     trainings: workspace === 'research' ? listTrainingRows(db, 'research') : [],

@@ -59,12 +59,16 @@ export function MeetingsLanding(): React.JSX.Element {
     all.map((r) => r.date),
     today
   )
-  const { year, years, setYear, weeks } = period
+  const { year, years, setYear, weeks, end } = period
   const { upcoming, recent } = recentAndUpcoming(
-    meetingsInYearOrPlanned(all, year, today, weeks),
+    meetingsInYearOrPlanned(all, year, today, weeks, end),
     today
   )
-  const summaries = seriesSummaries(meetingsInYear(all, year, weeks), today, fixedSeries(workspace))
+  const summaries = seriesSummaries(
+    meetingsInYear(all, year, weeks, end),
+    today,
+    fixedSeries(workspace)
+  )
 
   const recentRows: RecentRow[] = [...[...upcoming].reverse(), ...recent].map((row) => ({
     key: row.id,
@@ -124,6 +128,7 @@ export function MeetingsLanding(): React.JSX.Element {
               rows={all}
               year={year}
               weeks={weeks}
+              end={end}
               label={period.label}
               today={today}
               showSkills={tracksSkills(workspace)}
