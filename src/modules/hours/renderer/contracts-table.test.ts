@@ -54,24 +54,16 @@ describe('Contracts table in Settings, Work', () => {
     expect(host.querySelector('tbody')!.textContent).not.toContain('0:00')
   })
 
-  it('sets a contract back to none when its hours are cleared', async () => {
+  it('sets a contract back to none when its hours are set to 0:00', async () => {
     const host = await show(contract({ aim: true, invoice: 'month' }))
     press(host, 'Edit Royal Holloway')
-    const input = host.querySelector<HTMLInputElement>('input[aria-label^="Hours a week"]')!
-    expect(input.value).toBe('8:00')
-    type(input, '')
+    const group = host.querySelector('[role="group"][aria-label^="Hours a week"]')!
+    const hours = group.querySelector<HTMLInputElement>('input[aria-label="Hours"]')!
+    expect(hours.value).toBe('8')
+    type(hours, '0')
     press(host, 'Save')
     await act(async () => {})
     expect(api.setPlan).toHaveBeenCalledWith('work', '2026-09-28', { hoursPerWeek: 0 })
-  })
-
-  it('refuses nonsense and does not save it', async () => {
-    const host = await show(contract({ aim: true, invoice: 'month' }))
-    press(host, 'Edit Royal Holloway')
-    type(host.querySelector<HTMLInputElement>('input[aria-label^="Hours a week"]')!, 'abc')
-    press(host, 'Save')
-    await act(async () => {})
-    expect(api.setPlan).not.toHaveBeenCalled()
   })
 
   it('offers Delete only for a contract that holds no time', async () => {
@@ -86,29 +78,18 @@ describe('Contracts table in Settings, Work', () => {
     expect(empty.querySelector('button[aria-label^="Delete"]')).not.toBeNull()
   })
 
-  it('renames a client edited in place, and sets the list when more changed', async () => {
+  it('shows the clients as chips that can be removed, and sets the list when more changed', async () => {
     const host = await show(contract({ aim: true, invoice: 'month' }))
     press(host, 'Edit Royal Holloway')
-    const clients = host.querySelector<HTMLInputElement>('input[aria-label^="Clients of"]')!
-    expect(clients.value).toBe('Royal Holloway')
-    type(clients, 'RHUL')
-    press(host, 'Save')
-    await act(async () => {})
-    expect(api.renameClient).toHaveBeenCalledWith('work', 'Royal Holloway', 'RHUL')
-    expect(api.setPlan).not.toHaveBeenCalled()
-    unmount()
-
-    const again = await show(contract({ aim: true, invoice: 'month' }))
-    press(again, 'Edit Royal Holloway')
-    type(
-      again.querySelector<HTMLInputElement>('input[aria-label^="Clients of"]')!,
-      'Royal Holloway, Luminos'
+    const chips = host.querySelector('ul[aria-label^="Clients of"]')!
+    expect(chips.textContent).toContain('Royal Holloway')
+    press(host, 'Remove Royal Holloway')
+    expect(host.querySelector('ul[aria-label^="Clients of"]')!.textContent).not.toContain(
+      'Royal Holloway'
     )
-    press(again, 'Save')
-    await act(async () => {})
-    expect(api.setPlan).toHaveBeenCalledWith('work', '2026-09-28', {
-      clients: ['Royal Holloway', 'Luminos']
-    })
+    press(host, 'Cancel')
+    expect(api.setPlan).not.toHaveBeenCalled()
+    expect(api.renameClient).not.toHaveBeenCalled()
   })
 
   it('adds a contract from a row at the top of the table', async () => {

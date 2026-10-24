@@ -109,7 +109,7 @@ function PlanBlock({ workspace }: { workspace: HoursWorkspace }): React.JSX.Elem
           {!data.plan.weekAim && (
             <div className={styles.field}>
               <span className={styles.label} id={`${id}-days-label`}>
-                Days worked
+                Working days
               </span>
               <div role="group" aria-labelledby={`${id}-days-label`} className={styles.days}>
                 {WEEKDAYS.map(({ day, label }) => {

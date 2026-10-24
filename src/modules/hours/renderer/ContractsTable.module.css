@@ -11,7 +11,7 @@
 }
 .table {
   width: 100%;
-  min-width: 840px;
+  min-width: 980px;
   /* Fixed columns and rows: opening a row for editing changes neither widths nor heights. */
   table-layout: fixed;
   border-collapse: separate;
@@ -43,21 +43,23 @@
   white-space: nowrap;
 }
 .table th:nth-child(1) {
-  width: 15%;
-}
-.table th:nth-child(2),
-.table th:nth-child(3),
-.table th:nth-child(4) {
   width: 17%;
 }
+.table th:nth-child(2),
+.table th:nth-child(3) {
+  width: 148px;
+}
+.table th:nth-child(4) {
+  width: 22%;
+}
 .table th:nth-child(5) {
-  width: 9%;
+  width: 120px;
 }
 .table th:nth-child(6) {
-  width: 11%;
+  width: 120px;
 }
 .table th:nth-child(7) {
-  width: 14%;
+  width: 160px;
 }
 .table td {
   height: 56px;
@@ -105,4 +107,8 @@
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
+}
+/* Chips and the DurationField keep their own width. */
+.table td input[inputmode='numeric'] {
+  width: 3ch;
 }
