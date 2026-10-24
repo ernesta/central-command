@@ -4284,3 +4284,10 @@ The user's request: "contracts to be allowed to span any time, but the weeks are
 - **Tests.** `workspace-weeks`, `parse`, `store` ("any length": one-day and 10-day contracts, last day trackable and the day after refused, a later contract on a day after the end, an old file read unchanged byte for byte, `setContractEnd` on an old file, shortening past time by day), and `hours-partial-week.test.ts` (grid clamp, aim not prorated, heat/typical/periods, Week card days). The form test no longer asserts a whole-weeks refusal.
 - **Driven** on a scratch library (`CENTRAL_COMMAND_HOME`), in the production build and in dev mode, light and dark: a one-day contract (today), a 10-day contract with today a day after its end (no Today card; the Sat after the end dimmed and not openable; Next week disabled on the last), an old file (26 weeks, no `end`) whose end was edited to 27 Oct in Settings (file now `weeks: 26, end: 2026-10-27`, Week 26 shows "23 Oct – 27 Oct", 5 days), and the new-contract row. Not driven in the UI: the timer's refusal on a day after the end (unit-tested); the Weeks chart tips and the Home figures with a partial week (covered by the unit tests only).
 - **Seen, not mine:** the Week card's bar column runs past the card's right edge at a 1300px window with an aimed contract (the same on an old file); left as is.
+
+## Contracts table: clients as chips (24 Oct 2026)
+
+The user's review of Settings → Hours → Work: the edit row's clients stacked one chip per line (ugly), and the read-only row printed them as plain text.
+
+- `ClientChips` (`hours/renderer/ClientsField.tsx`) draws the read-only clients as the same chips the edit row uses, without the ✕; the Clients column is 34% wide (was 22%) and the table's minimum 1120px (was 980px), so chips sit side by side and only "+ add" may wrap. The cell wraps (`white-space: normal`), so a row grows to hold its chips; the earlier "rows keep their height" note no longer holds for a long client list.
+- Driven in the production build on a scratch library, dark mode (read-only and edit rows); dev mode and light mode not driven.
