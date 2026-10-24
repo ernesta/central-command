@@ -20,6 +20,7 @@ const empty: HomeSummary = {
 const task = (uid: string, daysLate = 0): HomeSummary['tasks']['today'][number] => ({
   uid,
   title: uid,
+  parent: null,
   workspace: 'research',
   list: 'Reading',
   due: '2026-10-15',

@@ -5,6 +5,7 @@ import { detailText, eventDetail, homeView, timeRange, whenLabel } from './home-
 const task = (uid: string, workspace: 'research' | 'work', daysLate = 0): HomeTask => ({
   uid,
   title: uid,
+  parent: null,
   workspace,
   list: 'L',
   due: '2026-10-15',

@@ -6,6 +6,7 @@ import type { SearchHit } from '@shared/search'
 import { ghostFor } from '@shared/search-complete'
 import { splitChips } from '@shared/search-chips'
 import { fold } from '@shared/text'
+import { SubtaskLine } from '@modules/tasks/renderer/SubtaskLine'
 import { LateChip } from '@modules/tasks/renderer/LateChip'
 import { IconButton } from '../components/IconButton'
 import { ChipInput } from './ChipInput'
@@ -268,7 +269,13 @@ export function GlobalSearch({
                   <span className={styles.title}>{hit.title}</span>
                   {(hit.detail || hit.late) && (
                     <span className={styles.detailRow}>
-                      {hit.detail && <span className={styles.detail}>{hit.detail}</span>}
+                      {hit.subtask ? (
+                        <span className={styles.detail}>
+                          <SubtaskLine {...hit.subtask} />
+                        </span>
+                      ) : (
+                        hit.detail && <span className={styles.detail}>{hit.detail}</span>
+                      )}
                       {hit.late ? <LateChip days={hit.late} /> : null}
                     </span>
                   )}

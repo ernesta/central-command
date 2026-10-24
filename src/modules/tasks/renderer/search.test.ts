@@ -22,7 +22,9 @@ describe('taskHits', () => {
     const hits = taskHits(tasks, req('methods'), 6)
     expect(hits[0].detail).toBe('Reading · Oct 9')
     expect(hits[1].detail).toContain('methods')
-    expect(taskHits(tasks, req('kid'), 6)[0].detail).toBe('Subtask of Write methods')
+    const kid = taskHits(tasks, req('kid'), 6)[0]
+    expect(kid.detail).toBe('Reading')
+    expect(kid.subtask).toEqual({ parent: 'Write methods', list: 'Reading', rest: '' })
   })
   it('shows a self-study subtask with its series in front', () => {
     const rows = [

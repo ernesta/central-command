@@ -19,6 +19,15 @@ export function studyLabel(task: Task, parent: Task | undefined): string {
   return series ? `${series} › ${title}` : title
 }
 
+/**
+ * The title the `↳ parent · list` line names for a task, or null where the line has no parent: a top-level task, and a self-study
+ * subtask (its series is already in its name).
+ */
+export function subtaskParent(task: Task, all: readonly Task[]): string | null {
+  if (!task.parentUid || task.ownKind === 'self-study') return null
+  return parentIn(task, all)?.title ?? null
+}
+
 /** The parent of a task among `tasks` (undefined for a top-level one). */
 export function parentIn(task: Task, tasks: readonly Task[]): Task | undefined {
   return task.parentUid ? tasks.find((t) => t.uid === task.parentUid) : undefined

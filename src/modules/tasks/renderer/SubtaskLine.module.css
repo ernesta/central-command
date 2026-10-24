@@ -1,0 +1,31 @@
+.plain {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.line {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  white-space: nowrap;
+}
+.mark {
+  flex: none;
+  align-self: center;
+  margin-right: 4px;
+  color: var(--text-muted);
+}
+.parent {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* The list (and a date) is never cut: the parent gives way first. */
+.tail {
+  flex: none;
+  white-space: pre;
+}

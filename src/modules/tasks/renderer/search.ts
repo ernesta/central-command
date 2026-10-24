@@ -39,14 +39,17 @@ export function taskHits(
     .map((t) => {
       const inTitle = needles.every((n) => fold(t.title).includes(n))
       const parent = t.parentUid ? byUid.get(t.parentUid) : undefined
-      const where = parent
-        ? `Subtask of ${parent.title || 'Untitled'}`
-        : listLabel(t.list, t.sublist)
-      const details = taskLine(where, t.due && formatDue(t.due, today))
+      // A subtask has no list of its own: it sits in its parent's.
+      const list =
+        parent && !t.list ? listLabel(parent.list, parent.sublist) : listLabel(t.list, t.sublist)
+      const rest = t.due ? formatDue(t.due, today) : ''
+      const details = taskLine(list, rest)
+      const marker = parent && t.ownKind !== 'self-study' ? parent.title || 'Untitled' : null
       return {
         key: t.uid,
         title: studyLabel(t, parent),
         detail: (!inTitle && snippet(t.description, needles)) || details,
+        subtask: marker === null ? undefined : { parent: marker, list, rest },
         late: t.status === 'done' ? undefined : daysLate(t.due, today) || undefined,
         route: taskRoute(t.workspace, t.uid)
       }

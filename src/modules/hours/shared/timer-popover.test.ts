@@ -17,6 +17,7 @@ describe('popoverHead', () => {
     expect(popoverHead({ task: taskKey('1'), label: 'Daily admin' }, open, false)).toEqual({
       title: 'Daily admin',
       series: null,
+      parent: null,
       line: 'Admin',
       hint: false,
       stopDisabled: false,
@@ -37,6 +38,9 @@ describe('popoverHead', () => {
   it("a subtask shows its parent's list; a done task still shows its list; an unknown one shows none", () => {
     expect(popoverHead({ task: taskKey('2'), label: 'Training' }, open, false).line).toBe('Admin')
     expect(popoverHead({ task: taskKey('3'), label: 'Finished' }, open, false).line).toBe('Archive')
+    expect(popoverHead({ task: taskKey('2'), label: 'Training' }, open, false).parent).toBe(
+      'Daily admin'
+    )
     expect(popoverHead({ task: taskKey('9'), label: 'Gone' }, open, false).line).toBeNull()
   })
 
@@ -44,6 +48,7 @@ describe('popoverHead', () => {
     expect(popoverHead({ label: '' }, open, false)).toEqual({
       title: 'No task yet',
       series: null,
+      parent: null,
       line: 'Pick one below',
       hint: true,
       stopDisabled: false,

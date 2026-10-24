@@ -71,7 +71,7 @@
   z-index: 30;
   display: grid;
   gap: 12px;
-  width: min(380px, 90vw);
+  width: min(420px, 90vw);
   padding: 16px;
   background: var(--surface);
   border: 1px solid var(--border-soft);

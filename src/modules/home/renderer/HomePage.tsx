@@ -3,7 +3,7 @@ import { Check, GraduationCap, Plane, Users } from 'lucide-react'
 import { Panel } from '@renderer/components/Panel'
 import { LateChip } from '../../tasks/renderer/LateChip'
 import { PriorityBadge } from '../../tasks/renderer/TaskIcons'
-import { taskLine } from '../../tasks/shared/query'
+import { SubtaskLine } from '../../tasks/renderer/SubtaskLine'
 import { tasksAllRoute } from '../../tasks/renderer/tasks-paths'
 import type { HomeEvent, HomeTask, HomeWorkspace } from '../shared/types'
 import { COMING_UP_DAYS, eventDetail, homeView, whenLabel, type HomeView } from './home-model'
@@ -42,7 +42,7 @@ function Row({
   to: string
   lead: React.ReactNode
   title: string
-  line: string
+  line: React.ReactNode
   trailing: React.ReactNode
 }): React.JSX.Element {
   return (
@@ -65,7 +65,7 @@ function TaskRow({ task }: { task: HomeTask }): React.JSX.Element {
       to={task.route}
       lead={<StatusButton uid={task.uid} status={task.status} />}
       title={task.title}
-      line={task.list}
+      line={<SubtaskLine parent={task.parent} list={task.list} />}
       trailing={
         <>
           <LateChip days={task.daysLate} />
@@ -98,7 +98,15 @@ function EventRow({
       }
       title={event.title}
       line={
-        task ? taskLine(event.detail, `due ${when.toLowerCase()}`) : eventDetail(event, initialsOf)
+        task ? (
+          <SubtaskLine
+            parent={task.parent}
+            list={event.detail}
+            rest={`due ${when.toLowerCase()}`}
+          />
+        ) : (
+          eventDetail(event, initialsOf)
+        )
       }
       trailing={
         task ? (

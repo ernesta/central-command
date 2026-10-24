@@ -120,6 +120,7 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
     db
       .prepare(
         `SELECT t.uid, t.title, t.workspace, t.due, t.priority, t.status,
+              CASE WHEN t.own_kind = 'self-study' THEN NULL ELSE p.title END AS parent,
               CASE WHEN t.parent_uid IS NULL THEN t.list ELSE COALESCE(p.list, '') END AS list,
               CASE WHEN t.parent_uid IS NULL THEN t.sublist ELSE COALESCE(p.sublist, '') END AS sublist
        FROM tasks t LEFT JOIN tasks p ON p.uid = t.parent_uid

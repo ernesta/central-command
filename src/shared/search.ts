@@ -9,6 +9,8 @@ export interface SearchHit {
   title: string
   /** One line: the part of the text that matched, or the details of the item. */
   detail: string
+  /** A subtask hit: its second line reads `↳ parent · list · rest` (`detail` holds the same words as plain text). */
+  subtask?: { parent: string; list: string; rest: string }
   /** A task hit that is overdue: how many days late, shown as a chip beside the detail. */
   late?: number
   /** Where clicking the result goes. Leave out for a hit that only ever `run`s. */

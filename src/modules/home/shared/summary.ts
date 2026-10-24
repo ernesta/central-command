@@ -18,6 +18,8 @@ export interface TaskInput {
   title: string
   workspace: HomeWorkspace
   list: string
+  /** The title of its parent, when it is a subtask shown with the `↳` line. */
+  parent?: string | null
   due: string | null
   priority: 'high' | 'normal' | 'low'
   status: 'todo' | 'doing' | 'done'
@@ -92,6 +94,7 @@ function toHomeTask(t: TaskInput, today: string): HomeTask | null {
     title: t.title,
     workspace: t.workspace,
     list: t.list,
+    parent: t.parent ?? null,
     due: t.due,
     priority: t.priority,
     status: t.status,
@@ -182,7 +185,7 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
         detail: t.list,
         route: t.route,
         inDays,
-        task: { uid: t.uid, status: t.status, priority: t.priority }
+        task: { uid: t.uid, status: t.status, priority: t.priority, parent: t.parent }
       })
   }
   for (const m of meetings) {

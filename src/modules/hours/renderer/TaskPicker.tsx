@@ -8,7 +8,8 @@ import { PickerInput } from '@renderer/components/picker-input'
 import { useTaskDefaults } from '../../tasks/renderer/useTaskDefaults'
 import { useOpenTasks } from '../../tasks/renderer/useOpenTasks'
 import { TaskName } from '../../tasks/renderer/TaskName'
-import { parentIn } from '../../tasks/shared/study-label'
+import { parentIn, subtaskParent } from '../../tasks/shared/study-label'
+import { SubtaskLine } from '../../tasks/renderer/SubtaskLine'
 import { ListField } from '../../tasks/renderer/ListField'
 import { taskKey } from '../../tasks/shared/tracked'
 import type { Task } from '../../tasks/shared/types'
@@ -266,8 +267,11 @@ export function TaskPicker({
                         title={<Highlighted label={item.task.title} query={value} />}
                       />
                     </span>
-                    <span className={styles.detail} title={detailOfTask(item.task, tasks)}>
-                      {detailOfTask(item.task, tasks)}
+                    <span className={styles.detail}>
+                      <SubtaskLine
+                        parent={subtaskParent(item.task, tasks)}
+                        list={detailOfTask(item.task, tasks)}
+                      />
                     </span>
                   </>
                 ) : (
@@ -328,8 +332,11 @@ export function TaskPicker({
                   <span className={styles.optionTitle}>
                     <TaskName task={task} parent={parentIn(task, tasks)} />
                   </span>
-                  <span className={styles.detail} title={detailOfTask(task, tasks)}>
-                    {detailOfTask(task, tasks)}
+                  <span className={styles.detail}>
+                    <SubtaskLine
+                      parent={subtaskParent(task, tasks)}
+                      list={detailOfTask(task, tasks)}
+                    />
                   </span>
                 </button>
               </li>

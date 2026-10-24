@@ -8,6 +8,8 @@ export interface HomeTask {
   title: string
   workspace: HomeWorkspace
   list: string
+  /** The title of the task it is a subtask of (the row then reads `↳ parent · list`); null for any other. */
+  parent: string | null
   due: string
   priority: 'high' | 'normal' | 'low'
   status: 'todo' | 'doing'
@@ -49,7 +51,12 @@ export interface HomeEvent {
   /** A meeting's or training's format: `in-person` or `online`. */
   mode?: string | null
   /** Set on a task: what its status circle and priority mark show. */
-  task?: { uid: string; status: 'todo' | 'doing'; priority: 'high' | 'normal' | 'low' }
+  task?: {
+    uid: string
+    status: 'todo' | 'doing'
+    priority: 'high' | 'normal' | 'low'
+    parent: string | null
+  }
 }
 
 export interface HomeTimer {

@@ -1,4 +1,4 @@
-import { parentIn, studySeries } from '../../tasks/shared/study-label'
+import { parentIn, studySeries, subtaskParent } from '../../tasks/shared/study-label'
 import { taskUidOf } from '../../tasks/shared/tracked'
 import type { Task } from '../../tasks/shared/types'
 import { listOfTask } from './start-picker'
@@ -11,6 +11,8 @@ export interface PopoverHead {
   title: string
   /** A self-study subtask's series, shown muted before the title; null otherwise. */
   series: string | null
+  /** The title of the parent a subtask belongs to (the line then reads `↳ parent · list`); null otherwise. */
+  parent: string | null
   /** The line under the title: the task's list, a nudge, or the reason Stop is off. Null when the list is not known. */
   line: string | null
   /** The line is a nudge or a reason, not a list (drawn quiet and italic). */
@@ -37,6 +39,7 @@ export function popoverHead(
     return {
       title: session.label || task?.title || 'No title',
       series: task ? studySeries(task, parentIn(task, tasks)) : null,
+      parent: task ? subtaskParent(task, tasks) : null,
       line: task ? listOfTask(task, tasks) || null : null,
       hint: false,
       stopDisabled: false,
@@ -47,6 +50,7 @@ export function popoverHead(
     ? {
         title: 'Which task was this?',
         series: null,
+        parent: null,
         line: STOP_NEEDS_TASK,
         hint: true,
         stopDisabled: true,
@@ -55,6 +59,7 @@ export function popoverHead(
     : {
         title: session.label || 'No task yet',
         series: null,
+        parent: null,
         line: 'Pick one below',
         hint: true,
         stopDisabled: false,

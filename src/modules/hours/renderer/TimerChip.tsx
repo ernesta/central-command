@@ -20,6 +20,7 @@ import { useTasksList } from '../../tasks/renderer/useTasksList'
 import { taskKey } from '../../tasks/shared/tracked'
 import type { TaskWorkspace } from '../../tasks/shared/types'
 import { suggestedTasks } from '../shared/start-picker'
+import { SubtaskLine } from '../../tasks/renderer/SubtaskLine'
 import { popoverHead, STOP_NEEDS_TASK } from '../shared/timer-popover'
 import { elapsedMinutes } from '../shared/timer'
 import type { HoursWorkspace } from '../shared/workspaces'
@@ -119,7 +120,11 @@ function TimerPopover({
           {head.series && <span className={styles.series}>{head.series} › </span>}
           {head.title}
         </div>
-        {head.line && <div className={head.hint ? styles.hint : styles.list}>{head.line}</div>}
+        {head.line && (
+          <div className={head.hint ? styles.hint : styles.list}>
+            {head.hint ? head.line : <SubtaskLine parent={head.parent} list={head.line} />}
+          </div>
+        )}
       </div>
       {/* Only an older entry with a name but no task still needs its client chosen here. */}
       {clients.length > 0 && !session.task && session.label !== '' && (
