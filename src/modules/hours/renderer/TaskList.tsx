@@ -12,10 +12,10 @@ import { taskUidOf } from '@modules/tasks/shared/tracked'
 import { StatusButton } from '@modules/tasks/renderer/StatusButton'
 import { taskRoute } from '@modules/tasks/renderer/tasks-paths'
 import { SubtaskLine } from '@modules/tasks/renderer/SubtaskLine'
-import { subtaskParent } from '@modules/tasks/shared/study-label'
+import { studyName, subtaskParent } from '@modules/tasks/shared/study-label'
 import { TaskName } from '@modules/tasks/renderer/TaskName'
 import { useTasksList } from '@modules/tasks/renderer/useTasksList'
-import { listOfTask } from '../shared/start-picker'
+import { detailOfTask } from '../shared/start-picker'
 import type { HoursWorkspace } from '../shared/workspaces'
 import { DurationField } from './DurationField'
 import styles from './TaskList.module.css'
@@ -145,7 +145,7 @@ export function TaskList({
                         <TaskName
                           task={own}
                           parent={own.parentUid ? taskOf.get(own.parentUid) : undefined}
-                          title={row.label}
+                          title={studyName(own, taskOf.get(own.parentUid ?? '')) ?? row.label}
                         />
                       ) : (
                         row.label
@@ -156,7 +156,7 @@ export function TaskList({
                     <span className={styles.taskLine}>
                       <SubtaskLine
                         parent={subtaskParent(own, tasks)}
-                        list={listOfTask(own, tasks)}
+                        list={detailOfTask(own, tasks)}
                       />
                     </span>
                   )}

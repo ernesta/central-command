@@ -2,6 +2,7 @@ import { fold } from '@shared/text'
 import type { OpenContract } from '@shared/tracking/contracts'
 import type { TrackingYear } from '@shared/tracking/types'
 import { addDays } from '@shared/year'
+import { STUDY_LINE, studyName } from '../../tasks/shared/study-label'
 import { listForNewTask } from '../../tasks/shared/new-task-list'
 import { taskUidOf } from '../../tasks/shared/tracked'
 import type { Task } from '../../tasks/shared/types'
@@ -22,8 +23,13 @@ export interface PickerOptions {
 export function pickerOptions(tasks: readonly Task[], typed: string, limit = 8): PickerOptions {
   const q = fold(typed.trim())
   if (!q) return { tasks: [], create: null }
-  const hits = tasks.filter((t) => fold(t.title).includes(q))
-  const starts = hits.filter((t) => fold(t.title).startsWith(q))
+  // A self-study task is found by the name it is shown by ("Series: Title") as well as by its title.
+  const names = (t: Task): string[] => {
+    const study = studyName(t, t.parentUid ? tasks.find((p) => p.uid === t.parentUid) : undefined)
+    return [fold(t.title), ...(study ? [fold(study)] : [])]
+  }
+  const hits = tasks.filter((t) => names(t).some((n) => n.includes(q)))
+  const starts = hits.filter((t) => names(t).some((n) => n.startsWith(q)))
   return {
     tasks: [...starts, ...hits.filter((t) => !starts.includes(t))].slice(0, limit),
     create: typed.trim()
@@ -96,9 +102,9 @@ export function listOfTask(task: Task, all: readonly Task[]): string {
   return all.find((t) => t.uid === task.parentUid)?.list ?? ''
 }
 
-/** What the picker shows beside a task: its list (a subtask shows its parent's). */
+/** A task's second line (picker, timer popover, Hours): its list (a subtask shows its parent's); a self-study task, shown as a training, says so. */
 export function detailOfTask(task: Task, all: readonly Task[]): string {
-  return listOfTask(task, all)
+  return task.ownKind === 'self-study' ? STUDY_LINE : listOfTask(task, all)
 }
 
 /**

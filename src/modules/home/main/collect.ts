@@ -11,6 +11,7 @@ import { periodFigures } from '../../hours/shared/so-far'
 import { listMeetingRows } from '../../meetings/main/repository'
 import { listTasks } from '../../tasks/main/repository'
 import { listLabel } from '../../tasks/shared/query'
+import { STUDY_LINE, studyNameOf } from '../../tasks/shared/study-label'
 import { hiddenTaskUids } from '../../tasks/shared/session-lock'
 import { workClients } from '../../tasks/shared/work-lists'
 import { listTrainingRows } from '../../training/main/repository'
@@ -124,6 +125,7 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
       .prepare(
         `SELECT t.uid, t.title, t.workspace, t.due, t.priority, t.status,
               CASE WHEN t.own_kind = 'self-study' THEN NULL ELSE p.title END AS parent,
+              t.own_kind AS ownKind, p.title AS parentTitle,
               CASE WHEN t.parent_uid IS NULL THEN t.list ELSE COALESCE(p.list, '') END AS list,
               CASE WHEN t.parent_uid IS NULL THEN t.sublist ELSE COALESCE(p.sublist, '') END AS sublist
        FROM tasks t LEFT JOIN tasks p ON p.uid = t.parent_uid
@@ -131,10 +133,19 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
          AND t.uid NOT IN (SELECT task FROM meetings WHERE task != '')
          AND t.uid NOT IN (SELECT task FROM training WHERE task != '' AND task != 'auto')`
       )
-      .all() as (TaskInput & { sublist: string })[]
+      .all() as (TaskInput & {
+      sublist: string
+      ownKind: string | null
+      parentTitle: string | null
+    })[]
   )
     .filter((t) => !hidden.has(t.uid))
-    .map(({ sublist, ...t }) => ({ ...t, list: listLabel(t.list, sublist) }))
+    .map(({ sublist, ownKind, parentTitle, ...t }): TaskInput =>
+      // A self-study task is shown as its training: that name, and "Training · self-study" where a list would be.
+      ownKind === 'self-study'
+        ? { ...t, title: studyNameOf(t.title, parentTitle), list: STUDY_LINE, study: true }
+        : { ...t, list: listLabel(t.list, sublist) }
+    )
   const meetings = (
     db
       .prepare(

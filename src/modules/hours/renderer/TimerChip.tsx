@@ -20,6 +20,7 @@ import { useTasksList } from '../../tasks/renderer/useTasksList'
 import { taskKey } from '../../tasks/shared/tracked'
 import type { TaskWorkspace } from '../../tasks/shared/types'
 import { suggestedTasks } from '../shared/start-picker'
+import { StudyIcon } from '../../tasks/renderer/TaskName'
 import { SubtaskLine } from '../../tasks/renderer/SubtaskLine'
 import { popoverHead, STOP_NEEDS_TASK } from '../shared/timer-popover'
 import { elapsedMinutes } from '../shared/timer'
@@ -117,7 +118,7 @@ function TimerPopover({
     <div className={styles.popover} role="dialog" aria-label="Timer">
       <div className={styles.head}>
         <div className={styles.title}>
-          {head.series && <span className={styles.series}>{head.series} › </span>}
+          {head.study && <StudyIcon />}
           {head.title}
         </div>
         {head.line && (

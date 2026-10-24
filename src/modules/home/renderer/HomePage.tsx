@@ -3,6 +3,7 @@ import { Check, GraduationCap, Plane, Users } from 'lucide-react'
 import { Panel } from '@renderer/components/Panel'
 import { LateChip } from '../../tasks/renderer/LateChip'
 import { PriorityBadge } from '../../tasks/renderer/TaskIcons'
+import { StudyIcon } from '../../tasks/renderer/TaskName'
 import { SubtaskLine } from '../../tasks/renderer/SubtaskLine'
 import { tasksAllRoute } from '../../tasks/renderer/tasks-paths'
 import type { HomeEvent, HomeTask, HomeWorkspace } from '../shared/types'
@@ -41,7 +42,7 @@ function Row({
 }: {
   to: string
   lead: React.ReactNode
-  title: string
+  title: React.ReactNode
   line: React.ReactNode
   trailing: React.ReactNode
 }): React.JSX.Element {
@@ -64,7 +65,12 @@ function TaskRow({ task }: { task: HomeTask }): React.JSX.Element {
     <Row
       to={task.route}
       lead={<StatusButton uid={task.uid} status={task.status} />}
-      title={task.title}
+      title={
+        <>
+          {task.study && <StudyIcon />}
+          {task.title}
+        </>
+      }
       line={<SubtaskLine parent={task.parent} list={task.list} />}
       trailing={
         <>
@@ -96,7 +102,12 @@ function EventRow({
           <Icon size={16} strokeWidth={1.75} className={styles.icon} aria-hidden />
         )
       }
-      title={event.title}
+      title={
+        <>
+          {task?.study && <StudyIcon />}
+          {event.title}
+        </>
+      }
       line={
         task ? (
           <SubtaskLine

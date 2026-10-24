@@ -8,6 +8,8 @@ export interface HomeTask {
   title: string
   workspace: HomeWorkspace
   list: string
+  /** A self-study task, shown as a training: a cap in front of its title, which is its training's name. */
+  study: boolean
   /** The title of the task it is a subtask of (the row then reads `↳ parent · list`); null for any other. */
   parent: string | null
   due: string
@@ -56,6 +58,7 @@ export interface HomeEvent {
     status: 'todo' | 'doing'
     priority: 'high' | 'normal' | 'low'
     parent: string | null
+    study: boolean
   }
 }
 

@@ -1,4 +1,6 @@
-.series {
+.icon {
+  flex: none;
+  margin-right: 6px;
   color: var(--text-muted);
-  font-weight: inherit;
+  vertical-align: -2px;
 }

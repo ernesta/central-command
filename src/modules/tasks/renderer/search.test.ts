@@ -26,14 +26,17 @@ describe('taskHits', () => {
     expect(kid.detail).toBe('Reading')
     expect(kid.subtask).toEqual({ parent: 'Write methods', list: 'Reading', rest: '' })
   })
-  it('shows a self-study subtask with its series in front', () => {
+  it('shows a self-study subtask as a training: its name, a cap, and Training · self-study', () => {
     const rows = [
       task({ uid: 'p', title: 'Simulating Social Worlds self-study' }),
-      task({ uid: 'c', title: 'Day 2 self-study', parentUid: 'p', ownKind: 'self-study' })
+      task({ uid: 'c', title: 'Day 2', parentUid: 'p', ownKind: 'self-study', due: '2026-10-09' })
     ]
-    expect(taskHits(rows, req('day 2'), 6)[0].title).toBe(
-      'Simulating Social Worlds › Day 2 self-study'
-    )
+    const hit = taskHits(rows, req('day 2'), 6)[0]
+    expect(hit.title).toBe('Simulating Social Worlds: Day 2')
+    expect(hit.mark).toBe('training')
+    expect(hit.detail).toBe('Training · self-study · Oct 9')
+    expect(hit.subtask).toBeUndefined()
+    expect(taskHits(rows, req('worlds: day'), 6).map((h) => h.key)).toEqual(['c'])
   })
   it('marks an open task whose date has passed as late, not a done one', () => {
     const rows = [

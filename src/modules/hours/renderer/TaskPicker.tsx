@@ -8,7 +8,7 @@ import { PickerInput } from '@renderer/components/picker-input'
 import { useTaskDefaults } from '../../tasks/renderer/useTaskDefaults'
 import { useOpenTasks } from '../../tasks/renderer/useOpenTasks'
 import { TaskName } from '../../tasks/renderer/TaskName'
-import { parentIn, subtaskParent } from '../../tasks/shared/study-label'
+import { parentIn, subtaskParent, taskLabel } from '../../tasks/shared/study-label'
 import { SubtaskLine } from '../../tasks/renderer/SubtaskLine'
 import { ListField } from '../../tasks/renderer/ListField'
 import { taskKey } from '../../tasks/shared/tracked'
@@ -264,7 +264,12 @@ export function TaskPicker({
                       <TaskName
                         task={item.task}
                         parent={parentIn(item.task, tasks)}
-                        title={<Highlighted label={item.task.title} query={value} />}
+                        title={
+                          <Highlighted
+                            label={taskLabel(item.task, parentIn(item.task, tasks))}
+                            query={value}
+                          />
+                        }
                       />
                     </span>
                     <span className={styles.detail}>

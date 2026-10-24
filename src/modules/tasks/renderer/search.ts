@@ -3,7 +3,7 @@ import { passesFilters, searchNeedles, textMatches, type SearchRequest } from '@
 import { fold } from '@shared/text'
 import { visibleTasks } from '../shared/session-lock'
 import { daysLate } from '../shared/late'
-import { studyLabel } from '../shared/study-label'
+import { STUDY_LINE, studyName, taskLabel } from '../shared/study-label'
 import { formatDue, listLabel, taskLine } from '../shared/query'
 import { taskMatches } from '../shared/search-filters'
 import type { Task, TaskWorkspace } from '../shared/types'
@@ -11,9 +11,15 @@ import { taskRoute } from './tasks-paths'
 
 const DEFAULT_LIMIT = 6
 
-function haystack(task: Task): string {
+function haystack(task: Task, parent: Task | undefined): string {
   return fold(
-    [task.title, ...task.tags, listLabel(task.list, task.sublist), task.description].join('\n')
+    [
+      task.title,
+      studyName(task, parent) ?? '',
+      ...task.tags,
+      listLabel(task.list, task.sublist),
+      task.description
+    ].join('\n')
   )
 }
 
@@ -27,7 +33,7 @@ export function taskHits(
   const needles = searchNeedles(request)
   const byUid = new Map(tasks.map((t) => [t.uid, t]))
   return tasks
-    .filter((t) => textMatches(haystack(t), request))
+    .filter((t) => textMatches(haystack(t, byUid.get(t.parentUid ?? '')), request))
     .filter((t) => passesFilters(request.filters, (f) => taskMatches(t, byUid, f, today)))
     .sort((a, b) => {
       const done = Number(a.status === 'done') - Number(b.status === 'done')
@@ -38,17 +44,22 @@ export function taskHits(
     })
     .slice(0, limit)
     .map((t) => {
-      const inTitle = needles.every((n) => fold(t.title).includes(n))
       const parent = t.parentUid ? byUid.get(t.parentUid) : undefined
-      // A subtask has no list of its own: it sits in its parent's.
-      const list =
-        parent && !t.list ? listLabel(parent.list, parent.sublist) : listLabel(t.list, t.sublist)
+      const inTitle = needles.every((n) => fold(taskLabel(t, parent)).includes(n))
+      const study = studyName(t, parent) !== null
+      // A subtask has no list of its own: it sits in its parent's. A self-study task is shown as a training and names no list.
+      const list = study
+        ? STUDY_LINE
+        : parent && !t.list
+          ? listLabel(parent.list, parent.sublist)
+          : listLabel(t.list, t.sublist)
       const rest = t.due ? formatDue(t.due, today) : ''
       const details = taskLine(list, rest)
       const marker = parent && t.ownKind !== 'self-study' ? parent.title || 'Untitled' : null
       return {
         key: t.uid,
-        title: studyLabel(t, parent),
+        title: taskLabel(t, parent),
+        mark: study ? ('training' as const) : undefined,
         detail: (!inTitle && snippet(t.description, needles)) || details,
         subtask: marker === null ? undefined : { parent: marker, list, rest },
         late: t.status === 'done' ? undefined : daysLate(t.due, today) || undefined,

@@ -1,7 +1,7 @@
-import { parentIn, studySeries, subtaskParent } from '../../tasks/shared/study-label'
+import { parentIn, studyName, subtaskParent } from '../../tasks/shared/study-label'
 import { taskUidOf } from '../../tasks/shared/tracked'
 import type { Task } from '../../tasks/shared/types'
-import { listOfTask } from './start-picker'
+import { detailOfTask } from './start-picker'
 
 /** The hint under a timer that cannot stop yet, and the tooltip of the greyed-out Stop. */
 export const STOP_NEEDS_TASK = 'Pick a task to stop the timer.'
@@ -9,8 +9,8 @@ export const STOP_NEEDS_TASK = 'Pick a task to stop the timer.'
 /** What the top block of the timer popover says and allows. */
 export interface PopoverHead {
   title: string
-  /** A self-study subtask's series, shown muted before the title; null otherwise. */
-  series: string | null
+  /** The task is a self-study task, shown as a training: a cap in front of the title. */
+  study: boolean
   /** The title of the parent a subtask belongs to (the line then reads `↳ parent · list`); null otherwise. */
   parent: string | null
   /** The line under the title: the task's list, a nudge, or the reason Stop is off. Null when the list is not known. */
@@ -37,10 +37,14 @@ export function popoverHead(
     const uid = taskUidOf(session.task)
     const task = uid ? tasks.find((t) => t.uid === uid) : undefined
     return {
-      title: session.label || task?.title || 'No title',
-      series: task ? studySeries(task, parentIn(task, tasks)) : null,
+      title:
+        (task && studyName(task, parentIn(task, tasks))) ||
+        session.label ||
+        task?.title ||
+        'No title',
+      study: task?.ownKind === 'self-study',
       parent: task ? subtaskParent(task, tasks) : null,
-      line: task ? listOfTask(task, tasks) || null : null,
+      line: task ? detailOfTask(task, tasks) || null : null,
       hint: false,
       stopDisabled: false,
       picker: false
@@ -49,7 +53,7 @@ export function popoverHead(
   return stopAfter
     ? {
         title: 'Which task was this?',
-        series: null,
+        study: false,
         parent: null,
         line: STOP_NEEDS_TASK,
         hint: true,
@@ -58,7 +62,7 @@ export function popoverHead(
       }
     : {
         title: session.label || 'No task yet',
-        series: null,
+        study: false,
         parent: null,
         line: 'Pick one below',
         hint: true,

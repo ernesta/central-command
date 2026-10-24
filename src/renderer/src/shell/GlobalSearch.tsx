@@ -7,6 +7,7 @@ import { ghostFor } from '@shared/search-complete'
 import { splitChips } from '@shared/search-chips'
 import { fold } from '@shared/text'
 import { SubtaskLine } from '@modules/tasks/renderer/SubtaskLine'
+import { StudyIcon } from '@modules/tasks/renderer/TaskName'
 import { LateChip } from '@modules/tasks/renderer/LateChip'
 import { IconButton } from '../components/IconButton'
 import { ChipInput } from './ChipInput'
@@ -266,7 +267,10 @@ export function GlobalSearch({
                   onMouseMove={() => setActive(i)}
                   onClick={() => open(hit)}
                 >
-                  <span className={styles.title}>{hit.title}</span>
+                  <span className={styles.title}>
+                    {hit.mark === 'training' && <StudyIcon />}
+                    {hit.title}
+                  </span>
                   {(hit.detail || hit.late) && (
                     <span className={styles.detailRow}>
                       {hit.subtask ? (

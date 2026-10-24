@@ -8,6 +8,8 @@ import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { describeRecurrence } from '../shared/recurrence'
 import { fieldLocked, sessionLock } from '../shared/session-lock'
+import { StudyIcon } from './TaskName'
+import { studyName } from '../shared/study-label'
 import { LateChip } from './LateChip'
 import { daysLate } from '../shared/late'
 import { dueTone, formatDue, formatTaskTime, tagsIn, type SortKey } from '../shared/query'
@@ -419,12 +421,26 @@ const stopRow = {
 }
 
 /** The title: a click edits it in place (Return or leaving saves, Escape undoes); an empty title is not saved. */
-function TitleCell({ task, locked }: { task: Task; locked: boolean }): React.JSX.Element {
+function TitleCell({
+  task,
+  locked,
+  study
+}: {
+  task: Task
+  locked: boolean
+  /** A self-study task's training name: shown with a cap in place of its stored title. */
+  study: string | null
+}): React.JSX.Element {
   const [editing, setEditing] = useState(false)
   const [text, setText] = useState(task.title)
   const classes = [styles.title, task.status === 'done' && styles.titleDone].filter(Boolean)
   if (locked) {
-    return <span className={classes.filter(Boolean).join(' ')}>{task.title || 'Untitled'}</span>
+    return (
+      <span className={classes.filter(Boolean).join(' ')}>
+        {study !== null && <StudyIcon />}
+        {study ?? (task.title || 'Untitled')}
+      </span>
+    )
   }
   if (!editing) {
     return (
@@ -580,7 +596,11 @@ function TaskRowView({
       <td>
         <div className={styles.titleLine}>
           {/* A subtask's parent is always in view here, so its name stands alone ("Introduction", not "Series › Introduction"). */}
-          <TitleCell locked={textLocked} task={task} />
+          <TitleCell
+            locked={textLocked}
+            task={task}
+            study={studyName(task, allRows.find((r) => r.task.uid === task.parentUid)?.task)}
+          />
           {task.recurrence && (
             <span className={styles.repeat} title={describeRecurrence(task.recurrence)}>
               <Repeat

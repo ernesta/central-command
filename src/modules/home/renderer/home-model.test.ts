@@ -6,6 +6,7 @@ const task = (uid: string, workspace: 'research' | 'work', daysLate = 0): HomeTa
   uid,
   title: uid,
   parent: null,
+  study: false,
   workspace,
   list: 'L',
   due: '2026-10-15',

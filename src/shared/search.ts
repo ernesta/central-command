@@ -9,6 +9,8 @@ export interface SearchHit {
   title: string
   /** One line: the part of the text that matched, or the details of the item. */
   detail: string
+  /** A task shown as a training (a self-study task): a cap in front of the title. */
+  mark?: 'training'
   /** A subtask hit: its second line reads `↳ parent · list · rest` (`detail` holds the same words as plain text). */
   subtask?: { parent: string; list: string; rest: string }
   /** A task hit that is overdue: how many days late, shown as a chip beside the detail. */

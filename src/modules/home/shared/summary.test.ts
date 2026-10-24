@@ -304,3 +304,27 @@ describe('the rest', () => {
     expect(daysFrom('2026-10-15', '2026-10-10')).toBe(-5)
   })
 })
+
+describe('a task’s marks', () => {
+  it('passes the parent and the self-study mark through to the row and its event', () => {
+    const s = buildHomeSummary({
+      ...base,
+      tasks: [
+        task({ uid: 'kid', due: '2026-10-10', parent: 'Publish Study A' }),
+        task({
+          uid: 'study',
+          title: 'PS5210: Day 1',
+          list: 'Training · self-study',
+          study: true,
+          due: '2026-10-16'
+        })
+      ]
+    })
+    expect(s.tasks.overdue[0]).toMatchObject({
+      uid: 'kid',
+      parent: 'Publish Study A',
+      study: false
+    })
+    expect(s.upcoming.find((e) => e.id === 'task:study')?.task).toMatchObject({ study: true })
+  })
+})

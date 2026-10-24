@@ -16,7 +16,7 @@ describe('popoverHead', () => {
   it('state 1: a task shows its title and list, Stop on, no picker', () => {
     expect(popoverHead({ task: taskKey('1'), label: 'Daily admin' }, open, false)).toEqual({
       title: 'Daily admin',
-      series: null,
+      study: false,
       parent: null,
       line: 'Admin',
       hint: false,
@@ -25,14 +25,15 @@ describe('popoverHead', () => {
     })
   })
 
-  it('a self-study subtask carries its series for the muted prefix', () => {
+  it('a self-study subtask is titled by its training’s name and marked, its line says Training · self-study', () => {
     const all = [
       task('p', 'Simulating Social Worlds self-study', { list: 'Training' }),
-      task('c', 'Day 2 self-study', { parentUid: 'p', ownKind: 'self-study' })
+      task('c', 'Day 2', { parentUid: 'p', ownKind: 'self-study' })
     ]
-    const head = popoverHead({ task: taskKey('c'), label: 'Day 2 self-study' }, all, false)
-    expect(head.series).toBe('Simulating Social Worlds')
-    expect(head.title).toBe('Day 2 self-study')
+    const head = popoverHead({ task: taskKey('c'), label: 'Day 2' }, all, false)
+    expect(head.study).toBe(true)
+    expect(head.title).toBe('Simulating Social Worlds: Day 2')
+    expect(head.line).toBe('Training · self-study')
   })
 
   it("a subtask shows its parent's list; a done task still shows its list; an unknown one shows none", () => {
@@ -47,7 +48,7 @@ describe('popoverHead', () => {
   it('state 2: no task asks for one below, Stop still on', () => {
     expect(popoverHead({ label: '' }, open, false)).toEqual({
       title: 'No task yet',
-      series: null,
+      study: false,
       parent: null,
       line: 'Pick one below',
       hint: true,
