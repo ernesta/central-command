@@ -11,6 +11,7 @@ import { periodFigures } from '../../hours/shared/so-far'
 import { listMeetingRows } from '../../meetings/main/repository'
 import { listTasks } from '../../tasks/main/repository'
 import { listLabel } from '../../tasks/shared/query'
+import { taskUidOf } from '../../tasks/shared/tracked'
 import { STUDY_LINE, studyNameOf } from '../../tasks/shared/study-label'
 import { hiddenTaskUids } from '../../tasks/shared/session-lock'
 import { workClients } from '../../tasks/shared/work-lists'
@@ -44,12 +45,26 @@ export function timerMinutes(runner: RunningTimer, now: Moment): number {
   return Math.max(0, days * 1440 + toMinutes(now.time) - toMinutes(runner.session.start))
 }
 
-function homeTimer(tracking: TrackingSource, now: Moment): HomeTimer | null {
+function homeTimer(db: Database, tracking: TrackingSource, now: Moment): HomeTimer | null {
   const running = tracking.running()
   if (!running || running.workspace === 'life') return null
+  const uid = running.session.task ? taskUidOf(running.session.task) : null
+  const own = uid
+    ? (db
+        .prepare(
+          `SELECT t.title, t.own_kind AS ownKind, p.title AS parentTitle
+           FROM tasks t LEFT JOIN tasks p ON p.uid = t.parent_uid WHERE t.uid = ?`
+        )
+        .get(uid) as
+        { title: string; ownKind: string | null; parentTitle: string | null } | undefined)
+    : undefined
   return {
     workspace: running.workspace,
-    label: running.session.label,
+    // A self-study task is named as its training, as everywhere else.
+    label:
+      own?.ownKind === 'self-study'
+        ? studyNameOf(own.title, own.parentTitle)
+        : running.session.label,
     date: running.session.date,
     time: running.session.start.slice(0, 5),
     minutes: timerMinutes(running, now)
@@ -182,7 +197,7 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
     meetings,
     trainings,
     openMeetingTodos,
-    timer: homeTimer(deps.tracking, now),
+    timer: homeTimer(db, deps.tracking, now),
     hours: { research: homeHours(research, now), work: homeHours(work, now) },
     timeOff: research
       ? timeOffRows(research, now.date)

@@ -1,9 +1,11 @@
 .root {
   position: relative;
+  /* As wide as the popover it opens, so the two line up. */
+  width: min(420px, 90vw);
   min-width: 0;
 }
 .chip {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 4px;
   max-width: 100%;
@@ -17,6 +19,7 @@
 .main {
   display: inline-flex;
   align-items: center;
+  flex: 1;
   gap: 8px;
   min-width: 0;
   padding: 3px 8px 3px 10px;
@@ -39,9 +42,11 @@
   flex: none;
   color: var(--text-muted);
 }
-/* About 26 characters, then an ellipsis; the full name is in the tooltip and the popover. */
+/* Takes the room the chip has, then an ellipsis; the full name is in the tooltip and the popover. */
 .name {
-  max-width: 26ch;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
