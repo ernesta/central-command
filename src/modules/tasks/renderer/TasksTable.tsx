@@ -595,7 +595,7 @@ function TaskRowView({
       </td>
       <td>
         <div className={styles.titleLine}>
-          {/* A subtask's parent is always in view here, so its name stands alone ("Introduction", not "Series › Introduction"). */}
+          {/* A subtask's parent is always in view here, so its name stands alone ("Introduction"); a self-study task shows its training's name with a cap. */}
           <TitleCell
             locked={textLocked}
             task={task}
