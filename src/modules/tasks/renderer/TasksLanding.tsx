@@ -117,7 +117,7 @@ export function TasksLanding(): React.JSX.Element {
         title="Tasks"
         actions={
           <>
-            <AllLink to={tasksAllRoute(workspace)}>
+            <AllLink to={tasksAllRoute(workspace, { view: 'open' })}>
               All tasks
               <ArrowRight size={14} strokeWidth={1.75} aria-hidden style={{ marginLeft: 6 }} />
             </AllLink>

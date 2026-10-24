@@ -57,14 +57,14 @@ describe('homeView', () => {
     expect(homeView(s, 'work').tasks.cut).toBe(true)
   })
 
-  it('shows the next 7 days of this workspace, and nothing from Watch', () => {
+  it('shows the next 3 days of this workspace, and nothing from Watch', () => {
     const s: HomeSummary = {
       ...base,
       upcoming: [
         event('m1', 'meeting', '/research/meetings/m/1', 1),
         event('m2', 'meeting', '/work/meetings/m/2', 2),
-        event('tr', 'training', '/research/training/t/x', 7),
-        event('late', 'task', '/research/tasks/t/y', 8),
+        event('tr', 'training', '/research/training/t/x', 3),
+        event('late', 'task', '/research/tasks/t/y', 4),
         event('w', 'deadline', 'https://ex.org', 3)
       ]
     }

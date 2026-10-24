@@ -3,7 +3,7 @@ import { formatShortDate } from '@shared/time'
 import type { HomeEvent, HomeSummary, HomeTask, HomeWorkspace } from '../shared/types'
 
 /** "Coming up" looks this many days ahead, today included. */
-export const COMING_UP_DAYS = 7
+export const COMING_UP_DAYS = 3
 
 export interface HomeView {
   tasks: {
@@ -52,7 +52,7 @@ export function eventDetail(event: HomeEvent, initialsOf: (name: string) => stri
   return detailText(event.detail)
 }
 
-/** The one workspace's share of the summary, which holds both: its tasks, and what is dated in the next 7 days. */
+/** The one workspace's share of the summary, which holds both: its tasks, and what is dated in the next 3 days. */
 export function homeView(summary: HomeSummary, workspace: HomeWorkspace): HomeView {
   const { tasks } = summary
   const mine = (t: HomeTask): boolean => t.workspace === workspace

@@ -143,7 +143,7 @@ function TodayCard({
         <span className={styles.actions}>
           {!cut && <span className={styles.small}>{count}</span>}
           {(cut || overdue.length + today.length > 0) && (
-            <StyledLink to={tasksAllRoute(workspace)}>See all</StyledLink>
+            <StyledLink to={tasksAllRoute(workspace, { view: 'open' })}>See all</StyledLink>
           )}
         </span>
       }
@@ -189,7 +189,7 @@ function ComingUpCard({
   )
 }
 
-/** What a workspace opens on: today's tasks, what is dated in the next 7 days, and the hours so far. */
+/** What a workspace opens on: today's tasks, what is dated in the next 3 days, and the hours so far. */
 export function HomePage({ workspace }: { workspace: HomeWorkspace }): React.JSX.Element | null {
   const summary = useHomeSummary()
   const { people } = usePeople()
