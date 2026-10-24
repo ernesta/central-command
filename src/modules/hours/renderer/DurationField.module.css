@@ -2,6 +2,8 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
+  box-sizing: border-box;
+  height: 32px;
   padding: 0 6px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-control);
@@ -14,8 +16,9 @@
 }
 .part {
   width: 3ch;
-  margin: 3px 0;
-  padding: 5px 2px;
+  height: 24px;
+  margin: 0;
+  padding: 0 2px;
   border: 0;
   border-radius: var(--radius-control);
   background: transparent;

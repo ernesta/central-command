@@ -4291,3 +4291,12 @@ The user's review of Settings → Hours → Work: the edit row's clients stacked
 
 - `ClientChips` (`hours/renderer/ClientsField.tsx`) draws the read-only clients as the same chips the edit row uses, without the ✕; the Clients column is 34% wide (was 22%) and the table's minimum 1120px (was 980px), so chips sit side by side and only "+ add" may wrap. The cell wraps (`white-space: normal`), so a row grows to hold its chips; the earlier "rows keep their height" note no longer holds for a long client list.
 - Driven in the production build on a scratch library, dark mode (read-only and edit rows); dev mode and light mode not driven.
+
+## Time card: no Stop, a cancellable Add time (24 Oct 2026, the user's review)
+
+The task page's Time card (`TaskTimeActions`, also on a training note) read badly: a "Stop" button beside "Add time", a date field and a time field of different heights, and an "Add time" button above a form whose button said "Add", with no way out.
+
+- **Start only.** The card offers Start when no timer is running and nothing when one is: the timer stops from the timer itself (top bar), so a second Stop here was noise.
+- **One opener.** "Add time" opens the form and hides while it is open; the form has Add and Cancel (Escape also closes it).
+- **One height.** The date field and `DurationField` are both 32px with 14px text (`TaskPage.module.css` `.dateInput`, `DurationField.module.css`); `DurationField` is shared, so Hours' forms get the same height.
+- Typecheck, lint and tests pass; not driven in the app.

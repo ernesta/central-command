@@ -1,4 +1,4 @@
-import { Play, Plus, Square } from 'lucide-react'
+import { Play, Plus } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { Select } from '@renderer/components/Select'
@@ -6,7 +6,6 @@ import { pushUndo } from '@renderer/components/undo-store'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useOpenContracts } from '@renderer/state/use-open-contracts'
 import { QUARTER } from '@shared/tracking/rounding'
-import { stopTimer } from '../../hours/renderer/start-request'
 import { DurationField } from '../../hours/renderer/DurationField'
 import { clientForTask } from '../../hours/shared/start-picker'
 import { taskKey } from '../shared/tracked'
@@ -77,9 +76,6 @@ export function TaskTimeActions({
     if (found.ask) setAsking(found.ask)
     else void begin(found.client)
   }
-  const stop = async (): Promise<void> => {
-    await stopTimer()
-  }
   const add = async (): Promise<void> => {
     const client = clientFor(list, date)
     const year = yearFor(date, client)
@@ -122,16 +118,7 @@ export function TaskTimeActions({
   return (
     <>
       <div className={styles.timeButtons}>
-        {isRunning ? (
-          <Button
-            size="small"
-            variant="primary"
-            icon={<Square size={14} strokeWidth={1.75} aria-hidden />}
-            onClick={() => void stop()}
-          >
-            Stop
-          </Button>
-        ) : (
+        {!isRunning && (
           <Button
             ref={startRef}
             size="small"
@@ -142,13 +129,15 @@ export function TaskTimeActions({
             Start
           </Button>
         )}
-        <Button
-          size="small"
-          icon={<Plus size={14} strokeWidth={1.75} aria-hidden />}
-          onClick={() => setAdding((open) => !open)}
-        >
-          Add time
-        </Button>
+        {!adding && (
+          <Button
+            size="small"
+            icon={<Plus size={14} strokeWidth={1.75} aria-hidden />}
+            onClick={() => setAdding(true)}
+          >
+            Add time
+          </Button>
+        )}
       </div>
       {asking && !isRunning && (
         <div
@@ -216,6 +205,9 @@ export function TaskTimeActions({
           />
           <Button size="small" variant="primary" disabled={minutes <= 0} onClick={() => void add()}>
             Add
+          </Button>
+          <Button size="small" onClick={() => setAdding(false)}>
+            Cancel
           </Button>
         </div>
       )}
