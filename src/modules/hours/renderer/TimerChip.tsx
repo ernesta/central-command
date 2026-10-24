@@ -16,6 +16,8 @@ import type { RunningTimer } from '@shared/tracking/api'
 import { formatDay, formatHours } from '@shared/tracking/format'
 import type { Moment } from '@shared/tracking/types'
 import { useOpenTasks } from '../../tasks/renderer/useOpenTasks'
+import { parentIn, studyName } from '../../tasks/shared/study-label'
+import { taskUidOf } from '../../tasks/shared/tracked'
 import { useTasksList } from '../../tasks/renderer/useTasksList'
 import { taskKey } from '../../tasks/shared/tracked'
 import type { TaskWorkspace } from '../../tasks/shared/types'
@@ -244,6 +246,12 @@ function Chip({ running, now }: { running: RunningTimer; now: Moment }): React.J
   const request = usePickerRequest()
   const { open, show, close, rootRef, mainRef, onKeyDown } = usePopover(request !== null)
   const { session } = running
+  const { tasks: allTasks } = useTasksList(running.workspace as TaskWorkspace, true)
+  // A self-study task is named as its training, here as in the popover.
+  const uid = session.task ? taskUidOf(session.task) : null
+  const own = uid && allTasks ? allTasks.find((t) => t.uid === uid) : undefined
+  const study = own && allTasks ? studyName(own, parentIn(own, allTasks)) : null
+  const name = study ?? session.label
   const clock = elapsedMinutes(session, now)
   // Stop was pressed with no task: the popover waits for one, and Stop stays off until it has it.
   const stopBlocked = !session.task && (request?.stopAfter ?? false)
@@ -256,7 +264,7 @@ function Chip({ running, now }: { running: RunningTimer; now: Moment }): React.J
           ref={mainRef}
           type="button"
           className={styles.main}
-          title={session.label || undefined}
+          title={name || undefined}
           aria-expanded={open}
           aria-haspopup="dialog"
           onClick={() => (open ? close() : show())}
@@ -265,7 +273,7 @@ function Chip({ running, now }: { running: RunningTimer; now: Moment }): React.J
           {running.workspace !== current && (
             <span className={styles.workspace}>{WORKSPACE_LABELS[running.workspace]}</span>
           )}
-          <span className={styles.name}>{session.label || 'No task yet'}</span>
+          <span className={styles.name}>{name || 'No task yet'}</span>
           <span className={styles.clock}>
             {clock === null ? formatDay(session.date) : formatHours(clock)}
           </span>
