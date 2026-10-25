@@ -2,9 +2,9 @@ import { fold } from '@shared/text'
 import type { OpenContract } from '@shared/tracking/contracts'
 import type { TrackingYear } from '@shared/tracking/types'
 import { addDays } from '@shared/year'
-import { STUDY_LINE, studyName } from '../../tasks/shared/study-label'
+import { studyName } from '../../tasks/shared/study-label'
 import { listForNewTask } from '../../tasks/shared/new-task-list'
-import { listLabel } from '../../tasks/shared/query'
+export { detailOfTask } from '../../tasks/shared/task-place'
 import { taskUidOf } from '../../tasks/shared/tracked'
 import type { Task } from '../../tasks/shared/types'
 import { RECENT_DAYS } from './tasks'
@@ -97,14 +97,6 @@ export function clientForTask(
 export function listOfTask(task: Task, all: readonly Task[]): string {
   if (task.list || !task.parentUid) return task.list
   return all.find((t) => t.uid === task.parentUid)?.list ?? ''
-}
-
-/** A task's second line (picker, timer popover, Hours): its list (a subtask shows its parent's); a self-study task, shown as a training, says so. */
-export function detailOfTask(task: Task, all: readonly Task[]): string {
-  if (task.ownKind === 'self-study') return STUDY_LINE
-  // Like search and Home: the whole place, `Impact › Historical Data Analysis`; a subtask has its parent's.
-  const home = task.list || !task.parentUid ? task : all.find((t) => t.uid === task.parentUid)
-  return home ? listLabel(home.list, home.sublist) : ''
 }
 
 /**

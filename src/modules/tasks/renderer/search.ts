@@ -3,7 +3,8 @@ import { passesFilters, searchNeedles, textMatches, type SearchRequest } from '@
 import { fold } from '@shared/text'
 import { visibleTasks } from '../shared/session-lock'
 import { daysLate } from '../shared/late'
-import { STUDY_LINE, studyName, taskLabel } from '../shared/study-label'
+import { studyName, taskLabel } from '../shared/study-label'
+import { detailOfTask } from '../shared/task-place'
 import { lineDue, listLabel, taskLine } from '../shared/query'
 import { taskMatches } from '../shared/search-filters'
 import type { Task, TaskWorkspace } from '../shared/types'
@@ -47,12 +48,7 @@ export function taskHits(
       const parent = t.parentUid ? byUid.get(t.parentUid) : undefined
       const inTitle = needles.every((n) => fold(taskLabel(t, parent)).includes(n))
       const study = studyName(t, parent) !== null
-      // A subtask has no list of its own: it sits in its parent's. A self-study task is shown as a training and names no list.
-      const list = study
-        ? STUDY_LINE
-        : parent && !t.list
-          ? listLabel(parent.list, parent.sublist)
-          : listLabel(t.list, t.sublist)
+      const list = detailOfTask(t, tasks)
       const due = lineDue(t, today)
       const details = taskLine(list, due)
       const marker = parent && t.ownKind !== 'self-study' ? parent.title || 'Untitled' : null

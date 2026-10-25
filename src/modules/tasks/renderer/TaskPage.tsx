@@ -18,7 +18,7 @@ import { describeRecurrence } from '../shared/recurrence'
 import { fieldLocked, sessionLock, type SessionSource } from '../shared/session-lock'
 import { LateChip } from './LateChip'
 import { daysLate } from '../shared/late'
-import { formatDue, tagsIn } from '../shared/query'
+import { formatDue, listLabel, tagsIn } from '../shared/query'
 import { TASK_STATUSES, type Task, type TaskChanges, type TaskWorkspace } from '../shared/types'
 import { subtaskProgress, taskTime, type TaskRow } from '../shared/views'
 import { DebouncedSaver } from './debounced-saver'
@@ -333,9 +333,7 @@ function TaskView({
               <div className={[styles.field, lock ? '' : styles.grow].join(' ')}>
                 <span className={styles.label}>List</span>
                 {lock ? (
-                  <span className={styles.lockedValue}>
-                    {[task.list, task.sublist].filter(Boolean).join(' › ')}
-                  </span>
+                  <span className={styles.lockedValue}>{listLabel(task.list, task.sublist)}</span>
                 ) : (
                   <ListField
                     workspace={workspace}

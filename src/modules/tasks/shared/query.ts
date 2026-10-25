@@ -289,10 +289,7 @@ export function dueText(due: string, today: string): string {
  * What a task's second line says of its date: `dueText`, or nothing for a task with no date, a done one, or an overdue one
  * (that shows `LateChip`, never a past date).
  */
-export function lineDue(
-  task: { due: string | null; status: string },
-  today: string
-): string {
+export function lineDue(task: { due: string | null; status: string }, today: string): string {
   if (!task.due || task.status === 'done' || task.due < today) return ''
   return dueText(task.due, today)
 }
