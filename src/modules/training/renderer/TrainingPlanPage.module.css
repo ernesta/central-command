@@ -21,7 +21,7 @@
   gap: 8px;
 }
 /* The same arrangement as a note — the text, then its outline on the right — laid out by the shared
-   `DocSplit`. The plan's own text is not capped at a note's width (`fullWidth`). */
+   `DocSplit`. */
 .notices {
   display: grid;
   gap: 8px;

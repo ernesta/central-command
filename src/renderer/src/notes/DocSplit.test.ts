@@ -23,10 +23,4 @@ describe('DocSplit', () => {
     expect(html).not.toContain(styles.hasSide)
     expect(html).not.toContain(styles.side)
   })
-
-  // A note is capped at a readable line length; the training plan asks for the room it has.
-  it('caps the document unless the page asks for the full width', () => {
-    expect(render({})).not.toContain(styles.wide)
-    expect(render({ fullWidth: true })).toContain(styles.wide)
-  })
 })

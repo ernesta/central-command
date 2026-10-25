@@ -7,26 +7,16 @@ interface DocSplitProps {
   side?: React.ReactNode
   /** The element the editor sits in, for the outline and the topics panel to scroll it. */
   docRef?: React.RefObject<HTMLDivElement | null>
-  /** The document fills its column instead of being capped at a comfortable line length. */
-  fullWidth?: boolean
 }
 
 /**
  * The shape every page with a note has: the text on the left, its panels on the right. The side column
  * stays in view and scrolls on its own, so the panels are reachable however long the note is.
  */
-export function DocSplit({
-  children,
-  side,
-  docRef,
-  fullWidth = false
-}: DocSplitProps): React.JSX.Element {
+export function DocSplit({ children, side, docRef }: DocSplitProps): React.JSX.Element {
   return (
     <div className={[styles.split, side && styles.hasSide].filter(Boolean).join(' ')}>
-      <div
-        className={[styles.doc, fullWidth && styles.wide].filter(Boolean).join(' ')}
-        ref={docRef}
-      >
+      <div className={styles.doc} ref={docRef}>
         {children}
       </div>
       {side && <div className={styles.side}>{side}</div>}

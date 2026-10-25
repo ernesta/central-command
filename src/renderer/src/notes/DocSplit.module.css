@@ -6,13 +6,9 @@
 .hasSide {
   grid-template-columns: minmax(0, 1fr) 260px;
 }
-/* A comfortable line length for reading and writing; `wide` gives that up for pages that want the room. */
+/* The text fills its column; the side column stays at the right edge. */
 .doc {
   min-width: 0;
-  max-width: 780px;
-}
-.wide {
-  max-width: none;
 }
 /* The panels stay in view while the text scrolls, and scroll on their own once there are more of them
    than fit. 4px of room all round (taken back with the margin) keeps a focused row's ring from being

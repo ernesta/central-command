@@ -70,7 +70,7 @@ function PlanView({ year }: { year: string }): React.JSX.Element {
   const docRef = useRef<HTMLDivElement>(null)
 
   return (
-    <DocSplit fullWidth docRef={docRef} side={<NoteOutline text={text} docRef={docRef} />}>
+    <DocSplit docRef={docRef} side={<NoteOutline text={text} docRef={docRef} />}>
       <section aria-label={`Training plan ${yearLabel(year)}`}>
         {(conflict || error) && (
           <div className={styles.notices}>

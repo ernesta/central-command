@@ -702,7 +702,6 @@ the note".
   partly done (mentions and "Mentioned in"); "unlinked mentions" (plain names that could be mentions) and tasks as a kind are not.
 - **Link editing (Cmd-K on selected text):** set, change or remove a link's address without touching the Markdown.
 - **"Paste without formatting" in the right-click menu:** reuses the Cmd-Shift-V code, and works even if the key chord misbehaves.
-- **Plan text width:** cap the Training plan's text at 780px like Notes and Meetings (it is full width now).
 - **Plan outline levels:** the plan's outline now also lists `#` headings, since it shares the Notes outline. Keep, or go back to `##`/`###` only?
 - **Created dates everywhere:** add a `created:` front-matter key to new meetings, training entries and plans (and optionally backfill from
   file dates with a one-off importer). Only Notes record it today.

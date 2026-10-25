@@ -318,7 +318,6 @@ function EntryView({
 
       <DocSplit
         docRef={docRef}
-        fullWidth
         side={
           <>
             <NoteOutline text={body} docRef={docRef} />
