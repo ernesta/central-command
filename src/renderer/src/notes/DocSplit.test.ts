@@ -29,9 +29,4 @@ describe('DocSplit', () => {
     expect(render({})).not.toContain(styles.wide)
     expect(render({ fullWidth: true })).toContain(styles.wide)
   })
-
-  it('only makes room for two columns of panels when asked', () => {
-    expect(render({ side: doc })).not.toContain(styles.roomy)
-    expect(render({ side: doc, roomySide: true })).toContain(styles.roomy)
-  })
 })

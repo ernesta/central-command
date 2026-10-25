@@ -49,8 +49,6 @@
   display: flex;
   gap: 8px;
 }
-/* The note, the outline and Files are laid out by the shared `DocSplit` (`roomySide`: two columns of
-   panels once the screen is wide enough). */
 @media (max-width: 900px) {
   .page {
     padding-inline: 24px;

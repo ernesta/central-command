@@ -318,7 +318,6 @@ function EntryView({
 
       <DocSplit
         docRef={docRef}
-        roomySide
         fullWidth
         side={
           <>

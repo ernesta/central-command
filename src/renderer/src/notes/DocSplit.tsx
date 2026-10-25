@@ -7,8 +7,6 @@ interface DocSplitProps {
   side?: React.ReactNode
   /** The element the editor sits in, for the outline and the topics panel to scroll it. */
   docRef?: React.RefObject<HTMLDivElement | null>
-  /** Two panels side by side once the screen is wide enough, rather than stacked in a narrow strip. */
-  roomySide?: boolean
   /** The document fills its column instead of being capped at a comfortable line length. */
   fullWidth?: boolean
 }
@@ -21,15 +19,10 @@ export function DocSplit({
   children,
   side,
   docRef,
-  roomySide = false,
   fullWidth = false
 }: DocSplitProps): React.JSX.Element {
   return (
-    <div
-      className={[styles.split, side && styles.hasSide, roomySide && styles.roomy]
-        .filter(Boolean)
-        .join(' ')}
-    >
+    <div className={[styles.split, side && styles.hasSide].filter(Boolean).join(' ')}>
       <div
         className={[styles.doc, fullWidth && styles.wide].filter(Boolean).join(' ')}
         ref={docRef}
