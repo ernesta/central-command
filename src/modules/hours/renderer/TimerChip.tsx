@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
 import { Play } from 'lucide-react'
-import { Select } from '@renderer/components/Select'
 import { showToast } from '@renderer/components/toast-store'
 import { pushUndoWithToast } from '@renderer/components/undo-store'
 import { TopBarPortal } from '@renderer/shell/top-bar-slot'
@@ -63,7 +62,6 @@ function TimerPopover({
   const open = useOpenTasks(running.workspace)
   // All tasks, so the list of a task since done or trashed still shows.
   const { tasks: all } = useTasksList(running.workspace as TaskWorkspace, true)
-  const clients = data?.plan.clients ?? []
   const tracking = window.api.tracking
   const [name, setName] = useState(query)
   const recent = useMemo(
@@ -129,31 +127,6 @@ function TimerPopover({
           </div>
         )}
       </div>
-      {/* Only an older entry with a name but no task still needs its client chosen here. */}
-      {clients.length > 0 && !session.task && session.label !== '' && (
-        <Select
-          compact
-          label="Client"
-          search
-          noun="clients"
-          value={session.client ?? ''}
-          options={[
-            ...(session.client === undefined ? [{ value: '', label: 'No client' }] : []),
-            ...clients.map((c) => ({ value: c, label: c }))
-          ]}
-          onChange={(to) =>
-            to &&
-            void tracking.setClient(
-              running.workspace,
-              running.year,
-              session.date,
-              session.label,
-              session.client,
-              to
-            )
-          }
-        />
-      )}
       {clock === null ? (
         <StaleTimer running={running} now={now} />
       ) : (
