@@ -1,7 +1,16 @@
 .filters {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 10px;
   padding: 4px;
+}
+
+/* A select is as wide as its value needs, never as its longest option, and gives way before the row wraps. */
+.filters {
+  --field-max: 200px;
+}
+.filters > * {
+  flex: 0 1 auto;
+  min-width: 0;
 }
