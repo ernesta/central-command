@@ -65,7 +65,7 @@ export function NoteOutline({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [signature, docRef])
   return (
-    <Panel as="nav" label="Outline">
+    <Panel as="nav" label="Outline" bare>
       {outline.length === 0 ? (
         <p className={styles.empty}>Headings you write appear here.</p>
       ) : (

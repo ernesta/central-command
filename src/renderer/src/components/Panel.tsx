@@ -11,6 +11,8 @@ interface PanelProps {
   as?: 'section' | 'aside' | 'nav'
   /** A wide, one-line card: the label and the content side by side, for a block under the page's details. */
   row?: boolean
+  /** No card: the label and the content on the page itself (the outline's rail). */
+  bare?: boolean
   children?: React.ReactNode
 }
 
@@ -26,11 +28,12 @@ export function Panel({
   actions,
   as: Landmark = 'section',
   row = false,
+  bare = false,
   children
 }: PanelProps): React.JSX.Element {
   return (
     <Landmark
-      className={[styles.panel, row && styles.row].filter(Boolean).join(' ')}
+      className={[styles.panel, row && styles.row, bare && styles.bare].filter(Boolean).join(' ')}
       aria-label={label}
     >
       <div className={styles.head}>

@@ -47,3 +47,10 @@
 .row .head {
   flex: none;
 }
+/* No card: the label and its content sit on the page, for a block that is a way round it (the outline). */
+.bare {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}

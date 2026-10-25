@@ -4,6 +4,7 @@ import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { openView } from '@renderer/editor/live-key-utils'
+import panel from '@renderer/components/Panel.module.css'
 import { NoteOutline } from './NoteOutline'
 
 let host: HTMLElement
@@ -34,6 +35,20 @@ describe('NoteOutline', () => {
       'Methods',
       'Participants'
     ])
+  })
+})
+
+describe('NoteOutline as a rail', () => {
+  it('is a labelled nav on the page itself, not a card', () => {
+    render('# Title\n\n## Methods\n', document.createElement('div'))
+    const nav = host.querySelector('nav')!
+    expect(nav.getAttribute('aria-label')).toBe('Outline')
+    expect(nav.className).toContain(panel.bare)
+  })
+
+  it('keeps every level in the list for now (the unfolding is a later stage)', () => {
+    render('# A\n\n## B\n\n### C\n', document.createElement('div'))
+    expect(host.querySelectorAll('li')).toHaveLength(3)
   })
 })
 
