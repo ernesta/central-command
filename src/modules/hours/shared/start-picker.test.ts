@@ -147,6 +147,13 @@ describe('lists', () => {
     expect(detailOfTask(sub, [sub])).toBe('')
   })
 
+  it("the second line names the sublist too, a subtask its parent's", () => {
+    const parent = task('p', 'Pipeline', { list: 'Impact', sublist: 'Historical Data Analysis' })
+    const sub = task('s', 'Sub', { list: '', parentUid: 'p' })
+    expect(detailOfTask(parent, [parent, sub])).toBe('Impact › Historical Data Analysis')
+    expect(detailOfTask(sub, [parent, sub])).toBe('Impact › Historical Data Analysis')
+  })
+
   it("the Create row offers a client list in Work (the time's client, else the last, else the first); elsewhere the last, else the first, else Inbox", () => {
     const clients = ['Impact', 'Royal Holloway']
     expect(listForNew(tasks, clients, 'Inbox', 'royal holloway')).toBe('Royal Holloway')
