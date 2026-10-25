@@ -2,6 +2,7 @@ import { RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { formatRelativeTime } from '@renderer/lib/relative-time'
+import { Tooltip } from '@renderer/components/Tooltip'
 import type { SyncStatus } from '../shared/types'
 import styles from './SyncIndicator.module.css'
 
@@ -42,17 +43,18 @@ export function SyncIndicator({ status, onSync }: SyncIndicatorProps): React.JSX
 
   return (
     <div className={styles.wrap}>
-      <button
-        type="button"
-        className={styles.dotButton}
-        title={describe(status)}
-        aria-label={describe(status)}
-        aria-expanded={isError ? showError : undefined}
-        disabled={!isError}
-        onClick={() => setShowError((s) => !s)}
-      >
-        <span className={dotClass} />
-      </button>
+      <Tooltip text={describe(status)}>
+        <button
+          type="button"
+          className={styles.dotButton}
+          aria-label={describe(status)}
+          aria-expanded={isError ? showError : undefined}
+          disabled={!isError}
+          onClick={() => setShowError((s) => !s)}
+        >
+          <span className={dotClass} />
+        </button>
+      </Tooltip>
       <Button
         size="small"
         icon={<RefreshCw size={14} strokeWidth={1.75} aria-hidden />}

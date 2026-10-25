@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowUp, FileText } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { defaultRangeExtractor, useVirtualizer } from '@tanstack/react-virtual'
+import { Tooltip } from '@renderer/components/Tooltip'
 import type { ReadingSort, SortKey } from '../shared/query'
 import type { Reading } from '../shared/types'
 import { clearOpened, peekOpened, rememberOpened } from './list-return'
@@ -199,26 +200,22 @@ export function ReadingsTable({
                     <span className={styles.missing}>Not in Zotero</span>
                   )}
                 </div>
-                <div
-                  role="cell"
-                  className={`${styles.cell} ${styles.title}`}
-                  title={reading.fullTitle}
-                >
-                  {reading.fullTitle}
-                </div>
+                <Tooltip text={reading.fullTitle}>
+                  <div role="cell" className={`${styles.cell} ${styles.title}`}>
+                    {reading.fullTitle}
+                  </div>
+                </Tooltip>
                 <div role="cell" className={`${styles.cell} ${styles.muted}`}>
                   {reading.year ?? '—'}
                 </div>
                 <div role="cell" className={styles.cell}>
                   <StatusPill status={reading.status} />
                 </div>
-                <div
-                  role="cell"
-                  className={`${styles.cell} ${styles.muted}`}
-                  title={reading.tags.join(', ')}
-                >
-                  {reading.tags.join(', ')}
-                </div>
+                <Tooltip text={reading.tags.join(', ')}>
+                  <div role="cell" className={`${styles.cell} ${styles.muted}`}>
+                    {reading.tags.join(', ')}
+                  </div>
+                </Tooltip>
               </div>
             )
           })}

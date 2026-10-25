@@ -8,6 +8,7 @@ import { DocSplit } from '@renderer/notes/DocSplit'
 import { NoteOutline } from '@renderer/notes/NoteOutline'
 import { useNotesSession } from '@renderer/notes/useNotesSession'
 import { ReadingListMentions } from '@modules/reading-lists/renderer/ReadingListMentions'
+import { Tooltip } from '@renderer/components/Tooltip'
 import type { Reading } from '../shared/types'
 import { MentionedIn } from '@renderer/entities/MentionedIn'
 import { AbstractBlock } from './AbstractBlock'
@@ -73,19 +74,20 @@ function ReadingView({ reading }: { reading: Reading }): React.JSX.Element {
       <header className={styles.head}>
         <div className={styles.citekeyRow}>
           <span className={styles.citekey}>{reading.citekey}</span>
-          <button
-            type="button"
-            className={styles.copy}
-            aria-label={copied ? 'Copied' : 'Copy citekey'}
-            title={copied ? 'Copied' : 'Copy citekey'}
-            onClick={() => void copyCitekey()}
-          >
-            {copied ? (
-              <Check size={14} strokeWidth={1.75} />
-            ) : (
-              <Copy size={14} strokeWidth={1.75} />
-            )}
-          </button>
+          <Tooltip text={copied ? 'Copied' : 'Copy citekey'}>
+            <button
+              type="button"
+              className={styles.copy}
+              aria-label={copied ? 'Copied' : 'Copy citekey'}
+              onClick={() => void copyCitekey()}
+            >
+              {copied ? (
+                <Check size={14} strokeWidth={1.75} />
+              ) : (
+                <Copy size={14} strokeWidth={1.75} />
+              )}
+            </button>
+          </Tooltip>
         </div>
         <h1 className={styles.title}>{reading.fullTitle}</h1>
         <div className={styles.meta}>
