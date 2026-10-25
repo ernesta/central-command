@@ -9,7 +9,8 @@ import { useTaskDefaults } from '../../tasks/renderer/useTaskDefaults'
 import { useOpenTasks } from '../../tasks/renderer/useOpenTasks'
 import { TaskName } from '../../tasks/renderer/TaskName'
 import { parentIn, subtaskParent, taskLabel } from '../../tasks/shared/study-label'
-import { SubtaskLine } from '../../tasks/renderer/SubtaskLine'
+import { todayIso } from '@shared/time'
+import { TaskSecondLine } from '../../tasks/renderer/TaskSecondLine'
 import { ListField } from '../../tasks/renderer/ListField'
 import { taskKey } from '../../tasks/shared/tracked'
 import type { Task } from '../../tasks/shared/types'
@@ -259,9 +260,11 @@ export function TaskPicker({
                       />
                     </span>
                     <span className={styles.detail}>
-                      <SubtaskLine
+                      <TaskSecondLine
                         parent={subtaskParent(item.task, tasks)}
                         list={detailOfTask(item.task, tasks)}
+                        task={item.task}
+                        today={todayIso()}
                       />
                     </span>
                   </>
@@ -305,9 +308,11 @@ export function TaskPicker({
                     <TaskName task={task} parent={parentIn(task, tasks)} />
                   </span>
                   <span className={styles.detail}>
-                    <SubtaskLine
+                    <TaskSecondLine
                       parent={subtaskParent(task, tasks)}
                       list={detailOfTask(task, tasks)}
+                      task={task}
+                      today={todayIso()}
                     />
                   </span>
                 </button>

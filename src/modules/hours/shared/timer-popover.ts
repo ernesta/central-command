@@ -13,6 +13,8 @@ export interface PopoverHead {
   study: boolean
   /** The title of the parent a subtask belongs to (the line then reads `↳ parent · list`); null otherwise. */
   parent: string | null
+  /** The task whose date the line shows (`due …`, or the late chip); null when there is none. */
+  task: Task | null
   /** The line under the title: the task's list, a nudge, or the reason Stop is off. Null when the list is not known. */
   line: string | null
   /** The line is a nudge or a reason, not a list (drawn quiet and italic). */
@@ -44,6 +46,7 @@ export function popoverHead(
         'No title',
       study: task?.ownKind === 'self-study',
       parent: task ? subtaskParent(task, tasks) : null,
+      task: task ?? null,
       line: task ? detailOfTask(task, tasks) || null : null,
       hint: false,
       stopDisabled: false,
@@ -55,6 +58,7 @@ export function popoverHead(
         title: 'Which task was this?',
         study: false,
         parent: null,
+        task: null,
         line: STOP_NEEDS_TASK,
         hint: true,
         stopDisabled: true,
@@ -64,6 +68,7 @@ export function popoverHead(
         title: session.label || 'No task yet',
         study: false,
         parent: null,
+        task: null,
         line: 'Pick one below',
         hint: true,
         stopDisabled: false,

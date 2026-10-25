@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
 import { Play } from 'lucide-react'
+import { todayIso } from '@shared/time'
 import { showToast } from '@renderer/components/toast-store'
 import { pushUndoWithToast } from '@renderer/components/undo-store'
 import { TopBarPortal } from '@renderer/shell/top-bar-slot'
@@ -22,7 +23,7 @@ import { taskKey } from '../../tasks/shared/tracked'
 import type { TaskWorkspace } from '../../tasks/shared/types'
 import { suggestedTasks } from '../shared/start-picker'
 import { StudyIcon } from '../../tasks/renderer/TaskName'
-import { SubtaskLine } from '../../tasks/renderer/SubtaskLine'
+import { TaskSecondLine } from '../../tasks/renderer/TaskSecondLine'
 import { popoverHead, STOP_NEEDS_TASK } from '../shared/timer-popover'
 import { elapsedMinutes } from '../shared/timer'
 import type { HoursWorkspace } from '../shared/workspaces'
@@ -123,7 +124,16 @@ function TimerPopover({
         </div>
         {head.line && (
           <div className={head.hint ? styles.hint : styles.list}>
-            {head.hint ? head.line : <SubtaskLine parent={head.parent} list={head.line} />}
+            {head.hint || !head.task ? (
+              head.line
+            ) : (
+              <TaskSecondLine
+                parent={head.parent}
+                list={head.line}
+                task={head.task}
+                today={todayIso()}
+              />
+            )}
           </div>
         )}
       </div>

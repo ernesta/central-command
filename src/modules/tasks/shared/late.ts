@@ -10,3 +10,8 @@ export function daysLate(due: string | null, today: string): number {
 export function lateLabel(days: number): string {
   return days === 1 ? '1 day late' : `${days} days late`
 }
+
+/** The days a task is late: 0 for a done one, one with no date, or one not yet due. */
+export function lateDays(task: { due: string | null; status: string }, today: string): number {
+  return task.status === 'done' ? 0 : daysLate(task.due, today)
+}
