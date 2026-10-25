@@ -1,5 +1,6 @@
 import { Download } from 'lucide-react'
 import styles from './ExportButton.module.css'
+import { Tooltip } from './Tooltip'
 
 /** "Export": used about once a year, so deliberately quiet. Same label and place in every list. */
 export function ExportButton({
@@ -14,15 +15,11 @@ export function ExportButton({
   busy?: boolean
 }): React.JSX.Element {
   return (
-    <button
-      type="button"
-      className={styles.export}
-      disabled={disabled || busy}
-      title={title}
-      onClick={onClick}
-    >
-      <Download size={14} strokeWidth={1.75} aria-hidden />
-      {busy ? 'Exporting…' : 'Export'}
-    </button>
+    <Tooltip text={title}>
+      <button type="button" className={styles.export} disabled={disabled || busy} onClick={onClick}>
+        <Download size={14} strokeWidth={1.75} aria-hidden />
+        {busy ? 'Exporting…' : 'Export'}
+      </button>
+    </Tooltip>
   )
 }

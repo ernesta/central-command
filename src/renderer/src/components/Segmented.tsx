@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import type { SelectOption } from './Select'
 import styles from './Segmented.module.css'
+import { Tooltip } from './Tooltip'
 
 interface SegmentedProps<T extends string> {
   value: T
@@ -20,19 +21,21 @@ export function Segmented<T extends string>({
   return (
     <div role="group" aria-label={label} className={styles.group}>
       {options.map((o) => (
-        <button
-          key={o.value}
-          type="button"
-          aria-pressed={o.value === value}
-          title={o.title}
-          className={[styles.segment, o.value === value && styles.active].filter(Boolean).join(' ')}
-          onClick={() => onChange(o.value)}
-        >
-          {o.icon}
-          <span className={styles.label} data-label={o.label}>
-            {o.label}
-          </span>
-        </button>
+        <Tooltip key={o.value} text={o.title}>
+          <button
+            type="button"
+            aria-pressed={o.value === value}
+            className={[styles.segment, o.value === value && styles.active]
+              .filter(Boolean)
+              .join(' ')}
+            onClick={() => onChange(o.value)}
+          >
+            {o.icon}
+            <span className={styles.label} data-label={o.label}>
+              {o.label}
+            </span>
+          </button>
+        </Tooltip>
       ))}
     </div>
   )

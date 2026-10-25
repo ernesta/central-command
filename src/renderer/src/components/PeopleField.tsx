@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 import { activePeople, findByName, sortPeople, type Person } from '@shared/people'
 import { PickerPopup, type PickerOption } from './Picker'
 import styles from './PeopleField.module.css'
+import { Tooltip } from './Tooltip'
 
 interface PeopleFieldProps {
   /** What the people are called, plural: "Attendees", "Leads". */
@@ -44,9 +45,9 @@ export function PeopleField({
               key={name}
               className={[styles.chip, !person && styles.unknown].filter(Boolean).join(' ')}
             >
-              <span title={person ? name : `${name} is not in your people list`}>
-                {person ? person.initials : name}
-              </span>
+              <Tooltip text={person ? name : `${name} is not in your people list`}>
+                <span>{person ? person.initials : name}</span>
+              </Tooltip>
               <button
                 type="button"
                 className={styles.remove}

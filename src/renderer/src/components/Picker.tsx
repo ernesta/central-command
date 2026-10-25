@@ -13,6 +13,7 @@ import {
 } from './picker-match'
 import { PickerInput } from './picker-input'
 import styles from './Picker.module.css'
+import { Tooltip } from './Tooltip'
 
 export type { PickerOption } from './picker-match'
 
@@ -359,9 +360,9 @@ export function PickerPopup<T extends string>({
               onClick={() => pick(matches.length)}
             >
               <Plus size={14} strokeWidth={1.75} aria-hidden />
-              <span className={styles.addText} title={(add.label ?? addLabel)(addText)}>
-                {(add.label ?? addLabel)(addText)}
-              </span>
+              <Tooltip text={(add.label ?? addLabel)(addText)} whenCut>
+                <span className={styles.addText}>{(add.label ?? addLabel)(addText)}</span>
+              </Tooltip>
             </div>
             {add.extra && <div className={styles.extra}>{add.extra}</div>}
           </div>
@@ -450,53 +451,56 @@ export function Picker<T extends string>({
 
   return (
     <div className={[styles.root, className].filter(Boolean).join(' ')}>
-      <button
-        ref={buttonRef}
-        id={id}
-        type="button"
-        title={title}
-        disabled={disabled}
-        className={[styles.button, compact && styles.compact, plain && styles.plain]
-          .filter(Boolean)
-          .join(' ')}
-        aria-label={label}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-controls={open ? listId : undefined}
-        onClick={() => setOpen(!open)}
-        onKeyDown={(event) => {
-          if (open) return
-          if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-            event.preventDefault()
-            setOpen(true)
-          } else if (
-            event.key.length === 1 &&
-            event.key !== ' ' &&
-            !event.metaKey &&
-            !event.ctrlKey &&
-            !event.altKey
-          ) {
-            // Typing on the closed control opens it with those letters already entered.
-            event.preventDefault()
-            setTyped(event.key)
-            setOpen(true)
-          }
-        }}
-      >
-        <span className={styles.cell}>
-          <span className={[styles.value, !shown && styles.placeholder].filter(Boolean).join(' ')}>
-            {shown || placeholder || ''}
-          </span>
-          {!plain && (
-            <span className={styles.sizer} aria-hidden>
-              {sizer.map((s, i) => (
-                <span key={i}>{s}</span>
-              ))}
+      <Tooltip text={title}>
+        <button
+          ref={buttonRef}
+          id={id}
+          type="button"
+          disabled={disabled}
+          className={[styles.button, compact && styles.compact, plain && styles.plain]
+            .filter(Boolean)
+            .join(' ')}
+          aria-label={label}
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-controls={open ? listId : undefined}
+          onClick={() => setOpen(!open)}
+          onKeyDown={(event) => {
+            if (open) return
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+              event.preventDefault()
+              setOpen(true)
+            } else if (
+              event.key.length === 1 &&
+              event.key !== ' ' &&
+              !event.metaKey &&
+              !event.ctrlKey &&
+              !event.altKey
+            ) {
+              // Typing on the closed control opens it with those letters already entered.
+              event.preventDefault()
+              setTyped(event.key)
+              setOpen(true)
+            }
+          }}
+        >
+          <span className={styles.cell}>
+            <span
+              className={[styles.value, !shown && styles.placeholder].filter(Boolean).join(' ')}
+            >
+              {shown || placeholder || ''}
             </span>
-          )}
-        </span>
-        <ChevronDown className={styles.chevron} size={12} strokeWidth={2} aria-hidden />
-      </button>
+            {!plain && (
+              <span className={styles.sizer} aria-hidden>
+                {sizer.map((s, i) => (
+                  <span key={i}>{s}</span>
+                ))}
+              </span>
+            )}
+          </span>
+          <ChevronDown className={styles.chevron} size={12} strokeWidth={2} aria-hidden />
+        </button>
+      </Tooltip>
       {open && (
         <PickerPopup
           anchorRef={buttonRef}

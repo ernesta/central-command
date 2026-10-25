@@ -2,6 +2,7 @@ import { Pin } from 'lucide-react'
 import { Link } from 'react-router'
 import { LANDING_DAYS } from '@shared/year'
 import styles from './Landing.module.css'
+import { Tooltip } from './Tooltip'
 
 /** A module's landing page: a page wrapper so every module's landing looks and behaves alike. */
 export function LandingPage({ children }: { children: React.ReactNode }): React.JSX.Element {
@@ -149,9 +150,9 @@ export function SeriesCards({ cards }: { cards: readonly SeriesCard[] }): React.
           </h3>
           <p className={styles.line}>{c.line}</p>
           {c.extra && (
-            <p className={styles.line} title={c.extra}>
-              {c.extra}
-            </p>
+            <Tooltip text={c.extra} whenCut>
+              <p className={styles.line}>{c.extra}</p>
+            </Tooltip>
           )}
           {c.chips && c.chips.length > 0 && (
             <ul className={`${styles.chips} ${styles.cardChips}`}>
@@ -195,9 +196,9 @@ export function RecentList({ rows }: { rows: readonly RecentRow[] }): React.JSX.
             </span>
             <span className={styles.people}>
               {row.people.slice(0, 3).map((p) => (
-                <span key={p.name} className={styles.person} title={p.name}>
-                  {p.initials}
-                </span>
+                <Tooltip key={p.name} text={p.name}>
+                  <span className={styles.person}>{p.initials}</span>
+                </Tooltip>
               ))}
               {row.people.length > 3 && (
                 <span className={styles.more}>+{row.people.length - 3}</span>

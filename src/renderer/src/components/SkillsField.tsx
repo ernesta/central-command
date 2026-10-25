@@ -10,6 +10,7 @@ import {
 } from '@shared/skills'
 import { PickerPopup, type PickerOption } from './Picker'
 import styles from './SkillsField.module.css'
+import { Tooltip } from './Tooltip'
 
 interface SkillsFieldProps {
   skills: string[]
@@ -43,9 +44,9 @@ export function SkillsField({ skills, onChange }: SkillsFieldProps): React.JSX.E
             key={name}
             className={[styles.chip, !findSkill(name) && styles.unknown].filter(Boolean).join(' ')}
           >
-            <span title={findSkill(name) ? undefined : `${name} is not on the skills list`}>
-              {name}
-            </span>
+            <Tooltip text={findSkill(name) ? undefined : `${name} is not on the skills list`}>
+              <span>{name}</span>
+            </Tooltip>
             <button
               type="button"
               className={styles.remove}
@@ -57,19 +58,20 @@ export function SkillsField({ skills, onChange }: SkillsFieldProps): React.JSX.E
           </li>
         ))}
         <li>
-          <button
-            ref={addRef}
-            type="button"
-            className={styles.add}
-            aria-haspopup="listbox"
-            aria-expanded={open}
-            disabled={full}
-            title={full ? `Up to ${MAX_SKILLS} skills` : undefined}
-            onClick={() => setOpen((o) => !o)}
-          >
-            <Plus size={12} strokeWidth={2} aria-hidden />
-            add
-          </button>
+          <Tooltip text={full ? `Up to ${MAX_SKILLS} skills` : undefined}>
+            <button
+              ref={addRef}
+              type="button"
+              className={styles.add}
+              aria-haspopup="listbox"
+              aria-expanded={open}
+              disabled={full}
+              onClick={() => setOpen((o) => !o)}
+            >
+              <Plus size={12} strokeWidth={2} aria-hidden />
+              add
+            </button>
+          </Tooltip>
         </li>
       </ul>
       {open && !full && (
