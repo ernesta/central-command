@@ -4,6 +4,7 @@ import { SkillChips } from '@renderer/components/SkillChips'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import type { Person } from '@shared/people'
 import { formatDate } from '@shared/time'
+import { Tooltip } from '@renderer/components/Tooltip'
 import { durationWithStudy } from '../shared/row-time'
 import { formatTimeRange, initialsFor } from '@modules/meetings/shared/query'
 import { entryParts, isUpcoming, type SelfStudy } from '../shared/rules'
@@ -107,9 +108,9 @@ export function TrainingTable({
                 <td className={styles.attendees}>
                   <span className={styles.chips}>
                     {shown.map((name) => (
-                      <span key={name} className={styles.chip} title={name}>
-                        {initialsFor(name, people)}
-                      </span>
+                      <Tooltip key={name} text={name}>
+                        <span className={styles.chip}>{initialsFor(name, people)}</span>
+                      </Tooltip>
                     ))}
                   </span>
                   {more > 0 && <span className={styles.more}>+{more}</span>}
