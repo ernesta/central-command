@@ -20,7 +20,7 @@ describe('taskHits', () => {
   })
   it('shows the matching text from the description, else the list and date; a subtask names its parent', () => {
     const hits = taskHits(tasks, req('methods'), 6)
-    expect(hits[0].detail).toBe('Reading · Oct 9')
+    expect(hits[0].detail).toBe('Reading · due Oct 9')
     expect(hits[1].detail).toContain('methods')
     const kid = taskHits(tasks, req('kid'), 6)[0]
     expect(kid.detail).toBe('Reading')
@@ -34,7 +34,7 @@ describe('taskHits', () => {
     const hit = taskHits(rows, req('day 2'), 6)[0]
     expect(hit.title).toBe('Simulating Social Worlds: Day 2')
     expect(hit.mark).toBe('training')
-    expect(hit.detail).toBe('Training · self-study · Oct 9')
+    expect(hit.detail).toBe('Training · self-study · due Oct 9')
     expect(hit.subtask).toBeUndefined()
     expect(taskHits(rows, req('worlds: day'), 6).map((h) => h.key)).toEqual(['c'])
   })

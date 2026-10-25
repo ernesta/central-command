@@ -1,10 +1,12 @@
 import { Link } from 'react-router'
 import { Check, GraduationCap, Plane, Users } from 'lucide-react'
+import { addDays } from '@shared/year'
 import { Panel } from '@renderer/components/Panel'
 import { LateChip } from '../../tasks/renderer/LateChip'
 import { PriorityBadge } from '../../tasks/renderer/TaskIcons'
 import { StudyIcon } from '../../tasks/renderer/TaskName'
 import { SubtaskLine } from '../../tasks/renderer/SubtaskLine'
+import { dueText } from '../../tasks/shared/query'
 import { tasksAllRoute } from '../../tasks/renderer/tasks-paths'
 import type { HomeEvent, HomeTask, HomeWorkspace } from '../shared/types'
 import { COMING_UP_DAYS, eventDetail, homeView, whenLabel, type HomeView } from './home-model'
@@ -84,10 +86,13 @@ function TaskRow({ task }: { task: HomeTask }): React.JSX.Element {
 
 function EventRow({
   event,
-  initialsOf
+  initialsOf,
+  showDue = false
 }: {
   event: HomeEvent
   initialsOf: (name: string) => string | null
+  /** Coming up names the date of a task's event; Today's section already says it. */
+  showDue?: boolean
 }): React.JSX.Element {
   const { task } = event
   const Icon = KIND_ICON[event.kind as keyof typeof KIND_ICON] ?? Check
@@ -113,7 +118,7 @@ function EventRow({
           <SubtaskLine
             parent={task.parent}
             list={event.detail}
-            due={`due ${when.toLowerCase()}`}
+            due={showDue && dueText(event.date, addDays(event.date, -event.inDays))}
           />
         ) : (
           eventDetail(event, initialsOf)
@@ -197,7 +202,7 @@ function ComingUpCard({
       ) : (
         <ul className={styles.list}>
           {view.comingUp.map((e) => (
-            <EventRow key={e.id} event={e} initialsOf={initialsOf} />
+            <EventRow key={e.id} event={e} initialsOf={initialsOf} showDue />
           ))}
         </ul>
       )}

@@ -4,7 +4,7 @@ import { fold } from '@shared/text'
 import { visibleTasks } from '../shared/session-lock'
 import { daysLate } from '../shared/late'
 import { STUDY_LINE, studyName, taskLabel } from '../shared/study-label'
-import { formatDue, listLabel, taskLine } from '../shared/query'
+import { lineDue, listLabel, taskLine } from '../shared/query'
 import { taskMatches } from '../shared/search-filters'
 import type { Task, TaskWorkspace } from '../shared/types'
 import { taskRoute } from './tasks-paths'
@@ -53,15 +53,15 @@ export function taskHits(
         : parent && !t.list
           ? listLabel(parent.list, parent.sublist)
           : listLabel(t.list, t.sublist)
-      const rest = t.due ? formatDue(t.due, today) : ''
-      const details = taskLine(list, rest)
+      const due = lineDue(t, today)
+      const details = taskLine(list, due)
       const marker = parent && t.ownKind !== 'self-study' ? parent.title || 'Untitled' : null
       return {
         key: t.uid,
         title: taskLabel(t, parent),
         mark: study ? ('training' as const) : undefined,
         detail: (!inTitle && snippet(t.description, needles)) || details,
-        subtask: marker === null ? undefined : { parent: marker, list, due: rest },
+        subtask: marker === null ? undefined : { parent: marker, list, due },
         late: t.status === 'done' ? undefined : daysLate(t.due, today) || undefined,
         route: taskRoute(t.workspace, t.uid)
       }
