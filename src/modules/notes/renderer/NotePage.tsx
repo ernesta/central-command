@@ -29,6 +29,7 @@ import { noteRoute, notesBase, useNotesWorkspace } from './notes-paths'
 import { useNoteSession } from './useNoteSession'
 import { useNotesList } from './useNotesList'
 import styles from './NotePage.module.css'
+import { Tooltip } from '@renderer/components/Tooltip'
 
 /** Where the cursor starts in a note that was just made: the title (New note) or the text (quick capture). */
 export interface NoteLocationState {
@@ -188,23 +189,24 @@ function NoteView({
             groups={groups}
             onChange={(value) => session.setMetaUndoable(value)}
           />
-          <Button
-            size="small"
-            aria-pressed={meta.pinned}
-            disabled={pinDisabled}
-            title={pinDisabled ? 'Four notes are pinned. Unpin one first.' : undefined}
-            icon={
-              <Pin
-                size={14}
-                strokeWidth={1.75}
-                fill={meta.pinned ? 'currentColor' : 'none'}
-                aria-hidden
-              />
-            }
-            onClick={() => session.setMetaUndoable({ pinned: !meta.pinned })}
-          >
-            {meta.pinned ? 'Pinned' : 'Pin'}
-          </Button>
+          <Tooltip text={pinDisabled ? 'Four notes are pinned. Unpin one first.' : undefined}>
+            <Button
+              size="small"
+              aria-pressed={meta.pinned}
+              disabled={pinDisabled}
+              icon={
+                <Pin
+                  size={14}
+                  strokeWidth={1.75}
+                  fill={meta.pinned ? 'currentColor' : 'none'}
+                  aria-hidden
+                />
+              }
+              onClick={() => session.setMetaUndoable({ pinned: !meta.pinned })}
+            >
+              {meta.pinned ? 'Pinned' : 'Pin'}
+            </Button>
+          </Tooltip>
           <Button
             size="small"
             variant="danger-outline"
