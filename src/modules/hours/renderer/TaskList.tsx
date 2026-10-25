@@ -29,7 +29,7 @@ interface TaskListProps {
   /** Renames a task for the day (the row's blocks and typed time with it). */
   /** Only offered for a row with no task: a task is renamed on its own page. */
   onRename: (label: string, name: string, client?: string, task?: string) => void | Promise<void>
-  /** The plan's clients (Work): each row then shows its client and offers the others. */
+  /** The plan's clients (Work): a row without a task shows its client and offers the others (a task's list is its client). */
   clients?: readonly string[]
   /** Moves a row to another client (`from` is its client now). */
   onSetClient?: (label: string, from: string | undefined, to: string) => void
@@ -195,7 +195,7 @@ export function TaskList({
                   {row.label || 'No task yet'}
                 </button>
               )}
-              {clients.length > 0 && onSetClient && (
+              {clients.length > 0 && onSetClient && !taskUidOf(row.task) && (
                 <Select
                   compact
                   className={styles.client}
