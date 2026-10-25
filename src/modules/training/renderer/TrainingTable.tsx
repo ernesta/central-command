@@ -1,9 +1,12 @@
+import { Fragment } from 'react'
 import { FileText, Folder } from 'lucide-react'
 import { Link, useNavigate } from 'react-router'
 import { SkillChips } from '@renderer/components/SkillChips'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import type { Person } from '@shared/people'
 import { formatDate } from '@shared/time'
+import { layoutRows } from '@shared/upcoming-groups'
+import { GroupRow } from '@renderer/components/GroupRow'
 import { Tooltip } from '@renderer/components/Tooltip'
 import { durationWithStudy } from '../shared/row-time'
 import { formatTimeRange, initialsFor } from '@modules/meetings/shared/query'
@@ -24,7 +27,8 @@ export function TrainingTable({
   people,
   today,
   selfStudy,
-  workspace = 'research'
+  workspace = 'research',
+  grouped = true
 }: {
   rows: TrainingIndexRow[]
   people: Person[]
@@ -33,12 +37,16 @@ export function TrainingTable({
   selfStudy?: SelfStudy
   /** Life's log has no type or skills columns (they are Inkpath's). */
   workspace?: TrainingWorkspace
+  /** Upcoming / Earlier headers: only while the list is sorted by date, newest first. */
+  grouped?: boolean
 }): React.JSX.Element {
   const research = workspace === 'research'
   const navigate = useNavigate()
+  const { ordered, groups } = layoutRows(rows, grouped, (row) => isUpcoming(row, today))
+  const columns = research ? 7 : 6
   const { tableProps, rowProps } = useRowNavigation(
-    rows.length,
-    (index) => void navigate(entryRoute(rows[index].id, workspace))
+    ordered.length,
+    (index) => void navigate(entryRoute(ordered[index].id, workspace))
   )
 
   return (
@@ -57,65 +65,70 @@ export function TrainingTable({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, index) => {
-            const parts = entryParts(row, selfStudy)
-            const shown = row.leads.slice(0, VISIBLE_LEADS)
-            const more = row.leads.length - shown.length
-            return (
-              <tr
-                key={`${row.workspace}/${row.id}`}
-                className={styles.row}
-                {...rowProps(index)}
-                onClick={() => void navigate(entryRoute(row.id, workspace))}
-              >
-                <td className={styles.nowrap}>
-                  <Link
-                    className={styles.link}
-                    tabIndex={-1}
-                    to={entryRoute(row.id, workspace)}
-                    // The row handles the click; the link is for the keyboard and for assistive technology.
-                    onClick={(event) => event.stopPropagation()}
+          {groups.map((group) => (
+            <Fragment key={group.key}>
+              {group.label && <GroupRow label={group.label} colSpan={columns} />}
+              {group.rows.map((row, offset) => {
+                const index = group.start + offset
+                const parts = entryParts(row, selfStudy)
+                const shown = row.leads.slice(0, VISIBLE_LEADS)
+                const more = row.leads.length - shown.length
+                return (
+                  <tr
+                    key={`${row.workspace}/${row.id}`}
+                    className={styles.row}
+                    {...rowProps(index)}
+                    onClick={() => void navigate(entryRoute(row.id, workspace))}
                   >
-                    {row.date ? formatDate(row.date) : 'No date'}
-                  </Link>
-                  {isUpcoming(row, today) && <span className={styles.upcoming}>Upcoming</span>}
-                </td>
-                <td className={styles.nowrap}>{formatTimeRange(row.start, row.end)}</td>
-                <td className={styles.nowrap}>
-                  {parts === null ? '—' : durationWithStudy(parts.training, parts.selfStudy)}
-                </td>
-                <td className={styles.nowrap}>{row.series || '—'}</td>
-                <td className={styles.titleCell}>
-                  {(row.hasNotes || row.folder) && (
-                    <span className={styles.marks}>
-                      {row.folder && (
-                        <Folder size={13} strokeWidth={1.75} aria-label="Has a linked folder" />
+                    <td className={styles.nowrap}>
+                      <Link
+                        className={styles.link}
+                        tabIndex={-1}
+                        to={entryRoute(row.id, workspace)}
+                        // The row handles the click; the link is for the keyboard and for assistive technology.
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        {row.date ? formatDate(row.date) : 'No date'}
+                      </Link>
+                    </td>
+                    <td className={styles.nowrap}>{formatTimeRange(row.start, row.end)}</td>
+                    <td className={styles.nowrap}>
+                      {parts === null ? '—' : durationWithStudy(parts.training, parts.selfStudy)}
+                    </td>
+                    <td className={styles.nowrap}>{row.series || '—'}</td>
+                    <td className={styles.titleCell}>
+                      {(row.hasNotes || row.folder) && (
+                        <span className={styles.marks}>
+                          {row.folder && (
+                            <Folder size={13} strokeWidth={1.75} aria-label="Has a linked folder" />
+                          )}
+                          {row.hasNotes && (
+                            <FileText size={13} strokeWidth={1.75} aria-label="Has notes" />
+                          )}
+                        </span>
                       )}
-                      {row.hasNotes && (
-                        <FileText size={13} strokeWidth={1.75} aria-label="Has notes" />
-                      )}
-                    </span>
-                  )}
-                  <span className={styles.titleText}>{row.title || 'Untitled'}</span>
-                </td>
-                {research && (
-                  <td className={styles.skills}>
-                    <SkillChips skills={row.skills} stacked />
-                  </td>
-                )}
-                <td className={styles.attendees}>
-                  <span className={styles.chips}>
-                    {shown.map((name) => (
-                      <Tooltip key={name} text={name}>
-                        <span className={styles.chip}>{initialsFor(name, people)}</span>
-                      </Tooltip>
-                    ))}
-                  </span>
-                  {more > 0 && <span className={styles.more}>+{more}</span>}
-                </td>
-              </tr>
-            )
-          })}
+                      <span className={styles.titleText}>{row.title || 'Untitled'}</span>
+                    </td>
+                    {research && (
+                      <td className={styles.skills}>
+                        <SkillChips skills={row.skills} stacked />
+                      </td>
+                    )}
+                    <td className={styles.attendees}>
+                      <span className={styles.chips}>
+                        {shown.map((name) => (
+                          <Tooltip key={name} text={name}>
+                            <span className={styles.chip}>{initialsFor(name, people)}</span>
+                          </Tooltip>
+                        ))}
+                      </span>
+                      {more > 0 && <span className={styles.more}>+{more}</span>}
+                    </td>
+                  </tr>
+                )
+              })}
+            </Fragment>
+          ))}
         </tbody>
       </table>
     </div>
