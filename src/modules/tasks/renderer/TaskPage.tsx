@@ -102,7 +102,7 @@ function TaskView({
   const navigate = useNavigate()
   const isNew = (useLocation().state as { isNew?: boolean } | null)?.isNew === true
   const today = todayIso()
-  const { tracked, running, yearFor, clientFor, months } = useTaskTime(workspace)
+  const { tracked, running, yearFor, clientFor, months, earlier } = useTaskTime(workspace)
   const sessionTasks = useSessionTaskUids(workspace)
   // A meeting's or training's task, or the series task they sit under, is the notes' to keep (title, list, date, status, repeat, delete).
   const lock = sessionLock(task, row.kids)
@@ -384,12 +384,12 @@ function TaskView({
             task={task}
             workspace={workspace}
             time={time}
-            own={own}
             isRunning={running.has(task.uid)}
             today={today}
             yearFor={yearFor}
             clientFor={clientFor}
             months={months(task.uid)}
+            earlier={earlier(task.uid, own.earlier)}
             list={task.list}
             parts={row.kids.filter((k) => k.status !== 'done' && !sessionTasks.has(k.uid))}
             actions={!sessionTasks.has(task.uid)}

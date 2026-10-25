@@ -19,12 +19,12 @@ export function TaskTimeCard({
   task,
   workspace,
   time,
-  own,
   isRunning,
   today,
   yearFor,
   clientFor,
   months,
+  earlier,
   list,
   parts,
   actions = true
@@ -32,7 +32,6 @@ export function TaskTimeCard({
   task: Task
   workspace: TaskWorkspace
   time: TaskTime
-  own: TaskTime
   isRunning: boolean
   today: string
   yearFor: (date: string, client?: string) => string | null
@@ -40,6 +39,8 @@ export function TaskTimeCard({
   clientFor: (list: string, date: string) => string | undefined
   /** Every hour on this task by month (history included); a task with none shows this month at 0:00. */
   months: { month: string; minutes: number }[]
+  /** ClickUp's time with no known day (what the months do not already show). */
+  earlier: number
   /** The list that names the client (the task's own). */
   list: string
   /** The open subtasks Add time may go to. */
@@ -53,10 +54,10 @@ export function TaskTimeCard({
         <span className={styles.label}>Time on this task</span>
         <b className={styles.total}>{formatTaskTime(time.total) || '0:00'}</b>
       </div>
-      {own.earlier > 0 && (
+      {earlier > 0 && (
         <div className={styles.timeLine}>
           <span>Earlier</span>
-          <span>{formatTaskTime(own.earlier)}</span>
+          <span>{formatTaskTime(earlier)}</span>
         </div>
       )}
       {months.length > 0 ? (

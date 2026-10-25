@@ -58,6 +58,24 @@ export function trackedByTask(
 }
 
 /**
+ * The part of a task's ClickUp time (`earlierMinutes`) whose day is not known: what is left once the history marked `earlier` that Hours
+ * dates (and `hoursByMonth` lists under its month) is taken out. The task page's "Earlier" line, so a dated hour shows under its month only.
+ */
+export function undatedEarlier(
+  years: readonly TrackingYear[],
+  uid: string,
+  earlierMinutes: number
+): number {
+  let dated = 0
+  for (const year of years) {
+    for (const s of year.sessions)
+      if (s.earlier && s.end !== null && taskUidOf(s.task) === uid) dated += reportedMinutes(s)
+    for (const a of year.adjusts) if (a.earlier && taskUidOf(a.task) === uid) dated += a.minutes
+  }
+  return Math.max(0, earlierMinutes - dated)
+}
+
+/**
  * Every hour Hours holds for a task by month (`YYYY-MM`, oldest first): ended sessions and typed time, history linked to the task
  * included (which `trackedByTask` leaves out because ClickUp's time already holds it). For the task page's "by month" list.
  */

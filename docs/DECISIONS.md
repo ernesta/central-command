@@ -4321,3 +4321,10 @@ The user asked why a client dropdown sat beside a task already under that client
 - **Timer popover** (`TimerChip`): the client select is gone. A timer started without a task cannot stop until a task is picked, and the task decides the client.
 - **"Which client?" buttons** (task page Start, the timer's task picker): gone. `clientForTask` (`hours/shared/start-picker.ts`) returns the task's list as the client where contracts have clients (none in Research), whether or not that client's contract is open today; it never falls back to another client (it used to take the only open client, or ask). The user: logging work in a list is allowed even when its contract has ended.
 - **Not driven in the app**; typecheck, lint and tests pass. **Open:** Start puts the timer in a contract that holds today, so a list whose client belongs only to an ended contract is probably refused with "couldn't start" (`bad-client`); Add time, which picks the contract by date, is unaffected. Allowing Start there needs the timer store to accept it (which file the hours go in is the user's call).
+
+## Time card: a dated hour shows under its month, not as "Earlier" (25 Oct 2026, the user's review)
+
+A task with 2:15 of ClickUp time, all of it linked to October hours, showed "Earlier 2:15" and "Oct 2026 2:15" under a total of 2:15. The total was right (ClickUp's time already holds the linked hours, so `trackedByTask` counts them once), but the two lines read as a sum. The user: show the most specific time there is; "Earlier" only when the day is not known.
+
+- `undatedEarlier` (`tasks/shared/tracked.ts`) is the task's `earlierMinutes` less the history marked `earlier` that Hours dates (ended sessions and typed time, the task's own, never below 0). The card's "Earlier" line shows that; `hoursByMonth` already listed the dated hours under their months. Earlier + months still equals the total.
+- The total, `trackedByTask` and every other view of time are unchanged. Tests in `tracked.test.ts`; tests, lint and typecheck pass. **Not driven in the app.**

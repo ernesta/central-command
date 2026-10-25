@@ -8,7 +8,7 @@ import { clientForList, contractForClient } from '@shared/tracking/contracts'
 import type { TrackingYear } from '@shared/tracking/types'
 import { useMeetingEntries } from '../../hours/renderer/useMeetingHours'
 import { elapsedMinutes } from '../../hours/shared/timer'
-import { hoursByMonth, taskUidOf, trackedByTask } from '../shared/tracked'
+import { hoursByMonth, taskUidOf, trackedByTask, undatedEarlier } from '../shared/tracked'
 import type { TaskWorkspace } from '../shared/types'
 import { useTasksList } from './useTasksList'
 
@@ -28,6 +28,8 @@ export function useTaskTime(workspace: TaskWorkspace): {
   clientFor: (list: string, date: string) => string | undefined
   /** A task's hours by month, history included. */
   months: (uid: string) => { month: string; minutes: number }[]
+  /** A task's ClickUp time with no known day: what its months do not already show. */
+  earlier: (uid: string, earlierMinutes: number) => number
 } {
   const [years, setYears] = useState<TrackingYear[]>([])
   const { running } = useRunningTimer()
@@ -77,6 +79,7 @@ export function useTaskTime(workspace: TaskWorkspace): {
     const clientFor = (list: string, date: string): string | undefined =>
       clientForList(years, date, list)
     const months = (uid: string): { month: string; minutes: number }[] => hoursByMonth(shown, uid)
-    return { tracked, running: active, yearFor, clientFor, months }
+    const earlier = (uid: string, minutes: number): number => undatedEarlier(shown, uid, minutes)
+    return { tracked, running: active, yearFor, clientFor, months, earlier }
   }, [base, running, now, workspace, years, shown])
 }

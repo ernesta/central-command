@@ -4,7 +4,7 @@ import { year as baseYear } from '@shared/tracking/test-utils'
 import type { TrackingYear } from '@shared/tracking/types'
 import { taskTime } from './views'
 import { task } from './test-utils'
-import { hoursByMonth, taskKey, taskUidOf, trackedByTask } from './tracked'
+import { hoursByMonth, taskKey, taskUidOf, trackedByTask, undatedEarlier } from './tracked'
 
 const year = (over: Partial<TrackingYear>): TrackingYear => baseYear(over)
 
@@ -214,5 +214,24 @@ describe('trackedByTask with the tasks’ ClickUp time', () => {
     const sub = task({ uid: 'sxbn2jqc', parentUid: 'jkabweh5', ownKind: 'training' })
     expect(taskTime({ task: sub, kids: [] }, tracked).total).toBe(120)
     expect(taskTime({ task: parent, kids: [sub] }, tracked).total).toBe(120)
+  })
+})
+
+describe('undatedEarlier', () => {
+  const dated = (minutes: number): TrackingYear =>
+    year({
+      adjusts: [
+        { id: 'h', date: '2026-10-05', label: 'X', minutes, task: taskKey('t1'), earlier: true }
+      ]
+    })
+
+  it('leaves only the ClickUp time with no known day', () => {
+    expect(undatedEarlier([dated(135)], 't1', 135)).toBe(0)
+    expect(undatedEarlier([dated(60)], 't1', 135)).toBe(75)
+  })
+
+  it('never goes below zero, and ignores other tasks', () => {
+    expect(undatedEarlier([dated(200)], 't1', 135)).toBe(0)
+    expect(undatedEarlier([dated(60)], 't2', 135)).toBe(135)
   })
 })
