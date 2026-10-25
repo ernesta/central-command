@@ -47,3 +47,36 @@ export function locatedOutline(markdown: string, levels: readonly number[]): Loc
   }
   return items
 }
+
+export interface VisibleOutlineEntry {
+  /** The heading's place in the full outline (what `current` counts in). */
+  index: number
+  /** The top heading that is, or holds, the heading being read. */
+  holdsCurrent: boolean
+}
+
+/**
+ * The outline entries a rail shows: the top headings (levels 1 and 2) and, only while the heading being read is
+ * their section's top heading or one of its `###`s, that section's `###`s. A `###` with no `#`/`##` above it is a top
+ * heading. `current` is an index into `outline` (null before the first heading); the result's indexes are too.
+ */
+export function visibleOutline(
+  outline: readonly OutlineItem[],
+  current: number | null
+): VisibleOutlineEntry[] {
+  // The top heading each entry belongs to (itself, for a top heading).
+  const top: number[] = []
+  let section = -1
+  for (const [i, item] of outline.entries()) {
+    if (item.level <= 2 || section < 0) section = item.level <= 2 ? i : -1
+    top.push(section < 0 ? i : section)
+  }
+  const open = current === null ? -1 : top[current]
+  const shown: VisibleOutlineEntry[] = []
+  for (const i of outline.keys()) {
+    const isTop = top[i] === i
+    if (!isTop && top[i] !== open) continue
+    shown.push({ index: i, holdsCurrent: isTop && i === open })
+  }
+  return shown
+}

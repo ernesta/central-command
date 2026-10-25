@@ -26,12 +26,13 @@
   background: var(--hover-tint);
   color: var(--ink);
 }
-.level2 {
-  padding-left: 12px;
-}
 .level3 {
   padding-left: 24px;
   color: var(--text-muted);
+}
+.item.holds {
+  border-left-color: var(--border-strong);
+  color: var(--ink);
 }
 .item.current {
   border-left-color: var(--accent);

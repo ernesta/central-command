@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Panel } from '@renderer/components/Panel'
 import { headingStart, liveViewIn, scrollToPos } from '@renderer/editor/live-outline'
-import { locatedOutline, type LocatedOutlineItem } from '@shared/markdown-outline'
+import { locatedOutline, visibleOutline, type LocatedOutlineItem } from '@shared/markdown-outline'
 import styles from './NoteOutline.module.css'
 
 /** Levels shown: a note's own top-level structure, not every sub-sub-heading. */
@@ -70,25 +70,28 @@ export function NoteOutline({
         <p className={styles.empty}>Headings you write appear here.</p>
       ) : (
         <ul className={styles.list}>
-          {outline.map((item, i) => (
-            <li key={`${i}-${item.text}`}>
-              <button
-                type="button"
-                className={[
-                  styles.item,
-                  item.level === 2 && styles.level2,
-                  item.level === 3 && styles.level3,
-                  i === current && styles.current
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-                aria-current={i === current ? 'location' : undefined}
-                onClick={() => scrollToHeading(docRef.current, item)}
-              >
-                {item.text}
-              </button>
-            </li>
-          ))}
+          {visibleOutline(outline, current).map(({ index: i, holdsCurrent }) => {
+            const item = outline[i]
+            return (
+              <li key={`${i}-${item.text}`}>
+                <button
+                  type="button"
+                  className={[
+                    styles.item,
+                    item.level === 3 && styles.level3,
+                    holdsCurrent && styles.holds,
+                    i === current && styles.current
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  aria-current={i === current ? 'location' : undefined}
+                  onClick={() => scrollToHeading(docRef.current, item)}
+                >
+                  {item.text}
+                </button>
+              </li>
+            )
+          })}
         </ul>
       )}
     </Panel>

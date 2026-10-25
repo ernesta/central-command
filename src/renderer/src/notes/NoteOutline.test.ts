@@ -28,12 +28,11 @@ describe('NoteOutline', () => {
     expect(host.querySelectorAll('button')).toHaveLength(0)
   })
 
-  it('lists the headings, in order, as buttons', () => {
+  it('lists the top headings, in order, as buttons (a folded ### is not in the DOM)', () => {
     render('# Title\n\n## Methods\n\n### Participants\n', document.createElement('div'))
     expect([...host.querySelectorAll('button')].map((b) => b.textContent)).toEqual([
       'Title',
-      'Methods',
-      'Participants'
+      'Methods'
     ])
   })
 })
@@ -46,9 +45,9 @@ describe('NoteOutline as a rail', () => {
     expect(nav.className).toContain(panel.bare)
   })
 
-  it('keeps every level in the list for now (the unfolding is a later stage)', () => {
-    render('# A\n\n## B\n\n### C\n', document.createElement('div'))
-    expect(host.querySelectorAll('li')).toHaveLength(3)
+  it('lists the top headings and folds the ###s while nothing is being read', () => {
+    render('# A\n\n## B\n\n### C\n\n## D\n\n### E\n', document.createElement('div'))
+    expect([...host.querySelectorAll('button')].map((b) => b.textContent)).toEqual(['A', 'B', 'D'])
   })
 })
 
@@ -68,11 +67,9 @@ describe('NoteOutline with the live editor', () => {
     const methods = [...host.querySelectorAll('button')].find((b) => b.textContent === 'Methods')!
     flushSync(() => methods.click())
     expect(scrolled).toEqual([text.indexOf('## Methods')])
-    const participants = [...host.querySelectorAll('button')].find(
-      (b) => b.textContent === 'Participants'
-    )!
-    flushSync(() => participants.click())
-    expect(scrolled.at(-1)).toBe(text.indexOf('### Participants'))
+    expect([...host.querySelectorAll('button')].map((b) => b.textContent)).not.toContain(
+      'Participants'
+    )
   })
 
   it('does nothing when the text has moved on and that line is no longer a heading', () => {
