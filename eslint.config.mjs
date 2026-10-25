@@ -28,5 +28,23 @@ export default defineConfig(
       ...eslintPluginReactRefresh.configs.vite.rules
     }
   },
+  {
+    // A tooltip is the shared Tooltip, never the native `title` attribute (docs/ONE_LINE_TABLES_PLAN.md).
+    files: ['src/**/*.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "JSXOpeningElement[name.name=/^[a-z]/] > JSXAttribute[name.name='title']",
+          message:
+            'Use <Tooltip text="…"> from @renderer/components/Tooltip, not a native title attribute.'
+        },
+        {
+          selector: "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='title']",
+          message: 'Use <Tooltip text="…"> around the Button, not a native title attribute.'
+        }
+      ]
+    }
+  },
   eslintConfigPrettier
 )
