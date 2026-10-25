@@ -16,12 +16,18 @@ export interface TaskProposal {
   existing: Task | null
 }
 
+/** A series task is named "<series> meetings" everywhere; a name that already says so is left alone; the catch-all "Other" is "Other meetings". */
+function seriesTaskTitle(name: string): string {
+  return /\bmeetings$/i.test(name) ? name : `${name} meetings`
+}
+
 /**
- * The generic task for a meeting series, never one with a person in it (the attendees stay on the note).
+ * The generic task for a meeting series, never one with a person in it (the attendees stay on the note). One rule for every
+ * workspace (the user's, 25 Oct 2026): the title is "<series> meetings", and only the list differs.
  *
- * - Research: the series itself ("Supervision", "Rastle Lab", "Luminos"), in the list "Meetings"; the catch-all "Other" is "Meetings".
+ * - Research: "Supervision meetings", "Rastle Lab meetings", "Other meetings", in the list "Meetings".
  * - Work: the series is a client, so "<Client> meetings" in that client's own list (Work's lists are its clients). A series that
- *   is no client is its own task, in the list of `OTHER_SERIES_CLIENT`.
+ *   is no client is "<series> meetings" in the list of `OTHER_SERIES_CLIENT`.
  *
  * `clients` is Work's list of clients (null in Research). An existing task is an open top-level one with that title, in that list
  * first, else in any list (Research) so a task the user already made is taken up rather than duplicated.
@@ -39,18 +45,18 @@ export function proposeMeetingTask(
   if (workspace === 'work') {
     const client = (clients ?? []).find((c) => fold(c) === fold(name))
     if (client) {
-      title = `${client} meetings`
+      title = seriesTaskTitle(client)
       list = client
     } else {
       // A series that is no client ("Document Automation – Vecten") is still work for one: its own series task, in the list of
       // the client the user named for them (12 Oct 2026). With that client gone from Work, nothing is proposed.
       const home = (clients ?? []).find((c) => fold(c) === fold(OTHER_SERIES_CLIENT))
       if (!home) return null
-      title = fold(name) === fold('Other') ? 'Meetings' : name
+      title = seriesTaskTitle(name)
       list = home
     }
   } else {
-    title = fold(name) === fold('Other') ? 'Meetings' : name
+    title = seriesTaskTitle(name)
     list = RESEARCH_MEETINGS_LIST
   }
   const same = open.filter((t) => !t.parentUid && fold(t.title.trim()) === fold(title))

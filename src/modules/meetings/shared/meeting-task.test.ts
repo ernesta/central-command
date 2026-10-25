@@ -12,7 +12,7 @@ const task = (over: Partial<Task>): Task =>
   ({
     uid: 't1',
     workspace: 'research',
-    title: 'Supervision',
+    title: 'Supervision meetings',
     list: 'Meetings',
     parentUid: null,
     ownKind: null,
@@ -22,13 +22,14 @@ const task = (over: Partial<Task>): Task =>
 describe('proposeMeetingTask', () => {
   it('Research: the series itself, in the Meetings list, nothing to take up yet', () => {
     expect(proposeMeetingTask('research', 'Rastle Lab', null, [])).toEqual({
-      title: 'Rastle Lab',
+      title: 'Rastle Lab meetings',
       list: 'Meetings',
       existing: null
     })
   })
-  it('Research: Other is just Meetings', () => {
-    expect(proposeMeetingTask('research', 'Other', null, [])?.title).toBe('Meetings')
+  it('Research: Other is Other meetings, and a name that already ends in meetings is kept', () => {
+    expect(proposeMeetingTask('research', 'Other', null, [])?.title).toBe('Other meetings')
+    expect(proposeMeetingTask('research', 'Team meetings', null, [])?.title).toBe('Team meetings')
   })
   it('takes up an open task that is already it, even in another list, but never a subtask', () => {
     const mine = task({ uid: 'a', list: 'Admin' })
@@ -51,14 +52,14 @@ describe('proposeMeetingTask', () => {
       existing: null
     })
   })
-  it('Work: a series that is no client is its own task in Teaching & Learning, Other is Meetings, and with no such client there is none', () => {
+  it('Work: a series that is no client is its own "<series> meetings" task in Teaching & Learning, Other is Other meetings, and with no such client there is none', () => {
     const both = ['Impact', 'Teaching & Learning']
     expect(proposeMeetingTask('work', 'Document Automation – Vecten', both, [])).toEqual({
-      title: 'Document Automation – Vecten',
+      title: 'Document Automation – Vecten meetings',
       list: 'Teaching & Learning',
       existing: null
     })
-    expect(proposeMeetingTask('work', 'Other', both, [])?.title).toBe('Meetings')
+    expect(proposeMeetingTask('work', 'Other', both, [])?.title).toBe('Other meetings')
     expect(proposeMeetingTask('work', 'Other', ['Impact'], [])).toBeNull()
     expect(proposeMeetingTask('work', '  ', ['Impact'], [])).toBeNull()
     expect(proposeMeetingTask('work', 'Impact', null, [])).toBeNull()
@@ -72,7 +73,7 @@ describe('proposeMeetingTask', () => {
 })
 
 describe('planMeetingTask', () => {
-  const series = task({ uid: 's', title: 'Supervision', list: 'Meetings' })
+  const series = task({ uid: 's', title: 'Supervision meetings', list: 'Meetings' })
   const note = { task: 'auto', series: 'Supervision', date: '2026-10-12' }
 
   it('titles a meeting "<series task> · <date>"', () => {
@@ -101,16 +102,16 @@ describe('planMeetingTask', () => {
     expect(planMeetingTask('research', note, null, [series])).toEqual({
       kind: 'create',
       due: '2026-10-12',
-      title: 'Supervision · Oct 12, 2026',
+      title: 'Supervision meetings · Oct 12, 2026',
       parent: { uid: 's' }
     })
   })
-  it('makes the series task too when there is none (Other is Meetings)', () => {
+  it('makes the series task too when there is none (Other is Other meetings)', () => {
     expect(planMeetingTask('research', { ...note, series: 'Other' }, null, [])).toEqual({
       kind: 'create',
       due: '2026-10-12',
-      title: 'Meetings · Oct 12, 2026',
-      parent: { title: 'Meetings', list: 'Meetings' }
+      title: 'Other meetings · Oct 12, 2026',
+      parent: { title: 'Other meetings', list: 'Meetings' }
     })
   })
   it('Work: a series that is no client makes its own series task in Teaching & Learning', () => {
@@ -124,8 +125,8 @@ describe('planMeetingTask', () => {
     ).toEqual({
       kind: 'create',
       due: '2026-10-12',
-      title: 'Document Automation – Vecten · Oct 12, 2026',
-      parent: { title: 'Document Automation – Vecten', list: 'Teaching & Learning' }
+      title: 'Document Automation – Vecten meetings · Oct 12, 2026',
+      parent: { title: 'Document Automation – Vecten meetings', list: 'Teaching & Learning' }
     })
     expect(planMeetingTask('work', { ...note, series: 'Other' }, ['Impact'], [])).toEqual({
       kind: 'none'
@@ -140,7 +141,7 @@ describe('planMeetingTask', () => {
 
   const sub = task({
     uid: 'm',
-    title: 'Supervision · Oct 12, 2026',
+    title: 'Supervision meetings · Oct 12, 2026',
     list: '',
     parentUid: 's',
     due: '2026-10-12'
@@ -161,12 +162,12 @@ describe('planMeetingTask', () => {
     ).toEqual({
       kind: 'sync',
       uid: 'm',
-      title: 'Supervision · Oct 13, 2026',
+      title: 'Supervision meetings · Oct 13, 2026',
       due: '2026-10-13'
     })
   })
   it('the subtask follows the series: new title, new series task', () => {
-    const lab = task({ uid: 'l', title: 'Rastle Lab', list: 'Meetings' })
+    const lab = task({ uid: 'l', title: 'Rastle Lab meetings', list: 'Meetings' })
     expect(
       planMeetingTask('research', { ...note, task: 'm', series: 'Rastle Lab' }, null, [
         series,
@@ -176,7 +177,7 @@ describe('planMeetingTask', () => {
     ).toEqual({
       kind: 'sync',
       uid: 'm',
-      title: 'Rastle Lab · Oct 12, 2026',
+      title: 'Rastle Lab meetings · Oct 12, 2026',
       parent: { uid: 'l' }
     })
   })
@@ -199,12 +200,12 @@ describe('planMeetingTask', () => {
 
 describe('a meeting task is recognised in every region (the bug of 19 Oct 2026)', () => {
   const dates = ['2026-01-05', '2026-03-31', '2026-10-19', '2026-12-31']
-  const series = task({ uid: 's', title: 'Supervision', list: 'Meetings' })
+  const series = task({ uid: 's', title: 'Supervision meetings', list: 'Meetings' })
 
   it.each(TEST_LOCALES)('%s: the title the app writes is its own, marked or not', (locale) => {
     withLocale(locale, () => {
       for (const date of dates) {
-        const title = meetingTaskTitle('Supervision', date)
+        const title = meetingTaskTitle('Supervision meetings', date)
         expect(isOwnMeetingTask(task({ title, parentUid: 's', list: '' }))).toBe(true)
         expect(
           isOwnMeetingTask(task({ title: 'whatever', parentUid: 's', ownKind: 'meeting' }))
@@ -218,7 +219,7 @@ describe('a meeting task is recognised in every region (the bug of 19 Oct 2026)'
     (locale) => {
       withLocale(locale, () => {
         for (const date of dates) {
-          const title = meetingTaskTitle('Supervision', date)
+          const title = meetingTaskTitle('Supervision meetings', date)
           expect(isOwnMeetingTask(task({ title, parentUid: 's', list: '' }))).toBe(true)
         }
       })
@@ -255,13 +256,13 @@ describe('a meeting task is recognised in every region (the bug of 19 Oct 2026)'
     withLocale(locale, () => {
       const own = task({
         uid: 'm',
-        title: meetingTaskTitle('Supervision', '2026-10-19'),
+        title: meetingTaskTitle('Supervision meetings', '2026-10-19'),
         list: '',
         parentUid: 's',
         due: '2026-10-19',
         ownKind: 'meeting'
       })
-      const other = task({ uid: 'o', title: 'Meetings', list: 'Meetings' })
+      const other = task({ uid: 'o', title: 'Other meetings', list: 'Meetings' })
       const plan = planMeetingTask(
         'research',
         { task: 'm', series: 'Other', date: '2026-10-20' },
@@ -271,7 +272,7 @@ describe('a meeting task is recognised in every region (the bug of 19 Oct 2026)'
       expect(plan).toEqual({
         kind: 'sync',
         uid: 'm',
-        title: meetingTaskTitle('Meetings', '2026-10-20'),
+        title: meetingTaskTitle('Other meetings', '2026-10-20'),
         parent: { uid: 'o' },
         due: '2026-10-20'
       })

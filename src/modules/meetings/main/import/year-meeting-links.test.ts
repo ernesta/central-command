@@ -95,14 +95,14 @@ describe('linkYearMeetings', () => {
     expect(report.ok).toBe(true)
     const tasks = listTasks(db, 'research')
     const series = tasks.filter((t) => !t.parentUid)
-    expect(series.map((t) => [t.title, t.list])).toEqual([['Supervision', 'Meetings']])
+    expect(series.map((t) => [t.title, t.list])).toEqual([['Supervision meetings', 'Meetings']])
     expect(
       tasks
         .filter((t) => t.parentUid)
         .map((t) => t.title)
         .sort()
-    ).toEqual(['Supervision · Oct 12, 2026', 'Supervision · Sep 24, 2026'])
-    const sub = tasks.find((t) => t.title === 'Supervision · Sep 24, 2026')!
+    ).toEqual(['Supervision meetings · Oct 12, 2026', 'Supervision meetings · Sep 24, 2026'])
+    const sub = tasks.find((t) => t.title === 'Supervision meetings · Sep 24, 2026')!
     expect(readFileSync(join(dir(), '2026-09-24 Supervision.md'), 'utf8')).toContain(
       `task: ${sub.uid}`
     )
@@ -118,7 +118,7 @@ describe('linkYearMeetings', () => {
 
   it('takes up a series task that already exists, and a second run finds nothing', () => {
     db.prepare(
-      "INSERT INTO tasks (uid, workspace, title, list, status, position, created_at, updated_at) VALUES ('serie001', 'research', 'Supervision', 'Admin', 'todo', 0, 'x', 'x')"
+      "INSERT INTO tasks (uid, workspace, title, list, status, position, created_at, updated_at) VALUES ('serie001', 'research', 'Supervision meetings', 'Admin', 'todo', 0, 'x', 'x')"
     ).run()
     expect(linkYearMeetings(root, db, true, '2026-10-12', 's').ok).toBe(true)
     expect(listTasks(db, 'research').filter((t) => !t.parentUid)).toHaveLength(1)
@@ -129,10 +129,12 @@ describe('linkYearMeetings', () => {
 
   it('gives a note that points at its series task a subtask, and leaves the day totals alone', () => {
     db.prepare(
-      "INSERT INTO tasks (uid, workspace, title, list, status, position, created_at, updated_at) VALUES ('abcd1234', 'research', 'Rastle Lab', 'Meetings', 'doing', 0, 'x', 'x')"
+      "INSERT INTO tasks (uid, workspace, title, list, status, position, created_at, updated_at) VALUES ('abcd1234', 'research', 'Rastle Lab meetings', 'Meetings', 'doing', 0, 'x', 'x')"
     ).run()
     expect(linkYearMeetings(root, db, true, '2026-10-12', 's').ok).toBe(true)
-    const sub = listTasks(db, 'research').find((t) => t.title === 'Rastle Lab · Oct 8, 2026')!
+    const sub = listTasks(db, 'research').find(
+      (t) => t.title === 'Rastle Lab meetings · Oct 8, 2026'
+    )!
     expect(sub.parentUid).toBe('abcd1234')
     expect(readFileSync(join(dir(), '2026-10-08 Rastle Lab.md'), 'utf8')).toContain(
       `task: ${sub.uid}`

@@ -52,18 +52,22 @@ const training = (id: string, over: Record<string, string | null> = {}): void =>
 function scenario(): Record<string, string> {
   const supervision = store.create({
     workspace: 'research',
-    title: 'Supervision',
+    title: 'Supervision meetings',
     list: 'Meetings'
   })
-  const meetings = store.create({ workspace: 'research', title: 'Meetings', list: 'Meetings' })
+  const meetings = store.create({
+    workspace: 'research',
+    title: 'Other meetings',
+    list: 'Meetings'
+  })
   const sub = (title: string, parentUid: string, due: string | null = null): string =>
     store.create({ workspace: 'research', title, parentUid, due }).uid
   const left = [1, 2, 3].map(() => sub('Supervision · 19 Oct 2026', supervision.uid, '2026-10-19'))
   const stale = sub('Supervision · 19 Oct 2026', supervision.uid, '2026-10-19')
-  const inStep = sub('Supervision · 12 Oct 2026', supervision.uid, '2026-10-12')
+  const inStep = sub('Supervision meetings · 12 Oct 2026', supervision.uid, '2026-10-12')
   const marked = store.create({
     workspace: 'research',
-    title: 'Supervision · 5 Oct 2026',
+    title: 'Supervision meetings · 5 Oct 2026',
     parentUid: supervision.uid,
     due: '2026-10-05',
     ownKind: 'meeting'
@@ -106,7 +110,7 @@ describe('planRepair: meetings', () => {
     expect(other?.fix).toMatchObject({
       uid: id.stale,
       mark: 'meeting',
-      title: withLocale('en-US', () => 'Meetings · Oct 20, 2026'),
+      title: withLocale('en-US', () => 'Other meetings · Oct 20, 2026'),
       due: '2026-10-20',
       parent: { uid: id.meetings }
     })
@@ -151,9 +155,9 @@ describe('planRepair: orphans', () => {
     const report = planRepair(readRepairInput(db), null, tracked)
     const orphans = report.orphans.filter((o) => o.title === 'Supervision · 19 Oct 2026')
     expect(orphans).toHaveLength(3)
-    expect(orphans.every((o) => o.list === 'Meetings' && o.parentTitle === 'Supervision')).toBe(
-      true
-    )
+    expect(
+      orphans.every((o) => o.list === 'Meetings' && o.parentTitle === 'Supervision meetings')
+    ).toBe(true)
     expect(orphans.find((o) => o.uid === id.left0)?.trackedMinutes).toBe(90)
     expect(report.orphans.map((o) => o.uid)).not.toContain(id.stale)
     const text = formatRepairReport(report, 'test')
