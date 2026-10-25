@@ -1,6 +1,7 @@
 import { Plus, X } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { PickerPopup } from '@renderer/components/Picker'
+import { Tooltip } from '@renderer/components/Tooltip'
 import styles from './ClientsField.module.css'
 import { addClient, MAX_CLIENTS } from '../shared/plan-settings'
 
@@ -62,19 +63,20 @@ export function ClientsField({
           </li>
         ))}
         <li>
-          <button
-            ref={addRef}
-            type="button"
-            className={styles.add}
-            aria-label="Add a client"
-            title="Add a client"
-            aria-haspopup="listbox"
-            aria-expanded={open}
-            disabled={full}
-            onClick={() => setOpen((o) => !o)}
-          >
-            <Plus size={12} strokeWidth={2} aria-hidden />
-          </button>
+          <Tooltip text="Add a client">
+            <button
+              ref={addRef}
+              type="button"
+              className={styles.add}
+              aria-label="Add a client"
+              aria-haspopup="listbox"
+              aria-expanded={open}
+              disabled={full}
+              onClick={() => setOpen((o) => !o)}
+            >
+              <Plus size={12} strokeWidth={2} aria-hidden />
+            </button>
+          </Tooltip>
         </li>
       </ul>
       {open && !full && (

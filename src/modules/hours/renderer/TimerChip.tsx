@@ -15,6 +15,7 @@ import { WORKSPACES } from '@shared/settings'
 import type { RunningTimer } from '@shared/tracking/api'
 import { formatDay, formatHours } from '@shared/tracking/format'
 import type { Moment } from '@shared/tracking/types'
+import { Tooltip } from '@renderer/components/Tooltip'
 import { useOpenTasks } from '../../tasks/renderer/useOpenTasks'
 import { parentIn, studyName } from '../../tasks/shared/study-label'
 import { taskUidOf } from '../../tasks/shared/tracked'
@@ -145,15 +146,16 @@ function TimerPopover({
           clock={clock}
           actions={
             <>
-              <button
-                type="button"
-                className={styles.stopButton}
-                disabled={head.stopDisabled}
-                title={head.stopDisabled ? STOP_NEEDS_TASK : undefined}
-                onClick={() => void stop()}
-              >
-                Stop
-              </button>
+              <Tooltip text={head.stopDisabled ? STOP_NEEDS_TASK : undefined}>
+                <button
+                  type="button"
+                  className={styles.stopButton}
+                  disabled={head.stopDisabled}
+                  onClick={() => void stop()}
+                >
+                  Stop
+                </button>
+              </Tooltip>
               <button type="button" className={styles.discard} onClick={() => void discard()}>
                 Discard
               </button>
@@ -243,34 +245,36 @@ function Chip({ running, now }: { running: RunningTimer; now: Moment }): React.J
   return (
     <div className={styles.root} ref={rootRef} onKeyDown={onKeyDown}>
       <div className={styles.chip}>
-        <button
-          ref={mainRef}
-          type="button"
-          className={styles.main}
-          title={name || undefined}
-          aria-expanded={open}
-          aria-haspopup="dialog"
-          onClick={() => (open ? close() : show())}
-        >
-          <span className={styles.dot} aria-hidden />
-          {running.workspace !== current && (
-            <span className={styles.workspace}>{WORKSPACE_LABELS[running.workspace]}</span>
-          )}
-          <span className={styles.name}>{name || 'No task yet'}</span>
-          <span className={styles.clock}>
-            {clock === null ? formatDay(session.date) : formatHours(clock)}
-          </span>
-        </button>
-        {clock !== null && (
+        <Tooltip text={name || undefined}>
           <button
+            ref={mainRef}
             type="button"
-            className={styles.stop}
-            disabled={stopBlocked}
-            title={stopBlocked ? STOP_NEEDS_TASK : undefined}
-            onClick={() => void stopTimer()}
+            className={styles.main}
+            aria-expanded={open}
+            aria-haspopup="dialog"
+            onClick={() => (open ? close() : show())}
           >
-            Stop
+            <span className={styles.dot} aria-hidden />
+            {running.workspace !== current && (
+              <span className={styles.workspace}>{WORKSPACE_LABELS[running.workspace]}</span>
+            )}
+            <span className={styles.name}>{name || 'No task yet'}</span>
+            <span className={styles.clock}>
+              {clock === null ? formatDay(session.date) : formatHours(clock)}
+            </span>
           </button>
+        </Tooltip>
+        {clock !== null && (
+          <Tooltip text={stopBlocked ? STOP_NEEDS_TASK : undefined}>
+            <button
+              type="button"
+              className={styles.stop}
+              disabled={stopBlocked}
+              onClick={() => void stopTimer()}
+            >
+              Stop
+            </button>
+          </Tooltip>
         )}
       </div>
       {open && (

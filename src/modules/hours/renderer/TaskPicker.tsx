@@ -5,6 +5,7 @@ import type { OpenContract } from '@shared/tracking/contracts'
 import { fold } from '@shared/text'
 import { Highlighted } from '@renderer/components/Picker'
 import { PickerInput } from '@renderer/components/picker-input'
+import { Tooltip } from '@renderer/components/Tooltip'
 import { useTaskDefaults } from '../../tasks/renderer/useTaskDefaults'
 import { useOpenTasks } from '../../tasks/renderer/useOpenTasks'
 import { TaskName } from '../../tasks/renderer/TaskName'
@@ -271,9 +272,9 @@ export function TaskPicker({
                 ) : (
                   <>
                     <Plus size={14} strokeWidth={1.75} aria-hidden />
-                    <span className={styles.createTitle} title={`Create “${item.title}”`}>
-                      Create “{item.title}”
-                    </span>
+                    <Tooltip text={`Create “${item.title}”`}>
+                      <span className={styles.createTitle}>Create “{item.title}”</span>
+                    </Tooltip>
                     <span className={styles.createIn}>in</span>
                   </>
                 )}

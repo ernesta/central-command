@@ -4,6 +4,7 @@ import { formatHours } from '@shared/tracking/format'
 import { derivedRows } from '@shared/tracking/derived'
 import { timeToSeconds } from '@shared/tracking/rounding'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
+import { Tooltip } from '@renderer/components/Tooltip'
 import { formatTimeRange } from '../../meetings/shared/query'
 import { meetingRoute } from '../../meetings/renderer/meetings-paths'
 import { entryRoute } from '../../training/renderer/training-paths'
@@ -72,14 +73,17 @@ export function MeetingRows({
               {row.client && <span className={styles.client}>{row.client}</span>}
             </Link>
             {clashes.length > 0 && (
-              <span
-                className={styles.warn}
-                role="img"
-                aria-label={`Overlaps ${clashes.map((c) => c.label || 'another entry').join(', ')}`}
-                title={`Overlaps ${clashes.map((c) => c.label || 'another entry').join(', ')}`}
+              <Tooltip
+                text={`Overlaps ${clashes.map((c) => c.label || 'another entry').join(', ')}`}
               >
-                <TriangleAlert size={15} strokeWidth={1.75} aria-hidden />
-              </span>
+                <span
+                  className={styles.warn}
+                  role="img"
+                  aria-label={`Overlaps ${clashes.map((c) => c.label || 'another entry').join(', ')}`}
+                >
+                  <TriangleAlert size={15} strokeWidth={1.75} aria-hidden />
+                </span>
+              </Tooltip>
             )}
             <span className={styles.time}>{formatHours(row.minutes)}</span>
           </li>
