@@ -147,7 +147,7 @@ export function TasksTable({
     () => (flat ? buildFlatItems(rows[0]) : buildItems(rows, open)),
     [rows, open, flat]
   )
-  const span = flat ? 3 : 6
+  const span = flat ? 4 : 6
 
   const toggle = (uid: string, to?: boolean): void =>
     setOpen((current) => {
@@ -837,8 +837,8 @@ function AddSubtaskRow({
       onKeyDown={onKeyDown}
       onClick={onStart}
     >
-      <td />
-      <td colSpan={span - 1}>
+      {span === 6 && <td />}
+      <td colSpan={span === 6 ? span - 1 : span}>
         {adding ? (
           <span className={styles.addInput}>
             <input
