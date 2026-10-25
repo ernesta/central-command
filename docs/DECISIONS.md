@@ -4328,3 +4328,11 @@ A task with 2:15 of ClickUp time, all of it linked to October hours, showed "Ear
 
 - `undatedEarlier` (`tasks/shared/tracked.ts`) is the task's `earlierMinutes` less the history marked `earlier` that Hours dates (ended sessions and typed time, the task's own, never below 0). The card's "Earlier" line shows that; `hoursByMonth` already listed the dated hours under their months. Earlier + months still equals the total.
 - The total, `trackedByTask` and every other view of time are unchanged. Tests in `tracked.test.ts`; tests, lint and typecheck pass. **Not driven in the app.**
+
+## Hours rows, picker and popover: the whole place and the due date (25 Oct 2026, the user's review)
+
+A running task in Today showed "Impact" under its title, though it sits in the sublist "Historical Data Analysis"; search and Home already said `Impact › Historical Data Analysis`. The user: the second line is parent, list and due date.
+
+- `detailOfTask` (`hours/shared/start-picker.ts`) returns `listLabel(list, sublist)` (a subtask: its parent's); a self-study task still says "Training · self-study". It feeds Hours' rows, the timer's picker and the popover, so all three name the whole place. `listOfTask` (the list alone, used to decide the client) is unchanged.
+- **Hours' rows** (`TaskList`) also show the due date after the list (`formatDue`, as search: "Today", "28 Oct"), with the `↳ parent` first for a subtask. The picker and popover stay without a due date (`docs/SUBTASK_DISPLAY_PLAN.md`, section 1).
+- Test in `start-picker.test.ts`; tests, lint and typecheck pass. **Not driven in the app.**
