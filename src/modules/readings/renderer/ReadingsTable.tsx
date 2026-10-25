@@ -200,7 +200,7 @@ export function ReadingsTable({
                     <span className={styles.missing}>Not in Zotero</span>
                   )}
                 </div>
-                <Tooltip text={reading.fullTitle}>
+                <Tooltip text={reading.fullTitle} whenCut>
                   <div role="cell" className={`${styles.cell} ${styles.title}`}>
                     {reading.fullTitle}
                   </div>
@@ -211,7 +211,7 @@ export function ReadingsTable({
                 <div role="cell" className={styles.cell}>
                   <StatusPill status={reading.status} />
                 </div>
-                <Tooltip text={reading.tags.join(', ')}>
+                <Tooltip text={reading.tags.join(', ')} whenCut>
                   <div role="cell" className={`${styles.cell} ${styles.muted}`}>
                     {reading.tags.join(', ')}
                   </div>

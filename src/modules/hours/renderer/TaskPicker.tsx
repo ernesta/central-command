@@ -272,7 +272,7 @@ export function TaskPicker({
                 ) : (
                   <>
                     <Plus size={14} strokeWidth={1.75} aria-hidden />
-                    <Tooltip text={`Create “${item.title}”`}>
+                    <Tooltip text={`Create “${item.title}”`} whenCut>
                       <span className={styles.createTitle}>Create “{item.title}”</span>
                     </Tooltip>
                     <span className={styles.createIn}>in</span>

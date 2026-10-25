@@ -1,3 +1,6 @@
+/* What the Training and Meetings tables share: one line per row, set here, never wrapped. Text cells ellipsise
+   (CutText) and the table scrolls sideways when the window is narrow. */
+
 /* 4px of padding all round so the focus ring on the date link is never clipped by the scroll container. */
 .wrap {
   overflow-x: auto;
@@ -6,7 +9,8 @@
 }
 .table {
   width: 100%;
-  min-width: 960px;
+  min-width: 1100px;
+  table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
   background: var(--surface);
@@ -22,15 +26,21 @@
   letter-spacing: 0.06em;
   text-align: left;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 .row {
   cursor: pointer;
 }
 .row td {
-  padding: 14px 16px;
+  height: 48px;
+  padding: 0 16px;
   border-bottom: 1px solid var(--border-faint);
-  vertical-align: top;
+  overflow: hidden;
+  vertical-align: middle;
   font-size: var(--text-14);
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   transition: background var(--transition-fast);
 }
 .row:last-child td {
@@ -62,16 +72,15 @@
     inset 0 2px 0 var(--accent),
     inset 0 -2px 0 var(--accent);
 }
-.nowrap {
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
 /* The hover tint is painted on the cells, so the last row's corner cells follow the table's rounded corners. */
 .row:last-child td:first-child {
   border-bottom-left-radius: calc(var(--radius-card) - 1px);
 }
 .row:last-child td:last-child {
   border-bottom-right-radius: calc(var(--radius-card) - 1px);
+}
+.nums {
+  font-variant-numeric: tabular-nums;
 }
 .link {
   color: var(--ink);
@@ -80,41 +89,35 @@
 .link:hover {
   color: var(--accent);
 }
-.summary {
-  max-width: 52ch;
+.secondary {
   color: var(--text-secondary);
 }
 .missing {
   color: var(--danger);
   font-size: var(--text-13);
 }
-/* Only as wide as three initials pills; more people show as a muted +N. */
-.attendees {
-  width: 1%;
-  white-space: nowrap;
+.skills {
+  color: var(--text-muted);
+  font-size: var(--text-13);
 }
-.chips {
-  display: inline-flex;
+/* Initials pills (three at most) and a muted +N. */
+.people {
+  display: flex;
+  align-items: center;
   gap: 6px;
-  vertical-align: middle;
 }
 .chip {
-  padding: 2px 9px;
+  flex: none;
+  padding: 1px 9px;
   border-radius: var(--radius-pill);
   background: var(--panel);
   color: var(--text-secondary);
   font-family: var(--font-mono);
   font-size: var(--text-13);
-  white-space: nowrap;
+  line-height: 20px;
 }
 .more {
-  margin-left: 6px;
+  flex: none;
   color: var(--text-muted);
   font-size: var(--text-12);
-  white-space: nowrap;
-}
-.skills {
-  width: 1%;
-  color: var(--text-muted);
-  font-size: var(--text-13);
 }

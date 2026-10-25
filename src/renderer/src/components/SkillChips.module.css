@@ -15,7 +15,16 @@
   line-height: 1.4;
   white-space: nowrap;
 }
-.stacked {
-  flex-direction: column;
-  align-items: flex-start;
+.oneLine {
+  flex-wrap: nowrap;
+  align-items: center;
+}
+.oneLine .chip {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.more {
+  flex: none;
+  color: var(--text-muted);
+  font-size: var(--text-12);
 }

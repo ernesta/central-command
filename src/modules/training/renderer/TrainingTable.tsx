@@ -1,6 +1,8 @@
 import { Fragment } from 'react'
 import { FileText, Folder } from 'lucide-react'
 import { Link, useNavigate } from 'react-router'
+import { CutText } from '@renderer/components/CutText'
+import { InitialsChips } from '@renderer/components/InitialsChips'
 import { SkillChips } from '@renderer/components/SkillChips'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import type { Person } from '@shared/people'
@@ -13,9 +15,11 @@ import { formatTimeRange, initialsFor } from '@modules/meetings/shared/query'
 import { entryParts, isUpcoming, type SelfStudy } from '../shared/rules'
 import type { TrainingIndexRow, TrainingWorkspace } from '../shared/types'
 import { entryRoute } from './training-paths'
+import shared from '@renderer/components/ListTable.module.css'
 import styles from './TrainingTable.module.css'
 
-const VISIBLE_LEADS = 3
+/** Column widths; the title takes the rest. */
+const WIDTHS = { date: 128, time: 124, duration: 130, series: 200, skills: 190, leads: 188 }
 
 /**
  * Date, Time, Duration, Series, Title, Skills, Leads. Clicking anywhere on a row opens
@@ -50,15 +54,24 @@ export function TrainingTable({
   )
 
   return (
-    <div className={styles.wrap}>
-      <table className={styles.table} aria-label="Training" {...tableProps}>
+    <div className={shared.wrap}>
+      <table className={shared.table} aria-label="Training" {...tableProps}>
+        <colgroup>
+          <col style={{ width: WIDTHS.date }} />
+          <col style={{ width: WIDTHS.time }} />
+          <col style={{ width: WIDTHS.duration }} />
+          <col style={{ width: WIDTHS.series }} />
+          <col />
+          {research && <col style={{ width: WIDTHS.skills }} />}
+          <col style={{ width: WIDTHS.leads }} />
+        </colgroup>
         <thead>
           <tr>
             {(research
               ? ['Date', 'Time', 'Duration', 'Series', 'Title', 'Skills', 'Leads']
               : ['Date', 'Time', 'Duration', 'Series', 'Title', 'Leads']
             ).map((label) => (
-              <th key={label} className={styles.th} scope="col">
+              <th key={label} className={shared.th} scope="col">
                 {label}
               </th>
             ))}
@@ -71,58 +84,73 @@ export function TrainingTable({
               {group.rows.map((row, offset) => {
                 const index = group.start + offset
                 const parts = entryParts(row, selfStudy)
-                const shown = row.leads.slice(0, VISIBLE_LEADS)
-                const more = row.leads.length - shown.length
+                const title = row.title || 'Untitled'
                 return (
                   <tr
                     key={`${row.workspace}/${row.id}`}
-                    className={styles.row}
+                    className={shared.row}
                     {...rowProps(index)}
                     onClick={() => void navigate(entryRoute(row.id, workspace))}
                   >
-                    <td className={styles.nowrap}>
-                      <Link
-                        className={styles.link}
-                        tabIndex={-1}
-                        to={entryRoute(row.id, workspace)}
-                        // The row handles the click; the link is for the keyboard and for assistive technology.
-                        onClick={(event) => event.stopPropagation()}
-                      >
-                        {row.date ? formatDate(row.date) : 'No date'}
-                      </Link>
+                    <td className={shared.nums}>
+                      <CutText>
+                        <Link
+                          className={shared.link}
+                          tabIndex={-1}
+                          to={entryRoute(row.id, workspace)}
+                          // The row handles the click; the link is for the keyboard and for assistive technology.
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          {row.date ? formatDate(row.date) : 'No date'}
+                        </Link>
+                      </CutText>
                     </td>
-                    <td className={styles.nowrap}>{formatTimeRange(row.start, row.end)}</td>
-                    <td className={styles.nowrap}>
-                      {parts === null ? '—' : durationWithStudy(parts.training, parts.selfStudy)}
+                    <td className={shared.nums}>
+                      <CutText>{formatTimeRange(row.start, row.end)}</CutText>
                     </td>
-                    <td className={styles.nowrap}>{row.series || '—'}</td>
-                    <td className={styles.titleCell}>
-                      {(row.hasNotes || row.folder) && (
-                        <span className={styles.marks}>
-                          {row.folder && (
-                            <Folder size={13} strokeWidth={1.75} aria-label="Has a linked folder" />
-                          )}
-                          {row.hasNotes && (
-                            <FileText size={13} strokeWidth={1.75} aria-label="Has notes" />
-                          )}
-                        </span>
-                      )}
-                      <span className={styles.titleText}>{row.title || 'Untitled'}</span>
+                    <td className={shared.nums}>
+                      <CutText>
+                        {parts === null ? '—' : durationWithStudy(parts.training, parts.selfStudy)}
+                      </CutText>
+                    </td>
+                    <td>
+                      <CutText>{row.series || '—'}</CutText>
+                    </td>
+                    <td>
+                      <div className={styles.titleLine}>
+                        <Tooltip text={title} whenCut>
+                          <span className={styles.titleText}>{title}</span>
+                        </Tooltip>
+                        {row.folder && (
+                          <Tooltip text="Linked folder">
+                            <span className={styles.mark}>
+                              <Folder
+                                size={13}
+                                strokeWidth={1.75}
+                                aria-label="Has a linked folder"
+                              />
+                            </span>
+                          </Tooltip>
+                        )}
+                        {row.hasNotes && (
+                          <Tooltip text="Has notes">
+                            <span className={styles.mark}>
+                              <FileText size={13} strokeWidth={1.75} aria-label="Has notes" />
+                            </span>
+                          </Tooltip>
+                        )}
+                      </div>
                     </td>
                     {research && (
-                      <td className={styles.skills}>
-                        <SkillChips skills={row.skills} stacked />
+                      <td className={shared.skills}>
+                        <SkillChips skills={row.skills} limit={1} />
                       </td>
                     )}
-                    <td className={styles.attendees}>
-                      <span className={styles.chips}>
-                        {shown.map((name) => (
-                          <Tooltip key={name} text={name}>
-                            <span className={styles.chip}>{initialsFor(name, people)}</span>
-                          </Tooltip>
-                        ))}
-                      </span>
-                      {more > 0 && <span className={styles.more}>+{more}</span>}
+                    <td>
+                      <InitialsChips
+                        names={row.leads}
+                        initials={(name) => initialsFor(name, people)}
+                      />
                     </td>
                   </tr>
                 )

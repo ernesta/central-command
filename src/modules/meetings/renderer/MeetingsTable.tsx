@@ -1,17 +1,19 @@
 import { Fragment } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { CutText } from '@renderer/components/CutText'
+import { InitialsChips } from '@renderer/components/InitialsChips'
 import { SkillChips } from '@renderer/components/SkillChips'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
-import { Tooltip } from '@renderer/components/Tooltip'
 import { layoutRows } from '@shared/upcoming-groups'
 import { GroupRow } from '@renderer/components/GroupRow'
 import { durationMinutes, formatDate, formatDuration } from '../shared/time'
 import { formatTimeRange, initialsFor, isUpcoming } from '../shared/query'
 import type { MeetingIndexRow, Person } from '../shared/types'
 import { meetingRoute } from './meetings-paths'
-import styles from './MeetingsTable.module.css'
+import shared from '@renderer/components/ListTable.module.css'
 
-const VISIBLE_ATTENDEES = 3
+/** Column widths; the summary takes the rest. */
+const WIDTHS = { date: 128, time: 124, duration: 100, series: 200, skills: 190, attendees: 188 }
 const COLUMNS = ['Date', 'Time', 'Duration', 'Series', 'Summary', 'Skills', 'Attendees']
 
 /**
@@ -42,12 +44,21 @@ export function MeetingsTable({
   })
 
   return (
-    <div className={styles.wrap}>
-      <table className={styles.table} aria-label="Meetings" {...tableProps}>
+    <div className={shared.wrap}>
+      <table className={shared.table} aria-label="Meetings" {...tableProps}>
+        <colgroup>
+          <col style={{ width: WIDTHS.date }} />
+          <col style={{ width: WIDTHS.time }} />
+          <col style={{ width: WIDTHS.duration }} />
+          <col style={{ width: WIDTHS.series }} />
+          <col />
+          {showSkills && <col style={{ width: WIDTHS.skills }} />}
+          <col style={{ width: WIDTHS.attendees }} />
+        </colgroup>
         <thead>
           <tr>
             {COLUMNS.filter((label) => showSkills || label !== 'Skills').map((label) => (
-              <th key={label} className={styles.th} scope="col">
+              <th key={label} className={shared.th} scope="col">
                 {label}
               </th>
             ))}
@@ -60,48 +71,52 @@ export function MeetingsTable({
               {group.rows.map((row, offset) => {
                 const index = group.start + offset
                 const duration = durationMinutes(row.start, row.end)
-                const shown = row.attendees.slice(0, VISIBLE_ATTENDEES)
-                const more = row.attendees.length - shown.length
                 return (
                   <tr
                     key={`${row.workspace}/${row.id}`}
-                    className={styles.row}
+                    className={shared.row}
                     {...rowProps(index)}
                     onClick={() => void navigate(meetingRoute(row.workspace, row.id))}
                   >
-                    <td className={styles.nowrap}>
-                      <Link
-                        className={styles.link}
-                        tabIndex={-1}
-                        to={meetingRoute(row.workspace, row.id)}
-                        // The row handles the click; the link is for the keyboard and for assistive technology.
-                        onClick={(event) => event.stopPropagation()}
-                      >
-                        {row.date ? formatDate(row.date) : 'No date'}
-                      </Link>
+                    <td className={shared.nums}>
+                      <CutText>
+                        <Link
+                          className={shared.link}
+                          tabIndex={-1}
+                          to={meetingRoute(row.workspace, row.id)}
+                          // The row handles the click; the link is for the keyboard and for assistive technology.
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          {row.date ? formatDate(row.date) : 'No date'}
+                        </Link>
+                      </CutText>
                     </td>
-                    <td className={styles.nowrap}>{formatTimeRange(row.start, row.end)}</td>
-                    <td className={styles.nowrap}>
-                      {duration === null ? '—' : formatDuration(duration)}
+                    <td className={shared.nums}>
+                      <CutText>{formatTimeRange(row.start, row.end)}</CutText>
                     </td>
-                    <td className={styles.nowrap}>{row.series || '—'}</td>
-                    <td className={styles.summary}>
-                      {row.summary || <span className={styles.missing}>No summary yet.</span>}
+                    <td className={shared.nums}>
+                      <CutText>{duration === null ? '—' : formatDuration(duration)}</CutText>
+                    </td>
+                    <td>
+                      <CutText>{row.series || '—'}</CutText>
+                    </td>
+                    <td className={shared.secondary}>
+                      {row.summary ? (
+                        <CutText>{row.summary}</CutText>
+                      ) : (
+                        <span className={shared.missing}>No summary yet.</span>
+                      )}
                     </td>
                     {showSkills && (
-                      <td className={styles.skills}>
-                        <SkillChips skills={row.skills} stacked />
+                      <td className={shared.skills}>
+                        <SkillChips skills={row.skills} limit={1} />
                       </td>
                     )}
-                    <td className={styles.attendees}>
-                      <span className={styles.chips}>
-                        {shown.map((name) => (
-                          <Tooltip key={name} text={name}>
-                            <span className={styles.chip}>{initialsFor(name, people)}</span>
-                          </Tooltip>
-                        ))}
-                      </span>
-                      {more > 0 && <span className={styles.more}>+{more}</span>}
+                    <td>
+                      <InitialsChips
+                        names={row.attendees}
+                        initials={(name) => initialsFor(name, people)}
+                      />
                     </td>
                   </tr>
                 )
