@@ -1,3 +1,4 @@
+import { Tooltip } from '@renderer/components/Tooltip'
 import { findByInitials } from '../shared/people'
 import type { Person } from '../shared/types'
 import styles from './OwnerPill.module.css'
@@ -12,11 +13,10 @@ export function OwnerPill({
 }): React.JSX.Element {
   const person = findByInitials(people, initials)
   return (
-    <span
-      className={[styles.pill, !person && styles.unknown].filter(Boolean).join(' ')}
-      title={person ? person.name : `${initials} is not in your people list`}
-    >
-      {initials}
-    </span>
+    <Tooltip text={person ? person.name : `${initials} is not in your people list`}>
+      <span className={[styles.pill, !person && styles.unknown].filter(Boolean).join(' ')}>
+        {initials}
+      </span>
+    </Tooltip>
   )
 }

@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router'
 import { SkillChips } from '@renderer/components/SkillChips'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
+import { Tooltip } from '@renderer/components/Tooltip'
 import { durationMinutes, formatDate, formatDuration } from '../shared/time'
 import { formatTimeRange, initialsFor, isUpcoming } from '../shared/query'
 import type { MeetingIndexRow, Person } from '../shared/types'
@@ -86,9 +87,9 @@ export function MeetingsTable({
                 <td className={styles.attendees}>
                   <span className={styles.chips}>
                     {shown.map((name) => (
-                      <span key={name} className={styles.chip} title={name}>
-                        {initialsFor(name, people)}
-                      </span>
+                      <Tooltip key={name} text={name}>
+                        <span className={styles.chip}>{initialsFor(name, people)}</span>
+                      </Tooltip>
                     ))}
                   </span>
                   {more > 0 && <span className={styles.more}>+{more}</span>}

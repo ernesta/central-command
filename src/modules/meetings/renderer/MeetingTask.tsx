@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { Check, Plus, X } from 'lucide-react'
+import { Tooltip } from '@renderer/components/Tooltip'
 import { TaskPicker, type PickedTask } from '../../hours/renderer/TaskPicker'
 import { useTasksList } from '../../tasks/renderer/useTasksList'
 import { useWorkClients } from '../../tasks/renderer/useWorkClients'
@@ -131,15 +132,16 @@ export function MeetingTask({
         >
           Change
         </button>
-        <button
-          type="button"
-          className={styles.icon}
-          onClick={() => onChange('')}
-          aria-label="No task"
-          title="No task"
-        >
-          <X size={14} strokeWidth={1.75} aria-hidden />
-        </button>
+        <Tooltip text="No task">
+          <button
+            type="button"
+            className={styles.icon}
+            onClick={() => onChange('')}
+            aria-label="No task"
+          >
+            <X size={14} strokeWidth={1.75} aria-hidden />
+          </button>
+        </Tooltip>
       </div>
     )
   }
