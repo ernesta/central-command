@@ -15,6 +15,7 @@ ask the user.
 - `npm run check:work-lists`: report only; the live Work tasks whose top-level list is not a client of a contract (expected: none; real library 7 Oct 2026: none)
 - `npm run import:reading-list -- --file <docx> [--title "…"] [--list-dir <folder>] [--apply]`: turn a Word reading list into a Reading list
   (dry run by default; macOS only)
+- `npm run luminos:meetings [-- --apply]`: the 14 meetings of the oldest Work contract (times, topics, own tasks, minutes moved; contract total checked); applied 25 Oct 2026 (`docs/DECISIONS.md`), do not re-run
 - `npm run people:from-notes [-- --apply]`: list people named in meeting attendees and training leads who are not in the people list, with
   proposed initials (dry run by default; apply only with the app closed)
 - `npm run tidy:reading-lists [-- --apply]`: bring reading list entries to reading entities (shorten linked ones, link typed citations that match exactly one reading); dry run by default, applied 2 Oct 2026; re-run after adding readings to Zotero
