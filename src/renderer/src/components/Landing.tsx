@@ -174,7 +174,7 @@ export interface RecentRow {
   key: string
   to: string
   date: string
-  /** "Upcoming" or "Planned" beside the title, when it has not happened. */
+  /** "Upcoming" beside the title, when it has not happened. */
   badge?: string
   title: string
   /** Initials of the people involved (the first three are shown). */

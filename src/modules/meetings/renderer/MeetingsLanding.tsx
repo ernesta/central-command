@@ -73,8 +73,8 @@ export function MeetingsLanding(): React.JSX.Element {
   const recentRows: RecentRow[] = [...[...upcoming].reverse(), ...recent].map((row) => ({
     key: row.id,
     to: meetingRoute(workspace, row.id),
-    date: row.date ? formatDate(row.date) : 'No date yet',
-    badge: isUpcoming(row, today) ? (row.date ? 'Upcoming' : 'Planned') : undefined,
+    date: row.date ? formatDate(row.date) : 'No date',
+    badge: isUpcoming(row, today) ? 'Upcoming' : undefined,
     title: row.series || 'Meeting',
     people: row.attendees.map((name) => ({ name, initials: initialsFor(name, people) })),
     note: noteFor(row, today)

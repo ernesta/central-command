@@ -42,7 +42,7 @@ export function PersonPage(): React.JSX.Element {
   const meetingRows: RecentRow[] = meetings.map((m) => ({
     key: `${m.workspace}/${m.id}`,
     to: meetingRoute(m.workspace, m.id),
-    date: m.date ? formatDate(m.date) : 'No date yet',
+    date: m.date ? formatDate(m.date) : 'No date',
     title: m.series || 'Meeting',
     people: [],
     note: m.summary || `${m.topicCount} ${m.topicCount === 1 ? 'topic' : 'topics'}`
@@ -51,7 +51,7 @@ export function PersonPage(): React.JSX.Element {
   const trainingRows: RecentRow[] = trainings.map((t) => ({
     key: t.id,
     to: entryRoute(t.id),
-    date: t.date ? formatDate(t.date) : 'No date yet',
+    date: t.date ? formatDate(t.date) : 'No date',
     title: trainingLabel(t.series, t.title || 'Untitled'),
     people: [],
     note: rowTimeLine(t, t.mode ? TRAINING_MODE_LABELS[t.mode] : null)

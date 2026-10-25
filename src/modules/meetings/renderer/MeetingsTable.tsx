@@ -65,11 +65,9 @@ export function MeetingsTable({
                     // The row handles the click; the link is for the keyboard and for assistive technology.
                     onClick={(event) => event.stopPropagation()}
                   >
-                    {row.date ? formatDate(row.date) : 'No date yet'}
+                    {row.date ? formatDate(row.date) : 'No date'}
                   </Link>
-                  {isUpcoming(row, today) && (
-                    <span className={styles.upcoming}>{row.date ? 'Upcoming' : 'Planned'}</span>
-                  )}
+                  {isUpcoming(row, today) && <span className={styles.upcoming}>Upcoming</span>}
                 </td>
                 <td className={styles.nowrap}>{formatTimeRange(row.start, row.end)}</td>
                 <td className={styles.nowrap}>

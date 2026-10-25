@@ -50,7 +50,7 @@ export function trainingHits(
     .slice(0, limit)
     .map((row) => {
       const inTitle = terms.every((t) => fold(row.title).includes(t))
-      const details = row.date ? formatShortDate(row.date) : 'No date yet'
+      const details = row.date ? formatShortDate(row.date) : 'No date'
       return {
         key: row.id,
         title: trainingLabel(row.series, row.title || 'Untitled'),

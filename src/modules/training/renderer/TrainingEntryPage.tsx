@@ -199,7 +199,7 @@ function EntryView({
     )
   }
 
-  const heading = `${trainingLabel(meta.series, meta.title || 'Untitled')} · ${meta.date ? formatDate(meta.date) : 'No date yet'}`
+  const heading = `${trainingLabel(meta.series, meta.title || 'Untitled')} · ${meta.date ? formatDate(meta.date) : 'No date'}`
 
   return (
     <div className={styles.page}>
