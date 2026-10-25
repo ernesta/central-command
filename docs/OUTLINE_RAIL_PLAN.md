@@ -1,7 +1,7 @@
 # Outline as a rail (plan, 25 Oct 2026)
 
 The user's decision of 25 Oct 2026, after the mockup `docs/design/outline-options-mockup.html` (options A to F, made-up titles; option **E** chosen).
-Stage 1 built and driven 25 Oct 2026 (see `docs/DECISIONS.md`, "Outline as a rail"); stage 2 is not started.
+Stages 1 and 2 built and driven 25 Oct 2026 (see `docs/DECISIONS.md`, "Outline as a rail").
 
 ## Why
 

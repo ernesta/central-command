@@ -370,9 +370,9 @@ Choices the plan left open, made conservatively; change any of them by telling C
 
 - **Hours counted the same way everywhere (17 Oct 2026; built and driven, `docs/HOURS_CONSISTENCY_PLAN.md`, `docs/DECISIONS.md`).** The Home summary and the widget file now count the Hours page's hours (derived hours, Work, the page's year). **Your call:** a note's own session is reported to the quarter hour on Hours, Home and a task's Time (10:00–11:10 is 1:15) but kept to the exact minute in the training log and its PDF (1:10), as the meeting counters are. They differ only for sessions that are not a multiple of 15 minutes. Say if the training log should report to the quarter too.
 
-### Outline as a rail (25 Oct 2026, `docs/OUTLINE_RAIL_PLAN.md`: stage 1 BUILT and driven, stage 2 not started)
+### Outline as a rail (25 Oct 2026, `docs/OUTLINE_RAIL_PLAN.md`: stages 1 and 2 BUILT and driven, not pushed)
 
-- Stage 1 done (the rail, above Files, `roomySide` removed). Stage 2 (unfold only the open section) waits for the user's go-ahead. Option E of `docs/design/outline-options-mockup.html`: a hairline rail above Files, top headings only, the current section unfolds. Two stages; stop after each. Option F (a breadcrumb bar over the text) is a possible later addition.
+- Stages 1 (the rail, above Files, `roomySide` removed) and 2 (`visibleOutline`: top headings, the open section's `###`s) done. Option E of `docs/design/outline-options-mockup.html`: a hairline rail above Files, top headings only, the current section unfolds. Two stages; stop after each. Option F (a breadcrumb bar over the text) is a possible later addition.
 
 ### One-line tables and one tooltip (25 Oct 2026, `docs/ONE_LINE_TABLES_PLAN.md`: BUILT and driven; `docs/DECISIONS.md`)
 
