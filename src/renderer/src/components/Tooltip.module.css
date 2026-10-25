@@ -1,0 +1,20 @@
+/* No box of its own: the wrapped element lays out exactly as if the tooltip were not there. */
+.wrap {
+  display: contents;
+}
+/* A small dark pill in a fixed layer on the body (no ancestor's overflow can clip it). */
+.tip {
+  position: fixed;
+  max-width: min(320px, calc(100vw - 16px));
+  padding: 4px 8px;
+  border-radius: var(--radius-control);
+  background: var(--tooltip-bg);
+  color: var(--tooltip-text);
+  font-size: var(--text-12);
+  font-family: var(--font-body);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  box-shadow: var(--shadow-float);
+  pointer-events: none;
+  z-index: 1000;
+}

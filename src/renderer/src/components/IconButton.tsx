@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { formatChord } from '@shared/shortcuts'
+import { Tooltip } from './Tooltip'
 import styles from './IconButton.module.css'
 
 const isMac = /Mac/i.test(navigator.platform || navigator.userAgent)
@@ -22,7 +23,7 @@ export function IconButton({
 }: IconButtonProps): React.JSX.Element {
   const tip = shortcut ? `${label} (${formatChord(shortcut, isMac).join('')})` : label
   return (
-    <span className={styles.wrap}>
+    <Tooltip text={tip}>
       <button
         type="button"
         aria-label={label}
@@ -31,9 +32,6 @@ export function IconButton({
       >
         {children}
       </button>
-      <span className={styles.tip} role="tooltip">
-        {tip}
-      </span>
-    </span>
+    </Tooltip>
   )
 }
