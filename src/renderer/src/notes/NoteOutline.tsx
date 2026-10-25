@@ -35,7 +35,7 @@ function currentIndex(root: HTMLElement | null, outline: LocatedOutlineItem[]): 
 
 /**
  * The note's own headings (`#` to `###`), generated from its text and kept live as you type: click one to jump
- * to it. Empty until the note has a heading. `docRef` is the element the editor is inside.
+ * to it. Not shown until the note has a heading. `docRef` is the element the editor is inside.
  */
 export function NoteOutline({
   text,
@@ -43,7 +43,7 @@ export function NoteOutline({
 }: {
   text: string
   docRef: React.RefObject<HTMLElement | null>
-}): React.JSX.Element {
+}): React.JSX.Element | null {
   const outline = locatedOutline(text, LEVELS)
   const [current, setCurrent] = useState<number | null>(null)
   const signature = outline.map((item) => `${item.line}:${item.text}`).join('\n')
@@ -64,36 +64,33 @@ export function NoteOutline({
     // `outline` is rebuilt every render; `signature` says when it really changed.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [signature, docRef])
+  if (outline.length === 0) return null
   return (
     <Panel as="nav" label="Outline" bare>
-      {outline.length === 0 ? (
-        <p className={styles.empty}>Headings you write appear here.</p>
-      ) : (
-        <ul className={styles.list}>
-          {visibleOutline(outline, current).map(({ index: i, holdsCurrent }) => {
-            const item = outline[i]
-            return (
-              <li key={`${i}-${item.text}`}>
-                <button
-                  type="button"
-                  className={[
-                    styles.item,
-                    item.level === 3 && styles.level3,
-                    holdsCurrent && styles.holds,
-                    i === current && styles.current
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
-                  aria-current={i === current ? 'location' : undefined}
-                  onClick={() => scrollToHeading(docRef.current, item)}
-                >
-                  {item.text}
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-      )}
+      <ul className={styles.list}>
+        {visibleOutline(outline, current).map(({ index: i, holdsCurrent }) => {
+          const item = outline[i]
+          return (
+            <li key={`${i}-${item.text}`}>
+              <button
+                type="button"
+                className={[
+                  styles.item,
+                  item.level === 3 && styles.level3,
+                  holdsCurrent && styles.holds,
+                  i === current && styles.current
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                aria-current={i === current ? 'location' : undefined}
+                onClick={() => scrollToHeading(docRef.current, item)}
+              >
+                {item.text}
+              </button>
+            </li>
+          )
+        })}
+      </ul>
     </Panel>
   )
 }

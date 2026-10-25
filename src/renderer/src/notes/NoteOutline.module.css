@@ -1,8 +1,3 @@
-.empty {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: var(--text-13);
-}
 /* A rail: a hairline down the left edge of the headings, the heading being read marked by an accent line over it. */
 .list {
   display: grid;

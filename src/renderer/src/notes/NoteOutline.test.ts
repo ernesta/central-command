@@ -22,10 +22,10 @@ function render(text: string, doc: HTMLElement): void {
 }
 
 describe('NoteOutline', () => {
-  it('says headings will appear, for a note with none', () => {
+  it('shows nothing for a note with no headings', () => {
     render('Just a paragraph.', document.createElement('div'))
-    expect(host.textContent).toContain('Headings you write appear here.')
-    expect(host.querySelectorAll('button')).toHaveLength(0)
+    expect(host.querySelector('nav')).toBeNull()
+    expect(host.textContent).toBe('')
   })
 
   it('lists the top headings, in order, as buttons (a folded ### is not in the DOM)', () => {
