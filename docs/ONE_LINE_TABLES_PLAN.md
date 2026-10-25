@@ -1,6 +1,6 @@
 # One-line tables and one tooltip plan (25 Oct 2026)
 
-**Status: agreed with the user on 25 Oct 2026 after mockups (`docs/design/one-line-tables-mockup.html`); not started.**
+**Status: BUILT 25 Oct 2026 (all six stages in one unattended run, driven in the built app and dev mode; `docs/DECISIONS.md`, "One-line tables and one tooltip"). Agreed with the user the same day after mockups (`docs/design/one-line-tables-mockup.html`).**
 
 The Training and Meetings tables grew second lines (the "Upcoming" pill under the date, a long title wrapping, stacked skills).
 A row is now one line, set by the CSS. Tooltips become one custom component everywhere.
