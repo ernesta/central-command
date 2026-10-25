@@ -2,19 +2,27 @@ import { ListTodo } from 'lucide-react'
 import { fold } from '@shared/text'
 import { nameFirst } from '@shared/search'
 import type { EntityProvider } from '@renderer/entities/registry'
-import { listLabel, taskLine } from '../shared/query'
+import { taskLine } from '../shared/query'
 import { hiddenTaskUids } from '../shared/session-lock'
+import { subtaskParent } from '../shared/study-label'
+import { detailOfTask } from '../shared/task-place'
 import type { Task } from '../shared/types'
 import { allTasks } from './task-cache'
 import { taskRoute } from './tasks-paths'
 
 const WORKSPACE_LABEL = { research: 'Research', work: 'Work' } as const
 
-function detailOf(task: Task, parent: Task | undefined): string {
-  const where = parent
-    ? `Subtask of ${parent.title || 'Untitled'}`
-    : listLabel(task.list, task.sublist)
-  return taskLine(where, WORKSPACE_LABEL[task.workspace])
+/**
+ * The picker's second line, the shared one as plain text: `↳ Parent · list › sublist` for a subtask, the list for any other task.
+ * The picker lists both workspaces at once (`allTasks`), so the workspace's name ends it.
+ */
+export function detailOf(task: Task, all: readonly Task[]): string {
+  const parent = subtaskParent(task, all)
+  const where = detailOfTask(task, all)
+  return taskLine(
+    parent === null ? where : `↳ ${parent || 'Untitled'} · ${where}`,
+    WORKSPACE_LABEL[task.workspace]
+  )
 }
 
 /** Tasks a note can mention, in either workspace, by their `uid`. Tasks not done come first. */
@@ -25,7 +33,6 @@ export const taskEntities: EntityProvider = {
   icon: ListTodo,
   async search(query, limit, self) {
     const tasks = await allTasks()
-    const byUid = new Map(tasks.map((t) => [t.uid, t]))
     const hidden = hiddenTaskUids(tasks)
     const terms = fold(query).split(/\s+/).filter(Boolean)
     const matching = tasks
@@ -45,7 +52,7 @@ export const taskEntities: EntityProvider = {
       .map((t) => ({
         id: t.uid,
         title: t.title || 'Untitled',
-        detail: detailOf(t, t.parentUid ? byUid.get(t.parentUid) : undefined),
+        detail: detailOf(t, tasks),
         label: t.title || 'Untitled',
         prepare: async () => ({ kind: 'task' as const, key: t.uid })
       }))
@@ -56,11 +63,10 @@ export const taskEntities: EntityProvider = {
     // A task made a moment ago is not in the cached list yet.
     const task = find(tasks) ?? find(await allTasks(true))
     if (!task) return null
-    const parent = task.parentUid ? tasks.find((t) => t.uid === task.parentUid) : undefined
     return {
       label: task.title || 'Untitled',
       title: task.title || 'Untitled',
-      detail: detailOf(task, parent),
+      detail: detailOf(task, tasks),
       route: taskRoute(task.workspace, task.uid)
     }
   }
