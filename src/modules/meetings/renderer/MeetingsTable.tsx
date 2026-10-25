@@ -2,16 +2,16 @@ import { Link, useNavigate } from 'react-router'
 import { SkillChips } from '@renderer/components/SkillChips'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import { durationMinutes, formatDate, formatDuration } from '../shared/time'
-import { MODE_LABELS, formatTimeRange, initialsFor, isUpcoming } from '../shared/query'
+import { formatTimeRange, initialsFor, isUpcoming } from '../shared/query'
 import type { MeetingIndexRow, Person } from '../shared/types'
 import { meetingRoute } from './meetings-paths'
 import styles from './MeetingsTable.module.css'
 
 const VISIBLE_ATTENDEES = 3
-const COLUMNS = ['Date', 'Time', 'Duration', 'Format', 'Series', 'Summary', 'Skills', 'Attendees']
+const COLUMNS = ['Date', 'Time', 'Duration', 'Series', 'Summary', 'Skills', 'Attendees']
 
 /**
- * Date, Time, Duration, Format, Series, Summary, Skills, Attendees. Clicking anywhere on a row opens the meeting.
+ * Date, Time, Duration, Series, Summary, Skills, Attendees. Clicking anywhere on a row opens the meeting.
  * Like the Notes table, it is one tab stop: arrow keys, Home/End and PageUp/PageDown move between
  * rows (the whole row is highlighted) and Enter opens the meeting.
  */
@@ -74,7 +74,6 @@ export function MeetingsTable({
                 <td className={styles.nowrap}>
                   {duration === null ? '—' : formatDuration(duration)}
                 </td>
-                <td className={styles.nowrap}>{row.mode ? MODE_LABELS[row.mode] : '—'}</td>
                 <td className={styles.nowrap}>{row.series || '—'}</td>
                 <td className={styles.summary}>
                   {row.summary || <span className={styles.missing}>No summary yet.</span>}

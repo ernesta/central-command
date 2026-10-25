@@ -4349,3 +4349,8 @@ A consistency check of the second line of a task row found five differences; all
 - Not changed: the `·` in `Subtasks · 2 of 5 done` and tooltips.
 - Tests: `query.test.ts`, `SubtaskLine.test.ts`, `TaskSecondLine.test.ts`, `entities.test.ts`, `timer-popover.test.ts`. Mutation checks: dropping the overdue rule, changing "due today" and moving "tomorrow" each fail tests.
 - **Driven** (scratch library, production build light and dark, dev mode light and dark): Home, Hours rows (today, tomorrow, future, overdue, subtask, overdue subtask, other year, done), the timer picker typed, Mod-K, the `@` picker. **Not seen:** the popover with a late chip — starting a task gives it today's date (the polish round's rule), so a running task is never overdue; the popover shares `TaskSecondLine` with the rows.
+
+## Training and Meetings lists: fewer columns (25 Oct 2026, the user's review)
+
+- **Training list** (`TrainingTable`): Format, Type and the summary are gone; the columns are Date, Time, Duration, Series, Title, Skills, Leads (Life's log: no Skills) and Title takes 45% of the width. **Meetings list** (`MeetingsTable`): Format is gone. The format and type are still set on the note.
+- **Applied to the real library on 25 Oct 2026 (the user's request, by hand, app closed):** `meetings/research/2026-10-13 Other.md` now ends at 13:15 (was 13:05), and 10 minutes came off the stored time of "Help coordinate and run CastlesFest" on 13 Oct in `time/research/2026-27.json` (session `b2dec229`, 15 to 5 minutes; times of day untouched).
