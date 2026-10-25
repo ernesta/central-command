@@ -1,3 +1,4 @@
+import { CutText } from './CutText'
 import { Pin } from 'lucide-react'
 import { Link } from 'react-router'
 import { LANDING_DAYS } from '@shared/year'
@@ -148,7 +149,9 @@ export function SeriesCards({ cards }: { cards: readonly SeriesCard[] }): React.
               {c.title}
             </Link>
           </h3>
-          <p className={styles.line}>{c.line}</p>
+          <Tooltip text={c.line} whenCut>
+            <p className={styles.line}>{c.line}</p>
+          </Tooltip>
           {c.extra && (
             <Tooltip text={c.extra} whenCut>
               <p className={styles.line}>{c.extra}</p>
@@ -204,7 +207,7 @@ export function RecentList({ rows }: { rows: readonly RecentRow[] }): React.JSX.
                 <span className={styles.more}>+{row.people.length - 3}</span>
               )}
             </span>
-            <span className={styles.note}>{row.note}</span>
+            <CutText className={styles.note}>{row.note}</CutText>
           </Link>
         </li>
       ))}

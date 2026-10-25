@@ -5,7 +5,10 @@ const MARGIN = 8
 
 /** True when the element's text does not fit, i.e. an ellipsis is showing. */
 export function isCut(el: Element | null): boolean {
-  return el instanceof HTMLElement && el.scrollWidth > el.clientWidth
+  return (
+    el instanceof HTMLElement &&
+    (el.scrollWidth > el.clientWidth || el.scrollHeight > el.clientHeight + 1)
+  )
 }
 
 /** Where a tip of `size` goes for an `anchor` inside a `win`: below and centred, above when there is no room, kept inside the window. */

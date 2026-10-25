@@ -437,10 +437,12 @@ function TitleCell({
   const classes = [styles.title, task.status === 'done' && styles.titleDone].filter(Boolean)
   if (locked) {
     return (
-      <span className={classes.filter(Boolean).join(' ')}>
-        {study !== null && <StudyIcon />}
-        {study ?? (task.title || 'Untitled')}
-      </span>
+      <Tooltip text={study ?? (task.title || 'Untitled')} whenCut>
+        <span className={classes.filter(Boolean).join(' ')}>
+          {study !== null && <StudyIcon />}
+          {study ?? (task.title || 'Untitled')}
+        </span>
+      </Tooltip>
     )
   }
   if (!editing) {

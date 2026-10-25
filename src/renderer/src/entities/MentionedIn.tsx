@@ -1,3 +1,4 @@
+import { CutText } from '@renderer/components/CutText'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import type { Backlink, EntityKind } from '@shared/entities'
@@ -55,8 +56,14 @@ export function MentionedIn({
             <li key={`${link.source.kind}/${link.source.workspace}/${link.source.id}`}>
               <Link className={styles.row} to={route}>
                 <Icon className={styles.icon} size={14} strokeWidth={1.75} aria-hidden />
-                <span className={styles.title}>{link.title}</span>
-                {link.context && <span className={styles.context}>{link.context}</span>}
+                <CutText text={link.title} className={styles.title}>
+                  {link.title}
+                </CutText>
+                {link.context && (
+                  <CutText text={link.context} className={styles.context}>
+                    {link.context}
+                  </CutText>
+                )}
               </Link>
             </li>
           )

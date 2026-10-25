@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import { Check, GraduationCap, Plane, Users } from 'lucide-react'
 import { addDays } from '@shared/year'
 import { Panel } from '@renderer/components/Panel'
+import { Tooltip } from '@renderer/components/Tooltip'
 import { LateChip } from '../../tasks/renderer/LateChip'
 import { PriorityBadge } from '../../tasks/renderer/TaskIcons'
 import { StudyIcon } from '../../tasks/renderer/TaskName'
@@ -39,12 +40,15 @@ function Row({
   to,
   lead,
   title,
+  titleText,
   line,
   trailing
 }: {
   to: string
   lead: React.ReactNode
   title: React.ReactNode
+  /** The title as text, for the tooltip shown when it is cut. */
+  titleText: string
   line: React.ReactNode
   trailing: React.ReactNode
 }): React.JSX.Element {
@@ -53,7 +57,9 @@ function Row({
       <Link className={styles.row} to={to}>
         {lead}
         <span className={styles.grow}>
-          <span className={styles.title}>{title}</span>
+          <Tooltip text={titleText} whenCut>
+            <span className={styles.title}>{title}</span>
+          </Tooltip>
           {line && <span className={styles.small}>{line}</span>}
         </span>
         {trailing}
@@ -67,6 +73,7 @@ function TaskRow({ task }: { task: HomeTask }): React.JSX.Element {
     <Row
       to={task.route}
       lead={<StatusButton uid={task.uid} status={task.status} />}
+      titleText={task.title}
       title={
         <>
           {task.study && <StudyIcon />}
@@ -100,6 +107,7 @@ function EventRow({
   return (
     <Row
       to={event.route}
+      titleText={event.title}
       lead={
         task ? (
           <StatusButton uid={task.uid} status={task.status} locked />

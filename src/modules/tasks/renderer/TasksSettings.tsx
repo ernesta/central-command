@@ -1,3 +1,4 @@
+import { CutText } from '@renderer/components/CutText'
 import { useEffect, useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
@@ -53,7 +54,7 @@ export function TasksSettings(): React.JSX.Element {
         <ul className={styles.list}>
           {trash.map(({ task, deletedAt }) => (
             <li key={task.uid} className={styles.row}>
-              <span className={styles.title}>{task.title || 'Untitled'}</span>
+              <CutText className={styles.title}>{task.title || 'Untitled'}</CutText>
               <span className={styles.meta}>
                 {task.parentUid ? 'Subtask' : listLabel(task.list, task.sublist)} · deleted{' '}
                 {formatDate(deletedAt.slice(0, 10))}

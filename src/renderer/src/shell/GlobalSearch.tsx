@@ -1,3 +1,4 @@
+import { Tooltip } from '@renderer/components/Tooltip'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
@@ -267,10 +268,12 @@ export function GlobalSearch({
                   onMouseMove={() => setActive(i)}
                   onClick={() => open(hit)}
                 >
-                  <span className={styles.title}>
-                    {hit.mark === 'training' && <StudyIcon />}
-                    {hit.title}
-                  </span>
+                  <Tooltip text={hit.title} whenCut>
+                    <span className={styles.title}>
+                      {hit.mark === 'training' && <StudyIcon />}
+                      {hit.title}
+                    </span>
+                  </Tooltip>
                   {(hit.detail || hit.late) && (
                     <span className={styles.detailRow}>
                       {hit.subtask ? (
@@ -278,7 +281,11 @@ export function GlobalSearch({
                           <SubtaskLine {...hit.subtask} />
                         </span>
                       ) : (
-                        hit.detail && <span className={styles.detail}>{hit.detail}</span>
+                        hit.detail && (
+                          <Tooltip text={hit.detail} whenCut>
+                            <span className={styles.detail}>{hit.detail}</span>
+                          </Tooltip>
+                        )
                       )}
                       {hit.late ? <LateChip days={hit.late} /> : null}
                     </span>

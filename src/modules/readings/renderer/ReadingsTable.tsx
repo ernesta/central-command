@@ -1,3 +1,4 @@
+import { CutText } from '@renderer/components/CutText'
 import { ArrowDown, ArrowUp, FileText } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { defaultRangeExtractor, useVirtualizer } from '@tanstack/react-virtual'
@@ -187,7 +188,7 @@ export function ReadingsTable({
                 onKeyDown={(event) => onKeyDown(event, reading, item.index)}
               >
                 <div role="cell" className={`${styles.cell} ${styles.citation}`}>
-                  <span className={styles.citationText}>{reading.shortCitation}</span>
+                  <CutText className={styles.citationText}>{reading.shortCitation}</CutText>
                   {reading.hasNotes && (
                     <FileText
                       size={14}

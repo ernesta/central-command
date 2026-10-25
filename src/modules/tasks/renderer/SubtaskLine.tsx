@@ -1,4 +1,5 @@
 import { CornerDownRight } from 'lucide-react'
+import { Tooltip } from '@renderer/components/Tooltip'
 import { taskLine } from '../shared/query'
 import styles from './SubtaskLine.module.css'
 
@@ -17,11 +18,20 @@ export function SubtaskLine({
   list: string
   due?: string | false | null
 }): React.JSX.Element {
-  if (parent == null) return <span className={styles.plain}>{taskLine(list, due)}</span>
+  if (parent == null) {
+    const text = taskLine(list, due)
+    return (
+      <Tooltip text={text} whenCut>
+        <span className={styles.plain}>{text}</span>
+      </Tooltip>
+    )
+  }
   return (
     <span className={styles.line}>
       <CornerDownRight size={12} strokeWidth={1.75} className={styles.mark} aria-hidden />
-      <span className={styles.parent}>{parent || 'Untitled'}</span>
+      <Tooltip text={parent || 'Untitled'} whenCut>
+        <span className={styles.parent}>{parent || 'Untitled'}</span>
+      </Tooltip>
       {(list || due) && <span className={styles.tail}> · {taskLine(list, due)}</span>}
     </span>
   )

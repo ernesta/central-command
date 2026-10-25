@@ -1,3 +1,5 @@
+import { Tooltip } from '@renderer/components/Tooltip'
+import { CutText } from '@renderer/components/CutText'
 import { FileText } from 'lucide-react'
 import type { Reading, ReadingStatus } from '../shared/types'
 import styles from './ReadingsBoard.module.css'
@@ -48,9 +50,11 @@ export function ReadingsBoard({ readings, onOpen }: ReadingsBoardProps): React.J
                         <span className={styles.missing}>Not in Zotero</span>
                       )}
                     </span>
-                    <span className={styles.title}>{reading.fullTitle}</span>
+                    <Tooltip text={reading.fullTitle} whenCut>
+                      <span className={styles.title}>{reading.fullTitle}</span>
+                    </Tooltip>
                     {reading.tags.length > 0 && (
-                      <span className={styles.tags}>{reading.tags.join(', ')}</span>
+                      <CutText className={styles.tags}>{reading.tags.join(', ')}</CutText>
                     )}
                   </button>
                 </li>

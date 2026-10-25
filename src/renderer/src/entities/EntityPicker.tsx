@@ -1,3 +1,4 @@
+import { CutText } from '@renderer/components/CutText'
 import { useLayoutEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import type { PickerSnapshot } from './picker-controller'
@@ -86,8 +87,14 @@ export function EntityPicker({
                   >
                     <Icon className={styles.icon} size={15} strokeWidth={1.75} aria-hidden />
                     <span className={styles.text}>
-                      <span className={styles.title}>{hit.title}</span>
-                      {hit.detail && <span className={styles.detail}>{hit.detail}</span>}
+                      <CutText text={hit.title} className={styles.title}>
+                        {hit.title}
+                      </CutText>
+                      {hit.detail && (
+                        <CutText text={hit.detail} className={styles.detail}>
+                          {hit.detail}
+                        </CutText>
+                      )}
                     </span>
                   </div>
                 )
