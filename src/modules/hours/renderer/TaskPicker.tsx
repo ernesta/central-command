@@ -80,7 +80,6 @@ export function TaskPicker({
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(-1)
   const [input] = useState(() => new PickerInput(''))
-  const [asking, setAsking] = useState<{ item: Item; clients: string[] } | null>(null)
   const [busy, setBusy] = useState(false)
   const holding = useOpenContracts(workspace)
   const contracts: OpenContract[] = clients
@@ -145,7 +144,6 @@ export function TaskPicker({
       onChange('')
     } finally {
       setBusy(false)
-      setAsking(null)
       setOpen(false)
       setActive(-1)
       setChosenList(null)
@@ -155,10 +153,7 @@ export function TaskPicker({
   const choose = (item: Item): void => {
     if (busy) return
     const list = item.kind === 'task' ? listOfTask(item.task, tasks) : item.list
-    const found = clientForTask(contracts, list)
-    if (found.ask && hintClient && found.ask.includes(hintClient)) void finish(item, hintClient)
-    else if (found.ask) setAsking({ item, clients: found.ask })
-    else void finish(item, found.client)
+    void finish(item, clientForTask(contracts, list))
   }
 
   // Enter with nothing chosen by the arrows: what is highlighted by default, or a new task when nothing fits.
@@ -186,22 +181,14 @@ export function TaskPicker({
       event.preventDefault()
       if (shown && current >= 0) choose(items[current])
       else submit()
-    } else if (
-      event.key === 'Tab' &&
-      !event.shiftKey &&
-      shown &&
-      !asking &&
-      current >= 0 &&
-      input.moved
-    ) {
+    } else if (event.key === 'Tab' && !event.shiftKey && shown && current >= 0 && input.moved) {
       // Tab takes the row the arrows led to (never a typed-for default: it could make a task) and moves on.
       choose(items[current])
-    } else if (event.key === 'Escape' && (shown || asking)) {
-      // Only the list (or the question) closes, not the popover or form behind it.
+    } else if (event.key === 'Escape' && shown) {
+      // Only the list closes, not the popover or form behind it.
       event.preventDefault()
       event.stopPropagation()
       setOpen(false)
-      setAsking(null)
     }
   }
 
@@ -222,7 +209,6 @@ export function TaskPicker({
           onChange(event.target.value.replace(/[\r\n]/g, ''))
           setOpen(true)
           setActive(-1)
-          setAsking(null)
           input.reset()
         }}
         onKeyDown={keys}
@@ -232,7 +218,7 @@ export function TaskPicker({
             setOpen(false)
         }}
       />
-      {shown && !asking && (
+      {shown && (
         <div id={listId} className={styles.list} role="listbox" aria-label={label}>
           {items.map((item, index) => (
             <div
@@ -304,26 +290,7 @@ export function TaskPicker({
           ))}
         </div>
       )}
-      {asking && (
-        <div className={styles.group} role="group" aria-label="Client">
-          <span className={styles.heading}>Which client?</span>
-          <ul className={styles.choices}>
-            {asking.clients.map((client) => (
-              <li key={client}>
-                <button
-                  type="button"
-                  className={styles.choice}
-                  autoFocus={client === asking.clients[0]}
-                  onClick={() => void finish(asking.item, client)}
-                >
-                  {client}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      {!asking && value.trim() === '' && recent.length > 0 && (
+      {value.trim() === '' && recent.length > 0 && (
         <div className={styles.group}>
           <span className={styles.heading}>Suggested</span>
           <ul className={styles.choices}>

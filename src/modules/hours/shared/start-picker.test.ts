@@ -118,22 +118,16 @@ describe('the client of a task', () => {
   const ra = { year: '2', clients: ['Royal Holloway'] }
 
   it('is none where there are no clients', () => {
-    expect(clientForTask([], 'Inbox')).toEqual({ client: undefined, ask: null })
+    expect(clientForTask([], 'Inbox')).toBeUndefined()
   })
 
   it('is the list when the list is a client, ignoring case', () => {
-    expect(clientForTask([luminos, ra], 'impact')).toEqual({ client: 'Impact', ask: null })
+    expect(clientForTask([luminos, ra], 'impact')).toBe('Impact')
     expect(clientOfList([luminos, ra], 'Royal Holloway')).toBe('Royal Holloway')
   })
 
-  it('is the only client there is, even for another list', () => {
-    expect(clientForTask([ra], 'Admin')).toEqual({ client: 'Royal Holloway', ask: null })
-  })
-
-  it('is asked, with every choice, when there are several and the list is none of them', () => {
-    expect(clientForTask([luminos, ra], 'Admin')).toEqual({
-      ask: ['Impact', 'Teaching & Learning', 'Royal Holloway']
-    })
+  it('is still the list when its contract is not open, never another client', () => {
+    expect(clientForTask([ra], 'Impact')).toBe('Impact')
   })
 })
 

@@ -80,20 +80,16 @@ export function clientOfList(contracts: readonly OpenContract[], list: string): 
 }
 
 /**
- * The client a task's time is for. Where there are no clients (Research) there is none. The task's list names it when it
- * can; with one client, that one; otherwise (several clients and a list that is none of them) it is `ask`, with the
- * choices, and the picker asks.
+ * The client a task's time is for: its list, which in Work is always a client (the store refuses any other). Where no
+ * contract has clients (Research) there is none. A list whose contract is not open today is still the client; the timer
+ * then says no contract holds today rather than guessing another client.
  */
 export function clientForTask(
   contracts: readonly OpenContract[],
   list: string
-): { client: string | undefined; ask: null } | { client?: undefined; ask: string[] } {
-  const all = contracts.flatMap((c) => c.clients)
-  if (all.length === 0) return { client: undefined, ask: null }
-  const named = clientOfList(contracts, list)
-  if (named) return { client: named, ask: null }
-  if (all.length === 1) return { client: all[0], ask: null }
-  return { ask: all }
+): string | undefined {
+  if (contracts.every((c) => c.clients.length === 0)) return undefined
+  return clientOfList(contracts, list) ?? (list.trim() || undefined)
 }
 
 /** A task's list: a subtask has none of its own and sits in its parent's. */

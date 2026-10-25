@@ -49,7 +49,6 @@ export function TaskTimeActions({
   const [target, setTarget] = useState('')
   const [error, setError] = useState<string | null>(null)
   // The clients to choose from when the task's list names none (nothing is guessed from the client used last).
-  const [asking, setAsking] = useState<string[] | null>(null)
   const startRef = useRef<HTMLButtonElement>(null)
   const { contracts } = useOpenContracts(workspace)
 
@@ -57,7 +56,6 @@ export function TaskTimeActions({
 
   const begin = async (client: string | undefined): Promise<void> => {
     setError(null)
-    setAsking(null)
     try {
       const made = await real()
       const result = await window.api.tracking.start(
@@ -72,9 +70,7 @@ export function TaskTimeActions({
     }
   }
   const start = (): void => {
-    const found = clientForTask(contracts, list)
-    if (found.ask) setAsking(found.ask)
-    else void begin(found.client)
+    void begin(clientForTask(contracts, list))
   }
   const add = async (): Promise<void> => {
     const client = clientFor(list, date)
@@ -139,34 +135,6 @@ export function TaskTimeActions({
           </Button>
         )}
       </div>
-      {asking && !isRunning && (
-        <div
-          className={styles.ask}
-          role="group"
-          aria-label="Client"
-          onKeyDown={(event) => {
-            if (event.key === 'Escape') {
-              event.stopPropagation()
-              setAsking(null)
-              startRef.current?.focus()
-            }
-          }}
-        >
-          <span className={styles.label}>Which client?</span>
-          <div className={styles.timeButtons}>
-            {asking.map((client, index) => (
-              <Button
-                key={client}
-                size="small"
-                autoFocus={index === 0}
-                onClick={() => void begin(client)}
-              >
-                {client}
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
       {adding && (
         <div
           className={styles.addTime}
