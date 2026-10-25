@@ -1,0 +1,130 @@
+<!doctype html><html><head><meta charset="utf-8"><title>One-line tables mockup</title><style>
+/* Design tokens ("Cool Slate"). Components use these, never raw values, so a
+   future theme is a token swap. */
+:root {
+  /*
+   * Light and dark, each colour once: `light-dark(light, dark)` picks by the colour scheme, which follows the theme
+   * setting (the main process sets it for the window) and the system when the setting is System.
+   */
+  color-scheme: light dark;
+
+  /* Colour */
+  --bg: light-dark(#edeff2, #14181d);
+  --panel: light-dark(#e1e5ea, #1b2128);
+  --surface: light-dark(#ffffff, #1f262e);
+  --ink: light-dark(#1b222b, #e6eaee);
+  --text-secondary: light-dark(#3a4652, #c2cad2);
+  --text-muted: light-dark(#5c6672, #98a3af);
+  --border-soft: light-dark(#d3d8de, #2f3843);
+  --border-strong: light-dark(#c3cad2, #3d4855);
+  --border-faint: light-dark(#e6e9ed, #262e37);
+  --hover-tint: light-dark(#f4f6f8, #262e37);
+  --accent: light-dark(#35577a, #86aad0);
+  --accent-hover: light-dark(#2f4d6c, #9bbbdc);
+  --accent-contrast: light-dark(#ffffff, #0f1620);
+  /* Hours charts: a week under its plan (amber against the accent blue, apart under colour-blind simulation) and a week not over yet. */
+  --chart-under: light-dark(#b8741a, #d9a05a);
+  --chart-now: light-dark(#9db3c9, #4a6784);
+  --selected-bg: light-dark(#dce6ee, #2a3b4d);
+  --selected-text: light-dark(#1f3a52, #d3e3f2);
+  /* The Markdown characters an editor shows around the block or span the cursor is in (`###`, `**`, `](url)`). */
+  --marker: light-dark(#7a8592, #8794a1);
+  --danger: light-dark(#a8433f, #dc7c77);
+  --danger-hover: light-dark(#953a37, #e79591);
+  /* Behind a dialog. */
+  --scrim: light-dark(rgba(27, 34, 43, 0.35), rgba(0, 0, 0, 0.6));
+  /* Always the opposite of --ink/--bg, so a tooltip reads the same in both themes. */
+  --tooltip-bg: light-dark(#1b222b, #e6eaee);
+  --tooltip-text: light-dark(#edeff2, #1b222b);
+  /* The accent as it reads on the tooltip/toast background (the opposite pair of --accent). */
+  --accent-on-tooltip: light-dark(#86aad0, #35577a);
+  /* The toast stays dark in both themes (a light pill in dark mode glares): a raised dark surface, with the same accent. */
+  --toast-bg: light-dark(#1b222b, #2b343f);
+  --toast-text: #edeff2;
+  --accent-on-toast: #86aad0;
+
+  }
+:root{--font-body:'IBM Plex Sans',system-ui,sans-serif;--font-mono:ui-monospace,monospace;--text-11:11px;--text-12:12px;--text-13:13px;--text-14:14px;--radius-control:8px;--radius-card:12px;--radius-pill:999px;--shadow-float:0 8px 24px var(--shadow-color);--transition-fast:120ms ease}
+html[data-theme=light]{color-scheme:light}html[data-theme=dark]{color-scheme:dark}
+body{margin:0;padding:24px;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:14px}
+h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:36px 0 4px}h3{font-size:13px;margin:22px 0 6px}
+p.n{margin:0 0 8px;color:var(--text-muted);font-size:13px;max-width:900px}
+button.t{position:fixed;top:16px;right:16px;padding:6px 12px;border-radius:8px;border:1px solid var(--border-soft);background:var(--surface);color:var(--ink);cursor:pointer}
+.wrap{max-width:1100px}
+table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius-card);overflow:hidden}
+th{padding:12px 16px;border-bottom:1px solid var(--border-soft);color:var(--text-muted);font-size:11px;font-weight:500;letter-spacing:.06em;text-align:left;text-transform:uppercase;white-space:nowrap}
+td{padding:12px 16px;border-bottom:1px solid var(--border-faint);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;height:20px}
+tr:last-child td{border-bottom:0}tr:hover td{background:var(--hover-tint)}
+.ink{color:var(--ink);font-weight:500}
+.ic{display:inline-flex;gap:4px;color:var(--text-muted);vertical-align:-2px}
+.ic svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.75}
+.slot{display:inline-block;width:34px;color:var(--text-muted);vertical-align:-2px}
+.slot .ic{gap:4px}
+.chip{display:inline-block;padding:2px 9px;border-radius:999px;background:var(--panel);color:var(--text-secondary);font-size:12px;line-height:1.4;vertical-align:middle;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.init{padding:2px 9px;border-radius:999px;background:var(--panel);color:var(--text-secondary);font-family:var(--font-mono);font-size:13px;margin-right:6px}
+.more{color:var(--text-muted);font-size:12px;margin-left:2px}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--selected-bg);color:var(--selected-text);font-size:12px;font-weight:500}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:8px;vertical-align:1px}
+.acc{color:var(--accent)}
+.bar td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+.hv{opacity:0;transition:opacity .12s}tr:hover .hv{opacity:1}
+.grp td{background:var(--panel);color:var(--text-muted);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:6px 16px;height:auto}
+.tipbox{position:fixed;z-index:9;pointer-events:none;padding:4px 8px;border-radius:8px;background:var(--tooltip-bg);color:var(--tooltip-text);font-size:12px;box-shadow:var(--shadow-float);opacity:0;transition:opacity .12s;max-width:420px;white-space:normal}
+</style></head><body><button class="t" onclick="var r=document.documentElement;r.dataset.theme=r.dataset.theme=='dark'?'light':'dark'">Light / dark</button>
+<div class="wrap"><h1>One-line tables: mockups</h1>
+<p class="n">Every row is one line. Title, Series and the other text cells ellipsise; hover any ellipsised text, a <b>+N</b>, or a marker to see the one shared tooltip (the dark pill the icon buttons already use). Skills show one chip plus +N. Upcoming is the only word (no "Planned").</p>
+<div id="root"></div></div><div class="tipbox" id="tip"></div>
+<script>
+const F='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
+const N='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>';
+const rows=[
+{d:'24 Mar 2027',t:'10:00–12:00',du:'2 h',s:'PS5210 Applied Neuroscience Methods',ti:'fMRI Analysis 2',f:1,n:0,sk:['Quantitative skills (SS)'],l:['KJ'],up:1},
+{d:'17 Mar 2027',t:'10:00–12:00',du:'2 h',s:'PS5210 Applied Neuroscience Methods',ti:'fMRI Analysis 1',f:1,n:0,sk:['Quantitative skills (SS)'],l:['KJ'],up:1},
+{d:'16 Oct 2026',t:'10:00–15:30',du:'5 h 30 min',s:'SENSS Specialist Training',ti:'Making Research Inclusive for Neurodivergent Participants: a long title that cannot fit',f:1,n:1,sk:['Qualitative skills (SS)'],l:['JBE','JP','LLC'],m:1},
+{d:'14 Oct 2026',t:'12:00–17:00',du:'5 h',s:'—',ti:'CastlesFest',f:1,n:0,sk:['Impact (RP)','Leadership (RP)','Networking (RP)'],l:['KR']},
+{d:'14 Oct 2026',t:'9:00–11:00',du:'2 h',s:'PS5210 Applied Neuroscience Methods',ti:'Numerical Skills',f:0,n:1,sk:['Quantitative skills (SS)'],l:['ML']}];
+const cols=['Date','Time','Duration','Series','Title','Skills','Leads'];
+const w=[120,120,100,200,0,200,150];
+function skills(r){const x=r.sk.length-1;return '<span class="chip" data-tip="'+r.sk[0]+'">'+r.sk[0]+'</span>'+(x?' <span class="more" data-tip="'+r.sk.slice(1).join(', ')+'">+'+x+'</span>':'')}
+function leads(r){return r.l.map(i=>'<span class="init">'+i+'</span>').join('')+(r.m?'<span class="more" data-tip="Four people">+1</span>':'')}
+function icons(r,single){if(single)return r.f?'<span data-tip="Linked folder">'+F+'</span>':r.n?'<span data-tip="Has notes">'+N+'</span>':'';return (r.f?'<span data-tip="Linked folder">'+F+'</span>':'')+(r.n?'<span data-tip="Has notes">'+N+'</span>':'')}
+function tbl(o){
+ let head=cols.slice(), cw=w.slice();
+ if(o.endpill){head.push('');cw.push(110)}
+ if(o.iconcol){head.unshift('');cw.unshift(56)}
+ if(o.iconend){}
+ let h='<table><colgroup>'+cw.map(x=>'<col'+(x?' style="width:'+x+'px"':'')+'>').join('')+'</colgroup><thead><tr>'+head.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>';
+ let last=null;
+ rows.forEach(r=>{
+  if(o.group){const g=r.up?'Upcoming':'Earlier';if(g!==last){h+='<tr class="grp"><td colspan="7">'+g+'</td></tr>';last=g}}
+  let date=r.d;
+  if(o.dot&&r.up)date='<span class="dot" data-tip="Upcoming"></span><span class="acc">'+r.d+'</span>';
+  else if(o.dot)date='<span style="margin-left:15px">'+r.d+'</span>';
+  let titleInner;
+  const tt='data-tip="'+r.ti+'"';
+  if(o.slot)titleInner='<span class="slot"><span class="ic">'+icons(r)+'</span></span><span class="ink" '+tt+'>'+r.ti+'</span>';
+  else if(o.iconend)titleInner='<div style="display:flex;gap:10px;align-items:center"><span class="ink" '+tt+' style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">'+r.ti+'</span><span class="ic" style="flex:none;min-width:30px;justify-content:flex-end">'+icons(r)+'</span></div>';
+  else if(o.after||o.single||o.hover)titleInner='<div style="display:flex;gap:8px;align-items:center"><span class="ink" '+tt+' style="min-width:0;overflow:hidden;text-overflow:ellipsis">'+r.ti+'</span><span class="ic'+(o.hover?' hv':'')+'" style="flex:none">'+icons(r,o.single)+'</span></div>';
+  else if(o.datecell)titleInner='<span class="ink" '+tt+'>'+r.ti+'</span>';
+  else if(o.iconcol)titleInner='<span class="ink" '+tt+'>'+r.ti+'</span>';
+  else titleInner='<span class="ic" style="margin-right:6px">'+icons(r)+'</span><span class="ink" '+tt+'>'+r.ti+'</span>';
+  if(o.datecell)date='<div style="display:flex;justify-content:space-between;align-items:center"><span>'+r.d+'</span><span class="ic">'+icons(r)+'</span></div>';
+  let cells=[date,r.t,r.du,'<span '+(r.s.length>26?'data-tip="'+r.s+'"':'')+'>'+r.s+'</span>',titleInner,skills(r),leads(r)];
+  if(o.endpill)cells.push(r.up?'<span class="pill">Upcoming</span>':'');
+  if(o.iconcol)cells.unshift('<span class="ic">'+icons(r)+'</span>');
+  h+='<tr class="'+(o.bar&&r.up?'bar':'')+'">'+cells.map(c=>'<td>'+c+'</td>').join('')+'</tr>';
+ });
+ return h+'</tbody></table>';
+}
+const secs=[
+['Icons after the title (A1 group headers applied to all)',[
+['C1 Icons right after the title text. Short titles: icons sit next to them. Long titles ellipsise and the icons stay visible at the end of the cell. Titles are all flush left.',{group:1,after:1}],
+['C2 One icon only after the title (folder wins, else notes); hover says what is linked. Quietest, loses "has both".',{group:1,single:1}],
+['C3 Icons after the title, shown only when the row is hovered or focused. Cleanest at rest, but you cannot scan for which entries have notes.',{group:1,hover:1}],
+['C4 Icons at the right edge of the Date cell (a fixed spot, away from the title).',{group:1,datecell:1}],
+['Today (for comparison): icons before the title.',{group:1}]]]];
+let out='';secs.forEach(([h,opts])=>{out+='<h2>'+h+'</h2>';opts.forEach(([d,o])=>{out+='<h3>'+d+'</h3>'+tbl(o)})});
+document.getElementById('root').innerHTML=out;
+const tip=document.getElementById('tip');
+document.addEventListener('mouseover',e=>{const t=e.target.closest('[data-tip]');if(!t){tip.style.opacity=0;return}tip.textContent=t.dataset.tip;const b=t.getBoundingClientRect();tip.style.opacity=1;tip.style.left=Math.max(8,b.left)+'px';tip.style.top=(b.top-30)+'px'});
+</script></body></html>
