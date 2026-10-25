@@ -6,6 +6,7 @@ import { showToast } from '@renderer/components/toast-store'
 import { pushUndoWithToast } from '@renderer/components/undo-store'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
+import { Tooltip } from '@renderer/components/Tooltip'
 import { describeRecurrence } from '../shared/recurrence'
 import { fieldLocked, sessionLock } from '../shared/session-lock'
 import { StudyIcon } from './TaskName'
@@ -574,24 +575,27 @@ function TaskRowView({
       }}
     >
       <td data-cell="status">
-        <button
-          type="button"
-          tabIndex={-1}
-          className={styles.iconButton}
-          title={
+        <Tooltip
+          text={
             statusLocked
               ? `${STATUS_LABELS[task.status]} · set by its meeting or training`
               : `${STATUS_LABELS[task.status]} · click for ${STATUS_LABELS[NEXT_STATUS[task.status]]}, Shift-click for ${STATUS_LABELS[PREVIOUS_STATUS[task.status]]}`
           }
-          aria-label={`Status: ${STATUS_LABELS[task.status]}`}
-          aria-disabled={statusLocked || undefined}
-          onClick={(event) => {
-            event.stopPropagation()
-            if (!statusLocked) void setTaskStatus(task, nextStatus(task.status, event.shiftKey))
-          }}
         >
-          <StatusIcon status={task.status} size={isKid && !flat ? 18 : 22} />
-        </button>
+          <button
+            type="button"
+            tabIndex={-1}
+            className={styles.iconButton}
+            aria-label={`Status: ${STATUS_LABELS[task.status]}`}
+            aria-disabled={statusLocked || undefined}
+            onClick={(event) => {
+              event.stopPropagation()
+              if (!statusLocked) void setTaskStatus(task, nextStatus(task.status, event.shiftKey))
+            }}
+          >
+            <StatusIcon status={task.status} size={isKid && !flat ? 18 : 22} />
+          </button>
+        </Tooltip>
       </td>
       <td>
         <div className={styles.titleLine}>
@@ -602,13 +606,15 @@ function TaskRowView({
             study={studyName(task, allRows.find((r) => r.task.uid === task.parentUid)?.task)}
           />
           {task.recurrence && (
-            <span className={styles.repeat} title={describeRecurrence(task.recurrence)}>
-              <Repeat
-                size={14}
-                strokeWidth={1.75}
-                aria-label={describeRecurrence(task.recurrence)}
-              />
-            </span>
+            <Tooltip text={describeRecurrence(task.recurrence)}>
+              <span className={styles.repeat}>
+                <Repeat
+                  size={14}
+                  strokeWidth={1.75}
+                  aria-label={describeRecurrence(task.recurrence)}
+                />
+              </span>
+            </Tooltip>
           )}
           <span className={styles.tags} {...stopRow}>
             <TagsField
@@ -645,21 +651,22 @@ function TaskRowView({
       {!flat && (
         <td data-cell="priority">
           {!isKid && (
-            <button
-              type="button"
-              tabIndex={-1}
-              data-menu-trigger
-              className={styles.iconButton}
-              aria-label={`Priority: ${PRIORITY_LABELS[task.priority]}`}
-              title={`Priority: ${PRIORITY_LABELS[task.priority]}`}
-              onClick={(event) => {
-                event.stopPropagation()
-                const rect = event.currentTarget.getBoundingClientRect()
-                onPriorityMenu(rect.left, rect.bottom + 4)
-              }}
-            >
-              <PriorityBadge priority={task.priority} />
-            </button>
+            <Tooltip text={`Priority: ${PRIORITY_LABELS[task.priority]}`}>
+              <button
+                type="button"
+                tabIndex={-1}
+                data-menu-trigger
+                className={styles.iconButton}
+                aria-label={`Priority: ${PRIORITY_LABELS[task.priority]}`}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  const rect = event.currentTarget.getBoundingClientRect()
+                  onPriorityMenu(rect.left, rect.bottom + 4)
+                }}
+              >
+                <PriorityBadge priority={task.priority} />
+              </button>
+            </Tooltip>
           )}
         </td>
       )}
@@ -698,16 +705,17 @@ function TaskRowView({
             {due && task.status !== 'done' && <LateChip days={daysLate(due, today)} />}
           </span>
           {!textLocked && (
-            <button
-              type="button"
-              tabIndex={-1}
-              className={[styles.iconButton, styles.remove].join(' ')}
-              aria-label={`Delete ${task.title || 'Untitled'}`}
-              title="Delete"
-              onClick={() => void startRemove()}
-            >
-              <Trash2 size={16} strokeWidth={1.75} aria-hidden />
-            </button>
+            <Tooltip text="Delete">
+              <button
+                type="button"
+                tabIndex={-1}
+                className={[styles.iconButton, styles.remove].join(' ')}
+                aria-label={`Delete ${task.title || 'Untitled'}`}
+                onClick={() => void startRemove()}
+              >
+                <Trash2 size={16} strokeWidth={1.75} aria-hidden />
+              </button>
+            </Tooltip>
           )}
           {ask !== null && (
             <span {...stopRow}>
@@ -758,28 +766,29 @@ function SubtaskPill({
   }
   const { done, total } = subtaskProgress(kids)
   return (
-    <button
-      type="button"
-      tabIndex={-1}
-      className={[styles.pill, open && styles.pillOpen].filter(Boolean).join(' ')}
-      aria-expanded={open}
-      aria-label={`${done} of ${total} subtasks done. ${open ? 'Hide' : 'Show'} subtasks`}
-      title={`${done} of ${total} subtasks done`}
-      onClick={(event) => {
-        event.stopPropagation()
-        onToggle()
-      }}
-    >
-      <span className={styles.fill} style={{ width: `${(done / total) * 100}%` }} />
-      <span className={styles.pillText}>
-        {done}/{total}
-      </span>
-      {open ? (
-        <ChevronDown size={12} strokeWidth={1.75} className={styles.pillIcon} aria-hidden />
-      ) : (
-        <ChevronRight size={12} strokeWidth={1.75} className={styles.pillIcon} aria-hidden />
-      )}
-    </button>
+    <Tooltip text={`${done} of ${total} subtasks done`}>
+      <button
+        type="button"
+        tabIndex={-1}
+        className={[styles.pill, open && styles.pillOpen].filter(Boolean).join(' ')}
+        aria-expanded={open}
+        aria-label={`${done} of ${total} subtasks done. ${open ? 'Hide' : 'Show'} subtasks`}
+        onClick={(event) => {
+          event.stopPropagation()
+          onToggle()
+        }}
+      >
+        <span className={styles.fill} style={{ width: `${(done / total) * 100}%` }} />
+        <span className={styles.pillText}>
+          {done}/{total}
+        </span>
+        {open ? (
+          <ChevronDown size={12} strokeWidth={1.75} className={styles.pillIcon} aria-hidden />
+        ) : (
+          <ChevronRight size={12} strokeWidth={1.75} className={styles.pillIcon} aria-hidden />
+        )}
+      </button>
+    </Tooltip>
   )
 }
 

@@ -1,3 +1,4 @@
+import { Tooltip } from '@renderer/components/Tooltip'
 import { StatusIcon } from './TaskIcons'
 import { NEXT_STATUS, STATUS_LABELS, nextStatus, setTaskStatus } from './task-actions'
 import type { TaskStatus } from '../shared/types'
@@ -15,24 +16,27 @@ export function StatusButton({
   locked?: boolean
 }): React.JSX.Element {
   return (
-    <button
-      type="button"
-      className={[styles.status, locked && styles.locked].filter(Boolean).join(' ')}
-      disabled={locked}
-      title={
+    <Tooltip
+      text={
         locked
           ? `${STATUS_LABELS[status]} · set by its meeting or training`
           : `${STATUS_LABELS[status]} · click for ${STATUS_LABELS[NEXT_STATUS[status]]}`
       }
-      aria-label={`Status: ${STATUS_LABELS[status]}`}
-      onClick={(event) => {
-        // The row is a link to the task; the circle only changes the status.
-        event.preventDefault()
-        event.stopPropagation()
-        void setTaskStatus({ uid }, nextStatus(status, event.shiftKey))
-      }}
     >
-      <StatusIcon status={status} size={20} />
-    </button>
+      <button
+        type="button"
+        className={[styles.status, locked && styles.locked].filter(Boolean).join(' ')}
+        disabled={locked}
+        aria-label={`Status: ${STATUS_LABELS[status]}`}
+        onClick={(event) => {
+          // The row is a link to the task; the circle only changes the status.
+          event.preventDefault()
+          event.stopPropagation()
+          void setTaskStatus({ uid }, nextStatus(status, event.shiftKey))
+        }}
+      >
+        <StatusIcon status={status} size={20} />
+      </button>
+    </Tooltip>
   )
 }
