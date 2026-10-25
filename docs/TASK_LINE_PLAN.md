@@ -1,5 +1,7 @@
 # Task line consistency plan (25 Oct 2026)
 
+**Status: built, driven (production and dev, light and dark), pushed 25 Oct 2026** (`docs/DECISIONS.md`, "Task lines").
+
 A consistency check of the second line of a task row (Hours rows, the timer picker and popover, Home, search, the `@` picker) found
 five differences. All agreed with the user on 25 Oct 2026; item 6 is deliberately left alone. Decision on the due wording: `due today`,
 `due tomorrow`, `due 12 Nov` (not a bare `Today` / `12 Nov`).

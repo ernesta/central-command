@@ -4336,3 +4336,16 @@ A running task in Today showed "Impact" under its title, though it sits in the s
 - `detailOfTask` (`hours/shared/start-picker.ts`) returns `listLabel(list, sublist)` (a subtask: its parent's); a self-study task still says "Training · self-study". It feeds Hours' rows, the timer's picker and the popover, so all three name the whole place. `listOfTask` (the list alone, used to decide the client) is unchanged.
 - **Hours' rows** (`TaskList`) also show the due date after the list (`formatDue`, as search: "Today", "28 Oct"), with the `↳ parent` first for a subtask. The picker and popover stay without a due date (`docs/SUBTASK_DISPLAY_PLAN.md`, section 1).
 - Test in `start-picker.test.ts`; tests, lint and typecheck pass. **Not driven in the app.**
+
+## Task lines (25 Oct 2026, `docs/TASK_LINE_PLAN.md`)
+
+A consistency check of the second line of a task row found five differences; all agreed with the user and built in one go, one commit per stage.
+
+- **One due wording** (`dueText`, `tasks/shared/query.ts`): `due today`, `due tomorrow`, `due 12 Nov` (the Mac's own day order; the year only when it is not this year). Hours rows, the timer picker and popover, Mod-K and Home's "Coming up" all use it; Home's "due in 2 days" is now the date.
+- **One place decides whether a line shows a date** (`lineDue`, same file; `SubtaskLine`'s `due` prop replaces `rest`): none for a task with no date, a done one, or an **overdue** one. Rows with no chip of their own (Hours rows, picker, popover, search) show it; Home's Today (a section that says it) and the Tasks table do not.
+- **Overdue shows `LateChip`, never a past date** (`TaskSecondLine`, `tasks/renderer/`, with `lateDays` in `late.ts`): now also in Hours rows, the picker and the popover (`PopoverHead.task`).
+- **The `@` picker** (`detailOf`, `tasks/renderer/entities.ts`): `↳ Parent · list › sublist · Workspace` for a subtask, `list › sublist · Workspace` for any other task, a self-study task `Training · self-study`. The workspace stays because the picker always lists both workspaces. "Subtask of X" is gone.
+- **One `detailOfTask`** (`tasks/shared/task-place.ts`; `hours/shared/start-picker.ts` re-exports it): search calls it instead of re-deriving; the task page uses `listLabel`. Home's SQL still builds its text with `listLabel`.
+- Not changed: the `·` in `Subtasks · 2 of 5 done` and tooltips.
+- Tests: `query.test.ts`, `SubtaskLine.test.ts`, `TaskSecondLine.test.ts`, `entities.test.ts`, `timer-popover.test.ts`. Mutation checks: dropping the overdue rule, changing "due today" and moving "tomorrow" each fail tests.
+- **Driven** (scratch library, production build light and dark, dev mode light and dark): Home, Hours rows (today, tomorrow, future, overdue, subtask, overdue subtask, other year, done), the timer picker typed, Mod-K, the `@` picker. **Not seen:** the popover with a late chip — starting a task gives it today's date (the polish round's rule), so a running task is never overdue; the popover shares `TaskSecondLine` with the rows.
