@@ -5,6 +5,8 @@ import {
   defaultList,
   dueTone,
   formatDue,
+  dueText,
+  lineDue,
   taskLine,
   formatTaskTime,
   listChoices,
@@ -116,6 +118,20 @@ describe('dates and time', () => {
     expect(dueTone('2026-10-04', today)).toBe('overdue')
     expect(dueTone(today, today)).toBe('today')
     expect(dueTone('2026-10-06', today)).toBe('normal')
+  })
+  it('words a due date one way: due today, due tomorrow, due 9 Oct (the year only when it is not this year)', () => {
+    expect(dueText(today, today)).toBe('due today')
+    expect(dueText('2026-10-06', today)).toBe('due tomorrow')
+    expect(dueText('2026-10-09', today)).toBe('due Oct 9')
+    expect(dueText('2027-01-04', today)).toBe('due Jan 4, 2027')
+    expect(dueText('2026-11-01', '2026-10-31')).toBe('due tomorrow')
+  })
+  it('leaves the date out of a line for a task with none, a done one, or an overdue one (the chip says that)', () => {
+    expect(lineDue({ due: '2026-10-09', status: 'todo' }, today)).toBe('due Oct 9')
+    expect(lineDue({ due: today, status: 'doing' }, today)).toBe('due today')
+    expect(lineDue({ due: null, status: 'todo' }, today)).toBe('')
+    expect(lineDue({ due: '2026-10-09', status: 'done' }, today)).toBe('')
+    expect(lineDue({ due: '2026-10-04', status: 'todo' }, today)).toBe('')
   })
   it('shows time as hours and minutes, and nothing for none', () => {
     expect(formatTaskTime(225)).toBe('3:45')

@@ -61,7 +61,7 @@ export function taskHits(
         title: taskLabel(t, parent),
         mark: study ? ('training' as const) : undefined,
         detail: (!inTitle && snippet(t.description, needles)) || details,
-        subtask: marker === null ? undefined : { parent: marker, list, rest },
+        subtask: marker === null ? undefined : { parent: marker, list, due: rest },
         late: t.status === 'done' ? undefined : daysLate(t.due, today) || undefined,
         route: taskRoute(t.workspace, t.uid)
       }

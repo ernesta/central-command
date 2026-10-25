@@ -113,7 +113,7 @@ function EventRow({
           <SubtaskLine
             parent={task.parent}
             list={event.detail}
-            rest={`due ${when.toLowerCase()}`}
+            due={`due ${when.toLowerCase()}`}
           />
         ) : (
           eventDetail(event, initialsOf)

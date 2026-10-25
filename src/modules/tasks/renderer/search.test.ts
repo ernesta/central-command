@@ -24,7 +24,7 @@ describe('taskHits', () => {
     expect(hits[1].detail).toContain('methods')
     const kid = taskHits(tasks, req('kid'), 6)[0]
     expect(kid.detail).toBe('Reading')
-    expect(kid.subtask).toEqual({ parent: 'Write methods', list: 'Reading', rest: '' })
+    expect(kid.subtask).toEqual({ parent: 'Write methods', list: 'Reading', due: '' })
   })
   it('shows a self-study subtask as a training: its name, a cap, and Training · self-study', () => {
     const rows = [

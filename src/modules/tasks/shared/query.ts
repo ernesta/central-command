@@ -1,5 +1,6 @@
 import { formatDate, formatShortDate } from '@shared/time'
 import { fold } from '@shared/text'
+import { addDays } from '@shared/year'
 import { TASK_PRIORITIES, type TaskPriority } from './types'
 import { compareRows, effectiveDue, inView, taskTime, type TaskRow, type TaskView } from './views'
 
@@ -272,6 +273,28 @@ export function viewCounts(rows: readonly TaskRow[], query: TasksQuery): Record<
 export function formatDue(due: string, today: string): string {
   if (due === today) return 'Today'
   return due.slice(0, 4) === today.slice(0, 4) ? formatShortDate(due) : formatDate(due)
+}
+
+/**
+ * A due date as a task's second line says it: "due today", "due tomorrow", "due 12 Nov" (the Mac's own order; the year only when
+ * it is not this year). The one wording of every task line.
+ */
+export function dueText(due: string, today: string): string {
+  if (due === today) return 'due today'
+  if (due === addDays(today, 1)) return 'due tomorrow'
+  return `due ${due.slice(0, 4) === today.slice(0, 4) ? formatShortDate(due) : formatDate(due)}`
+}
+
+/**
+ * What a task's second line says of its date: `dueText`, or nothing for a task with no date, a done one, or an overdue one
+ * (that shows `LateChip`, never a past date).
+ */
+export function lineDue(
+  task: { due: string | null; status: string },
+  today: string
+): string {
+  if (!task.due || task.status === 'done' || task.due < today) return ''
+  return dueText(task.due, today)
 }
 
 export type DueTone = 'overdue' | 'today' | 'normal'

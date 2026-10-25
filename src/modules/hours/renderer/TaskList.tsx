@@ -158,7 +158,7 @@ export function TaskList({
                       <SubtaskLine
                         parent={subtaskParent(own, tasks)}
                         list={detailOfTask(own, tasks)}
-                        rest={own.due && formatDue(own.due, todayIso())}
+                        due={own.due && formatDue(own.due, todayIso())}
                       />
                     </span>
                   )}
