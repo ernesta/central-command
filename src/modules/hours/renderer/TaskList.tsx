@@ -10,7 +10,8 @@ import type { TaskRow } from '@shared/tracking/totals'
 import { QUARTER } from '@shared/tracking/rounding'
 import { taskUidOf } from '@modules/tasks/shared/tracked'
 import { StatusButton } from '@modules/tasks/renderer/StatusButton'
-import { taskRoute } from '@modules/tasks/renderer/tasks-paths'
+import { taskRoute, todayIso } from '@modules/tasks/renderer/tasks-paths'
+import { formatDue } from '@modules/tasks/shared/query'
 import { SubtaskLine } from '@modules/tasks/renderer/SubtaskLine'
 import { studyName, subtaskParent } from '@modules/tasks/shared/study-label'
 import { TaskName } from '@modules/tasks/renderer/TaskName'
@@ -157,6 +158,7 @@ export function TaskList({
                       <SubtaskLine
                         parent={subtaskParent(own, tasks)}
                         list={detailOfTask(own, tasks)}
+                        rest={own.due && formatDue(own.due, todayIso())}
                       />
                     </span>
                   )}
