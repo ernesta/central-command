@@ -18,12 +18,12 @@
 .segment:hover:not(.active) {
   background: var(--hover-tint);
 }
-/* No overflow: hidden on the group: it would clip the focus ring's square corners. The end segments
+/* Each segment sits in the Tooltip's wrapper, so the ends are found through it. No overflow: hidden on the group: it would clip the focus ring's square corners. The end segments
    carry the group's rounded corners themselves (1px inside the border), so the ring follows the curve. */
-.segment:first-child {
+.group > :first-child > .segment {
   border-radius: calc(var(--radius-control) - 1px) 0 0 calc(var(--radius-control) - 1px);
 }
-.segment:last-child {
+.group > :last-child > .segment {
   border-radius: 0 calc(var(--radius-control) - 1px) calc(var(--radius-control) - 1px) 0;
 }
 .segment:focus-visible {

@@ -4487,3 +4487,7 @@ The Files panel refused a folder outside the Trainings folder setting ("Choose a
 - **Old links were rewritten the same day** (`npm run repair:training-folders [-- --apply]`, applied 26 Oct 2026: 69 notes, only the `folder:` line, each backed up to `~/CentralCommand/backups/repair-training-folders-<time>/`; all 69 folders were on disk; a dry run now finds nothing, do not re-run). `trainingsFolder` is removed from `Settings`, the code and `settings.json`; a relative `folder:` now reads as "not there". `import:training` writes absolute paths too (not re-run).
 - **Following a move** keeps working, but only near the old place: the search is in the folder that held the link (3 levels, 5,000 folders), by remembered identity or a unique name, and the new absolute path is saved as the link. The old `training_folder_memory` rows (keyed by the relative path) are never read again; the table fills with absolute paths as folders are listed.
 - Not driven in the app: the folder dialog is native. Unit tests cover listing, opening, escapes and following moves.
+
+## Segmented: the end corners are found through the Tooltip's wrapper (26 Oct 2026, the user's screenshot: "the highlight looks all weird")
+
+Each segment sits in `Tooltip`'s wrapper, so `:first-child` and `:last-child` matched every button and the last-child corners won everywhere: the selected pill had the wrong corners. The rules are now `.group > :first-child > .segment` and `.group > :last-child > .segment`.
