@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
-import type { Task } from '../../tasks/shared/types'
+import type { Task, TaskWorkspace } from '../../tasks/shared/types'
 import { planSelfStudyTask } from '../shared/self-study-task'
 import type { TrainingMeta } from '../shared/types'
 import { makeSelfStudyTask, syncSelfStudyTask } from './self-study-sync'
@@ -15,7 +15,8 @@ export function useSelfStudyTask(
   meta: TrainingMeta,
   ready: boolean,
   tasks: readonly Task[] | null,
-  setSelfStudy: (uid: string) => void
+  setSelfStudy: (uid: string) => void,
+  workspace: TaskWorkspace = 'research'
 ): { ensure: () => Promise<Task> } {
   const busy = useRef(false)
   // Series tasks this page made: the series is typed letter by letter, so one may be left behind and is put in the trash.
@@ -37,7 +38,7 @@ export function useSelfStudyTask(
         if (busy.current) return
         busy.current = true
         try {
-          await syncSelfStudyTask(window.api.tasks, plan, tasks, made.current)
+          await syncSelfStudyTask(window.api.tasks, plan, tasks, made.current, workspace)
         } catch (error) {
           console.error('Could not keep the self-study task in step:', error)
         } finally {
@@ -46,7 +47,7 @@ export function useSelfStudyTask(
       })()
     }, SETTLE_MS)
     return () => clearTimeout(timer)
-  }, [ready, tasks, selfStudy, series, title, date])
+  }, [ready, tasks, selfStudy, series, title, date, workspace])
 
   const ensure = useCallback(async (): Promise<Task> => {
     // A sync under way finishes first, so the task is not made twice.
@@ -59,7 +60,8 @@ export function useSelfStudyTask(
       const task = await makeSelfStudyTask(
         window.api.tasks,
         { ...note, selfStudy: note.selfStudy || ensured.current },
-        made.current
+        made.current,
+        workspace
       )
       ensured.current = task.uid
       if (task.uid !== note.selfStudy) setSelfStudy(task.uid)
@@ -67,7 +69,7 @@ export function useSelfStudyTask(
     } finally {
       busy.current = false
     }
-  }, [setSelfStudy])
+  }, [setSelfStudy, workspace])
 
   return { ensure }
 }

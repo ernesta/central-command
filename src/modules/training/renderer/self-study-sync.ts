@@ -1,5 +1,5 @@
 import type { TasksApi } from '../../tasks/shared/api'
-import type { Task } from '../../tasks/shared/types'
+import type { Task, TaskWorkspace } from '../../tasks/shared/types'
 import { strandedParent, TRAINING_LIST, type ParentTarget } from '../shared/training-task'
 import {
   planSelfStudyTask,
@@ -15,19 +15,23 @@ export type SelfStudyTasksApi = Pick<TasksApi, 'create' | 'update' | 'delete' | 
 async function parentUid(
   api: SelfStudyTasksApi,
   target: ParentTarget,
-  made: Set<string>
+  made: Set<string>,
+  workspace: TaskWorkspace
 ): Promise<string> {
   if ('uid' in target) return target.uid
-  const task = await api.create({ workspace: 'research', title: target.title, list: target.list })
+  const task = await api.create({ workspace, title: target.title, list: target.list })
   made.add(task.uid)
   return task.uid
 }
 
 /** A self-study task that is not made yet, for the buttons to show: Start and Add time make it when pressed (`uid` is ''). */
-export function draftSelfStudyTask(note: SelfStudyNote): Task {
+export function draftSelfStudyTask(
+  note: SelfStudyNote,
+  workspace: TaskWorkspace = 'research'
+): Task {
   return {
     uid: '',
-    workspace: 'research',
+    workspace,
     title: selfStudyTaskTitle(note.title || 'Untitled', note.series),
     description: '',
     status: 'doing',
@@ -56,9 +60,10 @@ export function draftSelfStudyTask(note: SelfStudyNote): Task {
 export async function makeSelfStudyTask(
   api: SelfStudyTasksApi,
   note: SelfStudyNote,
-  made: Set<string>
+  made: Set<string>,
+  workspace: TaskWorkspace = 'research'
 ): Promise<Task> {
-  const tasks = await api.list('research')
+  const tasks = await api.list(workspace)
   const plan = planSelfStudyTask(note, tasks, true)
   if (plan.kind !== 'create') {
     const own = tasks.find((t) => t.uid === note.selfStudy)
@@ -66,13 +71,13 @@ export async function makeSelfStudyTask(
     throw new Error('Could not make the self-study task')
   }
   return api.create({
-    workspace: 'research',
+    workspace,
     title: plan.title,
     status: 'doing',
     ownKind: 'self-study',
     ...(plan.due ? { due: plan.due } : {}),
     ...(plan.parent
-      ? { parentUid: await parentUid(api, plan.parent, made) }
+      ? { parentUid: await parentUid(api, plan.parent, made, workspace) }
       : { list: TRAINING_LIST })
   })
 }
@@ -85,20 +90,21 @@ export async function syncSelfStudyTask(
   api: SelfStudyTasksApi,
   plan: Extract<SelfStudyPlan, { kind: 'sync' }>,
   tasks: readonly Task[],
-  made: Set<string>
+  made: Set<string>,
+  workspace: TaskWorkspace = 'research'
 ): Promise<void> {
   const left = tasks.find((t) => t.uid === plan.uid)?.parentUid ?? null
   await api.update(plan.uid, {
     ...(plan.title !== undefined ? { title: plan.title } : {}),
     ...(plan.due !== undefined ? { due: plan.due } : {}),
     ...(plan.parent
-      ? { parentUid: await parentUid(api, plan.parent, made) }
+      ? { parentUid: await parentUid(api, plan.parent, made, workspace) }
       : plan.parent === null
         ? { parentUid: null, list: TRAINING_LIST }
         : {})
   })
   if (plan.parent !== undefined) {
-    const stranded = strandedParent(made, left, await api.list('research'))
+    const stranded = strandedParent(made, left, await api.list(workspace))
     if (stranded) await api.delete(stranded)
   }
 }

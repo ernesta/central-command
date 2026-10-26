@@ -115,9 +115,13 @@ function EntryView({
   }, [ready])
 
   const { meta, body, save, error, conflict, reloadedFromDisk, problems, updatedAt } = snapshot
-  const { tasks } = useTrainingTask(meta, ready, (task) => session.setMeta({ task }))
-  const { ensure } = useSelfStudyTask(meta, ready, tasks, (selfStudyTask) =>
-    session.setMeta({ selfStudy: selfStudyTask })
+  const { tasks } = useTrainingTask(meta, ready, (task) => session.setMeta({ task }), workspace)
+  const { ensure } = useSelfStudyTask(
+    meta,
+    ready,
+    tasks,
+    (selfStudyTask) => session.setMeta({ selfStudy: selfStudyTask }),
+    workspace
   )
   const trainingUid = trainingTaskUid(meta.task)
   const trainingTask = trainingUid ? tasks?.find((t) => t.uid === trainingUid) : undefined
@@ -309,15 +313,16 @@ function EntryView({
         renamedFrom={names}
       />
 
-      {research && meta.task && (
+      {(research ? meta.task : true) && (
         <TrainingTask
           task={meta.task}
           series={meta.series}
           tasks={tasks}
           onRemake={() => session.setMeta({ task: 'auto' })}
           selfStudy={tasks?.find((t) => t.uid === meta.selfStudy)}
+          sessionTask={research}
         >
-          <TrainingHours meta={meta} tasks={tasks} ensure={ensure} />
+          <TrainingHours meta={meta} tasks={tasks} ensure={ensure} workspace={workspace} />
         </TrainingTask>
       )}
 

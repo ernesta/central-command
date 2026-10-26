@@ -19,20 +19,23 @@ import { useSelfStudy } from './useSelfStudy'
 export function TrainingHours({
   meta,
   tasks,
-  ensure
+  ensure,
+  workspace = 'research'
 }: {
   meta: TrainingMeta
   tasks: readonly Task[] | null
   /** Makes the self-study task (`useSelfStudyTask`). */
   ensure: () => Promise<Task>
+  /** Life's entries have no session task: only the self-study one. */
+  workspace?: 'research' | 'life'
 }): React.JSX.Element | null {
-  const selfStudy = useSelfStudy()
-  const time = useTaskTime('research')
+  const selfStudy = useSelfStudy(workspace)
+  const time = useTaskTime(workspace)
   const uid = trainingTaskUid(meta.task)
   const own = uid ? tasks?.find((t) => t.uid === uid) : undefined
-  if (!uid || !own) return null
+  if (workspace === 'research' && (!uid || !own)) return null
   const study = meta.selfStudy ? tasks?.find((t) => t.uid === meta.selfStudy) : undefined
-  const task = study ?? draftSelfStudyTask(meta)
+  const task = study ?? draftSelfStudyTask(meta, workspace)
   const parent = task.parentUid ? tasks?.find((t) => t.uid === task.parentUid) : undefined
   // This task's own time (0 until something is put on it), not the training's session.
   const total = meta.selfStudy ? (selfStudy.get(meta.selfStudy) ?? 0) : 0
@@ -45,7 +48,7 @@ export function TrainingHours({
         <TaskTimeActions
           task={task}
           list={parent?.list ?? task.list}
-          workspace="research"
+          workspace={workspace}
           isRunning={study ? time.running.has(study.uid) : false}
           today={todayIso()}
           yearFor={time.yearFor}
@@ -54,7 +57,7 @@ export function TrainingHours({
         />
       </div>
       <div className={styles.note}>
-        <HoursLine meta={{ ...meta, task: uid }} />
+        <HoursLine meta={{ ...meta, task: uid ?? '' }} />
       </div>
     </>
   )

@@ -32,9 +32,10 @@ async function parentUid(target: ParentTarget, made: Set<string>): Promise<strin
 export function useTrainingTask(
   meta: TrainingMeta,
   ready: boolean,
-  setTask: (uid: string) => void
+  setTask: (uid: string) => void,
+  workspace: 'research' | 'life' = 'research'
 ): { tasks: Task[] | null } {
-  const { tasks } = useTasksList('research', true)
+  const { tasks } = useTasksList(workspace, true)
   const busy = useRef(false)
   // Series tasks this page made: the series is typed letter by letter, so one may be left behind and is put in the trash.
   const made = useRef(new Set<string>())

@@ -19,6 +19,7 @@ export function TrainingTask({
   tasks,
   onRemake,
   selfStudy,
+  sessionTask = true,
   children
 }: {
   /** The note's `task:` value. */
@@ -28,12 +29,14 @@ export function TrainingTask({
   onRemake: () => void
   /** The training's self-study task, once it exists. */
   selfStudy?: Task
+  /** False for Life, whose entries have no session task: only the self-study card shows. */
+  sessionTask?: boolean
   /** The training's hours, on the same line as its task. */
   children?: React.ReactNode
 }): React.JSX.Element | null {
   const navigate = useNavigate()
-  if (!task || tasks === null) return null
-  if (task === 'auto') {
+  if (tasks === null || (sessionTask && !task)) return null
+  if (sessionTask && task === 'auto') {
     return (
       <Panel label="Task" row>
         <div className={styles.row}>
@@ -45,7 +48,7 @@ export function TrainingTask({
     )
   }
   const own = tasks.find((t) => t.uid === task)
-  if (!own) {
+  if (sessionTask && !own) {
     return (
       <Panel label="Task" row>
         <div className={styles.row}>
