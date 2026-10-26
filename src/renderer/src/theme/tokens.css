@@ -43,9 +43,9 @@
   --accent-on-toast: #86aad0;
 
   /* Type */
-  --font-display: 'Newsreader', Georgia, serif;
-  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-display: 'Arabic Script', 'Newsreader', Georgia, serif;
+  --font-body: 'Arabic Script', 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'Arabic Script', 'IBM Plex Mono', ui-monospace, monospace;
 
   --text-11: 11px;
   --text-12: 12px;

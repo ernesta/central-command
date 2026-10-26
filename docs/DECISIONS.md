@@ -4516,3 +4516,12 @@ In the attendees' "+ add" list, typing a search leaves the highlight on the "Add
 - `PickerPopup` (`Picker.tsx`, so every picker, `PeopleField`, `SkillsField`, `ClientsField` and `Select` included): Down on the last row goes to the first, Up on the first goes to the last. Up from no highlight went to the last row already.
 - The default stays the Add row: starting on the first match would let Enter take a similar existing name instead of adding the typed one. The user can ask for that instead.
 - Test: `Picker.test.ts`, "the arrows wrap at the ends". Not driven again in the app after the change.
+
+## Urdu and Arabic text always uses Geeza Pro (26 Oct 2026, the user's screenshot: "fonts differ; I want Urdu to be in that lower font always")
+
+One note showed Urdu in two looks, both outside any table. The app's fonts have no Arabic-script glyphs, so macOS picks a fallback per run, and it picks by character: plain letters (`ی` U+06CC and the rest of U+0600 to U+06FF) get Noto Nastaliq Urdu; Arabic presentation forms (U+FB50 to U+FEFF, what copying from a PDF or website gives) get Geeza Pro. Found with `CTFontCreateForString`, not guessed. The user wanted the Geeza Pro look.
+
+- `base.css` defines `@font-face 'Arabic Script'` as `local('Geeza Pro')` with a `unicode-range` of the Arabic blocks (U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF), so Latin text never uses it. `tokens.css` puts it first in `--font-display`, `--font-body` and `--font-mono`. Without Geeza Pro (not a Mac) it falls through to the old fallback.
+- Notes keep their characters; the pasted presentation forms are not converted to plain letters (they will not match a search typed with plain letters). Offered, not done.
+- A table needs a header row and the `| --- |` separator in GFM; the user's line had neither, so it showed as plain text. Not a bug.
+- Not changed: a Markdown note stores no font. Driven in the installed build only (see the final report).
