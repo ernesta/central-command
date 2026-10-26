@@ -233,6 +233,26 @@ describe('collectHomeSummary: watch', () => {
     )
     expect(collect().watch?.counts.sources).toBe(1)
   })
+
+  it('puts only SAVED items in Coming up, and every new one in the brief', () => {
+    const source = addSource(
+      db,
+      { title: 'S', url: 'https://ex.org/f', kind: 'conference', method: 'feed' },
+      'now'
+    )
+    const insert = db.prepare(
+      `INSERT INTO watch_items (source_id, item_key, title, url, date, date_kind, state, first_seen_at)
+       VALUES (?, ?, ?, 'https://ex.org/i', ?, 'deadline', ?, '2026-10-14T00:00:00.000Z')`
+    )
+    insert.run(source.id, 'a', 'Saved deadline', '2026-10-17', 'saved')
+    insert.run(source.id, 'b', 'New deadline', '2026-10-16', 'new')
+    insert.run(source.id, 'c', 'Seen deadline', '2026-10-16', 'seen')
+    const summary = collect()
+    expect(summary.upcoming.filter((e) => e.id.startsWith('watch:')).map((e) => e.title)).toEqual([
+      'Saved deadline'
+    ])
+    expect(summary.watch?.fresh.map((i) => i.title)).toEqual(['New deadline'])
+  })
 })
 
 describe('collectHomeSummary: hours are the Hours page’s hours', () => {

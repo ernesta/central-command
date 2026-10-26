@@ -56,20 +56,27 @@ export function planNotifications(
   state: NotifyState,
   now: NotifyNow
 ): PlannedNotification[] {
-  if (!settings.enabled) return []
+  // The master switch covers the digest and the reminders; Watch's two have their own, set in Settings → Watch.
+  if (!settings.enabled && !settings.watchNew && settings.watchSavedDays === 0) return []
   const out: PlannedNotification[] = []
   const add = (n: PlannedNotification): void => {
     if (!state.sent.has(n.key)) out.push(n)
   }
   const nowMin = minutesOf(now.time)
 
-  if (settings.digestAt && nowMin >= minutesOf(settings.digestAt)) {
+  if (settings.enabled && settings.digestAt && nowMin >= minutesOf(settings.digestAt)) {
     const line = digestLine(summary)
     if (line) add({ key: `digest:${now.date}`, title: 'Today', body: line, route: '/research' })
   }
 
   const next = summary.meetings.next
-  if (settings.meetingMinutesBefore > 0 && next && next.date === now.date && next.start) {
+  if (
+    settings.enabled &&
+    settings.meetingMinutesBefore > 0 &&
+    next &&
+    next.date === now.date &&
+    next.start
+  ) {
     const until = minutesOf(next.start) - nowMin
     if (until >= 0 && until <= settings.meetingMinutesBefore)
       add({
@@ -84,6 +91,7 @@ export function planNotifications(
   }
 
   if (
+    settings.enabled &&
     settings.timerRunningHours > 0 &&
     summary.timer &&
     summary.timer.minutes >= settings.timerRunningHours * 60
@@ -97,8 +105,8 @@ export function planNotifications(
     })
   }
 
-  if (settings.watchRelevant && summary.watch) {
-    const fresh = summary.watch.relevant.filter(
+  if (settings.watchNew && summary.watch) {
+    const fresh = summary.watch.fresh.filter(
       (i) => i.state === 'new' && i.firstSeenAt >= state.since && !state.sent.has(`watch:${i.id}`)
     )
     if (fresh.length > 0) {
@@ -115,9 +123,11 @@ export function planNotifications(
     }
   }
 
-  if (settings.watchDeadlineDays > 0) {
+  // Only a SAVED item's deadline is in the summary's dated list, so these are the user's own.
+  if (settings.watchSavedDays > 0) {
     for (const e of summary.upcoming) {
-      if (e.kind !== 'deadline' || e.inDays < 0 || e.inDays > settings.watchDeadlineDays) continue
+      if (!e.id.startsWith('watch:') || e.kind !== 'deadline') continue
+      if (e.inDays < 0 || e.inDays > settings.watchSavedDays) continue
       add({
         key: `${e.id}:${e.date}`,
         title: e.inDays === 0 ? 'Deadline today' : `Deadline in ${plural(e.inDays, 'day')}`,

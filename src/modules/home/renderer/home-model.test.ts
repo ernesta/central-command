@@ -72,7 +72,7 @@ describe('homeView', () => {
     expect(homeView(s, 'work').tasks.cut).toBe(true)
   })
 
-  it('shows the next 3 days of this workspace, and nothing from Watch', () => {
+  it('shows the next 3 days of this workspace; a saved Watch deadline is Research’s and opens the Watch page', () => {
     const s: HomeSummary = {
       ...base,
       upcoming: [
@@ -80,10 +80,11 @@ describe('homeView', () => {
         event('m2', 'meeting', '/work/meetings/m/2', 2),
         event('tr', 'training', '/research/training/t/x', 3),
         event('late', 'task', '/research/tasks/t/y', 4),
-        event('w', 'deadline', 'https://ex.org', 3)
+        event('watch:5', 'deadline', 'https://ex.org', 3)
       ]
     }
-    expect(homeView(s, 'research').comingUp.map((e) => e.id)).toEqual(['m1', 'tr'])
+    expect(homeView(s, 'research').comingUp.map((e) => e.id)).toEqual(['m1', 'tr', 'watch:5'])
+    expect(homeView(s, 'research').comingUp[2].route).toBe('/research/watch')
     expect(homeView(s, 'work').comingUp.map((e) => e.id)).toEqual(['m2'])
   })
 

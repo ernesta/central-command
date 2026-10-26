@@ -212,7 +212,7 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
     watch: hasWatch
       ? {
           counts: getCounts(db),
-          relevant: listItems(db, { state: 'new', relevantOnly: true, limit: 10 }),
+          fresh: listItems(db, { state: 'new', limit: 50 }),
           upcoming: upcoming(db, now.date, 60)
         }
       : null,

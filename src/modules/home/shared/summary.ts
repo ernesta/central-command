@@ -71,14 +71,14 @@ export interface HomeInputs {
   timer: HomeTimer | null
   hours: HomeHoursByWorkspace
   timeOff: TimeOffEntry[]
-  watch: { counts: WatchBrief['counts']; relevant: WatchItem[]; upcoming: WatchItem[] } | null
+  watch: { counts: WatchBrief['counts']; fresh: WatchItem[]; upcoming: WatchItem[] } | null
   weather: WeatherSummary | null
 }
 
 /** How many of each list the page shows; the totals say how many there are. */
 export const SHOWN_TASKS = 8
 export const SHOWN_UPCOMING = 12
-export const SHOWN_WATCH = 5
+export const SHOWN_WATCH = 50
 const TASKS_AHEAD_DAYS = 14
 const MEETINGS_AHEAD_DAYS = 21
 const TRAININGS_AHEAD_DAYS = 45
@@ -298,7 +298,7 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
       ...events.filter((e) => e.inDays > 0).slice(0, SHOWN_UPCOMING)
     ],
     watch: input.watch
-      ? { counts: input.watch.counts, relevant: input.watch.relevant.slice(0, SHOWN_WATCH) }
+      ? { counts: input.watch.counts, fresh: input.watch.fresh.slice(0, SHOWN_WATCH) }
       : null,
     weather: input.weather
   }

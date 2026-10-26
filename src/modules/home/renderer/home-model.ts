@@ -20,6 +20,9 @@ export interface HomeView {
   today: string
 }
 
+/** Watch belongs to Research; its saved items' deadlines are listed there. */
+const WATCH_ROUTE = '/research/watch'
+
 const isHere = (workspace: HomeWorkspace, route: string): boolean =>
   route.startsWith(`/${workspace}/`)
 
@@ -64,8 +67,10 @@ function eventKindDetail(event: HomeEvent, initialsOf: (name: string) => string 
 export function homeView(summary: HomeSummary, workspace: HomeWorkspace): HomeView {
   const { tasks } = summary
   const mine = (t: HomeTask): boolean => t.workspace === workspace
-  const here = summary.upcoming.filter((e) => isHere(workspace, e.route))
-  // Watch's items (their routes are web addresses) are not on Home yet, so they are left out rather than shown without a place to go.
+  // A saved Watch item's route is its web address (a notification opens that); on Home its row opens the Watch page, where it is saved.
+  const here = summary.upcoming
+    .map((e) => (e.id.startsWith('watch:') ? { ...e, route: WATCH_ROUTE } : e))
+    .filter((e) => isHere(workspace, e.route))
   const comingUp = here.filter((e) => e.inDays >= 1 && e.inDays <= COMING_UP_DAYS)
   // The summary is sorted by date then time; an untimed item (a day off) follows the timed ones.
   const todayEvents = here

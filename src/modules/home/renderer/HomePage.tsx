@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { Check, GraduationCap, Plane, Users } from 'lucide-react'
+import { Bookmark, Check, GraduationCap, Plane, Users } from 'lucide-react'
 import { Panel } from '@renderer/components/Panel'
 import { Tooltip } from '@renderer/components/Tooltip'
 import { LateChip } from '../../tasks/renderer/LateChip'
@@ -31,7 +31,10 @@ const KIND_ICON = {
   task: Check,
   meeting: Users,
   training: GraduationCap,
-  'time-off': Plane
+  'time-off': Plane,
+  // A saved Watch item: the same bookmark as on the Watch page.
+  deadline: Bookmark,
+  event: Bookmark
 } as const
 
 /** Today's date, for the page heading ("Thursday 15 October"). */

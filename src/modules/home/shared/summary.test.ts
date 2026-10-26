@@ -189,7 +189,7 @@ describe('upcoming', () => {
       ],
       watch: {
         counts: { new: 1, newRelevant: 1, sources: 1, failing: 0, changed: 0 },
-        relevant: [],
+        fresh: [],
         upcoming: [
           watchItem({ title: 'Abstract deadline', date: '2026-10-18', state: 'saved' }),
           watchItem({
@@ -290,20 +290,20 @@ describe('the rest', () => {
       },
       work: null
     }
-    const items = Array.from({ length: 9 }, (_, i) => watchItem({ id: i + 1 }))
+    const items = Array.from({ length: 60 }, (_, i) => watchItem({ id: i + 1 }))
     const s = buildHomeSummary({
       ...base,
       timer,
       hours,
       watch: {
-        counts: { new: 9, newRelevant: 9, sources: 2, failing: 0, changed: 0 },
-        relevant: items,
+        counts: { new: 60, newRelevant: 9, sources: 2, failing: 0, changed: 0 },
+        fresh: items,
         upcoming: []
       }
     })
     expect(s.timer).toBe(timer)
     expect(s.hours).toBe(hours)
-    expect(s.watch?.relevant).toHaveLength(5)
+    expect(s.watch?.fresh).toHaveLength(50)
     expect(s.weather).toBeNull()
   })
 

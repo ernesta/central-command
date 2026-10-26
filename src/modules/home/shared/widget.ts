@@ -25,7 +25,7 @@ export interface WidgetSnapshot {
   week: WidgetHours | null
   /** Work's time so far (the invoice month or week), the same way; added without a version bump while nothing reads the file. */
   work: WidgetHours | null
-  /** New Watch items that mention a keyword. */
+  /** New Watch items, not yet looked at. */
   watchNew: number
   weather: {
     temperature: number
@@ -53,7 +53,7 @@ export function buildWidgetSnapshot(summary: HomeSummary): WidgetSnapshot {
     nextMeeting: m ? { title: m.series || 'Meeting', date: m.date, time: m.start } : null,
     week: summary.hours.research,
     work: summary.hours.work,
-    watchNew: summary.watch?.counts.newRelevant ?? 0,
+    watchNew: summary.watch?.counts.new ?? 0,
     weather: summary.weather
       ? {
           temperature: summary.weather.now.temperature,

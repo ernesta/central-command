@@ -18,10 +18,13 @@ export interface NotificationSettings {
   meetingMinutesBefore: number
   /** The timer has run this many hours without a stop. 0 = none. */
   timerRunningHours: number
-  /** New things found by Watch that mention one of the user's keywords. */
-  watchRelevant: boolean
-  /** A deadline Watch found, this many days before. 0 = none. */
-  watchDeadlineDays: number
+  /**
+   * Tell me when Watch finds new items. Off by default. Like the next setting it is the user's own switch for Watch alone
+   * (set in Settings → Watch), so it works without the master `enabled` that turns on the digest and meeting reminders.
+   */
+  watchNew: boolean
+  /** The deadline of an item the user SAVED in Watch, this many days before. 0 = off (the default). */
+  watchSavedDays: number
 }
 
 export interface WidgetSettings {
@@ -48,8 +51,8 @@ export const DEFAULT_HOME_SETTINGS: HomeSettings = {
     digestAt: '08:30',
     meetingMinutesBefore: 10,
     timerRunningHours: 0,
-    watchRelevant: true,
-    watchDeadlineDays: 7
+    watchNew: false,
+    watchSavedDays: 0
   },
   widget: { enabled: false }
 }
@@ -85,8 +88,8 @@ export function normaliseHome(
         defaults.notifications.meetingMinutesBefore
       ),
       timerRunningHours: int(n.timerRunningHours, 0, 24, defaults.notifications.timerRunningHours),
-      watchRelevant: bool(n.watchRelevant, defaults.notifications.watchRelevant),
-      watchDeadlineDays: int(n.watchDeadlineDays, 0, 90, defaults.notifications.watchDeadlineDays)
+      watchNew: bool(n.watchNew, defaults.notifications.watchNew),
+      watchSavedDays: int(n.watchSavedDays, 0, 90, defaults.notifications.watchSavedDays)
     },
     widget: { enabled: bool(g.enabled, defaults.widget.enabled) }
   }

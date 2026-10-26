@@ -5,7 +5,12 @@ import { digestLine, planNotifications, pruneSent } from './notifications'
 import { buildWidgetSnapshot } from './widget'
 import type { HomeSummary } from './types'
 
-const on = { ...DEFAULT_HOME_SETTINGS.notifications, enabled: true }
+const on = {
+  ...DEFAULT_HOME_SETTINGS.notifications,
+  enabled: true,
+  watchNew: true,
+  watchSavedDays: 7
+}
 const empty: HomeSummary = {
   today: '2026-10-15',
   generatedAt: '2026-10-15T08:40:00.000Z',
@@ -131,12 +136,12 @@ describe('planNotifications', () => {
     expect(planNotifications(s, on, state, at('09:20'))).toEqual([])
   })
 
-  it('groups new Watch matches in one notification and announces nothing found before notifications were on', () => {
+  it('groups new Watch items in one notification and announces nothing found before notifications were on', () => {
     const s: HomeSummary = {
       ...empty,
       watch: {
         counts: { new: 3, newRelevant: 3, sources: 1, failing: 0, changed: 0 },
-        relevant: [watched(1), watched(2), watched(3, '2026-09-01T00:00:00.000Z')]
+        fresh: [watched(1), watched(2), watched(3, '2026-09-01T00:00:00.000Z')]
       }
     }
     const [n] = planNotifications(s, { ...on, digestAt: '' }, state, at('09:00'))
@@ -151,11 +156,29 @@ describe('planNotifications', () => {
       )
     ).toEqual([])
     expect(
-      planNotifications(s, { ...on, digestAt: '', watchRelevant: false }, state, at('09:00'))
+      planNotifications(s, { ...on, digestAt: '', watchNew: false }, state, at('09:00'))
     ).toEqual([])
   })
 
-  it('warns of a deadline within the chosen days, once, and not of an ordinary event', () => {
+  it('gives Watch its own switches: with the master off only they speak, and with all off nothing does', () => {
+    const s: HomeSummary = {
+      ...empty,
+      tasks: { ...empty.tasks, todayTotal: 2 },
+      watch: {
+        counts: { new: 1, newRelevant: 1, sources: 1, failing: 0, changed: 0 },
+        fresh: [watched(1)]
+      }
+    }
+    const watchOnly = { ...on, enabled: false }
+    expect(planNotifications(s, watchOnly, state, at('09:00')).map((n) => n.title)).toEqual([
+      'New in Watch'
+    ])
+    expect(
+      planNotifications(s, { ...watchOnly, watchNew: false, watchSavedDays: 0 }, state, at('09:00'))
+    ).toEqual([])
+  })
+
+  it('warns of a saved deadline within the chosen days, once, and not of an ordinary event', () => {
     const s: HomeSummary = {
       ...empty,
       upcoming: [
@@ -199,7 +222,7 @@ describe('planNotifications', () => {
       route: 'https://ex.org/a'
     })
     expect(
-      planNotifications(s, { ...on, digestAt: '', watchDeadlineDays: 0 }, state, at('09:00'))
+      planNotifications(s, { ...on, digestAt: '', watchSavedDays: 0 }, state, at('09:00'))
     ).toEqual([])
   })
 })

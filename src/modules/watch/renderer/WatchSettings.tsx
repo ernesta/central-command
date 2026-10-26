@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
 import { CutText } from '@renderer/components/CutText'
+import { Segmented } from '@renderer/components/Segmented'
+import { Select } from '@renderer/components/Select'
+import { useSettings } from '@renderer/state/settings-context'
 import { Tooltip } from '@renderer/components/Tooltip'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { BY_HAND } from '../shared/by-hand'
@@ -12,11 +15,27 @@ import { todayIso } from './watch-paths'
 import { useWatchSources } from './useWatchSources'
 import styles from './WatchSettings.module.css'
 
+const ON_OFF = [
+  { value: 'off', label: 'Off' },
+  { value: 'on', label: 'On' }
+] as const
+
+/** How many days before a saved item's deadline to say so. */
+const BEFORE = [
+  { value: '0', label: 'Off' },
+  { value: '1', label: '1 day before' },
+  { value: '3', label: '3 days before' },
+  { value: '7', label: '7 days before' },
+  { value: '14', label: '14 days before' }
+]
+
 type Dialogue = { kind: 'add' } | { kind: 'edit'; id: number } | null
 
 /** Settings → Watch: the sources (a plain table, a row opens its dialog), suggestions to add in one click, and the places to check by hand. */
 export function WatchSettings(): React.JSX.Element {
   const { sources, reload } = useWatchSources()
+  const { settings, update } = useSettings()
+  const notify = settings.home.notifications
   const [dialog, setDialog] = useState<Dialogue>(null)
   const [suggestions, setSuggestions] = useState<WatchSuggestion[]>([])
   const [counts, setCounts] = useState<Map<number, number>>(new Map())
@@ -165,6 +184,35 @@ export function WatchSettings(): React.JSX.Element {
           </ul>
         </div>
       )}
+
+      <div>
+        <h3 className={styles.label}>Notifications</h3>
+        <div className={styles.notify}>
+          <div className={styles.field}>
+            <span>Tell me about new items</span>
+            <Segmented
+              label="New items"
+              value={notify.watchNew ? 'on' : 'off'}
+              options={ON_OFF}
+              onChange={(value) =>
+                void update({ home: { notifications: { watchNew: value === 'on' } } })
+              }
+            />
+          </div>
+          <div className={styles.field}>
+            <span>Remind me of a saved deadline</span>
+            <Select
+              label="Saved deadline reminder"
+              value={String(notify.watchSavedDays)}
+              options={BEFORE}
+              onChange={(value) =>
+                void update({ home: { notifications: { watchSavedDays: Number(value) } } })
+              }
+            />
+          </div>
+        </div>
+        <p className={styles.help}>Mac notifications, off until you turn them on.</p>
+      </div>
 
       <div>
         <h3 className={styles.label}>By hand</h3>

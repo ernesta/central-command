@@ -31,7 +31,7 @@ export class Notifier {
   /** One pass; returns what was shown. Safe to call as often as wanted. */
   tick(): PlannedNotification[] {
     const settings = this.deps.settings()
-    if (!settings.enabled) return []
+    if (!settings.enabled && !settings.watchNew && settings.watchSavedDays === 0) return []
     const now = this.deps.now()
     const stored = this.deps.store.load()
     const since = stored.since ?? this.deps.nowIso()

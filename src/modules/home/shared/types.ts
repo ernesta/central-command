@@ -131,8 +131,8 @@ export interface WeatherSummary {
 
 export interface WatchBrief {
   counts: WatchCounts
-  /** The best new items that mention a keyword (a handful). */
-  relevant: WatchItem[]
+  /** The newest items not yet looked at (a few dozen at most), for the notification about what is new. */
+  fresh: WatchItem[]
 }
 
 export interface HomeSummary {

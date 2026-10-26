@@ -32,7 +32,7 @@ describe('normaliseHome', () => {
         digestAt: '25:99',
         meetingMinutesBefore: -5,
         timerRunningHours: 2.5,
-        watchDeadlineDays: 'x'
+        watchSavedDays: 'x'
       }
     })
     expect(h.weather).toEqual({ enabled: false })
@@ -40,7 +40,8 @@ describe('normaliseHome', () => {
       digestAt: '08:30',
       meetingMinutesBefore: 10,
       timerRunningHours: 0,
-      watchDeadlineDays: 7
+      watchSavedDays: 0,
+      watchNew: false
     })
   })
 

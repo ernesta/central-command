@@ -167,3 +167,14 @@
 .spacer {
   flex: 1;
 }
+
+.notify {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+  margin-bottom: 8px;
+  font-size: var(--text-14);
+}
+.notify .field {
+  justify-items: start;
+}
