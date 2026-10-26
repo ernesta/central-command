@@ -99,7 +99,7 @@ if (trainingsArg) {
         withFileTypes: true
       })) {
         if (dated.isDirectory() && !dated.name.startsWith('.'))
-          folders.push({ path: `${year.name}/${programme.name}/${dated.name}` })
+          folders.push({ path: join(root, year.name, programme.name, dated.name) })
       }
     }
   }

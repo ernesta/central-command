@@ -46,8 +46,6 @@ export function normaliseSettings(raw: unknown, defaults: Settings): Settings {
       obj.trainingAimHours <= 5000
         ? obj.trainingAimHours
         : defaults.trainingAimHours,
-    trainingsFolder:
-      typeof obj.trainingsFolder === 'string' ? obj.trainingsFolder : defaults.trainingsFolder,
     yearStarts: yearStarts.length > 0 ? yearStarts : defaults.yearStarts,
     home: normaliseHome(obj.home, defaults.home),
     ui: { workspace, window, moduleState }

@@ -95,7 +95,7 @@ type: Research methods course # from the harmonised list
 mode: online # in-person | online, optional
 skills: [Data management and analysis (GS), Ethical and legal issues (GS)] # up to three
 leads: [Robert Darby] # people, several allowed
-folder: 2025-26/SEDarc/2025 12 10 Data Management and Security # optional, relative to the Trainings folder
+folder: 2025-26/SEDarc/2025 12 10 Data Management and Security # optional, an absolute path (was relative to the Trainings folder until 26 Oct 2026)
 organisation: SEDarc DTP # kept from the Inkpath log, not shown yet
 provider: Robert Darby # kept from the Inkpath log, not shown yet
 points: 1 # kept from the Inkpath log, not shown yet
@@ -227,7 +227,7 @@ helps Meetings on its own, it comes first (stage 1).
 
 ### Files panel (linked, never copied)
 
-A setting **Trainings folder** is the root; `folder` is stored relative to it. The main process lists the folder, opens a file with the
+(Superseded 26 Oct 2026: there is no Trainings folder setting; `folder` is an absolute path, see `docs/DECISIONS.md`.) A setting **Trainings folder** was the root; `folder` was stored relative to it. The main process lists the folder, opens a file with the
 default app or shows it in Finder, and refuses any path outside the root (`..`, absolute paths, symlinks that escape; tested). The app
 never moves, renames, writes or deletes the user's files.
 

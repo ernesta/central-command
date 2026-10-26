@@ -25,8 +25,7 @@ export function isSafeRelativeFolder(folder: string): boolean {
 }
 
 /**
- * A linked folder as an entry stores it: an absolute path, or (an older link) a path relative to the
- * Trainings folder the settings once held. No `..` and no control characters either way.
+ * A linked folder as an entry stores it: an absolute path. No `..` and no control characters.
  */
 export function isSafeFolder(folder: string): boolean {
   return folder !== '' && !folder.startsWith('~') && !hasControl(folder) && !hasDotDot(folder)
@@ -69,27 +68,20 @@ const inside = (root: string, target: string): boolean =>
 const notThere = (name: string | undefined): NotThereError =>
   new NotThereError(`“${name}” is not there. It may have been moved or renamed.`)
 
-/** Where a linked folder is: itself when absolute, else under `root`, the folder older links were relative to. */
-export function folderPath(root: string, folder: string): string {
+/** A linked folder is an absolute path; anything else (an old relative link nothing resolves any more) is not there. */
+export function folderPath(folder: string): string {
   if (!isSafeFolder(folder)) throw new FilesError(`Not a usable folder: ${folder}`)
-  if (isAbsolute(folder)) return folder
-  if (!root || !isAbsolute(root)) throw notThere(folder.split('/').at(-1))
-  return join(root, folder)
+  if (!isAbsolute(folder)) throw notThere(folder.split('/').at(-1))
+  return folder
 }
 
 /**
  * The real path of `sub/name` in the linked `folder` (the folder itself when both are empty), or an
  * error. Symbolic links are followed before the check, so a link that leads out of the folder is refused
- * like `..` is. `root` is only the old Trainings folder setting, for links saved relative to it. The app
- * never writes anywhere: everything here only reads, lists, opens or reveals.
+ * like `..` is. The app never writes anywhere: everything here only reads, lists, opens or reveals.
  */
-export async function resolveInside(
-  root: string,
-  folder: string,
-  sub = '',
-  name = ''
-): Promise<string> {
-  const base = folderPath(root, folder)
+export async function resolveInside(folder: string, sub = '', name = ''): Promise<string> {
+  const base = folderPath(folder)
   const parts = [sub, name].filter((p) => p !== '')
   for (const part of parts) {
     if (!isSafeRelativeFolder(part)) throw new FilesError(`Not a path inside the folder: ${part}`)
@@ -114,12 +106,12 @@ export async function resolveInside(
 }
 
 /** One level of an entry's folder (or of a sub-folder), folders first. Hidden files, Office lock files and links that lead out of the folder are left out. */
-export async function listFolder(root: string, folder: string, sub = ''): Promise<FolderListing> {
+export async function listFolder(folder: string, sub = ''): Promise<FolderListing> {
   let linked: string
   let dir: string
   try {
-    linked = await resolveInside(root, folder)
-    dir = sub === '' ? linked : await resolveInside(root, folder, sub)
+    linked = await resolveInside(folder)
+    dir = sub === '' ? linked : await resolveInside(folder, sub)
     if (!(await stat(dir)).isDirectory()) return { status: 'missing' }
   } catch (error) {
     if (error instanceof FilesError && !(error instanceof NotThereError)) throw error
@@ -146,13 +138,8 @@ export async function listFolder(root: string, folder: string, sub = ''): Promis
 }
 
 /** The real path of a file that may be opened with the default app: a regular file, not one that runs code. */
-export async function openablePath(
-  root: string,
-  folder: string,
-  sub: string,
-  name: string
-): Promise<string> {
-  const real = await resolveInside(root, folder, sub, name)
+export async function openablePath(folder: string, sub: string, name: string): Promise<string> {
+  const real = await resolveInside(folder, sub, name)
   if (!(await stat(real)).isFile()) throw new FilesError('Only files can be opened')
   const extension = real.split('.').pop()?.toLowerCase() ?? ''
   if (NEVER_OPEN.has(extension))

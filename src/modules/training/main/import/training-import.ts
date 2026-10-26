@@ -25,7 +25,7 @@ import {
   type ParsedTrainingNote
 } from './obsidian-notes'
 
-/** A folder under the Trainings folder, as a path relative to it (`2025-26/SEDarc/2025 12 10 Title`). */
+/** A dated folder under the Trainings folder, as the absolute path an entry links to. */
 export interface TrainingFolder {
   path: string
 }

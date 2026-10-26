@@ -142,9 +142,6 @@ function register({ db, paths, settings }: MainContext): () => void {
   })
   void mkdir(paths.trainingPlans, { recursive: true }).then(() => planWatcher.start())
 
-  // Linked folders are stored as absolute paths. `trainingsFolder` is no longer a setting anyone sees: it is only
-  // what links saved before that (relative paths) are resolved against.
-  const root = (): string => settings.get().trainingsFolder
   const text = (value: unknown, what: string): string => {
     if (typeof value !== 'string') throw new Error(`Invalid ${what}`)
     return value
@@ -152,7 +149,6 @@ function register({ db, paths, settings }: MainContext): () => void {
   const folderMemory = new FolderMemory(db)
   ipcMain.handle(TRAINING_IPC.filesList, (_event, folder: unknown, sub: unknown) =>
     listLinkedFolder(
-      root(),
       text(folder, 'folder'),
       sub === undefined ? '' : text(sub, 'sub-folder'),
       folderMemory
@@ -161,12 +157,7 @@ function register({ db, paths, settings }: MainContext): () => void {
   ipcMain.handle(
     TRAINING_IPC.filesOpen,
     async (_event, folder: unknown, sub: unknown, name: unknown) => {
-      const path = await openablePath(
-        root(),
-        text(folder, 'folder'),
-        text(sub, 'sub'),
-        text(name, 'name')
-      )
+      const path = await openablePath(text(folder, 'folder'), text(sub, 'sub'), text(name, 'name'))
       const failure = await shell.openPath(path)
       if (failure) throw new Error(failure)
     }
@@ -175,7 +166,7 @@ function register({ db, paths, settings }: MainContext): () => void {
     TRAINING_IPC.filesReveal,
     async (_event, folder: unknown, sub: unknown, name: unknown) => {
       shell.showItemInFolder(
-        await resolveInside(root(), text(folder, 'folder'), text(sub, 'sub'), text(name, 'name'))
+        await resolveInside(text(folder, 'folder'), text(sub, 'sub'), text(name, 'name'))
       )
     }
   )

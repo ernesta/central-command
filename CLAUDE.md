@@ -20,6 +20,7 @@ ask the user.
 - `npm run people:from-notes [-- --apply]`: list people named in meeting attendees and training leads who are not in the people list, with
   proposed initials (dry run by default; apply only with the app closed)
 - `npm run tidy:reading-lists [-- --apply]`: bring reading list entries to reading entities (shorten linked ones, link typed citations that match exactly one reading); dry run by default, applied 2 Oct 2026; re-run after adding readings to Zotero
+- `npm run repair:training-folders [-- --apply]`: training notes' `folder:` links from relative (to the old Trainings folder setting) to absolute paths, and the setting out of `settings.json`; applied 26 Oct 2026 (`docs/DECISIONS.md`, "Training files: any folder"), a dry run now finds nothing, do not re-run
 - `npm run watch:from-tasks [-- --apply]`: the addresses in the "Check upcoming …" reminders as Watch sources, plus what must be checked by hand (dry run by default, read-only; `--apply` only when the user says so, app closed, backs the database up first)
 - `npm run link:citations [-- --apply]`: turn plain-text citations ("Kim et al. (2020)") into reading entities; only an exact single match is linked, the rest are listed (dry run by
   default; applied 2 Oct 2026, re-run when new readings exist)

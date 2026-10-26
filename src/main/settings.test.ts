@@ -68,17 +68,15 @@ describe('SettingsStore', () => {
     expect(s.ui.workspace).toBe('research')
   })
 
-  it('keeps a sensible training aim and folder, and falls back for anything else', async () => {
+  it('keeps a sensible training aim, and falls back for anything else', async () => {
     const store = new SettingsStore(file, defaults)
-    await store.update({ trainingAimHours: 150, trainingsFolder: '/t' })
+    await store.update({ trainingAimHours: 150 })
     const kept = await new SettingsStore(file, defaults).load()
     expect(kept.trainingAimHours).toBe(150)
-    expect(kept.trainingsFolder).toBe('/t')
     for (const bad of [0, -5, 'lots', null, 1e9]) {
-      await writeFile(file, JSON.stringify({ trainingAimHours: bad, trainingsFolder: 5 }))
+      await writeFile(file, JSON.stringify({ trainingAimHours: bad }))
       const s = await new SettingsStore(file, defaults).load()
       expect(s.trainingAimHours).toBe(200)
-      expect(s.trainingsFolder).toBe('')
     }
   })
 

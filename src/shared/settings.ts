@@ -37,8 +37,6 @@ export interface Settings {
   terminal: TerminalId
   /** Yearly training aim in hours (Training shows progress towards it). */
   trainingAimHours: number
-  /** Legacy, no longer shown or asked for: linked folders are absolute paths. Only resolves links saved before that as paths relative to it. */
-  trainingsFolder: string
   /**
    * When each year starts (Mondays, oldest first; a year is 52 weeks), for Hours, Time off, Training and
    * Meetings alike. See `year.ts`. The next one is added by the app when a year ends.
@@ -73,7 +71,6 @@ export function defaultSettings(defaultZoteroExportPath: string): Settings {
     repoPath: '',
     terminal: 'terminal',
     trainingAimHours: DEFAULT_TRAINING_AIM_HOURS,
-    trainingsFolder: '',
     yearStarts: [...DEFAULT_YEAR_STARTS],
     home: structuredClone(DEFAULT_HOME_SETTINGS),
     ui: { workspace: 'research', window: null, moduleState: {} }
