@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { crossrefUrl, parseCrossref } from './parse-crossref'
 import { parseFeed, plainText } from './parse-feed'
 import { datedSentences, parsePage } from './parse-page'
+import { itemKind } from '../shared/types'
+import { findDate } from '../shared/dates'
 
 const RSS = `<?xml version="1.0" encoding="UTF-8"?>
 <!-- generated -->
@@ -165,5 +167,30 @@ describe('datedSentences', () => {
     expect(
       out.every((i) => i.url === 'https://eps.example/meetings' && i.key.startsWith('text:'))
     ).toBe(true)
+  })
+})
+
+describe('parsePage cards', () => {
+  const html = `<ul>
+    <li><a href="/e/a/"><img src="x"></a><p>Event</p><a href="/e/a/" tabindex=“-1”>Poetry masterclass for KS2</a>
+      <p>11 Nov 2026</p><div>Try out practical strategies.</div>
+      <a href="/e/a/">View details<span class="sr-only"> about Poetry masterclass for KS2</a></li>
+    <li><a href="/e/b/">Reconstructing Reading 2026</a><p>16 Nov 2026 - 26 Nov 2026</p></li>
+  </ul>`
+  it('gives each link the date and text of its own card', () => {
+    const { links } = parsePage(html, 'https://site.example/events')
+    expect(links.map((l) => [l.title, findDate(l.summary, '2026-10-26')?.date])).toEqual([
+      ['Poetry masterclass for KS2', '2026-11-11'],
+      ['Reconstructing Reading 2026', '2026-11-16']
+    ])
+    expect(links[0].summary).toBe('Event 11 Nov 2026 Try out practical strategies.')
+  })
+})
+
+describe('itemKind', () => {
+  it('makes a course on a conference listing a training, and nothing else', () => {
+    expect(itemKind('Secondary CPD: Developing literacy', 'conference')).toBe('training')
+    expect(itemKind('Reconstructing Reading 2026', 'conference')).toBeNull()
+    expect(itemKind('Summer course', 'training')).toBeNull()
   })
 })

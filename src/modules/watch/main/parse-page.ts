@@ -35,17 +35,39 @@ export function parsePage(html: string, baseUrl: string): ParsedPage {
   const main = clean.replace(/<(nav|header|footer|aside)[\s\S]*?<\/\1>/gi, ' ')
   const links: ParsedItem[] = []
   const seen = new Set<string>()
-  for (const m of main.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)) {
-    const href = /href\s*=\s*["']([^"']+)["']/i.exec(m[1])
-    if (!href) continue
-    const url = resolve(href[1], baseUrl)
-    if (!url || seen.has(url)) continue
-    const title = decodeEntities(m[2].replace(/<[^>]+>/g, ' '))
-      .replace(/\s+/g, ' ')
-      .trim()
-    if (title.length < 12 || FURNITURE.test(title)) continue
-    seen.add(url)
-    links.push({ key: url, title, url, summary: '', publishedAt: null })
+  // A listing's card (`<li>` or `<article>`) that holds one link is that link's own description and date; a block with
+  // several links says nothing about any one of them.
+  for (const block of main.split(/(?=<(?:li|article)\b)/i)) {
+    const found: ParsedItem[] = []
+    const urls = new Set<string>()
+    for (const m of block.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)) {
+      const href = /href\s*=\s*["']([^"']+)["']/i.exec(m[1])
+      if (!href) continue
+      const url = resolve(href[1], baseUrl)
+      if (!url) continue
+      urls.add(url)
+      if (seen.has(url)) continue
+      const title = decodeEntities(m[2].replace(/<[^>]+>/g, ' '))
+        .replace(/\s+/g, ' ')
+        .trim()
+      if (title.length < 12 || FURNITURE.test(title)) continue
+      seen.add(url)
+      found.push({ key: url, title, url, summary: '', publishedAt: null })
+    }
+    if (found.length === 1 && urls.size === 1) {
+      const title = found[0].title
+      found[0].summary = decodeEntities(
+        block
+          .replace(/<a\b[^>]*>\s*(?:view details|read more|find out more)[\s\S]*?<\/a>/gi, ' ')
+          .replace(/<[^>]+>/g, ' ')
+      )
+        .replace(/\s+/g, ' ')
+        .replace(title, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 300)
+    }
+    links.push(...found)
   }
   const text = decodeEntities(main.replace(/<[^>]+>/g, ' '))
     .replace(/\s+/g, ' ')

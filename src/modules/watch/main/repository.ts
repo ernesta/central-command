@@ -192,7 +192,7 @@ const toItem = (r: ItemRow): WatchItem => ({
 })
 
 const ITEM_SELECT = `
-  SELECT i.*, s.title AS source_title, s.kind AS kind
+  SELECT i.*, s.title AS source_title, COALESCE(i.item_kind, s.kind) AS kind
   FROM watch_items i JOIN watch_sources s ON s.id = i.source_id`
 
 /**
@@ -216,7 +216,7 @@ export function listItems(db: Database, query: WatchItemsQuery = {}): WatchItem[
   }
   if (query.kind) {
     const kinds = shownKind(query.kind) ? kindsOf(shownKind(query.kind)!) : [query.kind]
-    where.push(`s.kind IN (${kinds.map(() => '?').join(', ')})`)
+    where.push(`COALESCE(i.item_kind, s.kind) IN (${kinds.map(() => '?').join(', ')})`)
     params.push(...kinds)
   }
   if (query.relevantOnly) where.push('i.score > 0')

@@ -19,6 +19,15 @@ export function shownKind(kind: WatchKind): ShownKind | null {
   return null
 }
 
+/** Words that make a listing's entry a course, whatever the listing's own kind (a literacy charity's events page lists CPD and webinars among its conferences). */
+const COURSE_WORDS =
+  /\b(cpd|masterclass|webinars?|course|training|workshop|briefing|summer school)\b/i
+
+/** The kind of one item: a course in a conference listing is a training; anything else keeps its source's kind. */
+export function itemKind(title: string, sourceKind: WatchKind): WatchKind | null {
+  return shownKind(sourceKind) === 'conference' && COURSE_WORDS.test(title) ? 'training' : null
+}
+
 /** The stored kinds that make up a shown one. */
 export const kindsOf = (kind: ShownKind): WatchKind[] =>
   kind === 'training' ? ['training', 'summer-school'] : ['conference']
