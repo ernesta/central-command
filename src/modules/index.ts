@@ -12,6 +12,7 @@ import { plannedModules } from './planned'
 import { readingListsModule } from './reading-lists'
 import { readingsModule } from './readings'
 import { createTrainingModule } from './training'
+import { watchModule } from './watch'
 import type { LiveModuleManifest, ModuleManifest, PlannedModuleManifest } from './types'
 
 /** Add a new module by appending its manifest here; the shell builds routes and landing pages from this list. */
@@ -28,6 +29,7 @@ export const modules: ModuleManifest[] = [
   createHoursModule('research'),
   createTasksModule('research'),
   createTimeOffModule('research'),
+  watchModule,
   createMeetingsModule('work'),
   createNotesModule('work'),
   createHoursModule('work'),

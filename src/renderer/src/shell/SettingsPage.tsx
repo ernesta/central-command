@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react'
+import { useLocation } from 'react-router'
 import { WeatherSettings } from '@modules/home/renderer/WeatherSettings'
 import { moduleSettingsSections } from '@modules/index'
 import { useModuleState } from '../state/use-module-state'
@@ -33,11 +34,13 @@ function tabs(): SettingsTab[] {
  */
 export function SettingsPage(): React.JSX.Element {
   const all = tabs()
-  const { value, update } = useModuleState('settings', (raw) =>
-    normaliseSettingsTab(
-      raw,
-      all.map((t) => t.id)
-    )
+  const ids = all.map((t) => t.id)
+  // A link may open a tab ("Sources" on the Watch page): `state={{ settingsTab }}`, for this visit only.
+  const asked = (useLocation().state as { settingsTab?: unknown } | null)?.settingsTab
+  const { value, update } = useModuleState(
+    'settings',
+    (raw) => normaliseSettingsTab(raw, ids),
+    typeof asked === 'string' && ids.includes(asked) ? { tab: asked } : undefined
   )
   const current = all.find((t) => t.id === value.tab) ?? all[0]
   const Section = current.Section
