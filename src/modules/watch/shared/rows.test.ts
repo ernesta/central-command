@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { foundLabel, noteFor, sectionsOf } from './rows'
+import { checkedLabel, everyLabel, foundLabel, noteFor, sectionsOf } from './rows'
 import type { WatchItem } from './types'
 
 const item = (over: Partial<WatchItem>): WatchItem => ({
@@ -53,5 +53,25 @@ describe('sectionsOf', () => {
     expect(s.saved.map((i) => i.id)).toEqual([2, 1])
     expect(s.training.map((i) => i.id)).toEqual([3])
     expect(s.conference.map((i) => i.id)).toEqual([4])
+  })
+})
+
+describe('checkedLabel and everyLabel', () => {
+  const src = { lastCheckedAt: '2026-10-26T08:00:00.000Z', lastError: null, failures: 0 }
+  it('says when a working source was checked, and only a failing one says so', () => {
+    expect(checkedLabel(src, '2026-10-26')).toEqual({ text: 'Today', failing: false })
+    expect(checkedLabel({ ...src, lastCheckedAt: null }, '2026-10-26').text).toBe('Not yet')
+    expect(checkedLabel({ ...src, lastError: 'HTTP 404', failures: 3 }, '2026-10-26')).toEqual({
+      text: 'Can’t open: 3 tries',
+      failing: true
+    })
+    expect(checkedLabel({ ...src, lastError: 'x', failures: 1 }, '2026-10-26').text).toBe(
+      'Can’t open: 1 try'
+    )
+  })
+  it('names the usual intervals and any other as hours', () => {
+    expect(everyLabel(24)).toBe('Day')
+    expect(everyLabel(168)).toBe('Week')
+    expect(everyLabel(48)).toBe('48 hours')
   })
 })

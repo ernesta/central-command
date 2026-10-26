@@ -3,6 +3,7 @@ import type { LiveModuleManifest } from '../types'
 import { WatchCard } from './renderer/WatchCard'
 import { WatchAllPage } from './renderer/WatchAllPage'
 import { WatchPage } from './renderer/WatchPage'
+import { WatchSettings } from './renderer/WatchSettings'
 
 /**
  * Watch: what the public pages and feeds the user lists (training providers, conference sites, LINGUIST List) have
@@ -18,5 +19,6 @@ export const watchModule: LiveModuleManifest = {
     { path: 'trainings', element: createElement(WatchAllPage, { kind: 'training' }) },
     { path: 'conferences', element: createElement(WatchAllPage, { kind: 'conference' }) }
   ],
-  landingCard: WatchCard
+  landingCard: WatchCard,
+  settingsSection: WatchSettings
 }

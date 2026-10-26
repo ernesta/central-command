@@ -1,6 +1,12 @@
 import { daysBetween } from '@shared/year'
 import { formatDate, formatShortDate } from '@shared/time'
-import { shownKind, type ShownKind, type WatchItem } from './types'
+import {
+  shownKind,
+  type ShownKind,
+  type WatchItem,
+  type WatchKind,
+  type WatchSource
+} from './types'
 
 export const KIND_NOUN: Record<ShownKind, { one: string; many: string }> = {
   training: { one: 'Training', many: 'Trainings' },
@@ -53,4 +59,47 @@ function bySoonestDeadline(a: WatchItem, b: WatchItem): number {
   if (a.date) return -1
   if (b.date) return 1
   return b.firstSeenAt.localeCompare(a.firstSeenAt)
+}
+
+export interface CheckedLabel {
+  text: string
+  /** The source's last attempt failed: the text is a problem, drawn in the danger colour. */
+  failing: boolean
+}
+
+/** The "Last checked" cell: when it was, or (only for a failing source) how many tries have failed. */
+export function checkedLabel(
+  source: Pick<WatchSource, 'lastCheckedAt' | 'lastError' | 'failures'>,
+  today: string
+): CheckedLabel {
+  if (source.lastError)
+    return {
+      text: `Can’t open: ${source.failures} ${source.failures === 1 ? 'try' : 'tries'}`,
+      failing: true
+    }
+  if (!source.lastCheckedAt) return { text: 'Not yet', failing: false }
+  return { text: foundLabel(source.lastCheckedAt, today), failing: false }
+}
+
+/** How often a source is checked, in hours, as the choices the dialog offers. */
+export const EVERY_OPTIONS = [
+  { hours: 6, label: '6 hours' },
+  { hours: 12, label: '12 hours' },
+  { hours: 24, label: 'Day' },
+  { hours: 72, label: '3 days' },
+  { hours: 168, label: 'Week' }
+] as const
+
+/** "Day" for 24, or the odd number of hours a hand-edited source may have. */
+export function everyLabel(hours: number): string {
+  return EVERY_OPTIONS.find((o) => o.hours === hours)?.label ?? `${hours} hours`
+}
+
+export const KIND_LABEL: Record<WatchKind, string> = {
+  training: 'Training',
+  'summer-school': 'Training',
+  conference: 'Conference',
+  journal: 'Journal',
+  listing: 'Listing',
+  other: 'Other'
 }

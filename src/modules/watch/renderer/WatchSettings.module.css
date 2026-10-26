@@ -1,0 +1,169 @@
+.section {
+  display: grid;
+  gap: 24px;
+  padding: 28px 32px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-panel);
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.heading {
+  margin: 0;
+  font-size: var(--text-20);
+  font-weight: 600;
+}
+.label {
+  margin: 0 0 8px;
+  font-family: var(--font-body);
+  color: var(--text-muted);
+  font-size: var(--text-11);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.help {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+  line-height: 1.5;
+}
+.wrap {
+  overflow-x: auto;
+  padding: 4px;
+  scroll-padding: 4px;
+}
+.table {
+  width: 100%;
+  min-width: 620px;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+}
+.th {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-muted);
+  font-size: var(--text-11);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.row {
+  cursor: pointer;
+}
+.row td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-faint);
+  overflow: hidden;
+  vertical-align: middle;
+  font-size: var(--text-14);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background var(--transition-fast);
+}
+.row:last-child td {
+  border-bottom: 0;
+}
+.row:hover td,
+.row:focus-within td {
+  background: var(--hover-tint);
+}
+.name {
+  display: block;
+  max-width: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.address {
+  display: block;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+  text-overflow: ellipsis;
+}
+.muted {
+  color: var(--text-muted);
+}
+.failing {
+  color: var(--danger);
+}
+.suggestions,
+.byHand {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+}
+.suggestion,
+.hand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border-faint);
+  font-size: var(--text-14);
+}
+.suggestion:last-child,
+.hand:last-child {
+  border-bottom: 0;
+}
+.suggestionName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The add/edit dialog. */
+.form {
+  display: grid;
+  gap: 16px;
+  margin-top: 8px;
+}
+.field {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.row2 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 20px;
+}
+.fieldLabel {
+  color: var(--text-muted);
+  font-size: var(--text-11);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.error {
+  margin: 0;
+  color: var(--danger);
+  font-size: var(--text-13);
+}
+.spacer {
+  flex: 1;
+}
