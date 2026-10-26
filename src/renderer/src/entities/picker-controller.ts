@@ -131,15 +131,15 @@ export class EntityPickerController implements EntityHost {
     this.suggestion = suggestion
     const caret = target.coordsAt(suggestion.from)
     if (!changed && this.snapshot.open) {
-      if (caret.left !== this.snapshot.left || caret.bottom + 6 !== this.snapshot.top) {
-        this.set({ left: caret.left, top: caret.bottom + 6, lineTop: caret.top })
+      if (caret.left !== this.snapshot.left || caret.bottom + 2 !== this.snapshot.top) {
+        this.set({ left: caret.left, top: caret.bottom + 2, lineTop: caret.top })
       }
       return
     }
     this.set({
       open: true,
       left: caret.left,
-      top: caret.bottom + 6,
+      top: caret.bottom + 2,
       lineTop: caret.top,
       query: suggestion.query,
       active: 0,

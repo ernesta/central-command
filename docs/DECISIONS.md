@@ -1841,6 +1841,7 @@ Supersedes the "Reading lists" decisions about `@citekey`, "Attach a reading…"
 
 - Find: a click in the note or Escape in it closes the bar; Cmd-F while it is open puts the cursor back in the find field (selected). `FindBridge` gained `close` and `focus`; the bar's own state is cleared by the controller's `onClose`.
 - `@` picker: it used to follow the caret and flip above or below as results changed height, and a list that scrolled under a still pointer moved the highlight. Now anchored at the `@`, side chosen from the fixed 360px maximum, hover ignores events without pointer movement. Checked in the built app: the list's position is identical before and after typing more.
+  - **26 Oct 2026 (the user's call):** the list no longer flips above. It opens 2px under the caret's line, left edge at the `@` (it may overlap the side column, the user likes that), and shrinks to the room below (at least 120px). Not yet driven in the app.
 
 ## People pickers and time fields (2 Oct 2026)
 

@@ -13,6 +13,7 @@ interface EntityPickerProps {
 const EDGE = 12
 const WIDTH = 360
 const MAX_HEIGHT = 360
+const MIN_HEIGHT = 120
 
 /**
  * The list that opens under the cursor when `@` is typed: people, readings, meetings and notes matching what follows
@@ -33,18 +34,14 @@ export function EntityPicker({
   })
 
   if (!snapshot.open) return null
-  // The list opens on the side with room and stays there: where it sits depends only on where the `@` is, never on how many rows came back.
+  // The list always opens right under the caret's line and shrinks to the room left (never flipping above), so it never moves with how many rows came back.
   const below = window.innerHeight - snapshot.top - EDGE
-  const above = snapshot.lineTop - 6 - EDGE
-  const opensAbove = below < MAX_HEIGHT && above > below
   const left = Math.max(EDGE, Math.min(snapshot.left, window.innerWidth - WIDTH - EDGE))
-  const place: React.CSSProperties = opensAbove
-    ? {
-        left,
-        bottom: window.innerHeight - snapshot.lineTop + 6,
-        maxHeight: Math.min(MAX_HEIGHT, above)
-      }
-    : { left, top: snapshot.top, maxHeight: Math.min(MAX_HEIGHT, below) }
+  const place: React.CSSProperties = {
+    left,
+    top: snapshot.top,
+    maxHeight: Math.min(MAX_HEIGHT, Math.max(below, MIN_HEIGHT))
+  }
   let index = -1
   return createPortal(
     <div
