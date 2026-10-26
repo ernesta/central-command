@@ -4478,3 +4478,12 @@ Follow-up the same day (the user's screenshot): fixed 220px left the first line 
 ## Training details: the Open task icon sits inside the Duration box (26 Oct 2026, the user's screenshot)
 
 The icon that opens the training's own task was a flex item of its own beside Duration, so it floated wherever the row wrapped and spaced it. It is now inside the Duration box at the right edge (`TrainingMetaFields.tsx`, `.calc` is a flex row; the button is 24px with a negative margin so the box keeps its height), because the task is the session and the session is what has that duration. Options weighed with HTML mockups: on the Duration label, beside the title, a labelled Task field like Meetings'; the user chose inside the box. Typecheck, lint and tests pass; not driven in a scratch library.
+
+## Training files: any folder, no Trainings folder setting (26 Oct 2026, the user's call)
+
+The Files panel refused a folder outside the Trainings folder setting ("Choose a folder inside the Trainings folder"), and that folder is for Uni only. The setting is gone from Settings → Training and the panel asks for nothing before "Link a folder…".
+
+- **A link is an absolute path** (`folder: /Users/…/Slides/Day 1`). `isSafeFolder` refuses `..`, control characters and `~`; `folderPath`, `resolveInside` and `listFolder` (`training/main/files.ts`) take the linked folder as the root of what is listed, opened or shown in Finder, so `..`, a link leading out of the linked folder and a sub-path outside it are still refused (mutation-checked). Files that run code are still never opened. The `filesToRelative` channel and `relativeToRoot` are removed: the picked path is the link.
+- **Links saved before this stay relative** and are not rewritten (no note was touched). They resolve against `trainingsFolder`, which stays in `settings.json` and the `Settings` type as a legacy value nothing shows or asks for; do not remove it until a script has made those links absolute (not written; only on the user's go-ahead). A relative link with no such value reads as "not there", like a moved folder.
+- **Following a move** keeps working: a relative link is searched for under the legacy folder as before; an absolute link is searched for only in the folder that held it (3 levels, 5,000 folders), by remembered identity or a unique name, and the new absolute path is saved as the link.
+- Not driven in the app: the folder dialog is native. Unit tests cover listing, opening, escapes and following moves.

@@ -1,6 +1,6 @@
 import type { Database } from 'better-sqlite3'
 import { readdir, realpath, stat } from 'fs/promises'
-import { join, relative, sep } from 'path'
+import { dirname, isAbsolute, join, relative, sep } from 'path'
 import { listFolder, NotThereError, resolveInside, type FolderListing } from './files'
 
 /** A folder's identity on disk: it survives a rename or a move on the same disk. */
@@ -34,9 +34,12 @@ export class FolderMemory {
   }
 }
 
-/** The most folders and the deepest level a search for a moved folder looks at. */
+/** The most folders and the deepest level a search for a moved folder looks at (under the old Trainings folder, for a relative link). */
 const MAX_FOLDERS = 20000
 const MAX_DEPTH = 10
+/** The same for a search around an absolute link, which starts in the folder that held it. */
+const NEARBY_FOLDERS = 5000
+const NEARBY_DEPTH = 3
 
 const identityOf = (info: { dev: bigint; ino: bigint }): FolderIdentity => ({
   dev: String(info.dev),
@@ -56,22 +59,32 @@ async function currentIdentity(root: string, folder: string): Promise<FolderIden
 }
 
 /**
- * Where the folder went: the one under `root` with the remembered identity, or failing that the only
- * folder with the same name. Symbolic links are not followed, hidden folders are skipped, and the search
- * stops after a fixed number of folders, so a huge tree cannot hold it up. Null when nothing fits.
+ * Where the folder went: the one with the remembered identity, or failing that the only folder with the
+ * same name. A relative link is looked for under `root` (the old Trainings folder) and answered
+ * relative to it; an absolute link is looked for in the folder that held it and answered absolute.
+ * Symbolic links are not followed, hidden folders are skipped, and the search stops after a fixed number
+ * of folders, so a huge tree cannot hold it up. Null when nothing fits.
  */
 export async function findMoved(
   root: string,
   folder: string,
   remembered: FolderIdentity | null
 ): Promise<string | null> {
-  const rootReal = await realpath(root)
+  const absolute = isAbsolute(folder)
+  let rootReal: string
+  try {
+    rootReal = await realpath(absolute ? dirname(folder) : root)
+  } catch {
+    return null
+  }
+  const maxFolders = absolute ? NEARBY_FOLDERS : MAX_FOLDERS
+  const maxDepth = absolute ? NEARBY_DEPTH : MAX_DEPTH
   const name = folder.split('/').at(-1)
   let byIdentity: string | null = null
   const sameName: string[] = []
   let seen = 0
   const walk = async (dir: string, depth: number): Promise<void> => {
-    if (byIdentity !== null || depth > MAX_DEPTH) return
+    if (byIdentity !== null || depth > maxDepth) return
     let entries
     try {
       entries = await readdir(dir, { withFileTypes: true })
@@ -79,7 +92,7 @@ export async function findMoved(
       return
     }
     for (const entry of entries) {
-      if (byIdentity !== null || seen >= MAX_FOLDERS) return
+      if (byIdentity !== null || seen >= maxFolders) return
       if (!entry.isDirectory() || entry.name.startsWith('.')) continue
       seen += 1
       const path = join(dir, entry.name)
@@ -101,6 +114,7 @@ export async function findMoved(
   await walk(rootReal, 1)
   const found = byIdentity ?? (sameName.length === 1 ? sameName[0] : null)
   if (found === null) return null
+  if (absolute) return found === folder ? null : found
   const rel = relative(rootReal, found).split(sep).join('/')
   return rel === '' || rel === folder ? null : rel
 }
@@ -121,7 +135,6 @@ export async function listLinkedFolder(
   memory: FolderMemory
 ): Promise<LinkedListing> {
   const listing = await listFolder(root, folder, sub)
-  if (listing.status === 'no-root') return listing
   const here = await currentIdentity(root, folder)
   if (here) {
     memory.set(folder, here)

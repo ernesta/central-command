@@ -21,7 +21,7 @@ import { TRAINING_WORKSPACES, type TrainingRef, type TrainingWorkspace } from '.
 import { trainingPath } from './file-name'
 import { PlanStore } from './plan-store'
 import { planYearFromFileName } from '../shared/plan'
-import { openablePath, relativeToRoot, resolveInside } from './files'
+import { openablePath, resolveInside } from './files'
 import { FolderMemory, listLinkedFolder } from './folder-memory'
 import { trainingMigrations } from './migrations'
 import { settleSelfStudyTasks } from './self-study-sweep'
@@ -142,7 +142,8 @@ function register({ db, paths, settings }: MainContext): () => void {
   })
   void mkdir(paths.trainingPlans, { recursive: true }).then(() => planWatcher.start())
 
-  // The Trainings folder is read from the settings on every call, so a change there applies at once.
+  // Linked folders are stored as absolute paths. `trainingsFolder` is no longer a setting anyone sees: it is only
+  // what links saved before that (relative paths) are resolved against.
   const root = (): string => settings.get().trainingsFolder
   const text = (value: unknown, what: string): string => {
     if (typeof value !== 'string') throw new Error(`Invalid ${what}`)
@@ -177,9 +178,6 @@ function register({ db, paths, settings }: MainContext): () => void {
         await resolveInside(root(), text(folder, 'folder'), text(sub, 'sub'), text(name, 'name'))
       )
     }
-  )
-  ipcMain.handle(TRAINING_IPC.filesToRelative, (_event, absolute: unknown) =>
-    relativeToRoot(root(), text(absolute, 'path'))
   )
 
   const watchers = ACTIVE_WORKSPACES.map(

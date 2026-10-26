@@ -28,7 +28,7 @@ import {
   type TrainingWorkspace
 } from '../shared/types'
 import { isUntouchedTraining } from '../shared/untouched'
-import { isSafeRelativeFolder } from './files'
+import { isSafeFolder } from './files'
 import { idFromFileName, trainingBaseName, trainingPath } from './file-name'
 import { buildTrainingIndexRow } from './index-row'
 import { deleteTrainingRow, listTrainingIds, listTrainingRows, upsertTraining } from './repository'
@@ -92,10 +92,8 @@ export function checkTrainingPatch(patch: TrainingPatch): void {
   if (patch.skills !== undefined && patch.skills.length > MAX_SKILLS) {
     throw new TrainingError(`An entry has at most ${MAX_SKILLS} skills`)
   }
-  if (patch.folder !== undefined && patch.folder !== null && !isSafeRelativeFolder(patch.folder)) {
-    throw new TrainingError(
-      `The folder must be a path inside the Trainings folder: ${patch.folder}`
-    )
+  if (patch.folder !== undefined && patch.folder !== null && !isSafeFolder(patch.folder)) {
+    throw new TrainingError(`Not a usable folder: ${patch.folder}`)
   }
   if (patch.task !== undefined && !/^[A-Za-z0-9_-]*$/.test(patch.task)) {
     throw new TrainingError(`Invalid task: ${patch.task}`)

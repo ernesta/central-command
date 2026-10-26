@@ -162,7 +162,7 @@ describe('save', () => {
       { type: 'Seminar' },
       { skills: ['a', 'b', 'c', 'd'] },
       { folder: '../secrets' },
-      { folder: '/etc' },
+      { folder: '~/slides' },
       { points: 'many' }
     ]) {
       await expect(store.save(entry.ref, { meta }, entry.note.hash)).rejects.toBeInstanceOf(
@@ -353,7 +353,7 @@ describe('delete', () => {
 })
 
 describe('isSafeRelativeFolder', () => {
-  it('accepts paths inside the Trainings folder and refuses the rest', () => {
+  it('accepts paths below a linked folder and refuses the rest', () => {
     expect(isSafeRelativeFolder('2025-26/SEDarc/2025 12 10 Data Management')).toBe(true)
     for (const bad of ['', '/abs', '~/x', '../up', 'a/../../b', 'a\\..\\b', 'a\u0000b']) {
       expect(isSafeRelativeFolder(bad)).toBe(false)

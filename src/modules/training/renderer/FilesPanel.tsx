@@ -5,12 +5,11 @@ import { IconButton } from '@renderer/components/IconButton'
 import { Notice } from '@renderer/components/Notice'
 import { Panel } from '@renderer/components/Panel'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
-import { useSettings } from '@renderer/state/settings-context'
 import type { TrainingFolderListing } from '../shared/api'
 import styles from './FilesPanel.module.css'
 
 interface FilesPanelProps {
-  /** The linked folder, relative to the Trainings folder, or null. */
+  /** The linked folder (an absolute path), or null. */
   folder: string | null
   onChange: (folder: string | null) => void
 }
@@ -20,19 +19,17 @@ interface FilesPanelProps {
  * with its default app or shows it in Finder, and never moves, renames, writes or deletes anything.
  */
 export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Element {
-  const { settings } = useSettings()
-  const root = settings.trainingsFolder
   // The sub-folder being shown belongs to one linked folder; a different link starts at its top.
   const [nav, setNav] = useState<{ folder: string | null; sub: string }>({ folder, sub: '' })
   const sub = nav.folder === folder ? nav.sub : ''
   const [loaded, setLoaded] = useState<{ key: string; listing: TrainingFolderListing } | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const key = `${root}|${folder}|${sub}`
+  const key = `${folder}|${sub}`
   // The folder is changed in Finder, not here: look again when the window regains focus and every few seconds.
   const [refresh, setRefresh] = useState(0)
 
   useEffect(() => {
-    if (!folder || !root) return
+    if (!folder) return
     const again = (): void => setRefresh((n) => n + 1)
     const timer = window.setInterval(() => {
       if (document.visibilityState === 'visible') again()
@@ -44,10 +41,10 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
       window.removeEventListener('focus', again)
       document.removeEventListener('visibilitychange', again)
     }
-  }, [folder, root])
+  }, [folder])
 
   useEffect(() => {
-    if (!folder || !root) return
+    if (!folder) return
     let cancelled = false
     window.api.training.files
       .list(folder, sub)
@@ -65,7 +62,7 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
       cancelled = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [folder, root, sub, key, refresh])
+  }, [folder, sub, key, refresh])
 
   const listing = loaded?.key === key ? loaded.listing : null
 
@@ -75,10 +72,9 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
       const picked = await window.api.dialog.pickPath({
         kind: 'folder',
         title: 'Choose the folder for this entry',
-        defaultPath: root || undefined
+        defaultPath: folder?.startsWith('/') ? folder : undefined
       })
-      if (!picked) return
-      onChange(await window.api.training.files.toRelative(picked))
+      if (picked) onChange(picked)
     } catch (e) {
       setError(ipcErrorMessage(e))
     }
@@ -101,7 +97,7 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
       label="Files"
       actions={
         <>
-          {folder && root && (
+          {folder && (
             <IconButton
               className={styles.iconAction}
               label="Show in Finder"
@@ -120,7 +116,7 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
               <Link2Off size={15} strokeWidth={1.75} aria-hidden />
             </IconButton>
           )}
-          {root && folder && (
+          {folder && (
             <IconButton
               className={styles.iconAction}
               label="Change folder"
@@ -129,7 +125,7 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
               <FolderSymlink size={15} strokeWidth={1.75} aria-hidden />
             </IconButton>
           )}
-          {root && !folder && (
+          {!folder && (
             <Button size="small" onClick={() => void link()}>
               Link a folder…
             </Button>
@@ -137,13 +133,7 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
         </>
       }
     >
-      {!root && (
-        <p className={styles.quiet}>
-          Choose the Trainings folder in Settings to link a folder of slides and readings to this
-          entry.
-        </p>
-      )}
-      {root && !folder && (
+      {!folder && (
         <p className={styles.quiet}>
           No folder linked. Files stay where they are; the entry only points to them.
         </p>
@@ -154,7 +144,7 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
         </Notice>
       )}
 
-      {root && folder && (
+      {folder && (
         <>
           {crumbs.length > 0 && (
             <nav className={styles.crumbs} aria-label="Folder path">
@@ -177,12 +167,9 @@ export function FilesPanel({ folder, onChange }: FilesPanelProps): React.JSX.Ele
           )}
           {listing?.status === 'missing' && (
             <p className={styles.quiet}>
-              The folder “{folder}” is not there. It may have been moved or renamed; the link is
-              kept.
+              The folder “{folder.split('/').at(-1)}” is not there. It may have been moved or
+              renamed; the link is kept.
             </p>
-          )}
-          {listing?.status === 'no-root' && (
-            <p className={styles.quiet}>The Trainings folder in Settings is not a folder.</p>
           )}
           {listing?.status === 'ok' &&
             (listing.entries.length === 0 ? (

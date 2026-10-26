@@ -37,7 +37,7 @@ export interface Settings {
   terminal: TerminalId
   /** Yearly training aim in hours (Training shows progress towards it). */
   trainingAimHours: number
-  /** The folder holding training files (slides, readings); entries link to sub-folders of it. Empty until configured. */
+  /** Legacy, no longer shown or asked for: linked folders are absolute paths. Only resolves links saved before that as paths relative to it. */
   trainingsFolder: string
   /**
    * When each year starts (Mondays, oldest first; a year is 52 weeks), for Hours, Time off, Training and

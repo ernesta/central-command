@@ -140,7 +140,7 @@ export interface TrainingMeta {
   leads: string[]
   /** The institution that provided it (the Inkpath Provider). */
   institution: string | null
-  /** A folder of files, relative to the Trainings folder setting. */
+  /** A folder of files: an absolute path (or, in an older link, relative to the old Trainings folder setting). */
   folder: string | null
   /** Kept from the Inkpath log; not shown yet. */
   organisation: string | null

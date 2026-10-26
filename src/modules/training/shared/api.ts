@@ -17,8 +17,6 @@ export interface TrainingFolderEntry {
 
 export type TrainingFolderListing = (
   | { status: 'ok'; entries: TrainingFolderEntry[] }
-  /** The Trainings folder setting is empty or is not a folder. */
-  | { status: 'no-root' }
   /** The entry's folder is not there (moved or renamed). */
   | { status: 'missing' }
 ) & {
@@ -28,16 +26,14 @@ export type TrainingFolderListing = (
 
 /**
  * Files linked to an entry. The app only ever reads them: it lists, opens with the default app and
- * shows in Finder, and refuses any path outside the Trainings folder.
+ * shows in Finder, and refuses any path outside the linked folder.
  */
 export interface TrainingFilesApi {
-  /** One level of an entry's folder (or a sub-folder of it), relative to the Trainings folder setting. */
+  /** One level of an entry's linked folder (or a sub-folder of it). */
   list(folder: string, sub?: string): Promise<TrainingFolderListing>
   open(folder: string, sub: string, name: string): Promise<void>
   /** Show a file, or the folder itself when `name` is empty, in Finder. */
   reveal(folder: string, sub: string, name: string): Promise<void>
-  /** A folder picked in a dialog, as a path relative to the Trainings folder; rejects one outside it. */
-  toRelative(absolute: string): Promise<string>
 }
 
 export interface CreateTrainingInput {
@@ -140,7 +136,6 @@ export const TRAINING_IPC = {
   filesList: 'training:files-list',
   filesOpen: 'training:files-open',
   filesReveal: 'training:files-reveal',
-  filesToRelative: 'training:files-to-relative',
   planRead: 'training:plan-read',
   planWrite: 'training:plan-write',
   planReveal: 'training:plan-reveal',

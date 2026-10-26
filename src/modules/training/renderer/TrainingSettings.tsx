@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import { Input } from '@renderer/components/Input'
-import { PathField } from '@renderer/shell/PathField'
 import { useSettings } from '@renderer/state/settings-context'
 import styles from './TrainingSettings.module.css'
 
-/** Training's settings: the folder holding training files and the yearly aim in hours. */
+/** Training's settings: the yearly aim in hours. */
 export function TrainingSettings(): React.JSX.Element {
   const { settings, update } = useSettings()
   const [draft, setDraft] = useState<string | null>(null)
@@ -29,14 +28,6 @@ export function TrainingSettings(): React.JSX.Element {
       <h2 id="training-settings" className={styles.heading}>
         Training
       </h2>
-      <PathField
-        label="Trainings folder"
-        help="The folder holding your training files (slides, readings). Entries link to folders inside it; the app only lists and opens them and never changes them."
-        kind="folder"
-        placeholder="/path/to/Trainings"
-        value={settings.trainingsFolder}
-        onCommit={(trainingsFolder) => void update({ trainingsFolder })}
-      />
       <div className={styles.field}>
         <label htmlFor="training-aim" className={styles.label}>
           Yearly training aim (hours)

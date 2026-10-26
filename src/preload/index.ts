@@ -133,9 +133,7 @@ const api: Api = {
     files: {
       list: (folder, sub) => ipcRenderer.invoke(TRAINING_IPC.filesList, folder, sub),
       open: (folder, sub, name) => ipcRenderer.invoke(TRAINING_IPC.filesOpen, folder, sub, name),
-      reveal: (folder, sub, name) =>
-        ipcRenderer.invoke(TRAINING_IPC.filesReveal, folder, sub, name),
-      toRelative: (absolute) => ipcRenderer.invoke(TRAINING_IPC.filesToRelative, absolute)
+      reveal: (folder, sub, name) => ipcRenderer.invoke(TRAINING_IPC.filesReveal, folder, sub, name)
     },
     plan: {
       read: (year) => ipcRenderer.invoke(TRAINING_IPC.planRead, year),

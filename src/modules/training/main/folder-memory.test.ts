@@ -84,6 +84,34 @@ describe('listLinkedFolder', () => {
   })
 })
 
+describe('an absolute link', () => {
+  const absolute = (): string => join(root, FOLDER)
+
+  it('is listed and remembered without any root', async () => {
+    const res = await listLinkedFolder('', absolute(), '', memory)
+    expect(res.status).toBe('ok')
+    expect(memory.get(absolute())).not.toBeNull()
+  })
+
+  it('follows a rename next to it, answering with an absolute path', async () => {
+    await listLinkedFolder('', absolute(), '', memory)
+    const renamed = join(root, '2026-27', 'Workshops', 'Response Surface')
+    renameSync(absolute(), renamed)
+    const res = await listLinkedFolder('', absolute(), '', memory)
+    expect(res.movedTo).toBe(renamed)
+    expect(res.status === 'ok' && res.entries.map((e) => e.name)).toEqual(['slides.pdf'])
+  })
+
+  it('does not look beyond the folder that held it', async () => {
+    await listLinkedFolder('', absolute(), '', memory)
+    const elsewhere = join(root, '2026-27', 'Other', 'RSA')
+    renameSync(absolute(), elsewhere)
+    mkdirSync(join(root, '2026-27', 'Workshops', 'Nothing'))
+    const res = await listLinkedFolder('', absolute(), '', memory)
+    expect(res.status).toBe('missing')
+  })
+})
+
 describe('resolveInside', () => {
   it('says a missing folder is not there, in words', async () => {
     await expect(resolveInside(root, '2026-27/Nope')).rejects.toThrow(

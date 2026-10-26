@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSyn
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { FilesError, listFolder, openablePath, relativeToRoot, resolveInside } from './files'
+import { FilesError, isSafeFolder, listFolder, openablePath, resolveInside } from './files'
 
 let base: string
 let root: string
@@ -39,21 +39,32 @@ describe('listFolder', () => {
     expect(res.status === 'ok' && res.entries.map((e) => e.name)).toEqual(['deck.pptx'])
   })
 
-  it('reports an unset or missing root and a missing folder without throwing', async () => {
-    expect(await listFolder('', FOLDER)).toEqual({ status: 'no-root' })
-    expect(await listFolder(join(base, 'nope'), FOLDER)).toEqual({ status: 'no-root' })
+  it('lists any folder given as an absolute path, whatever the old setting says', async () => {
+    const res = await listFolder('', join(root, FOLDER))
+    expect(res.status === 'ok' && res.entries.map((e) => e.name)).toEqual(['slides', 'notes.pdf'])
+    const elsewhere = await listFolder(root, outside)
+    expect(elsewhere.status === 'ok' && elsewhere.entries.map((e) => e.name)).toEqual([
+      'passwords.txt'
+    ])
+  })
+
+  it('reads a relative link against the old setting, and calls it missing when none is set', async () => {
+    expect(await listFolder('', FOLDER)).toEqual({ status: 'missing' })
+    expect(await listFolder(join(base, 'nope'), FOLDER)).toEqual({ status: 'missing' })
     expect(await listFolder(root, '2025-26/Gone')).toEqual({ status: 'missing' })
+    expect(await listFolder(root, join(base, 'Gone'))).toEqual({ status: 'missing' })
   })
 
-  it('refuses .. and absolute paths', async () => {
+  it('refuses .. in a folder, a sub-folder and a name', async () => {
     await expect(listFolder(root, '../Secrets')).rejects.toBeInstanceOf(FilesError)
+    await expect(listFolder(root, `${root}/../Secrets`)).rejects.toBeInstanceOf(FilesError)
     await expect(listFolder(root, FOLDER, '../../../../Secrets')).rejects.toBeInstanceOf(FilesError)
-    await expect(listFolder(root, outside)).rejects.toBeInstanceOf(FilesError)
+    await expect(listFolder(root, join(root, FOLDER), '/etc')).rejects.toBeInstanceOf(FilesError)
   })
 
-  it('refuses a folder that is a symlink leading outside the root, and hides such links in a listing', async () => {
-    symlinkSync(outside, join(root, '2025-26', 'escape'))
-    await expect(listFolder(root, '2025-26/escape')).rejects.toBeInstanceOf(FilesError)
+  it('hides links that lead out of the linked folder, and refuses to open into them', async () => {
+    symlinkSync(outside, join(root, '2025-26', 'SEDarc', 'Day one', 'slides', 'escape'))
+    await expect(listFolder(root, FOLDER, 'slides/escape')).rejects.toBeInstanceOf(FilesError)
     symlinkSync(outside, join(root, '2025-26', 'SEDarc', 'Day one', 'linked'))
     symlinkSync(
       join(outside, 'passwords.txt'),
@@ -63,10 +74,15 @@ describe('listFolder', () => {
     expect(res.status === 'ok' && res.entries.map((e) => e.name)).toEqual(['slides', 'notes.pdf'])
   })
 
-  it('allows a symlink that stays inside the root', async () => {
+  it('follows a link that is itself the linked folder, and one that stays inside it', async () => {
     symlinkSync(join(root, '2025-26', 'SEDarc', 'Day one'), join(root, 'shortcut'))
-    const res = await listFolder(root, 'shortcut')
-    expect(res.status).toBe('ok')
+    expect((await listFolder(root, 'shortcut')).status).toBe('ok')
+    symlinkSync(
+      join(root, '2025-26', 'SEDarc', 'Day one', 'slides'),
+      join(root, '2025-26', 'SEDarc', 'Day one', 'inner')
+    )
+    const res = await listFolder(root, join(root, FOLDER))
+    expect(res.status === 'ok' && res.entries.map((e) => e.name)).toContain('inner')
   })
 })
 
@@ -92,23 +108,17 @@ describe('openablePath', () => {
   })
 })
 
-describe('resolveInside and relativeToRoot', () => {
-  it('needs a root', async () => {
+describe('resolveInside and isSafeFolder', () => {
+  it('needs a root only for a relative link', async () => {
     await expect(resolveInside('', FOLDER)).rejects.toBeInstanceOf(FilesError)
-    await expect(relativeToRoot('', root)).rejects.toBeInstanceOf(FilesError)
+    expect(await resolveInside('', join(root, FOLDER))).toBe(join(root, FOLDER))
   })
 
-  it('turns a picked folder into a path relative to the root, refusing others', async () => {
-    expect(await relativeToRoot(root, join(root, '2025-26', 'SEDarc', 'Day one'))).toBe(FOLDER)
-    await expect(relativeToRoot(root, outside)).rejects.toBeInstanceOf(FilesError)
-    await expect(relativeToRoot(root, root)).rejects.toBeInstanceOf(FilesError)
-    symlinkSync(outside, join(root, 'escape'))
-    await expect(relativeToRoot(root, join(root, 'escape'))).rejects.toBeInstanceOf(FilesError)
-  })
-
-  it('does not treat a sibling with the same prefix as inside', async () => {
-    const sibling = join(base, 'Trainings-old')
-    mkdirSync(sibling)
-    await expect(relativeToRoot(root, sibling)).rejects.toBeInstanceOf(FilesError)
+  it('accepts an absolute or relative folder and refuses the unsafe', () => {
+    expect(isSafeFolder('/Users/me/Slides/Day one')).toBe(true)
+    expect(isSafeFolder('2025-26/SEDarc/Day one')).toBe(true)
+    for (const bad of ['', '~/x', '../up', '/a/../../b', 'a\\..\\b', 'a\u0000b']) {
+      expect(isSafeFolder(bad)).toBe(false)
+    }
   })
 })
