@@ -57,9 +57,9 @@
 }
 
 .type {
-  min-width: 220px;
+  width: 200px;
 }
 
 .combo {
-  min-width: 300px;
+  width: 200px;
 }

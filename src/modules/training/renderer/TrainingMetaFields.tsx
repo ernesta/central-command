@@ -164,16 +164,6 @@ export function TrainingMetaFields({
         </div>
       )}
       <div className={styles.field}>
-        <span className={styles.label}>Format</span>
-        <Segmented<TrainingMode | ''>
-          label="Format"
-          value={meta.mode ?? ''}
-          options={MODE_OPTIONS}
-          // Choosing the selected format again clears it.
-          onChange={(mode) => onChange({ mode: mode === meta.mode || mode === '' ? null : mode })}
-        />
-      </div>
-      <div className={styles.field}>
         <label className={styles.label} htmlFor="training-institution">
           Institution
         </label>
@@ -188,6 +178,16 @@ export function TrainingMetaFields({
           text={meta.institution ?? ''}
           onChange={(institution) => onChange({ institution: institution || null })}
           add={{ onAdd: (institution) => onChange({ institution }) }}
+        />
+      </div>
+      <div className={styles.field}>
+        <span className={styles.label}>Format</span>
+        <Segmented<TrainingMode | ''>
+          label="Format"
+          value={meta.mode ?? ''}
+          options={MODE_OPTIONS}
+          // Choosing the selected format again clears it.
+          onChange={(mode) => onChange({ mode: mode === meta.mode || mode === '' ? null : mode })}
         />
       </div>
       <div className={styles.field}>
