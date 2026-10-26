@@ -129,7 +129,7 @@ export function TrainingMetaFields({
           </IconButton>
         </div>
       )}
-      <div className={styles.field}>
+      <div className={`${styles.field} ${styles.grow}`}>
         <label className={styles.label} htmlFor="training-series">
           Series
         </label>
@@ -147,7 +147,7 @@ export function TrainingMetaFields({
         />
       </div>
       {research && (
-        <div className={styles.field}>
+        <div className={`${styles.field} ${styles.grow}`}>
           <label className={styles.label} htmlFor="training-type">
             Type
           </label>
@@ -163,7 +163,7 @@ export function TrainingMetaFields({
           />
         </div>
       )}
-      <div className={styles.field}>
+      <div className={`${styles.field} ${styles.grow}`}>
         <label className={styles.label} htmlFor="training-institution">
           Institution
         </label>

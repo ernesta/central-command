@@ -56,10 +56,13 @@
   clip: rect(0 0 0 0);
 }
 
-.type {
-  width: 220px;
+/* Series, Type and Institution share what the line has left, 220px at the least. */
+.grow {
+  flex: 1 1 220px;
+  min-width: 220px;
 }
 
+.type,
 .combo {
-  width: 220px;
+  width: 100%;
 }
