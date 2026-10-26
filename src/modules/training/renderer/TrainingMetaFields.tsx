@@ -30,6 +30,8 @@ interface TrainingMetaFieldsProps {
   institutionSuggestions: string[]
   onChange: (patch: TrainingPatch) => void
   onAddPerson: (name: string) => Promise<Person>
+  /** Reload the people list (a person may have been made with `@` since the page opened). */
+  onOpenPeople: () => void
   /** Life's entries have no type or skills (they are Inkpath's). */
   workspace?: TrainingWorkspace
   /** Where the training's own task (the session) is, once it exists: an icon button in the details. */
@@ -49,6 +51,7 @@ export function TrainingMetaFields({
   institutionSuggestions,
   onChange,
   onAddPerson,
+  onOpenPeople,
   workspace = 'research',
   trainingTaskTo
 }: TrainingMetaFieldsProps): React.JSX.Element {
@@ -196,6 +199,7 @@ export function TrainingMetaFields({
           people={people}
           onChange={(leads) => onChange({ leads: orderNames(people, leads) })}
           onAddPerson={onAddPerson}
+          onOpen={onOpenPeople}
         />
       </div>
       {research && (

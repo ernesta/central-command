@@ -101,6 +101,10 @@ function EntryView({
     }
   }, [workspace])
 
+  const refreshPeople = useCallback(() => {
+    void window.api.meetings.people.list().then(setPeople)
+  }, [])
+
   // A brand-new entry opens with its title selected, so typing replaces "Untitled".
   const ready = snapshot.status === 'ready'
   useEffect(() => {
@@ -289,6 +293,7 @@ function EntryView({
         institutionSuggestions={institutionsUsed}
         onChange={(patch) => session.setMetaUndoable(patch)}
         onAddPerson={addPerson}
+        onOpenPeople={refreshPeople}
         workspace={workspace}
         trainingTaskTo={
           research && trainingTask ? taskRoute(trainingTask.workspace, trainingTask.uid) : undefined

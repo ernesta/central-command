@@ -15,6 +15,8 @@ interface PeopleFieldProps {
   onChange: (names: string[]) => void
   /** Add a person to the people list (initials are worked out from the name). Rejects with a message. */
   onAddPerson: (name: string) => Promise<Person>
+  /** Called when the picker opens, so the page can reload a list that changed elsewhere (a person made with `@`). */
+  onOpen?: () => void
 }
 
 /** People as initials chips (Meetings attendees, Training leads), with the shared picker to add people. */
@@ -24,7 +26,8 @@ export function PeopleField({
   names,
   people,
   onChange,
-  onAddPerson
+  onAddPerson,
+  onOpen
 }: PeopleFieldProps): React.JSX.Element {
   const [open, setOpen] = useState(false)
   const addRef = useRef<HTMLButtonElement>(null)
@@ -66,7 +69,10 @@ export function PeopleField({
             className={styles.add}
             aria-haspopup="listbox"
             aria-expanded={open}
-            onClick={() => setOpen((o) => !o)}
+            onClick={() => {
+              if (!open) onOpen?.()
+              setOpen((o) => !o)
+            }}
           >
             <Plus size={12} strokeWidth={2} aria-hidden />
             add

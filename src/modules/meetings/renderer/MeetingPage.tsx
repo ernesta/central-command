@@ -89,6 +89,10 @@ function MeetingView({
     }
   }, [])
 
+  const refreshPeople = useCallback(() => {
+    void window.api.meetings.people.list().then(setPeople)
+  }, [])
+
   const { meta, body, save, error, conflict, reloadedFromDisk, problems, updatedAt } = snapshot
   useMeetingTask(meetingRef.workspace, meta, snapshot.status === 'ready', (task) =>
     session.setMeta({ task })
@@ -322,6 +326,7 @@ function MeetingView({
         people={people}
         onChange={(patch) => session.setMetaUndoable(patch)}
         onAddPerson={addPerson}
+        onOpenPeople={refreshPeople}
       />
       <MeetingHoursNote workspace={meetingRef.workspace} id={currentId} meta={meta} />
 

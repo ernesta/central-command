@@ -26,6 +26,8 @@ interface MetaFieldsProps {
   people: Person[]
   onChange: (patch: MetaPatch) => void
   onAddPerson: (name: string) => Promise<Person>
+  /** Reload the people list (a person may have been made with `@` since the page opened). */
+  onOpenPeople: () => void
 }
 
 const MODE_OPTIONS = [
@@ -40,7 +42,8 @@ export function MetaFields({
   meta,
   people,
   onChange,
-  onAddPerson
+  onAddPerson,
+  onOpenPeople
 }: MetaFieldsProps): React.JSX.Element {
   // Choosing or adding a series renames the file, once: nothing is sent while the name is being typed.
   const commitSeries = (text: string): void => {
@@ -147,6 +150,7 @@ export function MetaFields({
           people={people}
           onChange={(attendees) => onChange({ attendees: orderNames(people, attendees) })}
           onAddPerson={onAddPerson}
+          onOpen={onOpenPeople}
         />
       </div>
       {tracksSkills(workspace) && (
