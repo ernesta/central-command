@@ -9,7 +9,6 @@ import {
   LandingSection,
   SeeAllLink
 } from '@renderer/components/Landing'
-import landing from '@renderer/components/Landing.module.css'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { KIND_NOUN, SHOWN_PER_SECTION, sectionsOf } from '../shared/rows'
@@ -99,13 +98,7 @@ export function WatchPage(): React.JSX.Element {
       ) : (
         <>
           {sections.saved.length > 0 && (
-            <LandingSection
-              id="watch-saved"
-              label="Saved"
-              aside={
-                <span className={landing.windowNote}>Their deadlines show in Home’s Coming up</span>
-              }
-            >
+            <LandingSection id="watch-saved" label="Saved">
               <WatchList items={sections.saved} today={today} actions={actions} />
             </LandingSection>
           )}
