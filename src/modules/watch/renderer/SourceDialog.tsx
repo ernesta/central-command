@@ -4,7 +4,7 @@ import { Dialog } from '@renderer/components/Dialog'
 import { Input } from '@renderer/components/Input'
 import { Select, type SelectOption } from '@renderer/components/Select'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
-import { EVERY_OPTIONS, KIND_LABEL, everyLabel } from '../shared/rows'
+import { KIND_LABEL } from '../shared/rows'
 import { guessMethod, shownKind, type WatchKind, type WatchSource } from '../shared/types'
 import styles from './WatchSettings.module.css'
 
@@ -16,7 +16,7 @@ function kindOptions(current: WatchKind): SelectOption<WatchKind>[] {
   return kinds.map((k) => ({ value: k, label: KIND_LABEL[k] }))
 }
 
-/** Add a source, or edit one (name, address, kind, how often) or remove it. Shown while it is wanted. */
+/** Add a source, or edit one (name, address, kind) or remove it. Shown while it is wanted. */
 export function SourceDialog({
   source,
   itemCount,
@@ -39,17 +39,9 @@ export function SourceDialog({
         : source.kind
       : 'training'
   )
-  const [hours, setHours] = useState(String(source?.intervalHours ?? 24))
   const [confirming, setConfirming] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-
-  const everyOptions: SelectOption<string>[] = [
-    ...EVERY_OPTIONS.map((o) => ({ value: String(o.hours), label: o.label })),
-    ...(EVERY_OPTIONS.some((o) => String(o.hours) === hours)
-      ? []
-      : [{ value: hours, label: everyLabel(Number(hours)) }])
-  ]
 
   const run = async (work: () => Promise<unknown>): Promise<void> => {
     setBusy(true)
@@ -70,7 +62,7 @@ export function SourceDialog({
           title,
           url,
           kind,
-          intervalHours: Number(hours)
+          intervalHours: 24
         })
       } else {
         const added = await window.api.watch.sources.add({
@@ -78,7 +70,7 @@ export function SourceDialog({
           url,
           kind,
           method: guessMethod(url),
-          intervalHours: Number(hours)
+          intervalHours: 24
         })
         // Look at it now, so the page has something to show (a source is only ever requested because it exists).
         void window.api.watch.checkNow(added.id).catch(() => undefined)
@@ -172,10 +164,6 @@ export function SourceDialog({
               options={kindOptions(source?.kind ?? 'training')}
               onChange={setKind}
             />
-          </div>
-          <div className={styles.field}>
-            <span className={styles.fieldLabel}>Every</span>
-            <Select label="Every" value={hours} options={everyOptions} onChange={setHours} />
           </div>
         </div>
         {error && (

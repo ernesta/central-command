@@ -18,6 +18,7 @@ import { todayIso, watchListRoute } from './watch-paths'
 import { useWatchItems } from './useWatchItems'
 import { useWatchSources } from './useWatchSources'
 import { WatchList } from './WatchList'
+import listStyles from './WatchList.module.css'
 
 const SETTINGS_WATCH = { settingsTab: 'watch' }
 
@@ -54,10 +55,7 @@ export function WatchPage(): React.JSX.Element {
       }
     >
       {list.length === 0 ? (
-        <EmptyState
-          heading={`Nothing new in ${KIND_NOUN[kind].many.toLowerCase()}`}
-          message={`See all ${KIND_NOUN[kind].many.toLowerCase()} for the rest.`}
-        />
+        <p className={listStyles.empty}>Nothing new in {KIND_NOUN[kind].many.toLowerCase()}</p>
       ) : (
         <WatchList items={list.slice(0, SHOWN_PER_SECTION)} today={today} actions={actions} />
       )}

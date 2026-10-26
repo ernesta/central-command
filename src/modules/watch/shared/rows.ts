@@ -13,6 +13,17 @@ export const KIND_NOUN: Record<ShownKind, { one: string; many: string }> = {
   conference: { one: 'Conference', many: 'Conferences' }
 }
 
+/**
+ * An item's title as the page shows it: without the sentence's closing full stop, and without a "Local Organiser: <name>"
+ * the page put in front of the event's own name.
+ */
+export function displayTitle(title: string): string {
+  return title
+    .replace(/^Local Organi[sz]ers?:\s+\p{Lu}\p{L}+(?:\s\p{Lu}\p{L}+)?\s+(?=\p{Lu}{2,})/u, '')
+    .replace(/\.\s*$/, '')
+    .trim()
+}
+
 /** The day an item was found, said the way the landing lists say a date: "Today", "Yesterday", "3 days ago", then the date. */
 export function foundLabel(firstSeenAt: string, today: string): string {
   const day = firstSeenAt.slice(0, 10)
@@ -79,20 +90,6 @@ export function checkedLabel(
     }
   if (!source.lastCheckedAt) return { text: 'Not yet', failing: false }
   return { text: foundLabel(source.lastCheckedAt, today), failing: false }
-}
-
-/** How often a source is checked, in hours, as the choices the dialog offers. */
-export const EVERY_OPTIONS = [
-  { hours: 6, label: '6 hours' },
-  { hours: 12, label: '12 hours' },
-  { hours: 24, label: 'Day' },
-  { hours: 72, label: '3 days' },
-  { hours: 168, label: 'Week' }
-] as const
-
-/** "Day" for 24, or the odd number of hours a hand-edited source may have. */
-export function everyLabel(hours: number): string {
-  return EVERY_OPTIONS.find((o) => o.hours === hours)?.label ?? `${hours} hours`
 }
 
 export const KIND_LABEL: Record<WatchKind, string> = {

@@ -56,3 +56,10 @@
     justify-content: flex-start;
   }
 }
+
+.empty {
+  margin: 0;
+  padding: 8px 0;
+  color: var(--text-muted);
+  font-size: var(--text-14);
+}

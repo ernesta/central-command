@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { checkedLabel, everyLabel, foundLabel, noteFor, sectionsOf } from './rows'
+import { checkedLabel, displayTitle, foundLabel, noteFor, sectionsOf } from './rows'
 import type { WatchItem } from './types'
 
 const item = (over: Partial<WatchItem>): WatchItem => ({
@@ -56,7 +56,7 @@ describe('sectionsOf', () => {
   })
 })
 
-describe('checkedLabel and everyLabel', () => {
+describe('checkedLabel', () => {
   const src = { lastCheckedAt: '2026-10-26T08:00:00.000Z', lastError: null, failures: 0 }
   it('says when a working source was checked, and only a failing one says so', () => {
     expect(checkedLabel(src, '2026-10-26')).toEqual({ text: 'Today', failing: false })
@@ -69,9 +69,17 @@ describe('checkedLabel and everyLabel', () => {
       'Can’t open: 1 try'
     )
   })
-  it('names the usual intervals and any other as hours', () => {
-    expect(everyLabel(24)).toBe('Day')
-    expect(everyLabel(168)).toBe('Week')
-    expect(everyLabel(48)).toBe('48 hours')
+})
+
+describe('displayTitle', () => {
+  it('drops the closing full stop and a local organiser’s name', () => {
+    expect(displayTitle('EPS Meeting: Cardiff University. 7th – 9th April 2027.')).toBe(
+      'EPS Meeting: Cardiff University. 7th – 9th April 2027'
+    )
+    expect(
+      displayTitle(
+        'Local Organiser: Adam Parker EPS Research Workshop: Birmingham City University. 20th January 2027.'
+      )
+    ).toBe('EPS Research Workshop: Birmingham City University. 20th January 2027')
   })
 })

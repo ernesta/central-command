@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
 import { CutText } from '@renderer/components/CutText'
 import { Tooltip } from '@renderer/components/Tooltip'
-import { KIND_LABEL, checkedLabel, everyLabel } from '../shared/rows'
+import { KIND_LABEL, checkedLabel } from '../shared/rows'
 import type { WatchItem } from '../shared/types'
 import { SourceDialog } from './SourceDialog'
 import { todayIso } from './watch-paths'
@@ -62,12 +62,11 @@ export function WatchSettings(): React.JSX.Element {
               <colgroup>
                 <col />
                 <col style={{ width: 110 }} />
-                <col style={{ width: 90 }} />
                 <col style={{ width: 170 }} />
               </colgroup>
               <thead>
                 <tr>
-                  {['Source', 'Kind', 'Every', 'Last checked'].map((h) => (
+                  {['Source', 'Kind', 'Last checked'].map((h) => (
                     <th key={h} className={styles.th} scope="col">
                       {h}
                     </th>
@@ -97,7 +96,6 @@ export function WatchSettings(): React.JSX.Element {
                         <CutText className={styles.address}>{s.url}</CutText>
                       </td>
                       <td className={styles.muted}>{KIND_LABEL[s.kind]}</td>
-                      <td className={styles.muted}>{everyLabel(s.intervalHours)}</td>
                       <td className={checked.failing ? styles.failing : styles.muted}>
                         {checked.failing && s.lastError ? (
                           <Tooltip text={s.lastError}>

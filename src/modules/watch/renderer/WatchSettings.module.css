@@ -35,12 +35,10 @@
 }
 .wrap {
   overflow-x: auto;
-  padding: 4px;
-  scroll-padding: 4px;
 }
 .table {
   width: 100%;
-  min-width: 620px;
+  min-width: 520px;
   table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
