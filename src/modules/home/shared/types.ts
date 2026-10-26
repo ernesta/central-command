@@ -1,6 +1,8 @@
 import type { WatchCounts, WatchItem } from '../../watch/shared/types'
 import type { WatchKind } from '../../watch/shared/types'
 
+import type { TaskStatus } from '../../tasks/shared/types'
+
 export type HomeWorkspace = 'research' | 'work'
 
 export interface HomeTask {
@@ -14,6 +16,8 @@ export interface HomeTask {
   parent: string | null
   /** The uid of that parent (null for any other task). */
   parentUid: string | null
+  parentStatus: TaskStatus | null
+  parentPriority: 'high' | 'normal' | 'low' | null
   due: string
   priority: 'high' | 'normal' | 'low'
   status: 'todo' | 'doing'

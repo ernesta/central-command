@@ -141,6 +141,8 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
         `SELECT t.uid, t.title, t.workspace, t.due, t.priority, t.status,
               CASE WHEN t.own_kind = 'self-study' THEN NULL ELSE p.title END AS parent,
               CASE WHEN t.own_kind = 'self-study' THEN NULL ELSE t.parent_uid END AS parentUid,
+              CASE WHEN t.own_kind = 'self-study' THEN NULL ELSE p.status END AS parentStatus,
+              CASE WHEN t.own_kind = 'self-study' THEN NULL ELSE p.priority END AS parentPriority,
               t.own_kind AS ownKind, p.title AS parentTitle,
               CASE WHEN t.parent_uid IS NULL THEN t.list ELSE COALESCE(p.list, '') END AS list,
               CASE WHEN t.parent_uid IS NULL THEN t.sublist ELSE COALESCE(p.sublist, '') END AS sublist

@@ -23,7 +23,6 @@ import { HomeHours } from './HomeHours'
 import { usePeople } from '../../meetings/renderer/usePeople'
 import { initialsFor } from '../../meetings/shared/query'
 import { StatusButton } from '../../tasks/renderer/StatusButton'
-import { taskRoute } from '../shared/summary'
 import { None, StyledLink } from './HomeParts'
 import { useHomeSummary } from './useHomeSummary'
 import styles from './Home.module.css'
@@ -52,7 +51,9 @@ function Row({
   titleText,
   line,
   trailing,
-  nested = false
+  kid = false,
+  end = false,
+  hasKids = false
 }: {
   to: string
   lead: React.ReactNode
@@ -61,12 +62,18 @@ function Row({
   titleText: string
   line: React.ReactNode
   trailing: React.ReactNode
-  /** A subtask under its task, as in the Tasks table. */
-  nested?: boolean
+  /** A subtask under its task, hung off a rail as in the Tasks table; `end` for the last one. */
+  kid?: boolean
+  end?: boolean
+  hasKids?: boolean
 }): React.JSX.Element {
   return (
-    <li>
-      <Link className={nested ? `${styles.row} ${styles.nested}` : styles.row} to={to}>
+    <li
+      className={[hasKids && styles.hasKids, kid && styles.kid, kid && end && styles.end]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      <Link className={styles.row} to={to}>
         {lead}
         <span className={styles.grow}>
           <Tooltip text={titleText} whenCut>
@@ -82,14 +89,20 @@ function Row({
 
 function TaskRow({
   task,
-  nested = false
+  kid = false,
+  end = false,
+  hasKids = false
 }: {
   task: HomeTask
-  nested?: boolean
+  kid?: boolean
+  end?: boolean
+  hasKids?: boolean
 }): React.JSX.Element {
   return (
     <Row
-      nested={nested}
+      kid={kid}
+      end={end}
+      hasKids={hasKids}
       to={task.route}
       lead={<StatusButton uid={task.uid} status={task.status} />}
       titleText={task.title}
@@ -99,7 +112,7 @@ function TaskRow({
           {task.title}
         </>
       }
-      line={<SubtaskLine parent={nested ? null : task.parent} list={task.list} />}
+      line={kid ? null : <SubtaskLine parent={task.parent} list={task.list} />}
       trailing={
         <>
           <LateChip days={task.daysLate} />
@@ -162,24 +175,15 @@ function EventRow({
   )
 }
 
-/** A task with its due subtasks under it; a parent that is not due is only named, as a heading link. */
+/** A task with its due subtasks hung under it, as in the Tasks table; a parent that is not due is its own row all the same. */
 function TaskGroupRows({ group }: { group: TaskGroup }): React.JSX.Element {
   const { head, context, kids } = group
+  const parent = head ?? context
   return (
     <>
-      {head && <TaskRow task={head} />}
-      {context && (
-        <Row
-          to={taskRoute(context.workspace, context.uid)}
-          lead={<span className={styles.icon} style={{ width: 16 }} aria-hidden />}
-          titleText={context.title}
-          title={<span className={styles.contextTitle}>{context.title || 'Untitled'}</span>}
-          line={null}
-          trailing={null}
-        />
-      )}
-      {kids.map((k) => (
-        <TaskRow key={k.uid} task={k} nested />
+      {parent && <TaskRow task={parent} hasKids={kids.length > 0} />}
+      {kids.map((k, i) => (
+        <TaskRow key={k.uid} task={k} kid end={i === kids.length - 1} />
       ))}
     </>
   )

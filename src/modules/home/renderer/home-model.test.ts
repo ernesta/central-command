@@ -7,6 +7,8 @@ const task = (uid: string, workspace: 'research' | 'work', daysLate = 0): HomeTa
   title: uid,
   parent: null,
   parentUid: null,
+  parentStatus: null,
+  parentPriority: null,
   study: false,
   workspace,
   list: 'L',

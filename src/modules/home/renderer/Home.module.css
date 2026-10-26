@@ -132,9 +132,42 @@
   color: var(--ink);
 }
 
-.nested {
-  margin-left: 28px;
+/* Subtasks hang off a rail from the parent's status circle, an elbow into each, on a slightly darker band: as in the Tasks table. */
+.list > li.hasKids {
+  border-bottom: 0;
 }
-.contextTitle {
-  color: var(--text-muted);
+.list > li.kid {
+  position: relative;
+  background: color-mix(in srgb, var(--bg) 35%, var(--surface));
+  font-size: var(--text-13);
+}
+.kid .row {
+  padding-left: 32px;
+}
+.kid::before,
+.kid::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  border-left: 2px solid var(--border-strong);
+  pointer-events: none;
+}
+.kid::before {
+  top: 0;
+  bottom: 0;
+}
+.kid::after {
+  top: 50%;
+  width: 12px;
+  border-left: 0;
+  border-top: 2px solid var(--border-strong);
+}
+.kid.end::before {
+  bottom: 50%;
+  width: 14px;
+  border-bottom: 2px solid var(--border-strong);
+  border-bottom-left-radius: 8px;
+}
+.kid.end::after {
+  display: none;
 }

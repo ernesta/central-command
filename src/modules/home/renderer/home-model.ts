@@ -1,5 +1,6 @@
 import { formatClock } from '@shared/locale-names'
 import { formatShortDate } from '@shared/time'
+import { taskRoute } from '../shared/summary'
 import type { HomeEvent, HomeSummary, HomeTask, HomeWorkspace } from '../shared/types'
 
 /** "Coming up" looks this many days ahead, today included. */
@@ -87,7 +88,7 @@ export function detailText(detail: string): string {
 /** A task of Today with the subtasks of it that are due too; `context` is a parent that is not itself due (it only names the group). */
 export interface TaskGroup {
   head: HomeTask | null
-  context: { uid: string; title: string; workspace: HomeWorkspace } | null
+  context: HomeTask | null
   kids: HomeTask[]
 }
 
@@ -105,7 +106,18 @@ export function groupTasks(tasks: HomeTask[]): TaskGroup[] {
     if (!g) {
       g = {
         head: null,
-        context: { uid: t.parentUid, title: t.parent ?? '', workspace: t.workspace },
+        context: {
+          ...t,
+          uid: t.parentUid,
+          title: t.parent ?? '',
+          parent: null,
+          parentUid: null,
+          // A done parent keeps its done circle; the row only ever hands the status to the circle.
+          status: (t.parentStatus ?? 'todo') as HomeTask['status'],
+          priority: t.parentPriority ?? 'normal',
+          daysLate: 0,
+          route: taskRoute(t.workspace, t.parentUid)
+        },
         kids: []
       }
       byParent.set(t.parentUid, g)

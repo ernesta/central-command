@@ -13,6 +13,8 @@ import type {
   WeatherSummary
 } from './types'
 
+import type { TaskStatus } from '../../tasks/shared/types'
+
 export interface TaskInput {
   uid: string
   title: string
@@ -22,6 +24,9 @@ export interface TaskInput {
   parent?: string | null
   /** The uid of that parent, to group a subtask under it. */
   parentUid?: string | null
+  /** That parent's status and priority, for the row that heads the subtask when the parent is not due itself. */
+  parentStatus?: TaskStatus | null
+  parentPriority?: 'high' | 'normal' | 'low' | null
   /** A self-study task: its `title` is already its training's name and its `list` says so. */
   study?: boolean
   due: string | null
@@ -100,6 +105,8 @@ function toHomeTask(t: TaskInput, today: string): HomeTask | null {
     list: t.list,
     parent: t.parent ?? null,
     parentUid: t.parentUid ?? null,
+    parentStatus: t.parentStatus ?? null,
+    parentPriority: t.parentPriority ?? null,
     study: t.study ?? false,
     due: t.due,
     priority: t.priority,
