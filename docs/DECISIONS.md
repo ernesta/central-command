@@ -4497,3 +4497,10 @@ Each segment sits in `Tooltip`'s wrapper, so `:first-child` and `:last-child` ma
 The self-study sweep (`settleSelfStudyTasks`) was hard-coded to Research, so a Life training (Urdu lessons) never got its task and showed nothing in Home. It now visits Research and Life, each in its own workspace's tasks, and reports the workspaces that changed. The "made in the app" rule is unchanged: a Life entry whose `task:` is not `auto` (or a `training`-marked task) is still left for the user to map by hand.
 
 Backfill (26 Oct 2026, the user's word that Lesson 1 was made in the app): `npm run backfill:life-self-study -- --apply` made "Urdu Beginners 1 self-study" and its "Lesson 1" subtask (due 22 Oct) and wrote `selfstudy:` into the note; backup in `backups/life-self-study-*`. A dry run now finds nothing. The sweep's rule for new entries is unchanged (`adopt` is used only by this script).
+
+## Life trainings show the Self-study card (26 Oct 2026, the user's screenshot: "still doesn't have the self study bit")
+
+The backfill had made Lesson 1's self-study task and linked it in the note, but the entry page drew the Self-study card (`TrainingTask`, `TrainingHours`: hours, Start, Add time, open-task icon) only for `research && meta.task`, and Life entries have no session task. The card, its tasks list, `useSelfStudy`, `useTaskTime`, `makeSelfStudyTask`, `syncSelfStudyTask` and `draftSelfStudyTask` all read `'research'`.
+
+- The entry's workspace is passed through (each takes `workspace`, default `'research'`, so Research is unchanged). `TrainingTask` has `sessionTask` (false for Life): no "Making the task…" or "The task was deleted." states, only the Self-study card. `TrainingHours` for Life has no `own` check and no hours line.
+- Driven (production build, scratch library, Life entry with no `selfstudy:`): the card shows, Add time makes the Life self-study task, writes `selfstudy:` into the note, and the time lands in Life's year file against it. Dev mode and dark mode not driven.
