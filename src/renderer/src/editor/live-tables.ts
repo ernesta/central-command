@@ -117,7 +117,7 @@ export function renderable(state: EditorState, table: SyntaxNode): boolean {
 }
 
 /**
- * The grid's column widths: proportional to the longest text in each column, but never narrower than the column's
+ * The grid's column widths: as wide as the longest text in each column (up to 48 characters, and less when the page is narrower), but never narrower than the column's
  * longest word (or 16 characters of its longest cell), so a word is never broken. A table that needs more than the page
  * is wider than it and scrolls sideways (`tableScroll`).
  */
@@ -140,7 +140,7 @@ function columns(lines: string[]): string {
     })
   })
   return widths
-    .map((w, i) => `minmax(${Math.max(4, words[i] ?? 0)}ch, ${Math.min(48, Math.max(6, w))}fr)`)
+    .map((w, i) => `minmax(${Math.max(4, words[i] ?? 0)}ch, ${Math.min(48, Math.max(6, w))}ch)`)
     .join(' ')
 }
 

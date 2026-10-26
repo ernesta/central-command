@@ -4536,3 +4536,10 @@ The editor treated every line as left to right: an Arabic or Urdu paragraph was 
 - **Everywhere else**: every text input and textarea is `dir="auto"` from its first focus (`lib/auto-direction.ts`: Mod-K, Find, title and picker fields); Mod-K's result titles and snippets are `dir="auto"`. The rest of the chrome stays left to right: the app is in English.
 - Driven in the production build (scratch library, a note with Urdu paragraphs, a list, a quote, tasks and two tables; selection by keyboard in a paragraph, across lines, select all, inside a revealed table; Mod-K with Arabic). Not driven in dev mode, not driven with a mouse drag. Open: Home/End and Cmd-Left/Right in a right-to-left line follow the default commands (visual left/right); not changed.
 - **Cells as text** (same day, the user: Shift+arrow selection in a table row was still odd, and each cell should follow its own direction): a row shown as text marks each cell `dir="auto"` with `unicode-bidi: isolate` (`live-tables.ts`, `.live-cell-text`), so an Arabic cell no longer reorders the pipes and cells beside it. The columns' order still follows the header row's first letter (English names: left to right).
+
+## Editor tables are as wide as their text (26 Oct 2026, the user: "this table is waaaay too wide")
+
+A table shown as a grid sized its columns as shares of the page (`fr`), so a two-column table of short phrases still spread across the whole line, with the right-aligned Urdu cells far from their English column.
+
+- `columns()` (`live-tables.ts`) now gives each column `minmax(<longest word>ch, <longest cell, 6 to 48>ch)` and the row has `justify-content: start`: a column is as wide as its longest text (at most 48 characters), a table that needs more than the page shrinks its columns toward the longest word, and one that needs more still scrolls as before. The row's bottom rule still runs the full width.
+- Not changed: the header's alignment (a left-aligned "Urdu" over right-aligned Urdu cells). Not driven (see the final report); editor unit tests pass, the real-library gate was not run.

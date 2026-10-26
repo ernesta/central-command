@@ -281,6 +281,7 @@
 /* A table away from the cursor: every line a row of a grid (`live-tables.ts`); the widths come with the line. */
 .wrap :global(.cm-editor) :global(.cm-line.live-table-row) {
   display: grid;
+  justify-content: start;
   column-gap: 16px;
   padding: 6px 4px;
   border-bottom: 1px solid var(--border-soft);
