@@ -29,6 +29,8 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 4px;
+  /* The head's height (above), so an icon appearing later (a task made on first use) does not grow the card. */
+  --icon-button-size: 28px;
 }
 /* The last action sits at the card's edge, where the side column clips a centred tooltip: line the tooltip up with its right edge. */
 .actions > :last-child [role='tooltip'] {

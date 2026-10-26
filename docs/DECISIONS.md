@@ -4504,3 +4504,7 @@ The backfill had made Lesson 1's self-study task and linked it in the note, but 
 
 - The entry's workspace is passed through (each takes `workspace`, default `'research'`, so Research is unchanged). `TrainingTask` has `sessionTask` (false for Life): no "Making the task…" or "The task was deleted." states, only the Self-study card. `TrainingHours` for Life has no `own` check and no hours line.
 - Driven (production build, scratch library, Life entry with no `selfstudy:`): the card shows, Add time makes the Life self-study task, writes `selfstudy:` into the note, and the time lands in Life's year file against it. Dev mode and dark mode not driven.
+
+## Panel icon actions are 28px, so the card does not grow (26 Oct 2026, the user's screenshot: "the height of the component changed visibly")
+
+The Self-study card's open-task icon only exists once the self-study task is made (first Start or Add time). `IconButton` defaults to 36px, but a `Panel` head is `min-height: 28px`, so the icon's arrival made the card taller. `Panel`'s `.actions` now sets `--icon-button-size: 28px` (the height the head's comment already named), so an icon in any panel's head fits the head. Every Panel with icon actions shrinks from 36px to 28px with it; a module that sets its own size on the button's element still wins. Not driven in the app (CSS only; tests, lint and typecheck run).
