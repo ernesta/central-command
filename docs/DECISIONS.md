@@ -4459,3 +4459,7 @@ The user's decisions (the plan) were followed as written; what was decided on th
 ## Watch: a listing's cards carry their own dates (26 Oct 2026)
 
 The National Literacy Trust's events page showed items with no date and "fake" ones. Cause: a page source stored each link bare, and `datedSentences` cut sentences from the whole page text, which run across cards ("View details about X Event Y 16 Nov 2026"). Now `parsePage` gives a link the text of its own `<li>`/`<article>` card (when the card holds one link), so its date is found and the page's sentences are not used when any card is dated; stale `text:` items of such a source (not saved) are removed on the next check, and bare items are completed in place. A course on a conference listing (CPD, masterclass, webinar, workshop, briefing, course, training) is a training: `watch_items.item_kind` (migration `watch/0003_item_kind`, null = the source's kind), `itemKind` in `shared/types.ts`. Takes effect on the next check of the source; the real library was not touched.
+
+## Watch: no note beside Saved (26 Oct 2026, the user's screenshot: "completely unnecessary")
+
+The Saved section no longer says "Their deadlines show in Home's Coming up" (`WatchPage.tsx`; the `aside` and the `landing` import are gone). The rule itself is unchanged: only saved items' deadlines reach Coming up and notifications. Supersedes that sentence in "Watch: the page, the sources and what they replace".
