@@ -30,6 +30,8 @@ export interface SelfStudySweepOptions {
   nowMs: number
   /** Overridable for tests. */
   quietMs?: number
+  /** Entries to treat as made in the app although their note does not say so (the one-off backfill). */
+  adopt?: (ref: TrainingRef) => boolean
 }
 
 /** Whether the app has closed this task before (so it never closes it again: a task reopened by hand stays open). */
@@ -78,7 +80,7 @@ async function settleWorkspace(
   options: SelfStudySweepOptions,
   workspace: TrainingWorkspace
 ): Promise<boolean> {
-  const { db, tasks, training, now, nowMs, quietMs = QUIET_MS } = options
+  const { db, tasks, training, now, nowMs, quietMs = QUIET_MS, adopt } = options
   let changed = false
   let all = listTasks(db, workspace)
   const refresh = (): void => {
@@ -114,7 +116,9 @@ async function settleWorkspace(
       // Only a training made in the app (its `task:` is `auto`, or the task made for it carries the `training` marker). Every older
       // entry is left alone: the user maps those to tasks and hours by hand.
       const madeInApp =
-        meta.task === 'auto' || all.find((t) => t.uid === meta.task)?.ownKind === 'training'
+        adopt?.(ref) === true ||
+        meta.task === 'auto' ||
+        all.find((t) => t.uid === meta.task)?.ownKind === 'training'
       if (!madeInApp) continue
       const made: string[] = []
       const task = tasks.create({

@@ -12,6 +12,7 @@ ask the user.
 - `npm run lint`, `npm run typecheck`, `npm run format`
 - `npm run build:locate`: builds `resources/Locate.app` (the Weather location helper, `native/locate.swift`; macOS, Xcode command line tools); `build:mac` runs it first
 - `npm run repair:session-tasks [-- --apply]`: the tasks the app makes for meetings and trainings against the notes that name them (marker, title, series task, due date, shared, orphans, trainings without a self-study task; marks the tasks Research training notes name; series tasks' date and status); dry run by default (a throwaway copy of the database, nothing touched), `--apply` only when the user says so, app closed, backs up first; trashes nothing
+- `npm run backfill:life-self-study [-- --apply]`: the self-study tasks for Life trainings made before the sweep covered Life (the sweep's "made in the app" rule lifted for Life entries); dry run by default, `--apply` app closed, backs the database and Life notes up; applied 26 Oct 2026 (`docs/DECISIONS.md`), do not re-run
 - `npm run check:work-lists`: report only; the live Work tasks whose top-level list is not a client of a contract (expected: none; real library 7 Oct 2026: none)
 - `npm run import:reading-list -- --file <docx> [--title "…"] [--list-dir <folder>] [--apply]`: turn a Word reading list into a Reading list
   (dry run by default; macOS only)

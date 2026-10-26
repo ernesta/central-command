@@ -4495,3 +4495,5 @@ Each segment sits in `Tooltip`'s wrapper, so `:first-child` and `:last-child` ma
 ## Self-study tasks for Life trainings (26 Oct 2026)
 
 The self-study sweep (`settleSelfStudyTasks`) was hard-coded to Research, so a Life training (Urdu lessons) never got its task and showed nothing in Home. It now visits Research and Life, each in its own workspace's tasks, and reports the workspaces that changed. The "made in the app" rule is unchanged: a Life entry whose `task:` is not `auto` (or a `training`-marked task) is still left for the user to map by hand.
+
+Backfill (26 Oct 2026, the user's word that Lesson 1 was made in the app): `npm run backfill:life-self-study -- --apply` made "Urdu Beginners 1 self-study" and its "Lesson 1" subtask (due 22 Oct) and wrote `selfstudy:` into the note; backup in `backups/life-self-study-*`. A dry run now finds nothing. The sweep's rule for new entries is unchanged (`adopt` is used only by this script).
