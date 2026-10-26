@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import type { HomeEvent, HomeSummary, HomeTask } from '../shared/types'
-import { detailText, eventDetail, groupTasks, homeView, timeRange, whenLabel } from './home-model'
+import {
+  comingUpItems,
+  dayLabel,
+  detailText,
+  eventDetail,
+  groupTasks,
+  homeView,
+  timeRange,
+  whenLabel
+} from './home-model'
 
 const task = (uid: string, workspace: 'research' | 'work', daysLate = 0): HomeTask => ({
   uid,
@@ -9,6 +18,7 @@ const task = (uid: string, workspace: 'research' | 'work', daysLate = 0): HomeTa
   parentUid: null,
   parentStatus: null,
   parentPriority: null,
+  parentDue: null,
   study: false,
   workspace,
   list: 'L',
@@ -107,14 +117,14 @@ describe('homeView', () => {
   })
 })
 
-describe('whenLabel', () => {
-  it('says only the time for today, and names tomorrow and counts the rest', () => {
-    expect(whenLabel(0, '14:00')).toBe('2:00 PM')
-    expect(whenLabel(0, '13:45', '15:00')).toBe('1:45 PM–3:00 PM')
-    expect(whenLabel(0, null)).toBe('')
-    expect(whenLabel(1, null)).toBe('Tomorrow')
-    expect(whenLabel(1, '09:00', '10:30')).toBe('Tomorrow 9:00 AM–10:30 AM')
-    expect(whenLabel(4, '11:00')).toBe('In 4 days 11:00 AM')
+describe('whenLabel and dayLabel', () => {
+  it('puts the time at the right and the day on the second line', () => {
+    expect(whenLabel('14:00')).toBe('2:00 PM')
+    expect(whenLabel('13:45', '15:00')).toBe('1:45 PM–3:00 PM')
+    expect(whenLabel(null)).toBe('')
+    expect(dayLabel(0)).toBe('')
+    expect(dayLabel(1)).toBe('tomorrow')
+    expect(dayLabel(4)).toBe('in 4 days')
   })
 
   it('writes a range only when the end differs from the start', () => {
@@ -139,6 +149,13 @@ describe('eventDetail', () => {
       'Training · Online'
     )
     expect(eventDetail(ev({ kind: 'training', mode: null }), initials)).toBe('Training')
+    expect(eventDetail(ev({ kind: 'training', mode: 'in-person', inDays: 2 }), initials)).toBe(
+      'Training · In person · in 2 days'
+    )
+    expect(eventDetail(ev({ attendees: ['Bo C'], inDays: 1 }), initials)).toBe(
+      'Meeting · with Bo · tomorrow'
+    )
+    expect(eventDetail(ev({ kind: 'time-off', detail: '', inDays: 3 }), initials)).toBe('In 3 days')
     expect(eventDetail(ev({ kind: 'time-off', detail: '3 days, to 2026-10-21' }), initials)).toBe(
       '3 days, to Oct 21'
     )
@@ -152,6 +169,8 @@ describe('detailText', () => {
   })
 })
 
+const TODAY = '2026-10-16'
+
 describe('groupTasks', () => {
   const kid = (uid: string, parentUid: string): HomeTask => ({
     ...task(uid, 'work'),
@@ -159,21 +178,60 @@ describe('groupTasks', () => {
     parentUid
   })
   it('puts a subtask under its task, wherever it came in the list', () => {
-    const groups = groupTasks([
-      kid('k1', 'p'),
-      task('a', 'work'),
-      task('p', 'work'),
-      kid('k2', 'p')
-    ])
+    const groups = groupTasks(
+      [kid('k1', 'p'), task('a', 'work'), task('p', 'work'), kid('k2', 'p')],
+      TODAY
+    )
     expect(groups.map((g) => [g.head?.uid, g.kids.map((k) => k.uid)])).toEqual([
       ['a', []],
       ['p', ['k1', 'k2']]
     ])
   })
   it('names a parent that is not due as context', () => {
-    const [g] = groupTasks([kid('k1', 'p')])
+    const [g] = groupTasks([kid('k1', 'p')], TODAY)
     expect(g.head).toBeNull()
     expect(g.context).toMatchObject({ uid: 'p', title: 'p' })
     expect(g.kids).toHaveLength(1)
+  })
+  it('gives a parent that is not due its own due date, and how late it is', () => {
+    const [a] = groupTasks([{ ...kid('k', 'p'), parentDue: '2026-11-02' }], TODAY)
+    expect(a.context).toMatchObject({ due: '2026-11-02', daysLate: 0 })
+    const [b] = groupTasks([{ ...kid('k', 'p'), parentDue: '2026-10-14' }], TODAY)
+    expect(b.context).toMatchObject({ daysLate: 2 })
+    const [c] = groupTasks([kid('k', 'p')], TODAY)
+    expect(c.context?.due).toBe('')
+  })
+})
+
+describe('comingUpItems', () => {
+  const taskEvent = (uid: string, parentUid: string | null, inDays: number): HomeEvent => ({
+    ...event(uid, 'task', `/work/tasks/t/${uid}`, inDays),
+    task: {
+      uid,
+      status: 'todo',
+      priority: 'normal',
+      parent: parentUid,
+      parentUid,
+      parentStatus: parentUid ? 'todo' : null,
+      parentPriority: parentUid ? 'normal' : null,
+      parentDue: null,
+      study: false
+    }
+  })
+  it('groups tasks where the first of them is and leaves the other events as they are', () => {
+    const items = comingUpItems(
+      [
+        taskEvent('k1', 'p', 1),
+        event('m', 'meeting', '/work/meetings/m/1', 2),
+        taskEvent('p', null, 2),
+        taskEvent('k2', 'p', 2),
+        taskEvent('solo', null, 3)
+      ],
+      'work',
+      TODAY
+    )
+    expect(
+      items.map((i) => (i.group ? [i.group.head?.uid, i.group.kids.map((k) => k.uid)] : i.event.id))
+    ).toEqual([['p', ['k1', 'k2']], 'm', ['solo', []]])
   })
 })

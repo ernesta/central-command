@@ -1,6 +1,6 @@
 import { formatClock } from '@shared/locale-names'
 import { formatShortDate } from '@shared/time'
-import { taskRoute } from '../shared/summary'
+import { daysFrom, taskRoute } from '../shared/summary'
 import type { HomeEvent, HomeSummary, HomeTask, HomeWorkspace } from '../shared/types'
 
 /** "Coming up" looks this many days ahead, today included. */
@@ -17,6 +17,7 @@ export interface HomeView {
   todayEvents: HomeEvent[]
   /** From tomorrow on. */
   comingUp: HomeEvent[]
+  today: string
 }
 
 const isHere = (workspace: HomeWorkspace, route: string): boolean =>
@@ -27,21 +28,27 @@ export function timeRange(time: string, end: string | null | undefined): string 
   return end && end !== time ? `${formatClock(time)}–${formatClock(end)}` : formatClock(time)
 }
 
-/**
- * When something dated happens: "Tomorrow 13:45–15:00", "In 4 days". Today's rows sit under "Today", so they say only the time
- * ("13:45–15:00"), or nothing for an all-day item.
- */
-export function whenLabel(inDays: number, time: string | null, end?: string | null): string {
-  const clock = time ? timeRange(time, end) : ''
-  if (inDays <= 0) return clock
-  const day = inDays === 1 ? 'Tomorrow' : `In ${inDays} days`
-  return clock ? `${day} ${clock}` : day
+/** The time at the right of an event's row ("13:45–15:00"), nothing for an all-day item. */
+export const whenLabel = (time: string | null, end?: string | null): string =>
+  time ? timeRange(time, end) : ''
+
+/** Which day, for the end of an event's second line: "tomorrow", "in 4 days"; nothing for today, whose rows sit under "Today". */
+export function dayLabel(inDays: number): string {
+  if (inDays <= 0) return ''
+  return inDays === 1 ? 'tomorrow' : `in ${inDays} days`
 }
 
 const MODE_LABEL: Record<string, string> = { 'in-person': 'In person', online: 'Online' }
 
-/** An event's second line: "Meeting · with AB, CD", "Training · Online"; the other kinds say what the summary gave. */
+/** An event's second line: "Meeting · with AB, CD · tomorrow", "Training · Online · in 2 days"; the other kinds say what the summary gave. */
 export function eventDetail(event: HomeEvent, initialsOf: (name: string) => string | null): string {
+  const day = dayLabel(event.inDays)
+  const text = eventKindDetail(event, initialsOf)
+  if (!day) return text
+  return text ? `${text} · ${day}` : day.charAt(0).toUpperCase() + day.slice(1)
+}
+
+function eventKindDetail(event: HomeEvent, initialsOf: (name: string) => string | null): string {
   if (event.kind === 'meeting') {
     const who = (event.attendees ?? []).map(initialsOf).filter((i): i is string => i !== null)
     return who.length > 0 ? `Meeting · with ${who.join(', ')}` : 'Meeting'
@@ -76,7 +83,8 @@ export function homeView(summary: HomeSummary, workspace: HomeWorkspace): HomeVi
       cut: tasks.overdue.length < tasks.overdueTotal || tasks.today.length < tasks.todayTotal
     },
     todayEvents,
-    comingUp
+    comingUp,
+    today: summary.today
   }
 }
 
@@ -93,7 +101,7 @@ export interface TaskGroup {
 }
 
 /** Today's tasks as the Tasks table shows them: a task, then its subtasks under it. A group sits where its task is, or where its first subtask is when the task itself is not due. */
-export function groupTasks(tasks: HomeTask[]): TaskGroup[] {
+export function groupTasks(tasks: HomeTask[], today: string): TaskGroup[] {
   const groups: TaskGroup[] = []
   const byParent = new Map<string, TaskGroup>()
   for (const t of tasks) if (!t.parentUid) byParent.set(t.uid, { head: t, context: null, kids: [] })
@@ -115,7 +123,9 @@ export function groupTasks(tasks: HomeTask[]): TaskGroup[] {
           // A done parent keeps its done circle; the row only ever hands the status to the circle.
           status: (t.parentStatus ?? 'todo') as HomeTask['status'],
           priority: t.parentPriority ?? 'normal',
-          daysLate: 0,
+          due: t.parentDue ?? '',
+          parentDue: null,
+          daysLate: t.parentDue && t.parentDue < today ? daysFrom(t.parentDue, today) : 0,
           route: taskRoute(t.workspace, t.parentUid)
         },
         kids: []
@@ -126,4 +136,60 @@ export function groupTasks(tasks: HomeTask[]): TaskGroup[] {
     g.kids.push(t)
   }
   return groups
+}
+
+/** A row of Coming up: an event as it is, or a task with its due subtasks hung under it. */
+export type ComingUpItem =
+  { event: HomeEvent; group?: undefined } | { group: TaskGroup; event?: undefined }
+
+/** A task's event as the task it stands for, so Today's grouping serves Coming up too (`daysLate` 0: nothing in the window is late). */
+function taskOfEvent(e: HomeEvent, workspace: HomeWorkspace): HomeTask {
+  const t = e.task!
+  return {
+    uid: t.uid,
+    title: e.title,
+    workspace,
+    list: e.detail,
+    study: t.study,
+    parent: t.parent,
+    parentUid: t.parentUid,
+    parentStatus: t.parentStatus,
+    parentPriority: t.parentPriority,
+    parentDue: t.parentDue,
+    due: e.date,
+    priority: t.priority,
+    status: t.status,
+    daysLate: 0,
+    route: e.route
+  }
+}
+
+/**
+ * Coming up as rows: tasks grouped as in Today (a group sits where its first task is), meetings, trainings and days off as they are.
+ * A task's route says its workspace.
+ */
+export function comingUpItems(
+  events: HomeEvent[],
+  workspace: HomeWorkspace,
+  today: string
+): ComingUpItem[] {
+  const groups = groupTasks(
+    events.filter((e) => e.task).map((e) => taskOfEvent(e, workspace)),
+    today
+  )
+  const groupOf = new Map<string, TaskGroup>()
+  for (const g of groups) for (const k of [g.head, ...g.kids]) if (k) groupOf.set(k.uid, g)
+  const seen = new Set<TaskGroup>()
+  const items: ComingUpItem[] = []
+  for (const e of events) {
+    if (!e.task) {
+      items.push({ event: e })
+      continue
+    }
+    const g = groupOf.get(e.task.uid)!
+    if (seen.has(g)) continue
+    seen.add(g)
+    items.push({ group: g })
+  }
+  return items
 }

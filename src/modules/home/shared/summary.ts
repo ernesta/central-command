@@ -27,6 +27,7 @@ export interface TaskInput {
   /** That parent's status and priority, for the row that heads the subtask when the parent is not due itself. */
   parentStatus?: TaskStatus | null
   parentPriority?: 'high' | 'normal' | 'low' | null
+  parentDue?: string | null
   /** A self-study task: its `title` is already its training's name and its `list` says so. */
   study?: boolean
   due: string | null
@@ -107,6 +108,7 @@ function toHomeTask(t: TaskInput, today: string): HomeTask | null {
     parentUid: t.parentUid ?? null,
     parentStatus: t.parentStatus ?? null,
     parentPriority: t.parentPriority ?? null,
+    parentDue: t.parentDue ?? null,
     study: t.study ?? false,
     due: t.due,
     priority: t.priority,
@@ -203,6 +205,10 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
           status: t.status,
           priority: t.priority,
           parent: t.parent,
+          parentUid: t.parentUid,
+          parentStatus: t.parentStatus,
+          parentPriority: t.parentPriority,
+          parentDue: t.parentDue,
           study: t.study ?? false
         }
       })

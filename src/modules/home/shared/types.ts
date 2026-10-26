@@ -18,6 +18,8 @@ export interface HomeTask {
   parentUid: string | null
   parentStatus: TaskStatus | null
   parentPriority: 'high' | 'normal' | 'low' | null
+  /** That parent's due date, which its row names when it is not due itself. */
+  parentDue: string | null
   due: string
   priority: 'high' | 'normal' | 'low'
   status: 'todo' | 'doing'
@@ -64,6 +66,11 @@ export interface HomeEvent {
     status: 'todo' | 'doing'
     priority: 'high' | 'normal' | 'low'
     parent: string | null
+    /** The parent's uid, status, priority and due date, as on `HomeTask`, so a subtask can hang under its task. */
+    parentUid: string | null
+    parentStatus: TaskStatus | null
+    parentPriority: 'high' | 'normal' | 'low' | null
+    parentDue: string | null
     study: boolean
   }
 }

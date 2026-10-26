@@ -1,17 +1,17 @@
 import { Link } from 'react-router'
 import { Check, GraduationCap, Plane, Users } from 'lucide-react'
-import { addDays } from '@shared/year'
 import { Panel } from '@renderer/components/Panel'
 import { Tooltip } from '@renderer/components/Tooltip'
 import { LateChip } from '../../tasks/renderer/LateChip'
 import { PriorityBadge } from '../../tasks/renderer/TaskIcons'
 import { StudyIcon } from '../../tasks/renderer/TaskName'
 import { SubtaskLine } from '../../tasks/renderer/SubtaskLine'
-import { dueText } from '../../tasks/shared/query'
+import { lineDue } from '../../tasks/shared/query'
 import { tasksAllRoute } from '../../tasks/renderer/tasks-paths'
 import type { HomeEvent, HomeTask, HomeWorkspace } from '../shared/types'
 import {
   COMING_UP_DAYS,
+  comingUpItems,
   eventDetail,
   groupTasks,
   homeView,
@@ -89,11 +89,14 @@ function Row({
 
 function TaskRow({
   task,
+  due = '',
   kid = false,
   end = false,
   hasKids = false
 }: {
   task: HomeTask
+  /** The date as `dueText` words it, where the row should say it. */
+  due?: string
   kid?: boolean
   end?: boolean
   hasKids?: boolean
@@ -112,7 +115,7 @@ function TaskRow({
           {task.title}
         </>
       }
-      line={kid ? null : <SubtaskLine parent={task.parent} list={task.list} />}
+      line={kid ? null : <SubtaskLine parent={task.parent} list={task.list} due={due} />}
       trailing={
         <>
           <LateChip days={task.daysLate} />
@@ -123,65 +126,44 @@ function TaskRow({
   )
 }
 
+/** A meeting, training or day off: its time at the right, its day ("in 2 days") at the end of the second line. */
 function EventRow({
   event,
-  initialsOf,
-  showDue = false
+  initialsOf
 }: {
   event: HomeEvent
   initialsOf: (name: string) => string | null
-  /** Coming up names the date of a task's event; Today's section already says it. */
-  showDue?: boolean
 }): React.JSX.Element {
-  const { task } = event
   const Icon = KIND_ICON[event.kind as keyof typeof KIND_ICON] ?? Check
-  const when = whenLabel(event.inDays, event.time, event.end)
   return (
     <Row
       to={event.route}
       titleText={event.title}
-      lead={
-        task ? (
-          <StatusButton uid={task.uid} status={task.status} locked />
-        ) : (
-          <Icon size={16} strokeWidth={1.75} className={styles.icon} aria-hidden />
-        )
-      }
-      title={
-        <>
-          {task?.study && <StudyIcon />}
-          {event.title}
-        </>
-      }
-      line={
-        task ? (
-          <SubtaskLine
-            parent={task.parent}
-            list={event.detail}
-            due={showDue && dueText(event.date, addDays(event.date, -event.inDays))}
-          />
-        ) : (
-          eventDetail(event, initialsOf)
-        )
-      }
-      trailing={
-        task ? (
-          <PriorityBadge priority={task.priority} />
-        ) : (
-          <span className={styles.when}>{when}</span>
-        )
-      }
+      lead={<Icon size={16} strokeWidth={1.75} className={styles.icon} aria-hidden />}
+      title={event.title}
+      line={eventDetail(event, initialsOf)}
+      trailing={<span className={styles.when}>{whenLabel(event.time, event.end)}</span>}
     />
   )
 }
 
 /** A task with its due subtasks hung under it, as in the Tasks table; a parent that is not due is its own row all the same. */
-function TaskGroupRows({ group }: { group: TaskGroup }): React.JSX.Element {
+function TaskGroupRows({
+  group,
+  today,
+  showDue = false
+}: {
+  group: TaskGroup
+  today: string
+  /** Coming up names the date of a task; Today's section already says it. A parent that is not due in the section always does. */
+  showDue?: boolean
+}): React.JSX.Element {
   const { head, context, kids } = group
   const parent = head ?? context
+  const due = parent && (head ? showDue : true) ? lineDue(parent, today) : ''
   return (
     <>
-      {parent && <TaskRow task={parent} hasKids={kids.length > 0} />}
+      {parent && <TaskRow task={parent} due={due} hasKids={kids.length > 0} />}
       {kids.map((k, i) => (
         <TaskRow key={k.uid} task={k} kid end={i === kids.length - 1} />
       ))}
@@ -230,8 +212,8 @@ function TodayCard({
           {todayEvents.map((e) => (
             <EventRow key={e.id} event={e} initialsOf={initialsOf} />
           ))}
-          {groupTasks([...overdue, ...today]).map((g) => (
-            <TaskGroupRows key={g.head?.uid ?? g.context?.uid} group={g} />
+          {groupTasks([...overdue, ...today], view.today).map((g) => (
+            <TaskGroupRows key={g.head?.uid ?? g.context?.uid} group={g} today={view.today} />
           ))}
         </ul>
       )}
@@ -241,9 +223,11 @@ function TodayCard({
 
 function ComingUpCard({
   view,
+  workspace,
   initialsOf
 }: {
   view: HomeView
+  workspace: HomeWorkspace
   initialsOf: (name: string) => string | null
 }): React.JSX.Element {
   return (
@@ -255,9 +239,18 @@ function ComingUpCard({
         <None>Nothing in the next {COMING_UP_DAYS} days.</None>
       ) : (
         <ul className={styles.list}>
-          {view.comingUp.map((e) => (
-            <EventRow key={e.id} event={e} initialsOf={initialsOf} showDue />
-          ))}
+          {comingUpItems(view.comingUp, workspace, view.today).map((item) =>
+            item.group ? (
+              <TaskGroupRows
+                key={item.group.head?.uid ?? item.group.context?.uid}
+                group={item.group}
+                today={view.today}
+                showDue
+              />
+            ) : (
+              <EventRow key={item.event.id} event={item.event} initialsOf={initialsOf} />
+            )
+          )}
         </ul>
       )}
     </Panel>
@@ -278,7 +271,7 @@ export function HomePage({ workspace }: { workspace: HomeWorkspace }): React.JSX
       <div className={styles.cols}>
         <div className={styles.stack}>
           <TodayCard view={view} workspace={workspace} initialsOf={initialsOf} />
-          <ComingUpCard view={view} initialsOf={initialsOf} />
+          <ComingUpCard view={view} workspace={workspace} initialsOf={initialsOf} />
         </div>
         <div className={styles.stack}>
           <HomeHours workspace={workspace} />
