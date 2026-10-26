@@ -72,7 +72,7 @@ describe('sourcesFromTasks', () => {
   })
 
   it('names the kind from the title', () => {
-    expect(kindOfReminder('Check upcoming summer schools')).toBe('summer-school')
+    expect(kindOfReminder('Check upcoming summer schools')).toBe('training')
     expect(kindOfReminder('Check the weather')).toBe('other')
   })
 })

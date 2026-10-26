@@ -3,8 +3,9 @@ import type { WatchSuggestion } from './types'
 const LL = 'https://linguistlist.org/issues/rss'
 
 /**
- * Sources worth offering to someone doing reading and language research. Offered, never added by themselves: the
- * user picks. Feeds and journals only (a web page needs the user's own address, which they know and we do not).
+ * Sources worth offering: LINGUIST List's feeds of conferences, calls for papers and summer schools. Offered, never added
+ * by themselves: the user picks. Feeds only (a web page needs the user's own address, which they know and we do not).
+ * Journals are not offered while the page has no journals list (which to keep is an open question, 26 Oct 2026).
  */
 export const SUGGESTED_SOURCES: WatchSuggestion[] = [
   {
@@ -24,10 +25,14 @@ export const SUGGESTED_SOURCES: WatchSuggestion[] = [
   {
     title: 'LINGUIST List: summer schools',
     url: `${LL}/sum`,
-    kind: 'summer-school',
+    kind: 'training',
     method: 'feed',
     groupLabel: 'LINGUIST List'
-  },
+  }
+]
+
+/** Journal feeds, kept for when Watch gets a journals list. Not offered yet. */
+export const JOURNAL_SUGGESTIONS: WatchSuggestion[] = [
   {
     title: 'LINGUIST List: journal contents',
     url: `${LL}/toc`,

@@ -14,10 +14,10 @@ export interface FromTasks {
   noAddress: { taskTitle: string; line: string }[]
 }
 
-/** The kind a "Check upcoming …" reminder is about, from its title. */
+/** The kind a "Check upcoming …" reminder is about, from its title (a summer school is a training; the Watch page has two kinds). */
 export function kindOfReminder(title: string): WatchKind {
   const t = title.toLowerCase()
-  if (t.includes('summer school')) return 'summer-school'
+  if (t.includes('summer school')) return 'training'
   if (t.includes('conference')) return 'conference'
   if (t.includes('training') || t.includes('course') || t.includes('workshop')) return 'training'
   return 'other'

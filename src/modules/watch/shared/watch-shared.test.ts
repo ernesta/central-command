@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { findDate } from './dates'
 import { scoreText } from './relevance'
+import { guessMethod, kindsOf, shownKind } from './types'
 
 const today = '2026-10-15'
 
@@ -56,5 +57,22 @@ describe('scoreText', () => {
   it('gives nothing for no keywords or an empty one', () => {
     expect(scoreText('Literacy', 'literacy', [])).toEqual({ score: 0, matched: [] })
     expect(scoreText('Literacy', '', [' '])).toEqual({ score: 0, matched: [] })
+  })
+})
+
+describe('kinds and methods the page uses', () => {
+  it('shows two kinds: a summer school is a training, a journal is in neither', () => {
+    expect(shownKind('summer-school')).toBe('training')
+    expect(shownKind('training')).toBe('training')
+    expect(shownKind('conference')).toBe('conference')
+    expect(shownKind('journal')).toBeNull()
+    expect(kindsOf('training')).toEqual(['training', 'summer-school'])
+  })
+
+  it('reads a feed-looking address as a feed and anything else as a page', () => {
+    expect(guessMethod('https://linguistlist.org/issues/rss/confs')).toBe('feed')
+    expect(guessMethod('https://ex.org/events.xml')).toBe('feed')
+    expect(guessMethod('https://ex.org/feed/')).toBe('feed')
+    expect(guessMethod('https://ex.org/events')).toBe('page')
   })
 })

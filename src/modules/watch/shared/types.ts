@@ -8,6 +8,21 @@ export const WATCH_KINDS = [
 ] as const
 export type WatchKind = (typeof WATCH_KINDS)[number]
 
+/** The two kinds the Watch page shows (a journals list may come later). A summer school is a training. */
+export const SHOWN_KINDS = ['training', 'conference'] as const
+export type ShownKind = (typeof SHOWN_KINDS)[number]
+
+/** The section a source's items belong to, or null for a kind the page does not show yet (journals, listings). */
+export function shownKind(kind: WatchKind): ShownKind | null {
+  if (kind === 'training' || kind === 'summer-school') return 'training'
+  if (kind === 'conference') return 'conference'
+  return null
+}
+
+/** The stored kinds that make up a shown one. */
+export const kindsOf = (kind: ShownKind): WatchKind[] =>
+  kind === 'training' ? ['training', 'summer-school'] : ['conference']
+
 /** How a source is read: a feed (RSS or Atom), a web page (new links, or a changed text), or Crossref's list of a journal's newest articles. */
 export const WATCH_METHODS = ['feed', 'page', 'crossref'] as const
 export type WatchMethod = (typeof WATCH_METHODS)[number]
@@ -49,7 +64,7 @@ export interface NewWatchSource {
 }
 
 export type WatchSourceChanges = Partial<
-  Pick<WatchSource, 'title' | 'kind' | 'groupLabel' | 'intervalHours' | 'active'>
+  Pick<WatchSource, 'title' | 'url' | 'kind' | 'groupLabel' | 'intervalHours' | 'active'>
 >
 
 export type DateKind = 'deadline' | 'date'
@@ -73,7 +88,8 @@ export interface WatchItem {
 }
 
 export interface WatchItemsQuery {
-  state?: WatchState | 'open'
+  /** `open` is new or saved; `undismissed` is everything but dismissed. */
+  state?: WatchState | 'open' | 'undismissed'
   sourceId?: number
   kind?: WatchKind
   /** Only items that mention at least one of the user's keywords. */
@@ -91,6 +107,13 @@ export interface WatchCounts {
   failing: number
   /** Page sources whose text changed with nothing new to show. */
   changed: number
+}
+
+/** How a pasted address is probably read: a feed when it looks like one, a page otherwise. */
+export function guessMethod(url: string): WatchMethod {
+  return /\.(xml|rss|atom)(\?|$)|\/(rss|feed|atom)(\/|\?|$)|[?&]format=(rss|atom)/i.test(url)
+    ? 'feed'
+    : 'page'
 }
 
 /** What a source gave, before anything is stored. */
