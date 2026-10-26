@@ -1,4 +1,5 @@
 import { daysBetween } from '@shared/year'
+import { splitTrailingDate } from './dates'
 import { formatDate, formatShortDate } from '@shared/time'
 import {
   shownKind,
@@ -22,6 +23,12 @@ export function displayTitle(title: string): string {
     .replace(/^Local Organi[sz]ers?:\s+\p{Lu}\p{L}+(?:\s\p{Lu}\p{L}+)?\s+(?=\p{Lu}{2,})/u, '')
     .replace(/\.\s*$/, '')
     .trim()
+}
+
+/** A row's title and the date of its event, taken from the end of the title when it names one. */
+export function titleParts(title: string): { name: string; when: string } {
+  const { name, when } = splitTrailingDate(displayTitle(title))
+  return { name: displayTitle(name), when }
 }
 
 /** The day an item was found, said the way the landing lists say a date: "Today", "Yesterday", "3 days ago", then the date. */

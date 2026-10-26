@@ -3,7 +3,7 @@
 .row {
   composes: recent from '@renderer/components/Landing.module.css';
   position: relative;
-  grid-template-columns: 120px minmax(0, 1fr) minmax(0, 240px) 130px 72px;
+  grid-template-columns: 120px minmax(0, 1fr) 150px minmax(0, 240px) 130px 72px;
 }
 .new {
   composes: upcoming from '@renderer/components/Landing.module.css';

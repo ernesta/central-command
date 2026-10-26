@@ -6,14 +6,14 @@ import { IconButton } from '@renderer/components/IconButton'
 import { Tooltip } from '@renderer/components/Tooltip'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import shared from '@renderer/components/ListTable.module.css'
-import { foundLabel, noteFor } from '../shared/rows'
+import { foundLabel, noteFor, titleParts } from '../shared/rows'
 import type { WatchGroup } from '../shared/query'
 import type { WatchItems } from './useWatchItems'
 import styles from './WatchAllPage.module.css'
 
 /** Column widths; the title takes the rest. */
-const WIDTHS = { found: 128, source: 280, note: 160, actions: 96 }
-const HEADINGS = ['Found', 'Title', 'Source', 'Note', '']
+const WIDTHS = { found: 128, when: 150, source: 280, note: 160, actions: 96 }
+const HEADINGS = ['Found', 'Title', 'When', 'Source', 'Note', '']
 
 /**
  * Found, Title, Source, Note and the two icon buttons, one 48px line each, "New" above "Earlier". Like the Training table
@@ -42,6 +42,7 @@ export function WatchTable({
         <colgroup>
           <col style={{ width: WIDTHS.found }} />
           <col />
+          <col style={{ width: WIDTHS.when }} />
           <col style={{ width: WIDTHS.source }} />
           <col style={{ width: WIDTHS.note }} />
           <col style={{ width: WIDTHS.actions }} />
@@ -73,7 +74,7 @@ export function WatchTable({
                     </td>
                     <td>
                       <div className={styles.titleLine}>
-                        <Tooltip text={item.title} whenCut>
+                        <Tooltip text={titleParts(item.title).name} whenCut>
                           <a
                             className={styles.title}
                             href={item.url}
@@ -86,11 +87,14 @@ export function WatchTable({
                               actions.open(item)
                             }}
                           >
-                            {item.title}
+                            {titleParts(item.title).name}
                           </a>
                         </Tooltip>
                         {item.state === 'new' && <span className={styles.new}>New</span>}
                       </div>
+                    </td>
+                    <td className={styles.muted}>
+                      <CutText>{titleParts(item.title).when}</CutText>
                     </td>
                     <td className={styles.muted}>
                       <CutText>{item.sourceTitle}</CutText>

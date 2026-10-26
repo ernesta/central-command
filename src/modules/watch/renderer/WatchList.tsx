@@ -3,7 +3,7 @@ import { CutText } from '@renderer/components/CutText'
 import { IconButton } from '@renderer/components/IconButton'
 import { Tooltip } from '@renderer/components/Tooltip'
 import landing from '@renderer/components/Landing.module.css'
-import { displayTitle, foundLabel, noteFor } from '../shared/rows'
+import { foundLabel, noteFor, titleParts } from '../shared/rows'
 import type { WatchItem } from '../shared/types'
 import type { WatchItems } from './useWatchItems'
 import styles from './WatchList.module.css'
@@ -29,7 +29,7 @@ export function WatchList({
           <div className={styles.row}>
             <span className={landing.date}>{foundLabel(item.firstSeenAt, today)}</span>
             <span className={styles.titleCell}>
-              <Tooltip text={displayTitle(item.title)} whenCut>
+              <Tooltip text={titleParts(item.title).name} whenCut>
                 <a
                   className={styles.title}
                   href={item.url}
@@ -40,11 +40,12 @@ export function WatchList({
                     actions.open(item)
                   }}
                 >
-                  {displayTitle(item.title)}
+                  {titleParts(item.title).name}
                 </a>
               </Tooltip>
               {item.state === 'new' && <span className={styles.new}>New</span>}
             </span>
+            <CutText className={styles.note}>{titleParts(item.title).when}</CutText>
             <CutText className={styles.note}>{item.sourceTitle}</CutText>
             <CutText className={styles.note}>{noteFor(item, today)}</CutText>
             <span className={styles.actions}>

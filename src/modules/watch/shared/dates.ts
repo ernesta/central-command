@@ -79,6 +79,24 @@ export function findDate(text: string, today: string): Found | null {
   return all.find((f) => f.kind === 'deadline') ?? all[0] ?? null
 }
 
+/**
+ * A title that ends with the date of its event ("EPS Meeting: Cardiff University. 7th – 9th April 2027"): the title without
+ * it, and the date as a short phrase ("7–9 April 2027"). A title that does not end with a date is returned whole.
+ */
+export function splitTrailingDate(title: string): { name: string; when: string } {
+  const text = title.replace(/[\s.]+$/, '')
+  for (const re of [DAY_FIRST, MONTH_FIRST]) {
+    for (const m of text.matchAll(re)) {
+      if ((m.index ?? 0) + m[0].length !== text.length) continue
+      const name = text.slice(0, m.index).replace(/[\s.,;:–-]+$/, '')
+      if (!name) continue
+      const when = m[0].replace(/(\d)(?:st|nd|rd|th)/g, '$1').replace(/\s*[-–]\s*/, '–')
+      return { name, when }
+    }
+  }
+  return { name: title, when: '' }
+}
+
 /** True when the text names dates and every one is before `today`: an event or deadline that is over. A text with no written-out date is not. */
 export function isOver(text: string, today: string): boolean {
   const all = [...scan(text, DAY_FIRST, 'day-first'), ...scan(text, MONTH_FIRST, 'month-first')]

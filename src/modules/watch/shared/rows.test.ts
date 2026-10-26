@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { checkedLabel, displayTitle, foundLabel, noteFor, sectionsOf } from './rows'
+import { checkedLabel, displayTitle, foundLabel, noteFor, sectionsOf, titleParts } from './rows'
 import type { WatchItem } from './types'
 
 const item = (over: Partial<WatchItem>): WatchItem => ({
@@ -81,5 +81,15 @@ describe('displayTitle', () => {
         'Local Organiser: Adam Parker EPS Research Workshop: Birmingham City University. 20th January 2027.'
       )
     ).toBe('EPS Research Workshop: Birmingham City University. 20th January 2027')
+  })
+})
+
+describe('titleParts', () => {
+  it('moves the date at the end of a title into its own part', () => {
+    expect(titleParts('EPS Meeting: Cardiff University. 7th – 9th April 2027')).toEqual({
+      name: 'EPS Meeting: Cardiff University',
+      when: '7–9 April 2027'
+    })
+    expect(titleParts('Summer school').when).toBe('')
   })
 })
