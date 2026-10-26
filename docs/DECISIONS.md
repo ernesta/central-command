@@ -4472,3 +4472,5 @@ A person made with `@` while writing a training note was missing from the Leads 
 ## Training details: Series, Type and Institution share the first line (26 Oct 2026, the user's screenshot)
 
 With Series stretched to about 700px the Skills field jumped to a new line at full width. The details row now runs Date, Start, End, Duration, Series, Type, Institution, then Format, Leads and Skills; Series, Type and Institution are a fixed 220px each (`TrainingMetaFields.module.css`), so the first line holds them at 1500px and the row wraps between fields, never inside one. Driven in a scratch library (production build, 1500px and 1000px); dev mode not driven.
+
+Follow-up the same day (the user's screenshot): fixed 220px left the first line short of the card's right edge. Series, Type and Institution now grow (`flex: 1 1 220px`, `min-width: 220px`, the picker `width: 100%`), so the line ends at the same margin as it starts; the second line (Format, Leads, Skills) keeps its own widths. Not driven in a scratch library.
