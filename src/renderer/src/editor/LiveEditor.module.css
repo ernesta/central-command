@@ -299,6 +299,10 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
+/* A cell shown as text: its own direction, isolated from the pipes and the other cells. */
+.wrap :global(.live-cell-text) {
+  unicode-bidi: isolate;
+}
 .wrap :global(.live-cell-center) {
   text-align: center;
 }

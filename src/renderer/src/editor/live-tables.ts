@@ -183,6 +183,7 @@ class EmptyCell extends WidgetType {
 }
 
 const hidden = Decoration.replace({})
+const textCell = Decoration.mark({ class: 'live-cell-text', attributes: { dir: 'auto' } })
 const pipeMark = Decoration.mark({ class: 'live-tablemark' })
 const cellMarks: Record<Align, Decoration> = {
   left: Decoration.mark({ class: 'live-cell', attributes: { dir: 'auto' } }),
@@ -229,6 +230,9 @@ export function drawTable(
         continue
       }
       for (const pipe of row.pipes) add('tpipe', line.from + pipe, line.from + pipe + 1, pipeMark)
+      // Shown as text, a cell is still its own run: its direction does not reach the pipes or the cells beside it.
+      for (const cell of row.cells)
+        if (cell.from < cell.to) add('tcell', line.from + cell.from, line.from + cell.to, textCell)
       continue
     }
 
