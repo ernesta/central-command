@@ -1,6 +1,7 @@
 import { createElement } from 'react'
 import type { LiveModuleManifest } from '../types'
 import { WatchCard } from './renderer/WatchCard'
+import { WatchAllPage } from './renderer/WatchAllPage'
 import { WatchPage } from './renderer/WatchPage'
 
 /**
@@ -12,6 +13,10 @@ export const watchModule: LiveModuleManifest = {
   workspace: 'research',
   label: 'Watch',
   status: 'live',
-  routes: [{ path: '', element: createElement(WatchPage) }],
+  routes: [
+    { path: '', element: createElement(WatchPage) },
+    { path: 'trainings', element: createElement(WatchAllPage, { kind: 'training' }) },
+    { path: 'conferences', element: createElement(WatchAllPage, { kind: 'conference' }) }
+  ],
   landingCard: WatchCard
 }

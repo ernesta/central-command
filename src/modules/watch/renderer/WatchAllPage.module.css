@@ -1,0 +1,54 @@
+.page {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  padding: 36px 48px 48px;
+}
+.heading {
+  margin: 0;
+  font-size: var(--text-32);
+}
+.content {
+  min-width: 0;
+}
+.titleLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-weight: 500;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.title:hover {
+  color: var(--accent);
+}
+.new {
+  composes: upcoming from '@renderer/components/Landing.module.css';
+  flex: none;
+  margin-left: 0;
+}
+.muted {
+  color: var(--text-muted);
+  font-size: var(--text-13);
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  --icon-button-size: 28px;
+}
+.saved {
+  color: var(--accent);
+}
+@media (max-width: 720px) {
+  .page {
+    padding: 24px 16px 32px;
+  }
+}
