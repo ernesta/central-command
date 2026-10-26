@@ -4468,3 +4468,7 @@ The Saved section no longer says "Their deadlines show in Home's Coming up" (`Wa
 ## People pickers reload the list when they open (26 Oct 2026, a bug the user found)
 
 A person made with `@` while writing a training note was missing from the Leads picker (it offered "Add …" instead): the Training and Meeting pages read the people list once, on opening. `PeopleField` now takes `onOpen`, and both pages reload the list each time the picker opens (`onOpenPeople` on `MetaFields` and `TrainingMetaFields`). No event channel for people changes was added; reloading on open is enough because the list is only read there. Not driven in a scratch library.
+
+## Training details: Series, Type and Institution share the first line (26 Oct 2026, the user's screenshot)
+
+With Series stretched to about 700px the Skills field jumped to a new line at full width. The details row now runs Date, Start, End, Duration, Series, Type, Institution, then Format, Leads and Skills; Series, Type and Institution are a fixed 220px each (`TrainingMetaFields.module.css`), so the first line holds them at 1500px and the row wraps between fields, never inside one. Driven in a scratch library (production build, 1500px and 1000px); dev mode not driven.
