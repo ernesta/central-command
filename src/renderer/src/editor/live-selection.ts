@@ -4,7 +4,13 @@ import {
   type Extension,
   type TransactionSpec
 } from '@codemirror/state'
-import { layer, RectangleMarker, type EditorView, type LayerMarker } from '@codemirror/view'
+import {
+  Direction,
+  layer,
+  RectangleMarker,
+  type EditorView,
+  type LayerMarker
+} from '@codemirror/view'
 
 /**
  * What a line starts with before its text: an optional quote or list prefix (never snapped to, it is drawn as its own
@@ -114,6 +120,49 @@ function rowMarkers(
 }
 
 /**
+ * CodeMirror runs a band to the edge of the line from the *editor's* direction (`view.textDirection`), so a right-to-left
+ * line in a left-to-right note (`live-direction.ts`) gets bands that stop at the text on both sides. A selection that
+ * continues past such a line's end (its left side) or comes into it from above (its right side) gets the missing piece.
+ */
+function rtlEdges(
+  view: EditorView,
+  range: { from: number; to: number },
+  skip: readonly TableRow[],
+  base: { left: number; top: number }
+): LayerMarker[] {
+  const markers: LayerMarker[] = []
+  const content = view.contentDOM.getBoundingClientRect()
+  const { doc } = view.state
+  const from = Math.max(range.from, view.viewport.from)
+  const to = Math.min(range.to, view.viewport.to)
+  for (let pos = from; pos <= to;) {
+    const line = doc.lineAt(pos)
+    pos = line.to + 1
+    if (skip.some((row) => row.from === line.from)) continue
+    if (view.textDirectionAt(line.from) !== Direction.RTL) continue
+    const edge = (at: number, side: -1 | 1, toRight: boolean): void => {
+      const coords = view.coordsAtPos(at, side)
+      if (!coords) return
+      const left = toRight ? coords.right : content.left
+      const right = toRight ? content.right : coords.left
+      if (right - left < 0.5) return
+      markers.push(
+        new RectangleMarker(
+          'cm-selectionBackground',
+          left - base.left,
+          coords.top - base.top,
+          right - left,
+          coords.bottom - coords.top
+        )
+      )
+    }
+    if (range.to > line.to && range.from <= line.to) edge(line.to, -1, false)
+    if (range.from < line.from && range.to > line.from) edge(line.from, 1, true)
+  }
+  return markers
+}
+
+/**
  * The selection, drawn as one block. CodeMirror's own drawing starts the bands of a note at the first line's
  * padding (a quote or an item pushes every band in) and runs a selection that ends at the start of a line down
  * through the gap above that line's text. This draws the same rectangles from the content's edge, and a selection
@@ -174,6 +223,7 @@ const selectionLayer = layer({
         at = row.to + 1
       }
       if (at < to) place(at, to)
+      markers.push(...rtlEdges(view, range, rows, base))
     }
     // The pieces meet at fractional heights: let each run a pixel into the next, or a hairline shows between them.
     return markers.map((marker, i) =>

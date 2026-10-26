@@ -269,7 +269,7 @@ export function GlobalSearch({
                   onClick={() => open(hit)}
                 >
                   <Tooltip text={hit.title} whenCut>
-                    <span className={styles.title}>
+                    <span className={styles.title} dir="auto">
                       {hit.mark === 'training' && <StudyIcon />}
                       {hit.title}
                     </span>
@@ -283,7 +283,9 @@ export function GlobalSearch({
                       ) : (
                         hit.detail && (
                           <Tooltip text={hit.detail} whenCut>
-                            <span className={styles.detail}>{hit.detail}</span>
+                            <span className={styles.detail} dir="auto">
+                              {hit.detail}
+                            </span>
                           </Tooltip>
                         )
                       )}

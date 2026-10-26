@@ -14,7 +14,7 @@
 .placeholder {
   position: absolute;
   top: 0;
-  left: 0;
+  inset-inline-start: 0;
   color: var(--text-muted);
   font-size: var(--text-16);
   line-height: 1.8;
@@ -72,7 +72,7 @@
 
 /* A marker at the start of its line (`# `, `> `): the caret sits at the line's edge, so the marker stands a little off it. */
 .wrap :global(.live-marker-lead) {
-  padding-left: 3px;
+  padding-inline-start: 3px;
 }
 /* In a big heading the marker is smaller than the text, so it reads as a marker and not as part of the title. */
 .wrap :global(.live-h1) :global(.live-marker),
@@ -218,8 +218,8 @@
 
 /* Quotes: one rule, and the text moves in one step per level (`> > text`). */
 .wrap :global(.cm-editor) :global(.cm-line.live-quote) {
-  padding-left: calc(var(--quote-depth, 1) * 1em);
-  border-left: 2px solid var(--border-strong);
+  padding-inline-start: calc(var(--quote-depth, 1) * 1em);
+  border-inline-start: 2px solid var(--border-strong);
   color: var(--text-secondary);
 }
 
@@ -331,7 +331,7 @@
 /* Lists: a bullet, number or checkbox stands for the marker; wrapped lines hang under the text, not under the marker. */
 /* (Spelled out to outrank the `.cm-line` padding reset above.) */
 .wrap :global(.cm-editor) :global(.cm-line.live-li) {
-  padding-left: calc(var(--li-depth, 0) * 1.6em + 1.6em);
+  padding-inline-start: calc(var(--li-depth, 0) * 1.6em + 1.6em);
   text-indent: -1.6em;
 }
 .wrap :global(.live-bullet),
@@ -359,7 +359,7 @@
   content: '';
   position: absolute;
   top: 0.15em;
-  left: 0.1em;
+  inset-inline-start: 0.1em;
   width: 1em;
   height: 1em;
   box-sizing: border-box;
@@ -390,7 +390,8 @@
 /* A mention (a link to a person, reading, meeting or note) is a chip with the icon of its kind. The icons are CSS variables
    LiveEditor sets from the providers (`--entity-icon-person` …); each chip says which one it is. */
 .wrap :global(.live-chip) {
-  padding: 1px 6px 1px 5px;
+  padding-block: 1px;
+  padding-inline: 5px 6px;
   border-radius: 6px;
   background: var(--selected-bg);
   color: var(--selected-text);
@@ -408,7 +409,7 @@
   display: inline-block;
   width: 0.9em;
   height: 0.9em;
-  margin-right: 4px;
+  margin-inline-end: 4px;
   vertical-align: -0.08em;
   background: currentColor;
   -webkit-mask: var(--entity-icon) center / contain no-repeat;

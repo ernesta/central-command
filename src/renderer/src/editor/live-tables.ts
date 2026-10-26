@@ -185,9 +185,9 @@ class EmptyCell extends WidgetType {
 const hidden = Decoration.replace({})
 const pipeMark = Decoration.mark({ class: 'live-tablemark' })
 const cellMarks: Record<Align, Decoration> = {
-  left: Decoration.mark({ class: 'live-cell' }),
-  center: Decoration.mark({ class: 'live-cell live-cell-center' }),
-  right: Decoration.mark({ class: 'live-cell live-cell-right' })
+  left: Decoration.mark({ class: 'live-cell', attributes: { dir: 'auto' } }),
+  center: Decoration.mark({ class: 'live-cell live-cell-center', attributes: { dir: 'auto' } }),
+  right: Decoration.mark({ class: 'live-cell live-cell-right', attributes: { dir: 'auto' } })
 }
 
 type Add = (kind: string, from: number, to: number, deco: Decoration) => void
@@ -209,7 +209,7 @@ export function drawTable(
   const aligns = alignmentsOf(texts[1] ?? '')
   const template = grid ? columns(texts) : ''
   const depth = listDepthOf(table)
-  const indent = depth > 0 ? `; padding-left: calc(${depth} * 1.6em)` : ''
+  const indent = depth > 0 ? `; padding-inline-start: calc(${depth} * 1.6em)` : ''
 
   for (let n = first; n <= last; n++) {
     const line = doc.line(n)
