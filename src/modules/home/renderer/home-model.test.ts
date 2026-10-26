@@ -113,7 +113,7 @@ describe('homeView', () => {
 
   it('has no next-meeting card or TODO count (removed 23 Oct 2026)', () => {
     const view = homeView(base, 'research')
-    expect(Object.keys(view).sort()).toEqual(['comingUp', 'tasks', 'todayEvents'])
+    expect(Object.keys(view).sort()).toEqual(['comingUp', 'tasks', 'today', 'todayEvents'])
   })
 })
 
