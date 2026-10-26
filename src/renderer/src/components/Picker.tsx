@@ -332,13 +332,17 @@ export function PickerPopup<T extends string>({
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => pick(index)}
               >
-                <span>
-                  <Highlighted label={option.label} query={query} />
-                </span>
-                {option.description && (
-                  <span className={styles.description}>
-                    <Highlighted label={option.description} query={query} />
+                <Tooltip text={option.label} whenCut>
+                  <span className={styles.cut}>
+                    <Highlighted label={option.label} query={query} />
                   </span>
+                </Tooltip>
+                {option.description && (
+                  <Tooltip text={option.description} whenCut>
+                    <span className={[styles.description, styles.cut].join(' ')}>
+                      <Highlighted label={option.description} query={query} />
+                    </span>
+                  </Tooltip>
                 )}
               </div>
             </Fragment>
