@@ -187,7 +187,7 @@ function register({ db, paths, settings }: MainContext): () => void {
         }
       })
   )
-  // Every Research entry with a title and a date has its self-study task: made here so it exists whether or not the note is opened.
+  // Every Research or Life entry with a title and a date has its self-study task: made here so it exists whether or not the note is opened.
   const tasks = new TasksStore(db)
   let settling = false
   const settleSelfStudy = async (): Promise<void> => {
@@ -201,7 +201,7 @@ function register({ db, paths, settings }: MainContext): () => void {
         now: localMoment(),
         nowMs: Date.now()
       })
-      if (changed) broadcastTasksChanged('research')
+      for (const workspace of changed) broadcastTasksChanged(workspace)
     } catch (error) {
       console.error('Could not settle the self-study tasks:', error)
     } finally {

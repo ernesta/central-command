@@ -5,7 +5,7 @@ import type { TasksStore } from '../../tasks/main/tasks-store'
 import type { Task } from '../../tasks/shared/types'
 import { TRAINING_LIST, type ParentTarget } from '../shared/training-task'
 import { isSelfStudyOwn, planSelfStudyTask } from '../shared/self-study-task'
-import type { TrainingRef } from '../shared/types'
+import type { TrainingRef, TrainingWorkspace } from '../shared/types'
 import { listTrainingRows } from './repository'
 import type { TrainingStore } from './training-store'
 
@@ -14,6 +14,9 @@ import type { TrainingStore } from './training-store'
  * keystroke), and a write of ours then would put the page in conflict with the file.
  */
 export const QUIET_MS = 30_000
+
+/** Life and Research trainings both get a self-study task. */
+const SWEPT_WORKSPACES: readonly TrainingWorkspace[] = ['research', 'life']
 
 /** How many times the link into the note is tried when the file changes under us. */
 const LINK_ATTEMPTS = 3
@@ -55,31 +58,44 @@ async function link(training: TrainingStore, ref: TrainingRef, uid: string): Pro
 }
 
 /**
- * Every Research training entry with a title and a date has its self-study task (the user's rule, 19 Oct 2026): made here, in the main
+ * Every Research or Life training entry with a title and a date has its self-study task (the user's rule, 19 Oct 2026): made here, in the main
  * process, so it exists whether or not the note is ever opened. The task is a subtask under the series' `<series> self-study` task (a
  * top-level task in Training for an entry with no series), is due a week after the entry's date, follows its title and series, and is marked
  * done a week after the entry ends. Only for an entry made in the app (see `madeInApp`); older ones are the user's to map by hand. Idempotent: the uid is written into the note, and an entry that has one never gets a second. A
- * task the note names that is gone (the user deleted it) is not made again by itself. Returns whether any task changed.
+ * task the note names that is gone (the user deleted it) is not made again by itself. Returns the workspaces whose tasks changed.
  */
-export async function settleSelfStudyTasks(options: SelfStudySweepOptions): Promise<boolean> {
+export async function settleSelfStudyTasks(
+  options: SelfStudySweepOptions
+): Promise<TrainingWorkspace[]> {
+  const changed: TrainingWorkspace[] = []
+  for (const workspace of SWEPT_WORKSPACES) {
+    if (await settleWorkspace(options, workspace)) changed.push(workspace)
+  }
+  return changed
+}
+
+async function settleWorkspace(
+  options: SelfStudySweepOptions,
+  workspace: TrainingWorkspace
+): Promise<boolean> {
   const { db, tasks, training, now, nowMs, quietMs = QUIET_MS } = options
   let changed = false
-  let all = listTasks(db, 'research')
+  let all = listTasks(db, workspace)
   const refresh = (): void => {
-    all = listTasks(db, 'research')
+    all = listTasks(db, workspace)
     changed = true
   }
 
   const parentUid = (target: ParentTarget, made: string[]): string => {
     if ('uid' in target) return target.uid
-    const parent = tasks.create({ workspace: 'research', title: target.title, list: target.list })
+    const parent = tasks.create({ workspace, title: target.title, list: target.list })
     made.push(parent.uid)
     return parent.uid
   }
 
-  for (const row of listTrainingRows(db, 'research')) {
+  for (const row of listTrainingRows(db, workspace)) {
     if (!named(row.title) || !row.date) continue
-    const ref: TrainingRef = { workspace: 'research', id: row.id }
+    const ref: TrainingRef = { workspace, id: row.id }
     const file = await training.read(ref).catch(() => null)
     if (!file || nowMs - (file.note.edited ?? 0) < quietMs) continue
     const meta = file.meta
@@ -102,7 +118,7 @@ export async function settleSelfStudyTasks(options: SelfStudySweepOptions): Prom
       if (!madeInApp) continue
       const made: string[] = []
       const task = tasks.create({
-        workspace: 'research',
+        workspace,
         title: plan.title,
         status: 'todo',
         ownKind: 'self-study',

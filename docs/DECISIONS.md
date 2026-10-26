@@ -4491,3 +4491,7 @@ The Files panel refused a folder outside the Trainings folder setting ("Choose a
 ## Segmented: the end corners are found through the Tooltip's wrapper (26 Oct 2026, the user's screenshot: "the highlight looks all weird")
 
 Each segment sits in `Tooltip`'s wrapper, so `:first-child` and `:last-child` matched every button and the last-child corners won everywhere: the selected pill had the wrong corners. The rules are now `.group > :first-child > .segment` and `.group > :last-child > .segment`.
+
+## Self-study tasks for Life trainings (26 Oct 2026)
+
+The self-study sweep (`settleSelfStudyTasks`) was hard-coded to Research, so a Life training (Urdu lessons) never got its task and showed nothing in Home. It now visits Research and Life, each in its own workspace's tasks, and reports the workspaces that changed. The "made in the app" rule is unchanged: a Life entry whose `task:` is not `auto` (or a `training`-marked task) is still left for the user to map by hand.

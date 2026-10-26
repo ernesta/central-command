@@ -23,6 +23,7 @@ let tasks: TasksStore
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'cc-self-study-'))
   mkdirSync(join(root, 'research'))
+  mkdirSync(join(root, 'life'))
   db = new Database(':memory:')
   db.pragma('foreign_keys = ON')
   runMigrations(db, [...tasksMigrations, ...meetingsMigrations, ...trainingMigrations])
@@ -39,7 +40,11 @@ const NOW = { date: '2026-10-19', time: '12:00' }
 const sweep = (
   now = NOW,
   over: Partial<Parameters<typeof settleSelfStudyTasks>[0]> = {}
-): Promise<boolean> =>
+): Promise<boolean> => sweepWorkspaces(now, over).then((changed) => changed.length > 0)
+const sweepWorkspaces = (
+  now = NOW,
+  over: Partial<Parameters<typeof settleSelfStudyTasks>[0]> = {}
+): ReturnType<typeof settleSelfStudyTasks> =>
   settleSelfStudyTasks({
     db,
     tasks,
@@ -67,6 +72,23 @@ const linked = async (ref: TrainingRef): Promise<string> =>
   (await training.read(ref)).meta.selfStudy
 
 describe('settleSelfStudyTasks', () => {
+  it('makes a Life training its self-study task in Life, and reports only that workspace', async () => {
+    const ref = (
+      await training.create({
+        workspace: 'life',
+        date: '2026-10-21',
+        title: 'Lesson 1',
+        series: 'Urdu Beginners 1',
+        task: 'auto'
+      })
+    ).ref
+    expect(await sweepWorkspaces()).toEqual(['life'])
+    const own = listTasks(db, 'life').find((t) => t.title === 'Lesson 1')
+    expect(own?.ownKind).toBe('self-study')
+    expect(await linked(ref)).toBe(own?.uid)
+    expect(all()).toEqual([])
+  })
+
   it.each(TEST_LOCALES)(
     '%s: makes the series task and the entry subtask, named after the entry and due a week after it, and links the note',
     async (locale) => {
