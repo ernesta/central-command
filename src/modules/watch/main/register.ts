@@ -1,6 +1,5 @@
 import { BrowserWindow, ipcMain, net } from 'electron'
 import type { MainContext, MainModule } from '../../main-registry'
-import { SUGGESTED_SOURCES } from '../shared/suggestions'
 import { WATCH_IPC } from '../shared/api'
 import {
   WATCH_KINDS,
@@ -121,10 +120,6 @@ function register({ db }: MainContext): () => void {
   ipcMain.handle(WATCH_IPC.sourcesRemove, (_e, id: unknown) => {
     removeSource(db, asId(id))
     broadcast(getCounts(db))
-  })
-  ipcMain.handle(WATCH_IPC.sourcesSuggestions, () => {
-    const held = new Set(listSources(db).map((s) => s.url))
-    return SUGGESTED_SOURCES.filter((s) => !held.has(s.url))
   })
   ipcMain.handle(WATCH_IPC.itemsList, (_e, query: unknown) => listItems(db, asQuery(query)))
   ipcMain.handle(WATCH_IPC.itemsSetState, (_e, id: unknown, state: unknown) => {

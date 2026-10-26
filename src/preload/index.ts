@@ -287,8 +287,7 @@ const api: Api = {
       list: () => ipcRenderer.invoke(WATCH_IPC.sourcesList),
       add: (input) => ipcRenderer.invoke(WATCH_IPC.sourcesAdd, input),
       update: (id, changes) => ipcRenderer.invoke(WATCH_IPC.sourcesUpdate, id, changes),
-      remove: (id) => ipcRenderer.invoke(WATCH_IPC.sourcesRemove, id),
-      suggestions: () => ipcRenderer.invoke(WATCH_IPC.sourcesSuggestions)
+      remove: (id) => ipcRenderer.invoke(WATCH_IPC.sourcesRemove, id)
     },
     items: {
       list: (query) => ipcRenderer.invoke(WATCH_IPC.itemsList, query),

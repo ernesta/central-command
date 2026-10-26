@@ -106,36 +106,6 @@
 .failing {
   color: var(--danger);
 }
-.suggestions,
-.byHand {
-  display: grid;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-card);
-}
-.suggestion,
-.hand {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 8px 16px;
-  border-bottom: 1px solid var(--border-faint);
-  font-size: var(--text-14);
-}
-.suggestion:last-child,
-.hand:last-child {
-  border-bottom: 0;
-}
-.suggestionName {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* The add/edit dialog. */
 .form {
   display: grid;
@@ -166,15 +136,4 @@
 }
 .spacer {
   flex: 1;
-}
-
-.notify {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px 32px;
-  margin-bottom: 8px;
-  font-size: var(--text-14);
-}
-.notify .field {
-  justify-items: start;
 }

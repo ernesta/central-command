@@ -6,8 +6,7 @@ import type {
   WatchItemsQuery,
   WatchSource,
   WatchSourceChanges,
-  WatchState,
-  WatchSuggestion
+  WatchState
 } from './types'
 
 /** The Watch slice of window.api. */
@@ -19,7 +18,6 @@ export interface WatchApi {
     /** Removes the source and the items it announced. */
     remove(id: number): Promise<void>
     /** Sources worth offering that are not being watched yet. */
-    suggestions(): Promise<WatchSuggestion[]>
   }
   items: {
     list(query?: WatchItemsQuery): Promise<WatchItem[]>
@@ -48,7 +46,6 @@ export const WATCH_IPC = {
   sourcesAdd: 'watch:sources-add',
   sourcesUpdate: 'watch:sources-update',
   sourcesRemove: 'watch:sources-remove',
-  sourcesSuggestions: 'watch:sources-suggestions',
   itemsList: 'watch:items-list',
   itemsSetState: 'watch:items-set-state',
   itemsOpen: 'watch:items-open',
