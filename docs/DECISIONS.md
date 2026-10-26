@@ -4508,3 +4508,11 @@ The backfill had made Lesson 1's self-study task and linked it in the note, but 
 ## Panel icon actions are 28px, so the card does not grow (26 Oct 2026, the user's screenshot: "the height of the component changed visibly")
 
 The Self-study card's open-task icon only exists once the self-study task is made (first Start or Add time). `IconButton` defaults to 36px, but a `Panel` head is `min-height: 28px`, so the icon's arrival made the card taller. `Panel`'s `.actions` now sets `--icon-button-size: 28px` (the height the head's comment already named), so an icon in any panel's head fits the head. Every Panel with icon actions shrinks from 36px to 28px with it; a module that sets its own size on the button's element still wins. Not driven in the app (CSS only; tests, lint and typecheck run).
+
+## Pickers: the arrows wrap at the ends (26 Oct 2026, the user's report: "tried to go down with arrows and that didn't seem to be working")
+
+In the attendees' "+ add" list, typing a search leaves the highlight on the "Add “…”" row, the last one (with several matches the Add row is the default, as the group field has always done). Arrow Down stopped at the last row, so it did nothing, and the list looked as if the arrows were dead. Driven first (production build, scratch library): the arrows did move the highlight, from the Add row up and back; only Down from the last row was a dead key.
+
+- `PickerPopup` (`Picker.tsx`, so every picker, `PeopleField`, `SkillsField`, `ClientsField` and `Select` included): Down on the last row goes to the first, Up on the first goes to the last. Up from no highlight went to the last row already.
+- The default stays the Add row: starting on the first match would let Enter take a similar existing name instead of adding the typed one. The user can ask for that instead.
+- Test: `Picker.test.ts`, "the arrows wrap at the ends". Not driven again in the app after the change.
