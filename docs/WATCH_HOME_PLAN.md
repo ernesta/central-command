@@ -18,7 +18,7 @@ Built backend-only on 15 Oct 2026 (an unattended run; `docs/DECISIONS.md`, "Watc
 | `in:watch` search                                                        | not started                                            |       |                                                   | mentioned only              |                                                                                                                                      | optional                                                     |
 | Meeting-derived hours in the summary and widget file (the page has them) | **done 17 Oct 2026**: `docs/HOURS_CONSISTENCY_PLAN.md` |       |                                                   |                             |                                                                                                                                      | backend consistency only; no widget is wanted yet            |
 
-Not applied to the real library: `npm run watch:from-tasks -- --apply` (waits for the user). Watch UI built and pushed 26 Oct 2026, not installed (the app was running) (see `docs/WATCH_UI_PLAN.md`). Commits `fa4f849` to `9282845`.
+Not applied to the real library: `npm run watch:from-tasks -- --apply` (waits for the user). Watch UI built, pushed and installed 26 Oct 2026 (installed app not opened or driven; no source added) (see `docs/WATCH_UI_PLAN.md`). Commits `fa4f849` to `9282845`.
 
 ## What to work on next (ranked; the user picks)
 
