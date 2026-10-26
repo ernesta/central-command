@@ -78,3 +78,9 @@ export function findDate(text: string, today: string): Found | null {
     .sort((a, b) => a.date.localeCompare(b.date))
   return all.find((f) => f.kind === 'deadline') ?? all[0] ?? null
 }
+
+/** True when the text names dates and every one is before `today`: an event or deadline that is over. A text with no written-out date is not. */
+export function isOver(text: string, today: string): boolean {
+  const all = [...scan(text, DAY_FIRST, 'day-first'), ...scan(text, MONTH_FIRST, 'month-first')]
+  return all.length > 0 && all.every((f) => f.date < today)
+}

@@ -1,8 +1,8 @@
 import { createHash } from 'crypto'
 import type { Database } from 'better-sqlite3'
-import { findDate } from '../shared/dates'
+import { findDate, isOver } from '../shared/dates'
 import { scoreText } from '../shared/relevance'
-import type { CheckOutcome, ParsedItem, WatchSource, WatchState } from '../shared/types'
+import type { CheckOutcome, ParsedItem, WatchSource } from '../shared/types'
 import { crossrefUrl, parseCrossref } from './parse-crossref'
 import { parseFeed } from './parse-feed'
 import { datedSentences, parsePage } from './parse-page'
@@ -19,8 +19,6 @@ export type Fetcher = (
   init: { headers: Record<string, string> }
 ) => Promise<FetchedResponse>
 
-/** A feed or Crossref item this recent is "new" on the very first check; older ones are history. */
-export const BASELINE_DAYS = 21
 /** One check adds at most this many items, so a page that rebuilt all its links cannot flood the list. */
 export const MAX_NEW_PER_CHECK = 60
 
@@ -28,10 +26,6 @@ const sha = (text: string): string => createHash('sha256').update(text).digest('
 
 function isoDay(now: string): string {
   return now.slice(0, 10)
-}
-
-function daysBetween(fromIso: string, toIso: string): number {
-  return (Date.parse(toIso) - Date.parse(fromIso)) / 86_400_000
 }
 
 interface Fetched {
@@ -87,9 +81,8 @@ async function load(
  * Check one source and store what is new. Never throws: a problem is kept on the source (`last_error`, `failures`)
  * and returned, so one broken site does not stop the others.
  *
- * The first good check is the baseline. A feed or Crossref item published in the last three weeks is new then;
- * everything else, and every link on a page, is stored as already seen, so adding a source does not bury the user
- * under years of history. After that, anything the source did not have before is new.
+ * Everything a source has is new, the first check included (the user's call, 26 Oct 2026), except what is already
+ * over: an item whose every written-out date has passed is not added. One check adds at most MAX_NEW_PER_CHECK.
  */
 export async function checkSource(
   db: Database,
@@ -130,15 +123,9 @@ export async function checkSource(
         if (added >= MAX_NEW_PER_CHECK) break
         const text = `${item.title}\n${item.summary}`
         const relevance = scoreText(item.title, item.summary, keywords)
+        // Something already over (every date it names has passed) is never added, not even on the first check.
+        if (isOver(text, today)) continue
         const dated = findDate(text, today)
-        let state: WatchState = 'new'
-        if (baseline) {
-          const recent =
-            source.method !== 'page' &&
-            item.publishedAt !== null &&
-            daysBetween(item.publishedAt, now) <= BASELINE_DAYS
-          if (!recent) state = 'seen'
-        }
         const info = insert.run(
           source.id,
           item.key,
@@ -150,7 +137,7 @@ export async function checkSource(
           dated?.kind ?? null,
           relevance.score,
           relevance.matched.join(','),
-          state,
+          'new',
           now
         )
         added += info.changes

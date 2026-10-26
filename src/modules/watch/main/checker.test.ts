@@ -108,7 +108,7 @@ describe('sources', () => {
 })
 
 describe('checkSource on a feed', () => {
-  it('makes recent items new on the first check and older ones history', async () => {
+  it('makes every item new on the first check, old and undated ones too', async () => {
     const s = add()
     const body = feed([
       { id: 'recent', title: 'Recent call', date: 'Wed, 14 Oct 2026 10:00:00 GMT' },
@@ -118,7 +118,7 @@ describe('checkSource on a feed', () => {
     const out = await checkSource(db, s, respond(body), NOW)
     expect(out).toMatchObject({ status: 'ok', added: 3, baseline: true })
     const byTitle = Object.fromEntries(listItems(db).map((i) => [i.title, i.state]))
-    expect(byTitle).toEqual({ 'Recent call': 'new', 'Old call': 'seen', 'Undated call': 'seen' })
+    expect(byTitle).toEqual({ 'Recent call': 'new', 'Old call': 'new', 'Undated call': 'new' })
     expect(getSource(db, s.id)).toMatchObject({ lastOkAt: NOW, lastError: null, failures: 0 })
   })
 
@@ -138,7 +138,25 @@ describe('checkSource on a feed', () => {
       '2026-10-16T09:00:00.000Z'
     )
     expect(out).toMatchObject({ added: 1, baseline: false })
-    expect(listItems(db, { state: 'new' }).map((i) => i.title)).toEqual(['B'])
+    expect(listItems(db).map((i) => i.title)).toHaveLength(2)
+    expect(listItems(db, { state: 'new' }).map((i) => i.title)).toContain('B')
+  })
+
+  it('adds nothing whose every date has passed, on the first check or later', async () => {
+    const s = add()
+    const body = feed([
+      { id: 'over', title: 'Workshop on 3 March 2026' },
+      { id: 'late', title: 'Call, apply by 1 October 2026' },
+      { id: 'open', title: 'Call, apply by 20 December 2026' },
+      { id: 'plain', title: 'Call with no date' }
+    ])
+    const out = await checkSource(db, s, respond(body), NOW)
+    expect(out.added).toBe(2)
+    expect(
+      listItems(db)
+        .map((i) => i.title)
+        .sort()
+    ).toEqual(['Call with no date', 'Call, apply by 20 December 2026'])
   })
 
   it('finds the deadline in the text and scores keywords', async () => {
@@ -213,11 +231,11 @@ describe('checkSource on a page', () => {
   const page = (links: string[], extra = ''): string =>
     `<html><body><main>${links.map((l, i) => `<a href="/c/${i}">${l}</a>`).join('')}${extra}</main></body></html>`
 
-  it('treats the first look as history, then reports a new link and a changed text', async () => {
+  it('makes the first look new, then reports a new link and a changed text', async () => {
     const s = add({ method: 'page', url: 'https://ex.org/calendar' })
     const first = await checkSource(db, s, respond(page(['Course on regression models'])), NOW)
     expect(first).toMatchObject({ added: 1, baseline: true })
-    expect(getCounts(db).new).toBe(0)
+    expect(getCounts(db).new).toBe(1)
 
     const t2 = '2026-10-16T09:00:00.000Z'
     await checkSource(
@@ -226,7 +244,7 @@ describe('checkSource on a page', () => {
       respond(page(['Course on regression models', 'Summer school in Essex'])),
       t2
     )
-    expect(listItems(db, { state: 'new' }).map((i) => i.title)).toEqual(['Summer school in Essex'])
+    expect(listItems(db, { state: 'new' })).toHaveLength(2)
     expect(getSource(db, s.id)!.changedAt).toBeNull()
 
     // Same links, different text: no item, but the page is flagged.
