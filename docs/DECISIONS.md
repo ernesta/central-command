@@ -4464,3 +4464,7 @@ The National Literacy Trust's events page showed items with no date and "fake" o
 ## Watch: no note beside Saved (26 Oct 2026, the user's screenshot: "completely unnecessary")
 
 The Saved section no longer says "Their deadlines show in Home's Coming up" (`WatchPage.tsx`; the `aside` and the `landing` import are gone). The rule itself is unchanged: only saved items' deadlines reach Coming up and notifications. Supersedes that sentence in "Watch: the page, the sources and what they replace".
+
+## People pickers reload the list when they open (26 Oct 2026, a bug the user found)
+
+A person made with `@` while writing a training note was missing from the Leads picker (it offered "Add …" instead): the Training and Meeting pages read the people list once, on opening. `PeopleField` now takes `onOpen`, and both pages reload the list each time the picker opens (`onOpenPeople` on `MetaFields` and `TrainingMetaFields`). No event channel for people changes was added; reloading on open is enough because the list is only read there. Not driven in a scratch library.
