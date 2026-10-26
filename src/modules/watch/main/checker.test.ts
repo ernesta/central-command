@@ -11,6 +11,7 @@ import {
   listItems,
   listSources,
   markAllSeen,
+  openItem,
   removeSource,
   setItemState,
   setKeywords,
@@ -313,30 +314,81 @@ describe('items, keywords, upcoming and counts', () => {
     )
   }
 
-  it('orders new items by keyword match, then recency', async () => {
+  it('orders new items by the day found, then the day published (keywords do not order them)', async () => {
     await seed()
     expect(listItems(db).map((i) => i.title)).toEqual([
-      'Literacy summit',
       'Plain event',
+      'Literacy summit',
       'Far away'
     ])
     expect(listItems(db, { relevantOnly: true }).map((i) => i.title)).toEqual(['Literacy summit'])
     expect(getCounts(db)).toMatchObject({ new: 3, newRelevant: 1, sources: 1 })
   })
 
-  it('lists what is dated within a window, soonest first, without dismissed ones', async () => {
+  it('lists only SAVED items that are dated within a window, soonest first', async () => {
     await seed()
+    // Nothing is saved, so nothing reaches Home's "Coming up" or a notification, however near its date.
+    expect(upcoming(db, '2026-10-15', 800)).toEqual([])
+    const byTitle = (t: string): number => listItems(db).find((i) => i.title === t)!.id
+    for (const t of ['Plain event', 'Literacy summit', 'Far away'])
+      setItemState(db, byTitle(t), 'saved')
     expect(upcoming(db, '2026-10-15', 60).map((i) => [i.title, i.date])).toEqual([
       ['Plain event', '2026-11-20'],
       ['Literacy summit', '2026-12-01']
     ])
-    const plain = listItems(db).find((i) => i.title === 'Plain event')!
-    setItemState(db, plain.id, 'dismissed')
-    expect(upcoming(db, '2026-10-15', 60).map((i) => i.title)).toEqual(['Literacy summit'])
     expect(upcoming(db, '2026-10-15', 800).map((i) => i.title)).toEqual([
+      'Plain event',
       'Literacy summit',
       'Far away'
     ])
+    // Dismissing or merely seeing a saved item's neighbours changes nothing; un-saving takes it off.
+    setItemState(db, byTitle('Plain event'), 'seen')
+    setItemState(db, byTitle('Far away'), 'dismissed')
+    expect(upcoming(db, '2026-10-15', 800).map((i) => i.title)).toEqual(['Literacy summit'])
+  })
+
+  it('opening an item makes a new one seen and leaves saved and dismissed ones alone', async () => {
+    await seed()
+    const [a, b, c] = listItems(db)
+    setItemState(db, b.id, 'saved')
+    setItemState(db, c.id, 'dismissed')
+    openItem(db, a.id)
+    openItem(db, b.id)
+    openItem(db, c.id)
+    expect(
+      listItems(db)
+        .map((i) => i.state)
+        .sort()
+    ).toEqual(['dismissed', 'saved', 'seen'])
+    expect(listItems(db, { state: 'new' })).toEqual([])
+    expect(
+      listItems(db, { state: 'undismissed' })
+        .map((i) => i.state)
+        .sort()
+    ).toEqual(['saved', 'seen'])
+  })
+
+  it('lists by kind: a summer school is a training, a journal is in neither section', async () => {
+    const training = add({ url: 'https://ex.org/t', kind: 'training' })
+    const school = add({ url: 'https://ex.org/s', kind: 'summer-school' })
+    const conf = add({ url: 'https://ex.org/c', kind: 'conference' })
+    for (const [s, id] of [
+      [training, 't'],
+      [school, 's'],
+      [conf, 'c']
+    ] as const)
+      await checkSource(
+        db,
+        s,
+        respond(feed([{ id, title: `Item ${id}`, date: 'Wed, 14 Oct 2026 10:00:00 GMT' }])),
+        NOW
+      )
+    expect(
+      listItems(db, { kind: 'training' })
+        .map((i) => i.title)
+        .sort()
+    ).toEqual(['Item s', 'Item t'])
+    expect(listItems(db, { kind: 'conference' }).map((i) => i.title)).toEqual(['Item c'])
   })
 
   it('"open" is new plus saved; mark-all-seen leaves saved and dismissed alone', async () => {
@@ -357,8 +409,8 @@ describe('items, keywords, upcoming and counts', () => {
     expect(setKeywords(db, ['Summit', 'summit', ' '])).toEqual(['summit'])
     rescoreItems(db)
     expect(listItems(db).map((i) => [i.title, i.score])).toEqual([
-      ['Literacy summit', 3],
       ['Plain event', 0],
+      ['Literacy summit', 3],
       ['Far away', 0]
     ])
     expect(getKeywords(db)).toEqual(['summit'])
@@ -389,5 +441,33 @@ describe('dueSources', () => {
     expect(
       dueSources([src({ id: 1, failures: 30, lastCheckedAt: '2026-10-08T08:00:00.000Z' })], NOW)
     ).toHaveLength(1)
+  })
+})
+
+describe('changing a source', () => {
+  it('moves it to a new address with a fresh baseline, and refuses an address already watched', async () => {
+    const a = add()
+    const b = add({ url: 'https://ex.org/other' })
+    await checkSource(db, a, respond(feed([{ id: '1', title: 'One' }])), NOW)
+    expect(getSource(db, a.id)?.lastOkAt).not.toBeNull()
+    expect(() => updateSource(db, a.id, { url: b.url })).toThrow('Already watching')
+    expect(() => updateSource(db, a.id, { url: 'file:///x' })).toThrow()
+    const moved = updateSource(db, a.id, { url: 'https://ex.org/new#frag', title: 'Moved' })
+    expect(moved).toMatchObject({ url: 'https://ex.org/new', title: 'Moved', lastOkAt: null })
+    expect(updateSource(db, a.id, { title: 'Same address' }).url).toBe('https://ex.org/new')
+  })
+})
+
+describe('the two kinds migration', () => {
+  it('turns stored summer schools into trainings', () => {
+    const old = new Database(':memory:')
+    runMigrations(old, watchMigrations.slice(0, 1))
+    old
+      .prepare(
+        "INSERT INTO watch_sources (title, url, kind, method, created_at) VALUES ('S', 'https://ex.org/s', 'summer-school', 'page', 'x')"
+      )
+      .run()
+    runMigrations(old, watchMigrations)
+    expect(listSources(old).map((s) => s.kind)).toEqual(['training'])
   })
 })

@@ -142,7 +142,7 @@ describe('meetings', () => {
 })
 
 describe('upcoming', () => {
-  it('merges tasks, meetings, time off and Watch dates into one dated list, soonest first', () => {
+  it('merges tasks, meetings, time off and saved Watch dates into one dated list, soonest first (unsaved items never)', () => {
     const s = buildHomeSummary({
       ...base,
       tasks: [
@@ -191,8 +191,16 @@ describe('upcoming', () => {
         counts: { new: 1, newRelevant: 1, sources: 1, failing: 0, changed: 0 },
         relevant: [],
         upcoming: [
-          watchItem({ title: 'Abstract deadline', date: '2026-10-18' }),
-          watchItem({ id: 2, title: 'Summer school', date: '2027-06-01', dateKind: 'date' })
+          watchItem({ title: 'Abstract deadline', date: '2026-10-18', state: 'saved' }),
+          watchItem({
+            id: 2,
+            title: 'Summer school',
+            date: '2027-06-01',
+            dateKind: 'date',
+            state: 'saved'
+          }),
+          watchItem({ id: 3, title: 'Never saved', date: '2026-10-16', state: 'new' }),
+          watchItem({ id: 4, title: 'Seen only', date: '2026-10-17', state: 'seen' })
         ]
       }
     })

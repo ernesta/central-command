@@ -24,9 +24,11 @@ export interface WatchApi {
   items: {
     list(query?: WatchItemsQuery): Promise<WatchItem[]>
     setState(id: number, state: WatchState): Promise<void>
+    /** The first look at an item (the page opens it in the browser): a new one becomes seen. */
+    open(id: number): Promise<void>
     /** New items become seen (all, or one source's). Returns how many changed. */
     markAllSeen(sourceId?: number): Promise<number>
-    /** Items with a deadline or event date from today to `days` days on, soonest first. */
+    /** Saved items with a deadline or event date from today to `days` days on, soonest first. */
     upcoming(days: number): Promise<WatchItem[]>
   }
   /** Check one source, or all of them, now. Resolves when the checks are done. */
@@ -49,6 +51,7 @@ export const WATCH_IPC = {
   sourcesSuggestions: 'watch:sources-suggestions',
   itemsList: 'watch:items-list',
   itemsSetState: 'watch:items-set-state',
+  itemsOpen: 'watch:items-open',
   itemsMarkAllSeen: 'watch:items-mark-all-seen',
   itemsUpcoming: 'watch:items-upcoming',
   checkNow: 'watch:check-now',

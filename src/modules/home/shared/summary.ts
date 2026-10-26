@@ -258,8 +258,10 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
       inDays: daysFrom(today, run.from)
     })
   }
+  // Only what the user saved: an unsaved item's date never reaches "Coming up" or a notification (the loader asks for
+  // saved items only; this keeps the rule even when it is handed more).
   for (const w of input.watch?.upcoming ?? []) {
-    if (!w.date) continue
+    if (!w.date || w.state !== 'saved') continue
     events.push({
       id: `watch:${w.id}`,
       kind: w.dateKind === 'deadline' ? 'deadline' : 'event',

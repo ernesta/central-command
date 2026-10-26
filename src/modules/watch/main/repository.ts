@@ -4,6 +4,8 @@ import {
   WATCH_KINDS,
   WATCH_METHODS,
   WATCH_STATES,
+  kindsOf,
+  shownKind,
   type DateKind,
   type NewWatchSource,
   type WatchCounts,
@@ -132,9 +134,21 @@ export function updateSource(db: Database, id: number, changes: WatchSourceChang
     next.intervalHours > 24 * 30
   )
     throw new Error('Invalid interval')
+  const url = validSourceUrl(next.url)
+  if (url !== current.url) {
+    const taken = db.prepare('SELECT id FROM watch_sources WHERE url = ?').get(url) as
+      { id: number } | undefined
+    if (taken && taken.id !== id) throw new Error('Already watching that address')
+  }
   db.prepare(
     'UPDATE watch_sources SET title = ?, kind = ?, group_label = ?, interval_hours = ?, active = ? WHERE id = ?'
   ).run(next.title.trim(), next.kind, next.groupLabel, next.intervalHours, next.active ? 1 : 0, id)
+  // A new address is a new place: forget what the old one said, so its first good check is a fresh baseline.
+  if (url !== current.url)
+    db.prepare(
+      `UPDATE watch_sources SET url = ?, last_ok_at = NULL, last_error = NULL, failures = 0, page_hash = NULL,
+         changed_at = NULL, etag = NULL, last_modified = NULL WHERE id = ?`
+    ).run(url, id)
   return getSource(db, id) as WatchSource
 }
 
@@ -182,13 +196,15 @@ const ITEM_SELECT = `
   FROM watch_items i JOIN watch_sources s ON s.id = i.source_id`
 
 /**
- * Items, the ones that need a look first: not-yet-seen before the rest, then the best keyword match,
- * then the newest. "open" means new or saved (what is still on the user's plate).
+ * Items, the ones that need a look first: not-yet-seen before the rest, then the day they were found and the day they were published, newest first (the
+ * keyword score is not shown or sorted by: keywords are not part of the page). "open" means new or saved, "undismissed"
+ * everything the user has not sent away. A `kind` the page shows (training, conference) takes in its stored kinds.
  */
 export function listItems(db: Database, query: WatchItemsQuery = {}): WatchItem[] {
   const where: string[] = []
   const params: unknown[] = []
   if (query.state === 'open') where.push("i.state IN ('new', 'saved')")
+  else if (query.state === 'undismissed') where.push("i.state != 'dismissed'")
   else if (query.state) {
     if (!(WATCH_STATES as readonly string[]).includes(query.state)) throw new Error('Invalid state')
     where.push('i.state = ?')
@@ -199,13 +215,14 @@ export function listItems(db: Database, query: WatchItemsQuery = {}): WatchItem[
     params.push(query.sourceId)
   }
   if (query.kind) {
-    where.push('s.kind = ?')
-    params.push(query.kind)
+    const kinds = shownKind(query.kind) ? kindsOf(shownKind(query.kind)!) : [query.kind]
+    where.push(`s.kind IN (${kinds.map(() => '?').join(', ')})`)
+    params.push(...kinds)
   }
   if (query.relevantOnly) where.push('i.score > 0')
   const limit = Math.min(Math.max(Math.trunc(query.limit ?? 200), 1), 1000)
   const sql = `${ITEM_SELECT} ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
-    ORDER BY (i.state = 'new') DESC, i.score DESC, COALESCE(i.published_at, i.first_seen_at) DESC, i.id DESC
+    ORDER BY (i.state = 'new') DESC, substr(i.first_seen_at, 1, 10) DESC, COALESCE(i.published_at, i.first_seen_at) DESC, i.id DESC
     LIMIT ${limit}`
   return (db.prepare(sql).all(...params) as ItemRow[]).map(toItem)
 }
@@ -213,6 +230,11 @@ export function listItems(db: Database, query: WatchItemsQuery = {}): WatchItem[
 export function setItemState(db: Database, id: number, state: WatchState): void {
   if (!(WATCH_STATES as readonly string[]).includes(state)) throw new Error('Invalid state')
   db.prepare('UPDATE watch_items SET state = ? WHERE id = ?').run(state, id)
+}
+
+/** Opening an item is the first look at it: a new one becomes seen (saved and dismissed ones stay as they are). */
+export function openItem(db: Database, id: number): void {
+  db.prepare("UPDATE watch_items SET state = 'seen' WHERE id = ? AND state = 'new'").run(id)
 }
 
 /** "Looked at everything": new items become seen (saved and dismissed stay as they are). Returns how many changed. */
@@ -245,15 +267,15 @@ export function getCounts(db: Database): WatchCounts {
 }
 
 /**
- * What has a date coming up: items with a deadline or event date from `today` to `days` days on, soonest first,
- * leaving out what the user dismissed. This is what a calendar or the Home page's "coming up" reads.
+ * What has a date coming up: the items the user SAVED with a deadline or event date from `today` to `days` days on,
+ * soonest first. Only saved items: an unsaved one never reaches Home's "Coming up" or a notification, however near its date.
  */
 export function upcoming(db: Database, today: string, days: number, limit = 50): WatchItem[] {
   const end = new Date(`${today}T00:00:00Z`)
   end.setUTCDate(end.getUTCDate() + Math.min(Math.max(Math.trunc(days), 1), 730))
   const rows = db
     .prepare(
-      `${ITEM_SELECT} WHERE i.date >= ? AND i.date <= ? AND i.state != 'dismissed'
+      `${ITEM_SELECT} WHERE i.date >= ? AND i.date <= ? AND i.state = 'saved'
        ORDER BY i.date, i.score DESC LIMIT ?`
     )
     .all(today, end.toISOString().slice(0, 10), limit) as ItemRow[]

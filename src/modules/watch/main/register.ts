@@ -22,6 +22,7 @@ import {
   listItems,
   listSources,
   markAllSeen,
+  openItem,
   removeSource,
   setItemState,
   setKeywords,
@@ -64,6 +65,7 @@ function asChanges(value: unknown): WatchSourceChanges {
   const o = asObject(value, 'changes')
   const out: WatchSourceChanges = {}
   if (str(o.title) !== undefined) out.title = str(o.title)
+  if (str(o.url) !== undefined) out.url = str(o.url)
   if (str(o.kind) !== undefined) out.kind = str(o.kind) as WatchSourceChanges['kind']
   if (str(o.groupLabel) !== undefined) out.groupLabel = str(o.groupLabel)
   if (typeof o.intervalHours === 'number') out.intervalHours = o.intervalHours
@@ -78,6 +80,7 @@ function asQuery(value: unknown): WatchItemsQuery {
   if (
     state !== undefined &&
     state !== 'open' &&
+    state !== 'undismissed' &&
     !(WATCH_STATES as readonly string[]).includes(state)
   )
     throw new Error('Invalid state')
@@ -128,6 +131,10 @@ function register({ db }: MainContext): () => void {
     if (typeof state !== 'string' || !(WATCH_STATES as readonly string[]).includes(state))
       throw new Error('Invalid state')
     setItemState(db, asId(id), state as WatchState)
+    broadcast(getCounts(db))
+  })
+  ipcMain.handle(WATCH_IPC.itemsOpen, (_e, id: unknown) => {
+    openItem(db, asId(id))
     broadcast(getCounts(db))
   })
   ipcMain.handle(WATCH_IPC.itemsMarkAllSeen, (_e, sourceId: unknown) => {

@@ -293,6 +293,7 @@ const api: Api = {
     items: {
       list: (query) => ipcRenderer.invoke(WATCH_IPC.itemsList, query),
       setState: (id, state) => ipcRenderer.invoke(WATCH_IPC.itemsSetState, id, state),
+      open: (id) => ipcRenderer.invoke(WATCH_IPC.itemsOpen, id),
       markAllSeen: (sourceId) => ipcRenderer.invoke(WATCH_IPC.itemsMarkAllSeen, sourceId),
       upcoming: (days) => ipcRenderer.invoke(WATCH_IPC.itemsUpcoming, days)
     },
