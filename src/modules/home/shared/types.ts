@@ -12,6 +12,8 @@ export interface HomeTask {
   study: boolean
   /** The title of the task it is a subtask of (the row then reads `↳ parent · list`); null for any other. */
   parent: string | null
+  /** The uid of that parent (null for any other task). */
+  parentUid: string | null
   due: string
   priority: 'high' | 'normal' | 'low'
   status: 'todo' | 'doing'

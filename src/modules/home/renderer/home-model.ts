@@ -83,3 +83,35 @@ export function homeView(summary: HomeSummary, workspace: HomeWorkspace): HomeVi
 export function detailText(detail: string): string {
   return detail.replace(/\b\d{4}-\d{2}-\d{2}\b/, (date) => formatShortDate(date))
 }
+
+/** A task of Today with the subtasks of it that are due too; `context` is a parent that is not itself due (it only names the group). */
+export interface TaskGroup {
+  head: HomeTask | null
+  context: { uid: string; title: string; workspace: HomeWorkspace } | null
+  kids: HomeTask[]
+}
+
+/** Today's tasks as the Tasks table shows them: a task, then its subtasks under it. A group sits where its task is, or where its first subtask is when the task itself is not due. */
+export function groupTasks(tasks: HomeTask[]): TaskGroup[] {
+  const groups: TaskGroup[] = []
+  const byParent = new Map<string, TaskGroup>()
+  for (const t of tasks) if (!t.parentUid) byParent.set(t.uid, { head: t, context: null, kids: [] })
+  for (const t of tasks) {
+    if (!t.parentUid) {
+      groups.push(byParent.get(t.uid)!)
+      continue
+    }
+    let g = byParent.get(t.parentUid)
+    if (!g) {
+      g = {
+        head: null,
+        context: { uid: t.parentUid, title: t.parent ?? '', workspace: t.workspace },
+        kids: []
+      }
+      byParent.set(t.parentUid, g)
+      groups.push(g)
+    }
+    g.kids.push(t)
+  }
+  return groups
+}

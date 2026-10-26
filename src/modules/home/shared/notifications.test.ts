@@ -21,6 +21,7 @@ const task = (uid: string, daysLate = 0): HomeSummary['tasks']['today'][number] 
   uid,
   title: uid,
   parent: null,
+  parentUid: null,
   study: false,
   workspace: 'research',
   list: 'Reading',

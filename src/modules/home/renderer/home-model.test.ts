@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { HomeEvent, HomeSummary, HomeTask } from '../shared/types'
-import { detailText, eventDetail, homeView, timeRange, whenLabel } from './home-model'
+import { detailText, eventDetail, groupTasks, homeView, timeRange, whenLabel } from './home-model'
 
 const task = (uid: string, workspace: 'research' | 'work', daysLate = 0): HomeTask => ({
   uid,
   title: uid,
   parent: null,
+  parentUid: null,
   study: false,
   workspace,
   list: 'L',
@@ -146,5 +147,31 @@ describe('detailText', () => {
   it('writes the end of a run of days off as a day and month', () => {
     expect(detailText('3 days, to 2026-10-21')).toBe('3 days, to Oct 21')
     expect(detailText('Admin')).toBe('Admin')
+  })
+})
+
+describe('groupTasks', () => {
+  const kid = (uid: string, parentUid: string): HomeTask => ({
+    ...task(uid, 'work'),
+    parent: parentUid,
+    parentUid
+  })
+  it('puts a subtask under its task, wherever it came in the list', () => {
+    const groups = groupTasks([
+      kid('k1', 'p'),
+      task('a', 'work'),
+      task('p', 'work'),
+      kid('k2', 'p')
+    ])
+    expect(groups.map((g) => [g.head?.uid, g.kids.map((k) => k.uid)])).toEqual([
+      ['a', []],
+      ['p', ['k1', 'k2']]
+    ])
+  })
+  it('names a parent that is not due as context', () => {
+    const [g] = groupTasks([kid('k1', 'p')])
+    expect(g.head).toBeNull()
+    expect(g.context).toMatchObject({ uid: 'p', title: 'p' })
+    expect(g.kids).toHaveLength(1)
   })
 })

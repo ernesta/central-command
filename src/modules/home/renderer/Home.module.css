@@ -131,3 +131,10 @@
 .temperature {
   color: var(--ink);
 }
+
+.nested {
+  margin-left: 28px;
+}
+.contextTitle {
+  color: var(--text-muted);
+}

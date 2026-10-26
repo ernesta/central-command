@@ -10,11 +10,20 @@ import { SubtaskLine } from '../../tasks/renderer/SubtaskLine'
 import { dueText } from '../../tasks/shared/query'
 import { tasksAllRoute } from '../../tasks/renderer/tasks-paths'
 import type { HomeEvent, HomeTask, HomeWorkspace } from '../shared/types'
-import { COMING_UP_DAYS, eventDetail, homeView, whenLabel, type HomeView } from './home-model'
+import {
+  COMING_UP_DAYS,
+  eventDetail,
+  groupTasks,
+  homeView,
+  type TaskGroup,
+  whenLabel,
+  type HomeView
+} from './home-model'
 import { HomeHours } from './HomeHours'
 import { usePeople } from '../../meetings/renderer/usePeople'
 import { initialsFor } from '../../meetings/shared/query'
 import { StatusButton } from '../../tasks/renderer/StatusButton'
+import { taskRoute } from '../shared/summary'
 import { None, StyledLink } from './HomeParts'
 import { useHomeSummary } from './useHomeSummary'
 import styles from './Home.module.css'
@@ -42,7 +51,8 @@ function Row({
   title,
   titleText,
   line,
-  trailing
+  trailing,
+  nested = false
 }: {
   to: string
   lead: React.ReactNode
@@ -51,10 +61,12 @@ function Row({
   titleText: string
   line: React.ReactNode
   trailing: React.ReactNode
+  /** A subtask under its task, as in the Tasks table. */
+  nested?: boolean
 }): React.JSX.Element {
   return (
     <li>
-      <Link className={styles.row} to={to}>
+      <Link className={nested ? `${styles.row} ${styles.nested}` : styles.row} to={to}>
         {lead}
         <span className={styles.grow}>
           <Tooltip text={titleText} whenCut>
@@ -68,9 +80,16 @@ function Row({
   )
 }
 
-function TaskRow({ task }: { task: HomeTask }): React.JSX.Element {
+function TaskRow({
+  task,
+  nested = false
+}: {
+  task: HomeTask
+  nested?: boolean
+}): React.JSX.Element {
   return (
     <Row
+      nested={nested}
       to={task.route}
       lead={<StatusButton uid={task.uid} status={task.status} />}
       titleText={task.title}
@@ -80,7 +99,7 @@ function TaskRow({ task }: { task: HomeTask }): React.JSX.Element {
           {task.title}
         </>
       }
-      line={<SubtaskLine parent={task.parent} list={task.list} />}
+      line={<SubtaskLine parent={nested ? null : task.parent} list={task.list} />}
       trailing={
         <>
           <LateChip days={task.daysLate} />
@@ -143,6 +162,29 @@ function EventRow({
   )
 }
 
+/** A task with its due subtasks under it; a parent that is not due is only named, as a heading link. */
+function TaskGroupRows({ group }: { group: TaskGroup }): React.JSX.Element {
+  const { head, context, kids } = group
+  return (
+    <>
+      {head && <TaskRow task={head} />}
+      {context && (
+        <Row
+          to={taskRoute(context.workspace, context.uid)}
+          lead={<span className={styles.icon} style={{ width: 16 }} aria-hidden />}
+          titleText={context.title}
+          title={<span className={styles.contextTitle}>{context.title || 'Untitled'}</span>}
+          line={null}
+          trailing={null}
+        />
+      )}
+      {kids.map((k) => (
+        <TaskRow key={k.uid} task={k} nested />
+      ))}
+    </>
+  )
+}
+
 function TodayCard({
   view,
   workspace,
@@ -184,8 +226,8 @@ function TodayCard({
           {todayEvents.map((e) => (
             <EventRow key={e.id} event={e} initialsOf={initialsOf} />
           ))}
-          {[...overdue, ...today].map((t) => (
-            <TaskRow key={t.uid} task={t} />
+          {groupTasks([...overdue, ...today]).map((g) => (
+            <TaskGroupRows key={g.head?.uid ?? g.context?.uid} group={g} />
           ))}
         </ul>
       )}

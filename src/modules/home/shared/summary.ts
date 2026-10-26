@@ -20,6 +20,8 @@ export interface TaskInput {
   list: string
   /** The title of its parent, when it is a subtask shown with the `↳` line. */
   parent?: string | null
+  /** The uid of that parent, to group a subtask under it. */
+  parentUid?: string | null
   /** A self-study task: its `title` is already its training's name and its `list` says so. */
   study?: boolean
   due: string | null
@@ -97,6 +99,7 @@ function toHomeTask(t: TaskInput, today: string): HomeTask | null {
     workspace: t.workspace,
     list: t.list,
     parent: t.parent ?? null,
+    parentUid: t.parentUid ?? null,
     study: t.study ?? false,
     due: t.due,
     priority: t.priority,
