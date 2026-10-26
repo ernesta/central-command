@@ -312,6 +312,16 @@ describe('Picker, adding a value', () => {
     expect(p.activeRow()).toBe('Add “b”')
   })
 
+  it('the arrows wrap at the ends, so Down from the Add row goes to the first match', () => {
+    const p = show(fruit, { add: addTo([]) })
+    p.open()
+    typeText('b')
+    press('ArrowDown')
+    expect(p.activeRow()).toBe('Banana')
+    press('ArrowUp')
+    expect(p.activeRow()).toBe('Add “b”')
+  })
+
   it('shows the message of an add that fails and stays open', async () => {
     const add: PickerAdd = { onAdd: () => Promise.reject(new Error('Nope')) }
     const p = show(many, { add })

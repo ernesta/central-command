@@ -238,10 +238,11 @@ export function PickerPopup<T extends string>({
     }
     const last = rows - 1
     switch (event.key) {
+      // The ends wrap: a search starts on the "Add" row, the last one, and Down must still go somewhere.
       case 'ArrowDown':
-        return go(current + 1)
+        return go(current >= last ? 0 : current + 1)
       case 'ArrowUp':
-        return go(current < 0 ? last : current - 1)
+        return go(current <= 0 ? last : current - 1)
       case 'Home':
       case 'End':
         // In the search field they move the caret, unless there is nothing to move it through.
