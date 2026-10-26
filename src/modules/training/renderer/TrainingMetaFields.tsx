@@ -117,18 +117,17 @@ export function TrainingMetaFields({
         <span className={styles.label} id="training-duration-label">
           Duration
         </span>
-        <output className={styles.calc} aria-labelledby="training-duration-label">
-          {duration === null ? '—' : formatDuration(duration)}
-        </output>
-      </div>
-      {trainingTaskTo && (
-        <div className={styles.field}>
-          <span className={styles.srLabel}>Task</span>
-          <IconButton label="Open task" onClick={() => void navigate(trainingTaskTo)}>
-            <ListChecks size={16} strokeWidth={1.75} aria-hidden />
-          </IconButton>
+        <div className={styles.calc}>
+          <output aria-labelledby="training-duration-label">
+            {duration === null ? '—' : formatDuration(duration)}
+          </output>
+          {trainingTaskTo && (
+            <IconButton label="Open task" onClick={() => void navigate(trainingTaskTo)}>
+              <ListChecks size={16} strokeWidth={1.75} aria-hidden />
+            </IconButton>
+          )}
         </div>
-      )}
+      </div>
       <div className={`${styles.field} ${styles.grow}`}>
         <label className={styles.label} htmlFor="training-series">
           Series

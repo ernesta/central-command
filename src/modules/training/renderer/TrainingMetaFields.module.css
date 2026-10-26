@@ -36,8 +36,16 @@
   outline-offset: 0;
   border-color: var(--accent);
 }
+.calc button {
+  /* The icon sits in the box without making it taller. */
+  margin: -4px -6px -4px 0;
+}
 .calc {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  --icon-button-size: 24px;
   min-width: 100px;
   padding: 7px 12px;
   border: 1px dashed var(--border-strong);
@@ -47,15 +55,6 @@
   font-size: var(--text-14);
   font-variant-numeric: tabular-nums;
 }
-/* The label of a field that is only an icon button: read out, not drawn. */
-.srLabel {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-}
-
 /* Series, Type and Institution share what the line has left, 220px at the least. */
 .grow {
   flex: 1 1 220px;
