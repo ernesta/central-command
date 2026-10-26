@@ -65,6 +65,16 @@ const collect = (
   })
 
 describe('collectHomeSummary: tasks', () => {
+  it('shows a self-study task as its training and leaves out the series task over it', () => {
+    task('series', { title: 'Social Worlds self-study', list: 'Training' })
+    task('day1', { title: 'Day 1', list: '', due: '2026-10-16' })
+    db.prepare(
+      "UPDATE tasks SET parent_uid = 'series', own_kind = 'self-study' WHERE uid = 'day1'"
+    ).run()
+    const summary = collect()
+    expect(summary.tasks.today.map((t) => t.title)).toEqual([])
+    expect(summary.upcoming.map((e) => e.title)).toEqual(['Social Worlds: Day 1'])
+  })
   it('reads due tasks of both workspaces, not done, trashed or undated ones', () => {
     task('a')
     task('w', { workspace: 'work' })

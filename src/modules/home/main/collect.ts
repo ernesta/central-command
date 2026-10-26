@@ -13,7 +13,7 @@ import { listTasks } from '../../tasks/main/repository'
 import { listLabel } from '../../tasks/shared/query'
 import { taskUidOf } from '../../tasks/shared/tracked'
 import { STUDY_LINE, studyNameOf } from '../../tasks/shared/study-label'
-import { hiddenTaskUids } from '../../tasks/shared/session-lock'
+import { hiddenTaskUids, studySeriesUids } from '../../tasks/shared/session-lock'
 import { workClients } from '../../tasks/shared/work-lists'
 import { listTrainingRows } from '../../training/main/repository'
 import { getCounts, listItems, upcoming } from '../../watch/main/repository'
@@ -134,7 +134,8 @@ export interface CollectDeps {
 export function collectHomeSummary(deps: CollectDeps): HomeSummary {
   const { db, now } = deps
   // Meetings' and trainings' own tasks (and the series task over them) are never shown as tasks: their events are.
-  const hidden = hiddenTaskUids((['research', 'work'] as const).flatMap((w) => listTasks(db, w)))
+  const all = (['research', 'work'] as const).flatMap((w) => listTasks(db, w))
+  const hidden = new Set([...hiddenTaskUids(all), ...studySeriesUids(all)])
   const tasks = (
     db
       .prepare(

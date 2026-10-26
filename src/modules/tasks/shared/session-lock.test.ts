@@ -5,6 +5,7 @@ import {
   lockedChanges,
   sessionLock,
   sessionLockIn,
+  studySeriesUids,
   visibleTasks
 } from './session-lock'
 import { task } from './test-utils'
@@ -86,5 +87,20 @@ describe('hiddenTaskUids', () => {
 
   it('never hides a childless task', () => {
     expect(hiddenTaskUids([task({ uid: 'a' })]).size).toBe(0)
+  })
+})
+
+describe('studySeriesUids', () => {
+  it('names the series task over self-study tasks, and nothing else', () => {
+    const tasks = [
+      task({ uid: 'study' }),
+      task({ uid: 's1', parentUid: 'study', ownKind: 'self-study' }),
+      task({ uid: 'series' }),
+      task({ uid: 't1', parentUid: 'series', ownKind: 'training' }),
+      task({ uid: 'mixed' }),
+      task({ uid: 'x', parentUid: 'mixed' }),
+      task({ uid: 'plain' })
+    ]
+    expect([...studySeriesUids(tasks)]).toEqual(['study'])
   })
 })

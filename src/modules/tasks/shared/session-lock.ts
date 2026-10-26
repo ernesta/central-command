@@ -56,6 +56,20 @@ export function hiddenTaskUids(tasks: readonly Task[]): Set<string> {
   return hidden
 }
 
+/**
+ * The series tasks over self-study tasks ("<series> self-study"): a container whose due date and status come from its subtasks. Task
+ * views keep them (time can be put on one), but Home shows only the subtasks, each named as its training (the user's choice, 26 Oct 2026).
+ */
+export function studySeriesUids(tasks: readonly Task[]): Set<string> {
+  const byUid = new Map(tasks.map((t) => [t.uid, t]))
+  const series = new Set<string>()
+  for (const t of tasks) {
+    const parent = t.ownKind === 'self-study' && t.parentUid ? byUid.get(t.parentUid) : undefined
+    if (parent && !parent.parentUid && !parent.ownKind) series.add(parent.uid)
+  }
+  return series
+}
+
 /** `tasks` without the hidden ones (`hiddenTaskUids`): the list every task view is built from. */
 export function visibleTasks<T extends Task>(tasks: readonly T[]): T[] {
   const hidden = hiddenTaskUids(tasks)
