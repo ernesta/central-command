@@ -26,7 +26,7 @@ Watch checks public pages and feeds the user lists (training providers, conferen
 1. ✅ **Backend adjustments.** Two kinds in the UI (map `summer-school` to training; migration only if needed, a new numbered one); items list by kind and by state (`new`, `seen`, `saved`, `dismissed`); a first view of an item marks it seen; the daily default interval; deadlines reach Home's Coming up and the notification only for `saved` items (`home/shared/summary.ts`: `watch.upcoming` now takes any item). Tests, including a mutation check on the saved-only rule. Nothing visible.
 2. ✅ **The Watch page** (`/research/watch`, module manifest, landing card): header, Saved, Trainings, Conferences, empty and "nothing yet" states (no sources: a message and `Add source`; nothing is requested while there are none). Drive it in a scratch library, production build and dev mode, light and dark.
 3. ✅ **See all trainings / See all conferences**: the list page (search, source, "Not dismissed" / New / Saved / Dismissed), `GroupRow`s.
-4. ✅ **Settings → Watch**: the sources table, the add/edit dialog, suggestions (LINGUIST List's feeds) as one-click adds, the by-hand lines; `shortcuts` unchanged.
+4. ✅ **Settings → Watch**: the sources table and the add/edit dialog (suggestions, the by-hand lines and the notification switches were removed 26 Oct 2026); `shortcuts` unchanged.
 5. ✅ **Home and notifications**: saved items' deadlines in Coming up; the notification switch (off by default) for new items and for a saved deadline. Quiet hours stay an open question (`docs/WATCH_HOME_PLAN.md`).
 6. **Import** (user's go-ahead only): `npm run watch:from-tasks -- --apply`.
 
