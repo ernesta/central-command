@@ -8,3 +8,9 @@
   flex: none;
   color: var(--text-muted);
 }
+/* The select fills what the arrow leaves, so it lines up with the search field and the row above. */
+.inside > :last-child {
+  display: block;
+  flex: 1;
+  min-width: 0;
+}
