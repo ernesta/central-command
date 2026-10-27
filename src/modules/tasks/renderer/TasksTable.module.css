@@ -87,11 +87,11 @@
 .handleCell {
   position: relative;
 }
-/* The grip shows on hover at the row's left edge; only it starts a drag. */
+/* The grip shows on hover at the row's right edge; only it starts a drag. */
 .handle {
   position: absolute;
   top: 50%;
-  left: 2px;
+  right: 0;
   display: flex;
   transform: translateY(-50%);
   color: var(--text-muted);
