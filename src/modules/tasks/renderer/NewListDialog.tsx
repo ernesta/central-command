@@ -110,8 +110,8 @@ export function NewListDialog({
             label="Inside"
             value={inside}
             options={[
-              { value: '', label: 'Inside nothing' },
-              ...groups.map((g) => ({ value: g.name, label: `Inside ${g.name}` }))
+              { value: '', label: 'None' },
+              ...groups.map((g) => ({ value: g.name, label: g.name }))
             ]}
             onChange={setInside}
           />

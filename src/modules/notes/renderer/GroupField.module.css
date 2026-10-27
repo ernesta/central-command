@@ -1,0 +1,10 @@
+/* The "Create" row's parent choice: the angle arrow the app uses for "inside", then the list's name. */
+.inside {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mark {
+  flex: none;
+  color: var(--text-muted);
+}

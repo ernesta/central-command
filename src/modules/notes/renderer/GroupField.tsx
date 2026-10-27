@@ -1,3 +1,4 @@
+import { CornerDownRight } from 'lucide-react'
 import { useState } from 'react'
 import { Picker, type PickerOption } from '@renderer/components/Picker'
 import { Select } from '@renderer/components/Select'
@@ -9,6 +10,7 @@ import {
   nameKey,
   type GroupSummary
 } from '../shared/groups'
+import styles from './GroupField.module.css'
 
 interface GroupFieldProps {
   group: string
@@ -103,15 +105,18 @@ export function GroupField({
           onChange(target ? { group: target, subgroup: typed } : { group: typed, subgroup: '' })
         },
         extra: (
-          <Select
-            label="Inside"
-            value={target}
-            options={[
-              ...(allowNewTop ? [{ value: '', label: 'Inside nothing' }] : []),
-              ...groups.map((g) => ({ value: g.name, label: `Inside ${g.name}` }))
-            ]}
-            onChange={setInside}
-          />
+          <div className={styles.inside}>
+            <CornerDownRight size={14} strokeWidth={1.75} className={styles.mark} aria-hidden />
+            <Select
+              label="Inside"
+              value={target}
+              options={[
+                ...(allowNewTop ? [{ value: '', label: 'None' }] : []),
+                ...groups.map((g) => ({ value: g.name, label: g.name }))
+              ]}
+              onChange={setInside}
+            />
+          </div>
         )
       }}
     />
