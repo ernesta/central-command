@@ -29,20 +29,24 @@
   display: block;
   overflow: visible;
 }
-/* Four steps of one hue: the accent mixed into the surface. */
+/* Five steps of one hue (none, then four by rank): the accent mixed into the surface. */
 .level0 {
   fill: var(--border-faint);
   background: var(--border-faint);
 }
 .level1 {
-  fill: color-mix(in srgb, var(--accent) 30%, var(--surface));
-  background: color-mix(in srgb, var(--accent) 30%, var(--surface));
+  fill: color-mix(in srgb, var(--accent) 25%, var(--surface));
+  background: color-mix(in srgb, var(--accent) 25%, var(--surface));
 }
 .level2 {
-  fill: color-mix(in srgb, var(--accent) 60%, var(--surface));
-  background: color-mix(in srgb, var(--accent) 60%, var(--surface));
+  fill: color-mix(in srgb, var(--accent) 50%, var(--surface));
+  background: color-mix(in srgb, var(--accent) 50%, var(--surface));
 }
 .level3 {
+  fill: color-mix(in srgb, var(--accent) 75%, var(--surface));
+  background: color-mix(in srgb, var(--accent) 75%, var(--surface));
+}
+.level4 {
   fill: var(--accent);
   background: var(--accent);
 }

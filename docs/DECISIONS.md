@@ -4548,3 +4548,8 @@ A table shown as a grid sized its columns as shares of the page (`fr`), so a two
 
 - `columns()` (`live-tables.ts`) now gives each column `minmax(<longest word>ch, <longest cell, 6 to 48>ch)` and the row is `width: fit-content; max-width: 100%` (the first attempt, `justify-content: start`, left each row's bottom rule at the full page width, which still looked wide): a column is as wide as its longest text (at most 48 characters), a table that needs more than the page shrinks its columns toward the longest word, and one that needs more still scrolls as before. The row's bottom rule still runs the full width.
 - Not changed: the header's alignment (a left-aligned "Urdu" over right-aligned Urdu cells). Driven in the production build (scratch library, dark, English/Urdu table): rows and rules end at the table. Editor unit tests pass, the real-library gate was not run.
+
+## Year heat map: shade by rank, the same in every workspace (27 Oct 2026)
+
+- **Why:** shading against the day's aim (or an average day) capped at "all of the aim", so a 1 h and a 9 h day in Work (a weekly aim only) looked alike. The user's call: consistency and visible differences, whatever the aim.
+- **Now:** `heatLevel(minutes, worked)` (`hours/shared/heat.ts`): no time is level 0; a day with time takes its place in the ranking of the year's worked days (equal days share the middle of their place), cut into four equal bands (levels 1 to 4, accent at 25, 50, 75, 100%). No aim, average or busiest-day reference is used, so Research, Work and Life are shaded alike. Tooltip and the grid are unchanged. Not driven in the app yet.

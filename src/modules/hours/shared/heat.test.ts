@@ -6,13 +6,20 @@ const START = '2026-09-21'
 const NOW = { date: '2026-09-25', time: '12:00:00' }
 
 describe('heatLevel', () => {
-  it('is empty with no time, and steps at half and all of the reference', () => {
-    expect(heatLevel(0, 450)).toBe(0)
-    expect(heatLevel(224, 450)).toBe(1)
-    expect(heatLevel(225, 450)).toBe(2)
-    expect(heatLevel(449, 450)).toBe(2)
-    expect(heatLevel(450, 450)).toBe(3)
-    expect(heatLevel(60, 0)).toBe(3)
+  const worked = [60, 120, 240, 300, 360, 420, 480, 540]
+  it('is 0 for no time', () => {
+    expect(heatLevel(0, worked)).toBe(0)
+  })
+  it('ranks a day among the worked days, so short and long days differ', () => {
+    expect(heatLevel(60, worked)).toBe(1)
+    expect(heatLevel(240, worked)).toBe(2)
+    expect(heatLevel(420, worked)).toBe(3)
+    expect(heatLevel(480, worked)).toBe(4)
+    expect(heatLevel(540, worked)).toBe(4)
+    expect(heatLevel(60, worked)).toBeLessThan(heatLevel(540, worked))
+  })
+  it('puts days of equal length in the middle of their place', () => {
+    expect(heatLevel(480, [480, 480, 480])).toBe(3)
   })
 })
 
@@ -33,10 +40,10 @@ describe('heatDays', () => {
   })
   it('gives each day its level, aim, day off and whether it is still to come', () => {
     const by = (d: string): (typeof days)[number] => days.find((x) => x.date === d)!
-    expect(by('2026-09-22')).toMatchObject({ minutes: 450, level: 3, off: null, future: false })
+    expect(by('2026-09-22')).toMatchObject({ minutes: 450, level: 4, off: null, future: false })
     expect(by('2026-09-22').aim).toBe(450)
     expect(by('2026-09-23')).toMatchObject({ off: 'leave', aim: null, level: 0 })
-    expect(by('2026-09-26')).toMatchObject({ aim: null, level: 1 }) // weekend work, against an average day
+    expect(by('2026-09-26')).toMatchObject({ aim: null, level: 2 }) // weekend work, ranked like any other day
     expect(by('2026-09-25').future).toBe(false)
     expect(by('2026-09-26').future).toBe(true)
   })
@@ -88,7 +95,7 @@ describe('heatWindow', () => {
   })
 })
 
-describe('heatDays with no aim', () => {
+describe('heatDays with no fixed hours', () => {
   const year = emptyYear(START)
   year.plan.hoursPerWeek = 0
   year.plan.weekAim = true
@@ -98,9 +105,9 @@ describe('heatDays with no aim', () => {
   const days = heatDays(year, NOW)
   const level = (date: string): number => days.find((d) => d.date === date)!.level
 
-  it('shades each day against the busiest one', () => {
-    expect(level('2026-09-22')).toBe(3)
-    expect(level('2026-09-24')).toBe(2)
+  it('shades each day by its place among the worked days', () => {
+    expect(level('2026-09-22')).toBe(4)
+    expect(level('2026-09-24')).toBe(3)
     expect(level('2026-09-23')).toBe(1)
     expect(level('2026-09-25')).toBe(0)
   })
@@ -116,8 +123,8 @@ describe('heatDays with a weekly aim only', () => {
   const level = (date: string): number => days.find((d) => d.date === date)!.level
 
   it('does not give an hour and nine hours the same shade', () => {
-    expect(level('2026-09-22')).toBe(3)
-    expect(level('2026-09-23')).toBe(1)
+    expect(level('2026-09-22')).toBe(4)
+    expect(level('2026-09-23')).toBeLessThan(level('2026-09-22'))
   })
 })
 

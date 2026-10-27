@@ -25,7 +25,7 @@ function notch(x: number, y: number, cell: number): string {
 const OFF_LABELS = Object.fromEntries(TIME_OFF_TYPES.map((t) => [t.id, t.label]))
 
 /**
- * The year as a calendar grid: a column a week (weeks start on the Mac's first weekday, whatever day the contract starts on), a row a weekday, shaded by how much of the day's aim was done; days off are outlined.
+ * The year as a calendar grid: a column a week (weeks start on the Mac's first weekday, whatever day the contract starts on), a row a weekday, shaded by where the day stands among the days worked (the same in every workspace); days off are outlined.
  * A day opens its week. The cells are square and as large as the plot is tall, so as many weeks as fit across are drawn, ending with
  * the week that holds today (`heatWindow`): the grid slides with the date.
  */
@@ -85,7 +85,7 @@ export function YearHeatMap({
       <ul className={styles.legend}>
         <li>
           Less
-          {[0, 1, 2, 3].map((l) => (
+          {[0, 1, 2, 3, 4].map((l) => (
             <i key={l} className={styles[`level${l}`]} />
           ))}
           More
@@ -155,13 +155,13 @@ export function YearHeatMap({
                   />
                   {d.date === now.date && (
                     <path
-                      className={`${styles.todayNotch} ${d.level >= 2 ? styles.dayOnFill : ''}`}
+                      className={`${styles.todayNotch} ${d.level >= 3 ? styles.dayOnFill : ''}`}
                       d={notch(cx(i), cy(i), cell)}
                     />
                   )}
                   {labelled && (
                     <text
-                      className={`${styles.day} ${d.level >= 2 && !d.future ? styles.dayOnFill : ''}`}
+                      className={`${styles.day} ${d.level >= 3 && !d.future ? styles.dayOnFill : ''}`}
                       x={cx(i) + cell / 2}
                       y={cy(i) + cell / 2 + 4}
                       textAnchor="middle"

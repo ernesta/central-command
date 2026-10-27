@@ -1,8 +1,10 @@
-import { dailyAim, hasAim } from '@shared/tracking/plan'
+import { dailyAim } from '@shared/tracking/plan'
 import { minutesByDate } from '@shared/tracking/totals'
 import type { Moment, TimeOffType, TrackingYear } from '@shared/tracking/types'
 import { addDays, daysBetween, weekdayOf, YEAR_WEEKS } from '@shared/year'
 import { contractEnd } from '@shared/tracking/workspace-weeks'
+
+export type HeatLevel = 0 | 1 | 2 | 3 | 4
 
 export interface HeatDay {
   date: string
@@ -13,19 +15,29 @@ export interface HeatDay {
   off: TimeOffType | null
   /** After today. */
   future: boolean
-  /** 0 for no time, then 1 to 3 for under half, under all, and all of the day's aim or more. */
-  level: 0 | 1 | 2 | 3
+  /** 0 for no time, then 1 to 4 by the day's place among the worked days (`heatLevel`). */
+  level: HeatLevel
 }
 
+/** Shades for a day with time: 1 (the lightest) to this, the busiest. 0 is no time. */
+export const HEAT_LEVELS = 4
+
 /**
- * How full a day is: against its aim, or, on a day with none, against an average work day. With no aim at all (a contract
- * with no fixed hours) a day is shaded against the year's busiest day.
+ * How busy a day is, the same way in every workspace: where it stands among the days that have time, not against an aim or an
+ * average, so a short day and a long one never look alike. Each day takes its place in the ranking of the worked days (days of
+ * equal length share the middle of their place), cut into `HEAT_LEVELS` equal bands.
  */
-export function heatLevel(minutes: number, reference: number): 0 | 1 | 2 | 3 {
+export function heatLevel(minutes: number, worked: readonly number[]): HeatLevel {
   if (minutes <= 0) return 0
-  if (reference <= 0) return 3
-  const share = minutes / reference
-  return share < 0.5 ? 1 : share < 1 ? 2 : 3
+  if (worked.length === 0) return HEAT_LEVELS
+  let below = 0
+  let equal = 0
+  for (const m of worked) {
+    if (m < minutes) below++
+    else if (m === minutes) equal++
+  }
+  const place = (below + equal / 2) / worked.length
+  return (1 + Math.min(HEAT_LEVELS - 1, Math.floor(place * HEAT_LEVELS))) as HeatLevel
 }
 
 /**
@@ -35,10 +47,7 @@ export function heatLevel(minutes: number, reference: number): 0 | 1 | 2 | 3 {
 export function heatDays(year: TrackingYear, now: Moment): HeatDay[] {
   const minutes = minutesByDate(year, now)
   const off = new Map(year.timeOff.map((t) => [t.date, t.type]))
-  // With no daily aim (no fixed hours, or a weekly aim only) a day says little about its own share, so days are shaded against the busiest.
-  const reference = hasAim(year) && !year.plan.weekAim ? null : Math.max(0, ...minutes.values())
-  const average =
-    year.plan.workDays.length > 0 ? year.plan.hoursPerWeek / year.plan.workDays.length : 0
+  const worked = [...minutes.values()].filter((m) => m > 0)
   return Array.from({ length: daysBetween(year.start, contractEnd(year)) + 1 }, (_, i) => {
     const date = addDays(year.start, i)
     const m = minutes.get(date) ?? 0
@@ -49,7 +58,7 @@ export function heatDays(year: TrackingYear, now: Moment): HeatDay[] {
       aim,
       off: off.get(date) ?? null,
       future: date > now.date,
-      level: heatLevel(m, reference ?? aim ?? average)
+      level: heatLevel(m, worked)
     }
   })
 }
