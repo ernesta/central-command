@@ -142,7 +142,13 @@
   font-size: var(--text-13);
 }
 .kid .row {
+  padding-top: 6px;
+  padding-bottom: 6px;
   padding-left: 32px;
+}
+/* .title sets its own size, so the li's 13px never reached it. */
+.kid .title {
+  font-size: var(--text-13);
 }
 .kid::before,
 .kid::after {
