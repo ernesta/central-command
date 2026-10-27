@@ -4553,3 +4553,10 @@ A table shown as a grid sized its columns as shares of the page (`fr`), so a two
 
 - **Why:** shading against the day's aim (or an average day) capped at "all of the aim", so a 1 h and a 9 h day in Work (a weekly aim only) looked alike. The user's call: consistency and visible differences, whatever the aim.
 - **Now:** `heatLevel(minutes, worked)` (`hours/shared/heat.ts`): no time is level 0; a day with time takes its place in the ranking of the year's worked days (equal days share the middle of their place), cut into four equal bands (levels 1 to 4, accent at 25, 50, 75, 100%). No aim, average or busiest-day reference is used, so Research, Work and Life are shaded alike. Tooltip and the grid are unchanged. Not driven in the app yet.
+
+## Tasks: a "New list" button (27 Oct 2026, the user: "I can't find a way to create a list or a sublist")
+
+- **Why:** a list or sublist could only be made from a task's List menu (type a new name, "Create"), which nobody found. A list has no row of its own (it is text on its tasks), so an empty list cannot exist.
+- **Now:** Research's Tasks landing has a **New list** header button (`NewListDialog`): the name, "Inside" (nothing, or an existing list, which makes a sublist) and the first task (due today). It refuses a name that exists already (same folding as notes' groups) or has `/` or `›`, then opens the new list's page.
+- **Work:** no button; its top-level lists are clients (`docs/CLIENT_LISTS_PLAN.md`) and a new name can only be a sublist, made from the List menu. Open: a "New sublist" button in Work, if wanted.
+- **Not driven in the app yet** (typecheck, lint and tests pass).

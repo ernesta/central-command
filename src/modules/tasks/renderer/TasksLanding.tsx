@@ -9,12 +9,14 @@ import {
 } from '@renderer/components/Landing'
 import { showToast } from '@renderer/components/toast-store'
 import { pushUndo } from '@renderer/components/undo-store'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Plus } from 'lucide-react'
+import { Button } from '@renderer/components/Button'
 import { Link } from 'react-router'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { listValue } from '../shared/query'
 import { landingSections, listSummaries, type SectionRow } from '../shared/views'
 import { AddBar } from './AddBar'
+import { NewListDialog } from './NewListDialog'
 import { TasksTable } from './TasksTable'
 import { tasksAllRoute, todayIso, useTasksWorkspace } from './tasks-paths'
 import { useWorkClients } from './useWorkClients'
@@ -32,6 +34,7 @@ export function TasksLanding(): React.JSX.Element {
   const { tracked, running } = useTaskTime(workspace)
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set())
   const today = todayIso()
+  const [newList, setNewList] = useState(false)
 
   const all = rows ?? []
   const sections = landingSections(all, today)
@@ -117,6 +120,14 @@ export function TasksLanding(): React.JSX.Element {
         title="Tasks"
         actions={
           <>
+            {clients === null && (
+              <Button
+                icon={<Plus size={14} strokeWidth={2} aria-hidden />}
+                onClick={() => setNewList(true)}
+              >
+                New list
+              </Button>
+            )}
             <AllLink to={tasksAllRoute(workspace, { view: 'open' })}>
               All tasks
               <ArrowRight size={14} strokeWidth={1.75} aria-hidden style={{ marginLeft: 6 }} />
@@ -125,6 +136,14 @@ export function TasksLanding(): React.JSX.Element {
         }
       />
 
+      {newList && (
+        <NewListDialog
+          workspace={workspace}
+          rows={all}
+          today={today}
+          onClose={() => setNewList(false)}
+        />
+      )}
       {rows !== null && (
         <>
           <AddBar workspace={workspace} rows={all} today={today} />
