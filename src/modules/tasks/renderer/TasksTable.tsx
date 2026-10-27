@@ -621,6 +621,7 @@ function TaskRowView({
           <span className={styles.tags} {...stopRow}>
             <TagsField
               inline
+              limit={2}
               tags={task.tags}
               suggestions={tagsIn(allRows)}
               onChange={(tags) => void updateTask(task, { tags }, 'change the tags', 'tag change')}

@@ -4560,3 +4560,9 @@ A table shown as a grid sized its columns as shares of the page (`fr`), so a two
 - **Now:** Research's Tasks landing has a **New list** header button (`NewListDialog`): the name, "Inside" (nothing, or an existing list, which makes a sublist) and the first task (due today). It refuses a name that exists already (same folding as notes' groups) or has `/` or `›`, then opens the new list's page.
 - **Work:** no button; its top-level lists are clients (`docs/CLIENT_LISTS_PLAN.md`) and a new name can only be a sublist, made from the List menu. Open: a "New sublist" button in Work, if wanted.
 - **Not driven in the app yet** (typecheck, lint and tests pass).
+
+## Task tags: the shared picker, "+N" in rows, stay open (27 Oct 2026, the user: "tags in tasks are SO broken")
+
+- **Why:** a row showed every tag and pushed the task name out; the native `<datalist>` arrow was misaligned and the field looked unlike People and Skills; after adding a tag the field closed, so adding several meant starting again each time.
+- **Now:** `TagsField` (`tasks/renderer/`) is chips (alphabetical) plus a `+ Tag` button opening `PickerPopup` (search, the tags in use, an `Add “tag”` row; a tag is one lower-case word, `normaliseTag`). The list reopens afresh after each pick or add (the tag just added is gone from it), with the search field focused, so several tags go in a row; Escape closes it and puts focus back on `+ Tag`. With `limit` (the tasks table: 2) the rest are a muted `+N` whose `Tooltip` lists them; removing a hidden tag is done on the task page.
+- **Not driven in the app** (typecheck, lint and tests pass): not checked yet that the list is not clipped in a table row or that Enter in it does not open the task. People's own field closes after a pick (not changed).
