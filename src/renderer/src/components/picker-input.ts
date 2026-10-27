@@ -9,6 +9,7 @@ export class PickerInput {
   private movedAlready = false
   private x = -1
   private y = -1
+  private pointerAt = -1
   private typed: string
   private at: number
 
@@ -37,6 +38,18 @@ export class PickerInput {
     this.y = y
     this.movedAlready = true
     return true
+  }
+
+  /** The pointer put the highlight on this row, which is already in view: scrolling to it would make the list jump. */
+  highlightedByPointer(index: number): void {
+    this.pointerAt = index
+  }
+
+  /** Whether the highlight just arrived by the pointer (asking forgets it, so the next arrow key scrolls). */
+  takePointerHighlight(index: number): boolean {
+    const was = this.pointerAt === index
+    this.pointerAt = -1
+    return was
   }
 
   /** Whether letters are being typed (a pause forgets them). */

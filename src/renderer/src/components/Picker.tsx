@@ -140,6 +140,8 @@ export function PickerPopup<T extends string>({
     const rect = anchor.getBoundingClientRect()
     const margin = 8
     popup.style.minWidth = `${minWidth ?? Math.max(rect.width, searchable ? 120 : 0)}px`
+    // A field-sized control gets a list exactly as wide as itself; a small one keeps the width its options need.
+    if (minWidth === undefined && rect.width >= 160) popup.style.maxWidth = `${rect.width}px`
     const width = popup.offsetWidth
     // Kept as it opens, so the list does not narrow and widen as the search takes options away.
     popup.style.width = `${width}px`
@@ -191,8 +193,9 @@ export function PickerPopup<T extends string>({
   }, [anchorRef])
 
   useEffect(() => {
-    popupRef.current?.querySelector('[data-active="true"]')?.scrollIntoView({ block: 'nearest' })
-  }, [current])
+    if (!input.takePointerHighlight(current))
+      popupRef.current?.querySelector('[data-active="true"]')?.scrollIntoView({ block: 'nearest' })
+  }, [current, input])
 
   const doAdd = async (): Promise<void> => {
     if (!add || busy.current) return
@@ -221,7 +224,11 @@ export function PickerPopup<T extends string>({
 
   const highlight = (index: number) => (event: React.MouseEvent) => {
     // Only a real pointer move highlights: a list that scrolls under a still pointer must not.
-    if (input.pointerMoved(event.clientX, event.clientY)) setActive(index)
+    if (input.pointerMoved(event.clientX, event.clientY)) {
+      // The row is already under the pointer: scrolling it into view would make the list jump.
+      input.highlightedByPointer(index)
+      setActive(index)
+    }
   }
 
   const keys = (event: React.KeyboardEvent): void => {
