@@ -141,7 +141,11 @@ export function PickerPopup<T extends string>({
     const margin = 8
     popup.style.minWidth = `${minWidth ?? Math.max(rect.width, searchable ? 120 : 0)}px`
     // A field-sized control gets a list exactly as wide as itself; a small one keeps the width its options need.
-    if (minWidth === undefined && rect.width >= 160) popup.style.maxWidth = `${rect.width}px`
+    if (rect.width >= 160) {
+      const fit = `${rect.width}px`
+      popup.style.minWidth = fit
+      popup.style.maxWidth = fit
+    }
     const width = popup.offsetWidth
     // Kept as it opens, so the list does not narrow and widen as the search takes options away.
     popup.style.width = `${width}px`
