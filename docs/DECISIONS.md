@@ -4610,3 +4610,7 @@ A subtask list is in the user's own order: `position` (new ones last, drag on th
 ## Home: subtasks are 13px (27 Oct 2026, the user: the font looks bigger than in Tasks)
 
 Home's `.title` sets its own 15px, so the 13px given to a subtask's `li` never reached the title text, and Home's subtasks read larger than the Tasks table's. `.kid .title` is now `--text-13` and `.kid .row` has 6px top and bottom padding, as the table's subtask rows. Top-level titles stay 15px on Home (14px in the table, left as it was). Not driven in the app (CSS only; lint and Prettier pass).
+
+## Home: a subtask shows no priority (27 Oct 2026, the user: be consistent)
+
+A subtask shows no priority in the Tasks table (`isKid`; it keeps the one it stores, `docs/DECISIONS.md` above), but Home's `TaskRow` drew the badge for every task. It now draws it only when `task.parent` is null, so a subtask hung under its parent and a subtask standing alone are both without one. Not driven in the app (lint, typecheck and the Home tests pass).

@@ -122,7 +122,8 @@ function TaskRow({
       trailing={
         <>
           <LateChip days={task.daysLate} />
-          <PriorityBadge priority={task.priority} />
+          {/* A subtask shows no priority, as in the Tasks table. */}
+          {task.parent === null && <PriorityBadge priority={task.priority} />}
         </>
       }
     />
