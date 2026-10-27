@@ -106,6 +106,21 @@ describe('heatDays with no aim', () => {
   })
 })
 
+describe('heatDays with a weekly aim only', () => {
+  const year = emptyYear(START)
+  year.plan.hoursPerWeek = 480
+  year.plan.weekAim = true
+  year.days['2026-09-22'] = { minutes: 540 }
+  year.days['2026-09-23'] = { minutes: 60 }
+  const days = heatDays(year, NOW)
+  const level = (date: string): number => days.find((d) => d.date === date)!.level
+
+  it('does not give an hour and nine hours the same shade', () => {
+    expect(level('2026-09-22')).toBe(3)
+    expect(level('2026-09-23')).toBe(1)
+  })
+})
+
 describe('heatGrid', () => {
   const friday = emptyYear('2026-09-25') // a Friday, 52 weeks
   const days = heatDays(friday, NOW)

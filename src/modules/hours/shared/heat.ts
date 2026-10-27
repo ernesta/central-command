@@ -35,9 +35,10 @@ export function heatLevel(minutes: number, reference: number): 0 | 1 | 2 | 3 {
 export function heatDays(year: TrackingYear, now: Moment): HeatDay[] {
   const minutes = minutesByDate(year, now)
   const off = new Map(year.timeOff.map((t) => [t.date, t.type]))
+  // With no daily aim (no fixed hours, or a weekly aim only) a day says little about its own share, so days are shaded against the busiest.
+  const reference = hasAim(year) && !year.plan.weekAim ? null : Math.max(0, ...minutes.values())
   const average =
     year.plan.workDays.length > 0 ? year.plan.hoursPerWeek / year.plan.workDays.length : 0
-  const reference = hasAim(year) ? null : Math.max(0, ...minutes.values())
   return Array.from({ length: daysBetween(year.start, contractEnd(year)) + 1 }, (_, i) => {
     const date = addDays(year.start, i)
     const m = minutes.get(date) ?? 0
