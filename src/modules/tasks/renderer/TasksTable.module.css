@@ -4,8 +4,10 @@
   padding: 4px;
   scroll-padding: 4px;
 }
+/* 20px of room on the left, taken back by the margin, holds the drag grip outside the rows. */
 .wrapFlat {
-  padding: 4px 0 0;
+  margin-left: -20px;
+  padding: 4px 0 0 20px;
   scroll-padding: 4px;
 }
 .table {
@@ -91,8 +93,8 @@
 .handle {
   position: absolute;
   top: 50%;
-  /* The icon has about 4px of space inside its box, so this puts the dots at the row's very edge. */
-  left: -3px;
+  /* Outside the row's highlight, in the room .wrapFlat leaves on the left. */
+  left: -18px;
   display: flex;
   transform: translateY(-50%);
   color: var(--text-muted);
