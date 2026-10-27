@@ -4579,3 +4579,9 @@ A table shown as a grid sized its columns as shares of the page (`fr`), so a two
 - **Why:** the Create row's "Inside" select sat at the width of "None" beside the `↳`, not lined up with the search field above. `Picker`'s root is `display: inline-block`, so it shrinks to its content.
 - **Now:** `GroupField.module.css` makes the select the flex item that takes what the arrow leaves (`.inside > :last-child`), so its right edge matches the search field and the Create row.
 - **Not driven in the app** (a CSS-only change).
+
+## Picker rows line up with the search field (27 Oct 2026, the user: every row highlight misaligned; the Inside select wider than the dropdown; the search wider than the highlighted rows)
+
+- **Why:** the popup's search field ran the full content width, but `.list` had 2px side padding and `.extra` 4px, so highlighted rows were 2px narrower than the search and the "Inside" select 4px.
+- **Now:** `Picker.module.css` gives `.list` and `.extra` no side padding, so search, rows, Create row and Inside select share one left and right edge.
+- **Not driven in the app** (lint, typecheck and tests pass); the screenshot the user meant was not in the message.
