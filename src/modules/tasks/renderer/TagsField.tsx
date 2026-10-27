@@ -56,7 +56,9 @@ export function TagsField({
       ))}
       {rest.length > 0 && (
         <Tooltip text={rest.join(', ')}>
-          <span className={styles.more}>+{rest.length}</span>
+          <span className={styles.more} data-tag-more>
+            +{rest.length}
+          </span>
         </Tooltip>
       )}
       <button

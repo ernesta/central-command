@@ -382,6 +382,7 @@
   display: contents;
 }
 .tags > div > span,
+.tags [data-tag-more],
 .tags input {
   order: 1;
   margin-left: 6px;
