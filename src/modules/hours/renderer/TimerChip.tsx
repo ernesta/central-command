@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation } from 'react-router'
-import { Play } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router'
+import { CalendarDays, GraduationCap, ListChecks, Play, type LucideIcon } from 'lucide-react'
 import { todayIso } from '@shared/time'
 import { showToast } from '@renderer/components/toast-store'
 import { pushUndoWithToast } from '@renderer/components/undo-store'
@@ -15,7 +15,9 @@ import { WORKSPACES } from '@shared/settings'
 import type { RunningTimer } from '@shared/tracking/api'
 import { formatDay, formatHours } from '@shared/tracking/format'
 import type { Moment } from '@shared/tracking/types'
+import { IconButton } from '@renderer/components/IconButton'
 import { Tooltip } from '@renderer/components/Tooltip'
+import { sourceTarget } from '@renderer/entities/source-routes'
 import { useOpenTasks } from '../../tasks/renderer/useOpenTasks'
 import { parentIn, studyName } from '../../tasks/shared/study-label'
 import { taskUidOf } from '../../tasks/shared/tracked'
@@ -25,6 +27,8 @@ import type { TaskWorkspace } from '../../tasks/shared/types'
 import { suggestedTasks } from '../shared/start-picker'
 import { StudyIcon } from '../../tasks/renderer/TaskName'
 import { TaskSecondLine } from '../../tasks/renderer/TaskSecondLine'
+import { taskRoute } from '../../tasks/renderer/tasks-paths'
+import type { Task } from '../../tasks/shared/types'
 import { popoverHead, STOP_NEEDS_TASK } from '../shared/timer-popover'
 import { elapsedMinutes } from '../shared/timer'
 import type { HoursWorkspace } from '../shared/workspaces'
@@ -33,6 +37,59 @@ import { StartedAt } from './StartedAt'
 import { StaleTimer } from './StaleTimer'
 import { TaskPicker, type PickedTask } from './TaskPicker'
 import styles from './TimerChip.module.css'
+
+interface OpenTarget {
+  to: string
+  label: string
+  Icon: LucideIcon
+}
+
+/**
+ * Where the popover's button goes: the task's page, or for a meeting's or training's own task (a session, not a task to the
+ * user) the note that made it. A self-study task is a task and opens as one. Null until a session's note is found.
+ */
+function useOpenTarget(task: Task | null): OpenTarget | null {
+  const uid = task?.uid
+  const session = task?.ownKind === 'meeting' || task?.ownKind === 'training'
+  const [found, setFound] = useState<{ uid: string; target: OpenTarget | null } | null>(null)
+  useEffect(() => {
+    if (!uid || !session) return
+    let cancelled = false
+    void window.api.tasks.sessionSource(uid).then((source) => {
+      if (cancelled) return
+      if (!source) return setFound({ uid, target: null })
+      const { route } = sourceTarget({
+        kind: source.kind,
+        workspace: source.workspace,
+        id: source.id
+      })
+      const meeting = source.kind === 'meeting'
+      setFound({
+        uid,
+        target: {
+          to: route,
+          label: meeting ? 'Open meeting' : 'Open training',
+          Icon: meeting ? CalendarDays : GraduationCap
+        }
+      })
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [uid, session])
+  if (!task) return null
+  if (!session)
+    return { to: taskRoute(task.workspace, task.uid), label: 'Open task', Icon: ListChecks }
+  if (!found || found.uid !== uid) return null
+  // A session whose note cannot be found is still a task: its own page.
+  return (
+    found.target ?? {
+      to: taskRoute(task.workspace, task.uid),
+      label: 'Open task',
+      Icon: ListChecks
+    }
+  )
+}
 
 /**
  * What the popover offers. Always the current timer first: its task and list, then when it began with Stop and Discard on
@@ -74,6 +131,8 @@ function TimerPopover({
     [data, open, now.date, session.task]
   )
   const head = popoverHead(session, all ?? open, stopAfter)
+  const target = useOpenTarget(head.task)
+  const navigate = useNavigate()
 
   const give = async (picked: PickedTask): Promise<void> => {
     await tracking.assignTask(
@@ -119,9 +178,22 @@ function TimerPopover({
   return (
     <div className={styles.popover} role="dialog" aria-label="Timer">
       <div className={styles.head}>
-        <div className={styles.title}>
-          {head.study && <StudyIcon />}
-          {head.title}
+        <div className={styles.titleRow}>
+          <div className={styles.title}>
+            {head.study && <StudyIcon />}
+            {head.title}
+          </div>
+          {target && (
+            <IconButton
+              label={target.label}
+              onClick={() => {
+                onClose()
+                void navigate(target.to)
+              }}
+            >
+              <target.Icon size={16} strokeWidth={1.75} aria-hidden />
+            </IconButton>
+          )}
         </div>
         {head.line && (
           <div className={head.hint ? styles.hint : styles.list}>

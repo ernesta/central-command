@@ -90,7 +90,20 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 2px;
 }
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+/* The button's box is taller than a line of title: pull it out so the head keeps its height. */
+.titleRow > :not(.title) {
+  flex: none;
+  margin: -4px -6px -4px 0;
+}
 .title {
+  min-width: 0;
   font-weight: 600;
   overflow-wrap: anywhere;
 }
