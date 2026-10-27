@@ -662,7 +662,18 @@ function TaskRowView({
         )
       }}
     >
-      <td data-cell="status">
+      <td data-cell="status" className={drag ? styles.handleCell : undefined}>
+        {drag && (
+          <span
+            className={styles.handle}
+            aria-hidden
+            onMouseDown={() => setArmed(true)}
+            onMouseUp={() => setArmed(false)}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <GripVertical size={14} strokeWidth={1.75} />
+          </span>
+        )}
         <Tooltip
           text={
             statusLocked
@@ -760,21 +771,7 @@ function TaskRowView({
         </td>
       )}
       <td className={styles.nowrap}>{formatTaskTime(minutes)}</td>
-      <td
-        className={[styles.nowrap, drag && styles.handleCell].filter(Boolean).join(' ')}
-        onClick={(event) => event.stopPropagation()}
-      >
-        {drag && (
-          <span
-            className={styles.handle}
-            aria-hidden
-            onMouseDown={() => setArmed(true)}
-            onMouseUp={() => setArmed(false)}
-            onClick={(event) => event.stopPropagation()}
-          >
-            <GripVertical size={14} strokeWidth={1.75} />
-          </span>
-        )}
+      <td className={styles.nowrap} onClick={(event) => event.stopPropagation()}>
         <span className={styles.dueCell}>
           <span
             className={[
