@@ -4609,7 +4609,7 @@ A subtask list is in the user's own order: `position` (new ones last, drag on th
 
 ## Subtasks: drag from a handle (27 Oct 2026, the user)
 
-A subtask row on the task page is dragged only from a grip (`GripVertical`) at the row's left edge, shown on hover; the rest of the row stays a plain click target. The row is `draggable` only between a press on the grip and the drag's end (`armed` in `TaskRow`). Rows that cannot be dragged (a meeting's or training's) have no grip. Not driven in the app (lint and typecheck pass).
+A subtask row on the task page is dragged only from a grip (`GripVertical`) at the row's left edge, shown on hover; the rest of the row stays a plain click target. The row is `draggable` only between a press on the grip and the drag's end (`armed` in `TaskRow`). Rows that cannot be dragged (a meeting's or training's) have no grip. The grip is at the row's very left edge (`left: -3px`, because the icon has about 4px of space inside its box; a first try at the right edge was a misreading, reverted the same day). Not driven in the app (lint and typecheck pass).
 
 ## Home: subtasks are 13px (27 Oct 2026, the user: the font looks bigger than in Tasks)
 
