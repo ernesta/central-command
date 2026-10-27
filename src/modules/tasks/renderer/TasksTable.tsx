@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, Plus, Repeat, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronRight, GripVertical, Plus, Repeat, Trash2 } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { DatePicker } from '@renderer/components/DatePicker'
@@ -613,6 +613,8 @@ function TaskRowView({
     drag?.mark === 'above' && styles.dropAbove,
     drag?.mark === 'below' && styles.dropBelow
   ]
+  // The row can be dragged only from its handle: the row stays a plain click target.
+  const [armed, setArmed] = useState(false)
   const belowMiddle = (event: React.DragEvent<HTMLElement>): boolean => {
     const rect = event.currentTarget.getBoundingClientRect()
     return event.clientY > rect.top + rect.height / 2
@@ -622,7 +624,7 @@ function TaskRowView({
       className={classes.filter(Boolean).join(' ')}
       data-uid={task.uid}
       {...rowProps}
-      draggable={drag ? true : undefined}
+      draggable={drag && armed ? true : undefined}
       onDragStart={(event) => {
         if (!drag) return
         event.dataTransfer.effectAllowed = 'move'
@@ -638,7 +640,10 @@ function TaskRowView({
         event.preventDefault()
         drag.onDrop(belowMiddle(event))
       }}
-      onDragEnd={drag?.onEnd}
+      onDragEnd={() => {
+        setArmed(false)
+        drag?.onEnd()
+      }}
       onKeyDown={onKeyDown}
       onClick={onOpen}
       onContextMenu={(event) => {
@@ -657,7 +662,18 @@ function TaskRowView({
         )
       }}
     >
-      <td data-cell="status">
+      <td data-cell="status" className={drag ? styles.handleCell : undefined}>
+        {drag && (
+          <span
+            className={styles.handle}
+            aria-hidden
+            onMouseDown={() => setArmed(true)}
+            onMouseUp={() => setArmed(false)}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <GripVertical size={14} strokeWidth={1.75} />
+          </span>
+        )}
         <Tooltip
           text={
             statusLocked

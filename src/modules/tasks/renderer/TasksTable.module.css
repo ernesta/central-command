@@ -84,6 +84,27 @@
 .dragging td {
   opacity: 0.5;
 }
+.handleCell {
+  position: relative;
+}
+/* The grip shows on hover at the row's left edge; only it starts a drag. */
+.handle {
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  display: flex;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  cursor: grab;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+.row:hover .handle {
+  opacity: 1;
+}
+.handle:active {
+  cursor: grabbing;
+}
 .dropAbove td {
   box-shadow: inset 0 2px 0 var(--accent);
 }

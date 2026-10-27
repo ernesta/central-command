@@ -4607,6 +4607,10 @@ A table shown as a grid sized its columns as shares of the page (`fr`), so a two
 
 A subtask list is in the user's own order: `position` (new ones last, drag on the task page changes it through `moveSubtask`, which renumbers the siblings 1, 2, 3 …), then when it was added. Done subtasks are shown after the open ones, each keeping its own position, so reopening one puts it back in its place. The subtasks a meeting or training note makes (`ownKind`) keep their date order and cannot be dragged. Dragging is limited to the open group or the done group, so a drop never looks like a no-op. Replaces the old "by date, then position" order, which scrambled a pipeline whose subtasks all share a date. Built, tested, driven in the production build (drag in a scratch library); dev mode and dark mode not driven; no undo for a move.
 
+## Subtasks: drag from a handle (27 Oct 2026, the user)
+
+A subtask row on the task page is dragged only from a grip (`GripVertical`) at the row's left edge, shown on hover; the rest of the row stays a plain click target. The row is `draggable` only between a press on the grip and the drag's end (`armed` in `TaskRow`). Rows that cannot be dragged (a meeting's or training's) have no grip. Not driven in the app (lint and typecheck pass).
+
 ## Home: subtasks are 13px (27 Oct 2026, the user: the font looks bigger than in Tasks)
 
 Home's `.title` sets its own 15px, so the 13px given to a subtask's `li` never reached the title text, and Home's subtasks read larger than the Tasks table's. `.kid .title` is now `--text-13` and `.kid .row` has 6px top and bottom padding, as the table's subtask rows. Top-level titles stay 15px on Home (14px in the table, left as it was). Not driven in the app (CSS only; lint and Prettier pass).
