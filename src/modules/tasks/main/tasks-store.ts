@@ -25,6 +25,7 @@ import {
 import { listFor } from '../shared/work-lists'
 import { seriesChanges } from '../shared/session-task'
 import { normaliseTag } from '../shared/tag'
+import { byPosition } from '../shared/views'
 
 export interface Clock {
   /** Today in local time, YYYY-MM-DD. */
@@ -313,6 +314,28 @@ export class TasksStore {
         if (!task.parentUid) this.passDown(task, value)
         this.settleSeries(task.parentUid)
       }
+    })()
+  }
+
+  /**
+   * Put a subtask before another subtask of the same parent (null: at the end), in the user's own order. The siblings are
+   * renumbered 1, 2, 3 …; only the ones whose number changed are written.
+   */
+  moveSubtask(uid: string, beforeUid: string | null): void {
+    this.db.transaction(() => {
+      const task = this.require(uid)
+      if (!task.parentUid) throw new Error('Only a subtask can be moved')
+      const siblings = listSubtasks(this.db, task.parentUid)
+        .filter((k) => k.uid !== uid)
+        .sort(byPosition)
+      const at =
+        beforeUid === null ? siblings.length : siblings.findIndex((k) => k.uid === beforeUid)
+      if (at < 0) throw new Error('That subtask is not under the same task')
+      siblings.splice(at, 0, task)
+      const now = this.clock.now()
+      siblings.forEach((k, i) => {
+        if (k.position !== i + 1) writeTask(this.db, { ...k, position: i + 1, updatedAt: now })
+      })
     })()
   }
 

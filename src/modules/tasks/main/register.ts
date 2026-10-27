@@ -193,6 +193,13 @@ function register(context: MainContext): () => void {
     const list = unlockedForDue(context.db, store, uids.map(asUid))
     changing(list, () => store.setDue(list, dateOrNull(due) ?? null))
   })
+  ipcMain.handle(TASKS_IPC.moveSubtask, (_event, uid: unknown, beforeUid: unknown) => {
+    const before = beforeUid === null ? null : asUid(beforeUid)
+    // A meeting's or training's subtasks have no order of their own: their date is theirs.
+    const task = store.get(asUid(uid))
+    if (task?.ownKind) throw new Error('This task is placed by its date')
+    changing(asUid(uid), () => store.moveSubtask(asUid(uid), before))
+  })
   /** The task, its subtasks and every one of them as an Hours key. */
   const withKids = (uid: string): string[] => [
     uid,

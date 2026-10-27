@@ -80,6 +80,47 @@ describe('create', () => {
   })
 })
 
+describe('moveSubtask', () => {
+  const order = (parent: string): string[] =>
+    listSubtasks(db, parent)
+      .sort((a, b) => a.position - b.position)
+      .map((k) => k.title)
+  const family = (): { parent: string; kids: string[] } => {
+    const parent = make('Parent')
+    const kids = ['a', 'b', 'c', 'd'].map(
+      (title) => store.create({ workspace: 'research', title, parentUid: parent.uid }).uid
+    )
+    return { parent: parent.uid, kids }
+  }
+
+  it('puts a subtask before another, or last', () => {
+    const { parent, kids } = family()
+    store.moveSubtask(kids[3], kids[1])
+    expect(order(parent)).toEqual(['a', 'd', 'b', 'c'])
+    store.moveSubtask(kids[0], null)
+    expect(order(parent)).toEqual(['d', 'b', 'c', 'a'])
+  })
+  it('keeps new subtasks last after a move', () => {
+    const { parent, kids } = family()
+    store.moveSubtask(kids[2], kids[0])
+    store.create({ workspace: 'research', title: 'e', parentUid: parent })
+    expect(order(parent)).toEqual(['c', 'a', 'b', 'd', 'e'])
+  })
+  it('writes only the subtasks whose place changed', () => {
+    const { kids } = family()
+    const before = store.get(kids[0])?.updatedAt
+    store.moveSubtask(kids[3], null)
+    expect(store.get(kids[0])?.updatedAt).toBe(before)
+  })
+  it('refuses a top-level task and a subtask of another task', () => {
+    const { parent, kids } = family()
+    const other = make('Other')
+    const stranger = store.create({ workspace: 'research', title: 'x', parentUid: other.uid })
+    expect(() => store.moveSubtask(parent, null)).toThrow('subtask')
+    expect(() => store.moveSubtask(kids[0], stranger.uid)).toThrow('same task')
+  })
+})
+
 describe('update', () => {
   it('changes fields and never the importer-only ones', () => {
     const t = make('A', { earlierMinutes: 90, sourceId: 's1' })

@@ -4602,3 +4602,7 @@ A table shown as a grid sized its columns as shares of the page (`fr`), so a two
 - **Stray "·":** a parent whose title was blank or only spaces drew an empty span after the "↳", so the "·" sat against the arrow. `SubtaskLine` trims the parent's title and says "Untitled" when nothing is left.
 - **Overflow:** the tail (list path and "due today") was `flex: none`, so a long list path ran past the row once the parent was short or empty. The tail now shrinks and ellipsises too, but only after the parent has (`.parent` shrinks 100000 times as fast as `.tail`).
 - **Not driven in the app** (lint, typecheck and tests pass); the parent's real title was not looked up.
+
+## Subtask order (27 Oct 2026)
+
+A subtask list is in the user's own order: `position` (new ones last, drag on the task page changes it through `moveSubtask`, which renumbers the siblings 1, 2, 3 …), then when it was added. Done subtasks are shown after the open ones, each keeping its own position, so reopening one puts it back in its place. The subtasks a meeting or training note makes (`ownKind`) keep their date order and cannot be dragged. Dragging is limited to the open group or the done group, so a drop never looks like a no-op. Replaces the old "by date, then position" order, which scrambled a pipeline whose subtasks all share a date. Built, tested, driven in the production build (drag in a scratch library); dev mode and dark mode not driven; no undo for a move.

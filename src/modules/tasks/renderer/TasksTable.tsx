@@ -149,6 +149,30 @@ export function TasksTable({
   )
   const span = flat ? 4 : 6
 
+  // Subtasks on a task's own page can be dragged into the user's own order (a meeting's or training's are placed by date).
+  const [dragUid, setDragUid] = useState<string | null>(null)
+  const [over, setOver] = useState<{ uid: string; below: boolean } | null>(null)
+  const kidTasks = useMemo(
+    () =>
+      flat
+        ? items.flatMap((i) => (i.type === 'kid' && i.task.ownKind === null ? [i.task] : []))
+        : [],
+    [flat, items]
+  )
+  const draggedTask = kidTasks.find((k) => k.uid === dragUid) ?? null
+  /** The subtask a drop at `target` puts the dragged one before (null: last); undefined where a drop changes nothing. */
+  const dropBefore = (target: Task, below: boolean): string | null | undefined => {
+    if (!draggedTask || target.uid === draggedTask.uid) return undefined
+    if ((target.status === 'done') !== (draggedTask.status === 'done')) return undefined
+    const at = kidTasks.findIndex((k) => k.uid === target.uid)
+    const before = below ? (kidTasks[at + 1]?.uid ?? null) : target.uid
+    return before === draggedTask.uid ? undefined : before
+  }
+  const endDrag = (): void => {
+    setDragUid(null)
+    setOver(null)
+  }
+
   const toggle = (uid: string, to?: boolean): void =>
     setOpen((current) => {
       const next = new Set(current)
@@ -350,6 +374,29 @@ export function TasksTable({
                 isRunning={running.has(item.task.uid)}
                 flat={flat}
                 isOpen={open.has(item.task.uid)}
+                drag={
+                  kidTasks.length > 1 && item.type === 'kid' && item.task.ownKind === null
+                    ? {
+                        dragging: dragUid === item.task.uid,
+                        mark: over?.uid === item.task.uid ? (over.below ? 'below' : 'above') : null,
+                        onStart: () => setDragUid(item.task.uid),
+                        onOver: (below) => {
+                          if (dropBefore(item.task, below) === undefined) setOver(null)
+                          else setOver({ uid: item.task.uid, below })
+                        },
+                        onDrop: (below) => {
+                          const before = dropBefore(item.task, below)
+                          const moving = dragUid
+                          endDrag()
+                          if (before === undefined || !moving) return
+                          window.api.tasks.moveSubtask(moving, before).catch((error: unknown) => {
+                            showToast(`Couldn’t move it: ${ipcErrorMessage(error)}`)
+                          })
+                        },
+                        onEnd: endDrag
+                      }
+                    : undefined
+                }
                 rowProps={rowProps(index)}
                 onKeyDown={(e) => onRowKeyDown(e, index)}
                 onOpen={() => {
@@ -503,6 +550,7 @@ function TaskRowView({
   isRunning,
   isOpen,
   flat,
+  drag,
   rowProps,
   onKeyDown,
   onOpen,
@@ -519,6 +567,15 @@ function TaskRowView({
   isRunning: boolean
   isOpen: boolean
   flat: boolean
+  /** Present on a subtask the user can drag into place. */
+  drag?: {
+    dragging: boolean
+    mark: 'above' | 'below' | null
+    onStart: () => void
+    onOver: (below: boolean) => void
+    onDrop: (below: boolean) => void
+    onEnd: () => void
+  }
   rowProps: RowProps
   onKeyDown: (event: React.KeyboardEvent) => void
   onOpen: () => void
@@ -551,13 +608,37 @@ function TaskRowView({
     styles.row,
     isKid && !flat && styles.kid,
     isKid && !flat && item.last && styles.end,
-    isRunning && styles.running
+    isRunning && styles.running,
+    drag?.dragging && styles.dragging,
+    drag?.mark === 'above' && styles.dropAbove,
+    drag?.mark === 'below' && styles.dropBelow
   ]
+  const belowMiddle = (event: React.DragEvent<HTMLElement>): boolean => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    return event.clientY > rect.top + rect.height / 2
+  }
   return (
     <tr
       className={classes.filter(Boolean).join(' ')}
       data-uid={task.uid}
       {...rowProps}
+      draggable={drag ? true : undefined}
+      onDragStart={(event) => {
+        if (!drag) return
+        event.dataTransfer.effectAllowed = 'move'
+        drag.onStart()
+      }}
+      onDragOver={(event) => {
+        if (!drag) return
+        event.preventDefault()
+        drag.onOver(belowMiddle(event))
+      }}
+      onDrop={(event) => {
+        if (!drag) return
+        event.preventDefault()
+        drag.onDrop(belowMiddle(event))
+      }}
+      onDragEnd={drag?.onEnd}
       onKeyDown={onKeyDown}
       onClick={onOpen}
       onContextMenu={(event) => {

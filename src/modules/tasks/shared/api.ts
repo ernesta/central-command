@@ -54,6 +54,8 @@ export interface TasksApi {
   setStatus(uid: string, status: TaskStatus): Promise<TaskStatusResult>
   /** Set (or clear, with null) the due date of several tasks at once. */
   setDue(uids: string[], due: string | null): Promise<void>
+  /** Put a subtask before another subtask of the same task (null: last). Session tasks keep their date order. */
+  moveSubtask(uid: string, beforeUid: string | null): Promise<void>
   /**
    * Move a task and its subtasks to the trash. Their saved time leaves Hours with them (kept for a restore); resolves with
    * the minutes removed. The caller asks the user first, unless the task is untouched.
@@ -95,6 +97,7 @@ export const TASKS_IPC = {
   update: 'tasks:update',
   setStatus: 'tasks:set-status',
   setDue: 'tasks:set-due',
+  moveSubtask: 'tasks:move-subtask',
   delete: 'tasks:delete',
   timeOn: 'tasks:time-on',
   restore: 'tasks:restore',

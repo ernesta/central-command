@@ -12,19 +12,23 @@ export const UPCOMING_DAYS = 7
 
 const PRIORITY_ORDER: Record<TaskPriority, number> = { high: 0, normal: 1, low: 2 }
 
-/** Subtasks by date, soonest first and undated last; ties keep their position, then when they were added. */
+/** The user's own order: position, then when the subtask was added. */
+export function byPosition(a: Task, b: Task): number {
+  return a.position - b.position || a.createdAt.localeCompare(b.createdAt)
+}
+
+/**
+ * Subtasks in the user's own order (new ones last, dragging changes it), done ones after the open ones, each keeping its place
+ * among its group. The subtasks a meeting or training note makes are ordered by date instead (soonest first, undated last), done or not.
+ */
 export function orderSubtasks(kids: readonly Task[]): Task[] {
-  return [...kids].sort(
-    (a, b) =>
-      (a.due === b.due
-        ? 0
-        : a.due === null
-          ? 1
-          : b.due === null
-            ? -1
-            : a.due.localeCompare(b.due)) ||
-      a.position - b.position ||
-      a.createdAt.localeCompare(b.createdAt)
+  const byDate = kids.some((k) => k.ownKind !== null)
+  const date = (a: Task, b: Task): number =>
+    a.due === b.due ? 0 : a.due === null ? 1 : b.due === null ? -1 : a.due.localeCompare(b.due)
+  return [...kids].sort((a, b) =>
+    byDate
+      ? date(a, b) || byPosition(a, b)
+      : Number(a.status === 'done') - Number(b.status === 'done') || byPosition(a, b)
   )
 }
 

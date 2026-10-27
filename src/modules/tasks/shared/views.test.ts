@@ -65,12 +65,29 @@ describe('groupTasks', () => {
     expect(rows.map((r) => r.task.uid)).toEqual(['p'])
     expect(rows[0].kids.map((k) => k.uid)).toEqual(['k1', 'k2'])
   })
-  it('orders subtasks by date, soonest first, undated last', () => {
+  it('orders subtasks by position, the done ones last and in their own order', () => {
     const all = [
       task({ uid: 'p' }),
-      task({ uid: 'none', parentUid: 'p', position: 1, due: null }),
-      task({ uid: 'late', parentUid: 'p', position: 2, due: '2026-11-30' }),
-      task({ uid: 'soon', parentUid: 'p', position: 3, due: '2026-10-23' })
+      task({ uid: 'a', parentUid: 'p', position: 1, status: 'done' }),
+      task({ uid: 'b', parentUid: 'p', position: 2, due: '2026-11-30' }),
+      task({ uid: 'c', parentUid: 'p', position: 3, status: 'doing', due: '2026-10-23' }),
+      task({ uid: 'd', parentUid: 'p', position: 4, status: 'done' })
+    ]
+    expect(groupTasks(all)[0].kids.map((k) => k.uid)).toEqual(['b', 'c', 'a', 'd'])
+  })
+  it('orders the subtasks a note made by date, soonest first, undated last, done or not', () => {
+    const all = [
+      task({ uid: 'p' }),
+      task({ uid: 'none', parentUid: 'p', position: 1, due: null, ownKind: 'self-study' }),
+      task({ uid: 'late', parentUid: 'p', position: 2, due: '2026-11-30', ownKind: 'self-study' }),
+      task({
+        uid: 'soon',
+        parentUid: 'p',
+        position: 3,
+        due: '2026-10-23',
+        status: 'done',
+        ownKind: 'self-study'
+      })
     ]
     expect(groupTasks(all)[0].kids.map((k) => k.uid)).toEqual(['soon', 'late', 'none'])
   })
