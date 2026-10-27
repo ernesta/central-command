@@ -26,11 +26,12 @@ export function SubtaskLine({
       </Tooltip>
     )
   }
+  const parentName = parent.trim() || 'Untitled'
   return (
     <span className={styles.line}>
       <CornerDownRight size={12} strokeWidth={1.75} className={styles.mark} aria-hidden />
-      <Tooltip text={parent || 'Untitled'} whenCut>
-        <span className={styles.parent}>{parent || 'Untitled'}</span>
+      <Tooltip text={parentName} whenCut>
+        <span className={styles.parent}>{parentName}</span>
       </Tooltip>
       {(list || due) && <span className={styles.tail}> · {taskLine(list, due)}</span>}
     </span>

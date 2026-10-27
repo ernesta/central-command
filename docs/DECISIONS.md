@@ -4596,3 +4596,9 @@ A table shown as a grid sized its columns as shares of the page (`fr`), so a two
 
 - **Decision (the user, 27 Oct 2026, mockup option A):** the popover's title row has a ghost icon button, `useOpenTarget` in `TimerChip.tsx`. A task (a subtask and a self-study task included) gets "Open task" (`ListChecks`, the task's page); a running meeting's or training's own task gets "Open meeting" / "Open training" (`CalendarDays` / `GraduationCap`), the note that made it (`tasks.sessionSource`, the "Made by" lookup). Nothing shows until the note is found; a session whose note is missing falls back to the task's page. No button while the timer has no task. Pressing it closes the popover.
 - **Driven:** production build, scratch library, light only: an ordinary task (lands on its page) and a meeting task (button found, opens the note). Not driven: a training, dark mode, dev mode.
+
+## A subtask line never runs past its row (27 Oct 2026, the user's screenshot of the timer's task picker)
+
+- **Stray "·":** a parent whose title was blank or only spaces drew an empty span after the "↳", so the "·" sat against the arrow. `SubtaskLine` trims the parent's title and says "Untitled" when nothing is left.
+- **Overflow:** the tail (list path and "due today") was `flex: none`, so a long list path ran past the row once the parent was short or empty. The tail now shrinks and ellipsises too, but only after the parent has (`.parent` shrinks 100000 times as fast as `.tail`).
+- **Not driven in the app** (lint, typecheck and tests pass); the parent's real title was not looked up.

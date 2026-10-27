@@ -18,14 +18,17 @@
   color: var(--text-muted);
 }
 .parent {
-  flex: 0 1 auto;
+  flex: 0 100000 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* The list (and a date) is never cut: the parent gives way first. */
+/* The parent gives way first; the list (and a date) is cut only once the parent is gone. */
 .tail {
-  flex: none;
+  flex: 0 100 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: pre;
 }
