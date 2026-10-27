@@ -38,7 +38,8 @@ export function TrainingHours({
   const task = study ?? draftSelfStudyTask(meta, workspace)
   const parent = task.parentUid ? tasks?.find((t) => t.uid === task.parentUid) : undefined
   // This task's own time (0 until something is put on it), not the training's session.
-  const total = meta.selfStudy ? (selfStudy.get(meta.selfStudy) ?? 0) : 0
+  // A running timer's minutes so far are in it (`time.tracked`), so the figure moves while it runs.
+  const total = study ? (time.tracked.get(study.uid) ?? selfStudy.get(study.uid) ?? 0) : 0
   return (
     <>
       <div className={styles.total}>

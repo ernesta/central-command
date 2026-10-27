@@ -1,4 +1,4 @@
-import { Play, Plus } from 'lucide-react'
+import { Play, Plus, Square } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { Select } from '@renderer/components/Select'
@@ -7,6 +7,7 @@ import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useOpenContracts } from '@renderer/state/use-open-contracts'
 import { QUARTER } from '@shared/tracking/rounding'
 import { DurationField } from '../../hours/renderer/DurationField'
+import { stopTimer } from '../../hours/renderer/start-request'
 import { clientForTask } from '../../hours/shared/start-picker'
 import { taskKey } from '../shared/tracked'
 import type { Task, TaskWorkspace } from '../shared/types'
@@ -114,7 +115,16 @@ export function TaskTimeActions({
   return (
     <>
       <div className={styles.timeButtons}>
-        {!isRunning && (
+        {isRunning ? (
+          <Button
+            size="small"
+            variant="primary"
+            icon={<Square size={14} strokeWidth={1.75} aria-hidden />}
+            onClick={() => void stopTimer()}
+          >
+            Stop
+          </Button>
+        ) : (
           <Button
             ref={startRef}
             size="small"
