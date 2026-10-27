@@ -4585,3 +4585,9 @@ A table shown as a grid sized its columns as shares of the page (`fr`), so a two
 - **Why:** the popup's search field ran the full content width, but `.list` had 2px side padding and `.extra` 4px, so highlighted rows were 2px narrower than the search and the "Inside" select 4px.
 - **Now:** `Picker.module.css` gives `.list` and `.extra` no side padding, so search, rows, Create row and Inside select share one left and right edge.
 - **Not driven in the app** (lint, typecheck and tests pass); the screenshot the user meant was not in the message.
+
+## Picker: hovering does not scroll, the list is as wide as its field (27 Oct 2026, the user's two screenshots)
+
+- **Jump on hover:** opening a long list scrolls the selected row into view, leaving the first row partly under the search field. A pointer resting there highlighted that row, and the highlight effect's `scrollIntoView` scrolled the list to it, so the list jumped. A highlight set by the pointer no longer scrolls (`PickerInput.highlightedByPointer`/`takePointerHighlight`, held in state like the rest of the input memory); arrow keys and typing still do.
+- **Width:** the popup was `max-content`, so it came out wider than the closed field. A field at least 160px wide now gets a list exactly its width (`max-width` = the field's), long names ellipsised with the tooltip; a narrower field, or one with `listMinWidth`, keeps the width its options need.
+- **Not driven in the app** (lint, typecheck and tests pass).
