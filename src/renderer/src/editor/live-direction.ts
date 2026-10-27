@@ -20,7 +20,8 @@ import { textDirection } from '@shared/text-direction'
 
 const lines = {
   ltr: Decoration.line({ attributes: { dir: 'ltr' } }),
-  rtl: Decoration.line({ attributes: { dir: 'rtl' } })
+  // Urdu and Arabic are not in the spell checker's languages: every word would be underlined.
+  rtl: Decoration.line({ attributes: { dir: 'rtl', spellcheck: 'false' } })
 }
 
 type Direction = 'ltr' | 'rtl'

@@ -1,5 +1,6 @@
 import { EditorSelection, type EditorState, type StateCommand } from '@codemirror/state'
 import { Decoration, ViewPlugin, WidgetType } from '@codemirror/view'
+import { textDirection } from '@shared/text-direction'
 import type { SyntaxNode } from '@lezer/common'
 import { enclosing, withBreaks } from './live-lines'
 import type { Extent } from './live-reveal'
@@ -184,6 +185,11 @@ class EmptyCell extends WidgetType {
 
 const hidden = Decoration.replace({})
 const textCell = Decoration.mark({ class: 'live-cell-text', attributes: { dir: 'auto' } })
+// Urdu and Arabic are not in the spell checker's languages: every word would be underlined.
+const textCellRtl = Decoration.mark({
+  class: 'live-cell-text',
+  attributes: { dir: 'auto', spellcheck: 'false' }
+})
 const pipeMark = Decoration.mark({ class: 'live-tablemark' })
 const cellMarks: Record<Align, Decoration> = {
   left: Decoration.mark({ class: 'live-cell', attributes: { dir: 'auto' } }),
@@ -230,9 +236,16 @@ export function drawTable(
         continue
       }
       for (const pipe of row.pipes) add('tpipe', line.from + pipe, line.from + pipe + 1, pipeMark)
-      // Shown as text, a cell is still its own run: its direction does not reach the pipes or the cells beside it.
+      // Shown as text, a cell is still its own run: its direction does not reach the pipes or the cells beside it. The run
+      // takes the white space round the text too, or a space typed after a right-to-left word falls outside it and the caret jumps.
       for (const cell of row.cells)
-        if (cell.from < cell.to) add('tcell', line.from + cell.from, line.from + cell.to, textCell)
+        if (cell.from < cell.to)
+          add(
+            'tcell',
+            line.from + cell.gapFrom,
+            line.from + cell.gapTo,
+            textDirection(line.text.slice(cell.from, cell.to)) === 'rtl' ? textCellRtl : textCell
+          )
       continue
     }
 

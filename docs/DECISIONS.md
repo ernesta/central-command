@@ -4537,6 +4537,11 @@ The editor treated every line as left to right: an Arabic or Urdu paragraph was 
 - Driven in the production build (scratch library, a note with Urdu paragraphs, a list, a quote, tasks and two tables; selection by keyboard in a paragraph, across lines, select all, inside a revealed table; Mod-K with Arabic). Not driven in dev mode, not driven with a mouse drag. Open: Home/End and Cmd-Left/Right in a right-to-left line follow the default commands (visual left/right); not changed.
 - **Cells as text** (same day, the user: Shift+arrow selection in a table row was still odd, and each cell should follow its own direction): a row shown as text marks each cell `dir="auto"` with `unicode-bidi: isolate` (`live-tables.ts`, `.live-cell-text`), so an Arabic cell no longer reorders the pipes and cells beside it. The columns' order still follows the header row's first letter (English names: left to right).
 
+## Right-to-left typing: the caret after a space, and no spell check (27 Oct 2026, the user: "when I finish a word and press space suddenly my cursor is on the right"; "why is this underlined now???")
+
+- **Caret**: a table row shown as text marked only each cell's letters (`from`..`to`) as its own isolated `dir="auto"` run. A space typed after an Urdu word sits between the word and the pipe, outside the run, in the table's left-to-right context, so the caret jumped to the word's right. The run now covers the whole gap between the pipes (`gapFrom`..`gapTo`, `live-tables.ts`). Not driven in the app; the user is to check it.
+- **Underline**: the editor has always had `spellcheck="true"`, and macOS has no Urdu dictionary, so every Urdu word got the red dotted line (why it showed only now is not known). Right-to-left lines (`live-direction.ts`) and right-to-left table cells shown as text (`textCellRtl`) are `spellcheck="false"`; a cell is chosen by its first strong letter, so English is still checked. A cell in a grid (cursor outside the table) is not marked: its text is not editable there.
+
 ## Editor tables are as wide as their text (26 Oct 2026, the user: "this table is waaaay too wide")
 
 A table shown as a grid sized its columns as shares of the page (`fr`), so a two-column table of short phrases still spread across the whole line, with the right-aligned Urdu cells far from their English column.
