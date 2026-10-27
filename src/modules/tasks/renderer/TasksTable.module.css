@@ -91,7 +91,8 @@
 .handle {
   position: absolute;
   top: 50%;
-  left: 2px;
+  /* The icon has about 4px of space inside its box, so this puts the dots at the row's very edge. */
+  left: -3px;
   display: flex;
   transform: translateY(-50%);
   color: var(--text-muted);
