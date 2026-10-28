@@ -355,17 +355,17 @@
   color: var(--text-muted);
   font-size: var(--text-13);
 }
-/* The input spans the row's padding on both sides; the plus sits where a subtask's status icon does and the text where a title
+/* The input's right border lines up with the delete button's hover box (the icon sits 12px in, its 24px box 8px); the plus sits where a subtask's status icon does and the text where a title
    starts (64px status column + 12px padding). */
 .addRow td.addFlat {
   padding-left: 12px;
-  padding-right: 12px;
+  padding-right: 8px;
 }
 .addFlat .addInput {
   padding-left: 15px;
 }
 .addRow td.addNested {
-  padding-right: 12px;
+  padding-right: 8px;
 }
 .addFlat .addPlus {
   width: 22px;
