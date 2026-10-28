@@ -4781,3 +4781,11 @@ The app still makes and keeps a meeting's and a training's own task (`own_kind` 
 ## Home's five rows are five top-level rows (28 Oct 2026, the user's correction)
 
 "Up to 5" in Today and Coming up means 5 top-level items; a task's subtasks hang under it and are not counted (Today showed 3 tasks because two subtasks took slots). `capRows` takes an `isKid` test (`isKidRow`) and counts "+N more" in top-level rows; the summary no longer cuts tasks (all overdue and due-today tasks are kept, with their totals) nor events inside the Coming up window (so `upcomingCut` stays empty there); events beyond the window are still capped at `SHOWN_UPCOMING`. `SHOWN_TASKS` is removed. Tests: `cap.test.ts`, `summary.test.ts`, `collect.test.ts`. Not driven in the app.
+
+## Work's Meetings follow the contract's clients (28 Oct 2026, the user's bug report)
+
+Contracts overlap, and a meeting has no contract of its own, so Work's Meetings page (landing and list) showed every meeting dated inside the shown contract: Royal Holloway (28 Sep 2026 –) counted the Luminos meetings of 29 Sep, 30 Sep and 5 Oct (4:00 of meetings, three "Document Automation" series cards). A meeting's task sits in a list and in Work a list is a client, which belongs to one contract, so `ofContractClients` (`meetings/shared/hours.ts`) drops a meeting whose task's list is not a client of the shown contract. A meeting with no task, or whose task is not found, stays (nothing is guessed). `Period.clients` carries the contract's clients; `useTaskLists` reads the lists (a subtask takes its parent's). Research is untouched (no clients). "Before next meeting" (open TODOs) is still not filtered by contract.
+
+**Work's "All meetings" has no Export button for now (the user's call).** The PDF log goes by date only and would carry the other contract's meetings; the main-process export is unchanged, the button is hidden when `workspace === 'work'`. Bring it back once the export follows the clients (`exportPdf` would need the contract's clients and the task lists in the main process).
+
+Tests: `ofContractClients` in `hours.test.ts`. Not driven in the app.
