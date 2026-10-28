@@ -178,8 +178,8 @@
   display: none;
 }
 
-/* Where a subtask's priority badge would be (30px minimum plus its 7px padding each side), so the late chips line up. */
+/* Where a subtask's priority badge would be (its 30px minimum width), so the late chips line up. */
 .badgeGap {
   flex: none;
-  width: 44px;
+  width: 30px;
 }
