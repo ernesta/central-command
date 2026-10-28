@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronRight, GripVertical, Plus, Repeat, Trash2 } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
+import { Button } from '@renderer/components/Button'
 import { DatePicker } from '@renderer/components/DatePicker'
 import { showToast } from '@renderer/components/toast-store'
 import { pushUndoWithToast } from '@renderer/components/undo-store'
@@ -960,7 +961,17 @@ function AddSubtaskRow({
                 if (title.trim() === '') onStop()
               }}
             />
-            <kbd className={styles.kbd}>Return</kbd>
+            <Button
+              type="button"
+              variant="primary"
+              size="small"
+              disabled={title.trim() === ''}
+              // Keeps the field focused: its blur would otherwise close the row before the click lands.
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => void submit()}
+            >
+              Add
+            </Button>
             {error && (
               <span role="alert" className={styles.addError}>
                 {error}

@@ -4,10 +4,10 @@
   padding: 4px;
   scroll-padding: 4px;
 }
-/* 20px of room on the left, taken back by the margin, holds the drag grip outside the rows. */
+/* The card's 20px side padding is taken back, so a row's highlight runs from the card's edge to its edge. */
 .wrapFlat {
-  margin-left: -20px;
-  padding: 4px 0 0 20px;
+  margin: 0 -20px;
+  padding: 4px 0 0;
   scroll-padding: 4px;
 }
 .table {
@@ -93,8 +93,7 @@
 .handle {
   position: absolute;
   top: 50%;
-  /* Outside the row's highlight, in the room .wrapFlat leaves on the left. */
-  left: -18px;
+  left: 2px;
   display: flex;
   transform: translateY(-50%);
   color: var(--text-muted);
@@ -354,10 +353,9 @@
   font-size: var(--text-13);
 }
 .addInput {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 8px;
-  min-width: 340px;
   padding: 3px 10px;
   border: 1px solid var(--accent);
   border-radius: var(--radius-control);
@@ -374,14 +372,6 @@
 }
 .addField:focus-visible {
   outline: none;
-}
-.kbd {
-  padding: 0 6px;
-  border: 1px solid var(--border-soft);
-  border-radius: 6px;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-  font-size: var(--text-12);
 }
 .addError {
   color: var(--danger);
