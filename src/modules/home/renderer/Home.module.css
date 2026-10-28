@@ -70,6 +70,15 @@
   color: var(--text-muted);
   font-size: var(--text-12);
 }
+/* A sub-label beside a card's heading: the heading's small caps are reset to plain muted text. */
+.subLabel {
+  margin-left: 12px;
+  color: var(--text-muted);
+  font-size: var(--text-12);
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+}
 .icon {
   flex: none;
   margin: 0 2px; /* as wide as a task's status circle, so titles line up down the list */

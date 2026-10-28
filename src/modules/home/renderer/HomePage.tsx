@@ -261,10 +261,10 @@ function ComingUpCard({
     <Panel
       label="Coming up"
       heading={
-        <span className={styles.actions}>
+        <>
           Coming up
-          <span className={styles.small}>Next {COMING_UP_DAYS} days</span>
-        </span>
+          <span className={styles.subLabel}>Next {COMING_UP_DAYS} days</span>
+        </>
       }
       actions={
         shown.length > 0 && (
