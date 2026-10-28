@@ -4815,3 +4815,9 @@ The user asked for an audit of how "something you can click" looks and behaves, 
 - **Guard:** `components/clickables.test.ts` reads every stylesheet: no underline in a `:hover` rule (allow-list: `MeetingTask`, `LiveEditor`), no `--selected-bg` in a `:hover` rule, `EntityPicker`/`TodoMenu` `.active` use the tint, no `cursor: pointer` on a `tr` or `.row` outside `Focus.module.css`, the row ring and the card ring written once, no literal `outline: 2px solid var(--accent)` outside the editor. Mutation-checked: each of the seven rules fails when its rule is broken (an underline hover, a blue hover, a `.row` cursor, a card ring copy, a literal ring, a row ring copy, a blue `.active`).
 - **Not driven:** Hours' rename button (only on rows without a task link, none in the scratch Research library; it takes the same `EditInPlace` class as the others), `TaskMenu` item hover (the menu did not open from the script), dev mode of stages 1 and 3 beyond the Watch lists and the person page.
 - **A harness lesson:** a dev-mode script that kills only `npx` leaves Electron and Vite behind on the debugging port, and the next run connects to the stale window and sees old CSS. Kill the group and `pkill -f remote-debugging-port=9333` before and after.
+
+## The task page's month lines roll subtasks up (28 Oct 2026, the user's bug report)
+
+- **Bug:** a task whose time sits on its subtasks ("Develop Study 2: Ghana EGRA USAID data processing pipeline") showed a total of 14:15 above a single "Oct 2026 0:00" line. The total is `taskTime(row, tracked)` (the task and its subtasks); the "Earlier" and month lines were built from the parent's own uid only.
+- **Rule:** the total, "Earlier" and the months all count the task and its subtasks. `useTaskTime`'s `months(uids)` merges `hoursByMonth` over them; `earlier(tasks)` sums `undatedEarlier` per task.
+- Built, typecheck, lint and tests pass; not driven in the app.

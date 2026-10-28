@@ -154,7 +154,6 @@ function TaskView({
   }, [isNew, task.uid, title, description])
 
   const time = taskTime(row, tracked)
-  const own = taskTime({ task, kids: [] }, tracked)
   const progress = subtaskProgress(row.kids)
   // Leaving after a delete goes where the visitor came from, as Back does.
   const leave = (): void => void navigate(-1)
@@ -389,8 +388,8 @@ function TaskView({
             today={today}
             yearFor={yearFor}
             clientFor={clientFor}
-            months={months(task.uid)}
-            earlier={earlier(task.uid, own.earlier)}
+            months={months([task.uid, ...row.kids.map((k) => k.uid)])}
+            earlier={earlier([task, ...row.kids])}
             list={task.list}
             parts={row.kids.filter((k) => k.status !== 'done' && !sessionTasks.has(k.uid))}
             actions={!sessionTasks.has(task.uid)}

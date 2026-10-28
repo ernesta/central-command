@@ -26,10 +26,10 @@ export function useTaskTime(workspace: TaskWorkspace): {
   yearFor: (date: string, client?: string) => string | null
   /** A task's list as the client of a contract that holds `date`, when its name is one. */
   clientFor: (list: string, date: string) => string | undefined
-  /** A task's hours by month, history included. */
-  months: (uid: string) => { month: string; minutes: number }[]
-  /** A task's ClickUp time with no known day: what its months do not already show. */
-  earlier: (uid: string, earlierMinutes: number) => number
+  /** The hours of these tasks (a task and its subtasks) by month, history included. */
+  months: (uids: readonly string[]) => { month: string; minutes: number }[]
+  /** These tasks' ClickUp time with no known day: what their months do not already show. */
+  earlier: (tasks: readonly { uid: string; earlierMinutes: number }[]) => number
 } {
   const [years, setYears] = useState<TrackingYear[]>([])
   const { running } = useRunningTimer()
@@ -78,8 +78,17 @@ export function useTaskTime(workspace: TaskWorkspace): {
       null
     const clientFor = (list: string, date: string): string | undefined =>
       clientForList(years, date, list)
-    const months = (uid: string): { month: string; minutes: number }[] => hoursByMonth(shown, uid)
-    const earlier = (uid: string, minutes: number): number => undatedEarlier(shown, uid, minutes)
+    const months = (uids: readonly string[]): { month: string; minutes: number }[] => {
+      const byMonth = new Map<string, number>()
+      for (const uid of uids)
+        for (const m of hoursByMonth(shown, uid))
+          byMonth.set(m.month, (byMonth.get(m.month) ?? 0) + m.minutes)
+      return [...byMonth]
+        .map(([month, minutes]) => ({ month, minutes }))
+        .sort((x, y) => x.month.localeCompare(y.month))
+    }
+    const earlier = (parts: readonly { uid: string; earlierMinutes: number }[]): number =>
+      parts.reduce((sum, t) => sum + undatedEarlier(shown, t.uid, t.earlierMinutes), 0)
     return { tracked, running: active, yearFor, clientFor, months, earlier }
   }, [base, running, now, workspace, years, shown])
 }
