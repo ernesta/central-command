@@ -77,6 +77,8 @@ grid for a note and its panels, used by all five pages) and `NoteOutline` moved 
 
 **Polish round 4 (28 Oct 2026): built, tested, driven in a scratch library; committed, not pushed, not installed** (`docs/POLISH_ROUND_4_PLAN.md`, `docs/DECISIONS.md`, "Polish round 4"). "Now" for a running session; no late pill in Hours' rows; Escape no longer leaves full screen from a closed form (decided at keydown) and the Escape/Enter table is written down; Home's Today and Coming up show 5 rows with "+N more" and "See all"; one thin accent border for a field's focus. Open: the user's Enter report (item 3) was not reproduced; Coming up's "See all" goes to the Tasks landing (say if another view is wanted).
 
+**Meetings "Has notes" mark (28 Oct 2026): built, driven, pushed** (`docs/DECISIONS.md`, "Meetings: the "Has notes" mark"). Same rule as Training; `meetings/0006_has_notes`; filled in by the startup reindex.
+
 **Polish round 3 (28 Oct 2026): built, driven, pushed, installed** (`docs/POLISH_ROUND_3_PLAN.md`, `docs/DECISIONS.md`, "Polish round 3"). No Export tooltip; a session dated today is upcoming until it ends; no "No hours until" lines; a red End before the start; a summary icon on Training and Meetings rows; one grid for Hours' task, meeting and Add rows and forms, with a guard test.
 
 **Polish round step 10, self-study labels (23 Oct 2026): built, driven, pushed, not installed** (item 6; `docs/DECISIONS.md`, "Polish round"). A self-study subtask reads "Series › Day 2 self-study" (series muted) in the table, search, the timer's picker and popover and Hours' rows; display only. Next: step 11, item 2 (locked session tasks).
