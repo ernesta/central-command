@@ -4747,3 +4747,11 @@ The user reviewed Watch after the first real checks of five sources (EPS, Nation
 The user liked how the Watch entry list behaves (a link does not underline; it changes colour a little on hover) and asked for it wherever an internal link underlined on hover. Done: Hours' task and meeting titles (`TaskList`, `MeetingRows`: accent), the person links on a meeting (`PersonLinks`: accent to accent-hover), the People table's name link and Home's "See all" style link (colour only). **External links** (Watch titles) get nothing extra: the pointing-hand cursor is enough (the user's call, after first asking for an underline). Left alone on purpose: the editable title in the Tasks table (an edit affordance, not a link) and `MeetingTask`'s underlined buttons (actions that choose a task); the live editor's own link styling is untouched.
 
 Watch also loses the **"New" pill** on every row (landing and full list): a New item is shown as before (ink, weight 500) and a **Read** item's title in the full list is muted (`--text-muted`, weight 400, accent on hover). The landings list New items only, so they show no distinction.
+
+## Royal Holloway kick-off meeting: its own meeting task (28 Oct 2026, the user's request; applied to the real library)
+
+The 2 Oct 2026 Royal Holloway note was the one Work meeting still pointing at an ordinary task (`uc8k3frf`, the 75-minute "Kick-off meeting and follow-up" merged by hand on 6 Oct). `npm run royal-holloway:meeting [-- --apply]` (`scripts/royal-holloway-meeting.mts`; dry run on a throwaway copy; backup in `backups/royal-holloway-meeting-<time>/`) split it:
+
+- **New:** series task "Royal Holloway meetings" (list Royal Holloway, Done, due 2 Oct) with one `own_kind = meeting` subtask "Royal Holloway meetings · 2 Oct 2026" (`3757qpzv`); the note's `task:` points at it and its 15:00–15:45 derives 45 min.
+- **Old task:** renamed "Kick-off meeting follow-up"; its adjust in `time/work/2026-09-28.json` and `earlier_minutes` went 75 -> 30. Contract total unchanged (30 + 45 = 75); not trashed.
+- **Found in the same audit, not changed:** `2026-09-30 Document Automation – Other.md` has a non-breaking space after the dash in `series:`, so `repair:session-tasks` wants to "move" its task into a new identically named series task. Do not run that script with `--apply` until the note's series is fixed.

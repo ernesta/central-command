@@ -18,6 +18,7 @@ ask the user.
   (dry run by default; macOS only)
 - `npm run luminos:meetings [-- --apply]`: the 14 meetings of the oldest Work contract (times, topics, own tasks, minutes moved; contract total checked); applied 25 Oct 2026 (`docs/DECISIONS.md`), do not re-run
 - `npm run luminos:meetings-2 [-- --apply]`: the 8 meetings of the second Work contract (1 May – 31 Oct 2026): times, topics, new series tasks per note series, minutes moved, Research series tasks renamed to "<series> meetings"; applied 25 Oct 2026 (`docs/DECISIONS.md`), do not re-run
+- `npm run royal-holloway:meeting [-- --apply]`: the 2 Oct 2026 Royal Holloway meeting gets its own meeting task and the kick-off task keeps only the follow-up (30 min; contract total unchanged); applied 28 Oct 2026 (`docs/DECISIONS.md`), do not re-run
 - `npm run people:from-notes [-- --apply]`: list people named in meeting attendees and training leads who are not in the people list, with
   proposed initials (dry run by default; apply only with the app closed)
 - `npm run tidy:reading-lists [-- --apply]`: bring reading list entries to reading entities (shorten linked ones, link typed citations that match exactly one reading); dry run by default, applied 2 Oct 2026; re-run after adding readings to Zotero
