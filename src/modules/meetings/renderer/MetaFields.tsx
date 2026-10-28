@@ -15,7 +15,6 @@ import { usedValueOptions } from '@renderer/components/picker-match'
 import { SkillsField } from '@renderer/components/SkillsField'
 import { orderNames } from '@shared/people'
 import { PeopleField } from '@renderer/components/PeopleField'
-import { MeetingTask } from './MeetingTask'
 import styles from './MetaFields.module.css'
 
 interface MetaFieldsProps {
@@ -124,15 +123,6 @@ export function MetaFields({
         <output className={styles.calc} aria-labelledby="meeting-duration-label">
           {duration === null ? '—' : formatDuration(duration)}
         </output>
-      </div>
-      <div className={styles.field}>
-        <span className={styles.label}>Task</span>
-        <MeetingTask
-          workspace={workspace}
-          series={meta.series}
-          task={meta.task}
-          onChange={(task) => onChange({ task })}
-        />
       </div>
       <div className={styles.field}>
         <span className={styles.label} id="meeting-type-label">
