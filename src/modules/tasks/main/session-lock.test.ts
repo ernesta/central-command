@@ -36,44 +36,59 @@ const series = (): { parent: string; sub: string } => {
   return { parent: parent.uid, sub: sub.uid }
 }
 
-describe('a session task', () => {
+const studyTask = (): string => {
+  const parent = store.create({ workspace: 'research', title: 'Python self-study', list: 'Training' })
+  return store.create({
+    workspace: 'research',
+    title: 'Day 1',
+    parentUid: parent.uid,
+    ownKind: 'self-study',
+    due: '2026-10-10'
+  }).uid
+}
+
+describe('a self-study task', () => {
   it('refuses the changes that are the note’s', () => {
-    const { sub } = series()
+    const sub = studyTask()
     for (const changes of [
       { title: 'Other' },
       { due: '2026-11-01' },
       { due: null },
       { recurrence: { every: 1, unit: 'week' as const } }
     ]) {
-      expect(() => guardUpdate(db, store, sub, changes)).toThrow(/kept by its meeting/)
+      expect(() => guardUpdate(db, store, sub, changes)).toThrow(/kept by its training/)
     }
     expect(() => guardStatus(db, store, sub)).toThrow()
     expect(() => guardDelete(db, store, sub)).toThrow()
   })
   it('lets priority, tags and notes change, and a value that does not change', () => {
-    const { sub } = series()
+    const sub = studyTask()
     expect(() =>
       guardUpdate(db, store, sub, {
         priority: 'high',
         tags: ['x'],
         description: 'notes',
-        title: 'Supervision · Oct 10, 2026'
+        title: 'Day 1'
       })
     ).not.toThrow()
   })
-  it('is still dated and closed by the sweep', () => {
+  it('drops out of a bulk date change', () => {
+    const sub = studyTask()
+    const free = store.create({ workspace: 'research', title: 'Free', list: 'Reading' })
+    expect(unlockedForDue(db, store, [sub, free.uid])).toEqual([free.uid])
+  })
+})
+
+describe('a meeting’s own task', () => {
+  it('has no lock of its own (the user never sees it), and the sweep still dates and closes it', () => {
     const { sub } = series()
+    expect(() => guardUpdate(db, store, sub, { title: 'Other' })).not.toThrow()
     db.prepare(
       `INSERT INTO meetings (workspace, meeting_id, task, series, date, end_time, content_hash)
        VALUES ('research', 'm1', ?, 'Supervision', '2026-10-12', '11:00', 'h')`
     ).run(sub)
     settleSessionTasks(db, store, { date: '2026-10-17', time: '10:00' })
     expect(store.get(sub)).toMatchObject({ status: 'done', due: '2026-10-12' })
-  })
-  it('drops out of a bulk date change', () => {
-    const { sub } = series()
-    const free = store.create({ workspace: 'research', title: 'Free', list: 'Reading' })
-    expect(unlockedForDue(db, store, [sub, free.uid])).toEqual([free.uid])
   })
 })
 
@@ -158,42 +173,54 @@ describe('a task with no session under it', () => {
   })
 })
 
+const insertTraining = (id: string, task: string, selfStudy: string, series: string): void => {
+  db.prepare(
+    `INSERT INTO training (workspace, entry_id, task, self_study_task, series, date, title, skills, leads, summary, excerpt, has_notes, problems, content_hash)
+     VALUES ('research', ?, ?, ?, ?, '2026-10-12', 'Plotly', '[]', '[]', '', '', 0, '[]', 'h')`
+  ).run(id, task, selfStudy, series)
+}
+
 describe('sessionSource of a series task', () => {
-  it('names a session under it and the series they belong to', () => {
-    const { parent, sub } = series()
-    db.prepare(
-      `INSERT INTO meetings (workspace, meeting_id, task, series, date, content_hash)
-       VALUES ('research', 'm1', ?, 'Supervision', '2026-10-12', 'h')`
-    ).run(sub)
-    expect(sessionSource(db, parent)).toMatchObject({
-      kind: 'meeting',
-      id: 'm1',
-      series: 'Supervision'
+  it('names a self-study task under it and the series their training belongs to', () => {
+    const parent = store.create({ workspace: 'research', title: 'Python self-study', list: 'Training' })
+    const kid = store.create({
+      workspace: 'research',
+      title: 'Day 1',
+      parentUid: parent.uid,
+      ownKind: 'self-study'
+    })
+    insertTraining('t1', 'a', kid.uid, 'Python')
+    expect(sessionSource(db, parent.uid)).toMatchObject({
+      kind: 'training',
+      id: 't1',
+      series: 'Python'
     })
   })
   it('is null for a task with nothing under it', () => {
     const t = store.create({ workspace: 'research', title: 'Plain', list: 'Reading' })
     expect(sessionSource(db, t.uid)).toBeNull()
   })
+  it('is null for a series task over meeting tasks (they are never shown)', () => {
+    const { parent, sub } = series()
+    db.prepare(
+      `INSERT INTO meetings (workspace, meeting_id, task, series, date, content_hash)
+       VALUES ('research', 'm1', ?, 'Supervision', '2026-10-12', 'h')`
+    ).run(sub)
+    expect(sessionSource(db, parent)).toBeNull()
+  })
 })
 
 describe('sessionSource', () => {
-  it('finds the meeting and the training that name a task', () => {
+  it('finds the training that names a self-study task, and nothing for a meeting’s or training’s own task', () => {
     const { sub } = series()
     db.prepare(
       `INSERT INTO meetings (workspace, meeting_id, task, series, date, content_hash)
        VALUES ('research', 'm1', ?, 'Supervision', '2026-10-12', 'h')`
     ).run(sub)
-    expect(sessionSource(db, sub)).toMatchObject({
-      kind: 'meeting',
-      id: 'm1',
-      title: 'Supervision'
-    })
-    db.prepare(
-      `INSERT INTO training (workspace, entry_id, task, self_study_task, date, title, skills, leads, summary, excerpt, has_notes, problems, content_hash)
-       VALUES ('research', 't1', 'a', 'b', '2026-10-12', 'Plotly', '[]', '[]', '', '', 0, '[]', 'h')`
-    ).run()
+    expect(sessionSource(db, sub)).toBeNull()
+    insertTraining('t1', 'a', 'b', '')
     expect(sessionSource(db, 'b')).toMatchObject({ kind: 'training', id: 't1', title: 'Plotly' })
+    expect(sessionSource(db, 'a')).toBeNull()
     expect(sessionSource(db, 'nope')).toBeNull()
   })
 })

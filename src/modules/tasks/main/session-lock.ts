@@ -16,13 +16,13 @@ export function lockOfUid(db: Database, store: TasksStore, uid: string): Session
 }
 
 const WHY: Record<SessionLock, string> = {
-  session: 'This task is kept by its meeting or training. Change it in the note.',
+  session: 'This task is kept by its training. Change it in the note.',
   series:
     'This task holds meeting or training tasks. Its date and status follow them; its title, list and repeat are fixed.'
 }
 
 /**
- * Refuses a change by the user to what the note owns (a session task's title, list, due date, status and repeat; a series task's
+ * Refuses a change by the user to what the note owns (a self-study task's title, list, due date, status and repeat; a series task's
  * title, list, repeat, and a due date). Only the user's IPC calls go through this: the sweep and the notes' own sync call the store.
  */
 export function guardUpdate(

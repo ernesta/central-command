@@ -14,9 +14,9 @@ export interface SessionSource {
 }
 
 /**
- * How the app holds a task fixed (the user's rule, 23 Oct 2026). `session`: a task the app made for a meeting or training (its
- * `ownKind` is set): its note says when it happened, so title, list, due date, status, repeat and delete are the note's and the
- * sweep's. `series`: the top-level task such sessions sit under: title, list, repeat, delete, due date and status are locked too
+ * How the app holds a task fixed (the user's rule, 23 Oct 2026). `session`: a self-study task (`ownKind` `self-study`): its training
+ * says when it happened, so title, list, due date, status, repeat and delete are the note's and the sweep's. A meeting's or
+ * training's own task is never shown (28 Oct 2026), so no one can edit it and it has no lock of its own. `series`: the top-level task such sessions sit under: title, list, repeat, delete, due date and status are locked too
  * (revised 23 Oct 2026: its due date is the latest of its subtasks' and it is done once they all are, `seriesChanges`). Priority,
  * tags, notes and time stay free.
  */
@@ -24,14 +24,14 @@ export type SessionLock = 'session' | 'series'
 
 /** The lock a task is under, given its open subtasks (only a top-level task can be a series). Null for any other task. */
 export function sessionLock(task: Task, kids: readonly Task[]): SessionLock | null {
-  if (task.ownKind) return 'session'
+  if (task.ownKind === 'self-study') return 'session'
   if (!task.parentUid && kids.some((k) => k.ownKind)) return 'series'
   return null
 }
 
 /** The lock of `task` among `tasks` (a workspace's whole list). */
 export function sessionLockIn(task: Task, tasks: readonly Task[]): SessionLock | null {
-  if (task.ownKind) return 'session'
+  if (task.ownKind === 'self-study') return 'session'
   if (task.parentUid) return null
   return sessionLock(
     task,

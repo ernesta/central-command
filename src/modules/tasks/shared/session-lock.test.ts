@@ -14,10 +14,19 @@ const sub = task({ uid: 's', parentUid: 'p', ownKind: 'meeting', due: '2026-10-1
 const parent = task({ uid: 'p' })
 const plain = task({ uid: 'x' })
 
+const study = task({ uid: 'st', parentUid: 'p', ownKind: 'self-study', due: '2026-10-10' })
+
 describe('sessionLock', () => {
-  it('a task with an own kind is a session task', () => {
-    expect(sessionLock(sub, [])).toBe('session')
-    expect(sessionLockIn(sub, [sub, parent])).toBe('session')
+  it('a self-study task is a session task', () => {
+    expect(sessionLock(study, [])).toBe('session')
+    expect(sessionLockIn(study, [study, parent])).toBe('session')
+  })
+  it('a meeting’s or training’s own task has no lock of its own (it is never shown)', () => {
+    for (const ownKind of ['meeting', 'training'] as const) {
+      const own = task({ uid: 'o', parentUid: 'p', ownKind })
+      expect(sessionLock(own, [])).toBeNull()
+      expect(sessionLockIn(own, [own, parent])).toBeNull()
+    }
   })
   it('a top-level task with a session subtask is a series', () => {
     expect(sessionLock(parent, [sub])).toBe('series')
