@@ -4622,3 +4622,9 @@ A subtask shows no priority in the Tasks table (`isKid`; it keeps the one it sto
 ## Home: a subtask's late chip lines up with its parent's (28 Oct 2026, the user: the alignment is off, ugly)
 
 With no priority badge on a subtask (above), its "N days late" chip moved to the row's far right, out of line with the parent's chip, which sits left of the P2. A subtask row now keeps an empty `badgeGap` (44px, the badge's 30px minimum plus 7px padding each side) where the badge would be, so the chips share a right edge. Not driven in the app (lint, typecheck and Prettier pass).
+
+## Add a subtask with a button; highlights run edge to edge (28 Oct 2026, the user)
+
+- **Add subtask:** the add row's "Return" chip is a primary small **Add** button, like the Tasks page's add bar (Enter and Escape still work; disabled while the title is empty; `onMouseDown` is prevented so the field's blur does not close the row before the click). The field fills the row (`.addInput` is `display: flex`, no minimum width).
+- **Edge to edge:** a row's hover, selection and focus highlight runs from its container's edge to its edge wherever tasks are listed, as the Tasks table's always did. The subtasks card on the task page (`.wrapFlat`, `margin: 0 -20px`), Home's lists (`.list`, `-16px`) and Hours' day task list (`.list`, `-24px`) take back the container's side padding and give it to the rows (square corners, `padding-inline` raised by the same amount), so content stays where it was. The drag grip now sits inside the row's first cell (`left: 2px`), replacing "outside the highlight" (above), because the card's edge is now the highlight's edge.
+- **Not driven in the app** (lint, typecheck and tests pass). The Week card's expanded days share Hours' list and were not checked.
