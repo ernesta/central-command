@@ -663,7 +663,7 @@ function TaskRowView({
         )
       }}
     >
-      <td data-cell="status" className={drag ? styles.handleCell : undefined}>
+      <td data-cell="status" className={flat && isKid ? styles.handleCell : undefined}>
         {drag && (
           <span
             className={styles.handle}
@@ -941,13 +941,11 @@ function AddSubtaskRow({
       onKeyDown={onKeyDown}
       onClick={onStart}
     >
-      <td className={span === 6 ? undefined : styles.addPlusCell}>
-        <span className={styles.addPlus} aria-hidden>
-          <Plus size={14} strokeWidth={1.75} />
-        </span>
-      </td>
-      <td colSpan={span - 1}>
+      <td colSpan={span} className={span === 6 ? styles.addNested : styles.addFlat}>
         <span className={styles.addInput}>
+          <span className={styles.addPlus} aria-hidden>
+            <Plus size={14} strokeWidth={1.75} />
+          </span>
           <input
             ref={field}
             className={styles.addField}
