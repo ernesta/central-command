@@ -25,6 +25,15 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.ext {
+  display: flex;
+  flex: none;
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+}
+.titleLine:has(.title:hover) .ext {
+  color: var(--accent);
+}
 .read {
   composes: muted from '@renderer/components/Link.module.css';
   font-weight: 400;

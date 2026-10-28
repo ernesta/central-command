@@ -1,5 +1,6 @@
 import { Fragment, useState } from 'react'
 import { CutText } from '@renderer/components/CutText'
+import { ExternalIcon } from '@renderer/components/ExternalIcon'
 import { GroupRow } from '@renderer/components/GroupRow'
 import { Tooltip } from '@renderer/components/Tooltip'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
@@ -76,6 +77,9 @@ export function WatchTable({
                     </td>
                     <td>
                       <div className={styles.titleLine}>
+                        <span className={styles.ext}>
+                          <ExternalIcon />
+                        </span>
                         <Tooltip text={titleParts(item.title).name} whenCut>
                           <a
                             className={

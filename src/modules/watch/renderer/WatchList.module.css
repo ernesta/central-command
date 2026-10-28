@@ -12,10 +12,9 @@
   min-width: 0;
 }
 .title {
+  composes: link from '@renderer/components/Link.module.css';
   min-width: 0;
   overflow: hidden;
-  color: inherit;
-  text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -23,6 +22,15 @@
   content: '';
   position: absolute;
   inset: 0;
+}
+.ext {
+  display: flex;
+  flex: none;
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+}
+.row:hover .ext {
+  color: var(--accent);
 }
 .title:focus-visible {
   outline: none;

@@ -1,4 +1,5 @@
 import { CutText } from '@renderer/components/CutText'
+import { ExternalIcon } from '@renderer/components/ExternalIcon'
 import { Tooltip } from '@renderer/components/Tooltip'
 import landing from '@renderer/components/Landing.module.css'
 import { deadlineFor, foundLabel, titleParts, whenFor } from '../shared/rows'
@@ -28,6 +29,9 @@ export function WatchList({
           <div className={styles.row}>
             <span className={landing.date}>{foundLabel(item.firstSeenAt, today)}</span>
             <span className={styles.titleCell}>
+              <span className={styles.ext}>
+                <ExternalIcon />
+              </span>
               <Tooltip text={titleParts(item.title).name} whenCut>
                 <a
                   className={styles.title}

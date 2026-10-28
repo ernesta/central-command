@@ -1,6 +1,7 @@
-import { Link2, Plus, X } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@renderer/components/Button'
+import { ExternalIcon } from '@renderer/components/ExternalIcon'
 import { useUndoableRemoval } from '@renderer/components/useUndoableRemoval'
 import { isSafeLinkUrl, type PersonLink } from '@shared/people'
 import styles from './PersonLinks.module.css'
@@ -41,7 +42,7 @@ export function PersonLinks({
         {links.map((link) => (
           <span key={`${link.label}-${link.url}`} className={styles.pill}>
             <a className={styles.link} href={link.url} target="_blank" rel="noreferrer">
-              <Link2 size={13} strokeWidth={1.75} aria-hidden />
+              <ExternalIcon />
               {link.label}
             </a>
             <button
