@@ -3,7 +3,7 @@ import { DEFAULT_HOME_SETTINGS } from '@shared/home-settings'
 import type { WatchItem } from '../../watch/shared/types'
 import { digestLine, planNotifications, pruneSent } from './notifications'
 import { buildWidgetSnapshot } from './widget'
-import type { HomeSummary, HomeTask } from './types'
+import type { HomeSummary, HomeTask, HomeWorkspace } from './types'
 import { tasksIn } from './summary.testing'
 
 const on = {
@@ -23,7 +23,7 @@ const empty: HomeSummary = {
   watch: null,
   weather: null
 }
-const task = (uid: string, daysLate = 0): HomeTask => ({
+const task = (uid: string, daysLate = 0, workspace: HomeWorkspace = 'research'): HomeTask => ({
   uid,
   title: uid,
   parent: null,
@@ -32,13 +32,13 @@ const task = (uid: string, daysLate = 0): HomeTask => ({
   parentPriority: null,
   parentDue: null,
   study: false,
-  workspace: 'research',
+  workspace,
   list: 'Reading',
   due: '2026-10-15',
   priority: 'normal',
   status: 'todo',
   daysLate,
-  route: `/research/tasks/t/${uid}`
+  route: `/${workspace}/tasks/t/${uid}`
 })
 const meeting = (start: string | null): NonNullable<HomeSummary['meetings']['next']> => ({
   workspace: 'research',
@@ -89,8 +89,9 @@ describe('planNotifications', () => {
     expect(planNotifications(withDay, on, state, at('08:29'))).toEqual([])
     const [d] = planNotifications(withDay, on, state, at('08:30'))
     expect(d).toMatchObject({
-      key: 'digest:2026-10-15',
-      title: 'Today',
+      key: 'digest:research:2026-10-15',
+      title: 'Today · Research',
+      route: '/research',
       body: '2 tasks due, 1 overdue · Supervision at 14:00'
     })
     expect(
@@ -232,10 +233,10 @@ describe('planNotifications', () => {
 
 describe('digestLine and pruneSent', () => {
   it('speaks of one task in the singular and says nothing for nothing', () => {
-    expect(digestLine({ ...empty, tasks: tasksIn({ research: { todayTotal: 1 } }) })).toBe(
-      '1 task due'
-    )
-    expect(digestLine(empty)).toBe('')
+    expect(
+      digestLine({ ...empty, tasks: tasksIn({ research: { todayTotal: 1 } }) }, 'research')
+    ).toBe('1 task due')
+    expect(digestLine(empty, 'research')).toBe('')
   })
 
   it('forgets keys older than a month', () => {
@@ -296,20 +297,103 @@ describe('buildWidgetSnapshot', () => {
   })
 })
 
-describe('Life in the summary (stage 1: the digest and the widget file still count Research and Work only)', () => {
-  const lifeBusy: HomeSummary = {
+describe('Life in the notifications and the widget file', () => {
+  const busy: HomeSummary = {
     ...empty,
     tasks: tasksIn({
-      research: { todayTotal: 1 },
-      life: { overdue: [task('l', 4)], today: [task('m')], overdueTotal: 7, todayTotal: 9 }
-    })
+      research: { today: [task('r')], todayTotal: 1 },
+      work: { overdue: [task('w', 2, 'work')], overdueTotal: 2 },
+      life: {
+        overdue: [task('l', 4, 'life')],
+        today: [task('m', 0, 'life')],
+        overdueTotal: 7,
+        todayTotal: 9
+      }
+    }),
+    meetings: { next: meeting('14:00'), openTodos: 0 }
   }
-  it('leaves Life’s tasks out of the digest line', () => {
-    expect(digestLine(lifeBusy)).toBe('1 task due')
+
+  it('each workspace’s digest line counts only its own tasks', () => {
+    expect(digestLine(busy, 'research')).toBe('1 task due · Supervision at 14:00')
+    expect(digestLine(busy, 'work')).toBe('2 overdue')
+    expect(digestLine(busy, 'life')).toBe('9 tasks due, 7 overdue')
   })
-  it('leaves Life’s tasks out of the widget file', () => {
-    const snap = buildWidgetSnapshot(lifeBusy)
-    expect(snap.taskCounts).toEqual({ overdue: 0, today: 1 })
-    expect(snap.tasks.map((t) => t.title)).toEqual([])
+
+  it('sends one digest per workspace, each opening its own page, and none for an empty one', () => {
+    const planned = planNotifications(busy, { ...on, meetingMinutesBefore: 0 }, state, at('09:00'))
+    expect(planned.map((n) => [n.key, n.title, n.body, n.route])).toEqual([
+      [
+        'digest:research:2026-10-15',
+        'Today · Research',
+        '1 task due · Supervision at 14:00',
+        '/research'
+      ],
+      ['digest:work:2026-10-15', 'Today · Work', '2 overdue', '/work'],
+      ['digest:life:2026-10-15', 'Today · Life', '9 tasks due, 7 overdue', '/life']
+    ])
+    const onlyLife: HomeSummary = { ...empty, tasks: tasksIn({ life: { todayTotal: 1 } }) }
+    expect(planNotifications(onlyLife, on, state, at('09:00')).map((n) => n.key)).toEqual([
+      'digest:life:2026-10-15'
+    ])
+  })
+
+  it('sending one workspace’s digest does not send the others again, and the old single key covers Research', () => {
+    const sent = new Set(['digest:life:2026-10-15'])
+    expect(
+      planNotifications(
+        busy,
+        { ...on, meetingMinutesBefore: 0 },
+        { ...state, sent },
+        at('09:00')
+      ).map((n) => n.key)
+    ).toEqual(['digest:research:2026-10-15', 'digest:work:2026-10-15'])
+    const legacy = new Set(['digest:2026-10-15'])
+    expect(
+      planNotifications(
+        busy,
+        { ...on, meetingMinutesBefore: 0 },
+        { ...state, sent: legacy },
+        at('09:00')
+      ).map((n) => n.key)
+    ).toEqual(['digest:work:2026-10-15', 'digest:life:2026-10-15'])
+  })
+
+  it('a Life timer’s reminder opens Life’s Hours, a Research timer’s Research’s', () => {
+    const timer = (workspace: 'life' | 'research'): HomeSummary => ({
+      ...empty,
+      timer: { workspace, label: 'Piano', date: '2026-10-15', time: '06:00', minutes: 600 }
+    })
+    const route = (s: HomeSummary): string | undefined =>
+      planNotifications(s, { ...on, digestAt: '', timerRunningHours: 8 }, state, at('16:00'))[0]
+        ?.route
+    expect(route(timer('life'))).toBe('/life/hours')
+    expect(route(timer('research'))).toBe('/research/hours')
+  })
+
+  it('the widget file carries every workspace’s tasks, counts and hours', () => {
+    const lifeHours = {
+      label: 'This week' as const,
+      minutes: 130,
+      aimMinutes: 0,
+      todayMinutes: 20,
+      clients: []
+    }
+    const snap = buildWidgetSnapshot({ ...busy, hours: { ...busy.hours, life: lifeHours } })
+    expect(snap.tasks.map((t) => [t.title, t.workspace, t.overdue])).toEqual(
+      [
+        ['l', 'life', true],
+        ['w', 'work', true],
+        ['m', 'life', false],
+        ['r', 'research', false]
+      ].slice(0, 5)
+    )
+    expect(snap.taskCounts).toEqual({ overdue: 9, today: 10 })
+    expect(snap.taskCountsByWorkspace).toEqual({
+      research: { overdue: 0, today: 1 },
+      work: { overdue: 2, today: 0 },
+      life: { overdue: 7, today: 9 }
+    })
+    expect(snap.life).toEqual(lifeHours)
+    expect(snap.version).toBe(1)
   })
 })

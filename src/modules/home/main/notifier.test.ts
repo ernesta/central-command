@@ -62,7 +62,7 @@ describe('Notifier', () => {
     expect(n.tick()).toHaveLength(1)
     expect(n.tick()).toEqual([])
     expect(shown).toHaveLength(1)
-    expect(file.value.sent).toEqual({ 'digest:2026-10-15': '2026-10-15' })
+    expect(file.value.sent).toEqual({ 'digest:research:2026-10-15': '2026-10-15' })
     // A new Notifier over the same file (the app restarted) does not repeat it.
     const again = new Notifier({
       summary: () => summary,

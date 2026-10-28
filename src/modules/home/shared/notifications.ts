@@ -1,6 +1,5 @@
 import type { NotificationSettings } from '@shared/home-settings'
-import { COUNTED_WORKSPACES, taskTotals } from './summary'
-import type { HomeSummary } from './types'
+import { HOME_WORKSPACES, type HomeSummary, type HomeWorkspace } from './types'
 
 export interface PlannedNotification {
   /** What makes it the same notification next time: once sent, a key is never sent again. */
@@ -33,16 +32,22 @@ const minutesOf = (t: string): number => {
 
 const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`
 
-/** "3 tasks due, 1 overdue · Supervision at 14:00": what the day holds, in a line. Empty when it holds nothing. */
-export function digestLine(summary: HomeSummary): string {
+const WORKSPACE_NAMES: Record<HomeWorkspace, string> = {
+  research: 'Research',
+  work: 'Work',
+  life: 'Life'
+}
+
+/** "3 tasks due, 1 overdue · Supervision at 14:00": what the day holds in one workspace, in a line. Empty when it holds nothing. */
+export function digestLine(summary: HomeSummary, workspace: HomeWorkspace): string {
   const parts: string[] = []
-  const total = taskTotals(summary, COUNTED_WORKSPACES)
-  if (total.today > 0) parts.push(`${plural(total.today, 'task')} due`)
-  if (total.overdue > 0) parts.push(`${total.overdue} overdue`)
+  const { todayTotal, overdueTotal } = summary.tasks[workspace]
+  if (todayTotal > 0) parts.push(`${plural(todayTotal, 'task')} due`)
+  if (overdueTotal > 0) parts.push(`${overdueTotal} overdue`)
   const text = parts.join(', ')
   const next = summary.meetings.next
   const meeting =
-    next && next.date === summary.today
+    next && next.workspace === workspace && next.date === summary.today
       ? `${next.series || 'Meeting'}${next.start ? ` at ${next.start}` : ''}`
       : ''
   return [text, meeting].filter(Boolean).join(' · ')
@@ -67,8 +72,19 @@ export function planNotifications(
   const nowMin = minutesOf(now.time)
 
   if (settings.enabled && settings.digestAt && nowMin >= minutesOf(settings.digestAt)) {
-    const line = digestLine(summary)
-    if (line) add({ key: `digest:${now.date}`, title: 'Today', body: line, route: '/research' })
+    // One digest per workspace, each saying only its own tasks and opening its own page.
+    for (const workspace of HOME_WORKSPACES) {
+      const line = digestLine(summary, workspace)
+      // The key of the one digest before there was one per workspace (Research's, then) still counts as sent.
+      if (workspace === 'research' && state.sent.has(`digest:${now.date}`)) continue
+      if (line)
+        add({
+          key: `digest:${workspace}:${now.date}`,
+          title: `Today · ${WORKSPACE_NAMES[workspace]}`,
+          body: line,
+          route: `/${workspace}`
+        })
+    }
   }
 
   const next = summary.meetings.next
@@ -103,7 +119,7 @@ export function planNotifications(
       key: `timer:${t.date}:${t.time}`,
       title: 'Timer still running',
       body: `${t.label} has run for ${Math.floor(t.minutes / 60)}h ${String(t.minutes % 60).padStart(2, '0')}m`,
-      route: '/research/hours'
+      route: `/${t.workspace}/hours`
     })
   }
 

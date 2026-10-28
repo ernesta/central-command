@@ -172,23 +172,6 @@ export function eventWorkspace(e: HomeEvent): HomeWorkspace | null {
   return HOME_WORKSPACES.find((w) => e.route.startsWith(`/${w}/`)) ?? null
 }
 
-/** The workspaces whose tasks the digest and the widget file count (stage 1 of `docs/LIFE_HOME_PLAN.md`: Life joins them in stage 3). */
-export const COUNTED_WORKSPACES: readonly HomeWorkspace[] = ['research', 'work']
-
-/** The whole counts of some workspaces' tasks, added up. */
-export function taskTotals(
-  summary: HomeSummary,
-  workspaces: readonly HomeWorkspace[]
-): { overdue: number; today: number } {
-  let overdue = 0
-  let today = 0
-  for (const w of workspaces) {
-    overdue += summary.tasks[w].overdueTotal
-    today += summary.tasks[w].todayTotal
-  }
-  return { overdue, today }
-}
-
 /** One workspace's lists: the most urgent first, each cut to the shown count. */
 function tasksOf(dated: HomeTask[], workspace: HomeWorkspace, today: string): HomeTasks {
   const mine = dated.filter((t) => t.workspace === workspace)
