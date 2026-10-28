@@ -1,5 +1,5 @@
 import { Fragment } from 'react'
-import { TextAlignStart } from 'lucide-react'
+import { FileText, TextAlignStart } from 'lucide-react'
 import { Link, useNavigate } from 'react-router'
 import { CutText } from '@renderer/components/CutText'
 import { InitialsChips } from '@renderer/components/InitialsChips'
@@ -106,6 +106,13 @@ export function MeetingsTable({
                       <div className={styles.line}>
                         <CutText>{row.series || '—'}</CutText>
                         {isNow(row, today, clockNow()) && <Badge>Now</Badge>}
+                        {row.hasNotes && (
+                          <Tooltip text="Has notes">
+                            <span className={styles.mark}>
+                              <FileText size={13} strokeWidth={1.75} aria-label="Has notes" />
+                            </span>
+                          </Tooltip>
+                        )}
                         {hasSummary(row) && (
                           <Tooltip text="Summary">
                             <span className={styles.mark}>
