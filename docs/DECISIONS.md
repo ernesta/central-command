@@ -4789,3 +4789,29 @@ Contracts overlap, and a meeting has no contract of its own, so Work's Meetings 
 **Work's "All meetings" has no Export button for now (the user's call).** The PDF log goes by date only and would carry the other contract's meetings; the main-process export is unchanged, the button is hidden when `workspace === 'work'`. Bring it back once the export follows the clients (`exportPdf` would need the contract's clients and the task lists in the main process).
 
 Tests: `ofContractClients` in `hours.test.ts`. Not driven in the app.
+
+## Clickable things: one logic (28 Oct 2026, `docs/CLICKABLES_PLAN.md`, the user's request; all six stages in one run)
+
+The user asked for an audit of how "something you can click" looks and behaves, then for one set of rules. The audit drove the production build on a scratch copy of the library (62 clickable things, light and dark, idle / hover / focus); the user agreed the rules and both before/after mocks. One commit per stage.
+
+| Kind | At rest | On hover | Where it lives |
+| --- | --- | --- | --- |
+| Text link (a title or name that goes somewhere, "See all") | ink | `--accent`, never underlined | `components/Link.module.css` `.link` |
+| Read link (a Read Watch item) | `--text-muted` | `--accent` | `.muted` |
+| External link | as above, with `ArrowUpRight` (13px, muted) before the text | the arrow follows the text | `.external`, `ExternalIcon` |
+| Surface (row, card, button, icon button, tab, segment, menu item) | as it was | `--hover-tint`; a primary button darkens (`--accent-hover`) | each component |
+| Selected state | `--selected-bg` | not changed by hover | `Segmented .active`, `TaskMenu` checked, `Picker` selected |
+| Keyboard highlight of a list (`EntityPicker`, `TodoMenu` `.active`) | | `--hover-tint`, never blue | |
+| Chip "+ add" / "×" | dashed `--border-strong` outline, muted / bare mark | border and text `--accent` / `--hover-tint` fill, ink | `components/Chip.module.css` |
+| Text edited in place (page titles, Tasks table title, subtask title, Hours' rename button, details fields) | 1px transparent border | `--hover-tint` fill and `--border-soft` border, no shift, no underline; details fields keep their chevron and pointer cursor | `components/EditInPlace.module.css` |
+| Focus | | one 2px `--accent` ring (`--focus-ring`, `--focus-offset` in `tokens.css`, used by `base.css`); a table row draws it inside its cells (`.rowFocus`), a card with a stretched link rings the card (`.cardFocus`), `.insetFocus` where an ancestor clips | `components/Focus.module.css` |
+
+- **Colour at rest changed only** for "See all", the person links and the landing's "See all trainings →" (accent to ink; the landing one had no `text-decoration: none` and was browser-underlined).
+- **Copies removed:** ten text-link copies, four table-row focus blocks, eight card focus blocks (`*Card.module.css` and the Landing card now compose `cardFocus`), six chip "+ add"/"×" looks, four "edit in place" looks. `cursor: pointer` on a table row comes with `.rowFocus`.
+- **Blue as hover is gone:** `StatusButton`, `TasksTable .iconButton`, `TagsField` ×, `TaskMenu` item hover use the tint (`TaskMenu`'s checked item stays blue).
+- **Found by driving (not in the audit):** Hours' running row's round button did not darken on hover (the live rule won the tie), now `--accent-hover`; Hours' delete icon had no hover at all, now a tint (its spread, so the times keep their place). Hours' day rows, the Segmented in Settings (Weather) and Mod-K's result row already followed the rules (tint, pointer cursor); the audit's "cursor auto, no hover" for Mod-K did not reproduce.
+- **Left as they are on purpose:** `MeetingTask`'s underlined buttons, the live editor (below), `WeekCard`'s `.day` row (a `tr` whose cursor depends on `:has(.dayButton)`).
+- **The live editor (reported, not changed):** `.live-link` is `--accent` and underlined at rest (and stays so on hover; pointer cursor only while Cmd is held, `data-open-links`); `.live-chip` is `--selected-bg` at rest (blue, though not a selected state), a pale `--panel` fill on hover and a pointer cursor only with Cmd held; the checkbox has a pointer cursor and no hover change; the editor card's focus ring (`LiveEditor.module.css:10`) is the same 2px accent written literally. The user decides whether these follow the rules (an underline at rest is the usual look of a link inside prose; the chip is blue at rest).
+- **Guard:** `components/clickables.test.ts` reads every stylesheet: no underline in a `:hover` rule (allow-list: `MeetingTask`, `LiveEditor`), no `--selected-bg` in a `:hover` rule, `EntityPicker`/`TodoMenu` `.active` use the tint, no `cursor: pointer` on a `tr` or `.row` outside `Focus.module.css`, the row ring and the card ring written once, no literal `outline: 2px solid var(--accent)` outside the editor. Mutation-checked: each of the seven rules fails when its rule is broken (an underline hover, a blue hover, a `.row` cursor, a card ring copy, a literal ring, a row ring copy, a blue `.active`).
+- **Not driven:** Hours' rename button (only on rows without a task link, none in the scratch Research library; it takes the same `EditInPlace` class as the others), `TaskMenu` item hover (the menu did not open from the script), dev mode of stages 1 and 3 beyond the Watch lists and the person page.
+- **A harness lesson:** a dev-mode script that kills only `npx` leaves Electron and Vite behind on the debugging port, and the next run connects to the stale window and sees old CSS. Kill the group and `pkill -f remote-debugging-port=9333` before and after.
