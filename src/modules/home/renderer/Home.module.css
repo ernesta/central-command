@@ -177,3 +177,9 @@
 .kid.end::after {
   display: none;
 }
+
+/* Where a subtask's priority badge would be (30px minimum plus its 7px padding each side), so the late chips line up. */
+.badgeGap {
+  flex: none;
+  width: 44px;
+}

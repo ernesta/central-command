@@ -122,8 +122,12 @@ function TaskRow({
       trailing={
         <>
           <LateChip days={task.daysLate} />
-          {/* A subtask shows no priority, as in the Tasks table. */}
-          {task.parent === null && <PriorityBadge priority={task.priority} />}
+          {/* A subtask shows no priority, as in the Tasks table; its space stays so the late chips line up. */}
+          {task.parent === null ? (
+            <PriorityBadge priority={task.priority} />
+          ) : (
+            <span className={styles.badgeGap} aria-hidden />
+          )}
         </>
       }
     />
