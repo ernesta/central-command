@@ -1,5 +1,4 @@
 import { formatHours } from '@shared/tracking/format'
-import { HoursLine } from '../../meetings/renderer/MeetingHoursNote'
 import { TaskTimeActions } from '../../tasks/renderer/TaskTimeActions'
 import { todayIso } from '../../tasks/renderer/tasks-paths'
 import { useTaskTime } from '../../tasks/renderer/useTaskTime'
@@ -56,9 +55,6 @@ export function TrainingHours({
           clientFor={time.clientFor}
           ensure={ensure}
         />
-      </div>
-      <div className={styles.note}>
-        <HoursLine meta={{ ...meta, task: uid ?? '' }} />
       </div>
     </>
   )

@@ -309,7 +309,6 @@ function EntryView({
         id={currentId}
         meta={meta}
         kind="training"
-        show="clashes"
         renamedFrom={names}
       />
 

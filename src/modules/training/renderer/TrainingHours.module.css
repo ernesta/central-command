@@ -16,13 +16,6 @@
   justify-items: end;
   gap: 8px;
 }
-/* An overlap or a missing time gets a line of its own under the card's row, and takes no room when there is none. */
-.note {
-  flex-basis: 100%;
-}
-.note:empty {
-  display: none;
-}
 .actions > div:first-child {
   margin-top: 0;
 }
