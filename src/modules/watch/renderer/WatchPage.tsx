@@ -13,7 +13,7 @@ import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { KIND_NOUN, SHOWN_PER_SECTION, sectionsOf } from '../shared/rows'
 import type { ShownKind } from '../shared/types'
-import { todayIso, watchListRoute } from './watch-paths'
+import { todayIso, useWatchWorkspace, watchListRoute } from './watch-paths'
 import { useWatchItems } from './useWatchItems'
 import { useWatchSources } from './useWatchSources'
 import { WatchList } from './WatchList'
@@ -24,7 +24,8 @@ const SETTINGS_WATCH = { settingsTab: 'watch' }
 /** The Watch page: what the places the user watches have announced, saved items first, then trainings and conferences. */
 export function WatchPage(): React.JSX.Element {
   const { items, ...actions } = useWatchItems()
-  const { sources } = useWatchSources()
+  const workspace = useWatchWorkspace()
+  const { sources } = useWatchSources(workspace)
   const [checking, setChecking] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const today = todayIso()
@@ -34,7 +35,7 @@ export function WatchPage(): React.JSX.Element {
     setChecking(true)
     setError(null)
     try {
-      await window.api.watch.checkNow()
+      await window.api.watch.checkNow(undefined, workspace)
     } catch (e) {
       setError(`Couldn’t check: ${ipcErrorMessage(e)}`)
     } finally {
@@ -47,7 +48,7 @@ export function WatchPage(): React.JSX.Element {
       id={`watch-${kind}`}
       label={KIND_NOUN[kind].many}
       aside={
-        <SeeAllLink to={watchListRoute(kind)}>
+        <SeeAllLink to={watchListRoute(kind, workspace)}>
           See all {KIND_NOUN[kind].many.toLowerCase()}
           <ArrowRight size={14} strokeWidth={1.75} aria-hidden />
         </SeeAllLink>

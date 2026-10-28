@@ -6,8 +6,14 @@ import {
   type ShownKind,
   type WatchItem,
   type WatchKind,
-  type WatchSource
+  type WatchSource,
+  type WatchWorkspace
 } from './types'
+
+export const WORKSPACE_LABEL: Record<WatchWorkspace, string> = {
+  research: 'Research',
+  life: 'Life'
+}
 
 export const KIND_NOUN: Record<ShownKind, { one: string; many: string }> = {
   training: { one: 'Training', many: 'Trainings' },

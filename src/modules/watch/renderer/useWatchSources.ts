@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react'
-import type { WatchSource } from '../shared/types'
+import type { WatchSource, WatchWorkspace } from '../shared/types'
 
-/** Watch's sources (null until read), read again after every check or change. */
-export function useWatchSources(): { sources: WatchSource[] | null; reload: () => void } {
+/** Watch's sources (null until read; one workspace's, or all of them), read again after every check or change. */
+export function useWatchSources(workspace?: WatchWorkspace): {
+  sources: WatchSource[] | null
+  reload: () => void
+} {
   const [sources, setSources] = useState<WatchSource[] | null>(null)
   const [tick, setTick] = useState(0)
 
   useEffect(() => {
     let cancelled = false
     void window.api.watch.sources
-      .list()
+      .list(workspace)
       .then((next) => {
         if (!cancelled) setSources(next)
       })
@@ -17,7 +20,7 @@ export function useWatchSources(): { sources: WatchSource[] | null; reload: () =
     return () => {
       cancelled = true
     }
-  }, [tick])
+  }, [tick, workspace])
 
   useEffect(() => window.api.watch.onChanged(() => setTick((n) => n + 1)), [])
 

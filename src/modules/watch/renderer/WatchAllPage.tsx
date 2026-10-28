@@ -17,7 +17,7 @@ import {
 } from '../shared/query'
 import { KIND_NOUN } from '../shared/rows'
 import type { ShownKind } from '../shared/types'
-import { todayIso } from './watch-paths'
+import { todayIso, useWatchWorkspace } from './watch-paths'
 import { useWatchItems } from './useWatchItems'
 import { WatchTable } from './WatchTable'
 import styles from './WatchAllPage.module.css'
@@ -25,9 +25,13 @@ import styles from './WatchAllPage.module.css'
 /** Every item of one kind (See all trainings, See all conferences): search, source and state filters, "New" above "Earlier". */
 export function WatchAllPage({ kind }: { kind: ShownKind }): React.JSX.Element {
   const noun = KIND_NOUN[kind].many.toLowerCase()
+  const workspace = useWatchWorkspace()
   const { items, ...actions } = useWatchItems({ kind, limit: 1000 })
-  // Each kind remembers its own search and filters.
-  const { value: saved, update: setQuery } = useModuleState(`watch-${kind}`, normaliseWatchQuery)
+  // Each workspace's kind remembers its own search and filters (Research's keep the key they had).
+  const { value: saved, update: setQuery } = useModuleState(
+    workspace === 'research' ? `watch-${kind}` : `watch-${workspace}-${kind}`,
+    normaliseWatchQuery
+  )
   const all = items ?? []
   const query = items === null ? saved : reconcileWatchQuery(saved, all)
   const visible = queryItems(all, query)

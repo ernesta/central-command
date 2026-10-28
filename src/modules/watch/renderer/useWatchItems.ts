@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { showToast } from '@renderer/components/toast-store'
 import type { WatchItem, WatchItemsQuery, WatchState } from '../shared/types'
+import { useWatchWorkspace } from './watch-paths'
 
 export interface WatchItems {
   /** Null until the first read. */
@@ -15,12 +16,13 @@ export interface WatchItems {
   open: (item: WatchItem) => void
 }
 
-/** Items from Watch (all but the dismissed by default), read again whenever a check or a click changes them. */
+/** Items from this workspace's Watch (all but the dismissed by default), read again whenever a check or a click changes them. */
 export function useWatchItems(
   query: WatchItemsQuery = { state: 'undismissed', limit: 1000 }
 ): WatchItems {
+  const workspace = useWatchWorkspace()
   const [items, setItems] = useState<WatchItem[] | null>(null)
-  const key = JSON.stringify(query)
+  const key = JSON.stringify({ ...query, workspace })
 
   useEffect(() => {
     let cancelled = false

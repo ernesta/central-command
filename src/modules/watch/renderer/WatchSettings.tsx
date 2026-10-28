@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
 import { CutText } from '@renderer/components/CutText'
 import { Tooltip } from '@renderer/components/Tooltip'
-import { KIND_LABEL, checkedLabel } from '../shared/rows'
+import { KIND_LABEL, WORKSPACE_LABEL, checkedLabel } from '../shared/rows'
 import type { WatchItem } from '../shared/types'
 import { SourceDialog } from './SourceDialog'
 import { todayIso } from './watch-paths'
@@ -12,7 +12,7 @@ import styles from './WatchSettings.module.css'
 
 type Dialogue = { kind: 'add' } | { kind: 'edit'; id: number } | null
 
-/** Settings → Watch: the sources (a plain table, a row opens its dialog). */
+/** Settings → Watch: the sources of every workspace (a plain table, a row opens its dialog). */
 export function WatchSettings(): React.JSX.Element {
   const { sources, reload } = useWatchSources()
   const [dialog, setDialog] = useState<Dialogue>(null)
@@ -62,11 +62,12 @@ export function WatchSettings(): React.JSX.Element {
               <colgroup>
                 <col />
                 <col style={{ width: 110 }} />
+                <col style={{ width: 110 }} />
                 <col style={{ width: 170 }} />
               </colgroup>
               <thead>
                 <tr>
-                  {['Source', 'Kind', 'Last checked'].map((h) => (
+                  {['Source', 'Workspace', 'Kind', 'Last checked'].map((h) => (
                     <th key={h} className={styles.th} scope="col">
                       {h}
                     </th>
@@ -95,6 +96,7 @@ export function WatchSettings(): React.JSX.Element {
                         </button>
                         <CutText className={styles.address}>{s.url}</CutText>
                       </td>
+                      <td className={styles.muted}>{WORKSPACE_LABEL[s.workspace]}</td>
                       <td className={styles.muted}>{KIND_LABEL[s.kind]}</td>
                       <td className={checked.failing ? styles.failing : styles.muted}>
                         {checked.failing && s.lastError ? (

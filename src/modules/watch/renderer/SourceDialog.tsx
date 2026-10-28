@@ -4,8 +4,15 @@ import { Dialog } from '@renderer/components/Dialog'
 import { Input } from '@renderer/components/Input'
 import { Select, type SelectOption } from '@renderer/components/Select'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
-import { KIND_LABEL } from '../shared/rows'
-import { guessMethod, shownKind, type WatchKind, type WatchSource } from '../shared/types'
+import { KIND_LABEL, WORKSPACE_LABEL } from '../shared/rows'
+import {
+  WATCH_WORKSPACES,
+  guessMethod,
+  shownKind,
+  type WatchKind,
+  type WatchSource,
+  type WatchWorkspace
+} from '../shared/types'
 import styles from './WatchSettings.module.css'
 
 const SHOWN: WatchKind[] = ['training', 'conference']
@@ -39,6 +46,7 @@ export function SourceDialog({
         : source.kind
       : 'training'
   )
+  const [workspace, setWorkspace] = useState<WatchWorkspace>(source?.workspace ?? 'research')
   const [confirming, setConfirming] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -62,6 +70,7 @@ export function SourceDialog({
           title,
           url,
           kind,
+          workspace,
           intervalHours: 24
         })
       } else {
@@ -69,6 +78,7 @@ export function SourceDialog({
           title,
           url,
           kind,
+          workspace,
           method: guessMethod(url),
           intervalHours: 24
         })
@@ -156,6 +166,15 @@ export function SourceDialog({
           />
         </label>
         <div className={styles.row2}>
+          <div className={styles.field}>
+            <span className={styles.fieldLabel}>Workspace</span>
+            <Select
+              label="Workspace"
+              value={workspace}
+              options={WATCH_WORKSPACES.map((w) => ({ value: w, label: WORKSPACE_LABEL[w] }))}
+              onChange={setWorkspace}
+            />
+          </div>
           <div className={styles.field}>
             <span className={styles.fieldLabel}>Kind</span>
             <Select
