@@ -42,7 +42,6 @@ export function WatchList({
                   {titleParts(item.title).name}
                 </a>
               </Tooltip>
-              {item.state === 'new' && <span className={styles.new}>New</span>}
             </span>
             <CutText className={styles.note}>{whenFor(item)}</CutText>
             <CutText className={styles.note}>{deadlineFor(item, today)}</CutText>

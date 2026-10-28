@@ -78,7 +78,11 @@ export function WatchTable({
                       <div className={styles.titleLine}>
                         <Tooltip text={titleParts(item.title).name} whenCut>
                           <a
-                            className={styles.title}
+                            className={
+                              item.state === 'seen'
+                                ? `${styles.title} ${styles.read}`
+                                : styles.title
+                            }
                             href={item.url}
                             tabIndex={-1}
                             target="_blank"
@@ -92,7 +96,6 @@ export function WatchTable({
                             {titleParts(item.title).name}
                           </a>
                         </Tooltip>
-                        {item.state === 'new' && <span className={styles.new}>New</span>}
                       </div>
                     </td>
                     <td className={styles.muted}>

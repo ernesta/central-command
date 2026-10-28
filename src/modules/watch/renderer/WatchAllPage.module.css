@@ -29,10 +29,12 @@
 .title:hover {
   color: var(--accent);
 }
-.new {
-  composes: upcoming from '@renderer/components/Landing.module.css';
-  flex: none;
-  margin-left: 0;
+.read {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.read:hover {
+  color: var(--accent);
 }
 .muted {
   color: var(--text-muted);
