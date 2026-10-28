@@ -11,7 +11,7 @@ import type { WatchItems } from './useWatchItems'
 import styles from './WatchAllPage.module.css'
 
 /** Column widths; the title takes the rest. */
-const WIDTHS = { found: 128, when: 150, deadline: 170, source: 240, actions: 96 }
+const WIDTHS = { found: 128, when: 190, deadline: 170, source: 240, actions: 96 }
 const HEADINGS = ['Found', 'Title', 'When', 'Deadline', 'Source', '']
 
 /**
