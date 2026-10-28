@@ -10,10 +10,11 @@ import { hasSummary } from '@shared/summary'
 import { clockNow, formatDate } from '@shared/time'
 import { layoutRows } from '@shared/upcoming-groups'
 import { GroupRow } from '@renderer/components/GroupRow'
+import { Badge } from '@renderer/components/Badge'
 import { Tooltip } from '@renderer/components/Tooltip'
 import { durationWithStudy } from '../shared/row-time'
 import { formatTimeRange, initialsFor } from '@modules/meetings/shared/query'
-import { entryParts, isUpcoming, type SelfStudy } from '../shared/rules'
+import { entryParts, isNow, isUpcoming, type SelfStudy } from '../shared/rules'
 import type { TrainingIndexRow, TrainingWorkspace } from '../shared/types'
 import { entryRoute } from './training-paths'
 import shared from '@renderer/components/ListTable.module.css'
@@ -122,6 +123,7 @@ export function TrainingTable({
                         <Tooltip text={title} whenCut>
                           <span className={styles.titleText}>{title}</span>
                         </Tooltip>
+                        {isNow(row, today, clockNow()) && <Badge>Now</Badge>}
                         {row.folder && (
                           <Tooltip text="Linked folder">
                             <span className={styles.mark}>

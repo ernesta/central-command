@@ -5,6 +5,7 @@ import {
   formatDate,
   formatDuration,
   formatShortDate,
+  isNow,
   isUpcomingSession,
   meetingHeading,
   trackingMoment
@@ -140,5 +141,28 @@ describe('an end before the start', () => {
     expect(endBeforeStart('10:00', '10:00')).toBe(false)
     expect(endBeforeStart('10:00', null)).toBe(false)
     expect(endBeforeStart(null, '10:00')).toBe(false)
+  })
+})
+
+describe('isNow', () => {
+  const today = '2026-10-28'
+  const row = { date: today, start: '11:00', end: '12:00' }
+
+  it('is false before the start, true at the start and inside, false at the end', () => {
+    expect(isNow(row, today, '10:59')).toBe(false)
+    expect(isNow(row, today, '11:00')).toBe(true)
+    expect(isNow(row, today, '11:30')).toBe(true)
+    expect(isNow(row, today, '12:00')).toBe(false)
+  })
+
+  it('needs both a start and an end', () => {
+    expect(isNow({ date: today, start: '11:00', end: null }, today, '11:30')).toBe(false)
+    expect(isNow({ date: today, start: null, end: '12:00' }, today, '11:30')).toBe(false)
+    expect(isNow({ date: today, start: null, end: null }, today, '11:30')).toBe(false)
+  })
+
+  it('is never on another day', () => {
+    expect(isNow({ ...row, date: '2026-10-27' }, today, '11:30')).toBe(false)
+    expect(isNow({ ...row, date: '2026-10-29' }, today, '11:30')).toBe(false)
   })
 })

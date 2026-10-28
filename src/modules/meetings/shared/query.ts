@@ -1,7 +1,7 @@
 import { formatClock } from '@shared/locale-names'
 import { fold } from '@shared/text'
 import { deriveInitials, findByName } from './people'
-import { formatDate, isUpcomingSession } from './time'
+import { formatDate, isNow as isSessionNow, isUpcomingSession } from './time'
 import { SERIES, type MeetingIndexRow, type MeetingMode, type Person } from './types'
 
 export interface MeetingsQuery {
@@ -70,6 +70,15 @@ export function isUpcoming(
   now?: string
 ): boolean {
   return isUpcomingSession(row, today, now)
+}
+
+/** A meeting running at `now` (`isNow`). */
+export function isNow(
+  row: Pick<MeetingIndexRow, 'date'> & Partial<Pick<MeetingIndexRow, 'start' | 'end'>>,
+  today: string,
+  now: string
+): boolean {
+  return isSessionNow(row, today, now)
 }
 
 /** Newest first: by date, then start time (no start time last), then id. Meetings with no date (planned) come first. */

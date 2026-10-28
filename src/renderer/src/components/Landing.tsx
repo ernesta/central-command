@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import { LANDING_DAYS } from '@shared/year'
 import styles from './Landing.module.css'
 import { Tooltip } from './Tooltip'
+import { Badge } from './Badge'
 
 /** A module's landing page: a page wrapper so every module's landing looks and behaves alike. */
 export function LandingPage({ children }: { children: React.ReactNode }): React.JSX.Element {
@@ -177,7 +178,7 @@ export interface RecentRow {
   key: string
   to: string
   date: string
-  /** "Upcoming" beside the title, when it has not happened. */
+  /** "Upcoming" (not over) or "Now" (running) beside the title. */
   badge?: string
   title: string
   /** Initials of the people involved (the first three are shown). */
@@ -195,7 +196,7 @@ export function RecentList({ rows }: { rows: readonly RecentRow[] }): React.JSX.
             <span className={styles.date}>{row.date}</span>
             <span>
               {row.title}
-              {row.badge && <span className={styles.upcoming}>{row.badge}</span>}
+              {row.badge && <Badge>{row.badge}</Badge>}
             </span>
             <span className={styles.people}>
               {row.people.slice(0, 3).map((p) => (

@@ -18,7 +18,7 @@ import { usePeriod } from '@renderer/state/use-period'
 import { recentAndUpcoming, seriesLine, seriesSummaries } from '../shared/landing'
 import { meetingsInYear, meetingsInYearOrPlanned } from '../shared/hours'
 import { mine, openTodos } from '../shared/open-todos'
-import { MODE_LABELS, initialsFor, isUpcoming } from '../shared/query'
+import { MODE_LABELS, initialsFor, isNow, isUpcoming } from '../shared/query'
 import { formatDate, formatShortDate } from '../shared/time'
 import { rowTimeLine } from '@modules/training/shared/row-time'
 import { fixedSeries, tracksSkills, type MeetingIndexRow } from '../shared/types'
@@ -78,7 +78,7 @@ export function MeetingsLanding(): React.JSX.Element {
     key: row.id,
     to: meetingRoute(workspace, row.id),
     date: row.date ? formatDate(row.date) : 'No date',
-    badge: isUpcoming(row, today, now) ? 'Upcoming' : undefined,
+    badge: isNow(row, today, now) ? 'Now' : isUpcoming(row, today, now) ? 'Upcoming' : undefined,
     title: row.series || 'Meeting',
     people: row.attendees.map((name) => ({ name, initials: initialsFor(name, people) })),
     note: noteFor(row, today, now)

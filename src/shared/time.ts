@@ -75,6 +75,19 @@ export function isUpcomingSession(
   return at !== null && over !== null && at < over
 }
 
+/** A session running at `now` (HH:MM): dated `today`, with a start and an end, `start <= now < end`. */
+export function isNow(
+  row: { date: string; start?: string | null; end?: string | null },
+  today: string,
+  now: string
+): boolean {
+  if (row.date !== today) return false
+  const start = minutes(row.start ?? null)
+  const end = minutes(row.end ?? null)
+  const at = minutes(now)
+  return start !== null && end !== null && at !== null && start <= at && at < end
+}
+
 /** When a tracking day ends and the next begins, as an hour of the morning. A setting later; fixed at 4 for now. */
 export const DAY_END_HOUR = 4
 

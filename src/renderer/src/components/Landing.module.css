@@ -190,15 +190,6 @@ li:only-child .recent {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.upcoming {
-  margin-left: 10px;
-  padding: 1px 8px;
-  border-radius: var(--radius-pill);
-  background: var(--selected-bg);
-  color: var(--selected-text);
-  font-size: var(--text-12);
-  font-weight: 500;
-}
 .people {
   display: inline-flex;
   align-items: center;

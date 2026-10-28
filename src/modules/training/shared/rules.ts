@@ -1,6 +1,6 @@
 import { LANDING_DAYS, addDays, inYear, yearLabel } from '@shared/year'
 import { fold } from '@shared/text'
-import { formatDate, durationMinutes, isUpcomingSession } from '@shared/time'
+import { formatDate, durationMinutes, isNow as isSessionNow, isUpcomingSession } from '@shared/time'
 import { minutesPerSkill } from '@shared/skills'
 import { findByName } from '@shared/people'
 import type { Person } from '@shared/people'
@@ -14,6 +14,15 @@ export function isUpcoming(
   now?: string
 ): boolean {
   return isUpcomingSession(row, today, now)
+}
+
+/** An entry running at `now` (`isNow`). */
+export function isNow(
+  row: Pick<TrainingIndexRow, 'date'> & Partial<Pick<TrainingIndexRow, 'start' | 'end'>>,
+  today: string,
+  now: string
+): boolean {
+  return isSessionNow(row, today, now)
 }
 
 /**

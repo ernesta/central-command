@@ -6,11 +6,12 @@ import { InitialsChips } from '@renderer/components/InitialsChips'
 import { SkillChips } from '@renderer/components/SkillChips'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import { hasSummary } from '@shared/summary'
+import { Badge } from '@renderer/components/Badge'
 import { Tooltip } from '@renderer/components/Tooltip'
 import { layoutRows } from '@shared/upcoming-groups'
 import { GroupRow } from '@renderer/components/GroupRow'
 import { clockNow, durationMinutes, formatDate, formatDuration } from '../shared/time'
-import { formatTimeRange, initialsFor, isUpcoming } from '../shared/query'
+import { formatTimeRange, initialsFor, isNow, isUpcoming } from '../shared/query'
 import type { MeetingIndexRow, Person } from '../shared/types'
 import { meetingRoute } from './meetings-paths'
 import shared from '@renderer/components/ListTable.module.css'
@@ -104,6 +105,7 @@ export function MeetingsTable({
                     <td>
                       <div className={styles.line}>
                         <CutText>{row.series || '—'}</CutText>
+                        {isNow(row, today, clockNow()) && <Badge>Now</Badge>}
                         {hasSummary(row) && (
                           <Tooltip text="Summary">
                             <span className={styles.mark}>
