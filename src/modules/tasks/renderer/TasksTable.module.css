@@ -355,14 +355,14 @@
   color: var(--text-muted);
   font-size: var(--text-13);
 }
-/* The input starts where a subtask's status icon starts and ends the same distance from the right; the plus sits where the icon
+/* The input starts where a subtask's status icon starts and runs to the row's 12px padding on the right; the plus sits where the icon
    does and the text where a title starts (64px status column + 12px padding). */
 .addRow td.addFlat {
   padding-left: 28px;
-  padding-right: 28px;
+  padding-right: 12px;
 }
 .addRow td.addNested {
-  padding-right: 40px;
+  padding-right: 12px;
 }
 .addFlat .addPlus {
   width: 22px;
