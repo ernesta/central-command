@@ -6,7 +6,7 @@ import { InitialsChips } from '@renderer/components/InitialsChips'
 import { SkillChips } from '@renderer/components/SkillChips'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import type { Person } from '@shared/people'
-import { formatDate } from '@shared/time'
+import { clockNow, formatDate } from '@shared/time'
 import { layoutRows } from '@shared/upcoming-groups'
 import { GroupRow } from '@renderer/components/GroupRow'
 import { Tooltip } from '@renderer/components/Tooltip'
@@ -46,7 +46,7 @@ export function TrainingTable({
 }): React.JSX.Element {
   const research = workspace === 'research'
   const navigate = useNavigate()
-  const { ordered, groups } = layoutRows(rows, grouped, (row) => isUpcoming(row, today))
+  const { ordered, groups } = layoutRows(rows, grouped, (row) => isUpcoming(row, today, clockNow()))
   const columns = research ? 7 : 6
   const { tableProps, rowProps } = useRowNavigation(
     ordered.length,

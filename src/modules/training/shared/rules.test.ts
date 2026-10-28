@@ -399,3 +399,20 @@ describe('recentAndUpcoming', () => {
     expect(recent.map((r) => r.date)).toEqual(['2026-10-18', '2026-10-11'])
   })
 })
+
+describe("today's entry and the clock", () => {
+  const rows = [row(TODAY)] // 10:00–11:00
+  const minutes = (now: string): number =>
+    trainingHours(rows, '2025-09-22', TODAY, 20, undefined, now).minutes
+
+  it('counts once it is over, not before or while it runs', () => {
+    expect(minutes('09:00')).toBe(0)
+    expect(minutes('10:30')).toBe(0)
+    expect(minutes('11:00')).toBe(60)
+  })
+
+  it('is upcoming until its end', () => {
+    expect(isUpcoming(rows[0], TODAY, '10:59')).toBe(true)
+    expect(isUpcoming(rows[0], TODAY, '11:00')).toBe(false)
+  })
+})

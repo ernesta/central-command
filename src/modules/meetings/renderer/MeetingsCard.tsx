@@ -2,7 +2,7 @@ import { Link } from 'react-router'
 import { seriesSummaries } from '../shared/landing'
 import { openTodos } from '../shared/open-todos'
 import { formatShortDate } from '../shared/time'
-import { meetingsBase, todayIso, useMeetingsWorkspace } from './meetings-paths'
+import { clockNow, meetingsBase, todayIso, useMeetingsWorkspace } from './meetings-paths'
 import { useMeetingsList } from './useMeetingsList'
 import styles from './MeetingsCard.module.css'
 
@@ -10,7 +10,7 @@ import styles from './MeetingsCard.module.css'
 export function MeetingsCard(): React.JSX.Element {
   const workspace = useMeetingsWorkspace()
   const { rows } = useMeetingsList(workspace)
-  const summaries = rows ? seriesSummaries(rows, todayIso()) : []
+  const summaries = rows ? seriesSummaries(rows, todayIso(), undefined, clockNow()) : []
   const count = summaries.reduce((n, s) => n + s.count, 0)
   const next = summaries
     .map((s) => s.next)

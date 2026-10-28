@@ -1,15 +1,19 @@
 import { LANDING_DAYS, addDays, inYear, yearLabel } from '@shared/year'
 import { fold } from '@shared/text'
-import { formatDate, durationMinutes } from '@shared/time'
+import { formatDate, durationMinutes, isUpcomingSession } from '@shared/time'
 import { minutesPerSkill } from '@shared/skills'
 import { findByName } from '@shared/people'
 import type { Person } from '@shared/people'
 import { trainingTaskUid } from './training-entries'
 import { TRAINING_MODE_LABELS, type TrainingIndexRow, type TrainingMode } from './types'
 
-/** An entry that has not happened yet: after `today` (YYYY-MM-DD), or planned with no date yet. */
-export function isUpcoming(row: Pick<TrainingIndexRow, 'date'>, today: string): boolean {
-  return row.date === '' || row.date > today
+/** An entry that is not over: after `today` (YYYY-MM-DD), planned with no date yet, or today and before its end (`isUpcomingSession`). */
+export function isUpcoming(
+  row: Pick<TrainingIndexRow, 'date'> & Partial<Pick<TrainingIndexRow, 'start' | 'end'>>,
+  today: string,
+  now?: string
+): boolean {
+  return isUpcomingSession(row, today, now)
 }
 
 /**
@@ -82,10 +86,11 @@ export function trainingHours(
   year: string,
   today: string,
   aimHours: number,
-  selfStudy?: SelfStudy
+  selfStudy?: SelfStudy,
+  now?: string
 ): TrainingHours {
   const timed = entriesInYear(rows, year)
-    .filter((r) => !isUpcoming(r, today))
+    .filter((r) => !isUpcoming(r, today, now))
     .map((r) => ({ skills: r.skills, minutes: entryMinutes(r, selfStudy) }))
     .filter((t) => t.minutes)
   const minutes = timed.reduce((n, t) => n + (t.minutes ?? 0), 0)
@@ -243,15 +248,18 @@ export function yearHoursTitle(year: string): string {
  */
 export function recentAndUpcoming(
   rows: readonly TrainingIndexRow[],
-  today: string
+  today: string,
+  now?: string
 ): { upcoming: TrainingIndexRow[]; recent: TrainingIndexRow[] } {
   const from = addDays(today, -LANDING_DAYS)
   const to = addDays(today, LANDING_DAYS)
   return {
     upcoming: rows
-      .filter((r) => isUpcoming(r, today) && (r.date === '' || r.date <= to))
+      .filter((r) => isUpcoming(r, today, now) && (r.date === '' || r.date <= to))
       .sort((a, b) => -compareNewestFirst(a, b)),
-    recent: rows.filter((r) => !isUpcoming(r, today) && r.date >= from).sort(compareNewestFirst)
+    recent: rows
+      .filter((r) => !isUpcoming(r, today, now) && r.date >= from)
+      .sort(compareNewestFirst)
   }
 }
 
@@ -271,17 +279,18 @@ export interface SeriesSummary {
 export function seriesSummaries(
   rows: readonly TrainingIndexRow[],
   today: string,
-  selfStudy?: SelfStudy
+  selfStudy?: SelfStudy,
+  now?: string
 ): SeriesSummary[] {
   return seriesOptions(rows).map((series) => {
-    const mine = rows.filter((r) => r.series === series && !isUpcoming(r, today))
+    const mine = rows.filter((r) => r.series === series && !isUpcoming(r, today, now))
     const parts = mine.map((r) => entryParts(r, selfStudy))
     const training = parts.reduce((n, p) => n + (p?.training ?? 0), 0)
     const study = parts.reduce((n, p) => n + (p?.selfStudy ?? 0), 0)
     return {
       series,
       count: mine.length,
-      upcoming: rows.filter((r) => r.series === series && isUpcoming(r, today)).length,
+      upcoming: rows.filter((r) => r.series === series && isUpcoming(r, today, now)).length,
       minutes: training + study,
       training,
       selfStudy: study

@@ -1,4 +1,5 @@
 import { HoursStrip } from '@renderer/components/HoursStrip'
+import { clockNow } from '@shared/time'
 import { meetingHours } from '../shared/hours'
 import type { MeetingIndexRow } from '../shared/types'
 
@@ -21,7 +22,7 @@ export function MeetingsHours({
   today: string
   showSkills: boolean
 }): React.JSX.Element {
-  const hours = meetingHours(rows, year, today, weeks, end)
+  const hours = meetingHours(rows, year, today, weeks, end, clockNow())
   const note = `${hours.meetings} done`
   return (
     <HoursStrip

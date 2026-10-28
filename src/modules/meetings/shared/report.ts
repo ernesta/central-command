@@ -22,6 +22,8 @@ export interface MeetingsReportInput {
   /** What the period is called in the report, when it is not "2026–27" (a contract's name and dates). */
   label?: string
   today: string
+  /** The time of day (HH:MM): a session still running today is not yet done. */
+  now?: string
   /** Only meetings of this series, titled "<seriesFilter> log"; omitted, every meeting, titled "Meetings log". */
   seriesFilter?: string
 }
@@ -37,12 +39,12 @@ export function reportFileName(year: string, seriesFilter?: string, label?: stri
  * Meetings that have not happened yet are left out. Pure: the same input gives the same HTML.
  */
 export function meetingsReportHtml(input: MeetingsReportInput): string {
-  const { year, today, seriesFilter, weeks, end } = input
+  const { year, today, seriesFilter, weeks, end, now } = input
   const included = seriesFilter ? input.rows.filter((r) => r.series === seriesFilter) : input.rows
   const rows = meetingsInYear(included, year, weeks, end)
-    .filter((r) => !isUpcoming(r, today) && durationMinutes(r.start, r.end))
+    .filter((r) => !isUpcoming(r, today, now) && durationMinutes(r.start, r.end))
     .sort((a, b) => -compareNewestFirst(a, b))
-  const hours = meetingHours(included, year, today, weeks, end)
+  const hours = meetingHours(included, year, today, weeks, end, now)
   const label = input.label ?? yearLabel(year)
   const title = seriesFilter ?? 'Meetings'
 

@@ -6,7 +6,7 @@ import { SkillChips } from '@renderer/components/SkillChips'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import { layoutRows } from '@shared/upcoming-groups'
 import { GroupRow } from '@renderer/components/GroupRow'
-import { durationMinutes, formatDate, formatDuration } from '../shared/time'
+import { clockNow, durationMinutes, formatDate, formatDuration } from '../shared/time'
 import { formatTimeRange, initialsFor, isUpcoming } from '../shared/query'
 import type { MeetingIndexRow, Person } from '../shared/types'
 import { meetingRoute } from './meetings-paths'
@@ -36,7 +36,7 @@ export function MeetingsTable({
   grouped?: boolean
 }): React.JSX.Element {
   const navigate = useNavigate()
-  const { ordered, groups } = layoutRows(rows, grouped, (row) => isUpcoming(row, today))
+  const { ordered, groups } = layoutRows(rows, grouped, (row) => isUpcoming(row, today, clockNow()))
   const columns = showSkills ? COLUMNS.length : COLUMNS.length - 1
   const { tableProps, rowProps } = useRowNavigation(ordered.length, (index) => {
     const row = ordered[index]

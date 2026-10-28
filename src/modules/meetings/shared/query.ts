@@ -1,7 +1,7 @@
 import { formatClock } from '@shared/locale-names'
 import { fold } from '@shared/text'
 import { deriveInitials, findByName } from './people'
-import { formatDate } from './time'
+import { formatDate, isUpcomingSession } from './time'
 import { SERIES, type MeetingIndexRow, type MeetingMode, type Person } from './types'
 
 export interface MeetingsQuery {
@@ -63,9 +63,13 @@ export function initialsFor(name: string, people: readonly Person[]): string {
   return findByName(people, name)?.initials ?? (deriveInitials(name) || name)
 }
 
-/** A meeting that has not happened yet: after `today` (YYYY-MM-DD), or planned with no date yet. */
-export function isUpcoming(row: Pick<MeetingIndexRow, 'date'>, today: string): boolean {
-  return row.date === '' || row.date > today
+/** A meeting that is not over: after `today` (YYYY-MM-DD), planned with no date yet, or today and before its end (`isUpcomingSession`). */
+export function isUpcoming(
+  row: Pick<MeetingIndexRow, 'date'> & Partial<Pick<MeetingIndexRow, 'start' | 'end'>>,
+  today: string,
+  now?: string
+): boolean {
+  return isUpcomingSession(row, today, now)
 }
 
 /** Newest first: by date, then start time (no start time last), then id. Meetings with no date (planned) come first. */
@@ -123,9 +127,10 @@ export function queryMeetings(
 /** The upcoming meetings, soonest first. */
 export function upcomingMeetings(
   rows: readonly MeetingIndexRow[],
-  today: string
+  today: string,
+  now?: string
 ): MeetingIndexRow[] {
-  return rows.filter((r) => isUpcoming(r, today)).sort((a, b) => -compareNewestFirst(a, b))
+  return rows.filter((r) => isUpcoming(r, today, now)).sort((a, b) => -compareNewestFirst(a, b))
 }
 
 /** Series to offer in the filter and the Series field: the fixed list, then any other series found in the files. */

@@ -21,17 +21,18 @@ export interface SeriesSummary {
 export function seriesSummaries(
   rows: readonly MeetingIndexRow[],
   today: string,
-  fixedSeries: readonly string[] = SERIES
+  fixedSeries: readonly string[] = SERIES,
+  now?: string
 ): SeriesSummary[] {
   const names = [...fixedSeries]
   for (const r of rows) if (r.series && !names.includes(r.series)) names.push(r.series)
   return names.map((series) => {
     const mine = rows.filter((r) => r.series === series && r.date !== '')
-    const happened = mine.filter((r) => !isUpcoming(r, today)).map((r) => r.date)
-    const upcoming = mine.filter((r) => isUpcoming(r, today)).map((r) => r.date)
+    const happened = mine.filter((r) => !isUpcoming(r, today, now)).map((r) => r.date)
+    const upcoming = mine.filter((r) => isUpcoming(r, today, now)).map((r) => r.date)
     return {
       series,
-      count: rows.filter((r) => r.series === series && !isUpcoming(r, today)).length,
+      count: rows.filter((r) => r.series === series && !isUpcoming(r, today, now)).length,
       last: happened.length ? happened.reduce((a, b) => (a > b ? a : b)) : null,
       next: upcoming.length ? upcoming.reduce((a, b) => (a < b ? a : b)) : null
     }
@@ -57,12 +58,15 @@ export interface RecentAndUpcoming {
 /** For the landing page: the meetings of the next `LANDING_DAYS` days and of the last `LANDING_DAYS` days, today included. */
 export function recentAndUpcoming(
   rows: readonly MeetingIndexRow[],
-  today: string
+  today: string,
+  now?: string
 ): RecentAndUpcoming {
   const from = addDays(today, -LANDING_DAYS)
   const to = addDays(today, LANDING_DAYS)
   return {
-    upcoming: upcomingMeetings(rows, today).filter((r) => r.date === '' || r.date <= to),
-    recent: rows.filter((r) => !isUpcoming(r, today) && r.date >= from).sort(compareNewestFirst)
+    upcoming: upcomingMeetings(rows, today, now).filter((r) => r.date === '' || r.date <= to),
+    recent: rows
+      .filter((r) => !isUpcoming(r, today, now) && r.date >= from)
+      .sort(compareNewestFirst)
   }
 }

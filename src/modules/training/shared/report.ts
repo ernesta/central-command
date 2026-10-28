@@ -17,6 +17,8 @@ export interface TrainingReportInput {
   /** The year's start date. */
   year: string
   today: string
+  /** The time of day (HH:MM): a session still running today is not yet done. */
+  now?: string
   aimHours: number
   /** Minutes tracked on each training's subtask; each line is a training's total. Left out: sessions only. */
   selfStudy?: SelfStudy
@@ -33,11 +35,11 @@ export function reportFileName(year: string): string {
  * network resources, so it prints the same anywhere. Pure: the same input gives the same HTML.
  */
 export function trainingReportHtml(input: TrainingReportInput): string {
-  const { year, today, aimHours } = input
+  const { year, today, aimHours, now } = input
   const rows = entriesInYear(input.rows, year)
-    .filter((r) => !isUpcoming(r, today) && entryMinutes(r, input.selfStudy))
+    .filter((r) => !isUpcoming(r, today, now) && entryMinutes(r, input.selfStudy))
     .sort((a, b) => -compareNewestFirst(a, b))
-  const hours = trainingHours(input.rows, year, today, aimHours, input.selfStudy)
+  const hours = trainingHours(input.rows, year, today, aimHours, input.selfStudy, now)
   const label = yearLabel(year)
 
   const body = rows

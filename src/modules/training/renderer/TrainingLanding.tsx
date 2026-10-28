@@ -33,6 +33,7 @@ import { NewTrainingButton } from './NewTrainingButton'
 import {
   entryRoute,
   seriesRoute,
+  clockNow,
   todayIso,
   trainingListRoute,
   trainingPlanRoute,
@@ -63,15 +64,20 @@ export function TrainingLanding(): React.JSX.Element {
   const selfStudy = useSelfStudy()
   const { settings } = useSettings()
   const today = todayIso()
+  const now = clockNow()
   const all = rows ?? []
   const { year, years, setYear } = useYear(
     [...all.map((r) => r.date), ...meetings.map((m) => m.date)],
     today
   )
   const aim = settings.trainingAimHours
-  const hours = trainingHours(all, year, today, aim, selfStudy)
-  const { upcoming, recent } = recentAndUpcoming(entriesInYearOrPlanned(all, year, today), today)
-  const summaries = seriesSummaries(entriesInYear(all, year), today, selfStudy)
+  const hours = trainingHours(all, year, today, aim, selfStudy, now)
+  const { upcoming, recent } = recentAndUpcoming(
+    entriesInYearOrPlanned(all, year, today),
+    today,
+    now
+  )
+  const summaries = seriesSummaries(entriesInYear(all, year), today, selfStudy, now)
 
   const noteParts = [`${hours.entries} done`]
 
@@ -79,7 +85,7 @@ export function TrainingLanding(): React.JSX.Element {
     key: row.id,
     to: entryRoute(row.id, workspace),
     date: row.date ? formatDate(row.date) : 'No date',
-    badge: isUpcoming(row, today) ? 'Upcoming' : undefined,
+    badge: isUpcoming(row, today, now) ? 'Upcoming' : undefined,
     title: trainingLabel(row.series, row.title || 'Untitled'),
     people: row.leads.map((name) => ({ name, initials: initialsFor(name, people) })),
     note: noteFor(row, selfStudy)

@@ -37,4 +37,4 @@ export function entryRoute(id: string, workspace: TrainingWorkspace = 'research'
   return `${trainingBase(workspace)}/t/${encodeURIComponent(id)}`
 }
 
-export { todayIso } from '@shared/time'
+export { clockNow, todayIso } from '@shared/time'

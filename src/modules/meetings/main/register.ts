@@ -2,7 +2,7 @@ import { mkdir } from 'fs/promises'
 import { join } from 'path'
 import { BrowserWindow, ipcMain, shell } from 'electron'
 import { exportHtmlAsPdf } from '../../../main/export-pdf'
-import { todayIso } from '@shared/time'
+import { clockNow, todayIso } from '@shared/time'
 import { dayNumber } from '@shared/year'
 import { readNoteFile } from '../../../main/notes/guarded-file'
 import { NotesWatcher } from '../../../main/notes/watcher'
@@ -166,6 +166,7 @@ function register({ db, paths }: MainContext): () => void {
           end: period?.end,
           label: period?.label,
           today: todayIso(),
+          now: clockNow(),
           seriesFilter
         }),
         dialogTitle: seriesFilter ? 'Export the supervision log' : 'Export the meetings log',

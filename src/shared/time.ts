@@ -45,6 +45,29 @@ export function todayIso(now = new Date()): string {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
 }
 
+/** The time of day in local time as HH:MM. */
+export function clockNow(now = new Date()): string {
+  const pad = (n: number): string => String(n).padStart(2, '0')
+  return `${pad(now.getHours())}:${pad(now.getMinutes())}`
+}
+
+/**
+ * A meeting or training that has not finished yet: planned with no date, dated after `today`, or dated today and
+ * not over: before its end, or, with a start only, before its start. With no times it is a day-level fact (today's
+ * is done), and so is every session when `now` (HH:MM) is not given.
+ */
+export function isUpcomingSession(
+  row: { date: string; start?: string | null; end?: string | null },
+  today: string,
+  now?: string
+): boolean {
+  if (row.date === '') return true
+  if (row.date !== today) return row.date > today
+  const at = minutes(now ?? null)
+  const over = minutes(row.end ?? null) ?? minutes(row.start ?? null)
+  return at !== null && over !== null && at < over
+}
+
 /** When a tracking day ends and the next begins, as an hour of the morning. A setting later; fixed at 4 for now. */
 export const DAY_END_HOUR = 4
 

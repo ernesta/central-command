@@ -42,4 +42,4 @@ export function useMeetingsWorkspace(): MeetingWorkspace {
     : 'research'
 }
 
-export { todayIso } from '@shared/time'
+export { clockNow, todayIso } from '@shared/time'

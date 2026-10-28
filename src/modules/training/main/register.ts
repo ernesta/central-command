@@ -3,7 +3,7 @@ import { join } from 'path'
 import { BrowserWindow, ipcMain, shell } from 'electron'
 import { exportHtmlAsPdf } from '../../../main/export-pdf'
 import { readNoteFile } from '../../../main/notes/guarded-file'
-import { todayIso, trackingMoment } from '@shared/time'
+import { clockNow, todayIso, trackingMoment } from '@shared/time'
 import { dayNumber } from '@shared/year'
 import { NotesWatcher } from '../../../main/notes/watcher'
 import { TrackingStore } from '../../../main/tracking/store'
@@ -94,6 +94,7 @@ function register({ db, paths, settings }: MainContext): () => void {
         rows: store.list('research'),
         year,
         today,
+        now: clockNow(),
         aimHours: settings.get().trainingAimHours,
         selfStudy: trackedByTask(tracking.years('research').map((y) => tracking.get('research', y)))
       })

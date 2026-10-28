@@ -105,3 +105,15 @@ describe('a Work contract as the period', () => {
     expect(meetingHours(timed, '2026-05-01', '2026-12-01', 26).minutes).toBe(60)
   })
 })
+
+describe("today's meeting and the clock", () => {
+  const rows = [row(TODAY)] // 10:00–11:00
+  const hours = (now: string): number =>
+    meetingHours(rows, '2025-09-22', TODAY, undefined, undefined, now).minutes
+
+  it('counts once it is over, not before or while it runs', () => {
+    expect(hours('09:00')).toBe(0)
+    expect(hours('10:30')).toBe(0)
+    expect(hours('11:00')).toBe(60)
+  })
+})

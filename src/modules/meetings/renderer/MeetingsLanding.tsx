@@ -29,6 +29,7 @@ import {
   meetingRoute,
   meetingsListRoute,
   seriesRoute,
+  clockNow,
   todayIso,
   useMeetingsWorkspace
 } from './meetings-paths'
@@ -37,9 +38,9 @@ import { useMeetingsList } from './useMeetingsList'
 type Whose = 'everyone' | 'mine'
 
 /** What to say at the right of a "recent and upcoming" row: the same parts for an upcoming and a past one. */
-function noteFor(row: MeetingIndexRow, today: string): string {
+function noteFor(row: MeetingIndexRow, today: string, now: string): string {
   const time = rowTimeLine(row, row.mode ? MODE_LABELS[row.mode] : null)
-  if (!isUpcoming(row, today) || row.topicCount === 0) return time
+  if (!isUpcoming(row, today, now) || row.topicCount === 0) return time
   return `${time} · ${row.topicCount} ${row.topicCount === 1 ? 'topic' : 'topics'} ready`
 }
 
@@ -49,6 +50,7 @@ export function MeetingsLanding(): React.JSX.Element {
   const { rows, people } = useMeetingsList(workspace)
   const [whose, setWhose] = useState<Whose>('everyone')
   const today = todayIso()
+  const now = clockNow()
 
   const me = people.find((p) => p.me)
   const all = rows ?? []
@@ -62,22 +64,24 @@ export function MeetingsLanding(): React.JSX.Element {
   const { year, years, setYear, weeks, end } = period
   const { upcoming, recent } = recentAndUpcoming(
     meetingsInYearOrPlanned(all, year, today, weeks, end),
-    today
+    today,
+    now
   )
   const summaries = seriesSummaries(
     meetingsInYear(all, year, weeks, end),
     today,
-    fixedSeries(workspace)
+    fixedSeries(workspace),
+    now
   )
 
   const recentRows: RecentRow[] = [...[...upcoming].reverse(), ...recent].map((row) => ({
     key: row.id,
     to: meetingRoute(workspace, row.id),
     date: row.date ? formatDate(row.date) : 'No date',
-    badge: isUpcoming(row, today) ? 'Upcoming' : undefined,
+    badge: isUpcoming(row, today, now) ? 'Upcoming' : undefined,
     title: row.series || 'Meeting',
     people: row.attendees.map((name) => ({ name, initials: initialsFor(name, people) })),
-    note: noteFor(row, today)
+    note: noteFor(row, today, now)
   }))
 
   return (

@@ -6,7 +6,7 @@ import { currentYear, yearLabel } from '@shared/year'
 import { trainingLabel } from '../shared/training-entries'
 import { compareNewestFirst, isUpcoming, trainingHours } from '../shared/rules'
 import { useSelfStudy } from './useSelfStudy'
-import { todayIso, trainingBase, useTrainingWorkspace } from './training-paths'
+import { clockNow, todayIso, trainingBase, useTrainingWorkspace } from './training-paths'
 import { useTrainingList } from './useTrainingList'
 import styles from './TrainingCard.module.css'
 
@@ -17,10 +17,13 @@ export function TrainingCard(): React.JSX.Element {
   const selfStudy = useSelfStudy()
   const { settings } = useSettings()
   const today = todayIso()
+  const now = clockNow()
   const year = currentYear(today, settings.yearStarts)
-  const hours = rows ? trainingHours(rows, year, today, settings.trainingAimHours, selfStudy) : null
+  const hours = rows
+    ? trainingHours(rows, year, today, settings.trainingAimHours, selfStudy, now)
+    : null
   const latest = rows
-    ?.filter((r) => !isUpcoming(r, today))
+    ?.filter((r) => !isUpcoming(r, today, now))
     .sort(compareNewestFirst)
     .at(0)
 

@@ -53,10 +53,11 @@ export function meetingHours(
   year: string,
   today: string,
   weeks = YEAR_WEEKS,
-  end?: string
+  end?: string,
+  now?: string
 ): MeetingHours {
   const timed = meetingsInYear(rows, year, weeks, end)
-    .filter((r) => !isUpcoming(r, today))
+    .filter((r) => !isUpcoming(r, today, now))
     .map((r) => ({ skills: r.skills, minutes: durationMinutes(r.start, r.end) }))
     .filter((t) => t.minutes)
   return {

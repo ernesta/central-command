@@ -29,7 +29,7 @@ import {
 import { TRAINING_TYPES } from '../shared/types'
 import { NewTrainingButton } from './NewTrainingButton'
 import { TrainingTable } from './TrainingTable'
-import { todayIso, useTrainingWorkspace } from './training-paths'
+import { clockNow, todayIso, useTrainingWorkspace } from './training-paths'
 import { useSelfStudy } from './useSelfStudy'
 import { useTrainingList } from './useTrainingList'
 import { useTrainingView } from './useTrainingView'
@@ -54,6 +54,7 @@ export function TrainingPage(): React.JSX.Element {
     null
   )
   const today = todayIso()
+  const now = clockNow()
   const everything = rows ?? []
   const { year, years, setYear } = useYear(
     [...everything.map((r) => r.date), ...meetings.map((m) => m.date)],
@@ -73,7 +74,7 @@ export function TrainingPage(): React.JSX.Element {
         })
   const visible = queryTraining(all, query, people)
   const aim = settings.trainingAimHours
-  const hours = trainingHours(everything, year, today, aim, selfStudy)
+  const hours = trainingHours(everything, year, today, aim, selfStudy, now)
 
   const exportPdf = async (): Promise<void> => {
     setExporting(true)

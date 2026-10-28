@@ -4,6 +4,7 @@ import {
   formatDate,
   formatDuration,
   formatShortDate,
+  isUpcomingSession,
   meetingHeading,
   trackingMoment
 } from './time'
@@ -85,5 +86,43 @@ describe('durationMinutes to the quarter hour', () => {
     expect(durationMinutes('09:00', '09:52')).toBe(45)
     expect(durationMinutes('09:00', '10:08')).toBe(75)
     expect(durationMinutes('09:00', '10:07')).toBe(60)
+  })
+})
+
+describe('isUpcomingSession', () => {
+  const today = '2026-10-28'
+  const at = (
+    start: string | null,
+    end: string | null
+  ): { date: string; start: string | null; end: string | null } => ({ date: today, start, end })
+
+  it('is upcoming before the start, and while it runs', () => {
+    expect(isUpcomingSession(at('11:00', '12:00'), today, '10:59')).toBe(true)
+    expect(isUpcomingSession(at('11:00', '12:00'), today, '11:30')).toBe(true)
+  })
+
+  it('is over at its end and after', () => {
+    expect(isUpcomingSession(at('11:00', '12:00'), today, '12:00')).toBe(false)
+    expect(isUpcomingSession(at('11:00', '12:00'), today, '18:00')).toBe(false)
+  })
+
+  it('with a start only, is upcoming until the start', () => {
+    expect(isUpcomingSession(at('11:00', null), today, '10:59')).toBe(true)
+    expect(isUpcomingSession(at('11:00', null), today, '11:00')).toBe(false)
+  })
+
+  it('with no times, today is done; so is everything when the clock is not given', () => {
+    expect(isUpcomingSession(at(null, null), today, '08:00')).toBe(false)
+    expect(isUpcomingSession(at('11:00', '12:00'), today)).toBe(false)
+  })
+
+  it('keeps the day-level rule for other days and for no date', () => {
+    expect(isUpcomingSession({ date: '2026-10-29', start: null, end: null }, today, '23:00')).toBe(
+      true
+    )
+    expect(
+      isUpcomingSession({ date: '2026-10-27', start: '23:00', end: '23:30' }, today, '00:00')
+    ).toBe(false)
+    expect(isUpcomingSession({ date: '', start: null, end: null }, today, '12:00')).toBe(true)
   })
 })
