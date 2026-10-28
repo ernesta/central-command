@@ -8,7 +8,7 @@ import {
   type Person
 } from '../shared/types'
 import { isValidDate, type MetaPatch } from '../shared/front-matter'
-import { durationMinutes, formatDuration } from '../shared/time'
+import { durationMinutes, endBeforeStart, formatDuration } from '../shared/time'
 import { Segmented } from '@renderer/components/Segmented'
 import { Picker } from '@renderer/components/Picker'
 import { usedValueOptions } from '@renderer/components/picker-match'
@@ -110,7 +110,12 @@ export function MetaFields({
         <label className={styles.label} htmlFor="meeting-end">
           End
         </label>
-        <TimeInput id="meeting-end" aria-label="End time" {...time('end')} />
+        <TimeInput
+          id="meeting-end"
+          aria-label="End time"
+          invalid={endBeforeStart(meta.start, meta.end)}
+          {...time('end')}
+        />
       </div>
       <div className={styles.field}>
         <span className={styles.label} id="meeting-duration-label">

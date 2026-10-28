@@ -16,6 +16,13 @@ export function durationMinutes(start: string | null, end: string | null): numbe
     : Math.floor((b - a + QUARTER / 2) / QUARTER) * QUARTER
 }
 
+/** Both times are set and the end is earlier than the start. */
+export function endBeforeStart(start: string | null, end: string | null): boolean {
+  const a = minutes(start)
+  const b = minutes(end)
+  return a !== null && b !== null && b < a
+}
+
 /** A length of time in hours and minutes: "45 min", "3 h", "1 h 30 min". */
 export function formatDuration(totalMinutes: number): string {
   const hours = Math.floor(totalMinutes / 60)

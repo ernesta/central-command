@@ -10,7 +10,7 @@ import { usedValueOptions } from '@renderer/components/picker-match'
 import { Select } from '@renderer/components/Select'
 import { SkillsField } from '@renderer/components/SkillsField'
 import { orderNames, type Person } from '@shared/people'
-import { durationMinutes, formatDuration } from '@shared/time'
+import { durationMinutes, endBeforeStart, formatDuration } from '@shared/time'
 import { isValidDate, type TrainingPatch } from '../shared/front-matter'
 import {
   TRAINING_MODE_LABELS,
@@ -111,7 +111,12 @@ export function TrainingMetaFields({
         <label className={styles.label} htmlFor="training-end">
           End
         </label>
-        <TimeInput id="training-end" aria-label="End time" {...time('end')} />
+        <TimeInput
+          id="training-end"
+          aria-label="End time"
+          invalid={endBeforeStart(meta.start, meta.end)}
+          {...time('end')}
+        />
       </div>
       <div className={styles.field}>
         <span className={styles.label} id="training-duration-label">

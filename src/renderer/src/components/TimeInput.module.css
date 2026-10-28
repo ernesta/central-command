@@ -35,3 +35,11 @@
 .colon {
   color: var(--text-muted);
 }
+.invalid,
+.invalid:focus-within {
+  border-color: var(--danger);
+}
+.invalid .part,
+.invalid .part:focus-visible {
+  color: var(--danger);
+}

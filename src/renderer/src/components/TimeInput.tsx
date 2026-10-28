@@ -11,6 +11,8 @@ interface TimeInputProps {
   value: string
   /** A complete time as "HH:MM", or null when the field is emptied. */
   onChange: (value: string | null) => void
+  /** Drawn in the danger colour, with no words: an end that is before its start. */
+  invalid?: boolean
 }
 
 type Part = 'hours' | 'minutes' | 'meridiem'
@@ -22,7 +24,13 @@ type Part = 'hours' | 'minutes' | 'meridiem'
  * carrying); minutes always sit on 00, 15, 30 or 45 (typed 07 becomes 00); Backspace or Delete empties the whole time.
  * Where the Mac's region uses a 12-hour clock a third part holds AM or PM (A, P, Up and Down set it); the value stays 24-hour.
  */
-export function TimeInput({ value, onChange, id, ...rest }: TimeInputProps): React.JSX.Element {
+export function TimeInput({
+  value,
+  onChange,
+  id,
+  invalid,
+  ...rest
+}: TimeInputProps): React.JSX.Element {
   const twelve = uses12HourClock()
   const refs = {
     hours: useRef<HTMLInputElement>(null),
@@ -113,6 +121,7 @@ export function TimeInput({ value, onChange, id, ...rest }: TimeInputProps): Rea
       id={name === 'hours' ? id : undefined}
       className={styles.part}
       aria-label={label}
+      aria-invalid={invalid || undefined}
       inputMode="numeric"
       autoComplete="off"
       placeholder="--"
@@ -132,7 +141,11 @@ export function TimeInput({ value, onChange, id, ...rest }: TimeInputProps): Rea
   )
 
   return (
-    <div className={styles.field} role="group" aria-label={rest['aria-label'] ?? 'Time'}>
+    <div
+      className={invalid ? `${styles.field} ${styles.invalid}` : styles.field}
+      role="group"
+      aria-label={rest['aria-label'] ?? 'Time'}
+    >
       {part('hours', hours, 'Hours')}
       <span className={styles.colon} aria-hidden>
         :

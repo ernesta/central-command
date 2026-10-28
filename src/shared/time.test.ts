@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   durationMinutes,
+  endBeforeStart,
   formatDate,
   formatDuration,
   formatShortDate,
@@ -124,5 +125,20 @@ describe('isUpcomingSession', () => {
       isUpcomingSession({ date: '2026-10-27', start: '23:00', end: '23:30' }, today, '00:00')
     ).toBe(false)
     expect(isUpcomingSession({ date: '', start: null, end: null }, today, '12:00')).toBe(true)
+  })
+})
+
+describe('an end before the start', () => {
+  it('is flagged, and has no duration (it never wraps past midnight)', () => {
+    expect(endBeforeStart('11:00', '10:00')).toBe(true)
+    expect(durationMinutes('23:00', '01:00')).toBeNull()
+    expect(durationMinutes('11:00', '10:00')).toBeNull()
+  })
+
+  it('is not flagged for a later end, an equal one, or a missing time', () => {
+    expect(endBeforeStart('10:00', '11:00')).toBe(false)
+    expect(endBeforeStart('10:00', '10:00')).toBe(false)
+    expect(endBeforeStart('10:00', null)).toBe(false)
+    expect(endBeforeStart(null, '10:00')).toBe(false)
   })
 })
