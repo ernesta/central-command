@@ -104,13 +104,9 @@
   font-size: var(--text-14);
 }
 .link {
-  color: var(--accent);
+  composes: link from '@renderer/components/Link.module.css';
   font-size: var(--text-13);
-  text-decoration: none;
   border-radius: var(--radius-control);
-}
-.link:hover {
-  color: var(--accent-hover);
 }
 .hours {
   margin: -12px -24px -4px;

@@ -78,11 +78,7 @@
   font-weight: 500;
 }
 .link {
-  color: var(--ink);
-  text-decoration: none;
-}
-.link:hover {
-  color: var(--accent);
+  composes: link from '@renderer/components/Link.module.css';
 }
 .pin {
   margin-right: 6px;

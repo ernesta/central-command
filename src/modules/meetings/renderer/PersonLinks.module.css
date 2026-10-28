@@ -25,15 +25,11 @@
   background: var(--panel);
 }
 .link {
+  composes: link from '@renderer/components/Link.module.css';
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: var(--accent);
   font-size: var(--text-13);
-  text-decoration: none;
-}
-.link:hover {
-  color: var(--accent-hover);
 }
 .remove {
   display: inline-grid;

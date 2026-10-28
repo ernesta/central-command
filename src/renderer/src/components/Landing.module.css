@@ -86,10 +86,10 @@
   font-size: var(--text-13);
 }
 .link {
+  composes: link from '@renderer/components/Link.module.css';
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--accent);
   font-size: var(--text-13);
 }
 

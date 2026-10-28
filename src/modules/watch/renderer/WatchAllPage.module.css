@@ -18,23 +18,16 @@
   min-width: 0;
 }
 .title {
+  composes: link from '@renderer/components/Link.module.css';
   min-width: 0;
   overflow: hidden;
-  color: var(--ink);
   font-weight: 500;
-  text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.title:hover {
-  color: var(--accent);
-}
 .read {
-  color: var(--text-muted);
+  composes: muted from '@renderer/components/Link.module.css';
   font-weight: 400;
-}
-.read:hover {
-  color: var(--accent);
 }
 .muted {
   color: var(--text-muted);

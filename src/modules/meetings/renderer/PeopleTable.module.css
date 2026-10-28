@@ -51,11 +51,7 @@
   border-bottom: 0;
 }
 .nameLink {
-  color: var(--ink);
-  text-decoration: none;
-}
-.nameLink:hover {
-  color: var(--accent);
+  composes: link from '@renderer/components/Link.module.css';
 }
 .me {
   color: var(--text-muted);
