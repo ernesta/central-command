@@ -24,15 +24,10 @@
   text-overflow: ellipsis;
 }
 .remove {
+  composes: remove from '@renderer/components/Chip.module.css';
   display: inline-flex;
   align-items: center;
   margin-right: -4px;
   padding: 2px;
-  border: 0;
   border-radius: var(--radius-pill);
-  background: transparent;
-  color: var(--text-muted);
-}
-.remove:hover {
-  color: var(--ink);
 }

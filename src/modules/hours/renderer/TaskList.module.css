@@ -89,6 +89,10 @@
   border-color: var(--accent);
   color: var(--accent-contrast);
 }
+.row[data-live='true'] .round:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
 .time,
 .timeButton {
   font-size: var(--text-16);
@@ -125,8 +129,15 @@
   color: var(--text-muted);
   font-size: var(--text-13);
 }
+/* The tint reaches past the 24px column by its spread, so the times keep their place. */
+button.delete {
+  border-radius: var(--radius-control);
+  transition: background var(--transition-fast);
+}
 button.delete:hover {
-  color: var(--text-secondary);
+  background: var(--hover-tint);
+  box-shadow: 0 0 0 4px var(--hover-tint);
+  color: var(--ink);
 }
 .row[data-live='true'] .delete {
   color: inherit;

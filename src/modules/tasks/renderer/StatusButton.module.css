@@ -11,7 +11,7 @@
   border-radius: var(--radius-control);
 }
 .status:hover {
-  background: var(--selected-bg);
+  background: var(--hover-tint);
 }
 .status:hover:disabled {
   background: transparent;

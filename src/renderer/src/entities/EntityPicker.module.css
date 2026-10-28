@@ -31,8 +31,7 @@
   cursor: pointer;
 }
 .active {
-  background: var(--selected-bg);
-  color: var(--selected-text);
+  background: var(--hover-tint);
 }
 .icon {
   flex: none;

@@ -24,7 +24,7 @@
   text-transform: uppercase;
 }
 .row {
-  cursor: pointer;
+  composes: rowFocus from '@renderer/components/Focus.module.css';
 }
 .row td {
   padding: 14px 16px;
@@ -38,29 +38,6 @@
 }
 .row:hover td {
   background: var(--hover-tint);
-}
-/* The whole row is highlighted when it has keyboard focus. The ring is drawn inside the cells (inset shadows),
-   so it follows the table's rounded corners and is never clipped. */
-.row:focus-visible {
-  outline: none;
-}
-.row:focus-visible td {
-  background: var(--hover-tint);
-  box-shadow:
-    inset 0 2px 0 var(--accent),
-    inset 0 -2px 0 var(--accent);
-}
-.row:focus-visible td:first-child {
-  box-shadow:
-    inset 2px 0 0 var(--accent),
-    inset 0 2px 0 var(--accent),
-    inset 0 -2px 0 var(--accent);
-}
-.row:focus-visible td:last-child {
-  box-shadow:
-    inset -2px 0 0 var(--accent),
-    inset 0 2px 0 var(--accent),
-    inset 0 -2px 0 var(--accent);
 }
 /* The hover tint is painted on the cells, so the last row's corner cells follow the table's rounded corners. */
 .row:last-child td:first-child {

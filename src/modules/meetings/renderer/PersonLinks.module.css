@@ -32,14 +32,10 @@
   font-size: var(--text-13);
 }
 .remove {
+  composes: remove from '@renderer/components/Chip.module.css';
   display: inline-grid;
   place-items: center;
-  border: 0;
-  background: transparent;
-  color: var(--text-muted);
-}
-.remove:hover {
-  color: var(--danger);
+  border-radius: var(--radius-pill);
 }
 .form {
   display: grid;

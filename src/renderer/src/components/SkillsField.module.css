@@ -27,35 +27,23 @@
   border: 1px solid var(--border-strong);
 }
 .remove {
+  composes: remove from '@renderer/components/Chip.module.css';
   display: grid;
   place-items: center;
   width: 20px;
   height: 20px;
   padding: 0;
-  border: 0;
   border-radius: var(--radius-pill);
-  background: transparent;
-  color: var(--text-muted);
-}
-.remove:hover {
-  background: var(--border-soft);
-  color: var(--ink);
 }
 .add {
+  composes: add from '@renderer/components/Chip.module.css';
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 2px 10px;
-  border: 1px dashed var(--border-strong);
   border-radius: var(--radius-pill);
-  background: transparent;
-  color: var(--text-muted);
   font-size: var(--text-13);
   white-space: nowrap;
-}
-.add:hover:not(:disabled) {
-  background: var(--hover-tint);
-  color: var(--ink);
 }
 .add:disabled {
   opacity: 0.55;

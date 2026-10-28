@@ -1,0 +1,23 @@
+/* The two buttons on a chip, one look wherever there are chips (docs/CLICKABLES_PLAN.md): "+ add" is a dashed outline that turns accent,
+   "×" a bare mark that gets a tint and turns ink. The size and shape stay with the module that composes them. */
+.add {
+  border: 1px dashed var(--border-strong);
+  background: transparent;
+  color: var(--text-muted);
+  transition:
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+.add:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.remove {
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+}
+.remove:hover {
+  background: var(--hover-tint);
+  color: var(--ink);
+}

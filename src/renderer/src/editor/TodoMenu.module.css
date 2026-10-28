@@ -19,8 +19,7 @@
   cursor: pointer;
 }
 .active {
-  background: var(--selected-bg);
-  color: var(--selected-text);
+  background: var(--hover-tint);
 }
 .initials {
   min-width: 28px;

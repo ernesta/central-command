@@ -57,7 +57,7 @@
   white-space: nowrap;
 }
 .row {
-  cursor: pointer;
+  composes: rowFocus from '@renderer/components/Focus.module.css';
 }
 .row td {
   padding: 10px 16px;

@@ -29,7 +29,9 @@
   font-size: var(--text-14);
   text-align: left;
 }
-.item:hover,
+.item:hover {
+  background: var(--hover-tint);
+}
 .item[aria-checked='true'] {
   background: var(--selected-bg);
 }
