@@ -33,7 +33,7 @@
   text-decoration: none;
 }
 .link:hover {
-  text-decoration: underline;
+  color: var(--accent-hover);
 }
 .remove {
   display: inline-grid;

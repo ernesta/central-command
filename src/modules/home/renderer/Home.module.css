@@ -111,7 +111,6 @@
 }
 .link:hover {
   color: var(--accent-hover);
-  text-decoration: underline;
 }
 .hours {
   margin: -12px -24px -4px;

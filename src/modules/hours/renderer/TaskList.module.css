@@ -177,7 +177,7 @@ button.delete:hover {
   border-radius: var(--radius-control);
 }
 .taskLink:hover .taskTitle {
-  text-decoration: underline;
+  color: var(--accent);
 }
 .taskTitle {
   overflow-wrap: anywhere;

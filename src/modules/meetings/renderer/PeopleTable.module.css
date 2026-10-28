@@ -56,7 +56,6 @@
 }
 .nameLink:hover {
   color: var(--accent);
-  text-decoration: underline;
 }
 .me {
   color: var(--text-muted);
