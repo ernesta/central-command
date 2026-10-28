@@ -4821,3 +4821,9 @@ The user asked for an audit of how "something you can click" looks and behaves, 
 - **Bug:** a task whose time sits on its subtasks ("Develop Study 2: Ghana EGRA USAID data processing pipeline") showed a total of 14:15 above a single "Oct 2026 0:00" line. The total is `taskTime(row, tracked)` (the task and its subtasks); the "Earlier" and month lines were built from the parent's own uid only.
 - **Rule:** the total, "Earlier" and the months all count the task and its subtasks. `useTaskTime`'s `months(uids)` merges `hoursByMonth` over them; `earlier(tasks)` sums `undatedEarlier` per task.
 - Built, typecheck, lint and tests pass; not driven in the app.
+
+## The timer's task picker wraps (28 Oct 2026, the user's report)
+
+- **Bug:** typing in the timer's task picker highlights "Create “…”" by default when several tasks match (it is the last row), so Arrow Down did nothing.
+- **Rule:** Arrow Down and Up wrap round the list (`TaskPicker.tsx`); Down from the last row goes to the first. Enter's default (the exact task, else the only match, else Create) is unchanged.
+- Built, typecheck, lint and tests pass; not driven in the app.

@@ -173,11 +173,11 @@ export function TaskPicker({
       event.preventDefault()
       input.markMoved()
       const step = event.key === 'ArrowDown' ? 1 : -1
+      // The list wraps, so Down from the default Create row (the last) goes to the first task, not nowhere.
       setActive(
-        Math.min(
-          items.length - 1,
-          Math.max(0, (current < 0 && step < 0 ? items.length : current) + step)
-        )
+        ((((current < 0 && step < 0 ? items.length : current) + step) % items.length) +
+          items.length) %
+          items.length
       )
     } else if (event.key === 'Enter') {
       event.preventDefault()
