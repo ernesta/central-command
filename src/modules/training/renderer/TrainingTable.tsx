@@ -1,11 +1,12 @@
 import { Fragment } from 'react'
-import { FileText, Folder } from 'lucide-react'
+import { FileText, Folder, TextAlignStart } from 'lucide-react'
 import { Link, useNavigate } from 'react-router'
 import { CutText } from '@renderer/components/CutText'
 import { InitialsChips } from '@renderer/components/InitialsChips'
 import { SkillChips } from '@renderer/components/SkillChips'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import type { Person } from '@shared/people'
+import { hasSummary } from '@shared/summary'
 import { clockNow, formatDate } from '@shared/time'
 import { layoutRows } from '@shared/upcoming-groups'
 import { GroupRow } from '@renderer/components/GroupRow'
@@ -136,6 +137,17 @@ export function TrainingTable({
                           <Tooltip text="Has notes">
                             <span className={styles.mark}>
                               <FileText size={13} strokeWidth={1.75} aria-label="Has notes" />
+                            </span>
+                          </Tooltip>
+                        )}
+                        {hasSummary(row) && (
+                          <Tooltip text="Summary">
+                            <span className={styles.mark}>
+                              <TextAlignStart
+                                size={13}
+                                strokeWidth={1.75}
+                                aria-label="Has a summary"
+                              />
                             </span>
                           </Tooltip>
                         )}

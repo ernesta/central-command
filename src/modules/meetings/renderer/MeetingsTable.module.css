@@ -1,0 +1,12 @@
+/* The series and its marker share one line: the text ellipsises, the marker stays visible after it. */
+.line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.mark {
+  display: inline-flex;
+  flex: none;
+  color: var(--text-muted);
+}

@@ -1,9 +1,12 @@
 import { Fragment } from 'react'
+import { TextAlignStart } from 'lucide-react'
 import { Link, useNavigate } from 'react-router'
 import { CutText } from '@renderer/components/CutText'
 import { InitialsChips } from '@renderer/components/InitialsChips'
 import { SkillChips } from '@renderer/components/SkillChips'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
+import { hasSummary } from '@shared/summary'
+import { Tooltip } from '@renderer/components/Tooltip'
 import { layoutRows } from '@shared/upcoming-groups'
 import { GroupRow } from '@renderer/components/GroupRow'
 import { clockNow, durationMinutes, formatDate, formatDuration } from '../shared/time'
@@ -11,6 +14,7 @@ import { formatTimeRange, initialsFor, isUpcoming } from '../shared/query'
 import type { MeetingIndexRow, Person } from '../shared/types'
 import { meetingRoute } from './meetings-paths'
 import shared from '@renderer/components/ListTable.module.css'
+import styles from './MeetingsTable.module.css'
 
 /** Column widths; the summary takes the rest. */
 const WIDTHS = { date: 128, time: 124, duration: 100, series: 200, skills: 190, attendees: 188 }
@@ -98,7 +102,20 @@ export function MeetingsTable({
                       <CutText>{duration === null ? '—' : formatDuration(duration)}</CutText>
                     </td>
                     <td>
-                      <CutText>{row.series || '—'}</CutText>
+                      <div className={styles.line}>
+                        <CutText>{row.series || '—'}</CutText>
+                        {hasSummary(row) && (
+                          <Tooltip text="Summary">
+                            <span className={styles.mark}>
+                              <TextAlignStart
+                                size={13}
+                                strokeWidth={1.75}
+                                aria-label="Has a summary"
+                              />
+                            </span>
+                          </Tooltip>
+                        )}
+                      </div>
                     </td>
                     <td className={shared.secondary}>
                       {row.summary ? (
