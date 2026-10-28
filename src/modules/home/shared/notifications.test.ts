@@ -3,7 +3,8 @@ import { DEFAULT_HOME_SETTINGS } from '@shared/home-settings'
 import type { WatchItem } from '../../watch/shared/types'
 import { digestLine, planNotifications, pruneSent } from './notifications'
 import { buildWidgetSnapshot } from './widget'
-import type { HomeSummary } from './types'
+import type { HomeSummary, HomeTask } from './types'
+import { tasksIn } from './summary.testing'
 
 const on = {
   ...DEFAULT_HOME_SETTINGS.notifications,
@@ -15,14 +16,14 @@ const empty: HomeSummary = {
   today: '2026-10-15',
   generatedAt: '2026-10-15T08:40:00.000Z',
   timer: null,
-  hours: { research: null, work: null },
-  tasks: { overdue: [], today: [], overdueTotal: 0, todayTotal: 0 },
+  hours: { research: null, work: null, life: null },
+  tasks: tasksIn({}),
   meetings: { next: null, openTodos: 0 },
   upcoming: [],
   watch: null,
   weather: null
 }
-const task = (uid: string, daysLate = 0): HomeSummary['tasks']['today'][number] => ({
+const task = (uid: string, daysLate = 0): HomeTask => ({
   uid,
   title: uid,
   parent: null,
@@ -52,12 +53,14 @@ const state = { sent: new Set<string>(), since: '2026-10-01T00:00:00.000Z' }
 const at = (time: string): { date: string; time: string } => ({ date: '2026-10-15', time })
 const withDay: HomeSummary = {
   ...empty,
-  tasks: {
-    overdue: [task('late', 3)],
-    today: [task('a'), task('b')],
-    overdueTotal: 1,
-    todayTotal: 2
-  },
+  tasks: tasksIn({
+    research: {
+      overdue: [task('late', 3)],
+      today: [task('a'), task('b')],
+      overdueTotal: 1,
+      todayTotal: 2
+    }
+  }),
   meetings: { next: meeting('14:00'), openTodos: 0 }
 }
 const watched = (id: number, firstSeenAt = '2026-10-14T00:00:00.000Z'): WatchItem => ({
@@ -163,7 +166,7 @@ describe('planNotifications', () => {
   it('gives Watch its own switches: with the master off only they speak, and with all off nothing does', () => {
     const s: HomeSummary = {
       ...empty,
-      tasks: { ...empty.tasks, todayTotal: 2 },
+      tasks: tasksIn({ research: { todayTotal: 2 } }),
       watch: {
         counts: { new: 1, newRelevant: 1, sources: 1, failing: 0, changed: 0 },
         fresh: [watched(1)]
@@ -229,7 +232,9 @@ describe('planNotifications', () => {
 
 describe('digestLine and pruneSent', () => {
   it('speaks of one task in the singular and says nothing for nothing', () => {
-    expect(digestLine({ ...empty, tasks: { ...empty.tasks, todayTotal: 1 } })).toBe('1 task due')
+    expect(digestLine({ ...empty, tasks: tasksIn({ research: { todayTotal: 1 } }) })).toBe(
+      '1 task due'
+    )
     expect(digestLine(empty)).toBe('')
   })
 
@@ -245,7 +250,9 @@ describe('buildWidgetSnapshot', () => {
     const many = Array.from({ length: 6 }, (_, i) => task(`t${i}`))
     const snap = buildWidgetSnapshot({
       ...withDay,
-      tasks: { overdue: [task('late', 2)], today: many, overdueTotal: 1, todayTotal: 6 },
+      tasks: tasksIn({
+        research: { overdue: [task('late', 2)], today: many, overdueTotal: 1, todayTotal: 6 }
+      }),
       timer: {
         workspace: 'research',
         label: 'Reading',
@@ -267,7 +274,8 @@ describe('buildWidgetSnapshot', () => {
           aimMinutes: 4800,
           todayMinutes: 120,
           clients: [{ client: 'Impact', minutes: 900 }]
-        }
+        },
+        life: null
       }
     })
     expect(snap.version).toBe(1)
@@ -285,5 +293,23 @@ describe('buildWidgetSnapshot', () => {
     })
     expect(snap.work).toMatchObject({ label: 'This month', minutes: 900, aimMinutes: 4800 })
     expect(JSON.stringify(snap)).not.toContain('uid')
+  })
+})
+
+describe('Life in the summary (stage 1: the digest and the widget file still count Research and Work only)', () => {
+  const lifeBusy: HomeSummary = {
+    ...empty,
+    tasks: tasksIn({
+      research: { todayTotal: 1 },
+      life: { overdue: [task('l', 4)], today: [task('m')], overdueTotal: 7, todayTotal: 9 }
+    })
+  }
+  it('leaves Life’s tasks out of the digest line', () => {
+    expect(digestLine(lifeBusy)).toBe('1 task due')
+  })
+  it('leaves Life’s tasks out of the widget file', () => {
+    const snap = buildWidgetSnapshot(lifeBusy)
+    expect(snap.taskCounts).toEqual({ overdue: 0, today: 1 })
+    expect(snap.tasks.map((t) => t.title)).toEqual([])
   })
 })

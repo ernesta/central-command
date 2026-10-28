@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { HomeEvent, HomeSummary, HomeTask } from '../shared/types'
+import { tasksIn } from '../shared/summary.testing'
+import type { HomeEvent, HomeSummary, HomeTask, HomeWorkspace } from '../shared/types'
 import {
   comingUpItems,
   dayLabel,
@@ -11,7 +12,7 @@ import {
   whenLabel
 } from './home-model'
 
-const task = (uid: string, workspace: 'research' | 'work', daysLate = 0): HomeTask => ({
+const task = (uid: string, workspace: HomeWorkspace, daysLate = 0): HomeTask => ({
   uid,
   title: uid,
   parent: null,
@@ -42,8 +43,8 @@ const base: HomeSummary = {
   today: '2026-10-15',
   generatedAt: '',
   timer: null,
-  hours: { research: null, work: null },
-  tasks: { overdue: [], today: [], overdueTotal: 0, todayTotal: 0 },
+  hours: { research: null, work: null, life: null },
+  tasks: tasksIn({}),
   meetings: { next: null, openTodos: 4 },
   upcoming: [],
   watch: null,
@@ -54,21 +55,28 @@ describe('homeView', () => {
   it('keeps each workspace to its own tasks', () => {
     const s: HomeSummary = {
       ...base,
-      tasks: {
-        overdue: [task('a', 'research', 2), task('b', 'work', 1)],
-        today: [task('c', 'work')],
-        overdueTotal: 2,
-        todayTotal: 1
-      }
+      tasks: tasksIn({
+        research: { overdue: [task('a', 'research', 2)], overdueTotal: 1 },
+        work: {
+          overdue: [task('b', 'work', 1)],
+          today: [task('c', 'work')],
+          overdueTotal: 1,
+          todayTotal: 1
+        },
+        life: { today: [task('d', 'life')], todayTotal: 1 }
+      })
     }
     expect(homeView(s, 'work').tasks.overdue.map((t) => t.uid)).toEqual(['b'])
     expect(homeView(s, 'work').tasks.today.map((t) => t.uid)).toEqual(['c'])
     expect(homeView(s, 'research').tasks.today).toEqual([])
+    expect(homeView(s, 'research').tasks.overdue.map((t) => t.uid)).toEqual(['a'])
+    expect(homeView(s, 'life').tasks.today.map((t) => t.uid)).toEqual(['d'])
+    expect(homeView(s, 'life').tasks.overdue).toEqual([])
     expect(homeView(s, 'work').tasks.cut).toBe(false)
   })
 
   it('says when the summary cut a list short', () => {
-    const s = { ...base, tasks: { ...base.tasks, today: [task('c', 'work')], todayTotal: 12 } }
+    const s = { ...base, tasks: tasksIn({ work: { today: [task('c', 'work')], todayTotal: 12 } }) }
     expect(homeView(s, 'work').tasks.cut).toBe(true)
   })
 

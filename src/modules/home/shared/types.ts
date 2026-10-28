@@ -3,7 +3,13 @@ import type { WatchKind } from '../../watch/shared/types'
 
 import type { TaskStatus } from '../../tasks/shared/types'
 
-export type HomeWorkspace = 'research' | 'work'
+export type HomeWorkspace = 'research' | 'work' | 'life'
+
+/** Home's workspaces, in the order the summary lists them. */
+export const HOME_WORKSPACES: readonly HomeWorkspace[] = ['research', 'work', 'life']
+
+/** The workspaces that have meetings (Life has none for now). */
+export type MeetingHomeWorkspace = Exclude<HomeWorkspace, 'life'>
 
 export interface HomeTask {
   uid: string
@@ -29,7 +35,7 @@ export interface HomeTask {
 }
 
 export interface HomeMeeting {
-  workspace: HomeWorkspace
+  workspace: MeetingHomeWorkspace
   id: string
   series: string
   date: string
@@ -54,6 +60,8 @@ export interface HomeEvent {
   route: string
   /** Days from today (0 = today). */
   inDays: number
+  /** The workspace it belongs to, when the route does not say (a Watch item's route is its web address). */
+  workspace?: HomeWorkspace
   /** HH:MM it ends, when known (a meeting or a training). */
   end?: string | null
   /** A meeting's attendees (full names), for "Meeting · with …". */
@@ -104,6 +112,7 @@ export interface HomeHours {
 export interface HomeHoursByWorkspace {
   research: HomeHours | null
   work: HomeHours | null
+  life: HomeHours | null
 }
 
 export interface WeatherSummary {
@@ -129,6 +138,14 @@ export interface WeatherSummary {
   }[]
 }
 
+/** One workspace's overdue and due-today tasks, each list cut to `SHOWN_TASKS`, with the whole counts. */
+export interface HomeTasks {
+  overdue: HomeTask[]
+  today: HomeTask[]
+  overdueTotal: number
+  todayTotal: number
+}
+
 export interface WatchBrief {
   counts: WatchCounts
   /** The newest items not yet looked at (a few dozen at most), for the notification about what is new. */
@@ -140,12 +157,8 @@ export interface HomeSummary {
   generatedAt: string
   timer: HomeTimer | null
   hours: HomeHoursByWorkspace
-  tasks: {
-    overdue: HomeTask[]
-    today: HomeTask[]
-    overdueTotal: number
-    todayTotal: number
-  }
+  /** Each workspace's own lists and totals: one workspace's tasks never use another's slots. */
+  tasks: Record<HomeWorkspace, HomeTasks>
   meetings: {
     next: HomeMeeting | null
     openTodos: number

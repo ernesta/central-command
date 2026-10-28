@@ -1,4 +1,5 @@
 import type { NotificationSettings } from '@shared/home-settings'
+import { COUNTED_WORKSPACES, taskTotals } from './summary'
 import type { HomeSummary } from './types'
 
 export interface PlannedNotification {
@@ -35,8 +36,9 @@ const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n =
 /** "3 tasks due, 1 overdue · Supervision at 14:00": what the day holds, in a line. Empty when it holds nothing. */
 export function digestLine(summary: HomeSummary): string {
   const parts: string[] = []
-  if (summary.tasks.todayTotal > 0) parts.push(`${plural(summary.tasks.todayTotal, 'task')} due`)
-  if (summary.tasks.overdueTotal > 0) parts.push(`${summary.tasks.overdueTotal} overdue`)
+  const total = taskTotals(summary, COUNTED_WORKSPACES)
+  if (total.today > 0) parts.push(`${plural(total.today, 'task')} due`)
+  if (total.overdue > 0) parts.push(`${total.overdue} overdue`)
   const text = parts.join(', ')
   const next = summary.meetings.next
   const meeting =

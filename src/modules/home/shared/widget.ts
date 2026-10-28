@@ -1,4 +1,5 @@
-import type { HomeSummary } from './types'
+import { byUrgency, COUNTED_WORKSPACES, taskTotals } from './summary'
+import type { HomeSummary, HomeTask, HomeWorkspace } from './types'
 
 /**
  * The small file a Mac widget reads. Plain JSON, versioned, no more than a widget draws: nothing the widget has to
@@ -38,10 +39,21 @@ export interface WidgetSnapshot {
 export const WIDGET_TASKS = 5
 
 export function buildWidgetSnapshot(summary: HomeSummary): WidgetSnapshot {
+  const shown = (pick: (w: HomeWorkspace) => HomeTask[]): HomeTask[] =>
+    COUNTED_WORKSPACES.flatMap(pick).sort(byUrgency)
   const tasks = [
-    ...summary.tasks.overdue.map((t) => ({ title: t.title, list: t.list, overdue: true })),
-    ...summary.tasks.today.map((t) => ({ title: t.title, list: t.list, overdue: false }))
+    ...shown((w) => summary.tasks[w].overdue).map((t) => ({
+      title: t.title,
+      list: t.list,
+      overdue: true
+    })),
+    ...shown((w) => summary.tasks[w].today).map((t) => ({
+      title: t.title,
+      list: t.list,
+      overdue: false
+    }))
   ].slice(0, WIDGET_TASKS)
+  const counts = taskTotals(summary, COUNTED_WORKSPACES)
   const m = summary.meetings.next
   return {
     version: 1,
@@ -49,7 +61,7 @@ export function buildWidgetSnapshot(summary: HomeSummary): WidgetSnapshot {
     today: summary.today,
     timer: summary.timer ? { label: summary.timer.label, minutes: summary.timer.minutes } : null,
     tasks,
-    taskCounts: { overdue: summary.tasks.overdueTotal, today: summary.tasks.todayTotal },
+    taskCounts: counts,
     nextMeeting: m ? { title: m.series || 'Meeting', date: m.date, time: m.start } : null,
     week: summary.hours.research,
     work: summary.hours.work,

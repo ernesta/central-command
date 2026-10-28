@@ -65,8 +65,7 @@ function eventKindDetail(event: HomeEvent, initialsOf: (name: string) => string 
 
 /** The one workspace's share of the summary, which holds both: its tasks, and what is dated in the next 3 days. */
 export function homeView(summary: HomeSummary, workspace: HomeWorkspace): HomeView {
-  const { tasks } = summary
-  const mine = (t: HomeTask): boolean => t.workspace === workspace
+  const tasks = summary.tasks[workspace]
   // A saved Watch item's route is its web address (a notification opens that); on Home its row opens the Watch page, where it is saved.
   const here = summary.upcoming
     .map((e) => (e.id.startsWith('watch:') ? { ...e, route: WATCH_ROUTE } : e))
@@ -83,8 +82,8 @@ export function homeView(summary: HomeSummary, workspace: HomeWorkspace): HomeVi
 
   return {
     tasks: {
-      overdue: tasks.overdue.filter(mine),
-      today: tasks.today.filter(mine),
+      overdue: tasks.overdue,
+      today: tasks.today,
       cut: tasks.overdue.length < tasks.overdueTotal || tasks.today.length < tasks.todayTotal
     },
     todayEvents,

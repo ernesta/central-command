@@ -72,7 +72,7 @@ describe('collectHomeSummary: tasks', () => {
       "UPDATE tasks SET parent_uid = 'series', own_kind = 'self-study' WHERE uid = 'day1'"
     ).run()
     const summary = collect()
-    expect(summary.tasks.today.map((t) => t.title)).toEqual([])
+    expect(summary.tasks.research.today.map((t) => t.title)).toEqual([])
     expect(summary.upcoming.map((e) => e.title)).toEqual(['Social Worlds: Day 1'])
   })
   it('reads due tasks of both workspaces, not done, trashed or undated ones', () => {
@@ -85,17 +85,16 @@ describe('collectHomeSummary: tasks', () => {
       "INSERT INTO tasks (uid, workspace, title, due, list, deleted_at, created_at, updated_at) VALUES ('gone', 'research', 'gone', '2026-10-15', 'L', 'x', 'x', 'x')"
     ).run()
     const s = collect()
-    expect(s.tasks.today.map((t) => t.uid).sort()).toEqual(['a', 'w'])
-    expect(s.tasks.overdue.map((t) => t.uid)).toEqual(['late'])
+    expect(s.tasks.research.today.map((t) => t.uid)).toEqual(['a'])
+    expect(s.tasks.work.today.map((t) => t.uid)).toEqual(['w'])
+    expect(s.tasks.research.overdue.map((t) => t.uid)).toEqual(['late'])
   })
 
-  it('leaves out Life: its tasks and trainings are not on any Home, and use none of its slots', () => {
-    task('a')
-    task('l', { workspace: 'life' })
+  const training = (workspace: string, id: string, date: string, over = {}): void =>
     upsertTraining(db, {
-      workspace: 'life',
-      id: 'lt',
-      date: '2026-10-16',
+      workspace,
+      id,
+      date,
       start: null,
       end: null,
       title: 'Lesson',
@@ -112,11 +111,57 @@ describe('collectHomeSummary: tasks', () => {
       excerpt: '',
       hasNotes: false,
       problems: [],
-      contentHash: 'h'
-    })
+      contentHash: 'h',
+      ...over
+    } as TrainingIndexRow)
+
+  it('keeps Life’s tasks and trainings in Life, and Research’s and Work’s out of it', () => {
+    task('a')
+    task('w', { workspace: 'work' })
+    task('l', { workspace: 'life' })
+    training('life', 'lt', '2026-10-16')
+    training('research', 'rt', '2026-10-17', { title: 'Lecture' })
     const s = collect()
-    expect(s.tasks.today.map((t) => t.uid)).toEqual(['a'])
-    expect(s.tasks.todayTotal).toBe(1)
+    expect(s.tasks.life.today.map((t) => t.uid)).toEqual(['l'])
+    expect(s.tasks.research.today.map((t) => t.uid)).toEqual(['a'])
+    expect(s.tasks.work.today.map((t) => t.uid)).toEqual(['w'])
+    expect(s.tasks.life.today[0].route).toBe('/life/tasks/t/l')
+    expect(s.upcoming.map((e) => [e.title, e.route])).toEqual([
+      ['Lesson', '/life/training/t/lt'],
+      ['Lecture', '/research/training/t/rt']
+    ])
+  })
+
+  it('gives each workspace its own slots: eight overdue Life tasks do not change Research’s lists or totals', () => {
+    task('a', { due: '2026-10-10' })
+    for (let i = 0; i < 8; i += 1) task(`l${i}`, { workspace: 'life', due: '2026-10-01' })
+    const s = collect()
+    expect(s.tasks.research.overdue.map((t) => t.uid)).toEqual(['a'])
+    expect(s.tasks.research.overdueTotal).toBe(1)
+    expect(s.tasks.life.overdue).toHaveLength(5)
+    expect(s.tasks.life.overdueTotal).toBe(8)
+  })
+
+  it('hides a Life series task over Life self-study tasks and shows each as its training', () => {
+    task('series', { workspace: 'life', title: 'Course self-study', list: 'Training' })
+    task('day1', { workspace: 'life', title: 'Day 1', list: '', due: '2026-10-16' })
+    db.prepare(
+      "UPDATE tasks SET parent_uid = 'series', own_kind = 'self-study' WHERE uid = 'day1'"
+    ).run()
+    const s = collect()
+    expect(s.tasks.life.today).toEqual([])
+    expect(s.upcoming.map((e) => [e.title, e.route])).toEqual([
+      ['Course: Day 1', '/life/tasks/t/day1']
+    ])
+    expect(s.upcoming.map((e) => e.route.startsWith('/research'))).toEqual([false])
+  })
+
+  it('has no meetings for Life, and Life’s meetings (if any existed) stay off the next-meeting card', () => {
+    db.prepare(
+      `INSERT INTO meetings (workspace, meeting_id, series, date, start_time, content_hash) VALUES ('life', 'x', 'Chat', '2026-10-22', '10:00', 'h')`
+    ).run()
+    const s = collect()
+    expect(s.meetings.next).toBeNull()
     expect(s.upcoming).toEqual([])
   })
 
@@ -125,7 +170,7 @@ describe('collectHomeSummary: tasks', () => {
     db.prepare("UPDATE tasks SET sublist = 'Methods' WHERE uid = 'parent'").run()
     task('kid', { list: '' })
     db.prepare("UPDATE tasks SET parent_uid = 'parent' WHERE uid = 'kid'").run()
-    const kid = collect().tasks.today.find((t) => t.uid === 'kid')
+    const kid = collect().tasks.research.today.find((t) => t.uid === 'kid')
     expect(kid?.list).toBe('Thesis › Methods')
   })
 
@@ -141,7 +186,7 @@ describe('collectHomeSummary: tasks', () => {
        VALUES ('research', 't1', '2026-10-21', 'R day', '[]', '[]', '', '', 0, '[]', 'h', 'own-training')`
     ).run()
     const s = collect()
-    expect(s.tasks.today.map((t) => t.uid)).toEqual(['ordinary'])
+    expect(s.tasks.research.today.map((t) => t.uid)).toEqual(['ordinary'])
     expect(s.upcoming.map((e) => [e.kind, e.title])).toEqual([
       ['meeting', 'Supervision'],
       ['training', 'R day']
@@ -154,7 +199,7 @@ describe('collectHomeSummary: tasks', () => {
       `INSERT INTO training (workspace, entry_id, date, title, skills, leads, summary, excerpt, has_notes, problems, content_hash, task)
        VALUES ('research', 't2', '2026-10-21', 'X', '[]', '[]', '', '', 0, '[]', 'h', 'auto')`
     ).run()
-    expect(collect().tasks.today.map((t) => t.uid)).toEqual(['auto-task'])
+    expect(collect().tasks.research.today.map((t) => t.uid)).toEqual(['auto-task'])
   })
 })
 

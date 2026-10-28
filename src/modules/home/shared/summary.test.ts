@@ -11,7 +11,7 @@ const base: HomeInputs = {
   trainings: [],
   openMeetingTodos: 0,
   timer: null,
-  hours: { research: null, work: null },
+  hours: { research: null, work: null, life: null },
   timeOff: [],
   watch: null,
   weather: null
@@ -57,8 +57,8 @@ describe('tasks', () => {
         task({ uid: 'later', due: '2026-10-20' })
       ]
     })
-    expect(s.tasks.overdue.map((t) => [t.uid, t.daysLate])).toEqual([['late', 5]])
-    expect(s.tasks.today.map((t) => [t.uid, t.daysLate])).toEqual([['now', 0]])
+    expect(s.tasks.research.overdue.map((t) => [t.uid, t.daysLate])).toEqual([['late', 5]])
+    expect(s.tasks.research.today.map((t) => [t.uid, t.daysLate])).toEqual([['now', 0]])
   })
 
   it('puts the most overdue first, then high priority, then by title', () => {
@@ -71,7 +71,7 @@ describe('tasks', () => {
         task({ uid: 'old', due: '2026-10-01', priority: 'low' })
       ]
     })
-    expect(s.tasks.overdue.map((t) => t.uid)).toEqual(['old', 'h', 'a', 'b'])
+    expect(s.tasks.research.overdue.map((t) => t.uid)).toEqual(['old', 'h', 'a', 'b'])
   })
 
   it('shows a handful and says how many there are', () => {
@@ -79,13 +79,14 @@ describe('tasks', () => {
       task({ uid: `t${String(i).padStart(2, '0')}` })
     )
     const s = buildHomeSummary({ ...base, tasks: many })
-    expect(s.tasks.today).toHaveLength(SHOWN_TASKS)
-    expect(s.tasks.todayTotal).toBe(12)
+    expect(s.tasks.research.today).toHaveLength(SHOWN_TASKS)
+    expect(s.tasks.research.todayTotal).toBe(12)
   })
 
   it('links a task to its page in its own workspace', () => {
     const s = buildHomeSummary({ ...base, tasks: [task({ uid: 'w1', workspace: 'work' })] })
-    expect(s.tasks.today[0].route).toBe('/work/tasks/t/w1')
+    expect(s.tasks.work.today[0].route).toBe('/work/tasks/t/w1')
+    expect(s.tasks.research.today).toEqual([])
   })
 })
 
@@ -257,7 +258,7 @@ describe('upcoming', () => {
       nowMinutes: 11 * 60,
       trainings: [tr('over', '09:00', '10:00'), tr('now', '10:30', '12:00')]
     })
-    expect(s.upcoming.map((e) => e.id)).toEqual(['training:now'])
+    expect(s.upcoming.map((e) => e.id)).toEqual(['training:research:now'])
   })
 
   it('does not repeat today\'s tasks as "coming up"', () => {
@@ -265,9 +266,63 @@ describe('upcoming', () => {
     expect(s.upcoming).toEqual([])
   })
 
-  it('keeps only twelve', () => {
-    const tasks = Array.from({ length: 20 }, (_, i) => task({ uid: `t${i}`, due: '2026-10-20' }))
-    expect(buildHomeSummary({ ...base, tasks }).upcoming).toHaveLength(12)
+  it('keeps only five of the days ahead for each workspace', () => {
+    const tasks = (workspace: 'research' | 'life', n: number): TaskInput[] =>
+      Array.from({ length: n }, (_, i) =>
+        task({ uid: `${workspace}${i}`, workspace, due: '2026-10-20' })
+      )
+    const s = buildHomeSummary({ ...base, tasks: [...tasks('research', 20), ...tasks('life', 8)] })
+    const ids = (w: string): string[] =>
+      s.upcoming.filter((e) => e.route.startsWith(`/${w}/`)).map((e) => e.id)
+    expect(ids('research')).toHaveLength(5)
+    expect(ids('life')).toHaveLength(5)
+  })
+
+  it("keeps every one of today's events and every saved Watch date, past the cap", () => {
+    const items = Array.from({ length: 9 }, (_, i) =>
+      watchItem({ id: i + 1, state: 'saved', date: `2026-10-${20 + i}` })
+    )
+    const s = buildHomeSummary({
+      ...base,
+      tasks: Array.from({ length: 9 }, (_, i) => task({ uid: `t${i}`, due: '2026-10-20' })),
+      watch: {
+        counts: { new: 0, newRelevant: 0, sources: 1, failing: 0, changed: 0 },
+        fresh: [],
+        upcoming: items
+      }
+    })
+    expect(s.upcoming.filter((e) => e.id.startsWith('watch:'))).toHaveLength(9)
+    expect(s.upcoming.filter((e) => e.id.startsWith('task:'))).toHaveLength(5)
+  })
+
+  it('a Life training has a Life route and its own event id', () => {
+    const s = buildHomeSummary({
+      ...base,
+      trainings: [
+        {
+          workspace: 'life',
+          id: 'x',
+          title: 'Lesson',
+          date: '2026-10-16',
+          start: null,
+          end: null,
+          mode: null
+        },
+        {
+          workspace: 'research',
+          id: 'x',
+          title: 'Lecture',
+          date: '2026-10-16',
+          start: null,
+          end: null,
+          mode: null
+        }
+      ]
+    })
+    expect(s.upcoming.map((e) => [e.id, e.route])).toEqual([
+      ['training:research:x', '/research/training/t/x'],
+      ['training:life:x', '/life/training/t/x']
+    ])
   })
 })
 
@@ -288,7 +343,8 @@ describe('the rest', () => {
         todayMinutes: 60,
         clients: []
       },
-      work: null
+      work: null,
+      life: null
     }
     const items = Array.from({ length: 60 }, (_, i) => watchItem({ id: i + 1 }))
     const s = buildHomeSummary({
@@ -328,7 +384,7 @@ describe('a task’s marks', () => {
         })
       ]
     })
-    expect(s.tasks.overdue[0]).toMatchObject({
+    expect(s.tasks.research.overdue[0]).toMatchObject({
       uid: 'kid',
       parent: 'Publish Study A',
       study: false

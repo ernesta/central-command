@@ -4,6 +4,7 @@ import { join } from 'path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import type { HomeSummary } from '../shared/types'
 import { WidgetWriter } from './widget-writer'
+import { tasksIn } from '../shared/summary.testing'
 
 let dir: string
 beforeEach(async () => {
@@ -17,8 +18,8 @@ const summary = (generatedAt: string, todayTotal = 1): HomeSummary => ({
   today: '2026-10-15',
   generatedAt,
   timer: null,
-  hours: { research: null, work: null },
-  tasks: { overdue: [], today: [], overdueTotal: 0, todayTotal },
+  hours: { research: null, work: null, life: null },
+  tasks: tasksIn({ research: { todayTotal } }),
   meetings: { next: null, openTodos: 0 },
   upcoming: [],
   watch: null,
@@ -57,7 +58,8 @@ describe('WidgetWriter', () => {
         aimMinutes: 4800,
         todayMinutes: 0,
         clients: [{ client: 'Impact', minutes: 105 }]
-      }
+      },
+      life: null
     }
     await w.write({ ...summary('a'), hours })
     const written = JSON.parse(await readFile(join(dir, 'widget', 'snapshot.json'), 'utf8'))

@@ -1,16 +1,19 @@
 import type { TimeOffEntry } from '@shared/tracking/types'
 import { daysLate } from '../../tasks/shared/late'
 import type { WatchItem } from '../../watch/shared/types'
-import type {
-  HomeEvent,
-  HomeHoursByWorkspace,
-  HomeMeeting,
-  HomeSummary,
-  HomeTask,
-  HomeTimer,
-  HomeWorkspace,
-  WatchBrief,
-  WeatherSummary
+import {
+  HOME_WORKSPACES,
+  type HomeEvent,
+  type HomeHoursByWorkspace,
+  type HomeMeeting,
+  type HomeSummary,
+  type HomeTask,
+  type HomeTasks,
+  type MeetingHomeWorkspace,
+  type HomeTimer,
+  type HomeWorkspace,
+  type WatchBrief,
+  type WeatherSummary
 } from './types'
 
 import type { TaskStatus } from '../../tasks/shared/types'
@@ -36,7 +39,7 @@ export interface TaskInput {
 }
 
 export interface MeetingInput {
-  workspace: HomeWorkspace
+  workspace: MeetingHomeWorkspace
   id: string
   series: string
   date: string
@@ -75,9 +78,9 @@ export interface HomeInputs {
   weather: WeatherSummary | null
 }
 
-/** How many of each list the page shows; the totals say how many there are. */
-export const SHOWN_TASKS = 8
-export const SHOWN_UPCOMING = 12
+/** How many of each list a workspace's Home shows; the totals say how many there are. Per workspace, so one never uses another's slots. */
+export const SHOWN_TASKS = 5
+export const SHOWN_UPCOMING = 5
 export const SHOWN_WATCH = 50
 const TASKS_AHEAD_DAYS = 14
 const MEETINGS_AHEAD_DAYS = 21
@@ -90,9 +93,9 @@ export const daysFrom = (today: string, date: string): number => dayIndex(date) 
 
 export const taskRoute = (workspace: HomeWorkspace, uid: string): string =>
   `/${workspace}/tasks/t/${uid}`
-export const trainingRoute = (id: string): string =>
-  `/research/training/t/${encodeURIComponent(id)}`
-export const meetingRoute = (workspace: HomeWorkspace, id: string): string =>
+export const trainingRoute = (workspace: HomeWorkspace, id: string): string =>
+  `/${workspace}/training/t/${encodeURIComponent(id)}`
+export const meetingRoute = (workspace: MeetingHomeWorkspace, id: string): string =>
   `/${workspace}/meetings/m/${encodeURIComponent(id)}`
 
 const PRIORITY_RANK = { high: 0, normal: 1, low: 2 } as const
@@ -119,7 +122,7 @@ function toHomeTask(t: TaskInput, today: string): HomeTask | null {
 }
 
 /** Most overdue first, then by priority, then by title: what to look at before anything else. */
-const byUrgency = (a: HomeTask, b: HomeTask): number =>
+export const byUrgency = (a: HomeTask, b: HomeTask): number =>
   b.daysLate - a.daysLate ||
   PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority] ||
   a.title.localeCompare(b.title)
@@ -163,6 +166,42 @@ const KIND_LABEL: Record<WatchItem['kind'], string> = {
   other: 'Watch'
 }
 
+/** The workspace an event belongs to: set on it, or the first part of its in-app route. */
+export function eventWorkspace(e: HomeEvent): HomeWorkspace | null {
+  if (e.workspace) return e.workspace
+  return HOME_WORKSPACES.find((w) => e.route.startsWith(`/${w}/`)) ?? null
+}
+
+/** The workspaces whose tasks the digest and the widget file count (stage 1 of `docs/LIFE_HOME_PLAN.md`: Life joins them in stage 3). */
+export const COUNTED_WORKSPACES: readonly HomeWorkspace[] = ['research', 'work']
+
+/** The whole counts of some workspaces' tasks, added up. */
+export function taskTotals(
+  summary: HomeSummary,
+  workspaces: readonly HomeWorkspace[]
+): { overdue: number; today: number } {
+  let overdue = 0
+  let today = 0
+  for (const w of workspaces) {
+    overdue += summary.tasks[w].overdueTotal
+    today += summary.tasks[w].todayTotal
+  }
+  return { overdue, today }
+}
+
+/** One workspace's lists: the most urgent first, each cut to the shown count. */
+function tasksOf(dated: HomeTask[], workspace: HomeWorkspace, today: string): HomeTasks {
+  const mine = dated.filter((t) => t.workspace === workspace)
+  const overdue = mine.filter((t) => t.due < today).sort(byUrgency)
+  const dueToday = mine.filter((t) => t.due === today).sort(byUrgency)
+  return {
+    overdue: overdue.slice(0, SHOWN_TASKS),
+    today: dueToday.slice(0, SHOWN_TASKS),
+    overdueTotal: overdue.length,
+    todayTotal: dueToday.length
+  }
+}
+
 /**
  * Everything the Home page shows, from data already read. Pure: no clock, no files, no network, so every rule
  * (what is overdue, what is next, what is coming up) is tested without an app.
@@ -172,8 +211,6 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
   const dated = input.tasks
     .map((t) => toHomeTask(t, today))
     .filter((t): t is HomeTask => t !== null)
-  const overdue = dated.filter((t) => t.due < today).sort(byUrgency)
-  const dueToday = dated.filter((t) => t.due === today).sort(byUrgency)
 
   const meetings = input.meetings
     .filter(
@@ -234,7 +271,7 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
     const inDays = daysFrom(today, t.date)
     if (inDays < 0 || inDays > TRAININGS_AHEAD_DAYS) continue
     events.push({
-      id: `training:${t.id}`,
+      id: `training:${t.workspace}:${t.id}`,
       kind: 'training',
       date: t.date,
       time: t.start,
@@ -242,7 +279,7 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
       mode: t.mode,
       title: t.title || 'Untitled training',
       detail: '',
-      route: trainingRoute(t.id),
+      route: trainingRoute(t.workspace, t.id),
       inDays
     })
   }
@@ -270,6 +307,7 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
       title: w.title,
       detail: `${KIND_LABEL[w.kind]} · ${w.sourceTitle}`,
       route: w.url,
+      workspace: 'research',
       inDays: daysFrom(today, w.date)
     })
   }
@@ -286,22 +324,32 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
     timer: input.timer,
     hours: input.hours,
     tasks: {
-      overdue: overdue.slice(0, SHOWN_TASKS),
-      today: dueToday.slice(0, SHOWN_TASKS),
-      overdueTotal: overdue.length,
-      todayTotal: dueToday.length
+      research: tasksOf(dated, 'research', today),
+      work: tasksOf(dated, 'work', today),
+      life: tasksOf(dated, 'life', today)
     },
     meetings: { next: nextMeeting, openTodos: input.openMeetingTodos },
-    // Everything dated today is kept (Home's "Today" lists it); the rest fills the days ahead.
-    upcoming: [
-      ...events.filter((e) => e.inDays <= 0),
-      ...events.filter((e) => e.inDays > 0).slice(0, SHOWN_UPCOMING)
-    ],
+    upcoming: shownEvents(events),
     watch: input.watch
       ? { counts: input.watch.counts, fresh: input.watch.fresh.slice(0, SHOWN_WATCH) }
       : null,
     weather: input.weather
   }
+}
+
+/**
+ * Everything dated today is kept (Home's "Today" lists it); the days ahead are cut to `SHOWN_UPCOMING` per workspace. A saved Watch
+ * item's date is not cut: the user chose it, and a notification may be due for it.
+ */
+function shownEvents(events: HomeEvent[]): HomeEvent[] {
+  const ahead = new Map<HomeWorkspace | null, number>()
+  return events.filter((e) => {
+    if (e.inDays <= 0 || e.id.startsWith('watch:')) return true
+    const w = eventWorkspace(e)
+    const n = (ahead.get(w) ?? 0) + 1
+    ahead.set(w, n)
+    return n <= SHOWN_UPCOMING
+  })
 }
 
 /** Minutes since midnight of an HH:MM time; a meeting with no time is treated as lasting all day. */

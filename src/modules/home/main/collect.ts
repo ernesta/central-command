@@ -25,7 +25,13 @@ import {
   type TaskInput,
   type TrainingInput
 } from '../shared/summary'
-import type { HomeHours, HomeSummary, HomeTimer, WeatherSummary } from '../shared/types'
+import {
+  HOME_WORKSPACES,
+  type HomeHours,
+  type HomeSummary,
+  type HomeTimer,
+  type WeatherSummary
+} from '../shared/types'
 
 /** The part of the tracking store Home reads. */
 export interface TrackingSource {
@@ -134,7 +140,7 @@ export interface CollectDeps {
 export function collectHomeSummary(deps: CollectDeps): HomeSummary {
   const { db, now } = deps
   // Meetings' and trainings' own tasks (and the series task over them) are never shown as tasks: their events are.
-  const all = (['research', 'work'] as const).flatMap((w) => listTasks(db, w))
+  const all = HOME_WORKSPACES.flatMap((w) => listTasks(db, w))
   const hidden = new Set([...hiddenTaskUids(all), ...studySeriesUids(all)])
   const tasks = (
     db
@@ -150,7 +156,6 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
               CASE WHEN t.parent_uid IS NULL THEN t.sublist ELSE COALESCE(p.sublist, '') END AS sublist
        FROM tasks t LEFT JOIN tasks p ON p.uid = t.parent_uid
        WHERE t.deleted_at IS NULL AND t.status != 'done' AND t.due IS NOT NULL
-         AND t.workspace IN ('research', 'work')
          AND t.uid NOT IN (SELECT task FROM meetings WHERE task != '')
          AND t.uid NOT IN (SELECT task FROM training WHERE task != '' AND task != 'auto')`
       )
@@ -183,8 +188,6 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
        FROM training WHERE date >= ? ORDER BY date, start_time`
     )
     .all(now.date) as TrainingInput[]
-  // Home is Research's and Work's; a Life training has no Home to be on.
-  const researchTrainings = trainings.filter((t) => t.workspace === 'research')
   const openMeetingTodos = (
     db
       .prepare(
@@ -203,10 +206,10 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
     generatedAt: deps.generatedAt,
     tasks,
     meetings,
-    trainings: researchTrainings,
+    trainings,
     openMeetingTodos,
     timer: homeTimer(db, deps.tracking, now),
-    hours: { research: homeHours(research, now), work: homeHours(work, now) },
+    hours: { research: homeHours(research, now), work: homeHours(work, now), life: null },
     timeOff: research
       ? timeOffRows(research, now.date)
           .filter((r) => !r.taken)

@@ -3,13 +3,14 @@ import { DEFAULT_HOME_SETTINGS } from '@shared/home-settings'
 import type { PlannedNotification } from '../shared/notifications'
 import type { HomeSummary } from '../shared/types'
 import { Notifier, type SentStore } from './notifier'
+import { tasksIn } from '../shared/summary.testing'
 
 const summary: HomeSummary = {
   today: '2026-10-15',
   generatedAt: '',
   timer: null,
-  hours: { research: null, work: null },
-  tasks: { overdue: [], today: [], overdueTotal: 0, todayTotal: 2 },
+  hours: { research: null, work: null, life: null },
+  tasks: tasksIn({ research: { todayTotal: 2 } }),
   meetings: { next: null, openTodos: 0 },
   upcoming: [],
   watch: null,
