@@ -136,3 +136,21 @@ describe('whenLabel', () => {
     expect(structuredOver({ eventStart: null, eventEnd: null }, today)).toBe(false)
   })
 })
+
+describe('ranges with both ends written out', () => {
+  it('reads "22 Sep 2026 - 11 Nov 2026" as one range, not two dates', () => {
+    expect(
+      findDates('Leading literacy briefing 22 Sep 2026 - 11 Nov 2026 Expert guidance', today)
+    ).toMatchObject({
+      eventStart: '2026-09-22',
+      eventEnd: '2026-11-11'
+    })
+    expect(findDates('Held 30 Dec 2026 to 2 Jan 2027', today)).toMatchObject({
+      eventStart: '2026-12-30',
+      eventEnd: '2027-01-02'
+    })
+    // A course whose range ended is over; one under way is not.
+    expect(isOver('Course 1 Sep 2026 - 5 Oct 2026', today)).toBe(true)
+    expect(isOver('Course 1 Sep 2026 - 25 Nov 2026', today)).toBe(false)
+  })
+})

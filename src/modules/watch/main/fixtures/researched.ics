@@ -1,0 +1,51 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//ResearchED - ECPv6.18.2//NONSGML v1.0//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:ResearchED
+X-ORIGINAL-URL:https://researched.org.uk
+X-WR-CALDESC:Events for ResearchED
+REFRESH-INTERVAL;VALUE=DURATION:PT1H
+X-Robots-Tag:noindex
+X-PUBLISHED-TTL:PT1H
+BEGIN:VEVENT
+DTSTART;TZID=Europe/London:20261114T083000
+DTEND;TZID=Europe/London:20261114T160000
+DTSTAMP:20260804T155421Z
+CREATED:20251205T112922Z
+LAST-MODIFIED:20260804T155421Z
+UID:43896-1794645000-1794672000@researched.org.uk
+SUMMARY:researchED Doha
+URL:https://researched.org.uk/event/researched-doha/
+LOCATION:Mesaieed International School\, Naslat Al Galayel St\, Umm Said\, Al Wakra Municipality\, Qatar
+CATEGORIES:Asia
+ATTACH;FMTTYPE=image/jpeg:https://researched.org.uk/wp-content/uploads/2025/12/doha.jpg
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;TZID=Europe/London:20270220T083000
+DTEND;TZID=Europe/London:20270220T170000
+DTSTAMP:20260925T144435Z
+CREATED:20260921T111800Z
+LAST-MODIFIED:20260925T144435Z
+UID:44064-1803112200-1803142800@researched.org.uk
+SUMMARY:researchED Scandinavia 2027 - Haninge
+URL:https://researched.org.uk/event/researched-scandinavia-2027/
+LOCATION:Fredrika Bremergymnasiet\, Dalarövägen 64\, Handen\, Haninge\, 136 46\, Sweden
+CATEGORIES:Europe,Sweden
+ATTACH;FMTTYPE=image/jpeg:https://researched.org.uk/wp-content/uploads/2025/12/Rudansjon-in-Haninge.jpg
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;TZID=Europe/London:20270306T083000
+DTEND;TZID=Europe/London:20270306T170000
+DTSTAMP:20261028T093002Z
+CREATED:20261028T093002Z
+LAST-MODIFIED:20261028T093002Z
+UID:44088-1804321800-1804352400@researched.org.uk
+SUMMARY:researchED Glasgow
+URL:https://researched.org.uk/event/researched-glasgow-2027/
+LOCATION:The Glasgow Academy\, 25 Colebrook Street\, Glasgow\, G12 8HE\, United Kingdom
+CATEGORIES:Scotland,United Kingdom
+ATTACH;FMTTYPE=image/jpeg:https://researched.org.uk/wp-content/uploads/2026/10/Glasgow.jpg
+END:VEVENT
+END:VCALENDAR

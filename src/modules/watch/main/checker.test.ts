@@ -189,7 +189,7 @@ describe('checkSource on a feed', () => {
     })
     const failing = getSource(db, s.id)!
     const out2 = await checkSource(db, failing, respond('', { status: 503 }), NOW)
-    expect(out2.error).toBe('The site answered 503')
+    expect(out2.error).toBe('The site had a problem (503)')
     expect(getSource(db, s.id)!.failures).toBe(2)
     expect(getCounts(db).failing).toBe(1)
   })
@@ -233,7 +233,12 @@ describe('checkSource on a page', () => {
 
   it('makes the first look new, then reports a new link and a changed text', async () => {
     const s = add({ method: 'page', url: 'https://ex.org/calendar' })
-    const first = await checkSource(db, s, respond(page(['Course on regression models'])), NOW)
+    const first = await checkSource(
+      db,
+      s,
+      respond(page(['Course on regression models 12 Nov 2026'])),
+      NOW
+    )
     expect(first).toMatchObject({ added: 1, baseline: true })
     expect(getCounts(db).new).toBe(1)
 
@@ -241,7 +246,9 @@ describe('checkSource on a page', () => {
     await checkSource(
       db,
       getSource(db, s.id)!,
-      respond(page(['Course on regression models', 'Summer school in Essex'])),
+      respond(
+        page(['Course on regression models 12 Nov 2026', 'Summer school in Essex 3 Dec 2026'])
+      ),
       t2
     )
     expect(listItems(db, { state: 'new' })).toHaveLength(2)
@@ -253,7 +260,10 @@ describe('checkSource on a page', () => {
       db,
       getSource(db, s.id)!,
       respond(
-        page(['Course on regression models', 'Summer school in Essex'], '<p>Now fully booked</p>')
+        page(
+          ['Course on regression models 12 Nov 2026', 'Summer school in Essex 3 Dec 2026'],
+          '<p>Now fully booked</p>'
+        )
       ),
       t3
     )

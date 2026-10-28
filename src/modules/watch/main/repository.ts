@@ -26,6 +26,7 @@ interface SourceRow {
   url: string
   kind: WatchKind
   method: WatchMethod
+  reading: string | null
   issn: string | null
   group_label: string
   task_uid: string | null
@@ -50,7 +51,7 @@ const toSource = (r: SourceRow): WatchSource => ({
   title: r.title,
   url: r.url,
   kind: r.kind,
-  method: r.method,
+  method: r.reading === 'event' ? 'event' : r.method,
   issn: r.issn,
   groupLabel: r.group_label,
   taskUid: r.task_uid,
@@ -119,15 +120,17 @@ export function addSource(db: Database, input: NewWatchSource, now: string): Wat
     throw new Error('Already watching that address')
   const info = db
     .prepare(
-      `INSERT INTO watch_sources (workspace, title, url, kind, method, issn, group_label, task_uid, interval_hours, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO watch_sources (workspace, title, url, kind, method, reading, issn, group_label, task_uid, interval_hours, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .run(
       workspace,
       title,
       url,
       input.kind,
-      input.method,
+      // The CHECK on `method` has no 'event': a page that is one event is stored as a page read as an event.
+      input.method === 'event' ? 'page' : input.method,
+      input.method === 'event' ? 'event' : null,
       issn,
       input.groupLabel ?? '',
       input.taskUid ?? null,
@@ -150,6 +153,16 @@ export function updateSource(db: Database, id: number, changes: WatchSourceChang
     next.intervalHours > 24 * 30
   )
     throw new Error('Invalid interval')
+  if (changes.method !== undefined && changes.method !== current.method) {
+    // Only a page and a page that is one event can be told apart by the user; a feed or a journal stays what it is.
+    const pages = ['page', 'event']
+    if (!pages.includes(current.method) || !pages.includes(changes.method))
+      throw new Error('That source cannot be read another way')
+    db.prepare('UPDATE watch_sources SET reading = ?, found_via = NULL WHERE id = ?').run(
+      changes.method === 'event' ? 'event' : null,
+      id
+    )
+  }
   const url = validSourceUrl(next.url)
   if (url !== current.url) {
     const taken = db.prepare('SELECT id FROM watch_sources WHERE url = ?').get(url) as
@@ -171,7 +184,7 @@ export function updateSource(db: Database, id: number, changes: WatchSourceChang
   if (url !== current.url)
     db.prepare(
       `UPDATE watch_sources SET url = ?, last_ok_at = NULL, last_error = NULL, failures = 0, page_hash = NULL,
-         changed_at = NULL, etag = NULL, last_modified = NULL WHERE id = ?`
+         changed_at = NULL, etag = NULL, last_modified = NULL, found_via = NULL WHERE id = ?`
     ).run(url, id)
   return getSource(db, id) as WatchSource
 }

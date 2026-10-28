@@ -1,0 +1,45 @@
+{
+  "events": [
+    {
+      "id": 43896,
+      "url": "https://researched.org.uk/event/researched-doha/",
+      "title": "researchED Doha",
+      "start_date": "2026-11-14 08:30:00",
+      "end_date": "2026-11-14 16:00:00",
+      "all_day": false,
+      "status": "publish",
+      "description": "<p>Join us at\u00a0Mesaieed International School\u00a0for a milestone moment in Qatar\u2019s educational journey, a day of powerful ideas, evidence-informed exploration, and insp</p>",
+      "venue": {
+        "city": "Al Wakra Municipality"
+      }
+    },
+    {
+      "id": 44064,
+      "url": "https://researched.org.uk/event/researched-scandinavia-2027/",
+      "title": "researchED Scandinavia 2027 &#8211; Haninge",
+      "start_date": "2027-02-20 08:30:00",
+      "end_date": "2027-02-20 17:00:00",
+      "all_day": false,
+      "status": "publish",
+      "description": "<p>ResearchED is an international school conference where researchers, teachers, and school leaders from around the world share knowledge about teaching, learning,</p>",
+      "venue": {
+        "city": "Haninge"
+      }
+    },
+    {
+      "id": 44088,
+      "url": "https://researched.org.uk/event/researched-glasgow-2027/",
+      "title": "researchED Glasgow",
+      "start_date": "2027-03-06 08:30:00",
+      "end_date": "2027-03-06 17:00:00",
+      "all_day": false,
+      "status": "publish",
+      "description": "<p></p>",
+      "venue": {
+        "city": "Glasgow"
+      }
+    }
+  ],
+  "total": 3,
+  "total_pages": 1
+}

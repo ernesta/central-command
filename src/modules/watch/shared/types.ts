@@ -36,8 +36,11 @@ export function itemKind(title: string, sourceKind: WatchKind): WatchKind | null
 export const kindsOf = (kind: ShownKind): WatchKind[] =>
   kind === 'training' ? ['training', 'summer-school'] : ['conference']
 
-/** How a source is read: a feed (RSS or Atom), a web page (new links, or a changed text), or Crossref's list of a journal's newest articles. */
-export const WATCH_METHODS = ['feed', 'page', 'crossref'] as const
+/**
+ * How a source is read: a feed (RSS or Atom), a web page (its events, from the calendar it carries when it carries one, else from its
+ * links and text), a page that is one event (its dates and its key-dates pages), or Crossref's list of a journal's newest articles.
+ */
+export const WATCH_METHODS = ['feed', 'page', 'event', 'crossref'] as const
 export type WatchMethod = (typeof WATCH_METHODS)[number]
 
 /** Stored states; the page calls `seen` "Read". There is no dismissed state: Save or Read are the two ways to deal with an item. */
@@ -83,7 +86,7 @@ export interface NewWatchSource {
 export type WatchSourceChanges = Partial<
   Pick<
     WatchSource,
-    'title' | 'url' | 'kind' | 'groupLabel' | 'intervalHours' | 'active' | 'workspace'
+    'title' | 'url' | 'kind' | 'groupLabel' | 'intervalHours' | 'active' | 'workspace' | 'method'
   >
 >
 
@@ -153,6 +156,8 @@ export interface ParsedItem {
   url: string
   summary: string
   publishedAt: string | null
+  /** A link to another site (page method): kept only when it carries a coming date of its own. */
+  offsite?: boolean
   /** Dates a structured source (an events API, iCal, JSON-LD) gives outright, so no text is read for them. */
   dates?: ItemDates
 }

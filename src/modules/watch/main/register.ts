@@ -81,6 +81,11 @@ function asChanges(value: unknown): WatchSourceChanges {
   if (str(o.groupLabel) !== undefined) out.groupLabel = str(o.groupLabel)
   if (typeof o.intervalHours === 'number') out.intervalHours = o.intervalHours
   if (typeof o.active === 'boolean') out.active = o.active
+  const method = str(o.method)
+  if (method !== undefined) {
+    if (!(WATCH_METHODS as readonly string[]).includes(method)) throw new Error('Invalid method')
+    out.method = method as WatchSourceChanges['method']
+  }
   return out
 }
 

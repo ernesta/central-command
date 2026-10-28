@@ -1,11 +1,9 @@
 import { createHash } from 'crypto'
 import type { Database } from 'better-sqlite3'
-import { findDate, findDates, isOver, structuredOver } from '../shared/dates'
+import { findDates, isOver, structuredOver } from '../shared/dates'
 import { scoreText } from '../shared/relevance'
-import { itemKind, type CheckOutcome, type ParsedItem, type WatchSource } from '../shared/types'
-import { crossrefUrl, parseCrossref } from './parse-crossref'
-import { parseFeed } from './parse-feed'
-import { datedSentences, parsePage } from './parse-page'
+import { itemKind, type CheckOutcome, type WatchSource } from '../shared/types'
+import { loadSource, resolveUndated, type LoadOptions } from './load-source'
 import { getKeywords } from './repository'
 
 /** The part of a web response the checker needs, so tests can stand in for the network. */
@@ -28,60 +26,6 @@ function isoDay(now: string): string {
   return now.slice(0, 10)
 }
 
-interface Fetched {
-  items: ParsedItem[]
-  /** Page method: the page text, to tell a changed page from an unchanged one. */
-  pageText?: string
-  /** The page's cards carry their own dates (so sentences cut from its text are not wanted). */
-  cards?: boolean
-  notModified?: boolean
-  etag?: string | null
-  lastModified?: string | null
-}
-
-async function load(
-  source: WatchSource,
-  fetcher: Fetcher,
-  etag: string | null,
-  lastModified: string | null,
-  today: string
-): Promise<Fetched> {
-  const headers: Record<string, string> = {
-    'User-Agent': 'CentralCommand/1.0 (a local reader of public announcement pages)',
-    Accept:
-      source.method === 'crossref'
-        ? 'application/json'
-        : source.method === 'feed'
-          ? 'application/rss+xml, application/atom+xml, application/xml;q=0.9, */*;q=0.5'
-          : 'text/html, application/xhtml+xml;q=0.9, */*;q=0.5'
-  }
-  if (source.method !== 'crossref') {
-    if (etag) headers['If-None-Match'] = etag
-    if (lastModified) headers['If-Modified-Since'] = lastModified
-  }
-  const url = source.method === 'crossref' ? crossrefUrl(source.issn ?? '') : source.url
-  const response = await fetcher(url, { headers })
-  if (response.status === 304) return { items: [], notModified: true }
-  if (response.status < 200 || response.status >= 300)
-    throw new Error(`The site answered ${response.status}`)
-  const body = await response.text()
-  const meta = {
-    etag: response.headers.get('etag'),
-    lastModified: response.headers.get('last-modified')
-  }
-  if (source.method === 'crossref') return { items: parseCrossref(body), ...meta }
-  if (source.method === 'feed') return { items: parseFeed(body), ...meta }
-  const page = parsePage(body, source.url)
-  // A listing whose cards carry their own dates needs no sentences cut from its text: they run across cards.
-  const cards = page.links.some((l) => findDate(`${l.title}\n${l.summary}`, today))
-  return {
-    items: [...page.links, ...(cards ? [] : datedSentences(page.text, source.url, today))],
-    pageText: page.text,
-    cards,
-    ...meta
-  }
-}
-
 /**
  * Check one source and store what is new. Never throws: a problem is kept on the source (`last_error`, `failures`)
  * and returned, so one broken site does not stop the others.
@@ -93,7 +37,8 @@ export async function checkSource(
   db: Database,
   source: WatchSource,
   fetcher: Fetcher,
-  now: string
+  now: string,
+  options: LoadOptions = {}
 ): Promise<CheckOutcome> {
   const baseline = source.lastOkAt === null
   const stamp = db.prepare(
@@ -101,13 +46,21 @@ export async function checkSource(
   )
   try {
     const prior = db
-      .prepare('SELECT etag, last_modified, page_hash FROM watch_sources WHERE id = ?')
+      .prepare('SELECT etag, last_modified, page_hash, found_via FROM watch_sources WHERE id = ?')
       .get(source.id) as {
       etag: string | null
       last_modified: string | null
       page_hash: string | null
+      found_via: string | null
     }
-    const got = await load(source, fetcher, prior.etag, prior.last_modified, isoDay(now))
+    const got = await loadSource(
+      source,
+      { etag: prior.etag, lastModified: prior.last_modified, foundVia: prior.found_via },
+      fetcher,
+      isoDay(now),
+      options
+    )
+    const today = isoDay(now)
     if (got.notModified) {
       db.prepare(
         'UPDATE watch_sources SET last_checked_at = ?, last_ok_at = ?, last_error = NULL, failures = 0 WHERE id = ?'
@@ -115,8 +68,12 @@ export async function checkSource(
       return { sourceId: source.id, status: 'unchanged', added: 0, baseline: false }
     }
 
+    // Links with no date beside them may have one on their own page (a few per check; a miss is remembered for a fortnight).
+    const items = [
+      ...got.items,
+      ...(await resolveUndated(db, source, got.undated ?? [], fetcher, today, now, options))
+    ]
     const keywords = getKeywords(db)
-    const today = isoDay(now)
     const insert = db.prepare(
       `INSERT OR IGNORE INTO watch_items
          (source_id, item_key, title, url, summary, published_at, event_date, event_end, deadline, deadline_label,
@@ -127,22 +84,49 @@ export async function checkSource(
       `UPDATE watch_items SET summary = ?, event_date = ?, event_end = ?, deadline = ?, deadline_label = ?, item_kind = ?
        WHERE source_id = ? AND item_key = ? AND summary = ''`
     )
+    // A calendar, an event page or a "no upcoming events" page is the whole truth about its source.
+    const refresh = db.prepare(
+      `UPDATE watch_items SET title = ?, summary = ?, event_date = ?, event_end = ?, deadline = ?, deadline_label = ?, item_kind = ?
+       WHERE source_id = ? AND item_key = ?`
+    )
+    const current = items.filter((i) =>
+      i.dates ? !structuredOver(i.dates, today) : !isOver(`${i.title}\n${i.summary}`, today)
+    )
     let added = 0
     db.transaction(() => {
+      if (got.authoritative) {
+        const keep = new Set(current.map((i) => i.key))
+        const rows = db
+          .prepare("SELECT id, item_key FROM watch_items WHERE source_id = ? AND state != 'saved'")
+          .all(source.id) as { id: number; item_key: string }[]
+        const drop = db.prepare('DELETE FROM watch_items WHERE id = ?')
+        for (const row of rows) if (!keep.has(row.item_key)) drop.run(row.id)
+      }
       // Sentences stored before the page's cards were read with their dates ran across cards: they are not the user's to keep unless saved.
       if (got.cards)
         db.prepare(
           "DELETE FROM watch_items WHERE source_id = ? AND item_key LIKE 'text:%' AND state != 'saved'"
         ).run(source.id)
-      for (const item of got.items) {
+      for (const item of current) {
         if (added >= MAX_NEW_PER_CHECK) break
         const text = `${item.title}\n${item.summary}`
         const relevance = scoreText(item.title, item.summary, keywords)
-        // Something already over (every date it names has passed) is never added, not even on the first check.
-        if (item.dates ? structuredOver(item.dates, today) : isOver(text, today)) continue
         const dated = item.dates ?? findDates(text, today)
         const kind = itemKind(item.title, source.kind)
-        if (item.summary) {
+        if (item.dates) {
+          // Dates a calendar gave outright: a moved or renamed event is the same item, changed.
+          refresh.run(
+            item.title,
+            item.summary,
+            dated.eventStart,
+            dated.eventEnd,
+            dated.deadline,
+            dated.deadlineLabel,
+            kind,
+            source.id,
+            item.key
+          )
+        } else if (item.summary) {
           // Seen before without its description or date (stored when pages were read as bare links): complete it.
           update.run(
             item.summary,
@@ -184,8 +168,17 @@ export async function checkSource(
       }
       db.prepare(
         `UPDATE watch_sources SET last_checked_at = ?, last_ok_at = ?, last_error = NULL, failures = 0,
-           etag = ?, last_modified = ?, page_hash = ?, changed_at = ? WHERE id = ?`
-      ).run(now, now, got.etag ?? null, got.lastModified ?? null, pageHash, changedAt, source.id)
+           etag = ?, last_modified = ?, page_hash = ?, changed_at = ?, found_via = ? WHERE id = ?`
+      ).run(
+        now,
+        now,
+        got.etag ?? null,
+        got.lastModified ?? null,
+        pageHash,
+        changedAt,
+        got.via === undefined ? prior.found_via : got.via,
+        source.id
+      )
     })()
     return { sourceId: source.id, status: 'ok', added, baseline }
   } catch (error) {

@@ -6,3 +6,4 @@ tsconfig.json
 tsconfig.*.json
 central-command-mvp-phase1-brief.md
 docs/design
+src/modules/watch/main/fixtures

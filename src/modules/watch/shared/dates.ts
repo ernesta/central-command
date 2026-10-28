@@ -40,6 +40,11 @@ const MONTH_FIRST = new RegExp(
   `\\b${MONTH}\\.?\\s+(\\d{1,2})${ORD}(?:\\s*[-–]\\s*(\\d{1,2})${ORD})?,?\\s+(\\d{4})\\b`,
   'gi'
 )
+/** A range with both ends written out: "22 Sep 2026 - 11 Nov 2026", "30 Dec 2026 to 2 Jan 2027". */
+const FULL_RANGE = new RegExp(
+  `\\b(\\d{1,2})${ORD}\\s+${MONTH}\\.?,?\\s+(\\d{4})\\s*(?:[-–]|to|until)\\s*(\\d{1,2})${ORD}\\s+${MONTH}\\.?,?\\s+(\\d{4})\\b`,
+  'gi'
+)
 /** A range that crosses a month: "30 June – 2 July 2027". */
 const CROSS_MONTH = new RegExp(
   `\\b(\\d{1,2})${ORD}\\s+${MONTH}\\.?\\s*[-–]\\s*(\\d{1,2})${ORD}\\s+${MONTH}\\.?,?\\s+(\\d{4})\\b`,
@@ -117,6 +122,17 @@ function spans(text: string): Span[] {
     )
     if (found) cross.push(found)
   }
+  for (const m of text.matchAll(FULL_RANGE)) {
+    const [m1, m2] = [monthOf(m[2]), monthOf(m[5])]
+    if (!m1 || !m2) continue
+    const found = span(
+      text,
+      m,
+      iso(Number(m[3]), m1, Number(m[1])),
+      iso(Number(m[6]), m2, Number(m[4]))
+    )
+    if (found) cross.push(found)
+  }
   const out: Span[] = [...cross]
   const inCross = (s: Span): boolean =>
     cross.some((c) => s.index >= c.index && s.index < c.index + c.length) ||
@@ -158,7 +174,7 @@ const ahead = (s: Span, today: string): boolean => (s.end ?? s.date) >= today
  */
 export function findDate(text: string, today: string): Found | null {
   const all = spans(text)
-    .filter((f) => f.date >= today)
+    .filter((f) => ahead(f, today))
     .sort((a, b) => a.date.localeCompare(b.date))
   const pick = all.find((f) => f.kind === 'deadline') ?? all[0]
   return pick ? { date: pick.date, kind: pick.kind } : null
