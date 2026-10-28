@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronRight, GripVertical, Plus, Repeat, Trash2 } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { DatePicker } from '@renderer/components/DatePicker'
@@ -914,6 +914,11 @@ function AddSubtaskRow({
 }): React.JSX.Element {
   const [title, setTitle] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const field = useRef<HTMLInputElement>(null)
+  // Asked for from the pill, the menu or Enter on the row: the field is always there, so focus it.
+  useEffect(() => {
+    if (adding) field.current?.focus()
+  }, [adding])
 
   const submit = async (): Promise<void> => {
     const text = title.trim()
@@ -936,51 +941,58 @@ function AddSubtaskRow({
       onKeyDown={onKeyDown}
       onClick={onStart}
     >
-      {span === 6 && <td />}
-      <td colSpan={span === 6 ? span - 1 : span}>
-        {adding ? (
-          <span className={styles.addInput}>
-            <input
-              autoFocus
-              className={styles.addField}
-              placeholder="Subtask title"
-              aria-label={`New subtask of ${parent.title}`}
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  event.preventDefault()
-                  void submit()
-                } else if (event.key === 'Escape') {
-                  event.preventDefault()
-                  event.stopPropagation()
-                  onStop()
-                }
-              }}
-              onBlur={() => {
-                if (title.trim() === '') onStop()
-              }}
-            />
-            <Button
-              type="button"
-              variant="primary"
-              size="small"
-              disabled={title.trim() === ''}
-              // Keeps the field focused: its blur would otherwise close the row before the click lands.
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={() => void submit()}
-            >
-              Add
-            </Button>
-            {error && (
-              <span role="alert" className={styles.addError}>
-                {error}
-              </span>
-            )}
+      {span === 6 && (
+        <td>
+          <span className={styles.addPlus} aria-hidden>
+            <Plus size={14} strokeWidth={1.75} />
           </span>
-        ) : (
-          <span>+ Add a subtask</span>
-        )}
+        </td>
+      )}
+      <td colSpan={span === 6 ? span - 1 : span}>
+        <span className={styles.addInput}>
+          <input
+            ref={field}
+            className={styles.addField}
+            placeholder="Add a subtask"
+            aria-label={`New subtask of ${parent.title}`}
+            value={title}
+            onClick={(event) => event.stopPropagation()}
+            onChange={(event) => setTitle(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault()
+                void submit()
+              } else if (event.key === 'Escape') {
+                event.preventDefault()
+                event.stopPropagation()
+                setTitle('')
+                onStop()
+              }
+            }}
+            onBlur={() => {
+              if (adding && title.trim() === '') onStop()
+            }}
+          />
+          <Button
+            type="button"
+            variant="primary"
+            size="small"
+            disabled={title.trim() === ''}
+            // Keeps the field focused: its blur would otherwise close the row before the click lands.
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={(event) => {
+              event.stopPropagation()
+              void submit()
+            }}
+          >
+            Add
+          </Button>
+          {error && (
+            <span role="alert" className={styles.addError}>
+              {error}
+            </span>
+          )}
+        </span>
       </td>
     </tr>
   )
