@@ -27,6 +27,7 @@ const row = (id: string, over: Partial<MeetingIndexRow> = {}): MeetingIndexRow =
   excerpt: '',
   problems: [],
   topicCount: 0,
+  hasNotes: false,
   todos: [],
   contentHash: 'h',
   ...over
@@ -54,6 +55,13 @@ describe('meetings index', () => {
     })
     upsertMeeting(db, r)
     expect(getMeetingRow(db, 'research', '2026-09-24 Supervision')).toEqual(r)
+  })
+
+  it('round-trips hasNotes', () => {
+    upsertMeeting(db, row('2026-09-24 Supervision', { hasNotes: true }))
+    expect(getMeetingRow(db, 'research', '2026-09-24 Supervision')?.hasNotes).toBe(true)
+    upsertMeeting(db, row('2026-09-24 Supervision', { hasNotes: false }))
+    expect(getMeetingRow(db, 'research', '2026-09-24 Supervision')?.hasNotes).toBe(false)
   })
 
   it('updates in place instead of duplicating', () => {

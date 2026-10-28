@@ -363,6 +363,16 @@ describe('reindex', () => {
     expect(getMeetingRow(db, 'research', 'a')?.series).toBe('Luminos')
   })
 
+  it('reindexAll fills has_notes on a row whose content is unchanged', async () => {
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(file('a'), '---\nseries: Other\ndate: 2026-01-01\n---\n## Notes\n\nWe talked.\n')
+    await store.reindexAll('research')
+    db.prepare('UPDATE meetings SET has_notes = 0').run() // as a row from before the migration
+    expect(getMeetingRow(db, 'research', 'a')?.hasNotes).toBe(false)
+    await store.reindexAll('research')
+    expect(getMeetingRow(db, 'research', 'a')?.hasNotes).toBe(true)
+  })
+
   it('pruneMissing drops rows whose file is gone, keeps the rest, and reads no file', async () => {
     mkdirSync(dir, { recursive: true })
     writeFileSync(file('a'), '---\nseries: Other\ndate: 2026-01-01\n---\n')

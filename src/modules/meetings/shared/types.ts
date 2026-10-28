@@ -74,6 +74,8 @@ export interface MeetingIndexRow {
   problems: string[]
   /** How many topics the note has (level-3 headings under Notes, or the fallback headings). */
   topicCount: number
+  /** Whether the Notes section has any text (as Training's `hasNotes`). */
+  hasNotes: boolean
   /** The TODOs found in the note, in order. */
   todos: TodoItem[]
   contentHash: string

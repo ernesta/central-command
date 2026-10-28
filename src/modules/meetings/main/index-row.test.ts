@@ -54,6 +54,16 @@ describe('buildIndexRow', () => {
     expect(buildIndexRow('research', 'x', head + '## Notes\n').topicCount).toBe(0)
   })
 
+  it('has notes only when the Notes section has text', () => {
+    const head = '---\nseries: Other\ndate: 2026-01-02\n---\n'
+    const has = (body: string): boolean => buildIndexRow('research', 'x', head + body).hasNotes
+    expect(has('## Notes\n')).toBe(false)
+    expect(has('## Notes\n\n   \n\n')).toBe(false)
+    expect(has('## Notes\n\nWe talked.\n')).toBe(true)
+    expect(has('## Previous TODOs\n\n- [ ] send it\n\n## Notes\n')).toBe(false)
+    expect(has('## Summary\n\nWent well.\n\n## Notes\n')).toBe(false)
+  })
+
   it('records the TODOs in the note', () => {
     const row = buildIndexRow(
       'research',

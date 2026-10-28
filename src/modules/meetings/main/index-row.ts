@@ -31,6 +31,7 @@ export function buildIndexRow(
     }
   }
 
+  const notes = markdownToExcerpt(extractSection(body, 'Notes') ?? '', SUMMARY_LENGTH)
   const summary = markdownToExcerpt(extractSection(body, 'Summary') ?? '', SUMMARY_LENGTH)
   return {
     workspace,
@@ -48,6 +49,7 @@ export function buildIndexRow(
     excerpt: markdownToExcerpt(body, SEARCH_TEXT_LENGTH),
     problems,
     topicCount: parseTopics(body).length,
+    hasNotes: notes !== '',
     todos: parseTodos(body),
     contentHash: hashContent(content)
   }

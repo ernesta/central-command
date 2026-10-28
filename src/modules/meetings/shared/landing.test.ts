@@ -19,6 +19,7 @@ const row = (id: string, over: Partial<MeetingIndexRow> = {}): MeetingIndexRow =
   excerpt: '',
   problems: [],
   topicCount: 0,
+  hasNotes: false,
   todos: [],
   contentHash: 'h',
   ...over

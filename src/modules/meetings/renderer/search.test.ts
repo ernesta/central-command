@@ -19,6 +19,7 @@ const meeting = (over: Partial<MeetingIndexRow>): MeetingIndexRow => ({
   excerpt: 'Ethics application for Study 1 and the data management plan.',
   problems: [],
   topicCount: 0,
+  hasNotes: false,
   todos: [],
   contentHash: 'h',
   ...over

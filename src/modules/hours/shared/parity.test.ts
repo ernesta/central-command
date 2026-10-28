@@ -59,6 +59,7 @@ const meeting = (over: Partial<MeetingIndexRow> = {}): MeetingIndexRow => ({
   excerpt: '',
   problems: [],
   topicCount: 0,
+  hasNotes: false,
   todos: [],
   contentHash: '',
   ...over
