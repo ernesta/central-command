@@ -104,7 +104,7 @@ function TaskView({
   const today = todayIso()
   const { tracked, running, yearFor, clientFor, months, earlier } = useTaskTime(workspace)
   const sessionTasks = useSessionTaskUids(workspace)
-  // A meeting's or training's task, or the series task they sit under, is the notes' to keep (title, list, date, status, repeat, delete).
+  // A self-study task, or a series task over session tasks, is the notes' to keep (title, list, date, status, repeat, delete).
   const lock = sessionLock(task, row.kids)
   const statusLocked = fieldLocked(lock, 'status')
   const source = useSessionSource(task.uid, lock !== null)
@@ -442,7 +442,7 @@ function Subtasks({
   )
 }
 
-/** The meeting or training whose note made a task (null until it is read, or for any other task). */
+/** The training whose note made a self-study task, or a series task over such tasks (null until it is read, or for any other task). */
 function useSessionSource(uid: string, wanted: boolean): SessionSource | null {
   const [source, setSource] = useState<SessionSource | null>(null)
   useEffect(() => {
@@ -458,7 +458,7 @@ function useSessionSource(uid: string, wanted: boolean): SessionSource | null {
   return wanted ? source : null
 }
 
-/** A locked task's link to what made it: the series, meeting or training, as a field like the others, its name plain and an icon button to open it. */
+/** A locked task's link to what made it: the series or training, as a field like the others, its name plain and an icon button to open it. */
 function MadeByField({
   lock,
   source

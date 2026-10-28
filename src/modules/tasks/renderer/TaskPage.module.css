@@ -163,7 +163,7 @@
   min-height: 28px;
   color: var(--ink);
 }
-/* The icon button after a locked task's series, meeting or training: small, so the row keeps its height. */
+/* The icon button after a locked task's series or training: small, so the row keeps its height. */
 .openButton {
   --icon-button-size: 28px;
 }

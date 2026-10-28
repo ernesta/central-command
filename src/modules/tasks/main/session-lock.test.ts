@@ -37,7 +37,11 @@ const series = (): { parent: string; sub: string } => {
 }
 
 const studyTask = (): string => {
-  const parent = store.create({ workspace: 'research', title: 'Python self-study', list: 'Training' })
+  const parent = store.create({
+    workspace: 'research',
+    title: 'Python self-study',
+    list: 'Training'
+  })
   return store.create({
     workspace: 'research',
     title: 'Day 1',
@@ -182,7 +186,11 @@ const insertTraining = (id: string, task: string, selfStudy: string, series: str
 
 describe('sessionSource of a series task', () => {
   it('names a self-study task under it and the series their training belongs to', () => {
-    const parent = store.create({ workspace: 'research', title: 'Python self-study', list: 'Training' })
+    const parent = store.create({
+      workspace: 'research',
+      title: 'Python self-study',
+      list: 'Training'
+    })
     const kid = store.create({
       workspace: 'research',
       title: 'Day 1',

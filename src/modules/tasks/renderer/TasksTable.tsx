@@ -590,7 +590,7 @@ function TaskRowView({
   const isKid = item.type === 'kid'
   const due = isKid ? task.due : effectiveDue(task, kids)
   const minutes = taskTime({ task, kids }, tracked).total
-  // A task the app made for a meeting or training is the note's: shown, not edited (title, list, date, status, delete).
+  // A self-study task is its training's, and a series task follows its subtasks: shown, not edited (title, list, date, status, delete).
   const lock = sessionLock(task, kids)
   const statusLocked = fieldLocked(lock, 'status')
   const textLocked = lock !== null
@@ -678,7 +678,7 @@ function TaskRowView({
         <Tooltip
           text={
             statusLocked
-              ? `${STATUS_LABELS[task.status]} · set by its meeting or training`
+              ? `${STATUS_LABELS[task.status]} · ${lock === 'series' ? 'set by its subtasks' : 'set by its training'}`
               : `${STATUS_LABELS[task.status]} · click for ${STATUS_LABELS[NEXT_STATUS[task.status]]}, Shift-click for ${STATUS_LABELS[PREVIOUS_STATUS[task.status]]}`
           }
         >

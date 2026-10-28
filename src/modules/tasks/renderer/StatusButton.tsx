@@ -12,14 +12,14 @@ export function StatusButton({
 }: {
   uid: string
   status: TaskStatus
-  /** A session task: its note and the clock set its status, so the circle only shows it. */
+  /** A self-study task: its note and the clock set its status, so the circle only shows it. */
   locked?: boolean
 }): React.JSX.Element {
   return (
     <Tooltip
       text={
         locked
-          ? `${STATUS_LABELS[status]} · set by its meeting or training`
+          ? `${STATUS_LABELS[status]} · set by its training`
           : `${STATUS_LABELS[status]} · click for ${STATUS_LABELS[NEXT_STATUS[status]]}`
       }
     >
