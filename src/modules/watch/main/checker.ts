@@ -80,9 +80,11 @@ export async function checkSource(
           score, matched, state, first_seen_at, item_kind)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
+    // An item found again has its dates read again (an event that moved, a range that was once only a day); its description is filled in if it had none.
     const update = db.prepare(
-      `UPDATE watch_items SET summary = ?, event_date = ?, event_end = ?, deadline = ?, deadline_label = ?, item_kind = ?
-       WHERE source_id = ? AND item_key = ? AND summary = ''`
+      `UPDATE watch_items SET summary = CASE WHEN summary = '' THEN ? ELSE summary END,
+         event_date = ?, event_end = ?, deadline = ?, deadline_label = ?, item_kind = ?
+       WHERE source_id = ? AND item_key = ?`
     )
     // A calendar, an event page or a "no upcoming events" page is the whole truth about its source.
     const refresh = db.prepare(
@@ -94,6 +96,17 @@ export async function checkSource(
     )
     let added = 0
     db.transaction(() => {
+      if (got.sentences) {
+        // Sentences cut from a page's text are found again by their wording: one that is gone from it (rewritten, past) goes too.
+        const keep = new Set(current.map((i) => i.key))
+        const rows = db
+          .prepare(
+            "SELECT id, item_key FROM watch_items WHERE source_id = ? AND item_key LIKE 'text:%' AND state != 'saved'"
+          )
+          .all(source.id) as { id: number; item_key: string }[]
+        const drop = db.prepare('DELETE FROM watch_items WHERE id = ?')
+        for (const row of rows) if (!keep.has(row.item_key)) drop.run(row.id)
+      }
       if (got.authoritative) {
         const keep = new Set(current.map((i) => i.key))
         const rows = db
@@ -126,8 +139,7 @@ export async function checkSource(
             source.id,
             item.key
           )
-        } else if (item.summary) {
-          // Seen before without its description or date (stored when pages were read as bare links): complete it.
+        } else {
           update.run(
             item.summary,
             dated.eventStart,

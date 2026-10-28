@@ -44,6 +44,8 @@ export interface Fetched {
   via?: string | null
   /** Links of the page with no date beside them: each may have one on its own page. */
   undated?: ParsedItem[]
+  /** The page's dated sentences are items (`text:` keys): the unsaved ones no longer in its text go. */
+  sentences?: boolean
 }
 
 /** What a failed request says, in words the Sources table can show. */
@@ -182,8 +184,10 @@ export async function loadSource(
       forget = true
     }
   }
-  const got = await get(fetcher, source.url, HTML_ACCEPT, forget ? null : prior, options)
-  if (got.status === 304 && !forget) return { items: [], notModified: true }
+  // A page that is one event is read in full every time: its deadlines sit on other pages, which can change while it does not.
+  const asEvent = source.method === 'event' || prior.foundVia === 'event'
+  const got = await get(fetcher, source.url, HTML_ACCEPT, forget || asEvent ? null : prior, options)
+  if (got.status === 304 && !forget && !asEvent) return { items: [], notModified: true }
   const html = got.body
   const meta = { etag: got.etag, lastModified: got.lastModified }
   const base = { ...meta, ...(forget ? { via: null } : {}) }
@@ -229,7 +233,11 @@ export async function loadSource(
     namesOneEvent(pageTitle(html)) &&
     findDates(page.upcomingText, '0000-01-01').eventStart
   )
-    return { ...(await readEventPage(html, source.url, fetcher, today, options)), ...base }
+    return {
+      ...(await readEventPage(html, source.url, fetcher, today, options)),
+      ...base,
+      via: 'event'
+    }
 
   const links = page.links.filter(
     // A link to another site is an item only when it carries a coming date of its own.
@@ -243,6 +251,7 @@ export async function loadSource(
     undated,
     pageText: page.text,
     cards,
+    sentences: !cards,
     authoritative: page.none,
     ...base
   }

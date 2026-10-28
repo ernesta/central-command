@@ -103,12 +103,12 @@ export function parsePage(html: string, baseUrl: string): ParsedPage {
   const none = NOTHING_COMING.test(toText(main))
   const links: ParsedItem[] = []
   const seen = new Set<string>()
-  // A listing's card (`<li>` or `<article>`) that holds one link is that link's own description and date; a block with
-  // several links says nothing about any one of them.
-  for (const block of main.split(/(?=<(?:li|article)\b)/i)) {
+  // A listing's card (`<li>` or `<article>`, up to its own closing tag) that holds one link is that link's own description and date;
+  // a block with several links says nothing about any one of them, and what follows a card is no part of it.
+  const collect = (part: string, card: boolean): void => {
     const found: ParsedItem[] = []
     const urls = new Set<string>()
-    for (const m of block.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)) {
+    for (const m of part.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)) {
       const href = /href\s*=\s*["']([^"']+)["']/i.exec(m[1])
       if (!href) continue
       const url = resolve(href[1], baseUrl)
@@ -129,10 +129,10 @@ export function parsePage(html: string, baseUrl: string): ParsedPage {
         ...(host(url) !== host(baseUrl) ? { offsite: true } : {})
       })
     }
-    if (found.length === 1 && urls.size === 1) {
+    if (card && found.length === 1 && urls.size === 1) {
       const title = found[0].title
       found[0].summary = decodeEntities(
-        block
+        part
           .replace(/<a\b[^>]*>\s*(?:view details|read more|find out more)[\s\S]*?<\/a>/gi, ' ')
           .replace(/<[^>]+>/g, ' ')
       )
@@ -143,6 +143,17 @@ export function parsePage(html: string, baseUrl: string): ParsedPage {
         .slice(0, 300)
     }
     links.push(...found)
+  }
+  for (const block of main.split(/(?=<(?:li|article)\b)/i)) {
+    const isCard = /^<(?:li|article)\b/i.test(block)
+    const end = isCard ? block.search(/<\/(?:li|article)>/i) : -1
+    if (end < 0) {
+      collect(block, false)
+      continue
+    }
+    const close = block.indexOf('>', end) + 1
+    collect(block.slice(0, close), true)
+    collect(block.slice(close), false)
   }
   return {
     links: none ? [] : links,

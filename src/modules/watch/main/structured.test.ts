@@ -163,6 +163,31 @@ describe('SSSR: a page that is one event', () => {
     expect(() => updateSource(db, s.id, { method: 'feed' })).toThrow()
   })
 
+  it('is read in full every time, never answered “not modified”: its deadlines are on other pages', async () => {
+    const s = page('SSSR', MAIN)
+    const withEtag =
+      (f: Fetcher): Fetcher =>
+      async (url, init) => {
+        const r = await f(url, init)
+        return { ...r, headers: { get: (n) => (n === 'etag' ? '"v1"' : null) } }
+      }
+    await checkSource(db, s, withEtag(sssr()), NOW, NO_WAIT)
+    let sent: Record<string, string> = {}
+    const second: Fetcher = async (url, init) => {
+      if (url === MAIN) sent = init.headers
+      return sssr()(url, init)
+    }
+    const out = await checkSource(
+      db,
+      getSource(db, s.id)!,
+      second,
+      '2026-10-29T09:00:00.000Z',
+      NO_WAIT
+    )
+    expect(sent['If-None-Match']).toBeUndefined()
+    expect(out.status).toBe('ok')
+  })
+
   it('has nothing once the conference is over', async () => {
     const s = page('SSSR', MAIN)
     await checkSource(db, s, sssr(), NOW, NO_WAIT)
@@ -222,6 +247,23 @@ describe('the fallback for listing pages', () => {
     expect(items.every((i) => i.eventDate)).toBe(true)
   })
 
+  it('reads the dates of an item stored earlier again: a day that is really a range becomes the range', async () => {
+    const URL_ = 'https://literacytrust.org.uk/events'
+    const s = page('National Literacy Trust', URL_)
+    const key = 'https://literacytrust.org.uk/events/leading-literacy-briefing-reading/'
+    db.prepare(
+      "INSERT INTO watch_items (source_id, item_key, title, url, summary, event_date, state, first_seen_at) VALUES (?, ?, 'Leading literacy briefing: reading', 'u', 'old text', '2026-09-22', 'seen', 'x')"
+    ).run(s.id, key)
+    await checkSource(db, s, site({ [URL_]: fixture('nlt-events.html') }), NOW, NO_WAIT)
+    const item = listItems(db).find((i) => i.url === 'u')!
+    expect([item.state, item.eventDate, item.eventEnd, item.summary]).toEqual([
+      'seen',
+      '2026-09-22',
+      '2026-11-11',
+      'old text'
+    ])
+  })
+
   it('EPS: dated sentences, as before (a list is not mistaken for one event)', async () => {
     const URL_ = 'https://eps.ac.uk/future-meetings'
     const s = page('EPS', URL_)
@@ -230,6 +272,27 @@ describe('the fallback for listing pages', () => {
     expect(titles.some((t) => t.startsWith('EPS Meeting: University College London'))).toBe(true)
     expect(titles.length).toBeGreaterThanOrEqual(2)
     expect(titles).not.toContain('Future Meetings and Workshops')
+  })
+
+  it('EPS: a sentence stored earlier that the page no longer says goes, a saved one stays', async () => {
+    const URL_ = 'https://eps.ac.uk/future-meetings'
+    const s = page('EPS', URL_)
+    const insert = db.prepare(
+      "INSERT INTO watch_items (source_id, item_key, title, url, state, first_seen_at) VALUES (?, ?, ?, 'u', ?, 'x')"
+    )
+    insert.run(
+      s.id,
+      'text:old run together sentence',
+      'Local Organiser: A B EPS Meeting: X. 1 Jan 2027.',
+      'seen'
+    )
+    insert.run(s.id, 'text:saved one', 'EPS Meeting: Saved. 2 Feb 2027.', 'saved')
+    insert.run(s.id, 'https://eps.ac.uk/other', 'A link item stays', 'new')
+    await checkSource(db, s, site({ [URL_]: fixture('eps-future-meetings.html') }), NOW, NO_WAIT)
+    const titles = listItems(db).map((i) => i.title)
+    expect(titles).not.toContain('Local Organiser: A B EPS Meeting: X. 1 Jan 2027.')
+    expect(titles).toContain('EPS Meeting: Saved. 2 Feb 2027.')
+    expect(titles).toContain('A link item stays')
   })
 
   const listing = (body: string): string =>
