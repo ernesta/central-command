@@ -362,6 +362,10 @@ Choices the plan left open, made conservatively; change any of them by telling C
 
 ## TODOs
 
+### Life's Home and Watch per workspace (28 Oct 2026, `docs/LIFE_HOME_PLAN.md`: all five stages BUILT and driven in a scratch library; `docs/DECISIONS.md`, "Home: Life has one", "Watch: sources per workspace")
+
+- Life has its own Home (tasks, trainings, hours with trainings, the timer), caps of 5 per workspace, one digest per workspace, Life in `snapshot.json`, and Watch with separate sources per workspace (`watch/0004_workspace`). **For the user to look at in the installed app:** Life's Home with real data, Settings → Watch's Workspace column, and adding a Life source (a check that finds items was not driven). Decided on my own, change on request: the address is unique across workspaces; the deadline notification still opens the item's web address; a saved Watch date is not cut by the cap of 5. Not driven: the digest and reminder banners themselves.
+
 ### For the user (review and decisions)
 
 - **Tag readings with a workspace so readings can be scoped to one too; until then readings are unscoped and appear in a search of any workspace** (`workspace:` keeps them whichever it names; `docs/SEARCH_MODIFIERS_PLAN.md`, `docs/DECISIONS.md`, "Search modifiers"). Search modifiers (`in:task`, `status:`, `with:`, dates, quoted phrases, a completion list) were built unattended on 19 Oct 2026, pushed and installed.

@@ -1,6 +1,6 @@
 # Watch: the page, the sources and what they replace (plan)
 
-Agreed with the user on 26 Oct 2026 after three rounds of mockups (`docs/design/watch-mockup.html`, the current one; the 15 Oct mockup it replaces was made in an unattended run and invented its own chips and cards). **Stop at the end of each stage and ask.** Backend: `docs/WATCH_HOME_PLAN.md`, `src/modules/watch/`.
+Agreed with the user on 26 Oct 2026 after three rounds of mockups (`docs/design/watch-mockup.html`, the current one; the 15 Oct mockup it replaces was made in an unattended run and invented its own chips and cards). **Stop at the end of each stage and ask.** Backend: `docs/WATCH_HOME_PLAN.md`, `src/modules/watch/`. **Since 28 Oct 2026 Watch is per workspace (Research's and Life's, each with its own sources): `docs/LIFE_HOME_PLAN.md`, stage 4, and `docs/DECISIONS.md`, "Watch: sources per workspace". Where this plan says Research's, read "a workspace's".**
 
 ## What Watch is
 
