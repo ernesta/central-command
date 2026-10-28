@@ -14,6 +14,8 @@ export interface Period {
   weeks: number
   /** A contract's real last day; undefined for the academic year (and while Work has no contract). */
   end: string | undefined
+  /** A Work contract's clients (its task lists); undefined for the academic year. */
+  clients: readonly string[] | undefined
   /** How a sentence names it: "2026–27", or "Luminos · 1 May 2026 – 29 Oct 2026". */
   label: string
   /** The contract's length and name for the PDF export; undefined for the academic year. */
@@ -34,6 +36,7 @@ export function usePeriod(workspace: Workspace, dates: readonly string[], today:
       ...academic,
       weeks: YEAR_WEEKS,
       end: undefined,
+      clients: undefined,
       label: yearLabel(academic.year),
       contract: undefined,
       loaded: true
@@ -50,6 +53,7 @@ export function usePeriod(workspace: Workspace, dates: readonly string[], today:
     setYear: tracked.setYear,
     weeks: weeks ?? 0,
     end: tracked.data?.end,
+    clients: tracked.data?.plan.clients ?? [],
     label,
     contract:
       weeks === undefined

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { meetingHours, meetingsInYear, meetingsInYearOrPlanned } from './hours'
+import { meetingHours, meetingsInYear, meetingsInYearOrPlanned, ofContractClients } from './hours'
 import type { MeetingIndexRow } from './types'
 
 const row = (date: string, over: Partial<MeetingIndexRow> = {}): MeetingIndexRow => ({
@@ -116,5 +116,28 @@ describe("today's meeting and the clock", () => {
     expect(hours('09:00')).toBe(0)
     expect(hours('10:30')).toBe(0)
     expect(hours('11:00')).toBe(60)
+  })
+})
+
+describe('ofContractClients', () => {
+  const lists: Record<string, string> = { a: 'Royal Holloway', b: 'Impact', c: '' }
+  const listOf = (uid: string): string => lists[uid] ?? ''
+  const rows = [
+    row('2026-09-29', { id: 'rh', task: 'a' }),
+    row('2026-10-05', { id: 'impact', task: 'b' }),
+    row('2026-10-06', { id: 'unknown', task: 'c' }),
+    row('2026-10-07', { id: 'no-task' })
+  ]
+
+  it("drops a meeting whose task's list is another contract's client", () => {
+    expect(ofContractClients(rows, ['Royal Holloway'], listOf).map((r) => r.id)).toEqual([
+      'rh',
+      'unknown',
+      'no-task'
+    ])
+  })
+
+  it('keeps everything with no clients given (Research)', () => {
+    expect(ofContractClients(rows, undefined, listOf)).toHaveLength(4)
   })
 })

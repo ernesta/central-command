@@ -16,13 +16,14 @@ import {
 import { Segmented } from '@renderer/components/Segmented'
 import { usePeriod } from '@renderer/state/use-period'
 import { recentAndUpcoming, seriesLine, seriesSummaries } from '../shared/landing'
-import { meetingsInYear, meetingsInYearOrPlanned } from '../shared/hours'
+import { meetingsInYear, meetingsInYearOrPlanned, ofContractClients } from '../shared/hours'
 import { mine, openTodos } from '../shared/open-todos'
 import { MODE_LABELS, initialsFor, isNow, isUpcoming } from '../shared/query'
 import { formatDate, formatShortDate } from '../shared/time'
 import { rowTimeLine } from '@modules/training/shared/row-time'
 import { fixedSeries, tracksSkills, type MeetingIndexRow } from '../shared/types'
 import { MeetingsHours } from './MeetingsHours'
+import { useTaskLists } from './useTaskLists'
 import { NewMeetingButton } from './NewMeetingButton'
 import { OpenTodos } from './OpenTodos'
 import {
@@ -53,14 +54,16 @@ export function MeetingsLanding(): React.JSX.Element {
   const now = clockNow()
 
   const me = people.find((p) => p.me)
-  const all = rows ?? []
-  const open = openTodos(all)
+  const listOf = useTaskLists(workspace)
+  const everything = rows ?? []
+  const open = openTodos(everything)
   const shown = whose === 'mine' && me ? mine(open, me.initials) : open
   const period = usePeriod(
     workspace,
-    all.map((r) => r.date),
+    everything.map((r) => r.date),
     today
   )
+  const all = ofContractClients(everything, period.clients, listOf)
   const { year, years, setYear, weeks, end } = period
   const { upcoming, recent } = recentAndUpcoming(
     meetingsInYearOrPlanned(all, year, today, weeks, end),

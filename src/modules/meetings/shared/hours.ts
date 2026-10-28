@@ -1,5 +1,6 @@
 import { YEAR_WEEKS, inYear } from '@shared/year'
 import { minutesPerSkill } from '@shared/skills'
+import { fold } from '@shared/text'
 import { isUpcoming } from './query'
 import { durationMinutes } from './time'
 import type { MeetingIndexRow } from './types'
@@ -65,4 +66,22 @@ export function meetingHours(
     minutes: timed.reduce((n, t) => n + (t.minutes ?? 0), 0),
     perSkill: minutesPerSkill(timed)
   }
+}
+
+/**
+ * Contracts overlap, and a meeting has no contract of its own: its task's list is a client, and a client belongs to one contract.
+ * Of the meetings in a contract's days, drops those whose task's list is a client the contract does not have. A meeting with no
+ * task, or whose task is not known, stays: nothing is guessed. `listOf` gives a task's top-level list ('' when unknown).
+ */
+export function ofContractClients(
+  rows: readonly MeetingIndexRow[],
+  clients: readonly string[] | undefined,
+  listOf: (taskUid: string) => string
+): MeetingIndexRow[] {
+  if (clients === undefined) return [...rows]
+  const mine = new Set(clients.map(fold))
+  return rows.filter((r) => {
+    const list = r.task ? listOf(r.task) : ''
+    return list === '' || mine.has(fold(list))
+  })
 }

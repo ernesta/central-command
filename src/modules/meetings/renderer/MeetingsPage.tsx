@@ -21,13 +21,14 @@ import {
   seriesOptions,
   type MeetingsQuery
 } from '../shared/query'
-import { meetingsInYearOrPlanned } from '../shared/hours'
+import { meetingsInYearOrPlanned, ofContractClients } from '../shared/hours'
 import { MeetingsHours } from './MeetingsHours'
 import { fixedSeries, tracksSkills } from '../shared/types'
 import { MeetingsTable } from './MeetingsTable'
 import { NewMeetingButton } from './NewMeetingButton'
 import { todayIso, useMeetingsWorkspace } from './meetings-paths'
 import { useMeetingsList } from './useMeetingsList'
+import { useTaskLists } from './useTaskLists'
 import { useMeetingsView } from './useMeetingsView'
 import styles from './MeetingsPage.module.css'
 
@@ -59,7 +60,12 @@ export function MeetingsPage(): React.JSX.Element {
     today
   )
   const { year, years, setYear, weeks, end } = period
-  const all = meetingsInYearOrPlanned(everything, year, today, weeks, end)
+  const listOf = useTaskLists(workspace)
+  const all = ofContractClients(
+    meetingsInYearOrPlanned(everything, year, today, weeks, end),
+    period.clients,
+    listOf
+  )
   // A remembered series or attendee that no longer exists in the files must not hide everything.
   const query =
     rows === null
