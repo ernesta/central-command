@@ -1,14 +1,17 @@
 import { describe, expect, it } from 'vitest'
+import { capRows } from '../shared/cap'
 import { tasksIn } from '../shared/summary.testing'
 import type { HomeEvent, HomeSummary, HomeTask, HomeWorkspace } from '../shared/types'
 import {
   comingUpItems,
+  comingUpRows,
   dayLabel,
   detailText,
   eventDetail,
   groupTasks,
   homeView,
   timeRange,
+  todayRows,
   whenLabel
 } from './home-model'
 
@@ -122,14 +125,20 @@ describe('homeView', () => {
 
   it('has no next-meeting card or TODO count (removed 23 Oct 2026)', () => {
     const view = homeView(base, 'research')
-    expect(Object.keys(view).sort()).toEqual(['comingUp', 'tasks', 'today', 'todayEvents'])
+    expect(Object.keys(view).sort()).toEqual([
+      'comingUp',
+      'comingUpHidden',
+      'tasks',
+      'today',
+      'todayEvents'
+    ])
   })
 })
 
 describe('homeView for Life', () => {
   it('is empty when Life has nothing', () => {
     const view = homeView(base, 'life')
-    expect(view.tasks).toEqual({ overdue: [], today: [], cut: false })
+    expect(view.tasks).toEqual({ overdue: [], today: [], cut: false, hidden: 0 })
     expect(view.todayEvents).toEqual([])
     expect(view.comingUp).toEqual([])
   })
@@ -149,7 +158,7 @@ describe('homeView for Life', () => {
     expect(homeView(s, 'life').tasks.overdue.map((t) => t.uid)).toEqual(['a'])
     expect(homeView(s, 'life').tasks.today.map((t) => t.uid)).toEqual(['b'])
     for (const other of ['research', 'work'] as const) {
-      expect(homeView(s, other).tasks).toEqual({ overdue: [], today: [], cut: false })
+      expect(homeView(s, other).tasks).toEqual({ overdue: [], today: [], cut: false, hidden: 0 })
     }
   })
 
@@ -299,5 +308,64 @@ describe('comingUpItems', () => {
     expect(
       items.map((i) => (i.group ? [i.group.head?.uid, i.group.kids.map((k) => k.uid)] : i.event.id))
     ).toEqual([['p', ['k1', 'k2']], 'm', ['solo', []]])
+  })
+})
+
+describe('Today and Coming up as capped rows', () => {
+  const timed = (id: string, time: string): HomeEvent => ({
+    ...event(id, 'meeting', '/research/meetings/m/' + id, 0),
+    time
+  })
+
+  it("lists today's events first (by time), then overdue and due tasks", () => {
+    const s: HomeSummary = {
+      ...base,
+      upcoming: [timed('late', '15:00'), timed('early', '09:00')],
+      tasks: tasksIn({
+        research: {
+          overdue: [task('o', 'research', 2)],
+          today: [task('t', 'research')],
+          overdueTotal: 1,
+          todayTotal: 1
+        }
+      })
+    }
+    const rows = todayRows(homeView(s, 'research')).map((r) =>
+      r.kind === 'event' ? r.event.id : r.task.uid
+    )
+    expect(rows).toEqual(['early', 'late', 'o', 't'])
+  })
+
+  it('caps the merged list at five and counts the rest, the summary cut included', () => {
+    const s: HomeSummary = {
+      ...base,
+      upcoming: [timed('a', '09:00'), timed('b', '10:00'), timed('c', '11:00')],
+      tasks: tasksIn({
+        research: {
+          overdue: [task('o1', 'research', 2), task('o2', 'research', 1)],
+          today: [task('t1', 'research'), task('t2', 'research')],
+          overdueTotal: 6,
+          todayTotal: 3
+        }
+      })
+    }
+    const view = homeView(s, 'research')
+    expect(view.tasks.hidden).toBe(5)
+    const { shown, more } = capRows(todayRows(view), view.tasks.hidden)
+    expect(shown).toHaveLength(5)
+    expect(more).toBe(2 + 5)
+  })
+
+  it('carries what the summary cut from Coming up, and caps its rows too', () => {
+    const ahead = ['a', 'b', 'c', 'd', 'e', 'f'].map((id) =>
+      event(id, 'meeting', '/research/meetings/m/' + id, 1)
+    )
+    const s: HomeSummary = { ...base, upcoming: ahead, upcomingCut: { research: 3, work: 9 } }
+    const view = homeView(s, 'research')
+    expect(view.comingUpHidden).toBe(3)
+    expect(homeView(s, 'life').comingUpHidden).toBe(0)
+    const { shown, more } = capRows(comingUpRows(view, 'research'), view.comingUpHidden)
+    expect(shown).toHaveLength(5)
+    expect(more).toBe(1 + 3)
   })
 })

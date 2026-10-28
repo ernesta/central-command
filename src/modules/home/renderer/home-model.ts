@@ -1,10 +1,9 @@
 import { formatClock } from '@shared/locale-names'
 import { formatShortDate } from '@shared/time'
-import { daysFrom, taskRoute } from '../shared/summary'
+import { COMING_UP_DAYS, daysFrom, taskRoute } from '../shared/summary'
 import type { HomeEvent, HomeSummary, HomeTask, HomeWorkspace } from '../shared/types'
 
-/** "Coming up" looks this many days ahead, today included. */
-export const COMING_UP_DAYS = 3
+export { COMING_UP_DAYS }
 
 export interface HomeView {
   tasks: {
@@ -12,11 +11,15 @@ export interface HomeView {
     today: HomeTask[]
     /** The summary caps each list, so when it is cut short the counts here are not the whole story. */
     cut: boolean
+    /** Tasks the summary left out of the two lists (their totals minus what it carries). */
+    hidden: number
   }
   /** Today's timed meetings and trainings first (time order), then the rest of what is dated today. */
   todayEvents: HomeEvent[]
   /** From tomorrow on. */
   comingUp: HomeEvent[]
+  /** What the summary left out of Coming up (inside its window). */
+  comingUpHidden: number
   today: string
 }
 
@@ -83,10 +86,12 @@ export function homeView(summary: HomeSummary, workspace: HomeWorkspace): HomeVi
     tasks: {
       overdue: tasks.overdue,
       today: tasks.today,
-      cut: tasks.overdue.length < tasks.overdueTotal || tasks.today.length < tasks.todayTotal
+      cut: tasks.overdue.length < tasks.overdueTotal || tasks.today.length < tasks.todayTotal,
+      hidden: tasks.overdueTotal - tasks.overdue.length + (tasks.todayTotal - tasks.today.length)
     },
     todayEvents,
     comingUp,
+    comingUpHidden: summary.upcomingCut?.[workspace] ?? 0,
     today: summary.today
   }
 }
@@ -195,4 +200,41 @@ export function comingUpItems(
     items.push({ group: g })
   }
   return items
+}
+
+/** One displayed row of Today or Coming up: an event, or a task (a subtask hangs under its task). */
+export type HomeRow =
+  | { kind: 'event'; event: HomeEvent }
+  | {
+      kind: 'task'
+      task: HomeTask
+      /** Name the date: a parent that is not due in the section, or any task of Coming up. */ showDue: boolean
+      kid: boolean
+    }
+
+function groupRows(groups: TaskGroup[], showDue: boolean): HomeRow[] {
+  return groups.flatMap((g) => {
+    const parent = g.head ?? g.context
+    return [
+      ...(parent
+        ? [{ kind: 'task', task: parent, showDue: g.head ? showDue : true, kid: false } as const]
+        : []),
+      ...g.kids.map((task) => ({ kind: 'task', task, showDue: false, kid: true }) as const)
+    ]
+  })
+}
+
+/** Today as the rows the card draws, in order: the events, then the overdue and due tasks with their subtasks. */
+export function todayRows(view: HomeView): HomeRow[] {
+  return [
+    ...view.todayEvents.map((event) => ({ kind: 'event', event }) as const),
+    ...groupRows(groupTasks([...view.tasks.overdue, ...view.tasks.today], view.today), false)
+  ]
+}
+
+/** Coming up as the rows the card draws, in order. */
+export function comingUpRows(view: HomeView, workspace: HomeWorkspace): HomeRow[] {
+  return comingUpItems(view.comingUp, workspace, view.today).flatMap((item) =>
+    item.group ? groupRows([item.group], true) : [{ kind: 'event', event: item.event } as const]
+  )
 }

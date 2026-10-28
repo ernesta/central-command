@@ -85,6 +85,8 @@ export interface HomeInputs {
 export const SHOWN_TASKS = 5
 export const SHOWN_UPCOMING = 5
 export const SHOWN_WATCH = 50
+/** "Coming up" looks this many days ahead, today included. */
+export const COMING_UP_DAYS = 3
 const TASKS_AHEAD_DAYS = 14
 const MEETINGS_AHEAD_DAYS = 21
 const TRAININGS_AHEAD_DAYS = 45
@@ -304,6 +306,7 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
       a.title.localeCompare(b.title)
   )
 
+  const shown = shownEvents(events)
   return {
     today,
     generatedAt: input.generatedAt,
@@ -315,7 +318,8 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
       life: tasksOf(dated, 'life', today)
     },
     meetings: { next: nextMeeting, openTodos: input.openMeetingTodos },
-    upcoming: shownEvents(events),
+    upcoming: shown.events,
+    upcomingCut: shown.cut,
     watch: {
       research: briefOf(input.watch.research),
       life: briefOf(input.watch.life)
@@ -326,17 +330,26 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
 
 /**
  * Everything dated today is kept (Home's "Today" lists it); the days ahead are cut to `SHOWN_UPCOMING` per workspace. A saved Watch
- * item's date is not cut: the user chose it, and a notification may be due for it.
+ * item's date is not cut: the user chose it, and a notification may be due for it. `cut` counts, per workspace, what fell inside the
+ * Coming up window.
  */
-function shownEvents(events: HomeEvent[]): HomeEvent[] {
+function shownEvents(events: HomeEvent[]): {
+  events: HomeEvent[]
+  cut: Partial<Record<HomeWorkspace, number>>
+} {
   const ahead = new Map<HomeWorkspace | null, number>()
-  return events.filter((e) => {
+  const cut: Partial<Record<HomeWorkspace, number>> = {}
+  const kept = events.filter((e) => {
     if (e.inDays <= 0 || e.id.startsWith('watch:')) return true
     const w = eventWorkspace(e)
     const n = (ahead.get(w) ?? 0) + 1
     ahead.set(w, n)
-    return n <= SHOWN_UPCOMING
+    if (n <= SHOWN_UPCOMING) return true
+    // Left out, but "Coming up" says how many it holds that it cannot show.
+    if (w && e.inDays <= COMING_UP_DAYS) cut[w] = (cut[w] ?? 0) + 1
+    return false
   })
+  return { events: kept, cut }
 }
 
 const briefOf = (watch: HomeInputs['watch'][WatchWorkspace]): WatchBrief | null =>

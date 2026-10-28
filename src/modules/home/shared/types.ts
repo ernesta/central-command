@@ -164,6 +164,8 @@ export interface HomeSummary {
     openTodos: number
   }
   upcoming: HomeEvent[]
+  /** Per workspace, how many events inside the Coming up window the summary left out of `upcoming` (it keeps `SHOWN_UPCOMING`). */
+  upcomingCut?: Partial<Record<HomeWorkspace, number>>
   /** Each Watch workspace's brief; null where that workspace watches nothing. */
   watch: Record<WatchWorkspace, WatchBrief | null>
   /** Null when weather is off, has no place yet, or could not be read. */

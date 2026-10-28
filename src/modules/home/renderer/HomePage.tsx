@@ -7,18 +7,19 @@ import { PriorityBadge } from '../../tasks/renderer/TaskIcons'
 import { StudyIcon } from '../../tasks/renderer/TaskName'
 import { SubtaskLine } from '../../tasks/renderer/SubtaskLine'
 import { lineDue } from '../../tasks/shared/query'
-import { tasksAllRoute } from '../../tasks/renderer/tasks-paths'
+import { tasksAllRoute, tasksBase } from '../../tasks/renderer/tasks-paths'
 import type { HomeEvent, HomeTask, HomeWorkspace } from '../shared/types'
 import {
   COMING_UP_DAYS,
-  comingUpItems,
+  comingUpRows,
   eventDetail,
-  groupTasks,
   homeView,
-  type TaskGroup,
+  todayRows,
+  type HomeRow,
   whenLabel,
   type HomeView
 } from './home-model'
+import { capRows } from '../shared/cap'
 import { HomeHours } from './HomeHours'
 import { usePeople } from '../../meetings/renderer/usePeople'
 import { initialsFor } from '../../meetings/shared/query'
@@ -155,26 +156,39 @@ function EventRow({
   )
 }
 
-/** A task with its due subtasks hung under it, as in the Tasks table; a parent that is not due is its own row all the same. */
-function TaskGroupRows({
-  group,
+/** The rows of a card: a task's subtasks hang under it (the rail ends at the last one shown); the rest is "+N more". */
+function Rows({
+  rows,
+  more,
   today,
-  showDue = false
+  initialsOf
 }: {
-  group: TaskGroup
+  rows: HomeRow[]
+  more: number
   today: string
-  /** Coming up names the date of a task; Today's section already says it. A parent that is not due in the section always does. */
-  showDue?: boolean
+  initialsOf: (name: string) => string | null
 }): React.JSX.Element {
-  const { head, context, kids } = group
-  const parent = head ?? context
-  const due = parent && (head ? showDue : true) ? lineDue(parent, today) : ''
   return (
     <>
-      {parent && <TaskRow task={parent} due={due} hasKids={kids.length > 0} />}
-      {kids.map((k, i) => (
-        <TaskRow key={k.uid} task={k} kid end={i === kids.length - 1} />
-      ))}
+      <ul className={styles.list}>
+        {rows.map((row, i) => {
+          if (row.kind === 'event')
+            return <EventRow key={row.event.id} event={row.event} initialsOf={initialsOf} />
+          const next = rows[i + 1]
+          const nextIsKid = next?.kind === 'task' && next.kid
+          return (
+            <TaskRow
+              key={`${row.kid ? 'kid' : 'task'}:${row.task.uid}`}
+              task={row.task}
+              due={row.showDue ? lineDue(row.task, today) : ''}
+              kid={row.kid}
+              end={row.kid && !nextIsKid}
+              hasKids={!row.kid && nextIsKid}
+            />
+          )
+        })}
+      </ul>
+      {more > 0 && <p className={styles.more}>+{more} more</p>}
     </>
   )
 }
@@ -191,6 +205,7 @@ function TodayCard({
   const { overdue, today, cut } = view.tasks
   const { todayEvents } = view
   const empty = todayEvents.length + overdue.length + today.length === 0
+  const { shown, more } = capRows(todayRows(view), view.tasks.hidden)
   const count = empty
     ? 'Clear'
     : [
@@ -207,7 +222,7 @@ function TodayCard({
       actions={
         <span className={styles.actions}>
           {!cut && <span className={styles.small}>{count}</span>}
-          {(cut || overdue.length + today.length > 0) && (
+          {(cut || more > 0 || overdue.length + today.length > 0) && (
             <StyledLink to={tasksAllRoute(workspace, { view: 'open' })}>See all</StyledLink>
           )}
         </span>
@@ -216,14 +231,7 @@ function TodayCard({
       {empty ? (
         <None>Nothing today.</None>
       ) : (
-        <ul className={styles.list}>
-          {todayEvents.map((e) => (
-            <EventRow key={e.id} event={e} initialsOf={initialsOf} />
-          ))}
-          {groupTasks([...overdue, ...today], view.today).map((g) => (
-            <TaskGroupRows key={g.head?.uid ?? g.context?.uid} group={g} today={view.today} />
-          ))}
-        </ul>
+        <Rows rows={shown} more={more} today={view.today} initialsOf={initialsOf} />
       )}
     </Panel>
   )
@@ -238,28 +246,21 @@ function ComingUpCard({
   workspace: HomeWorkspace
   initialsOf: (name: string) => string | null
 }): React.JSX.Element {
+  const { shown, more } = capRows(comingUpRows(view, workspace), view.comingUpHidden)
   return (
     <Panel
       label="Coming up"
-      actions={<span className={styles.small}>Next {COMING_UP_DAYS} days</span>}
+      actions={
+        <span className={styles.actions}>
+          <span className={styles.small}>Next {COMING_UP_DAYS} days</span>
+          {shown.length > 0 && <StyledLink to={tasksBase(workspace)}>See all</StyledLink>}
+        </span>
+      }
     >
-      {view.comingUp.length === 0 ? (
+      {shown.length === 0 ? (
         <None>Nothing in the next {COMING_UP_DAYS} days.</None>
       ) : (
-        <ul className={styles.list}>
-          {comingUpItems(view.comingUp, workspace, view.today).map((item) =>
-            item.group ? (
-              <TaskGroupRows
-                key={item.group.head?.uid ?? item.group.context?.uid}
-                group={item.group}
-                today={view.today}
-                showDue
-              />
-            ) : (
-              <EventRow key={item.event.id} event={item.event} initialsOf={initialsOf} />
-            )
-          )}
-        </ul>
+        <Rows rows={shown} more={more} today={view.today} initialsOf={initialsOf} />
       )}
     </Panel>
   )

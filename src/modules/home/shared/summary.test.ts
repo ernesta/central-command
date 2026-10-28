@@ -302,6 +302,19 @@ describe('upcoming', () => {
     expect(s.upcoming.filter((e) => e.id.startsWith('task:'))).toHaveLength(5)
   })
 
+  it('counts what the cap left out of the Coming up window, per workspace', () => {
+    const s = buildHomeSummary({
+      ...base,
+      tasks: [
+        ...Array.from({ length: 7 }, (_, i) => task({ uid: `n${i}`, due: '2026-10-16' })),
+        task({ uid: 'far', due: '2026-10-25' }),
+        task({ uid: 'w', workspace: 'work', due: '2026-10-16' })
+      ]
+    })
+    expect(s.upcoming.filter((e) => e.id.startsWith('task:n'))).toHaveLength(5)
+    expect(s.upcomingCut).toEqual({ research: 2 })
+  })
+
   it('a Life training has a Life route and its own event id', () => {
     const s = buildHomeSummary({
       ...base,
