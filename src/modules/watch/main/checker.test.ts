@@ -359,17 +359,17 @@ describe('items, keywords, upcoming and counts', () => {
       'Literacy summit',
       'Far away'
     ])
-    // Dismissing or merely seeing a saved item's neighbours changes nothing; un-saving takes it off.
+    // Reading a saved item's neighbours changes nothing; un-saving takes it off.
     setItemState(db, byTitle('Plain event'), 'seen')
-    setItemState(db, byTitle('Far away'), 'dismissed')
+    setItemState(db, byTitle('Far away'), 'seen')
     expect(upcoming(db, '2026-10-15', 800).map((i) => i.title)).toEqual(['Literacy summit'])
   })
 
-  it('opening an item makes a new one seen and leaves saved and dismissed ones alone', async () => {
+  it('opening an item makes a new one read and leaves saved and read ones alone', async () => {
     await seed()
     const [a, b, c] = listItems(db)
     setItemState(db, b.id, 'saved')
-    setItemState(db, c.id, 'dismissed')
+    setItemState(db, c.id, 'seen')
     openItem(db, a.id)
     openItem(db, b.id)
     openItem(db, c.id)
@@ -377,13 +377,8 @@ describe('items, keywords, upcoming and counts', () => {
       listItems(db)
         .map((i) => i.state)
         .sort()
-    ).toEqual(['dismissed', 'saved', 'seen'])
+    ).toEqual(['saved', 'seen', 'seen'])
     expect(listItems(db, { state: 'new' })).toEqual([])
-    expect(
-      listItems(db, { state: 'undismissed' })
-        .map((i) => i.state)
-        .sort()
-    ).toEqual(['saved', 'seen'])
   })
 
   it('lists by kind: a summer school is a training, a journal is in neither section', async () => {
@@ -409,15 +404,15 @@ describe('items, keywords, upcoming and counts', () => {
     expect(listItems(db, { kind: 'conference' }).map((i) => i.title)).toEqual(['Item c'])
   })
 
-  it('"open" is new plus saved; mark-all-seen leaves saved and dismissed alone', async () => {
+  it('"open" is new plus saved; mark-all-seen leaves saved alone', async () => {
     await seed()
     const [a, b] = listItems(db)
     setItemState(db, a.id, 'saved')
-    setItemState(db, b.id, 'dismissed')
-    expect(listItems(db, { state: 'open' })).toHaveLength(2)
-    expect(markAllSeen(db)).toBe(1)
+    expect(listItems(db, { state: 'open' })).toHaveLength(3)
+    expect(markAllSeen(db)).toBe(2)
     expect(listItems(db, { state: 'saved' })).toHaveLength(1)
-    expect(listItems(db, { state: 'dismissed' })).toHaveLength(1)
+    expect(listItems(db, { state: 'seen' })).toHaveLength(2)
+    expect(() => setItemState(db, b.id, 'dismissed' as never)).toThrow('Invalid state')
     expect(() => setItemState(db, a.id, 'bogus' as never)).toThrow('Invalid state')
   })
 
@@ -487,5 +482,38 @@ describe('the two kinds migration', () => {
       .run()
     runMigrations(old, watchMigrations)
     expect(listSources(old).map((s) => s.kind)).toEqual(['training'])
+  })
+})
+
+describe('migration 0005', () => {
+  it('turns what was dismissed into read and leaves the other states alone', () => {
+    const old = new Database(':memory:')
+    old.pragma('foreign_keys = ON')
+    runMigrations(old, watchMigrations.slice(0, 4))
+    old
+      .prepare(
+        "INSERT INTO watch_sources (title, url, kind, method, created_at) VALUES ('S', 'https://ex.org/f', 'conference', 'feed', 'x')"
+      )
+      .run()
+    for (const [k, state] of [
+      ['a', 'dismissed'],
+      ['b', 'new'],
+      ['c', 'saved'],
+      ['d', 'seen']
+    ])
+      old
+        .prepare(
+          "INSERT INTO watch_items (source_id, item_key, title, url, state, first_seen_at) VALUES (1, ?, ?, 'u', ?, 'x')"
+        )
+        .run(k, k, state)
+    runMigrations(old, watchMigrations)
+    expect(
+      (
+        old.prepare('SELECT item_key AS k, state FROM watch_items ORDER BY k').all() as {
+          k: string
+          state: string
+        }[]
+      ).map((r) => r.state)
+    ).toEqual(['seen', 'new', 'saved', 'seen'])
   })
 })

@@ -66,7 +66,7 @@ describe('Watch per workspace', () => {
     const l = source(2, 'life')
     item(r, 'r1')
     item(l, 'l1')
-    item(l, 'l2', { state: 'dismissed' })
+    item(l, 'l2', { state: 'seen' })
     expect(listItems(db, { workspace: 'research' }).map((i) => [i.title, i.workspace])).toEqual([
       ['Item r1', 'research']
     ])

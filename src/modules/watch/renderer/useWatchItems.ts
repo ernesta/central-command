@@ -1,25 +1,20 @@
 import { useCallback, useEffect, useState } from 'react'
-import { showToast } from '@renderer/components/toast-store'
 import type { WatchItem, WatchItemsQuery, WatchState } from '../shared/types'
 import { useWatchWorkspace } from './watch-paths'
 
 export interface WatchItems {
   /** Null until the first read. */
   items: WatchItem[] | null
-  /** Saves an item, or takes the save back (a saved item becomes seen). */
+  /** Saves an item (which reads it), or takes the save back (a saved item becomes read). */
   toggleSaved: (item: WatchItem) => void
-  /** Sends an item away, with an Undo. */
-  dismiss: (item: WatchItem) => void
-  /** Puts a dismissed item back among the seen ones. */
-  restore: (item: WatchItem) => void
+  /** Marks a new item read, or a read item new again. */
+  toggleRead: (item: WatchItem) => void
   /** Opens the item's page in the browser; the first look makes a new item seen. */
   open: (item: WatchItem) => void
 }
 
-/** Items from this workspace's Watch (all but the dismissed by default), read again whenever a check or a click changes them. */
-export function useWatchItems(
-  query: WatchItemsQuery = { state: 'undismissed', limit: 1000 }
-): WatchItems {
+/** Items from this workspace's Watch (every state by default), read again whenever a check or a click changes them. */
+export function useWatchItems(query: WatchItemsQuery = { limit: 1000 }): WatchItems {
   const workspace = useWatchWorkspace()
   const [items, setItems] = useState<WatchItem[] | null>(null)
   const key = JSON.stringify({ ...query, workspace })
@@ -50,14 +45,7 @@ export function useWatchItems(
   return {
     items,
     toggleSaved: (item) => void setState(item, item.state === 'saved' ? 'seen' : 'saved'),
-    dismiss: (item) => {
-      void setState(item, 'dismissed')
-      showToast(`Dismissed "${item.title}".`, {
-        label: 'Undo',
-        run: () => void setState(item, item.state)
-      })
-    },
-    restore: (item) => void setState(item, 'seen'),
+    toggleRead: (item) => void setState(item, item.state === 'new' ? 'seen' : 'new'),
     open: (item) => {
       void window.api.watch.items.open(item.id)
       window.open(item.url, '_blank', 'noopener')

@@ -224,14 +224,12 @@ const ITEM_SELECT = `
 
 /**
  * Items, the ones that need a look first: not-yet-seen before the rest, then the day they were found and the day they were published, newest first (the
- * keyword score is not shown or sorted by: keywords are not part of the page). "open" means new or saved, "undismissed"
- * everything the user has not sent away. A `kind` the page shows (training, conference) takes in its stored kinds.
+ * keyword score is not shown or sorted by: keywords are not part of the page). "open" means new or saved. A `kind` the page shows (training, conference) takes in its stored kinds.
  */
 export function listItems(db: Database, query: WatchItemsQuery = {}): WatchItem[] {
   const where: string[] = []
   const params: unknown[] = []
   if (query.state === 'open') where.push("i.state IN ('new', 'saved')")
-  else if (query.state === 'undismissed') where.push("i.state != 'dismissed'")
   else if (query.state) {
     if (!(WATCH_STATES as readonly string[]).includes(query.state)) throw new Error('Invalid state')
     where.push('i.state = ?')
@@ -263,13 +261,13 @@ export function setItemState(db: Database, id: number, state: WatchState): void 
   db.prepare('UPDATE watch_items SET state = ? WHERE id = ?').run(state, id)
 }
 
-/** Opening an item is the first look at it: a new one becomes seen (saved and dismissed ones stay as they are). */
+/** Opening an item is the first look at it: a new one becomes seen (a saved or read one stays as it is). */
 export function openItem(db: Database, id: number): void {
   db.prepare("UPDATE watch_items SET state = 'seen' WHERE id = ? AND state = 'new'").run(id)
 }
 
 /**
- * "Looked at everything": new items become seen (saved and dismissed stay as they are), in one source or one workspace's sources,
+ * "Looked at everything": new items become read (saved ones stay as they are), in one source or one workspace's sources,
  * or everywhere when neither is given. Returns how many changed.
  */
 export function markAllSeen(db: Database, sourceId?: number, workspace?: WatchWorkspace): number {

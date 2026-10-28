@@ -59,17 +59,17 @@ export interface WatchSections {
   conference: WatchItem[]
 }
 
-/** How many unsaved items each section of the page lists; "See all" has the rest. */
+/** How many new items each section of the page lists; "See all" has the rest. */
 export const SHOWN_PER_SECTION = 8
 
 /**
- * The page's sections from every item that is not dismissed: what is saved (of either kind) first, then each kind's
- * unsaved items, newest first. An item of a kind the page does not show (a journal) is left out.
+ * The page's sections: what is saved (of either kind) first, then each kind's NEW items, newest first (a read item is only in
+ * "See all"). An item of a kind the page does not show (a journal) is left out.
  */
 export function sectionsOf(items: readonly WatchItem[]): WatchSections {
-  const live = items.filter((i) => i.state !== 'dismissed' && shownKind(i.kind) !== null)
+  const live = items.filter((i) => shownKind(i.kind) !== null)
   const unsaved = (kind: ShownKind): WatchItem[] =>
-    live.filter((i) => i.state !== 'saved' && shownKind(i.kind) === kind)
+    live.filter((i) => i.state === 'new' && shownKind(i.kind) === kind)
   return {
     saved: live.filter((i) => i.state === 'saved').sort(bySoonestDeadline),
     training: unsaved('training'),

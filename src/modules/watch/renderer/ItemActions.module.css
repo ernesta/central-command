@@ -1,0 +1,16 @@
+.actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  --icon-button-size: 28px;
+}
+.saved {
+  color: var(--accent);
+}
+@media (max-width: 720px) {
+  .actions {
+    justify-content: flex-start;
+  }
+}

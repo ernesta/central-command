@@ -40,7 +40,8 @@ export const kindsOf = (kind: ShownKind): WatchKind[] =>
 export const WATCH_METHODS = ['feed', 'page', 'crossref'] as const
 export type WatchMethod = (typeof WATCH_METHODS)[number]
 
-export const WATCH_STATES = ['new', 'seen', 'saved', 'dismissed'] as const
+/** Stored states; the page calls `seen` "Read". There is no dismissed state: Save or Read are the two ways to deal with an item. */
+export const WATCH_STATES = ['new', 'seen', 'saved'] as const
 export type WatchState = (typeof WATCH_STATES)[number]
 
 export interface WatchSource {
@@ -111,8 +112,8 @@ export interface WatchItem {
 export interface WatchItemsQuery {
   /** Only this workspace's sources' items. */
   workspace?: WatchWorkspace
-  /** `open` is new or saved; `undismissed` is everything but dismissed. */
-  state?: WatchState | 'open' | 'undismissed'
+  /** `open` is new or saved. */
+  state?: WatchState | 'open'
   sourceId?: number
   kind?: WatchKind
   /** Only items that mention at least one of the user's keywords. */

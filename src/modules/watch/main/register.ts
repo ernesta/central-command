@@ -91,7 +91,6 @@ function asQuery(value: unknown): WatchItemsQuery {
   if (
     state !== undefined &&
     state !== 'open' &&
-    state !== 'undismissed' &&
     !(WATCH_STATES as readonly string[]).includes(state)
   )
     throw new Error('Invalid state')

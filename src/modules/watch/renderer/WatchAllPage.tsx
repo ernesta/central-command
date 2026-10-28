@@ -3,35 +3,32 @@ import { EmptyState } from '@renderer/components/EmptyState'
 import { FilterRow } from '@renderer/components/FilterRow'
 import { SearchInput } from '@renderer/components/SearchInput'
 import { Select } from '@renderer/components/Select'
-import { useModuleState } from '@renderer/state/use-module-state'
+import { useState } from 'react'
 import {
   DEFAULT_WATCH_QUERY,
   groupItems,
   LIST_STATES,
   LIST_STATE_LABELS,
-  normaliseWatchQuery,
   queryItems,
   reconcileWatchQuery,
   sourceOptions,
-  watchFiltersActive
+  watchFiltersActive,
+  type WatchQuery
 } from '../shared/query'
 import { KIND_NOUN } from '../shared/rows'
 import type { ShownKind } from '../shared/types'
-import { todayIso, useWatchWorkspace } from './watch-paths'
+import { todayIso } from './watch-paths'
 import { useWatchItems } from './useWatchItems'
 import { WatchTable } from './WatchTable'
 import styles from './WatchAllPage.module.css'
 
-/** Every item of one kind (See all trainings, See all conferences): search, source and state filters, "New" above "Earlier". */
+/** Every item of one kind (See all trainings, See all conferences): search, source and state filters, grouped Saved, New, Read. */
 export function WatchAllPage({ kind }: { kind: ShownKind }): React.JSX.Element {
   const noun = KIND_NOUN[kind].many.toLowerCase()
-  const workspace = useWatchWorkspace()
   const { items, ...actions } = useWatchItems({ kind, limit: 1000 })
-  // Each workspace's kind remembers its own search and filters (Research's keep the key they had).
-  const { value: saved, update: setQuery } = useModuleState(
-    workspace === 'research' ? `watch-${kind}` : `watch-${workspace}-${kind}`,
-    normaliseWatchQuery
-  )
+  // The filters are not remembered: every visit starts on All sources, All.
+  const [saved, setSaved] = useState<WatchQuery>(DEFAULT_WATCH_QUERY)
+  const setQuery = (changes: Partial<WatchQuery>): void => setSaved((q) => ({ ...q, ...changes }))
   const all = items ?? []
   const query = items === null ? saved : reconcileWatchQuery(saved, all)
   const visible = queryItems(all, query)

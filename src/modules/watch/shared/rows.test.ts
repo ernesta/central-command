@@ -42,18 +42,17 @@ describe('noteFor', () => {
 })
 
 describe('sectionsOf', () => {
-  it('puts saved items first and splits the rest by kind, leaving out dismissed ones and kinds not shown', () => {
+  it('puts saved items first and splits the rest by kind, listing only new ones and leaving out kinds not shown', () => {
     const s = sectionsOf([
       item({ id: 1, kind: 'conference', state: 'saved', date: '2026-12-01' }),
       item({ id: 2, kind: 'training', state: 'saved', date: '2026-11-05' }),
       item({ id: 3, kind: 'summer-school', state: 'new' }),
       item({ id: 4, kind: 'conference', state: 'seen' }),
-      item({ id: 5, kind: 'conference', state: 'dismissed' }),
       item({ id: 6, kind: 'journal', state: 'new' })
     ])
     expect(s.saved.map((i) => i.id)).toEqual([2, 1])
     expect(s.training.map((i) => i.id)).toEqual([3])
-    expect(s.conference.map((i) => i.id)).toEqual([4])
+    expect(s.conference.map((i) => i.id)).toEqual([])
   })
 })
 

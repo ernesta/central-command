@@ -1,13 +1,12 @@
-import { Fragment } from 'react'
-import { Bookmark, Undo2, X } from 'lucide-react'
+import { Fragment, useState } from 'react'
 import { CutText } from '@renderer/components/CutText'
 import { GroupRow } from '@renderer/components/GroupRow'
-import { IconButton } from '@renderer/components/IconButton'
 import { Tooltip } from '@renderer/components/Tooltip'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import shared from '@renderer/components/ListTable.module.css'
 import { foundLabel, noteFor, titleParts } from '../shared/rows'
-import type { WatchGroup } from '../shared/query'
+import { cutGroups, type WatchGroup } from '../shared/query'
+import { ItemActions } from './ItemActions'
 import type { WatchItems } from './useWatchItems'
 import styles from './WatchAllPage.module.css'
 
@@ -16,11 +15,12 @@ const WIDTHS = { found: 128, when: 150, source: 280, note: 160, actions: 96 }
 const HEADINGS = ['Found', 'Title', 'When', 'Source', 'Note', '']
 
 /**
- * Found, Title, Source, Note and the two icon buttons, one 48px line each, "New" above "Earlier". Like the Training table
- * it is one tab stop (arrow keys, Home/End, Enter opens the item's page in the browser).
+ * Found, Title, When, Source, Note and the two icon buttons, one 48px line each, under Saved / New / Read headers in "All", each
+ * group cut after its first rows with a "Show N more" row. Like the Training table it is one tab stop (arrow keys, Home/End,
+ * Enter opens the item's page in the browser).
  */
 export function WatchTable({
-  groups,
+  groups: all,
   today,
   label,
   actions
@@ -28,8 +28,10 @@ export function WatchTable({
   groups: readonly WatchGroup[]
   today: string
   label: string
-  actions: Pick<WatchItems, 'toggleSaved' | 'dismiss' | 'restore' | 'open'>
+  actions: Pick<WatchItems, 'toggleSaved' | 'toggleRead' | 'open'>
 }): React.JSX.Element {
+  const [opened, setOpened] = useState<ReadonlySet<WatchGroup['key']>>(new Set())
+  const groups = cutGroups(all, opened)
   const ordered = groups.flatMap((g) => g.rows)
   const { tableProps, rowProps } = useRowNavigation(ordered.length, (index) =>
     actions.open(ordered[index])
@@ -103,34 +105,23 @@ export function WatchTable({
                       <CutText>{noteFor(item, today)}</CutText>
                     </td>
                     <td onClick={(event) => event.stopPropagation()}>
-                      <span className={styles.actions}>
-                        {item.state === 'dismissed' ? (
-                          <IconButton label="Restore" onClick={() => actions.restore(item)}>
-                            <Undo2 size={16} strokeWidth={1.75} />
-                          </IconButton>
-                        ) : (
-                          <>
-                            <IconButton
-                              label={item.state === 'saved' ? 'Saved' : 'Save'}
-                              aria-pressed={item.state === 'saved'}
-                              className={item.state === 'saved' ? styles.saved : undefined}
-                              onClick={() => actions.toggleSaved(item)}
-                            >
-                              <Bookmark
-                                size={16}
-                                strokeWidth={1.75}
-                                fill={item.state === 'saved' ? 'currentColor' : 'none'}
-                              />
-                            </IconButton>
-                            <IconButton label="Dismiss" onClick={() => actions.dismiss(item)}>
-                              <X size={16} strokeWidth={1.75} />
-                            </IconButton>
-                          </>
-                        )}
-                      </span>
+                      <ItemActions item={item} actions={actions} />
                     </td>
                   </tr>
                 ))}
+                {group.hidden > 0 && (
+                  <tr>
+                    <td colSpan={HEADINGS.length} className={styles.moreCell}>
+                      <button
+                        type="button"
+                        className={styles.more}
+                        onClick={() => setOpened(new Set([...opened, group.key]))}
+                      >
+                        Show {group.hidden} more
+                      </button>
+                    </td>
+                  </tr>
+                )}
               </Fragment>
             )
           })}

@@ -1,16 +1,15 @@
-import { Bookmark, Undo2, X } from 'lucide-react'
 import { CutText } from '@renderer/components/CutText'
-import { IconButton } from '@renderer/components/IconButton'
 import { Tooltip } from '@renderer/components/Tooltip'
 import landing from '@renderer/components/Landing.module.css'
 import { foundLabel, noteFor, titleParts } from '../shared/rows'
 import type { WatchItem } from '../shared/types'
+import { ItemActions } from './ItemActions'
 import type { WatchItems } from './useWatchItems'
 import styles from './WatchList.module.css'
 
 /**
  * Items as the landing's list of rows: the day found, the title (a "New" pill while unseen), its source, a deadline when
- * the text names one, and two icon buttons: save and dismiss (a dismissed item shows Restore instead). The row opens the
+ * the text names one, and two icon buttons: Mark read and Save. The row opens the
  * item's page in the browser.
  */
 export function WatchList({
@@ -20,7 +19,7 @@ export function WatchList({
 }: {
   items: readonly WatchItem[]
   today: string
-  actions: Pick<WatchItems, 'toggleSaved' | 'dismiss' | 'restore' | 'open'>
+  actions: Pick<WatchItems, 'toggleSaved' | 'toggleRead' | 'open'>
 }): React.JSX.Element {
   return (
     <ul className={`${landing.box} ${landing.recentList}`}>
@@ -48,31 +47,7 @@ export function WatchList({
             <CutText className={styles.note}>{titleParts(item.title).when}</CutText>
             <CutText className={styles.note}>{item.sourceTitle}</CutText>
             <CutText className={styles.note}>{noteFor(item, today)}</CutText>
-            <span className={styles.actions}>
-              {item.state === 'dismissed' ? (
-                <IconButton label="Restore" onClick={() => actions.restore(item)}>
-                  <Undo2 size={16} strokeWidth={1.75} />
-                </IconButton>
-              ) : (
-                <>
-                  <IconButton
-                    label={item.state === 'saved' ? 'Saved' : 'Save'}
-                    aria-pressed={item.state === 'saved'}
-                    className={item.state === 'saved' ? styles.saved : undefined}
-                    onClick={() => actions.toggleSaved(item)}
-                  >
-                    <Bookmark
-                      size={16}
-                      strokeWidth={1.75}
-                      fill={item.state === 'saved' ? 'currentColor' : 'none'}
-                    />
-                  </IconButton>
-                  <IconButton label="Dismiss" onClick={() => actions.dismiss(item)}>
-                    <X size={16} strokeWidth={1.75} />
-                  </IconButton>
-                </>
-              )}
-            </span>
+            <ItemActions item={item} actions={actions} />
           </div>
         </li>
       ))}
