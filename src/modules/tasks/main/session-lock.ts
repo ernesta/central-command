@@ -53,56 +53,40 @@ export function unlockedForDue(db: Database, store: TasksStore, uids: readonly s
 }
 
 /**
- * The meeting or training whose note made this task, or null. For a series task (what such sessions sit under) it is one of its
- * sessions, with the name of their series in `series`, so the page can link to the series.
+ * The training whose note made this self-study task, or null (a meeting's or training's own task is never shown, so has no source).
+ * For a series task over self-study tasks it is one of those trainings, with the name of their series in `series`, so the page can
+ * link to the series.
  */
 export function sessionSource(db: Database, uid: string): SessionSource | null {
   return ownSource(db, uid) ?? seriesSource(db, uid)
 }
 
 function ownSource(db: Database, uid: string): SessionSource | null {
-  const meeting = db
-    .prepare(
-      `SELECT workspace, meeting_id AS id, series, date FROM meetings WHERE task = ? LIMIT 1`
-    )
-    .get(uid) as { workspace: string; id: string; series: string; date: string } | undefined
-  if (meeting) {
-    return {
-      kind: 'meeting',
-      workspace: meeting.workspace,
-      id: meeting.id,
-      title: meeting.series || meeting.date || meeting.id
-    }
-  }
   const training = db
     .prepare(
-      `SELECT workspace, entry_id AS id, title FROM training WHERE task = @uid OR self_study_task = @uid LIMIT 1`
+      `SELECT workspace, entry_id AS id, title FROM training WHERE self_study_task = ? LIMIT 1`
     )
-    .get({ uid }) as { workspace: string; id: string; title: string } | undefined
-  if (training) {
-    return {
-      kind: 'training',
-      workspace: training.workspace,
-      id: training.id,
-      title: training.title || training.id
-    }
+    .get(uid) as { workspace: string; id: string; title: string } | undefined
+  if (!training) return null
+  return {
+    kind: 'training',
+    workspace: training.workspace,
+    id: training.id,
+    title: training.title || training.id
   }
-  return null
 }
 
 function seriesSource(db: Database, uid: string): SessionSource | null {
   const kids = db
     .prepare(
-      'SELECT uid FROM tasks WHERE parent_uid = ? AND deleted_at IS NULL AND own_kind IS NOT NULL'
+      `SELECT uid FROM tasks WHERE parent_uid = ? AND deleted_at IS NULL AND own_kind = 'self-study'`
     )
     .all(uid) as { uid: string }[]
   for (const kid of kids) {
     const source = ownSource(db, kid.uid)
     if (!source) continue
-    const table = source.kind === 'meeting' ? 'meetings' : 'training'
-    const idColumn = source.kind === 'meeting' ? 'meeting_id' : 'entry_id'
     const row = db
-      .prepare(`SELECT series FROM ${table} WHERE workspace = ? AND ${idColumn} = ?`)
+      .prepare('SELECT series FROM training WHERE workspace = ? AND entry_id = ?')
       .get(source.workspace, source.id) as { series: string | null } | undefined
     return { ...source, series: row?.series ?? '' }
   }

@@ -1,12 +1,15 @@
 import type { Task, TaskChanges } from './types'
 
-/** The meeting or training whose note made a task, for the "Made by" line on a locked task. */
+/**
+ * The training whose note made a self-study task (or the series task over such tasks), for the "Made by" line on a locked task. Meeting
+ * and training tasks are never shown (28 Oct 2026), so nothing links to them.
+ */
 export interface SessionSource {
-  kind: 'meeting' | 'training'
+  kind: 'training'
   workspace: string
   id: string
   title: string
-  /** Set for a series task: the series the meetings or trainings under it belong to (empty when they have none). */
+  /** Set for a series task: the series the trainings under it belong to (empty when they have none). */
   series?: string
 }
 

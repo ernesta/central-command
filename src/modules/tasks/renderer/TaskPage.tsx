@@ -1,5 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
-import { CalendarDays, GraduationCap } from 'lucide-react'
+import { GraduationCap } from 'lucide-react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
@@ -344,7 +344,7 @@ function TaskView({
                   />
                 )}
               </div>
-              {lock && <MadeByField lock={lock} source={source} />}
+              {lock && source && <MadeByField lock={lock} source={source} />}
             </div>
           </section>
 
@@ -464,31 +464,19 @@ function MadeByField({
   source
 }: {
   lock: 'session' | 'series'
-  source: SessionSource | null
+  source: SessionSource
 }): React.JSX.Element {
   const navigate = useNavigate()
-  if (!source) {
-    return (
-      <div className={styles.field}>
-        <span className={styles.label}>Made by</span>
-        <span className={styles.lockedValue}>Its meeting or training</span>
-      </div>
-    )
-  }
-  const kind = source.kind === 'meeting' ? 'meeting' : 'training'
-  const { route } = sourceTarget({ kind, workspace: source.workspace, id: source.id })
-  // A series task opens the series' own page when there is one, else the meeting or training under it.
+  const { route } = sourceTarget({ kind: 'training', workspace: source.workspace, id: source.id })
+  // A series task opens the series' own page when there is one, else the training under it.
   const series = lock === 'series'
   const to =
     series && source.series ? seriesTarget(source.kind, source.workspace, source.series) : route
   const name = series ? source.series || source.title : source.title
-  const noun = series ? 'series' : kind
-  const Icon = kind === 'meeting' ? CalendarDays : GraduationCap
+  const noun = series ? 'series' : 'training'
   return (
     <div className={styles.field}>
-      <span className={styles.label}>
-        {series ? 'Series' : kind === 'meeting' ? 'Meeting' : 'Training'}
-      </span>
+      <span className={styles.label}>{series ? 'Series' : 'Training'}</span>
       <span className={styles.lockedValue}>
         {name}
         <IconButton
@@ -496,7 +484,7 @@ function MadeByField({
           className={styles.openButton}
           onClick={() => void navigate(to)}
         >
-          <Icon size={16} strokeWidth={1.75} aria-hidden />
+          <GraduationCap size={16} strokeWidth={1.75} aria-hidden />
         </IconButton>
       </span>
     </div>
