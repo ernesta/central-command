@@ -89,6 +89,37 @@ describe('collectHomeSummary: tasks', () => {
     expect(s.tasks.overdue.map((t) => t.uid)).toEqual(['late'])
   })
 
+  it('leaves out Life: its tasks and trainings are not on any Home, and use none of its slots', () => {
+    task('a')
+    task('l', { workspace: 'life' })
+    upsertTraining(db, {
+      workspace: 'life',
+      id: 'lt',
+      date: '2026-10-16',
+      start: null,
+      end: null,
+      title: 'Lesson',
+      series: '',
+      type: null,
+      mode: null,
+      skills: [],
+      leads: [],
+      institution: null,
+      folder: null,
+      task: '',
+      selfStudy: '',
+      summary: '',
+      excerpt: '',
+      hasNotes: false,
+      problems: [],
+      contentHash: 'h'
+    })
+    const s = collect()
+    expect(s.tasks.today.map((t) => t.uid)).toEqual(['a'])
+    expect(s.tasks.todayTotal).toBe(1)
+    expect(s.upcoming).toEqual([])
+  })
+
   it('gives a subtask its parent’s list and sublist, which it has none of itself', () => {
     task('parent', { list: 'Thesis', due: null })
     db.prepare("UPDATE tasks SET sublist = 'Methods' WHERE uid = 'parent'").run()
