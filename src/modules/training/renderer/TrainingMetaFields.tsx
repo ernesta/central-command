@@ -1,6 +1,3 @@
-import { ListChecks } from 'lucide-react'
-import { useNavigate } from 'react-router'
-import { IconButton } from '@renderer/components/IconButton'
 import { TimeInput } from '@renderer/components/TimeInput'
 import { endFollowingStart } from '@renderer/components/time-input'
 import { Segmented } from '@renderer/components/Segmented'
@@ -34,8 +31,6 @@ interface TrainingMetaFieldsProps {
   onOpenPeople: () => void
   /** Life's entries have no type or skills (they are Inkpath's). */
   workspace?: TrainingWorkspace
-  /** Where the training's own task (the session) is, once it exists: an icon button in the details. */
-  trainingTaskTo?: string
 }
 
 const MODE_OPTIONS = TRAINING_MODES.map((value) => ({
@@ -52,10 +47,8 @@ export function TrainingMetaFields({
   onChange,
   onAddPerson,
   onOpenPeople,
-  workspace = 'research',
-  trainingTaskTo
+  workspace = 'research'
 }: TrainingMetaFieldsProps): React.JSX.Element {
-  const navigate = useNavigate()
   const research = workspace === 'research'
   const duration = durationMinutes(meta.start, meta.end)
   const knownType = meta.type === null || TRAINING_TYPES.some((t) => t.name === meta.type)
@@ -126,11 +119,6 @@ export function TrainingMetaFields({
           <output aria-labelledby="training-duration-label">
             {duration === null ? '—' : formatDuration(duration)}
           </output>
-          {trainingTaskTo && (
-            <IconButton label="Open task" onClick={() => void navigate(trainingTaskTo)}>
-              <ListChecks size={16} strokeWidth={1.75} aria-hidden />
-            </IconButton>
-          )}
         </div>
       </div>
       <div className={`${styles.field} ${styles.grow}`}>

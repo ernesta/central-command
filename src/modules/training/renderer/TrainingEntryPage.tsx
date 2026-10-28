@@ -24,7 +24,6 @@ import { MeetingHoursNote } from '../../meetings/renderer/MeetingHoursNote'
 import { FilesPanel } from './FilesPanel'
 import { TrainingHours } from './TrainingHours'
 import { TrainingTask } from './TrainingTask'
-import { taskRoute } from '../../tasks/renderer/tasks-paths'
 import { entryRoute, trainingBase, useTrainingWorkspace } from './training-paths'
 import { TrainingMetaFields } from './TrainingMetaFields'
 import { useTrainingTask } from './useTrainingTask'
@@ -124,7 +123,6 @@ function EntryView({
     workspace
   )
   const trainingUid = trainingTaskUid(meta.task)
-  const trainingTask = trainingUid ? tasks?.find((t) => t.uid === trainingUid) : undefined
   useDocumentTitle(meta.title)
 
   // Back goes to wherever the user came from (the list); with no history, the list.
@@ -299,9 +297,6 @@ function EntryView({
         onAddPerson={addPerson}
         onOpenPeople={refreshPeople}
         workspace={workspace}
-        trainingTaskTo={
-          research && trainingTask ? taskRoute(trainingTask.workspace, trainingTask.uid) : undefined
-        }
       />
 
       <MeetingHoursNote
@@ -313,14 +308,7 @@ function EntryView({
       />
 
       {(research ? meta.task : true) && (
-        <TrainingTask
-          task={meta.task}
-          series={meta.series}
-          tasks={tasks}
-          onRemake={() => session.setMeta({ task: 'auto' })}
-          selfStudy={tasks?.find((t) => t.uid === meta.selfStudy)}
-          sessionTask={research}
-        >
+        <TrainingTask tasks={tasks} selfStudy={tasks?.find((t) => t.uid === meta.selfStudy)}>
           <TrainingHours meta={meta} tasks={tasks} ensure={ensure} workspace={workspace} />
         </TrainingTask>
       )}

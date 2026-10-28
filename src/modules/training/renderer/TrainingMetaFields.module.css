@@ -32,16 +32,11 @@
   font-size: var(--text-14);
   font-variant-numeric: tabular-nums;
 }
-.calc button {
-  /* The icon sits in the box without making it taller. */
-  margin: -4px -6px -4px 0;
-}
 .calc {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  --icon-button-size: 24px;
   min-width: 100px;
   padding: 7px 12px;
   border: 1px dashed var(--border-strong);
