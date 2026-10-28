@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest'
-import { escapeLeavesFullScreen } from './useEscapeFullScreen'
+import { escapeLeavesFullScreen, listenForEscape } from './useEscapeFullScreen'
 
 const press = (init: KeyboardEventInit = {}): KeyboardEvent =>
   new KeyboardEvent('keydown', { key: 'Escape', cancelable: true, ...init })
@@ -34,5 +34,62 @@ describe('escapeLeavesFullScreen', () => {
     expect(escapeLeavesFullScreen(press(), document.getElementById('a'))).toBe(false)
     document.body.innerHTML = '<div role="menu"></div><button id="b"></button>'
     expect(escapeLeavesFullScreen(press(), document.getElementById('b'))).toBe(false)
+  })
+})
+
+describe('listenForEscape', () => {
+  const form = (): { input: HTMLInputElement; left: () => number; stop: () => void } => {
+    document.body.innerHTML = '<div id="form"><input id="task"></div>'
+    const input = document.getElementById('task') as HTMLInputElement
+    input.focus()
+    let count = 0
+    const stop = listenForEscape(window, () => count++)
+    return { input, left: () => count, stop }
+  }
+  const escape = (target: Element): void => {
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
+    )
+  }
+
+  it('stays when a handler closes the form and unmounts the focused field', () => {
+    const { input, left, stop } = form()
+    document.getElementById('form')!.addEventListener('keydown', () => {
+      document.getElementById('form')!.remove()
+    })
+    escape(input)
+    expect(document.activeElement).toBe(document.body)
+    expect(left()).toBe(0)
+    stop()
+  })
+
+  it('stays when a handler closes the list that was open', () => {
+    const { left, stop } = form()
+    document.body.insertAdjacentHTML('beforeend', '<ul role="listbox" id="list"></ul>')
+    document.getElementById('form')!.insertAdjacentHTML('beforeend', '<button id="b">')
+    const input = document.getElementById('b') as HTMLButtonElement
+    input.focus()
+    document.getElementById('form')!.addEventListener('keydown', () => {
+      document.getElementById('list')!.remove()
+    })
+    escape(input)
+    expect(left()).toBe(0)
+    stop()
+  })
+
+  it('leaves when nothing had focus or wanted the key', () => {
+    const { left, stop } = form()
+    document.body.innerHTML = ''
+    escape(document.body)
+    expect(left()).toBe(1)
+    stop()
+  })
+
+  it('stops listening when cleaned up', () => {
+    const { left, stop } = form()
+    stop()
+    document.body.innerHTML = ''
+    escape(document.body)
+    expect(left()).toBe(0)
   })
 })
