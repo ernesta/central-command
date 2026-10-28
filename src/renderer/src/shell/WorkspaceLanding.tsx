@@ -15,19 +15,18 @@ export function WorkspaceLanding({
 }): React.JSX.Element {
   const live = liveModules(workspace).filter((m) => m.landingCard)
   const planned = plannedModulesFor(workspace)
-  const hasHome = workspace === 'research' || workspace === 'work'
 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
         <div className={styles.title}>
           <h1 className={styles.heading}>{WORKSPACE_LABELS[workspace]}</h1>
-          {hasHome && <HomeDate />}
-          {hasHome && <HomeWeather />}
+          <HomeDate />
+          <HomeWeather />
         </div>
         {actions}
       </header>
-      {hasHome && <HomePage workspace={workspace} />}
+      <HomePage workspace={workspace} />
       {live.length > 0 && (
         <div className={styles.live}>
           {live.map(({ id, landingCard: Card }) => (Card ? <Card key={id} /> : null))}

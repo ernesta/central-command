@@ -2,7 +2,7 @@ import Database from 'better-sqlite3'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { runMigrations } from '../../../main/db/migrate'
 import type { RunningTimer } from '@shared/tracking/api'
-import { emptyYear, WORK_PLAN, type TrackingYear } from '@shared/tracking/types'
+import { emptyYear, LIFE_PLAN, WORK_PLAN, type TrackingYear } from '@shared/tracking/types'
 import { meetingsMigrations } from '../../meetings/main/migrations'
 import { tasksMigrations } from '../../tasks/main/migrations'
 import { trainingMigrations } from '../../training/main/migrations'
@@ -442,6 +442,52 @@ describe('collectHomeSummary: hours are the Hours page’s hours', () => {
       ]
     }
     expect(hours({ research: studied }).research?.minutes).toBe(30 + 90 + 45)
+  })
+
+  const life: TrackingYear = {
+    ...emptyYear('2026-09-21', LIFE_PLAN),
+    adjusts: [{ id: 'p', date: '2026-10-15', label: 'Piano', minutes: 20 }]
+  }
+
+  it('Life: a training’s own session counts in Life’s week, as in Research’s, and not in Research’s', () => {
+    task('lt', { workspace: 'life', due: null, title: 'Lesson' })
+    insertTraining('life-day', 'lt', { workspace: 'life' })
+    const h = hours({ research, life })
+    expect(h.life).toMatchObject({ label: 'This week', aimMinutes: 0, todayMinutes: 20 })
+    expect(h.life?.minutes).toBe(20 + 90)
+    expect(h.research?.minutes).toBe(30)
+  })
+
+  it('Life: a Research training does not count in Life’s week', () => {
+    task('rt', { due: null })
+    insertTraining('research-day', 'rt')
+    expect(hours({ research, life }).life?.minutes).toBe(20)
+    expect(hours({ research, life }).research?.minutes).toBe(30 + 90)
+  })
+
+  it('Life: no year holding today gives no hours, and an empty Life gives a total of nothing', () => {
+    expect(hours({ research }).life).toBeNull()
+    const empty: TrackingYear = emptyYear('2026-09-21', LIFE_PLAN)
+    expect(hours({ life: empty }).life).toMatchObject({ minutes: 0, todayMinutes: 0 })
+  })
+
+  it('Life’s running timer reaches the summary, labelled for Life', () => {
+    const tracking: TrackingSource = {
+      running: () => ({
+        workspace: 'life',
+        year: '2026-09-21',
+        session: { id: 's', date: '2026-10-15', start: '09:30:00', end: null, label: 'Piano' }
+      }),
+      years: () => [],
+      get: () => emptyYear('2026-09-21')
+    }
+    expect(collect(tracking).timer).toEqual({
+      workspace: 'life',
+      label: 'Piano',
+      date: '2026-10-15',
+      time: '09:30',
+      minutes: 60
+    })
   })
 
   it('Work: a meeting under a client’s list lands in the month and under the client', () => {

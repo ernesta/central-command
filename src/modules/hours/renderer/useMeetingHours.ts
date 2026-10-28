@@ -10,7 +10,7 @@ import type { HoursWorkspace } from '../shared/workspaces'
 
 /**
  * A workspace's meetings, training notes and tasks, read again whenever any changes, and from them the hours they derive
- * (`meetingEntries`, and in Research `trainingEntries`: a training's own session). Nothing is stored: this is the notes' date, start
+ * (`meetingEntries`, and in Research and Life `trainingEntries`: a training's own session). Nothing is stored: this is the notes' date, start
  * and end every time.
  */
 export function useMeetingEntries(workspace: HoursWorkspace, today: string): DerivedEntry[] {
@@ -28,7 +28,7 @@ export function useMeetingEntries(workspace: HoursWorkspace, today: string): Der
       void Promise.all([
         // Life has no meetings.
         workspace === 'life' ? Promise.resolve([]) : window.api.meetings.list(workspace),
-        workspace === 'research' ? window.api.training.list('research') : Promise.resolve([]),
+        workspace === 'work' ? Promise.resolve([]) : window.api.training.list(workspace),
         window.api.tasks.list(workspace)
       ]).then(([rows, trainings, tasks]) => {
         if (!cancelled) setLoaded({ workspace, rows, trainings, tasks })

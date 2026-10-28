@@ -30,6 +30,7 @@ import {
   type HomeHours,
   type HomeSummary,
   type HomeTimer,
+  type HomeWorkspace,
   type WeatherSummary
 } from '../shared/types'
 
@@ -53,7 +54,7 @@ export function timerMinutes(runner: RunningTimer, now: Moment): number {
 
 function homeTimer(db: Database, tracking: TrackingSource, now: Moment): HomeTimer | null {
   const running = tracking.running()
-  if (!running || running.workspace === 'life') return null
+  if (!running) return null
   const uid = running.session.task ? taskUidOf(running.session.task) : null
   const own = uid
     ? (db
@@ -84,7 +85,7 @@ function homeTimer(db: Database, tracking: TrackingSource, now: Moment): HomeTim
 function shownYearOf(
   db: Database,
   tracking: TrackingSource,
-  workspace: 'research' | 'work',
+  workspace: HomeWorkspace,
   now: Moment,
   yearStarts: readonly string[]
 ): TrackingYear | null {
@@ -99,17 +100,22 @@ function shownYearOf(
   const stored = files.find((f) => f.start === start) ?? tracking.get(workspace, start)
   if (!inContract(now.date, stored)) return null
   return shownYear(stored, {
-    meetings: listMeetingRows(db, workspace),
-    trainings: workspace === 'research' ? listTrainingRows(db, 'research') : [],
+    // Life has no meetings; its trainings count as Research's do.
+    meetings: workspace === 'life' ? [] : listMeetingRows(db, workspace),
+    trainings: workspace === 'work' ? [] : listTrainingRows(db, workspace),
     tasks: listTasks(db, workspace),
     clients: workspace === 'work' ? workClients(files.map((f) => f.plan)) : null,
     today: now.date
   })
 }
 
-function homeHours(year: TrackingYear | null, now: Moment): HomeHours | null {
+function homeHours(
+  year: TrackingYear | null,
+  now: Moment,
+  workspace: HomeWorkspace
+): HomeHours | null {
   if (!year) return null
-  const f = periodFigures(year, now)
+  const f = periodFigures(year, now, workspace)
   return {
     label: f.label,
     minutes: f.minutes,
@@ -199,6 +205,7 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
 
   const research = shownYearOf(db, deps.tracking, 'research', now, deps.yearStarts)
   const work = shownYearOf(db, deps.tracking, 'work', now, deps.yearStarts)
+  const life = shownYearOf(db, deps.tracking, 'life', now, deps.yearStarts)
   const hasWatch = deps.watch && getCounts(db).sources > 0
   const inputs: HomeInputs = {
     today: now.date,
@@ -209,7 +216,11 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
     trainings,
     openMeetingTodos,
     timer: homeTimer(db, deps.tracking, now),
-    hours: { research: homeHours(research, now), work: homeHours(work, now), life: null },
+    hours: {
+      research: homeHours(research, now, 'research'),
+      work: homeHours(work, now, 'work'),
+      life: homeHours(life, now, 'life')
+    },
     timeOff: research
       ? timeOffRows(research, now.date)
           .filter((r) => !r.taken)

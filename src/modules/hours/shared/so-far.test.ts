@@ -4,6 +4,7 @@ import { dayMinutes, weekMinutes } from '@shared/tracking/totals'
 import {
   DEFAULT_PLAN,
   emptyYear,
+  LIFE_PLAN,
   WORK_PLAN,
   type Moment,
   type TrackingYear
@@ -48,7 +49,7 @@ describe('what Home and the Hours page both show', () => {
 
 describe('periodFigures: the one decision about time so far', () => {
   it('a plan with a whole-week aim is shown by the invoice period: the month, with its clients', () => {
-    const f = periodFigures(contract, now)
+    const f = periodFigures(contract, now, 'work')
     const period = thisPeriod(contract, now)
     expect(f.label).toBe('This month')
     expect(f.minutes).toBe(period?.minutes)
@@ -59,7 +60,7 @@ describe('periodFigures: the one decision about time so far', () => {
 
   it('a contract invoiced by week is shown by the week', () => {
     const weekly = { ...contract, invoice: 'week' as const }
-    const f = periodFigures(weekly, now)
+    const f = periodFigures(weekly, now, 'work')
     expect(f.label).toBe('This week')
     expect(f.minutes).toBe(thisPeriod(weekly, now)?.minutes)
   })
@@ -70,12 +71,25 @@ describe('periodFigures: the one decision about time so far', () => {
       adjusts: [{ id: 'a', date: '2026-10-15', label: 'Reading', minutes: 90 }]
     }
     const week = thisWeek(research, now)
-    const f = periodFigures(research, now)
+    const f = periodFigures(research, now, 'research')
     expect(f.label).toBe('This week')
     expect(f.minutes).toBe(weekMinutes(research, week, now))
     expect(f.minutes).toBe(90)
     expect(f.aim).toBe(weekFigures(research, week, now).aim)
     expect(f.today).toBe(90)
+    expect(f.clients).toEqual([])
+  })
+
+  it('Life has no invoice periods: the week, no aim, no clients', () => {
+    const life: TrackingYear = {
+      ...emptyYear('2026-09-14', LIFE_PLAN),
+      adjusts: [{ id: 'a', date: '2026-10-15', label: 'Piano', minutes: 40 }]
+    }
+    const f = periodFigures(life, now, 'life')
+    expect(f.label).toBe('This week')
+    expect(f.minutes).toBe(40)
+    expect(f.aim).toBe(0)
+    expect(f.today).toBe(40)
     expect(f.clients).toEqual([])
   })
 })

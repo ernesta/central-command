@@ -23,7 +23,7 @@ export function HomeHours({ workspace }: { workspace: HomeWorkspace }): React.JS
   const data = useShownYear(workspace, stored, now.date)
   if (!data || !inContract(now.date, data)) return null
 
-  const { label, minutes, aim, today, clients } = periodFigures(data, now)
+  const { label, minutes, aim, today, clients } = periodFigures(data, now, workspace)
 
   return (
     <Panel label={label} actions={<StyledLink to={hoursBase(workspace)}>Hours</StyledLink>}>

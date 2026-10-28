@@ -126,6 +126,63 @@ describe('homeView', () => {
   })
 })
 
+describe('homeView for Life', () => {
+  it('is empty when Life has nothing', () => {
+    const view = homeView(base, 'life')
+    expect(view.tasks).toEqual({ overdue: [], today: [], cut: false })
+    expect(view.todayEvents).toEqual([])
+    expect(view.comingUp).toEqual([])
+  })
+
+  it('shows Life’s tasks alone, and none of them on Research’s or Work’s Home', () => {
+    const s: HomeSummary = {
+      ...base,
+      tasks: tasksIn({
+        life: {
+          overdue: [task('a', 'life', 3)],
+          today: [task('b', 'life')],
+          overdueTotal: 1,
+          todayTotal: 1
+        }
+      })
+    }
+    expect(homeView(s, 'life').tasks.overdue.map((t) => t.uid)).toEqual(['a'])
+    expect(homeView(s, 'life').tasks.today.map((t) => t.uid)).toEqual(['b'])
+    for (const other of ['research', 'work'] as const) {
+      expect(homeView(s, other).tasks).toEqual({ overdue: [], today: [], cut: false })
+    }
+  })
+
+  it('shows a Life training today and in two days on Life’s Home only', () => {
+    const s: HomeSummary = {
+      ...base,
+      upcoming: [
+        { ...event('training:life:a', 'training', '/life/training/t/a', 0), time: '10:00' },
+        event('training:life:b', 'training', '/life/training/t/b', 2),
+        event('training:research:c', 'training', '/research/training/t/c', 2)
+      ]
+    }
+    const life = homeView(s, 'life')
+    expect(life.todayEvents.map((e) => e.id)).toEqual(['training:life:a'])
+    expect(life.comingUp.map((e) => e.id)).toEqual(['training:life:b'])
+    expect(homeView(s, 'research').todayEvents).toEqual([])
+    expect(homeView(s, 'research').comingUp.map((e) => e.id)).toEqual(['training:research:c'])
+    expect(homeView(s, 'work').comingUp).toEqual([])
+  })
+
+  it('keeps a Life task’s cut flag to Life’s own totals', () => {
+    const s: HomeSummary = {
+      ...base,
+      tasks: tasksIn({
+        research: { today: [task('r', 'research')], todayTotal: 1 },
+        life: { today: [task('l', 'life')], todayTotal: 9 }
+      })
+    }
+    expect(homeView(s, 'life').tasks.cut).toBe(true)
+    expect(homeView(s, 'research').tasks.cut).toBe(false)
+  })
+})
+
 describe('whenLabel and dayLabel', () => {
   it('puts the time at the right and the day on the second line', () => {
     expect(whenLabel('14:00')).toBe('2:00 PM')

@@ -131,14 +131,14 @@ describe('hours counted the same way everywhere (Research)', () => {
     expect(days.reduce((a, b) => a + b, 0)).toBe(weekMinutes(shown, thisWeek(shown, now), now))
     // 60 meeting + 90 training + 30 self-study + 60 typed
     expect(weekMinutes(shown, thisWeek(shown, now), now)).toBe(240)
-    const home = periodFigures(shown, now)
+    const home = periodFigures(shown, now, 'research')
     expect(home.minutes).toBe(240)
     expect(home.today).toBe(dayMinutes(shown, now.date, now))
     expect(home.today).toBe(60)
   })
 
   it('the stored year alone would miss what the notes derive (the old Home summary’s mistake)', () => {
-    expect(periodFigures(stored, now).minutes).toBe(90)
+    expect(periodFigures(stored, now, 'research').minutes).toBe(90)
   })
 
   it('the Hours page’s Meetings and training rows are the derived hours, and nothing else', () => {
@@ -212,7 +212,7 @@ describe('hours counted the same way everywhere (Work)', () => {
   )
 
   it('the month, its clients and the days all add up to the same figure', () => {
-    const f = periodFigures(shown, now)
+    const f = periodFigures(shown, now, 'work')
     expect(f.label).toBe('This month')
     expect(f.minutes).toBe(45 + 60)
     expect(f.clients.reduce((n, c) => n + c.minutes, 0)).toBe(f.minutes)

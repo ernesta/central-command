@@ -1,4 +1,5 @@
 import { weekTotals } from '@shared/tracking/plan'
+import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { dayMinutes, weekMinutes } from '@shared/tracking/totals'
 import { invoiceOf, type Moment, type TrackingYear } from '@shared/tracking/types'
 import { addDays } from '@shared/year'
@@ -42,10 +43,11 @@ export interface PeriodFigures {
 /**
  * The one decision about "time so far": the same choice the Hours page makes (a plan with a whole-week aim is shown by invoice period,
  * the month or the week; any other by week). `data` is the shown year (the stored one plus the hours the notes derive), so Home,
- * the summary and the widget file give the numbers the Hours page gives.
+ * the summary and the widget file give the numbers the Hours page gives. Only a workspace with contracts (Work) has invoice periods:
+ * Life has a whole-week aim of none, and is shown by the week like Research.
  */
-export function periodFigures(data: TrackingYear, now: Moment): PeriodFigures {
-  const period = data.plan.weekAim ? thisPeriod(data, now) : null
+export function periodFigures(data: TrackingYear, now: Moment, workspace: string): PeriodFigures {
+  const period = data.plan.weekAim && hasContracts(workspace) ? thisPeriod(data, now) : null
   const week = weekFigures(data, thisWeek(data, now), now)
   return {
     label: period && invoiceOf(data) === 'month' ? 'This month' : 'This week',

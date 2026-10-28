@@ -9,7 +9,7 @@ import type { Task } from '../../tasks/shared/types'
 /** What the hours the notes derive are worked out from: a workspace's notes and tasks (and Work's clients). */
 export interface DerivedSources {
   meetings: readonly MeetingIndexRow[]
-  /** Research's training notes; none in the other workspaces. */
+  /** Research's and Life's training notes; none in Work. */
   trainings: readonly TrainingIndexRow[]
   /** Every task of the workspace, subtasks too. */
   tasks: readonly Task[]
