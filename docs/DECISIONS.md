@@ -4618,3 +4618,7 @@ Home's `.title` sets its own 15px, so the 13px given to a subtask's `li` never r
 ## Home: a subtask shows no priority (27 Oct 2026, the user: be consistent)
 
 A subtask shows no priority in the Tasks table (`isKid`; it keeps the one it stores, `docs/DECISIONS.md` above), but Home's `TaskRow` drew the badge for every task. It now draws it only when `task.parent` is null, so a subtask hung under its parent and a subtask standing alone are both without one. Not driven in the app (lint, typecheck and the Home tests pass).
+
+## Home: a subtask's late chip lines up with its parent's (28 Oct 2026, the user: the alignment is off, ugly)
+
+With no priority badge on a subtask (above), its "N days late" chip moved to the row's far right, out of line with the parent's chip, which sits left of the P2. A subtask row now keeps an empty `badgeGap` (44px, the badge's 30px minimum plus 7px padding each side) where the badge would be, so the chips share a right edge. Not driven in the app (lint, typecheck and Prettier pass).
