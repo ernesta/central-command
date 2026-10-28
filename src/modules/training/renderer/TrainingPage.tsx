@@ -135,7 +135,6 @@ export function TrainingPage(): React.JSX.Element {
             <ExportButton
               busy={exporting}
               disabled={rows === null}
-              title={`Exports ${yearLabel(year)} as a PDF, oldest first, without upcoming entries`}
               onClick={() => void exportPdf()}
             />
           )}

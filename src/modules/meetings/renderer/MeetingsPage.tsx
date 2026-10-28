@@ -134,7 +134,6 @@ export function MeetingsPage(): React.JSX.Element {
           <ExportButton
             busy={exporting}
             disabled={rows === null}
-            title={`Exports the ${workspace === 'research' ? 'Supervision' : 'meetings'} log for ${period.label} as a PDF, oldest first, without upcoming meetings`}
             onClick={() => void exportPdf()}
           />
           <NewMeetingButton />
