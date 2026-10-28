@@ -318,8 +318,8 @@ describe('collectHomeSummary: watch', () => {
       'now'
     )
     const insert = db.prepare(
-      `INSERT INTO watch_items (source_id, item_key, title, url, date, date_kind, state, first_seen_at)
-       VALUES (?, ?, ?, 'https://ex.org/i', ?, 'deadline', ?, '2026-10-14T00:00:00.000Z')`
+      `INSERT INTO watch_items (source_id, item_key, title, url, deadline, state, first_seen_at)
+       VALUES (?, ?, ?, 'https://ex.org/i', ?, ?, '2026-10-14T00:00:00.000Z')`
     )
     insert.run(source.id, 'a', 'Saved deadline', '2026-10-17', 'saved')
     insert.run(source.id, 'b', 'New deadline', '2026-10-16', 'new')
@@ -341,8 +341,8 @@ describe('collectHomeSummary: Watch per workspace', () => {
     ).id
   const item = (sourceId: number, key: string, state: string, date: string): void => {
     db.prepare(
-      `INSERT INTO watch_items (source_id, item_key, title, url, date, date_kind, state, first_seen_at)
-       VALUES (?, ?, ?, 'https://ex.org/i', ?, 'deadline', ?, '2026-10-14T00:00:00.000Z')`
+      `INSERT INTO watch_items (source_id, item_key, title, url, deadline, state, first_seen_at)
+       VALUES (?, ?, ?, 'https://ex.org/i', ?, ?, '2026-10-14T00:00:00.000Z')`
     ).run(sourceId, key, `Item ${key}`, date, state)
   }
 

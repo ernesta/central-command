@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { checkedLabel, displayTitle, foundLabel, noteFor, sectionsOf, titleParts } from './rows'
+import {
+  checkedLabel,
+  displayTitle,
+  foundLabel,
+  deadlineFor,
+  whenFor,
+  sectionsOf,
+  titleParts
+} from './rows'
 import type { WatchItem } from './types'
 
 const item = (over: Partial<WatchItem>): WatchItem => ({
@@ -12,6 +20,10 @@ const item = (over: Partial<WatchItem>): WatchItem => ({
   url: 'https://ex.org/1',
   summary: '',
   publishedAt: null,
+  eventDate: null,
+  eventEnd: null,
+  deadline: null,
+  deadlineLabel: null,
   date: null,
   dateKind: null,
   score: 0,
@@ -30,14 +42,26 @@ describe('foundLabel', () => {
   })
 })
 
-describe('noteFor', () => {
-  it('names a deadline still to come, and says nothing otherwise', () => {
-    expect(noteFor(item({ date: '2026-11-05', dateKind: 'deadline' }), '2026-10-26')).toMatch(
-      /^Apply by .*5/
+describe('whenFor and deadlineFor', () => {
+  it('says the stored dates first, then the date the title ends with', () => {
+    expect(whenFor(item({ eventDate: '2026-11-14' }))).toBe('14 Nov 2026')
+    expect(whenFor(item({ eventDate: '2027-07-14', eventEnd: '2027-07-17' }))).toBe(
+      '14–17 Jul 2027'
     )
-    expect(noteFor(item({ date: '2026-11-05', dateKind: 'date' }), '2026-10-26')).toBe('')
-    expect(noteFor(item({ date: '2026-10-01', dateKind: 'deadline' }), '2026-10-26')).toBe('')
-    expect(noteFor(item({}), '2026-10-26')).toBe('')
+    expect(whenFor(item({ title: 'EPS Meeting: Cardiff. 7th – 9th April 2027' }))).toBe(
+      '7–9 April 2027'
+    )
+    expect(whenFor(item({}))).toBe('')
+  })
+  it('names a deadline still to come, with its own words, and says nothing otherwise', () => {
+    const due = { deadline: '2026-11-05', deadlineLabel: 'Register by' }
+    expect(deadlineFor(item(due), '2026-10-26')).toBe('Register by 5 Nov')
+    expect(deadlineFor(item({ deadline: '2026-11-05' }), '2026-10-26')).toBe('Apply by 5 Nov')
+    expect(deadlineFor(item({ ...due, deadline: '2027-01-05' }), '2026-10-26')).toBe(
+      'Register by 5 Jan 2027'
+    )
+    expect(deadlineFor(item({ ...due, deadline: '2026-10-01' }), '2026-10-26')).toBe('')
+    expect(deadlineFor(item({ eventDate: '2026-11-05' }), '2026-10-26')).toBe('')
   })
 })
 

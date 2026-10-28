@@ -4,18 +4,18 @@ import { GroupRow } from '@renderer/components/GroupRow'
 import { Tooltip } from '@renderer/components/Tooltip'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import shared from '@renderer/components/ListTable.module.css'
-import { foundLabel, noteFor, titleParts } from '../shared/rows'
+import { deadlineFor, foundLabel, titleParts, whenFor } from '../shared/rows'
 import { cutGroups, type WatchGroup } from '../shared/query'
 import { ItemActions } from './ItemActions'
 import type { WatchItems } from './useWatchItems'
 import styles from './WatchAllPage.module.css'
 
 /** Column widths; the title takes the rest. */
-const WIDTHS = { found: 128, when: 150, source: 280, note: 160, actions: 96 }
-const HEADINGS = ['Found', 'Title', 'When', 'Source', 'Note', '']
+const WIDTHS = { found: 128, when: 150, deadline: 170, source: 240, actions: 96 }
+const HEADINGS = ['Found', 'Title', 'When', 'Deadline', 'Source', '']
 
 /**
- * Found, Title, When, Source, Note and the two icon buttons, one 48px line each, under Saved / New / Read headers in "All", each
+ * Found, Title, When, Deadline, Source and the two icon buttons, one 48px line each, under Saved / New / Read headers in "All", each
  * group cut after its first rows with a "Show N more" row. Like the Training table it is one tab stop (arrow keys, Home/End,
  * Enter opens the item's page in the browser).
  */
@@ -45,8 +45,8 @@ export function WatchTable({
           <col style={{ width: WIDTHS.found }} />
           <col />
           <col style={{ width: WIDTHS.when }} />
+          <col style={{ width: WIDTHS.deadline }} />
           <col style={{ width: WIDTHS.source }} />
-          <col style={{ width: WIDTHS.note }} />
           <col style={{ width: WIDTHS.actions }} />
         </colgroup>
         <thead>
@@ -96,13 +96,13 @@ export function WatchTable({
                       </div>
                     </td>
                     <td className={styles.muted}>
-                      <CutText>{titleParts(item.title).when}</CutText>
+                      <CutText>{whenFor(item)}</CutText>
+                    </td>
+                    <td className={styles.muted}>
+                      <CutText>{deadlineFor(item, today)}</CutText>
                     </td>
                     <td className={styles.muted}>
                       <CutText>{item.sourceTitle}</CutText>
-                    </td>
-                    <td className={styles.muted}>
-                      <CutText>{noteFor(item, today)}</CutText>
                     </td>
                     <td onClick={(event) => event.stopPropagation()}>
                       <ItemActions item={item} actions={actions} />

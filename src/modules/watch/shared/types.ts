@@ -100,7 +100,13 @@ export interface WatchItem {
   url: string
   summary: string
   publishedAt: string | null
-  /** YYYY-MM-DD found in the text: a deadline, or the day of the event. */
+  /** The event's first and last day (YYYY-MM-DD); the end only for a range. */
+  eventDate: string | null
+  eventEnd: string | null
+  /** A deadline for it (applying, submitting, registering) and the words for it: "Apply by". */
+  deadline: string | null
+  deadlineLabel: string | null
+  /** The one date Home's Coming up and the notifications use: the deadline, else the event's day. */
   date: string | null
   dateKind: DateKind | null
   score: number
@@ -147,6 +153,16 @@ export interface ParsedItem {
   url: string
   summary: string
   publishedAt: string | null
+  /** Dates a structured source (an events API, iCal, JSON-LD) gives outright, so no text is read for them. */
+  dates?: ItemDates
+}
+
+/** An item's dates as stored. */
+export interface ItemDates {
+  eventStart: string | null
+  eventEnd: string | null
+  deadline: string | null
+  deadlineLabel: string | null
 }
 
 export interface CheckOutcome {

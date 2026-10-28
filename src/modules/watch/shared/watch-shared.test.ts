@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { findDate } from './dates'
+import { findDate, findDates, isOver, structuredOver, whenLabel } from './dates'
 import { scoreText } from './relevance'
 import { guessMethod, kindsOf, shownKind } from './types'
 
@@ -74,5 +74,65 @@ describe('kinds and methods the page uses', () => {
     expect(guessMethod('https://ex.org/events.xml')).toBe('feed')
     expect(guessMethod('https://ex.org/feed/')).toBe('feed')
     expect(guessMethod('https://ex.org/events')).toBe('page')
+  })
+})
+
+describe('findDates', () => {
+  it('gives the event range and the deadline apart, with the deadline’s words', () => {
+    expect(
+      findDates(
+        'The 34th conference is 14-17 July 2027 in Santiago. Abstract submission closes 12 November 2026.',
+        today
+      )
+    ).toEqual({
+      eventStart: '2027-07-14',
+      eventEnd: '2027-07-17',
+      deadline: '2026-11-12',
+      deadlineLabel: 'Submit by'
+    })
+    expect(
+      findDates('Register by 5 Nov 2026 for the day on 20 February 2027', today)
+    ).toMatchObject({
+      eventStart: '2027-02-20',
+      deadline: '2026-11-05',
+      deadlineLabel: 'Register by'
+    })
+  })
+  it('reads a range across two months, and has an end only for a range', () => {
+    expect(findDates('Summer school 30 June – 2 July 2027', today)).toMatchObject({
+      eventStart: '2027-06-30',
+      eventEnd: '2027-07-02'
+    })
+    expect(findDates('14 November 2026', today)).toMatchObject({
+      eventStart: '2026-11-14',
+      eventEnd: null,
+      deadline: null
+    })
+  })
+  it('leaves out what is over, keeps a range under way, and finds nothing in a text with no date', () => {
+    expect(findDates('Held 3 May 2026', today)).toEqual({
+      eventStart: null,
+      eventEnd: null,
+      deadline: null,
+      deadlineLabel: null
+    })
+    expect(findDates('Conference 14-17 October 2026', today).eventStart).toBe('2026-10-14')
+    expect(isOver('Conference 12-14 October 2026', today)).toBe(true)
+    expect(isOver('Conference 12-17 October 2026', today)).toBe(false)
+    expect(findDates('see you soon', today).eventStart).toBeNull()
+  })
+})
+
+describe('whenLabel', () => {
+  it('writes a day, a range in a month, across months and across years', () => {
+    expect(whenLabel('2026-11-14', null)).toBe('14 Nov 2026')
+    expect(whenLabel('2027-07-14', '2027-07-17')).toBe('14–17 Jul 2027')
+    expect(whenLabel('2027-06-30', '2027-07-02')).toBe('30 Jun – 2 Jul 2027')
+    expect(whenLabel('2026-12-30', '2027-01-02')).toBe('30 Dec 2026 – 2 Jan 2027')
+  })
+  it('structured dates that ended are over', () => {
+    expect(structuredOver({ eventStart: '2026-09-15', eventEnd: null }, today)).toBe(true)
+    expect(structuredOver({ eventStart: '2026-09-15', eventEnd: '2026-10-16' }, today)).toBe(false)
+    expect(structuredOver({ eventStart: null, eventEnd: null }, today)).toBe(false)
   })
 })

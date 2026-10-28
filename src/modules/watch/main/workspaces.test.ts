@@ -34,8 +34,8 @@ const item = (
   over: { state?: string; date?: string | null; score?: number } = {}
 ): void => {
   db.prepare(
-    `INSERT INTO watch_items (source_id, item_key, title, url, date, date_kind, score, state, first_seen_at)
-     VALUES (?, ?, ?, 'https://ex.org/i', ?, 'deadline', ?, ?, '2026-10-14T00:00:00.000Z')`
+    `INSERT INTO watch_items (source_id, item_key, title, url, deadline, score, state, first_seen_at)
+     VALUES (?, ?, ?, 'https://ex.org/i', ?, ?, ?, '2026-10-14T00:00:00.000Z')`
   ).run(sourceId, key, `Item ${key}`, over.date ?? null, over.score ?? 0, over.state ?? 'new')
 }
 

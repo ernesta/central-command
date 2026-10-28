@@ -1,5 +1,5 @@
 import { daysBetween } from '@shared/year'
-import { splitTrailingDate } from './dates'
+import { dayLabel, splitTrailingDate, whenLabel } from './dates'
 import { formatDate, formatShortDate } from '@shared/time'
 import {
   shownKind,
@@ -47,10 +47,17 @@ export function foundLabel(firstSeenAt: string, today: string): string {
   return day.slice(0, 4) === today.slice(0, 4) ? formatShortDate(day) : formatDate(day)
 }
 
-/** What a row says at the right of the source: a deadline still to come ("Apply by 5 Nov"), and nothing otherwise. */
-export function noteFor(item: WatchItem, today: string): string {
-  if (item.dateKind !== 'deadline' || !item.date || item.date < today) return ''
-  return `Apply by ${formatShortDate(item.date)}`
+/** When the event is: its stored dates ("14 Nov 2026", "14–17 Jul 2027"), else the date its title ends with, else nothing. */
+export function whenFor(item: WatchItem): string {
+  if (item.eventDate) return whenLabel(item.eventDate, item.eventEnd)
+  return splitTrailingDate(displayTitle(item.title)).when
+}
+
+/** The deadline column: a deadline still to come ("Apply by 5 Nov", "Register by 3 Dec 2027" in another year), and nothing otherwise. */
+export function deadlineFor(item: WatchItem, today: string): string {
+  if (!item.deadline || item.deadline < today) return ''
+  const sameYear = item.deadline.slice(0, 4) === today.slice(0, 4)
+  return `${item.deadlineLabel ?? 'Apply by'} ${dayLabel(item.deadline, !sameYear)}`
 }
 
 export interface WatchSections {

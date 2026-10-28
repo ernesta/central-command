@@ -1,6 +1,6 @@
 import { createHash } from 'crypto'
 import type { Database } from 'better-sqlite3'
-import { findDate, isOver } from '../shared/dates'
+import { findDate, findDates, isOver, structuredOver } from '../shared/dates'
 import { scoreText } from '../shared/relevance'
 import { itemKind, type CheckOutcome, type ParsedItem, type WatchSource } from '../shared/types'
 import { crossrefUrl, parseCrossref } from './parse-crossref'
@@ -119,11 +119,12 @@ export async function checkSource(
     const today = isoDay(now)
     const insert = db.prepare(
       `INSERT OR IGNORE INTO watch_items
-         (source_id, item_key, title, url, summary, published_at, date, date_kind, score, matched, state, first_seen_at, item_kind)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+         (source_id, item_key, title, url, summary, published_at, event_date, event_end, deadline, deadline_label,
+          score, matched, state, first_seen_at, item_kind)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     const update = db.prepare(
-      `UPDATE watch_items SET summary = ?, date = ?, date_kind = ?, item_kind = ?
+      `UPDATE watch_items SET summary = ?, event_date = ?, event_end = ?, deadline = ?, deadline_label = ?, item_kind = ?
        WHERE source_id = ? AND item_key = ? AND summary = ''`
     )
     let added = 0
@@ -138,15 +139,17 @@ export async function checkSource(
         const text = `${item.title}\n${item.summary}`
         const relevance = scoreText(item.title, item.summary, keywords)
         // Something already over (every date it names has passed) is never added, not even on the first check.
-        if (isOver(text, today)) continue
-        const dated = findDate(text, today)
+        if (item.dates ? structuredOver(item.dates, today) : isOver(text, today)) continue
+        const dated = item.dates ?? findDates(text, today)
         const kind = itemKind(item.title, source.kind)
         if (item.summary) {
           // Seen before without its description or date (stored when pages were read as bare links): complete it.
           update.run(
             item.summary,
-            dated?.date ?? null,
-            dated?.kind ?? null,
+            dated.eventStart,
+            dated.eventEnd,
+            dated.deadline,
+            dated.deadlineLabel,
             kind,
             source.id,
             item.key
@@ -159,8 +162,10 @@ export async function checkSource(
           item.url,
           item.summary,
           item.publishedAt,
-          dated?.date ?? null,
-          dated?.kind ?? null,
+          dated.eventStart,
+          dated.eventEnd,
+          dated.deadline,
+          dated.deadlineLabel,
           relevance.score,
           relevance.matched.join(','),
           'new',

@@ -517,3 +517,96 @@ describe('migration 0005', () => {
     ).toEqual(['seen', 'new', 'saved', 'seen'])
   })
 })
+
+describe('an item’s dates', () => {
+  it('stores the event range and the deadline apart, and drops what is over', async () => {
+    const s = add()
+    await checkSource(
+      db,
+      s,
+      respond(
+        feed([
+          {
+            id: 'a',
+            title: 'Annual conference',
+            body: 'Held 14-17 July 2027 in Santiago. Abstract submission closes 12 November 2026.'
+          },
+          { id: 'b', title: 'Past meeting', body: 'Held 3 May 2026.' },
+          { id: 'c', title: 'No dates here', body: 'Come along.' }
+        ])
+      ),
+      NOW
+    )
+    const items = listItems(db)
+    expect(items.map((i) => i.title).sort()).toEqual(['Annual conference', 'No dates here'])
+    const a = items.find((i) => i.title === 'Annual conference')!
+    expect([a.eventDate, a.eventEnd, a.deadline, a.deadlineLabel]).toEqual([
+      '2027-07-14',
+      '2027-07-17',
+      '2026-11-12',
+      'Submit by'
+    ])
+    // Home's one date is the deadline while it is ahead.
+    expect([a.date, a.dateKind]).toEqual(['2026-11-12', 'deadline'])
+  })
+
+  it('a saved item’s coming-up date is its deadline while that is ahead, then its event day', async () => {
+    const s = add()
+    await checkSource(
+      db,
+      s,
+      respond(
+        feed([
+          {
+            id: 'a',
+            title: 'Annual conference',
+            body: 'Held 14-17 July 2027. Registration closes 12 November 2026.'
+          }
+        ])
+      ),
+      NOW
+    )
+    setItemState(db, listItems(db)[0].id, 'saved')
+    expect(upcoming(db, '2026-10-15', 60).map((i) => [i.date, i.dateKind])).toEqual([
+      ['2026-11-12', 'deadline']
+    ])
+    // After the deadline the event itself is what is coming.
+    expect(upcoming(db, '2026-11-20', 400).map((i) => [i.date, i.dateKind])).toEqual([
+      ['2027-07-14', 'date']
+    ])
+    expect(upcoming(db, '2026-11-20', 60)).toEqual([])
+  })
+})
+
+describe('migration 0006', () => {
+  it('copies the single date to a deadline or an event day by its kind', () => {
+    const old = new Database(':memory:')
+    old.pragma('foreign_keys = ON')
+    runMigrations(old, watchMigrations.slice(0, 5))
+    old
+      .prepare(
+        "INSERT INTO watch_sources (title, url, kind, method, created_at) VALUES ('S', 'https://ex.org/f', 'conference', 'feed', 'x')"
+      )
+      .run()
+    for (const [k, date, kind] of [
+      ['a', '2026-11-05', 'deadline'],
+      ['b', '2027-02-20', 'date'],
+      ['c', null, null]
+    ])
+      old
+        .prepare(
+          "INSERT INTO watch_items (source_id, item_key, title, url, date, date_kind, first_seen_at) VALUES (1, ?, ?, 'u', ?, ?, 'x')"
+        )
+        .run(k, k, date, kind)
+    runMigrations(old, watchMigrations)
+    expect(
+      listItems(old)
+        .map((i) => [i.title, i.eventDate, i.deadline])
+        .sort()
+    ).toEqual([
+      ['a', null, '2026-11-05'],
+      ['b', '2027-02-20', null],
+      ['c', null, null]
+    ])
+  })
+})

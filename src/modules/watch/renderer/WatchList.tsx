@@ -1,15 +1,15 @@
 import { CutText } from '@renderer/components/CutText'
 import { Tooltip } from '@renderer/components/Tooltip'
 import landing from '@renderer/components/Landing.module.css'
-import { foundLabel, noteFor, titleParts } from '../shared/rows'
+import { deadlineFor, foundLabel, titleParts, whenFor } from '../shared/rows'
 import type { WatchItem } from '../shared/types'
 import { ItemActions } from './ItemActions'
 import type { WatchItems } from './useWatchItems'
 import styles from './WatchList.module.css'
 
 /**
- * Items as the landing's list of rows: the day found, the title (a "New" pill while unseen), its source, a deadline when
- * the text names one, and two icon buttons: Mark read and Save. The row opens the
+ * Items as the landing's list of rows: the day found, the title (a "New" pill while unseen), when it is, its deadline when
+ * it has one, its source, and two icon buttons: Mark read and Save. The row opens the
  * item's page in the browser.
  */
 export function WatchList({
@@ -44,9 +44,9 @@ export function WatchList({
               </Tooltip>
               {item.state === 'new' && <span className={styles.new}>New</span>}
             </span>
-            <CutText className={styles.note}>{titleParts(item.title).when}</CutText>
+            <CutText className={styles.note}>{whenFor(item)}</CutText>
+            <CutText className={styles.note}>{deadlineFor(item, today)}</CutText>
             <CutText className={styles.note}>{item.sourceTitle}</CutText>
-            <CutText className={styles.note}>{noteFor(item, today)}</CutText>
             <ItemActions item={item} actions={actions} />
           </div>
         </li>

@@ -7,7 +7,6 @@ import {
   WATCH_WORKSPACES,
   kindsOf,
   shownKind,
-  type DateKind,
   type NewWatchSource,
   type WatchCounts,
   type WatchItem,
@@ -192,8 +191,10 @@ interface ItemRow {
   url: string
   summary: string
   published_at: string | null
-  date: string | null
-  date_kind: DateKind | null
+  event_date: string | null
+  event_end: string | null
+  deadline: string | null
+  deadline_label: string | null
   score: number
   matched: string
   state: WatchState
@@ -210,8 +211,12 @@ const toItem = (r: ItemRow): WatchItem => ({
   url: r.url,
   summary: r.summary,
   publishedAt: r.published_at,
-  date: r.date,
-  dateKind: r.date_kind,
+  eventDate: r.event_date,
+  eventEnd: r.event_end,
+  deadline: r.deadline,
+  deadlineLabel: r.deadline_label,
+  date: r.deadline ?? r.event_date,
+  dateKind: r.deadline ? 'deadline' : r.event_date ? 'date' : null,
   score: r.score,
   matched: r.matched ? r.matched.split(',') : [],
   state: r.state,
@@ -307,9 +312,9 @@ export function getCounts(db: Database, workspace?: WatchWorkspace): WatchCounts
 }
 
 /**
- * What has a date coming up: the items the user SAVED with a deadline or event date from `today` to `days` days on,
- * soonest first (one workspace's, or every workspace's when none is given). Only saved items: an unsaved one never reaches
- * Home's "Coming up" or a notification, however near its date.
+ * What has a date coming up: the items the user SAVED whose date is from `today` to `days` days on, soonest first (one workspace's,
+ * or every workspace's when none is given). An item's date is its deadline while that is still ahead, else its event's day. Only
+ * saved items: an unsaved one never reaches Home's "Coming up" or a notification, however near its date.
  */
 export function upcoming(
   db: Database,
@@ -320,19 +325,28 @@ export function upcoming(
 ): WatchItem[] {
   const end = new Date(`${today}T00:00:00Z`)
   end.setUTCDate(end.getUTCDate() + Math.min(Math.max(Math.trunc(days), 1), 730))
+  const last = end.toISOString().slice(0, 10)
   const rows = db
     .prepare(
-      `${ITEM_SELECT} WHERE i.date >= ? AND i.date <= ? AND i.state = 'saved'
-       ${workspace ? 'AND s.workspace = ?' : ''}
-       ORDER BY i.date, i.score DESC LIMIT ?`
+      `SELECT * FROM (
+         SELECT x.*, CASE WHEN x.deadline >= @today THEN x.deadline ELSE x.event_date END AS coming
+         FROM (${ITEM_SELECT} WHERE i.state = 'saved' ${workspace ? 'AND s.workspace = @workspace' : ''}) x
+       ) WHERE coming >= @today AND coming <= @last
+       ORDER BY coming, score DESC LIMIT @limit`
     )
-    .all(
+    .all({
       today,
-      end.toISOString().slice(0, 10),
-      ...(workspace ? [checkWorkspace(workspace)] : []),
-      limit
-    ) as ItemRow[]
-  return rows.map(toItem)
+      last,
+      limit,
+      ...(workspace ? { workspace: checkWorkspace(workspace) } : {})
+    }) as (ItemRow & {
+    coming: string
+  })[]
+  return rows.map((r) => ({
+    ...toItem(r),
+    date: r.coming,
+    dateKind: r.coming === r.deadline ? 'deadline' : 'date'
+  }))
 }
 
 export function getKeywords(db: Database): string[] {
