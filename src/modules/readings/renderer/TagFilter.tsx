@@ -49,7 +49,13 @@ export function TagFilter({ tags, selected, onChange }: TagFilterProps): React.J
     <div
       ref={wrapRef}
       className={styles.wrap}
-      onKeyDown={(event) => event.key === 'Escape' && open && close()}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && open) {
+          event.preventDefault()
+          event.stopPropagation()
+          close()
+        }
+      }}
     >
       <button
         ref={triggerRef}

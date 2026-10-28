@@ -87,6 +87,8 @@ export function TopicsPanel({
             onChange={(event) => setTitle(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === 'Escape') {
+                event.preventDefault()
+                event.stopPropagation()
                 setAdding(false)
                 setTitle('')
               }

@@ -289,6 +289,7 @@ function usePopover(forced: boolean): {
 
   const onKeyDown = (event: React.KeyboardEvent): void => {
     if (event.key === 'Escape' && open) {
+      event.preventDefault()
       event.stopPropagation()
       close()
       mainRef.current?.focus()

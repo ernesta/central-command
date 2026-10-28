@@ -47,7 +47,11 @@ export function AddTimeOff({
     <div
       className={styles.box}
       onKeyDown={(event) => {
-        if (event.key === 'Escape') onDone()
+        if (event.key === 'Escape') {
+          event.preventDefault()
+          event.stopPropagation()
+          onDone()
+        }
         if (event.key === 'Enter' && !(event.target instanceof HTMLButtonElement)) void add()
       }}
     >

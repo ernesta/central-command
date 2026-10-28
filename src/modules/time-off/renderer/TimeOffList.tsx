@@ -80,7 +80,11 @@ function DayRow({
   return (
     <tr
       onKeyDown={(event) => {
-        if (event.key === 'Escape') cancel()
+        if (event.key === 'Escape') {
+          event.preventDefault()
+          event.stopPropagation()
+          cancel()
+        }
         if (event.key === 'Enter' && !(event.target instanceof HTMLButtonElement)) void save()
       }}
     >

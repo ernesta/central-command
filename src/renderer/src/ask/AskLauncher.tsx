@@ -52,7 +52,13 @@ export function AskLauncher(): React.JSX.Element {
     <section
       className={styles.panel}
       aria-label="Ask Claude"
-      onKeyDown={(event) => event.key === 'Escape' && setOpen(false)}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') {
+          event.preventDefault()
+          event.stopPropagation()
+          setOpen(false)
+        }
+      }}
     >
       <header className={styles.header}>
         <span className={styles.title}>

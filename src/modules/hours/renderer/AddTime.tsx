@@ -51,7 +51,11 @@ export function AddTime({
     <div
       className={formStyles.form}
       onKeyDown={(event) => {
-        if (event.key === 'Escape') close()
+        if (event.key === 'Escape') {
+          event.preventDefault()
+          event.stopPropagation()
+          close()
+        }
       }}
     >
       <TaskPicker

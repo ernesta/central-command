@@ -149,7 +149,11 @@ export function TaskTimeActions({
         <div
           className={styles.addTime}
           onKeyDown={(event) => {
-            if (event.key === 'Escape') setAdding(false)
+            if (event.key === 'Escape') {
+              event.preventDefault()
+              event.stopPropagation()
+              setAdding(false)
+            }
           }}
         >
           {parts.length > 0 && (

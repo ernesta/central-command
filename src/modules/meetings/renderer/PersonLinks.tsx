@@ -81,7 +81,11 @@ export function PersonLinks({
             onChange={(event) => setUrl(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === 'Enter') add()
-              else if (event.key === 'Escape') reset()
+              else if (event.key === 'Escape') {
+                event.preventDefault()
+                event.stopPropagation()
+                reset()
+              }
             }}
           />
           <div className={styles.actions}>

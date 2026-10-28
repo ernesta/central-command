@@ -86,6 +86,7 @@ export function StartedAt({
       onKeyDown={(event) => {
         if (event.key === 'Enter') save()
         else if (event.key === 'Escape' && draft !== null) {
+          event.preventDefault()
           event.stopPropagation()
           setDraft(null)
           setRefused(null)

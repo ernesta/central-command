@@ -43,7 +43,11 @@ function NextYearRow({ start, starts }: { start: string; starts: string[] }): Re
   return (
     <tr
       onKeyDown={(event) => {
-        if (event.key === 'Escape') done()
+        if (event.key === 'Escape') {
+          event.preventDefault()
+          event.stopPropagation()
+          done()
+        }
         if (event.key === 'Enter' && !(event.target instanceof HTMLButtonElement)) save()
       }}
     >
