@@ -191,9 +191,12 @@ function Rows({
 /** "+22 more ·", the rows a card leaves out, in front of its "See all". */
 function MoreCount({ more }: { more: number }): React.JSX.Element {
   return (
-    <span className={styles.small}>
-      +{more} more <span aria-hidden>·</span>
-    </span>
+    <>
+      <span className={styles.small}>+{more} more</span>
+      <span className={styles.small} aria-hidden>
+        ·
+      </span>
+    </>
   )
 }
 
@@ -227,7 +230,7 @@ function TodayCard({
         <span className={styles.actions}>
           {!cut && <span className={styles.small}>{count}</span>}
           {(cut || more > 0 || overdue.length + today.length > 0) && (
-            <span className={styles.actions}>
+            <span className={styles.seeAll}>
               {more > 0 && <MoreCount more={more} />}
               <StyledLink to={tasksAllRoute(workspace, { view: 'open' })}>See all</StyledLink>
             </span>
@@ -261,7 +264,7 @@ function ComingUpCard({
         <span className={styles.actions}>
           <span className={styles.small}>Next {COMING_UP_DAYS} days</span>
           {shown.length > 0 && (
-            <span className={styles.actions}>
+            <span className={styles.seeAll}>
               {more > 0 && <MoreCount more={more} />}
               <StyledLink to={tasksBase(workspace)}>See all</StyledLink>
             </span>

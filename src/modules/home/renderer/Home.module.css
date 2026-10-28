@@ -116,6 +116,11 @@
   align-items: center;
   gap: 12px;
 }
+.seeAll {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 .weather {
   display: inline-flex;
   align-items: baseline;
