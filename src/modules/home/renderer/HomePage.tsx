@@ -260,16 +260,19 @@ function ComingUpCard({
   return (
     <Panel
       label="Coming up"
-      actions={
+      heading={
         <span className={styles.actions}>
+          Coming up
           <span className={styles.small}>Next {COMING_UP_DAYS} days</span>
-          {shown.length > 0 && (
-            <span className={styles.seeAll}>
-              {more > 0 && <MoreCount more={more} />}
-              <StyledLink to={tasksBase(workspace)}>See all</StyledLink>
-            </span>
-          )}
         </span>
+      }
+      actions={
+        shown.length > 0 && (
+          <span className={styles.seeAll}>
+            {more > 0 && <MoreCount more={more} />}
+            <StyledLink to={tasksBase(workspace)}>See all</StyledLink>
+          </span>
+        )
       }
     >
       {shown.length === 0 ? (
