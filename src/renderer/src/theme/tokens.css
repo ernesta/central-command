@@ -70,6 +70,10 @@
 
   /* Motion */
   --transition-fast: 120ms ease;
+
+  /* Focus: one ring everywhere (base.css); an inset variant, components/Focus.module.css, where an ancestor clips it */
+  --focus-ring: 2px solid var(--accent);
+  --focus-offset: 2px;
   --transition-base: 200ms ease;
 
   /* Hours cards: the side padding of a card (and of a day's detail), the one value its rows, form and Add row are measured from; a control's height in a form row */

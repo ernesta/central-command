@@ -1,0 +1,31 @@
+/* The one text link: ink at rest, accent on hover, never underlined (docs/CLICKABLES_PLAN.md).
+   Take it with `composes: link from '@renderer/components/Link.module.css'`. */
+.link {
+  color: var(--ink);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+.link:hover {
+  color: var(--accent);
+}
+/* A link already read: muted at rest, accent on hover. */
+.muted {
+  color: var(--text-muted);
+}
+.muted:hover {
+  color: var(--accent);
+}
+/* An external link: the small arrow comes before the text and follows the link's hover. */
+.external {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.external > svg {
+  flex: none;
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+}
+.external:hover > svg {
+  color: var(--accent);
+}

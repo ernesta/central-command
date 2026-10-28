@@ -1,0 +1,41 @@
+/* Keyboard focus, written once (docs/CLICKABLES_PLAN.md). Take a class with `composes: … from '@renderer/components/Focus.module.css'`. */
+
+/* A table row: the ring is drawn inside the cells (inset shadows), so it follows the table's rounded corners and is never clipped. */
+.rowFocus {
+  cursor: pointer;
+}
+.rowFocus:focus-visible {
+  outline: none;
+}
+.rowFocus:focus-visible td {
+  background: var(--hover-tint);
+  box-shadow:
+    inset 0 2px 0 var(--accent),
+    inset 0 -2px 0 var(--accent);
+}
+.rowFocus:focus-visible td:first-child {
+  box-shadow:
+    inset 2px 0 0 var(--accent),
+    inset 0 2px 0 var(--accent),
+    inset 0 -2px 0 var(--accent);
+}
+.rowFocus:focus-visible td:last-child {
+  box-shadow:
+    inset -2px 0 0 var(--accent),
+    inset 0 2px 0 var(--accent),
+    inset 0 -2px 0 var(--accent);
+}
+
+/* A card whose title link is stretched over it: the ring goes round the card, not the link. */
+.cardFocus {
+  cursor: pointer;
+}
+.cardFocus:has(:focus-visible) {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+/* Where an ancestor clips the ring: inside the element. */
+.insetFocus:focus-visible {
+  outline-offset: -2px;
+}
