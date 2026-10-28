@@ -156,40 +156,44 @@ function EventRow({
   )
 }
 
-/** The rows of a card: a task's subtasks hang under it (the rail ends at the last one shown); the rest is "+N more". */
+/** The rows of a card: a task's subtasks hang under it (the rail ends at the last one shown). */
 function Rows({
   rows,
-  more,
   today,
   initialsOf
 }: {
   rows: HomeRow[]
-  more: number
   today: string
   initialsOf: (name: string) => string | null
 }): React.JSX.Element {
   return (
-    <>
-      <ul className={styles.list}>
-        {rows.map((row, i) => {
-          if (row.kind === 'event')
-            return <EventRow key={row.event.id} event={row.event} initialsOf={initialsOf} />
-          const next = rows[i + 1]
-          const nextIsKid = next?.kind === 'task' && next.kid
-          return (
-            <TaskRow
-              key={`${row.kid ? 'kid' : 'task'}:${row.task.uid}`}
-              task={row.task}
-              due={row.showDue ? lineDue(row.task, today) : ''}
-              kid={row.kid}
-              end={row.kid && !nextIsKid}
-              hasKids={!row.kid && nextIsKid}
-            />
-          )
-        })}
-      </ul>
-      {more > 0 && <p className={styles.more}>+{more} more</p>}
-    </>
+    <ul className={styles.list}>
+      {rows.map((row, i) => {
+        if (row.kind === 'event')
+          return <EventRow key={row.event.id} event={row.event} initialsOf={initialsOf} />
+        const next = rows[i + 1]
+        const nextIsKid = next?.kind === 'task' && next.kid
+        return (
+          <TaskRow
+            key={`${row.kid ? 'kid' : 'task'}:${row.task.uid}`}
+            task={row.task}
+            due={row.showDue ? lineDue(row.task, today) : ''}
+            kid={row.kid}
+            end={row.kid && !nextIsKid}
+            hasKids={!row.kid && nextIsKid}
+          />
+        )
+      })}
+    </ul>
+  )
+}
+
+/** "+22 more ·", the rows a card leaves out, in front of its "See all". */
+function MoreCount({ more }: { more: number }): React.JSX.Element {
+  return (
+    <span className={styles.small}>
+      +{more} more <span aria-hidden>·</span>
+    </span>
   )
 }
 
@@ -223,7 +227,10 @@ function TodayCard({
         <span className={styles.actions}>
           {!cut && <span className={styles.small}>{count}</span>}
           {(cut || more > 0 || overdue.length + today.length > 0) && (
-            <StyledLink to={tasksAllRoute(workspace, { view: 'open' })}>See all</StyledLink>
+            <span className={styles.actions}>
+              {more > 0 && <MoreCount more={more} />}
+              <StyledLink to={tasksAllRoute(workspace, { view: 'open' })}>See all</StyledLink>
+            </span>
           )}
         </span>
       }
@@ -231,7 +238,7 @@ function TodayCard({
       {empty ? (
         <None>Nothing today.</None>
       ) : (
-        <Rows rows={shown} more={more} today={view.today} initialsOf={initialsOf} />
+        <Rows rows={shown} today={view.today} initialsOf={initialsOf} />
       )}
     </Panel>
   )
@@ -253,14 +260,19 @@ function ComingUpCard({
       actions={
         <span className={styles.actions}>
           <span className={styles.small}>Next {COMING_UP_DAYS} days</span>
-          {shown.length > 0 && <StyledLink to={tasksBase(workspace)}>See all</StyledLink>}
+          {shown.length > 0 && (
+            <span className={styles.actions}>
+              {more > 0 && <MoreCount more={more} />}
+              <StyledLink to={tasksBase(workspace)}>See all</StyledLink>
+            </span>
+          )}
         </span>
       }
     >
       {shown.length === 0 ? (
         <None>Nothing in the next {COMING_UP_DAYS} days.</None>
       ) : (
-        <Rows rows={shown} more={more} today={view.today} initialsOf={initialsOf} />
+        <Rows rows={shown} today={view.today} initialsOf={initialsOf} />
       )}
     </Panel>
   )

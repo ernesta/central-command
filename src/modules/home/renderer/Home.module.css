@@ -183,9 +183,3 @@
   flex: none;
   width: 30px;
 }
-.more {
-  margin: 0;
-  padding: 8px 4px 0;
-  color: var(--text-muted);
-  font-size: var(--text-12);
-}
