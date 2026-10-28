@@ -1,4 +1,4 @@
-import type { WatchCounts, WatchItem } from '../../watch/shared/types'
+import type { WatchCounts, WatchItem, WatchWorkspace } from '../../watch/shared/types'
 import type { WatchKind } from '../../watch/shared/types'
 
 import type { TaskStatus } from '../../tasks/shared/types'
@@ -164,7 +164,8 @@ export interface HomeSummary {
     openTodos: number
   }
   upcoming: HomeEvent[]
-  watch: WatchBrief | null
+  /** Each Watch workspace's brief; null where that workspace watches nothing. */
+  watch: Record<WatchWorkspace, WatchBrief | null>
   /** Null when weather is off, has no place yet, or could not be read. */
   weather: WeatherSummary | null
 }

@@ -12,6 +12,7 @@ import type { WatchItem } from './types'
 const item = (over: Partial<WatchItem>): WatchItem => ({
   id: 1,
   sourceId: 1,
+  workspace: 'research',
   sourceTitle: 'LINGUIST List',
   kind: 'conference',
   title: 'An item',

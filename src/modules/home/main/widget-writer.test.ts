@@ -22,7 +22,7 @@ const summary = (generatedAt: string, todayTotal = 1): HomeSummary => ({
   tasks: tasksIn({ research: { todayTotal } }),
   meetings: { next: null, openTodos: 0 },
   upcoming: [],
-  watch: null,
+  watch: { research: null, life: null },
   weather: null
 })
 

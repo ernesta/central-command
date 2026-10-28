@@ -13,7 +13,7 @@ const base: HomeInputs = {
   timer: null,
   hours: { research: null, work: null, life: null },
   timeOff: [],
-  watch: null,
+  watch: { research: null, life: null },
   weather: null
 }
 
@@ -30,6 +30,7 @@ const task = (over: Partial<TaskInput> & { uid: string }): TaskInput => ({
 const watchItem = (over: Partial<WatchItem>): WatchItem => ({
   id: 1,
   sourceId: 1,
+  workspace: 'research',
   sourceTitle: 'LINGUIST List',
   kind: 'conference',
   title: 'A conference',
@@ -189,20 +190,23 @@ describe('upcoming', () => {
         { date: '2026-12-25', type: 'public' }
       ],
       watch: {
-        counts: { new: 1, newRelevant: 1, sources: 1, failing: 0, changed: 0 },
-        fresh: [],
-        upcoming: [
-          watchItem({ title: 'Abstract deadline', date: '2026-10-18', state: 'saved' }),
-          watchItem({
-            id: 2,
-            title: 'Summer school',
-            date: '2027-06-01',
-            dateKind: 'date',
-            state: 'saved'
-          }),
-          watchItem({ id: 3, title: 'Never saved', date: '2026-10-16', state: 'new' }),
-          watchItem({ id: 4, title: 'Seen only', date: '2026-10-17', state: 'seen' })
-        ]
+        research: {
+          counts: { new: 1, newRelevant: 1, sources: 1, failing: 0, changed: 0 },
+          fresh: [],
+          upcoming: [
+            watchItem({ title: 'Abstract deadline', date: '2026-10-18', state: 'saved' }),
+            watchItem({
+              id: 2,
+              title: 'Summer school',
+              date: '2027-06-01',
+              dateKind: 'date',
+              state: 'saved'
+            }),
+            watchItem({ id: 3, title: 'Never saved', date: '2026-10-16', state: 'new' }),
+            watchItem({ id: 4, title: 'Seen only', date: '2026-10-17', state: 'seen' })
+          ]
+        },
+        life: null
       }
     })
     expect(s.upcoming.map((e) => [e.date, e.kind, e.title])).toEqual([
@@ -286,9 +290,12 @@ describe('upcoming', () => {
       ...base,
       tasks: Array.from({ length: 9 }, (_, i) => task({ uid: `t${i}`, due: '2026-10-20' })),
       watch: {
-        counts: { new: 0, newRelevant: 0, sources: 1, failing: 0, changed: 0 },
-        fresh: [],
-        upcoming: items
+        research: {
+          counts: { new: 0, newRelevant: 0, sources: 1, failing: 0, changed: 0 },
+          fresh: [],
+          upcoming: items
+        },
+        life: null
       }
     })
     expect(s.upcoming.filter((e) => e.id.startsWith('watch:'))).toHaveLength(9)
@@ -352,14 +359,17 @@ describe('the rest', () => {
       timer,
       hours,
       watch: {
-        counts: { new: 60, newRelevant: 9, sources: 2, failing: 0, changed: 0 },
-        fresh: items,
-        upcoming: []
+        research: {
+          counts: { new: 60, newRelevant: 9, sources: 2, failing: 0, changed: 0 },
+          fresh: items,
+          upcoming: []
+        },
+        life: null
       }
     })
     expect(s.timer).toBe(timer)
     expect(s.hours).toBe(hours)
-    expect(s.watch?.fresh).toHaveLength(50)
+    expect(s.watch.research?.fresh).toHaveLength(50)
     expect(s.weather).toBeNull()
   })
 

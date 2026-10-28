@@ -10,6 +10,7 @@ import { upsertTraining } from '../../training/main/repository'
 import type { TrainingIndexRow } from '../../training/shared/types'
 import { addSource } from '../../watch/main/repository'
 import { watchMigrations } from '../../watch/main/migrations'
+import { homeView } from '../renderer/home-model'
 import { buildWidgetSnapshot } from '../shared/widget'
 import { collectHomeSummary, timerMinutes, type TrackingSource } from './collect'
 
@@ -301,13 +302,13 @@ describe('collectHomeSummary: tracking', () => {
 
 describe('collectHomeSummary: watch', () => {
   it('has no Watch brief until a source exists', () => {
-    expect(collect().watch).toBeNull()
+    expect(collect().watch).toEqual({ research: null, life: null })
     addSource(
       db,
       { title: 'S', url: 'https://ex.org/f', kind: 'conference', method: 'feed' },
       'now'
     )
-    expect(collect().watch?.counts.sources).toBe(1)
+    expect(collect().watch.research?.counts.sources).toBe(1)
   })
 
   it('puts only SAVED items in Coming up, and every new one in the brief', () => {
@@ -327,7 +328,57 @@ describe('collectHomeSummary: watch', () => {
     expect(summary.upcoming.filter((e) => e.id.startsWith('watch:')).map((e) => e.title)).toEqual([
       'Saved deadline'
     ])
-    expect(summary.watch?.fresh.map((i) => i.title)).toEqual(['New deadline'])
+    expect(summary.watch.research?.fresh.map((i) => i.title)).toEqual(['New deadline'])
+  })
+})
+
+describe('collectHomeSummary: Watch per workspace', () => {
+  const sourceOf = (workspace: 'research' | 'life', n: number): number =>
+    addSource(
+      db,
+      { title: `S${n}`, url: `https://ex.org/${n}`, kind: 'conference', method: 'feed', workspace },
+      'now'
+    ).id
+  const item = (sourceId: number, key: string, state: string, date: string): void => {
+    db.prepare(
+      `INSERT INTO watch_items (source_id, item_key, title, url, date, date_kind, state, first_seen_at)
+       VALUES (?, ?, ?, 'https://ex.org/i', ?, 'deadline', ?, '2026-10-14T00:00:00.000Z')`
+    ).run(sourceId, key, `Item ${key}`, date, state)
+  }
+
+  it('each workspace has its own brief; one with no source has none', () => {
+    sourceOf('life', 1)
+    expect(collect().watch.research).toBeNull()
+    expect(collect().watch.life?.counts.sources).toBe(1)
+    sourceOf('research', 2)
+    expect(collect().watch.research?.counts.sources).toBe(1)
+  })
+
+  it('new items, counts and saved dates never cross workspaces', () => {
+    const r = sourceOf('research', 1)
+    const l = sourceOf('life', 2)
+    item(r, 'r-new', 'new', '2026-10-16')
+    item(r, 'r-saved', 'saved', '2026-10-17')
+    item(l, 'l-new', 'new', '2026-10-16')
+    item(l, 'l-new2', 'new', '2026-10-16')
+    item(l, 'l-saved', 'saved', '2026-10-18')
+    const s = collect()
+    expect(s.watch.research?.fresh.map((i) => i.title)).toEqual(['Item r-new'])
+    expect(s.watch.life?.fresh.map((i) => i.title).sort()).toEqual(['Item l-new', 'Item l-new2'])
+    expect(s.watch.research?.counts.new).toBe(1)
+    expect(s.watch.life?.counts.new).toBe(2)
+    const dated = s.upcoming.filter((e) => e.id.startsWith('watch:'))
+    expect(dated.map((e) => [e.title, e.workspace])).toEqual([
+      ['Item r-saved', 'research'],
+      ['Item l-saved', 'life']
+    ])
+    expect(homeView(s, 'life').comingUp.map((e) => [e.title, e.route])).toEqual([
+      ['Item l-saved', '/life/watch']
+    ])
+    expect(homeView(s, 'research').comingUp.map((e) => [e.title, e.route])).toEqual([
+      ['Item r-saved', '/research/watch']
+    ])
+    expect(homeView(s, 'work').comingUp).toEqual([])
   })
 })
 

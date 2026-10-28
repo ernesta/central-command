@@ -1,3 +1,4 @@
+import type { WatchWorkspace } from '../../watch/shared/types'
 import { byUrgency } from './summary'
 import { HOME_WORKSPACES, type HomeSummary, type HomeTask, type HomeWorkspace } from './types'
 
@@ -30,8 +31,9 @@ export interface WidgetSnapshot {
   work: WidgetHours | null
   /** Life's time so far (the week, no aim), the same way; added without a version bump, like `work`. */
   life: WidgetHours | null
-  /** New Watch items, not yet looked at. */
+  /** New Watch items, not yet looked at, in every workspace and in each. */
   watchNew: number
+  watchNewByWorkspace: Record<WatchWorkspace, number>
   weather: {
     temperature: number
     unit: 'celsius' | 'fahrenheit'
@@ -65,6 +67,10 @@ export function buildWidgetSnapshot(summary: HomeSummary): WidgetSnapshot {
       { overdue: summary.tasks[w].overdueTotal, today: summary.tasks[w].todayTotal }
     ])
   ) as WidgetSnapshot['taskCountsByWorkspace']
+  const watchNew = {
+    research: summary.watch.research?.counts.new ?? 0,
+    life: summary.watch.life?.counts.new ?? 0
+  }
   const m = summary.meetings.next
   return {
     version: 1,
@@ -81,7 +87,8 @@ export function buildWidgetSnapshot(summary: HomeSummary): WidgetSnapshot {
     week: summary.hours.research,
     work: summary.hours.work,
     life: summary.hours.life,
-    watchNew: summary.watch?.counts.new ?? 0,
+    watchNew: watchNew.research + watchNew.life,
+    watchNewByWorkspace: watchNew,
     weather: summary.weather
       ? {
           temperature: summary.weather.now.temperature,

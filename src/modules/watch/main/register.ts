@@ -5,11 +5,13 @@ import {
   WATCH_KINDS,
   WATCH_METHODS,
   WATCH_STATES,
+  WATCH_WORKSPACES,
   type NewWatchSource,
   type WatchCounts,
   type WatchItemsQuery,
   type WatchSourceChanges,
-  type WatchState
+  type WatchState,
+  type WatchWorkspace
 } from '../shared/types'
 import { rescoreItems } from './checker'
 import { watchMigrations } from './migrations'
@@ -40,6 +42,13 @@ const asId = (value: unknown): number => {
   return value
 }
 const str = (v: unknown): string | undefined => (typeof v === 'string' ? v : undefined)
+/** A workspace argument: absent means every workspace's. */
+function asWorkspace(value: unknown): WatchWorkspace | undefined {
+  if (value === undefined || value === null) return undefined
+  if (typeof value !== 'string' || !(WATCH_WORKSPACES as readonly string[]).includes(value))
+    throw new Error('Invalid workspace')
+  return value as WatchWorkspace
+}
 
 function asNewSource(value: unknown): NewWatchSource {
   const o = asObject(value, 'source')
@@ -49,6 +58,7 @@ function asNewSource(value: unknown): NewWatchSource {
   if (!method || !(WATCH_METHODS as readonly string[]).includes(method))
     throw new Error('Invalid method')
   return {
+    workspace: asWorkspace(o.workspace),
     title: str(o.title) ?? '',
     url: str(o.url) ?? '',
     kind: kind as NewWatchSource['kind'],
@@ -63,6 +73,8 @@ function asNewSource(value: unknown): NewWatchSource {
 function asChanges(value: unknown): WatchSourceChanges {
   const o = asObject(value, 'changes')
   const out: WatchSourceChanges = {}
+  const workspace = asWorkspace(o.workspace)
+  if (workspace) out.workspace = workspace
   if (str(o.title) !== undefined) out.title = str(o.title)
   if (str(o.url) !== undefined) out.url = str(o.url)
   if (str(o.kind) !== undefined) out.kind = str(o.kind) as WatchSourceChanges['kind']
@@ -87,6 +99,7 @@ function asQuery(value: unknown): WatchItemsQuery {
   if (kind !== undefined && !(WATCH_KINDS as readonly string[]).includes(kind))
     throw new Error('Invalid kind')
   return {
+    workspace: asWorkspace(o.workspace),
     state: state as WatchItemsQuery['state'],
     kind: kind as WatchItemsQuery['kind'],
     sourceId: typeof o.sourceId === 'number' ? o.sourceId : undefined,
@@ -108,7 +121,9 @@ function register({ db }: MainContext): () => void {
   const now = (): string => new Date().toISOString()
   const today = (): string => now().slice(0, 10)
 
-  ipcMain.handle(WATCH_IPC.sourcesList, () => listSources(db))
+  ipcMain.handle(WATCH_IPC.sourcesList, (_e, workspace: unknown) =>
+    listSources(db, asWorkspace(workspace))
+  )
   ipcMain.handle(WATCH_IPC.sourcesAdd, (_e, input: unknown) => {
     const source = addSource(db, asNewSource(input), now())
     broadcast(getCounts(db))
@@ -132,18 +147,24 @@ function register({ db }: MainContext): () => void {
     openItem(db, asId(id))
     broadcast(getCounts(db))
   })
-  ipcMain.handle(WATCH_IPC.itemsMarkAllSeen, (_e, sourceId: unknown) => {
-    const changed = markAllSeen(db, sourceId === undefined ? undefined : asId(sourceId))
+  ipcMain.handle(WATCH_IPC.itemsMarkAllSeen, (_e, sourceId: unknown, workspace: unknown) => {
+    const changed = markAllSeen(
+      db,
+      sourceId === undefined ? undefined : asId(sourceId),
+      asWorkspace(workspace)
+    )
     broadcast(getCounts(db))
     return changed
   })
-  ipcMain.handle(WATCH_IPC.itemsUpcoming, (_e, days: unknown) =>
-    upcoming(db, today(), typeof days === 'number' ? days : 60)
+  ipcMain.handle(WATCH_IPC.itemsUpcoming, (_e, days: unknown, workspace: unknown) =>
+    upcoming(db, today(), typeof days === 'number' ? days : 60, 50, asWorkspace(workspace))
   )
-  ipcMain.handle(WATCH_IPC.checkNow, (_e, sourceId: unknown) =>
-    scheduler.checkNow(sourceId === undefined ? undefined : asId(sourceId))
+  ipcMain.handle(WATCH_IPC.checkNow, (_e, sourceId: unknown, workspace: unknown) =>
+    scheduler.checkNow(sourceId === undefined ? undefined : asId(sourceId), asWorkspace(workspace))
   )
-  ipcMain.handle(WATCH_IPC.counts, () => getCounts(db))
+  ipcMain.handle(WATCH_IPC.counts, (_e, workspace: unknown) =>
+    getCounts(db, asWorkspace(workspace))
+  )
   ipcMain.handle(WATCH_IPC.keywordsGet, () => getKeywords(db))
   ipcMain.handle(WATCH_IPC.keywordsSet, (_e, terms: unknown) => {
     if (!Array.isArray(terms) || !terms.every((t) => typeof t === 'string'))

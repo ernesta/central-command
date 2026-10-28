@@ -17,6 +17,7 @@ import { hiddenTaskUids, studySeriesUids } from '../../tasks/shared/session-lock
 import { workClients } from '../../tasks/shared/work-lists'
 import { listTrainingRows } from '../../training/main/repository'
 import { getCounts, listItems, upcoming } from '../../watch/main/repository'
+import { WATCH_WORKSPACES, type WatchWorkspace } from '../../watch/shared/types'
 import {
   buildHomeSummary,
   daysFrom,
@@ -206,7 +207,15 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
   const research = shownYearOf(db, deps.tracking, 'research', now, deps.yearStarts)
   const work = shownYearOf(db, deps.tracking, 'work', now, deps.yearStarts)
   const life = shownYearOf(db, deps.tracking, 'life', now, deps.yearStarts)
-  const hasWatch = deps.watch && getCounts(db).sources > 0
+  // Each workspace's Watch has its own sources, counts, new items and saved dates; one with no source says nothing.
+  const watchOf = (workspace: WatchWorkspace): HomeInputs['watch'][WatchWorkspace] =>
+    deps.watch && getCounts(db, workspace).sources > 0
+      ? {
+          counts: getCounts(db, workspace),
+          fresh: listItems(db, { state: 'new', limit: 50, workspace }),
+          upcoming: upcoming(db, now.date, 60, 50, workspace)
+        }
+      : null
   const inputs: HomeInputs = {
     today: now.date,
     nowMinutes: toMinutes(now.time),
@@ -226,13 +235,7 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
           .filter((r) => !r.taken)
           .map(({ date, type }) => ({ date, type }))
       : [],
-    watch: hasWatch
-      ? {
-          counts: getCounts(db),
-          fresh: listItems(db, { state: 'new', limit: 50 }),
-          upcoming: upcoming(db, now.date, 60)
-        }
-      : null,
+    watch: Object.fromEntries(WATCH_WORKSPACES.map((w) => [w, watchOf(w)])) as HomeInputs['watch'],
     weather: deps.weather
   }
   return buildHomeSummary(inputs)

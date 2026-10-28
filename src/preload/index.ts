@@ -283,7 +283,7 @@ const api: Api = {
   },
   watch: {
     sources: {
-      list: () => ipcRenderer.invoke(WATCH_IPC.sourcesList),
+      list: (workspace) => ipcRenderer.invoke(WATCH_IPC.sourcesList, workspace),
       add: (input) => ipcRenderer.invoke(WATCH_IPC.sourcesAdd, input),
       update: (id, changes) => ipcRenderer.invoke(WATCH_IPC.sourcesUpdate, id, changes),
       remove: (id) => ipcRenderer.invoke(WATCH_IPC.sourcesRemove, id)
@@ -292,11 +292,12 @@ const api: Api = {
       list: (query) => ipcRenderer.invoke(WATCH_IPC.itemsList, query),
       setState: (id, state) => ipcRenderer.invoke(WATCH_IPC.itemsSetState, id, state),
       open: (id) => ipcRenderer.invoke(WATCH_IPC.itemsOpen, id),
-      markAllSeen: (sourceId) => ipcRenderer.invoke(WATCH_IPC.itemsMarkAllSeen, sourceId),
-      upcoming: (days) => ipcRenderer.invoke(WATCH_IPC.itemsUpcoming, days)
+      markAllSeen: (sourceId, workspace) =>
+        ipcRenderer.invoke(WATCH_IPC.itemsMarkAllSeen, sourceId, workspace),
+      upcoming: (days, workspace) => ipcRenderer.invoke(WATCH_IPC.itemsUpcoming, days, workspace)
     },
-    checkNow: (sourceId) => ipcRenderer.invoke(WATCH_IPC.checkNow, sourceId),
-    counts: () => ipcRenderer.invoke(WATCH_IPC.counts),
+    checkNow: (sourceId, workspace) => ipcRenderer.invoke(WATCH_IPC.checkNow, sourceId, workspace),
+    counts: (workspace) => ipcRenderer.invoke(WATCH_IPC.counts, workspace),
     keywords: {
       get: () => ipcRenderer.invoke(WATCH_IPC.keywordsGet),
       set: (terms) => ipcRenderer.invoke(WATCH_IPC.keywordsSet, terms)

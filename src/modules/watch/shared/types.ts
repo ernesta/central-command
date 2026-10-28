@@ -8,6 +8,10 @@ export const WATCH_KINDS = [
 ] as const
 export type WatchKind = (typeof WATCH_KINDS)[number]
 
+/** The workspaces that have a Watch: each has its own sources, and its items are its sources'. */
+export const WATCH_WORKSPACES = ['research', 'life'] as const
+export type WatchWorkspace = (typeof WATCH_WORKSPACES)[number]
+
 /** The two kinds the Watch page shows (a journals list may come later). A summer school is a training. */
 export const SHOWN_KINDS = ['training', 'conference'] as const
 export type ShownKind = (typeof SHOWN_KINDS)[number]
@@ -41,6 +45,7 @@ export type WatchState = (typeof WATCH_STATES)[number]
 
 export interface WatchSource {
   id: number
+  workspace: WatchWorkspace
   title: string
   url: string
   kind: WatchKind
@@ -62,6 +67,8 @@ export interface WatchSource {
 }
 
 export interface NewWatchSource {
+  /** Absent reads as Research. */
+  workspace?: WatchWorkspace
   title: string
   url: string
   kind: WatchKind
@@ -73,7 +80,10 @@ export interface NewWatchSource {
 }
 
 export type WatchSourceChanges = Partial<
-  Pick<WatchSource, 'title' | 'url' | 'kind' | 'groupLabel' | 'intervalHours' | 'active'>
+  Pick<
+    WatchSource,
+    'title' | 'url' | 'kind' | 'groupLabel' | 'intervalHours' | 'active' | 'workspace'
+  >
 >
 
 export type DateKind = 'deadline' | 'date'
@@ -81,6 +91,8 @@ export type DateKind = 'deadline' | 'date'
 export interface WatchItem {
   id: number
   sourceId: number
+  /** Its source's workspace. */
+  workspace: WatchWorkspace
   sourceTitle: string
   kind: WatchKind
   title: string
@@ -97,6 +109,8 @@ export interface WatchItem {
 }
 
 export interface WatchItemsQuery {
+  /** Only this workspace's sources' items. */
+  workspace?: WatchWorkspace
   /** `open` is new or saved; `undismissed` is everything but dismissed. */
   state?: WatchState | 'open' | 'undismissed'
   sourceId?: number

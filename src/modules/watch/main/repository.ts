@@ -4,6 +4,7 @@ import {
   WATCH_KINDS,
   WATCH_METHODS,
   WATCH_STATES,
+  WATCH_WORKSPACES,
   kindsOf,
   shownKind,
   type DateKind,
@@ -15,11 +16,13 @@ import {
   type WatchMethod,
   type WatchSource,
   type WatchSourceChanges,
-  type WatchState
+  type WatchState,
+  type WatchWorkspace
 } from '../shared/types'
 
 interface SourceRow {
   id: number
+  workspace: WatchWorkspace
   title: string
   url: string
   kind: WatchKind
@@ -44,6 +47,7 @@ const SOURCE_SELECT = `
 
 const toSource = (r: SourceRow): WatchSource => ({
   id: r.id,
+  workspace: r.workspace,
   title: r.title,
   url: r.url,
   kind: r.kind,
@@ -78,10 +82,20 @@ export function validSourceUrl(value: string): string {
   return u.toString()
 }
 
-export function listSources(db: Database): WatchSource[] {
-  return (db.prepare(`${SOURCE_SELECT} ORDER BY s.group_label, s.title`).all() as SourceRow[]).map(
-    toSource
-  )
+const checkWorkspace = (workspace: string): WatchWorkspace => {
+  if (!(WATCH_WORKSPACES as readonly string[]).includes(workspace))
+    throw new Error('Invalid workspace')
+  return workspace as WatchWorkspace
+}
+
+/** The sources of one workspace, or of every workspace when none is given (Settings lists them all). */
+export function listSources(db: Database, workspace?: WatchWorkspace): WatchSource[] {
+  const rows = workspace
+    ? db
+        .prepare(`${SOURCE_SELECT} WHERE s.workspace = ? ORDER BY s.group_label, s.title`)
+        .all(checkWorkspace(workspace))
+    : db.prepare(`${SOURCE_SELECT} ORDER BY s.group_label, s.title`).all()
+  return (rows as SourceRow[]).map(toSource)
 }
 
 export function getSource(db: Database, id: number): WatchSource | null {
@@ -99,16 +113,18 @@ export function addSource(db: Database, input: NewWatchSource, now: string): Wat
   const issn = input.issn?.trim() || null
   if (input.method === 'crossref' && !(issn && /^\d{4}-\d{3}[\dXx]$/.test(issn)))
     throw new Error('A journal needs its ISSN, like 1088-8438')
+  const workspace = checkWorkspace(input.workspace ?? 'research')
   const hours = input.intervalHours ?? 24
   if (!Number.isInteger(hours) || hours < 1 || hours > 24 * 30) throw new Error('Invalid interval')
   if (db.prepare('SELECT 1 FROM watch_sources WHERE url = ?').get(url))
     throw new Error('Already watching that address')
   const info = db
     .prepare(
-      `INSERT INTO watch_sources (title, url, kind, method, issn, group_label, task_uid, interval_hours, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO watch_sources (workspace, title, url, kind, method, issn, group_label, task_uid, interval_hours, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .run(
+      workspace,
       title,
       url,
       input.kind,
@@ -126,6 +142,7 @@ export function updateSource(db: Database, id: number, changes: WatchSourceChang
   const current = getSource(db, id)
   if (!current) throw new Error('No such source')
   const next = { ...current, ...changes }
+  checkWorkspace(next.workspace)
   if (!next.title.trim()) throw new Error('A source needs a name')
   if (!(WATCH_KINDS as readonly string[]).includes(next.kind)) throw new Error('Invalid kind')
   if (
@@ -141,8 +158,16 @@ export function updateSource(db: Database, id: number, changes: WatchSourceChang
     if (taken && taken.id !== id) throw new Error('Already watching that address')
   }
   db.prepare(
-    'UPDATE watch_sources SET title = ?, kind = ?, group_label = ?, interval_hours = ?, active = ? WHERE id = ?'
-  ).run(next.title.trim(), next.kind, next.groupLabel, next.intervalHours, next.active ? 1 : 0, id)
+    'UPDATE watch_sources SET title = ?, kind = ?, group_label = ?, interval_hours = ?, active = ?, workspace = ? WHERE id = ?'
+  ).run(
+    next.title.trim(),
+    next.kind,
+    next.groupLabel,
+    next.intervalHours,
+    next.active ? 1 : 0,
+    next.workspace,
+    id
+  )
   // A new address is a new place: forget what the old one said, so its first good check is a fresh baseline.
   if (url !== current.url)
     db.prepare(
@@ -160,6 +185,7 @@ export function removeSource(db: Database, id: number): void {
 interface ItemRow {
   id: number
   source_id: number
+  workspace: WatchWorkspace
   source_title: string
   kind: WatchKind
   title: string
@@ -177,6 +203,7 @@ interface ItemRow {
 const toItem = (r: ItemRow): WatchItem => ({
   id: r.id,
   sourceId: r.source_id,
+  workspace: r.workspace,
   sourceTitle: r.source_title,
   kind: r.kind,
   title: r.title,
@@ -192,7 +219,7 @@ const toItem = (r: ItemRow): WatchItem => ({
 })
 
 const ITEM_SELECT = `
-  SELECT i.*, s.title AS source_title, COALESCE(i.item_kind, s.kind) AS kind
+  SELECT i.*, s.title AS source_title, s.workspace AS workspace, COALESCE(i.item_kind, s.kind) AS kind
   FROM watch_items i JOIN watch_sources s ON s.id = i.source_id`
 
 /**
@@ -209,6 +236,10 @@ export function listItems(db: Database, query: WatchItemsQuery = {}): WatchItem[
     if (!(WATCH_STATES as readonly string[]).includes(query.state)) throw new Error('Invalid state')
     where.push('i.state = ?')
     params.push(query.state)
+  }
+  if (query.workspace) {
+    where.push('s.workspace = ?')
+    params.push(checkWorkspace(query.workspace))
   }
   if (query.sourceId !== undefined) {
     where.push('i.source_id = ?')
@@ -237,48 +268,72 @@ export function openItem(db: Database, id: number): void {
   db.prepare("UPDATE watch_items SET state = 'seen' WHERE id = ? AND state = 'new'").run(id)
 }
 
-/** "Looked at everything": new items become seen (saved and dismissed stay as they are). Returns how many changed. */
-export function markAllSeen(db: Database, sourceId?: number): number {
-  const info =
-    sourceId === undefined
-      ? db.prepare("UPDATE watch_items SET state = 'seen' WHERE state = 'new'").run()
-      : db
-          .prepare("UPDATE watch_items SET state = 'seen' WHERE state = 'new' AND source_id = ?")
-          .run(sourceId)
-  if (sourceId !== undefined)
-    db.prepare('UPDATE watch_sources SET changed_at = NULL WHERE id = ?').run(sourceId)
-  else db.prepare('UPDATE watch_sources SET changed_at = NULL').run()
+/**
+ * "Looked at everything": new items become seen (saved and dismissed stay as they are), in one source or one workspace's sources,
+ * or everywhere when neither is given. Returns how many changed.
+ */
+export function markAllSeen(db: Database, sourceId?: number, workspace?: WatchWorkspace): number {
+  const sources = (column: string): string =>
+    sourceId !== undefined
+      ? `${column} = ${Math.trunc(sourceId)}`
+      : workspace
+        ? `${column} IN (SELECT id FROM watch_sources WHERE workspace = '${checkWorkspace(workspace)}')`
+        : '1'
+  const info = db
+    .prepare(
+      `UPDATE watch_items SET state = 'seen' WHERE state = 'new' AND ${sources('source_id')}`
+    )
+    .run()
+  db.prepare(`UPDATE watch_sources SET changed_at = NULL WHERE ${sources('id')}`).run()
   return info.changes
 }
 
-export function getCounts(db: Database): WatchCounts {
-  const one = (sql: string): number => (db.prepare(sql).get() as { n: number }).n
+/** The counts of one workspace's sources and items, or of all of them when none is given. */
+export function getCounts(db: Database, workspace?: WatchWorkspace): WatchCounts {
+  const only = workspace ? checkWorkspace(workspace) : null
+  const one = (sql: string): number =>
+    (db.prepare(sql).get(...(only ? [only] : [])) as { n: number }).n
+  const items = only
+    ? 'FROM watch_items i JOIN watch_sources s ON s.id = i.source_id WHERE s.workspace = ? AND'
+    : 'FROM watch_items i WHERE'
+  const sources = only
+    ? 'FROM watch_sources s WHERE s.workspace = ? AND'
+    : 'FROM watch_sources s WHERE'
   return {
-    new: one("SELECT COUNT(*) AS n FROM watch_items WHERE state = 'new'"),
-    newRelevant: one("SELECT COUNT(*) AS n FROM watch_items WHERE state = 'new' AND score > 0"),
-    sources: one('SELECT COUNT(*) AS n FROM watch_sources WHERE active = 1'),
-    failing: one(
-      'SELECT COUNT(*) AS n FROM watch_sources WHERE active = 1 AND last_error IS NOT NULL'
-    ),
-    changed: one(
-      'SELECT COUNT(*) AS n FROM watch_sources WHERE active = 1 AND changed_at IS NOT NULL'
-    )
+    new: one(`SELECT COUNT(*) AS n ${items} i.state = 'new'`),
+    newRelevant: one(`SELECT COUNT(*) AS n ${items} i.state = 'new' AND i.score > 0`),
+    sources: one(`SELECT COUNT(*) AS n ${sources} s.active = 1`),
+    failing: one(`SELECT COUNT(*) AS n ${sources} s.active = 1 AND s.last_error IS NOT NULL`),
+    changed: one(`SELECT COUNT(*) AS n ${sources} s.active = 1 AND s.changed_at IS NOT NULL`)
   }
 }
 
 /**
  * What has a date coming up: the items the user SAVED with a deadline or event date from `today` to `days` days on,
- * soonest first. Only saved items: an unsaved one never reaches Home's "Coming up" or a notification, however near its date.
+ * soonest first (one workspace's, or every workspace's when none is given). Only saved items: an unsaved one never reaches
+ * Home's "Coming up" or a notification, however near its date.
  */
-export function upcoming(db: Database, today: string, days: number, limit = 50): WatchItem[] {
+export function upcoming(
+  db: Database,
+  today: string,
+  days: number,
+  limit = 50,
+  workspace?: WatchWorkspace
+): WatchItem[] {
   const end = new Date(`${today}T00:00:00Z`)
   end.setUTCDate(end.getUTCDate() + Math.min(Math.max(Math.trunc(days), 1), 730))
   const rows = db
     .prepare(
       `${ITEM_SELECT} WHERE i.date >= ? AND i.date <= ? AND i.state = 'saved'
+       ${workspace ? 'AND s.workspace = ?' : ''}
        ORDER BY i.date, i.score DESC LIMIT ?`
     )
-    .all(today, end.toISOString().slice(0, 10), limit) as ItemRow[]
+    .all(
+      today,
+      end.toISOString().slice(0, 10),
+      ...(workspace ? [checkWorkspace(workspace)] : []),
+      limit
+    ) as ItemRow[]
   return rows.map(toItem)
 }
 

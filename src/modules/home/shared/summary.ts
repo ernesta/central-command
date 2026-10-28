@@ -1,6 +1,6 @@
 import type { TimeOffEntry } from '@shared/tracking/types'
 import { daysLate } from '../../tasks/shared/late'
-import type { WatchItem } from '../../watch/shared/types'
+import type { WatchItem, WatchWorkspace } from '../../watch/shared/types'
 import {
   HOME_WORKSPACES,
   type HomeEvent,
@@ -74,7 +74,10 @@ export interface HomeInputs {
   timer: HomeTimer | null
   hours: HomeHoursByWorkspace
   timeOff: TimeOffEntry[]
-  watch: { counts: WatchBrief['counts']; fresh: WatchItem[]; upcoming: WatchItem[] } | null
+  watch: Record<
+    WatchWorkspace,
+    { counts: WatchBrief['counts']; fresh: WatchItem[]; upcoming: WatchItem[] } | null
+  >
   weather: WeatherSummary | null
 }
 
@@ -280,7 +283,7 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
   }
   // Only what the user saved: an unsaved item's date never reaches "Coming up" or a notification (the loader asks for
   // saved items only; this keeps the rule even when it is handed more).
-  for (const w of input.watch?.upcoming ?? []) {
+  for (const w of Object.values(input.watch).flatMap((b) => b?.upcoming ?? [])) {
     if (!w.date || w.state !== 'saved') continue
     events.push({
       id: `watch:${w.id}`,
@@ -290,7 +293,7 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
       title: w.title,
       detail: `${KIND_LABEL[w.kind]} · ${w.sourceTitle}`,
       route: w.url,
-      workspace: 'research',
+      workspace: w.workspace,
       inDays: daysFrom(today, w.date)
     })
   }
@@ -313,9 +316,10 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
     },
     meetings: { next: nextMeeting, openTodos: input.openMeetingTodos },
     upcoming: shownEvents(events),
-    watch: input.watch
-      ? { counts: input.watch.counts, fresh: input.watch.fresh.slice(0, SHOWN_WATCH) }
-      : null,
+    watch: {
+      research: briefOf(input.watch.research),
+      life: briefOf(input.watch.life)
+    },
     weather: input.weather
   }
 }
@@ -334,6 +338,9 @@ function shownEvents(events: HomeEvent[]): HomeEvent[] {
     return n <= SHOWN_UPCOMING
   })
 }
+
+const briefOf = (watch: HomeInputs['watch'][WatchWorkspace]): WatchBrief | null =>
+  watch ? { counts: watch.counts, fresh: watch.fresh.slice(0, SHOWN_WATCH) } : null
 
 /** Minutes since midnight of an HH:MM time; a meeting with no time is treated as lasting all day. */
 function minutesOf(time: string | null): number {

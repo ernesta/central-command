@@ -1,4 +1,5 @@
 import type { NotificationSettings } from '@shared/home-settings'
+import { WATCH_WORKSPACES } from '../../watch/shared/types'
 import { HOME_WORKSPACES, type HomeSummary, type HomeWorkspace } from './types'
 
 export interface PlannedNotification {
@@ -123,22 +124,24 @@ export function planNotifications(
     })
   }
 
-  if (settings.watchNew && summary.watch) {
-    const fresh = summary.watch.fresh.filter(
+  // One notification per workspace for what is new in its Watch, opening that workspace's Watch page.
+  for (const workspace of WATCH_WORKSPACES) {
+    const brief = summary.watch[workspace]
+    if (!settings.watchNew || !brief) continue
+    const fresh = brief.fresh.filter(
       (i) => i.state === 'new' && i.firstSeenAt >= state.since && !state.sent.has(`watch:${i.id}`)
     )
-    if (fresh.length > 0) {
-      // One notification for the lot; its key names the newest item, so the next batch is a new notification.
-      const newest = fresh.reduce((a, b) => (b.id > a.id ? b : a))
-      add({
-        key: `watch:${newest.id}`,
-        covers: fresh.map((i) => `watch:${i.id}`),
-        title: fresh.length === 1 ? 'New in Watch' : `${fresh.length} new in Watch`,
-        body:
-          fresh.length === 1 ? fresh[0].title : `${fresh[0].title}, and ${fresh.length - 1} more`,
-        route: '/research/watch'
-      })
-    }
+    if (fresh.length === 0) continue
+    // One notification for the lot; its key names the newest item, so the next batch is a new notification.
+    const newest = fresh.reduce((a, b) => (b.id > a.id ? b : a))
+    const where = workspace === 'research' ? 'Watch' : `${WORKSPACE_NAMES[workspace]} Watch`
+    add({
+      key: `watch:${newest.id}`,
+      covers: fresh.map((i) => `watch:${i.id}`),
+      title: fresh.length === 1 ? `New in ${where}` : `${fresh.length} new in ${where}`,
+      body: fresh.length === 1 ? fresh[0].title : `${fresh[0].title}, and ${fresh.length - 1} more`,
+      route: `/${workspace}/watch`
+    })
   }
 
   // Only a SAVED item's deadline is in the summary's dated list, so these are the user's own.

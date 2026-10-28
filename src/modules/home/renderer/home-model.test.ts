@@ -47,7 +47,7 @@ const base: HomeSummary = {
   tasks: tasksIn({}),
   meetings: { next: null, openTodos: 4 },
   upcoming: [],
-  watch: null,
+  watch: { research: null, life: null },
   weather: null
 }
 

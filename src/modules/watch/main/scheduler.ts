@@ -1,6 +1,7 @@
 import type { Database } from 'better-sqlite3'
 import type { CheckOutcome } from '../shared/types'
 import { checkSource, dueSources, type Fetcher } from './checker'
+import type { WatchWorkspace } from '../shared/types'
 import { getSource, listSources } from './repository'
 
 export interface SchedulerOptions {
@@ -36,11 +37,11 @@ export class WatchScheduler {
     return this.run(() => dueSources(listSources(this.options.db), this.now()).map((s) => s.id))
   }
 
-  /** Check one source now, or every active source when no id is given, due or not. */
-  checkNow(sourceId?: number): Promise<CheckOutcome[]> {
+  /** Check one source now, or every active source (of one workspace, when it is given) when no id is given, due or not. */
+  checkNow(sourceId?: number, workspace?: WatchWorkspace): Promise<CheckOutcome[]> {
     return this.run(() =>
       sourceId === undefined
-        ? listSources(this.options.db)
+        ? listSources(this.options.db, workspace)
             .filter((s) => s.active)
             .map((s) => s.id)
         : [sourceId]

@@ -6,13 +6,15 @@ import type {
   WatchItemsQuery,
   WatchSource,
   WatchSourceChanges,
-  WatchState
+  WatchState,
+  WatchWorkspace
 } from './types'
 
 /** The Watch slice of window.api. */
 export interface WatchApi {
   sources: {
-    list(): Promise<WatchSource[]>
+    /** One workspace's sources, or every workspace's (Settings). */
+    list(workspace?: WatchWorkspace): Promise<WatchSource[]>
     add(input: NewWatchSource): Promise<WatchSource>
     update(id: number, changes: WatchSourceChanges): Promise<WatchSource>
     /** Removes the source and the items it announced. */
@@ -24,14 +26,14 @@ export interface WatchApi {
     setState(id: number, state: WatchState): Promise<void>
     /** The first look at an item (the page opens it in the browser): a new one becomes seen. */
     open(id: number): Promise<void>
-    /** New items become seen (all, or one source's). Returns how many changed. */
-    markAllSeen(sourceId?: number): Promise<number>
-    /** Saved items with a deadline or event date from today to `days` days on, soonest first. */
-    upcoming(days: number): Promise<WatchItem[]>
+    /** New items become seen (all, one source's, or one workspace's). Returns how many changed. */
+    markAllSeen(sourceId?: number, workspace?: WatchWorkspace): Promise<number>
+    /** Saved items with a deadline or event date from today to `days` days on, soonest first (one workspace's, or all). */
+    upcoming(days: number, workspace?: WatchWorkspace): Promise<WatchItem[]>
   }
-  /** Check one source, or all of them, now. Resolves when the checks are done. */
-  checkNow(sourceId?: number): Promise<CheckOutcome[]>
-  counts(): Promise<WatchCounts>
+  /** Check one source, or all of them (one workspace's, when it is given), now. Resolves when the checks are done. */
+  checkNow(sourceId?: number, workspace?: WatchWorkspace): Promise<CheckOutcome[]>
+  counts(workspace?: WatchWorkspace): Promise<WatchCounts>
   keywords: {
     get(): Promise<string[]>
     /** Replaces the list (an empty list restores the defaults) and scores what is stored again. */

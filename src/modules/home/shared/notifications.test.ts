@@ -20,7 +20,7 @@ const empty: HomeSummary = {
   tasks: tasksIn({}),
   meetings: { next: null, openTodos: 0 },
   upcoming: [],
-  watch: null,
+  watch: { research: null, life: null },
   weather: null
 }
 const task = (uid: string, daysLate = 0, workspace: HomeWorkspace = 'research'): HomeTask => ({
@@ -66,6 +66,7 @@ const withDay: HomeSummary = {
 const watched = (id: number, firstSeenAt = '2026-10-14T00:00:00.000Z'): WatchItem => ({
   id,
   sourceId: 1,
+  workspace: 'research',
   sourceTitle: 'LL',
   kind: 'conference',
   title: `Item ${id}`,
@@ -144,8 +145,11 @@ describe('planNotifications', () => {
     const s: HomeSummary = {
       ...empty,
       watch: {
-        counts: { new: 3, newRelevant: 3, sources: 1, failing: 0, changed: 0 },
-        fresh: [watched(1), watched(2), watched(3, '2026-09-01T00:00:00.000Z')]
+        research: {
+          counts: { new: 3, newRelevant: 3, sources: 1, failing: 0, changed: 0 },
+          fresh: [watched(1), watched(2), watched(3, '2026-09-01T00:00:00.000Z')]
+        },
+        life: null
       }
     }
     const [n] = planNotifications(s, { ...on, digestAt: '' }, state, at('09:00'))
@@ -169,8 +173,11 @@ describe('planNotifications', () => {
       ...empty,
       tasks: tasksIn({ research: { todayTotal: 2 } }),
       watch: {
-        counts: { new: 1, newRelevant: 1, sources: 1, failing: 0, changed: 0 },
-        fresh: [watched(1)]
+        research: {
+          counts: { new: 1, newRelevant: 1, sources: 1, failing: 0, changed: 0 },
+          fresh: [watched(1)]
+        },
+        life: null
       }
     }
     const watchOnly = { ...on, enabled: false }
@@ -395,5 +402,42 @@ describe('Life in the notifications and the widget file', () => {
     })
     expect(snap.life).toEqual(lifeHours)
     expect(snap.version).toBe(1)
+  })
+})
+
+describe('Watch in the notifications, per workspace', () => {
+  const brief = (ids: number[]): NonNullable<HomeSummary['watch']['life']> => ({
+    counts: { new: ids.length, newRelevant: 0, sources: 1, failing: 0, changed: 0 },
+    fresh: ids.map((id) => ({ ...watched(id), workspace: 'life' as const }))
+  })
+  const watchOnly = { ...on, enabled: false, digestAt: '' }
+
+  it('Life’s new items are their own notification, opening Life’s Watch page, and Research’s stay Research’s', () => {
+    const s: HomeSummary = {
+      ...empty,
+      watch: { research: brief([1]), life: brief([2, 3]) }
+    }
+    const planned = planNotifications(s, watchOnly, state, at('09:00'))
+    expect(planned.map((n) => [n.title, n.route, n.key])).toEqual([
+      ['New in Watch', '/research/watch', 'watch:1'],
+      ['2 new in Life Watch', '/life/watch', 'watch:3']
+    ])
+    expect(planned[1].covers).toEqual(['watch:2', 'watch:3'])
+  })
+
+  it('a workspace with nothing new says nothing', () => {
+    const s: HomeSummary = { ...empty, watch: { research: null, life: brief([4]) } }
+    expect(planNotifications(s, watchOnly, state, at('09:00')).map((n) => n.title)).toEqual([
+      'New in Life Watch'
+    ])
+  })
+
+  it('the widget counts new items per workspace and in all', () => {
+    const snap = buildWidgetSnapshot({
+      ...empty,
+      watch: { research: brief([1]), life: brief([2, 3]) }
+    })
+    expect(snap.watchNew).toBe(3)
+    expect(snap.watchNewByWorkspace).toEqual({ research: 1, life: 2 })
   })
 })
