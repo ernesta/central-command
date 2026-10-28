@@ -4,13 +4,14 @@ import { describe, expect, it } from 'vitest'
 import { TaskSecondLine } from './TaskSecondLine'
 
 const today = '2026-10-05'
-const render = (due: string | null, status = 'todo'): string =>
+const render = (due: string | null, status = 'todo', noLate = false): string =>
   renderToStaticMarkup(
     createElement(TaskSecondLine, {
       parent: null,
       list: 'Impact › Data',
       task: { due, status },
-      today
+      today,
+      noLate
     })
   )
 const text = (html: string): string => html.replace(/<[^>]*>/g, '')
@@ -21,6 +22,11 @@ describe('TaskSecondLine', () => {
     expect(text(render('2026-10-06'))).toBe('Impact › Data · due tomorrow')
     expect(text(render('2026-10-12'))).toBe('Impact › Data · due Oct 12')
     expect(render('2026-10-12')).not.toContain('late')
+  })
+
+  it('leaves the late chip out with noLate, keeping the place', () => {
+    expect(text(render('2026-10-02', 'todo', true))).toBe('Impact › Data')
+    expect(render('2026-10-02', 'todo', true)).not.toContain('late')
   })
 
   it('shows the late chip, never the past date, for an overdue task', () => {

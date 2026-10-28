@@ -159,6 +159,7 @@ export function TaskList({
                         list={detailOfTask(own, tasks)}
                         task={own}
                         today={todayIso()}
+                        noLate
                       />
                     </span>
                   )}
