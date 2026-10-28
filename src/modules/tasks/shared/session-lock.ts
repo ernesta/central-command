@@ -40,6 +40,28 @@ export function sessionLockIn(task: Task, tasks: readonly Task[]): SessionLock |
 }
 
 /**
+ * The top-level tasks with a session subtask (a meeting's, training's or self-study): the series tasks. A visible series task may have
+ * session subtasks no view shows, so the views' own rows can miss them; this reads the whole list.
+ */
+export function seriesUids(tasks: readonly Task[]): Set<string> {
+  const series = new Set<string>()
+  const top = new Set(tasks.filter((t) => !t.parentUid).map((t) => t.uid))
+  for (const t of tasks) {
+    if (t.ownKind && t.parentUid && top.has(t.parentUid)) series.add(t.parentUid)
+  }
+  return series
+}
+
+/** The lock of a task a view shows: `sessionLock` of its shown subtasks, or a series lock when `series` (`seriesUids` of every task) has it. */
+export function lockOf(
+  task: Task,
+  kids: readonly Task[],
+  series: ReadonlySet<string>
+): SessionLock | null {
+  return sessionLock(task, kids) ?? (!task.parentUid && series.has(task.uid) ? 'series' : null)
+}
+
+/**
  * The tasks no task view shows (the user's rule, 24 Oct 2026): a meeting's own task and a training's own session task, which are
  * kept as records (every hour has a task, the notes' hours come from them, Work's totals depend on them) but are shown as the
  * meeting or training, not as a task; and the plain series task whose every subtask is one of those. Self-study tasks stay
@@ -71,6 +93,12 @@ export function studySeriesUids(tasks: readonly Task[]): Set<string> {
     if (parent && !parent.parentUid && !parent.ownKind) series.add(parent.uid)
   }
   return series
+}
+
+/** `trash` (`{ task }` rows, subtasks included) without the hidden tasks: Settings' Deleted tasks never lists a meeting's or training's own task. */
+export function visibleTrash<T extends { task: Task }>(trash: readonly T[]): T[] {
+  const hidden = hiddenTaskUids(trash.map((r) => r.task))
+  return trash.filter((r) => !hidden.has(r.task.uid))
 }
 
 /** `tasks` without the hidden ones (`hiddenTaskUids`): the list every task view is built from. */

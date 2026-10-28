@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Task, TaskWorkspace } from '../shared/types'
-import { visibleTasks } from '../shared/session-lock'
+import { seriesUids, visibleTasks } from '../shared/session-lock'
 import { groupTasks, type TaskRow } from '../shared/views'
 
 /**
@@ -14,6 +14,8 @@ export function useTasksList(
 ): {
   tasks: Task[] | null
   rows: TaskRow[] | null
+  /** The series tasks among every task, hidden subtasks included (`seriesUids`): for the lock, which the shown rows cannot tell. */
+  series: ReadonlySet<string>
 } {
   const [tasks, setTasks] = useState<Task[] | null>(null)
 
@@ -43,5 +45,6 @@ export function useTasksList(
     [tasks, includeHidden]
   )
   const rows = useMemo(() => (shown ? groupTasks(shown) : null), [shown])
-  return { tasks: shown, rows }
+  const series = useMemo(() => seriesUids(tasks ?? []), [tasks])
+  return { tasks: shown, rows, series }
 }

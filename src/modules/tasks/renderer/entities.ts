@@ -59,10 +59,15 @@ export const taskEntities: EntityProvider = {
   },
   async resolve(key) {
     const find = (list: Task[]): Task | undefined => list.find((t) => t.uid === key)
-    const tasks = await allTasks()
-    // A task made a moment ago is not in the cached list yet.
-    const task = find(tasks) ?? find(await allTasks(true))
-    if (!task) return null
+    let tasks = await allTasks()
+    let task = find(tasks)
+    if (!task) {
+      // A task made a moment ago is not in the cached list yet.
+      tasks = await allTasks(true)
+      task = find(tasks)
+    }
+    // A meeting's or training's own task is never shown: a link to one is as good as a link to a deleted task.
+    if (!task || hiddenTaskUids(tasks).has(task.uid)) return null
     return {
       label: task.title || 'Untitled',
       title: task.title || 'Untitled',

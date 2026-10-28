@@ -15,7 +15,7 @@ import { IconButton } from '@renderer/components/IconButton'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { EditorCard } from '@renderer/notes/EditorCard'
 import { describeRecurrence } from '../shared/recurrence'
-import { fieldLocked, sessionLock, type SessionSource } from '../shared/session-lock'
+import { fieldLocked, lockOf, type SessionSource } from '../shared/session-lock'
 import { LateChip } from './LateChip'
 import { daysLate } from '../shared/late'
 import { formatDue, listLabel, tagsIn } from '../shared/query'
@@ -42,7 +42,7 @@ import styles from './TaskPage.module.css'
 export function TaskPage(): React.JSX.Element {
   const workspace = useTasksWorkspace()
   const { uid = '' } = useParams()
-  const { tasks, rows } = useTasksList(workspace, true)
+  const { tasks, rows, series } = useTasksList(workspace)
   if (tasks === null || rows === null) return <div className={styles.page} />
   const task = tasks.find((t) => t.uid === uid)
   if (!task) {
@@ -62,6 +62,7 @@ export function TaskPage(): React.JSX.Element {
       task={task}
       row={row ?? { task, kids: [] }}
       rows={rows}
+      series={series}
       workspace={workspace}
     />
   )
@@ -92,11 +93,13 @@ function TaskView({
   task,
   row,
   rows,
+  series,
   workspace
 }: {
   task: Task
   row: TaskRow
   rows: readonly TaskRow[]
+  series: ReadonlySet<string>
   workspace: TaskWorkspace
 }): React.JSX.Element {
   const navigate = useNavigate()
@@ -105,7 +108,7 @@ function TaskView({
   const { tracked, running, yearFor, clientFor, months, earlier } = useTaskTime(workspace)
   const sessionTasks = useSessionTaskUids(workspace)
   // A self-study task, or a series task over session tasks, is the notes' to keep (title, list, date, status, repeat, delete).
-  const lock = sessionLock(task, row.kids)
+  const lock = lockOf(task, row.kids, series)
   const statusLocked = fieldLocked(lock, 'status')
   const source = useSessionSource(task.uid, lock !== null)
   const [error, setError] = useState<string | null>(null)

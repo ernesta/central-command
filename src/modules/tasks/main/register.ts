@@ -27,6 +27,7 @@ import { writeTasksSnapshot } from './snapshot'
 import { TrackingStore } from '../../../main/tracking/store'
 import { trackingMoment } from '@shared/time'
 import { workClients } from '../shared/work-lists'
+import { visibleTrash } from '../shared/session-lock'
 import {
   guardDelete,
   guardStatus,
@@ -250,7 +251,7 @@ function register(context: MainContext): () => void {
     const all = listTrash(context.db)
     const trashed = new Set(all.map((r) => r.task.uid))
     // A subtask deleted along with its parent comes back with it, so only the ones that stand alone are listed.
-    return all.filter((r) => !r.task.parentUid || !trashed.has(r.task.parentUid))
+    return visibleTrash(all).filter((r) => !r.task.parentUid || !trashed.has(r.task.parentUid))
   })
   ipcMain.handle(TASKS_IPC.snapshot, () =>
     basename(

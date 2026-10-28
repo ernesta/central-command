@@ -9,6 +9,7 @@ import { formatHours } from '@shared/tracking/format'
 import type { TaskRow } from '@shared/tracking/totals'
 import { QUARTER } from '@shared/tracking/rounding'
 import { taskUidOf } from '@modules/tasks/shared/tracked'
+import { hiddenTaskUids } from '@modules/tasks/shared/session-lock'
 import { StatusButton } from '@modules/tasks/renderer/StatusButton'
 import { taskRoute, todayIso } from '@modules/tasks/renderer/tasks-paths'
 import { TaskSecondLine } from '@modules/tasks/renderer/TaskSecondLine'
@@ -67,6 +68,8 @@ export function TaskList({
   const [problem, setProblem] = useState('')
   const { tasks } = useTasksList(workspace, true)
   const taskOf = useMemo(() => new Map(tasks?.map((t) => [t.uid, t])), [tasks])
+  // Time kept on a meeting's or training's own task (older history) shows as its label: the task itself is never shown.
+  const hidden = useMemo(() => hiddenTaskUids(tasks ?? []), [tasks])
   const statusOf = useMemo(() => new Map(tasks?.map((t) => [t.uid, t.status])), [tasks])
   const entering = useNewRowKeys(rows.map((row) => rowKey(row).toLowerCase()))
   if (rows.length === 0) return null
@@ -102,8 +105,10 @@ export function TaskList({
     <>
       <ul className={styles.list}>
         {rows.map((row) => {
-          const status = statusOf.get(taskUidOf(row.task) ?? '')
-          const own = taskOf.get(taskUidOf(row.task) ?? '')
+          const uid = taskUidOf(row.task) ?? ''
+          const sealed = hidden.has(uid)
+          const status = sealed ? undefined : statusOf.get(uid)
+          const own = sealed ? undefined : taskOf.get(uid)
           return (
             <li
               key={rowKey(row).toLowerCase()}
@@ -133,7 +138,11 @@ export function TaskList({
                   {status && <StatusButton uid={taskUidOf(row.task) ?? ''} status={status} />}
                 </span>
               )}
-              {taskUidOf(row.task) ? (
+              {sealed ? (
+                <div className={styles.nameColumn}>
+                  <span className={styles.taskTitle}>{row.label}</span>
+                </div>
+              ) : taskUidOf(row.task) ? (
                 <div className={styles.nameColumn}>
                   <Link
                     className={styles.taskLink}

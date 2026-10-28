@@ -9,7 +9,7 @@ import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { Tooltip } from '@renderer/components/Tooltip'
 import { describeRecurrence } from '../shared/recurrence'
-import { fieldLocked, sessionLock } from '../shared/session-lock'
+import { fieldLocked, lockOf } from '../shared/session-lock'
 import { StudyIcon } from './TaskName'
 import { studyName } from '../shared/study-label'
 import { LateChip } from './LateChip'
@@ -139,7 +139,7 @@ export function TasksTable({
   flat?: boolean
 }): React.JSX.Element {
   const navigate = useNavigate()
-  const { rows: allRows } = useTasksList(workspace)
+  const { rows: allRows, series } = useTasksList(workspace)
   const [open, setOpen] = useState<ReadonlySet<string>>(new Set())
   const [adding, setAdding] = useState<string | null>(null)
   const [menu, setMenu] = useState<MenuState | null>(null)
@@ -199,9 +199,10 @@ export function TasksTable({
 
   const menuGroups = (state: MenuState): MenuGroup[] => {
     const { task } = state
-    const lock = sessionLock(
+    const lock = lockOf(
       task,
-      task.parentUid ? [] : (allRows?.find((r) => r.task.uid === task.uid)?.kids ?? [])
+      task.parentUid ? [] : (allRows?.find((r) => r.task.uid === task.uid)?.kids ?? []),
+      series
     )
     const priority: MenuGroup = {
       label: 'Priority',
@@ -253,7 +254,7 @@ export function TasksTable({
     if (event.key === ' ' && item.type !== 'add') {
       event.preventDefault()
       const kids = item.type === 'task' ? item.kids : []
-      if (fieldLocked(sessionLock(item.task, kids), 'status')) return
+      if (fieldLocked(lockOf(item.task, kids, series), 'status')) return
       void setTaskStatus(item.task, nextStatus(item.task.status, event.shiftKey))
       return
     }
@@ -370,6 +371,7 @@ export function TasksTable({
                 item={item}
                 workspace={workspace}
                 allRows={allRows ?? []}
+                series={series}
                 today={today}
                 tracked={tracked}
                 isRunning={running.has(item.task.uid)}
@@ -546,6 +548,7 @@ function TaskRowView({
   item,
   workspace,
   allRows,
+  series,
   today,
   tracked,
   isRunning,
@@ -563,6 +566,7 @@ function TaskRowView({
   item: Extract<Item, { type: 'task' | 'kid' }>
   workspace: TaskWorkspace
   allRows: readonly TaskRow[]
+  series: ReadonlySet<string>
   today: string
   tracked: ReadonlyMap<string, number>
   isRunning: boolean
@@ -591,7 +595,7 @@ function TaskRowView({
   const due = isKid ? task.due : effectiveDue(task, kids)
   const minutes = taskTime({ task, kids }, tracked).total
   // A self-study task is its training's, and a series task follows its subtasks: shown, not edited (title, list, date, status, delete).
-  const lock = sessionLock(task, kids)
+  const lock = lockOf(task, kids, series)
   const statusLocked = fieldLocked(lock, 'status')
   const textLocked = lock !== null
   // A task with saved time asks before it goes: the time leaves Hours with it.

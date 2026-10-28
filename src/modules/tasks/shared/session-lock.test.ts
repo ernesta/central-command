@@ -5,7 +5,10 @@ import {
   lockedChanges,
   sessionLock,
   sessionLockIn,
+  lockOf,
+  seriesUids,
   studySeriesUids,
+  visibleTrash,
   visibleTasks
 } from './session-lock'
 import { task } from './test-utils'
@@ -111,5 +114,44 @@ describe('studySeriesUids', () => {
       task({ uid: 'plain' })
     ]
     expect([...studySeriesUids(tasks)]).toEqual(['study'])
+  })
+})
+
+describe('a series task that is shown because the user made a subtask under it', () => {
+  const tasks = [
+    task({ uid: 'mixed' }),
+    task({ uid: 'x1', parentUid: 'mixed', ownKind: 'meeting' }),
+    task({ uid: 'x2', parentUid: 'mixed' }),
+    task({ uid: 'plain' })
+  ]
+  it('is still a series, though the rows a view builds from visible tasks do not show the session subtask', () => {
+    const shown = visibleTasks(tasks)
+    const mixed = shown.find((t) => t.uid === 'mixed')!
+    const kids = shown.filter((t) => t.parentUid === 'mixed')
+    expect(sessionLock(mixed, kids)).toBeNull()
+    expect([...seriesUids(tasks)]).toEqual(['mixed'])
+    expect(lockOf(mixed, kids, seriesUids(tasks))).toBe('series')
+    expect(
+      lockOf(
+        shown.find((t) => t.uid === 'plain')!,
+        [],
+        seriesUids(tasks)
+      )
+    ).toBeNull()
+  })
+})
+
+describe('visibleTrash', () => {
+  const row = (t: ReturnType<typeof task>): { task: ReturnType<typeof task> } => ({ task: t })
+  it('never lists a deleted meeting’s or training’s own task, nor the series task over only those', () => {
+    const trash = [
+      row(task({ uid: 'm', parentUid: 'ser', ownKind: 'meeting' })),
+      row(task({ uid: 'ser' })),
+      row(task({ uid: 't', ownKind: 'training' })),
+      row(task({ uid: 'study', parentUid: 'ss', ownKind: 'self-study' })),
+      row(task({ uid: 'ss' })),
+      row(task({ uid: 'plain' }))
+    ]
+    expect(visibleTrash(trash).map((r) => r.task.uid)).toEqual(['study', 'ss', 'plain'])
   })
 })
