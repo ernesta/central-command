@@ -941,14 +941,12 @@ function AddSubtaskRow({
       onKeyDown={onKeyDown}
       onClick={onStart}
     >
-      {span === 6 && (
-        <td>
-          <span className={styles.addPlus} aria-hidden>
-            <Plus size={14} strokeWidth={1.75} />
-          </span>
-        </td>
-      )}
-      <td colSpan={span === 6 ? span - 1 : span}>
+      <td className={span === 6 ? undefined : styles.addPlusCell}>
+        <span className={styles.addPlus} aria-hidden>
+          <Plus size={14} strokeWidth={1.75} />
+        </span>
+      </td>
+      <td colSpan={span - 1}>
         <span className={styles.addInput}>
           <input
             ref={field}

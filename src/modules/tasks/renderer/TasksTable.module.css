@@ -86,8 +86,10 @@
 .dragging td {
   opacity: 0.5;
 }
-.handleCell {
+/* Room for the grip (2px to 16px) before the status icon. */
+.row td.handleCell {
   position: relative;
+  padding-left: 28px;
 }
 /* The grip shows on hover at the row's left edge; only it starts a drag. */
 .handle {
@@ -199,6 +201,7 @@
 }
 .iconButton {
   display: inline-flex;
+  vertical-align: middle;
   align-items: center;
   justify-content: center;
   margin: -3px;
@@ -352,6 +355,13 @@
   color: var(--text-muted);
   font-size: var(--text-13);
 }
+/* The input ends where the trash icon's column begins: 12 gap + 16 icon + 12 padding. */
+.addRow td:last-child {
+  padding-right: 40px;
+}
+.addRow td.addPlusCell {
+  padding-left: 30px;
+}
 .addPlus {
   display: inline-flex;
   width: 18px;
@@ -361,8 +371,8 @@
 .addInput {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 3px 10px;
+  gap: 12px;
+  padding: 5px 6px 5px 12px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-control);
   background: var(--surface);
