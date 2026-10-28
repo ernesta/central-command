@@ -18,7 +18,7 @@ export interface MeetingEntry {
   end: string
   /** The exact length in minutes. */
   minutes: number
-  /** The task's key (`cc://task/<uid>`) and its title. */
+  /** The task's key (`cc://task/<uid>`), and the meeting's own name (its series), never the task's title. */
   task: string
   label: string
   /** Work: the client the task's list stands for. */
@@ -60,7 +60,7 @@ export function meetingEntries(
       end: row.end ?? '',
       minutes,
       task: `${TASK_PREFIX}${row.task}`,
-      label: task.title.trim(),
+      label: row.series.trim() || 'Untitled meeting',
       ...(client !== undefined ? { client } : {})
     })
   }

@@ -30,7 +30,7 @@ const row = (over: Partial<MeetingIndexRow> = {}): MeetingIndexRow => ({
   ...over
 })
 const tasks: Record<string, TaskInfo> = {
-  abc12345: { title: ' Supervision ', list: 'Meetings' },
+  abc12345: { title: 'Supervision meetings · 24 Sep 2026', list: 'Meetings' },
   imp00001: { title: 'Impact meetings', list: 'impact' }
 }
 const taskOf = (uid: string): TaskInfo | null => tasks[uid] ?? null
@@ -80,7 +80,7 @@ describe('meetingEntries', () => {
       'Teaching & Learning'
     ])
     expect(entry.client).toBe('Impact')
-    expect(entry.label).toBe('Impact meetings')
+    expect(entry.label).toBe('Supervision')
   })
 })
 
