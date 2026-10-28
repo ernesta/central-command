@@ -1,6 +1,6 @@
 # Polish round 4 (28 Oct 2026)
 
-Five items from the user's review of Polish round 3 (numbers are the user's; items 1 and 3 to 7 of that review were round 3). Not started. One commit per item, in this order; drive each in the real app on a scratch library (production build and dev mode, light and dark) and look at the screenshots; mutation-check the logic in items 1, 3 and 4. Stop and ask only if blocked. Follow the CLAUDE.md rule to stop after each stage unless the user says to run the plan in one go.
+Five items from the user's review of Polish round 3 (numbers are the user's; items 1 and 3 to 7 of that review were round 3). Items 1 to 4 built 28 Oct 2026; item 5 survey below, waiting for the user's answer. One commit per item, in this order; drive each in the real app on a scratch library (production build and dev mode, light and dark) and look at the screenshots; mutation-check the logic in items 1, 3 and 4. Stop and ask only if blocked. Follow the CLAUDE.md rule to stop after each stage unless the user says to run the plan in one go.
 
 ## Items
 
@@ -14,3 +14,23 @@ Five items from the user's review of Polish round 3 (numbers are the user's; ite
 ## Done when
 
 `npm test`, `npm run lint`, `npm run typecheck` pass; each item driven (production build and dev mode, light and dark) and screenshots looked at; docs updated (`docs/DECISIONS.md` "Polish round 4", `docs/ROADMAP.md`, `CLAUDE.md` "What is built"); pushed and installed only when the user says so.
+
+## Item 5 survey (28 Oct 2026)
+
+Counts: 77 `:focus-visible`, 8 `:focus-within`, 35 `outline-offset`, 26 `border-color: var(--accent)` rules in the CSS. What a focused or hovered thing looks like today (light and dark share the tokens):
+
+| Kind | Where | Focus | Hover |
+| --- | --- | --- | --- |
+| Anything not styled | `theme/base.css` | 2px `--accent` outline, offset 2px | none |
+| Text input (`Input`), the Task field (`TaskPicker .input`), the Picker's search | `Input.module.css`, `TaskPicker.module.css`, `Picker.module.css` | the global outline at offset 0 **plus** `border-color: var(--accent)`: a thick (about 3px) accent frame (the user's 12.08.47 screenshot) | none |
+| Time and duration fields | `TimeInput`, `DurationField` | `:focus-within` 1px `--accent` border, no outline; the focused part is filled `--selected-bg` | none |
+| Task box (`AddBar`) | `AddBar.module.css` | 1px `--accent` border, no outline | none |
+| Mod-K field (`ChipInput`) | `ChipInput.module.css` | inset 2px `--accent` ring (`::after`) | none |
+| Buttons, icon buttons, links | global | 2px outline, offset 2px | per component (tint) |
+| Table cells that read as text (`Picker plain`) | `Picker.module.css` | `--border-strong` border plus `--hover-tint` fill | the same |
+| Quiet rows (the Hours Add row, `AddTime .quiet`) | `AddTime.module.css` | the global outline | `--hover-tint` fill in a rounded box, no border (the user's 12.03.32 screenshot) |
+| Table rows, cards, landing cards | `ListTable`, `*Card` | `outline: none` with a row tint (rows) or a card border | tint |
+
+What most of the app does: a field gets **one accent border**; the thick frame is only the `Input` family, and buttons and plain rows use the outline or a quiet tint.
+
+The two screenshots are the quiet tint (Add row, hover) and the thick frame (Task input, focus). The survey does not say which one "the previous" is, so the user is asked.
