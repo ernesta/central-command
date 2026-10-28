@@ -18,6 +18,7 @@ import { MeetingRows } from './MeetingRows'
 import { TaskList } from './TaskList'
 import { renameRow } from './rename-row'
 import styles from './TodayCard.module.css'
+import formStyles from './HoursForm.module.css'
 
 interface TodayCardProps {
   workspace: HoursWorkspace
@@ -107,7 +108,7 @@ export function TodayCard({ workspace, data, running, now }: TodayCardProps): Re
         }
       />
       <MeetingRows workspace={workspace} data={data} date={now.date} now={now} />
-      <div className={styles.start}>
+      <div className={formStyles.form}>
         <TaskPicker
           ref={picker}
           workspace={workspace}

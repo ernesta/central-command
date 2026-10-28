@@ -1,18 +1,5 @@
-.row {
-  display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) auto auto;
-  gap: 14px;
-  grid-auto-rows: minmax(32px, auto);
-  align-items: center;
-  padding: 10px 12px;
-  border-radius: var(--radius-card);
-}
-.row:not(:has(.warn)) {
-  grid-template-columns: 32px minmax(0, 1fr) auto;
-}
 .icon {
   color: var(--text-muted);
-  justify-self: center;
 }
 .name {
   display: flex;
@@ -39,10 +26,4 @@
 .warn {
   display: inline-grid;
   color: var(--danger);
-}
-.time {
-  padding: 2px 40px 2px 8px;
-  font-size: var(--text-16);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
 }

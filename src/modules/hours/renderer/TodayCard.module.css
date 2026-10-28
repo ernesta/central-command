@@ -2,7 +2,7 @@
   --stack-gap: 14px;
   display: grid;
   gap: var(--stack-gap);
-  padding: 20px 24px;
+  padding: 20px var(--hours-pad);
   background: var(--surface);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-card);
@@ -35,9 +35,4 @@
   font-size: var(--text-13);
   font-weight: 400;
   color: var(--text-muted);
-}
-.start {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
 }

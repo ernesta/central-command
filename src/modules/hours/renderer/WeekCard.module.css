@@ -79,11 +79,11 @@
 }
 .table th:first-child,
 .table td:first-child {
-  padding-left: 24px;
+  padding-left: var(--hours-pad);
 }
 .table th:last-child,
 .table td:last-child {
-  padding-right: 24px;
+  padding-right: var(--hours-pad);
 }
 .table .right {
   text-align: right;
@@ -148,7 +148,7 @@
   background: var(--text-muted);
 }
 .detail td {
-  padding: 0 24px 14px;
+  padding: 0 var(--hours-pad) 14px;
   border-bottom: 1px solid var(--border-faint);
 }
 .detailBody {

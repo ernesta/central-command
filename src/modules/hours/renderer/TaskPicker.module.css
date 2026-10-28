@@ -4,7 +4,10 @@
   flex: 1;
 }
 .input {
+  box-sizing: border-box;
   width: 100%;
+  /* A form row sets `--field-h`, so its controls share one height; elsewhere the padding sets it. */
+  height: var(--field-h, auto);
   padding: 8px 12px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-control);

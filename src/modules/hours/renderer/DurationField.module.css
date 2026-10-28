@@ -3,7 +3,7 @@
   align-items: center;
   gap: 2px;
   box-sizing: border-box;
-  height: 32px;
+  height: var(--field-h, 32px);
   padding: 0 6px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-control);

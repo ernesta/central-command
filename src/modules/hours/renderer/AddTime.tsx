@@ -6,6 +6,7 @@ import type { HoursWorkspace } from '../shared/workspaces'
 import { DurationField } from './DurationField'
 import { TaskPicker, type PickedTask, type TaskPickerHandle } from './TaskPicker'
 import styles from './AddTime.module.css'
+import formStyles from './HoursForm.module.css'
 
 /** Time that was not tracked: a quiet "Add" that opens one inline row (task, hours:minutes). Escape closes it. */
 export function AddTime({
@@ -48,7 +49,7 @@ export function AddTime({
 
   return (
     <div
-      className={styles.form}
+      className={formStyles.form}
       onKeyDown={(event) => {
         if (event.key === 'Escape') close()
       }}

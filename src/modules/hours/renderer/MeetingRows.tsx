@@ -61,8 +61,10 @@ export function MeetingRows({
         const training = row.kind === 'training'
         const Icon = training ? GraduationCap : CalendarClock
         return (
-          <li key={`${row.kind}:${row.id}`} className={styles.row}>
-            <Icon size={16} strokeWidth={1.75} className={styles.icon} aria-hidden />
+          <li key={`${row.kind}:${row.id}`} className={listStyles.row}>
+            <span className={`${listStyles.lead} ${styles.icon}`}>
+              <Icon size={16} strokeWidth={1.75} aria-hidden />
+            </span>
             <Link
               className={styles.name}
               to={training ? entryRoute(row.id) : meetingRoute(workspace, row.id)}
@@ -85,7 +87,10 @@ export function MeetingRows({
                 </span>
               </Tooltip>
             )}
-            <span className={styles.time}>{formatHours(row.minutes)}</span>
+            <span className={listStyles.end}>
+              <span className={listStyles.time}>{formatHours(row.minutes)}</span>
+              <span className={listStyles.delete} aria-hidden />
+            </span>
           </li>
         )
       })}

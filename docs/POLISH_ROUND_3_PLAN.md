@@ -17,4 +17,22 @@ Seven fixes from the user's review of 28 Oct 2026. Agreed with the user: the sum
 7. **Alignment guard.** A test (jsdom or Playwright) comparing the x of lead, name and time across Today and Week rows (tasks and meetings) and the form controls' heights, so the alignment cannot drift again.
 
 ## Done when
+
 `npm test`, `npm run lint`, `npm run typecheck` pass; each step driven in the real app on a scratch library (production build and dev mode, light and dark), screenshots looked at, especially step 6; docs updated (`docs/DECISIONS.md` "Polish round 3", `docs/ROADMAP.md`, `CLAUDE.md` "What is built").
+
+## Step 6: measurements (28 Oct 2026, production build, scratch library, 1300px window; x in px from the window's left)
+
+Today and a week's day (Wed 28 Oct) agreed with each other; the rows did not agree with each other. A card is x 49–639, its padding 24.
+
+|                              | before: lead icon (centre) | name (left)       | time (right)                             | controls                                                                  |
+| ---------------------------- | -------------------------- | ----------------- | ---------------------------------------- | ------------------------------------------------------------------------- |
+| Task row                     | 101                        | 131               | 571 (then the 24px delete slot, to 603)  |                                                                           |
+| Meeting / training row       | **77**                     | **107**           | **627** (`padding-right: 40px`, no slot) |                                                                           |
+| Add row                      | 101                        | 131               |                                          |                                                                           |
+| Add form, Today's start form |                            | input left **73** | button right 615                         | input **39**, time field **32**, button **35**, `align-items: flex-start` |
+
+After: task, meeting and training rows all have lead 101, name 131, time 546 (box 521–571, delete slot to 603), in Today and in a day's detail, light and dark, production build and dev mode (Work's client rows too); the forms start at 85 and end at 603 (the rows' content edges), and the input, the time field and the button are 34px, centred.
+
+What broke it: `git log` of `hours/renderer` CSS: `9478bfe1` ("task rows' highlights run edge to edge", 28 Oct) gave the task rows `padding: 10px 36px` and the list `margin-inline: -24px`, but `MeetingRows.module.css` kept its own `padding: 10px 12px` (and a time padded 40px on the right as a stand-in for the delete slot), so meeting rows moved 24px left of the task rows; the forms, never inset, had their own `align-items: flex-start` and three different control heights (`TaskPicker`'s padding, `DurationField`'s 32px, `Button`'s padding).
+
+What was done: the meeting row uses `TaskList.module.css`'s `row`, `lead`, `end`, `time` and `delete` classes (one grid), the inset is `--hours-pad` (24px, `tokens.css`) plus 12px everywhere (card padding, the list's negative margin, the row, the Week card's detail), the Add and start forms are one module (`HoursForm.module.css`: inset 12px, `align-items: center`, `--field-h` = `--hours-control-h`, 34px, read by `TaskPicker`'s input, `DurationField` and the button). Step 7's guard is `hours/renderer/row-grid.test.ts` (jsdom has no layout, so it checks that every row and form takes its grid, inset and height from those two modules; the measured numbers above are the reference).

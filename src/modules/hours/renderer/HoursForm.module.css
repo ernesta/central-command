@@ -1,0 +1,15 @@
+/* The task, time and button row of Add (a day's detail) and of the Today card's start form: one inset, one control height, one alignment. */
+.form {
+  --field-h: var(--hours-control-h);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  /* The rows' own inset (the card's padding is outside it): the form's edges are the rows' content edges. */
+  padding-inline: 12px;
+}
+.form > button {
+  box-sizing: border-box;
+  height: var(--field-h);
+  padding-block: 0;
+  justify-content: center;
+}
