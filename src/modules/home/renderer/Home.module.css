@@ -25,7 +25,8 @@
 }
 .list {
   display: grid;
-  margin: 0;
+  /* The panel's 16px side padding is taken back so a row's highlight runs edge to edge, like the Tasks table's. */
+  margin: 0 -16px;
   padding: 0;
   list-style: none;
 }
@@ -39,10 +40,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 4px;
+  padding: 8px 20px;
   color: inherit;
   text-decoration: none;
-  border-radius: var(--radius-control);
 }
 .row:hover {
   background: var(--hover-tint);
@@ -52,7 +52,7 @@
   align-items: center;
   gap: 10px;
   margin: 0;
-  padding: 8px 4px;
+  padding: 8px 20px;
 }
 .grow {
   display: grid;

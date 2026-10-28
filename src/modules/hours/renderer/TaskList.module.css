@@ -4,6 +4,8 @@
   padding: 0;
   display: grid;
   gap: 2px;
+  /* The card's 24px side padding is taken back so a row's highlight runs edge to edge, like the Tasks table's. */
+  margin-inline: -24px;
 }
 /* Meetings and trainings follow the tasks as one list: close the container's gap (`--stack-gap`) to the rows' own. */
 .list + .list {
@@ -14,8 +16,7 @@
   grid-template-columns: 32px minmax(0, 1fr) auto;
   gap: 14px;
   align-items: center;
-  padding: 10px 12px;
-  border-radius: var(--radius-card);
+  padding: 10px 36px;
 }
 /* The first column is the start button's, or the task's status (or nothing): meetings below use it for their icon. */
 .row:has(.client) {
