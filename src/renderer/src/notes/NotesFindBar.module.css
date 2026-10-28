@@ -22,10 +22,6 @@
   color: var(--ink);
   font-size: var(--text-13);
 }
-.input:focus-visible {
-  outline-offset: 0;
-  border-color: var(--accent);
-}
 .count {
   min-width: 68px;
   padding: 0 4px;

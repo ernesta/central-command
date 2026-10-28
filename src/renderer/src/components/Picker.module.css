@@ -127,10 +127,6 @@
   font-family: var(--font-body);
   font-size: var(--text-14);
 }
-.search:focus-visible {
-  outline-offset: 0;
-  border-color: var(--accent);
-}
 .list {
   display: flex;
   flex-direction: column;

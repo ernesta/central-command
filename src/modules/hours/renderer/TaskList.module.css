@@ -66,10 +66,6 @@
   color: var(--ink);
   font: inherit;
 }
-.rename:focus-visible {
-  outline-offset: 0;
-  border-color: var(--accent);
-}
 .round {
   display: inline-grid;
   place-items: center;

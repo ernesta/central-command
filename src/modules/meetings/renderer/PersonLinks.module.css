@@ -60,10 +60,6 @@
   background: var(--surface);
   font-size: var(--text-14);
 }
-.input:focus-visible {
-  outline-offset: 0;
-  border-color: var(--accent);
-}
 .actions {
   display: flex;
   gap: 8px;

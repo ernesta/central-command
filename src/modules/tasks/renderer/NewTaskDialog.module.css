@@ -31,10 +31,6 @@
   color: var(--ink);
   font-size: var(--text-14);
 }
-.title:focus-visible {
-  outline-offset: 0;
-  border-color: var(--accent);
-}
 .error {
   margin: 0;
   color: var(--danger);

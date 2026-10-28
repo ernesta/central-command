@@ -64,6 +64,20 @@ kbd {
   outline-offset: 2px;
 }
 
+/* A field's focus is one accent border, never the outline: every text field and search box, the one rule (checkboxes and the like keep the outline). Specific enough to beat a component's own `.input` border. (Composite fields
+   such as the time and duration fields do the same on their wrapper with :focus-within.) */
+input:not(
+    [type='checkbox'],
+    [type='radio'],
+    [type='range'],
+    [type='file'],
+    [type='color']
+  ):focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+}
+
 ::selection {
   background: var(--selected-bg);
   color: var(--selected-text);

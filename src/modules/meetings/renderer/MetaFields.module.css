@@ -32,10 +32,6 @@
   font-size: var(--text-14);
   font-variant-numeric: tabular-nums;
 }
-.input:focus-visible {
-  outline-offset: 0;
-  border-color: var(--accent);
-}
 .calc {
   display: block;
   min-width: 100px;

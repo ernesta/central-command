@@ -11,7 +11,3 @@
 .input::placeholder {
   color: var(--text-muted);
 }
-.input:focus-visible {
-  outline-offset: 0;
-  border-color: var(--accent);
-}

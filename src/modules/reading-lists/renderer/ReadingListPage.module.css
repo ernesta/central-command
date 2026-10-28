@@ -29,10 +29,6 @@
 .title:hover {
   border-color: var(--border-soft);
 }
-.title:focus-visible {
-  outline-offset: 0;
-  border-color: var(--accent);
-}
 .title::placeholder {
   color: var(--text-muted);
 }

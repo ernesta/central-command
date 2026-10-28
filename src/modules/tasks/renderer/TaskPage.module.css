@@ -47,10 +47,6 @@
 .title:hover {
   border-color: var(--border-soft);
 }
-.title:focus-visible {
-  outline-offset: 0;
-  border-color: var(--accent);
-}
 .lockedTitle {
   margin: 0;
   padding: 3px 5px;
