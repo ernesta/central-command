@@ -1,0 +1,13 @@
+/* Text that is edited where it stands (docs/CLICKABLES_PLAN.md): a soft box on hover, a transparent 1px border at rest so nothing shifts
+   (a module that composes it offsets its own padding or margin by that 1px). Focus while editing is base.css's accent border. */
+.edit {
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
+}
+.edit:hover:not(:focus-visible, :disabled) {
+  background: var(--hover-tint);
+  border-color: var(--border-soft);
+}

@@ -36,21 +36,17 @@
   color: var(--selected-text);
 }
 .nameButton {
+  composes: edit from '@renderer/components/EditInPlace.module.css';
   min-width: 0;
   justify-self: start;
   max-width: 100%;
-  padding: 2px 8px;
+  padding: 1px 7px;
   margin: 0 -8px;
-  border: 0;
-  border-radius: var(--radius-control);
   background: transparent;
   color: inherit;
   font: inherit;
   text-align: left;
   overflow-wrap: anywhere;
-}
-.nameButton:hover {
-  background: var(--hover-tint);
 }
 .nameButton[data-empty='true'] {
   color: var(--text-muted);

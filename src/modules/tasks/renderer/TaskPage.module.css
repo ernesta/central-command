@@ -28,6 +28,7 @@
   border-radius: var(--radius-card);
 }
 .title {
+  composes: edit from '@renderer/components/EditInPlace.module.css';
   width: 100%;
   box-sizing: border-box;
   margin: 0;
@@ -43,9 +44,6 @@
   field-sizing: content;
   overflow: hidden;
   resize: none;
-}
-.title:hover {
-  border-color: var(--border-soft);
 }
 .lockedTitle {
   margin: 0;

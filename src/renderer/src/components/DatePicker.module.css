@@ -34,7 +34,7 @@
   color: inherit;
 }
 .plain:hover {
-  border-color: var(--border-strong);
+  border-color: var(--border-soft);
   background: var(--hover-tint);
 }
 .popover {

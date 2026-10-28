@@ -13,6 +13,7 @@
 }
 /* The title is an input that looks like the page heading. */
 .title {
+  composes: edit from '@renderer/components/EditInPlace.module.css';
   flex: 1;
   min-width: 260px;
   margin: 0;
@@ -25,9 +26,6 @@
   font-size: var(--text-30);
   font-weight: 700;
   line-height: 1.25;
-}
-.title:hover {
-  border-color: var(--border-soft);
 }
 .title::placeholder {
   color: var(--text-muted);

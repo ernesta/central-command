@@ -394,12 +394,10 @@
 }
 
 .editable {
+  composes: edit from '@renderer/components/EditInPlace.module.css';
+  margin: -1px 2px -1px -6px;
+  padding: 0 5px;
   cursor: text;
-}
-.editable:hover {
-  text-decoration: underline;
-  text-decoration-color: var(--border-strong);
-  text-underline-offset: 3px;
 }
 .titleInput {
   box-sizing: border-box;

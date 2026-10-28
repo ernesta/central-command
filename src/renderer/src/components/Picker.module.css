@@ -79,7 +79,10 @@
 .plain .chevron {
   opacity: 0;
 }
-.plain:hover:not(:disabled),
+.plain:hover:not(:disabled) {
+  border-color: var(--border-soft);
+  background: var(--hover-tint);
+}
 .plain:focus-visible,
 .plain[aria-expanded='true'] {
   border-color: var(--border-strong);
