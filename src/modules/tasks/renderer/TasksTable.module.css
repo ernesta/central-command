@@ -384,16 +384,16 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 3px 3px 3px 0;
+  padding: 5px 6px 5px 0;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-control);
   background: var(--surface);
   color: var(--ink);
 }
-/* The button sits inside the field's box, so it is shorter than a standalone small button and does not make the box taller than its text. */
+/* The button is no taller than the field's text line, so the box keeps the height its padding gives it. */
 .addInput .addButton {
   padding: 0 10px;
-  line-height: 20px;
+  line-height: 16px;
 }
 .addInput:focus-within {
   border-color: var(--accent);
