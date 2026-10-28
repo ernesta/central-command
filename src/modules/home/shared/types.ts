@@ -138,7 +138,7 @@ export interface WeatherSummary {
   }[]
 }
 
-/** One workspace's overdue and due-today tasks, each list cut to `SHOWN_TASKS`, with the whole counts. */
+/** One workspace's overdue and due-today tasks, with the whole counts (Home's page shows 5 top-level rows and counts the rest). */
 export interface HomeTasks {
   overdue: HomeTask[]
   today: HomeTask[]

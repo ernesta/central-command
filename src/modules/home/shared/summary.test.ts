@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { WatchItem } from '../../watch/shared/types'
-import { buildHomeSummary, daysFrom, SHOWN_TASKS, type HomeInputs, type TaskInput } from './summary'
+import { buildHomeSummary, daysFrom, type HomeInputs, type TaskInput } from './summary'
 
 const base: HomeInputs = {
   today: '2026-10-15',
@@ -79,12 +79,12 @@ describe('tasks', () => {
     expect(s.tasks.research.overdue.map((t) => t.uid)).toEqual(['old', 'h', 'a', 'b'])
   })
 
-  it('shows a handful and says how many there are', () => {
+  it('keeps every task and says how many there are (the page caps its top-level rows)', () => {
     const many = Array.from({ length: 12 }, (_, i) =>
       task({ uid: `t${String(i).padStart(2, '0')}` })
     )
     const s = buildHomeSummary({ ...base, tasks: many })
-    expect(s.tasks.research.today).toHaveLength(SHOWN_TASKS)
+    expect(s.tasks.research.today).toHaveLength(12)
     expect(s.tasks.research.todayTotal).toBe(12)
   })
 
@@ -306,7 +306,7 @@ describe('upcoming', () => {
     expect(s.upcoming.filter((e) => e.id.startsWith('task:'))).toHaveLength(5)
   })
 
-  it('counts what the cap left out of the Coming up window, per workspace', () => {
+  it('cuts nothing inside the Coming up window (the page counts top-level rows) and caps the days beyond it', () => {
     const s = buildHomeSummary({
       ...base,
       tasks: [
@@ -315,8 +315,17 @@ describe('upcoming', () => {
         task({ uid: 'w', workspace: 'work', due: '2026-10-16' })
       ]
     })
-    expect(s.upcoming.filter((e) => e.id.startsWith('task:n'))).toHaveLength(5)
-    expect(s.upcomingCut).toEqual({ research: 2 })
+    expect(s.upcoming.filter((e) => e.id.startsWith('task:n'))).toHaveLength(7)
+    expect(s.upcomingCut).toEqual({})
+  })
+
+  it('caps the days beyond the Coming up window and counts none of them as cut', () => {
+    const s = buildHomeSummary({
+      ...base,
+      tasks: Array.from({ length: 7 }, (_, i) => task({ uid: `f${i}`, due: '2026-10-25' }))
+    })
+    expect(s.upcoming.filter((e) => e.id.startsWith('task:f'))).toHaveLength(5)
+    expect(s.upcomingCut).toEqual({})
   })
 
   it('a Life training has a Life route and its own event id', () => {

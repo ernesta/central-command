@@ -137,11 +137,14 @@ export function MeetingsPage(): React.JSX.Element {
       <header className={styles.header}>
         <h1 className={styles.heading}>All meetings</h1>
         <div className={styles.actions}>
-          <ExportButton
-            busy={exporting}
-            disabled={rows === null}
-            onClick={() => void exportPdf()}
-          />
+          {/* Work's log is by date only and would include another contract's meetings: off until it follows the contract's clients. */}
+          {workspace !== 'work' && (
+            <ExportButton
+              busy={exporting}
+              disabled={rows === null}
+              onClick={() => void exportPdf()}
+            />
+          )}
           <NewMeetingButton />
         </div>
       </header>

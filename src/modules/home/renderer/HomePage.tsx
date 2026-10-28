@@ -14,12 +14,13 @@ import {
   comingUpRows,
   eventDetail,
   homeView,
+  isKidRow,
   todayRows,
   type HomeRow,
   whenLabel,
   type HomeView
 } from './home-model'
-import { capRows } from '../shared/cap'
+import { SHOWN_ROWS, capRows } from '../shared/cap'
 import { HomeHours } from './HomeHours'
 import { usePeople } from '../../meetings/renderer/usePeople'
 import { initialsFor } from '../../meetings/shared/query'
@@ -212,7 +213,7 @@ function TodayCard({
   const { overdue, today, cut } = view.tasks
   const { todayEvents } = view
   const empty = todayEvents.length + overdue.length + today.length === 0
-  const { shown, more } = capRows(todayRows(view), view.tasks.hidden)
+  const { shown, more } = capRows(todayRows(view), view.tasks.hidden, SHOWN_ROWS, isKidRow)
   const count = empty
     ? 'Clear'
     : [
@@ -256,7 +257,12 @@ function ComingUpCard({
   workspace: HomeWorkspace
   initialsOf: (name: string) => string | null
 }): React.JSX.Element {
-  const { shown, more } = capRows(comingUpRows(view, workspace), view.comingUpHidden)
+  const { shown, more } = capRows(
+    comingUpRows(view, workspace),
+    view.comingUpHidden,
+    SHOWN_ROWS,
+    isKidRow
+  )
   return (
     <Panel
       label="Coming up"

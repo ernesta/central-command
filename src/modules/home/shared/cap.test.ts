@@ -17,6 +17,13 @@ describe('capRows', () => {
     expect(capRows([])).toEqual({ shown: [], more: 0 })
   })
 
+  it('counts top-level rows only: a subtask stays with its task and is not counted', () => {
+    const list = ['a', 'a1', 'a2', 'b', 'c', 'd', 'e', 'e1', 'f', 'g']
+    const { shown, more } = capRows(list, 0, 5, (r) => r.length > 1)
+    expect(shown).toEqual(['a', 'a1', 'a2', 'b', 'c', 'd', 'e', 'e1'])
+    expect(more).toBe(2)
+  })
+
   it('adds what the summary already left out', () => {
     expect(capRows(rows(7), 4).more).toBe(6)
     expect(capRows(rows(3), 2)).toEqual({ shown: rows(3), more: 2 })

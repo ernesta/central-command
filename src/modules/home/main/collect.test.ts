@@ -139,7 +139,7 @@ describe('collectHomeSummary: tasks', () => {
     const s = collect()
     expect(s.tasks.research.overdue.map((t) => t.uid)).toEqual(['a'])
     expect(s.tasks.research.overdueTotal).toBe(1)
-    expect(s.tasks.life.overdue).toHaveLength(5)
+    expect(s.tasks.life.overdue).toHaveLength(8)
     expect(s.tasks.life.overdueTotal).toBe(8)
   })
 

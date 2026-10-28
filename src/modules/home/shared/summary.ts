@@ -82,7 +82,6 @@ export interface HomeInputs {
 }
 
 /** How many of each list a workspace's Home shows; the totals say how many there are. Per workspace, so one never uses another's slots. */
-export const SHOWN_TASKS = 5
 export const SHOWN_UPCOMING = 5
 export const SHOWN_WATCH = 50
 /** "Coming up" looks this many days ahead, today included. */
@@ -183,8 +182,8 @@ function tasksOf(dated: HomeTask[], workspace: HomeWorkspace, today: string): Ho
   const overdue = mine.filter((t) => t.due < today).sort(byUrgency)
   const dueToday = mine.filter((t) => t.due === today).sort(byUrgency)
   return {
-    overdue: overdue.slice(0, SHOWN_TASKS),
-    today: dueToday.slice(0, SHOWN_TASKS),
+    overdue,
+    today: dueToday,
     overdueTotal: overdue.length,
     todayTotal: dueToday.length
   }
@@ -340,7 +339,8 @@ function shownEvents(events: HomeEvent[]): {
   const ahead = new Map<HomeWorkspace | null, number>()
   const cut: Partial<Record<HomeWorkspace, number>> = {}
   const kept = events.filter((e) => {
-    if (e.inDays <= 0 || e.id.startsWith('watch:')) return true
+    // Inside the Coming up window nothing is cut: the page counts top-level rows (a task's subtasks hang under it).
+    if (e.inDays <= COMING_UP_DAYS || e.id.startsWith('watch:')) return true
     const w = eventWorkspace(e)
     const n = (ahead.get(w) ?? 0) + 1
     ahead.set(w, n)

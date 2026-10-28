@@ -238,3 +238,6 @@ export function comingUpRows(view: HomeView, workspace: HomeWorkspace): HomeRow[
     item.group ? groupRows([item.group], true) : [{ kind: 'event', event: item.event } as const]
   )
 }
+
+/** A subtask row hangs under its task, so the cap does not count it. */
+export const isKidRow = (row: HomeRow): boolean => row.kind === 'task' && row.kid
