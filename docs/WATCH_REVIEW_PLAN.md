@@ -1,5 +1,7 @@
 # Watch review plan (28 Oct 2026)
 
+**Status: all four stages BUILT (28 Oct 2026), in one run at the user's request; write-up in `docs/DECISIONS.md`, "Watch review". [x] Stage 1 states and the full list. [x] Stage 2 dates. [x] Stage 3 parsing. [x] Stage 4 `watch:reparse` (built and dry-run on the real library; `--apply` is the user's call).**
+
 The user's review of Watch after the first real checks of five sources (Research: EPS, National Literacy Trust, researchED, SSSR,
 What Works Hub for Global Education). Four stages; all decisions below are the user's unless marked "my call".
 
