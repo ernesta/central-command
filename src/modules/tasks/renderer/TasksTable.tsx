@@ -973,6 +973,7 @@ function AddSubtaskRow({
             type="button"
             variant="primary"
             size="small"
+            className={styles.addButton}
             disabled={title.trim() === ''}
             // Keeps the field focused: its blur would otherwise close the row before the click lands.
             onMouseDown={(event) => event.preventDefault()}
