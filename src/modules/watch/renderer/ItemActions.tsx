@@ -6,7 +6,7 @@ import type { WatchItems } from './useWatchItems'
 import styles from './ItemActions.module.css'
 
 /**
- * A row's icon buttons: Mark read (a read item's puts it back to New; a saved item is read already and has none) and Save, and
+ * A row's icon buttons: Mark as read (a read item's puts it back to New; a saved item is read already and has none) and Save, and
  * for an entry added by hand Edit and Delete before them. Save sits last so it stays in the same place on every row.
  */
 export function ItemActions({
@@ -30,7 +30,7 @@ export function ItemActions({
       )}
       {item.state !== 'saved' && (
         <IconButton
-          label={item.state === 'new' ? 'Mark read' : 'Mark new'}
+          label={item.state === 'new' ? 'Mark as read' : 'Mark as unread'}
           onClick={() => actions.toggleRead(item)}
         >
           {item.state === 'new' ? (

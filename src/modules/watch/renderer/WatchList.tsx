@@ -11,7 +11,7 @@ import styles from './WatchList.module.css'
 
 /**
  * Items as the landing's list of rows: the day found, the title (a "New" pill while unseen), when it is, its deadline when
- * it has one, its source, and two icon buttons: Mark read and Save. The row opens the
+ * it has one, its source, and two icon buttons: Mark as read and Save. The row opens the
  * item's page in the browser.
  */
 export function WatchList({

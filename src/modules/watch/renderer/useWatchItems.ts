@@ -63,7 +63,7 @@ export function useWatchItems(query: WatchItemsQuery = { limit: 1000 }): WatchIt
   return {
     items,
     held,
-    // Any choice about the row (Save, Mark new, Cmd-Z) lets it go to where its state puts it.
+    // Any choice about the row (Save, Mark as unread, Cmd-Z) lets it go to where its state puts it.
     toggleSaved: (item) => {
       hold(item.id, false)
       void setState(item, item.state === 'saved' ? 'seen' : 'saved')

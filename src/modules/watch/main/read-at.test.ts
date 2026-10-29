@@ -27,7 +27,7 @@ const readAt = (id: number): string | null =>
     .read_at
 
 describe('read_at', () => {
-  it('is set when an item becomes Read by opening, Mark read, Mark all or un-saving', () => {
+  it('is set when an item becomes Read by opening, Mark as read, Mark all or un-saving', () => {
     const [a, b, c, d] = ['a', 'b', 'c', 'd'].map((k) => add(k, '2026-10-01'))
     openItem(db, a, '2026-10-20T10:00:00.000Z')
     setItemState(db, b, 'seen', { now: '2026-10-21T10:00:00.000Z' })
@@ -42,7 +42,7 @@ describe('read_at', () => {
     ])
   })
 
-  it('is cleared by Mark new, and left alone by Save', () => {
+  it('is cleared by Mark as unread, and left alone by Save', () => {
     const a = add('a', '2026-10-01')
     setItemState(db, a, 'seen', { now: '2026-10-20T10:00:00.000Z' })
     setItemState(db, a, 'saved', { now: '2026-10-21T10:00:00.000Z' })
