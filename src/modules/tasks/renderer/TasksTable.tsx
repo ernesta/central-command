@@ -54,7 +54,7 @@ type Item =
   | { type: 'kid'; key: string; task: Task; last: boolean; flat?: boolean }
   | { type: 'add'; key: string; parent: Task }
 
-/** The rows that are on screen: each task, then (open) all its subtasks and a line to add one, or (closed) only the subtasks that put it here. */
+/** The rows of a task's own page: its subtasks and a line to add one. */
 function buildFlatItems(row: SectionRow | undefined): Item[] {
   if (!row) return []
   return [
@@ -69,6 +69,7 @@ function buildFlatItems(row: SectionRow | undefined): Item[] {
   ]
 }
 
+/** The rows that are on screen: each task, then (open) all its subtasks and a line to add one; a closed task shows none. */
 function buildItems(rows: readonly SectionRow[], open: ReadonlySet<string>): Item[] {
   const items: Item[] = []
   for (const row of rows) {
@@ -76,15 +77,6 @@ function buildItems(rows: readonly SectionRow[], open: ReadonlySet<string>): Ite
     if (open.has(row.task.uid)) {
       for (const kid of row.kids) items.push({ type: 'kid', key: kid.uid, task: kid, last: false })
       items.push({ type: 'add', key: `add-${row.task.uid}`, parent: row.task })
-    } else {
-      row.nested.forEach((kid, i) =>
-        items.push({
-          type: 'kid',
-          key: `nested-${kid.uid}`,
-          task: kid,
-          last: i === row.nested.length - 1
-        })
-      )
     }
   }
   return items

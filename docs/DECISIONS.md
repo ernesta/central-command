@@ -4908,3 +4908,7 @@ On Watch, "Sources" (`AllLink`, a router link) was taller than "New entry" and "
 ## Home: subtasks start collapsed under their task (29 Oct 2026, the user: Home is gigantic and overwhelming)
 
 Home's Today and Coming up listed every subtask under its task, so a few tasks filled the page. `Rows` now draws a task's subtasks only when that task is open; all start collapsed. A task with subtasks has a pill right after its title, as in the Tasks table (the count and a chevron, as the Tasks table's pill without the progress fill: Home holds only the open subtasks, so there is no done count). The pill is a button inside the row's link, so it stops the click from opening the task. Open state is local to the card and resets when leaving Home. The 5-row cap counts top-level rows only, so it is unchanged. Not driven in the app (lint, typecheck and tests pass).
+
+## Task tables: subtasks are closed by default everywhere (29 Oct 2026, the user: closed by default in all task views too)
+
+After Home, the Tasks landing's sections still drew a closed task's due subtasks (`SectionRow.nested`) under it. `buildItems` no longer does: a closed task shows none, and the pill opens them. The Tasks page and a task's own page already passed `nested: []`. `nested` stays in the data (it puts a task in a section and `moveOverdueToToday` moves those subtasks too). Not driven in the app (lint, typecheck and tests pass).
