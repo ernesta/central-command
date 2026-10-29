@@ -69,15 +69,18 @@ export async function readEntryLink(
   const body = textOf(mainContent(html))
   const found = findDates(`${summary}\n${body}`, today)
   if (!title) return { ...EMPTY(url, 'Couldn’t find a title on that page'), summary }
+  const section = sectionOf(title, `${summary}\n${body.slice(0, 600)}`)
+  // An opportunity is not an event: a date its page gives with no deadline of its own ("Closes 31 October") is when it closes.
+  const closes = section === 'opportunity' && !found.deadline && found.eventStart
   return {
     url,
     title,
     summary,
-    section: sectionOf(title, `${summary}\n${body.slice(0, 600)}`),
-    eventDate: found.eventStart,
-    eventEnd: found.eventEnd,
-    deadline: found.deadline,
-    deadlineLabel: found.deadlineLabel,
+    section,
+    eventDate: closes ? null : found.eventStart,
+    eventEnd: closes ? null : found.eventEnd,
+    deadline: closes ? (found.eventEnd ?? found.eventStart) : found.deadline,
+    deadlineLabel: closes ? 'Apply by' : found.deadlineLabel,
     notice: null
   }
 }

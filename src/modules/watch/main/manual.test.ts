@@ -264,6 +264,22 @@ describe('reading a pasted link', () => {
     })
   })
 
+  it('reads the one date of an opportunity as its deadline, not as an event', async () => {
+    const read = await readEntryLink(
+      'https://ex.org/f',
+      page(
+        '<html><head><meta property="og:title" content="Early Career Fellowship"></head><body><main><p>Applications: 31 October 2026.</p></main></body></html>'
+      ),
+      '2026-10-29'
+    )
+    expect(read).toMatchObject({
+      section: 'opportunity',
+      eventDate: null,
+      deadline: '2026-10-31',
+      deadlineLabel: 'Apply by'
+    })
+  })
+
   it('keeps the link and says so in one line when the page cannot be read', async () => {
     const read = await readEntryLink('https://ex.org/x', page('', 404), '2026-10-29')
     expect(read).toMatchObject({ url: 'https://ex.org/x', title: '' })

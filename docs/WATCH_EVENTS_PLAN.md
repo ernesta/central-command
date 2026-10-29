@@ -72,11 +72,11 @@ a short idempotent script `npm run watch:add-events [-- --apply]` (dry run by de
 `docs/DECISIONS.md` under "One-off scripts applied to the real library" and in CLAUDE.md's command list as "applied …,
 do not re-run"). It adds, for Research, interval 24 hours:
 
-| Title | Address | Method |
-|---|---|---|
-| LINGUIST List: Conferences | https://linguistlist.org/issues/rss/confs | feed |
-| LINGUIST List: Calls | https://linguistlist.org/issues/rss/calls | feed |
-| LINGUIST List: Summer schools | https://linguistlist.org/issues/?topic=Summer%20Schools | page |
+| Title                         | Address                                                 | Method |
+| ----------------------------- | ------------------------------------------------------- | ------ |
+| LINGUIST List: Conferences    | https://linguistlist.org/issues/rss/confs               | feed   |
+| LINGUIST List: Calls          | https://linguistlist.org/issues/rss/calls               | feed   |
+| LINGUIST List: Summer schools | https://linguistlist.org/issues/?topic=Summer%20Schools | page   |
 
 Not added, on purpose: the FYI, Support, Jobs and other LINGUIST feeds (the user's choice, 29 Oct 2026: FYIs are too mixed
 to sift). Each feed holds only the newest 20 postings and the conferences feed turns over in about five days, hence the

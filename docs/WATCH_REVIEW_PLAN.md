@@ -80,7 +80,7 @@ Never send page text anywhere (no model, no third party): the "Never send user d
 ## Stage 4: the real library
 
 - A script, dry run by default, backs the database up first, `--apply` only when the user says so and the app is closed: `npm run watch:reparse
-  [-- --apply]` removes the stored **unsaved** items of page sources that fail the new rules (never a saved item) and clears the sources' `etag`
+[-- --apply]` removes the stored **unsaved** items of page sources that fail the new rules (never a saved item) and clears the sources' `etag`
   / `last_modified` / `page_hash` so the next check reads them again. Record it in `docs/DECISIONS.md`, "One-off scripts applied to the real library".
 - Then re-check the five sources from a scratch library first (what the new parsers give for each live page, through the app's fetcher), read every
   line, and report per source what was found. The user's sources stay as they are (no source is added or removed by the script).
