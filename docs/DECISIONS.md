@@ -4913,3 +4913,7 @@ Home's Today and Coming up listed every subtask under its task, so a few tasks f
 ## Task tables: subtasks are closed by default everywhere (29 Oct 2026, the user: closed by default in all task views too)
 
 After Home, the Tasks landing's sections still drew a closed task's due subtasks (`SectionRow.nested`) under it. `buildItems` no longer does: a closed task shows none, and the pill opens them. The Tasks page and a task's own page already passed `nested: []`. `nested` stays in the data (it puts a task in a section and `moveOverdueToToday` moves those subtasks too). Not driven in the app (lint, typecheck and tests pass).
+
+## Home: the Today card has no count line (29 Oct 2026, the user: "27 due"?? "+N is sufficient")
+
+The Today card's header said "3 events · 27 due · 1 overdue" (or "Clear") before "+N more · See all". The user did not ask for it and "27 due" read as a total, not as today's tasks. The line is gone (`TodayCard` in `HomePage.tsx`): the header holds only "+N more" and "See all", and the rows and "Nothing today." say the rest. Replaces the Today count in "Review of the page". Not driven in the app (lint, typecheck and tests pass).
