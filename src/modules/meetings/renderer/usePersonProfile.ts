@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { todayIso } from '@shared/time'
+import { useToday } from '@renderer/state/use-today'
 import { DEFAULT_TRAINING_QUERY, queryTraining } from '@modules/training/shared/rules'
 import type { TrainingIndexRow } from '@modules/training/shared/types'
 import { DEFAULT_MEETINGS_QUERY, queryMeetings } from '../shared/query'
@@ -40,6 +40,8 @@ export function usePersonProfile(name: string): {
     profile: PersonProfile
   } | null>(null)
   const [reload, setReload] = useState(0)
+  // Past and upcoming are told apart by today's date: read again when midnight passes.
+  const today = useToday()
   const loading = found?.name !== name || found.reload !== reload
 
   useEffect(() => {
@@ -66,7 +68,6 @@ export function usePersonProfile(name: string): {
         people
       )
 
-      const today = todayIso()
       const past = meetings.filter((m) => m.date !== '' && m.date <= today)
       const upcoming = meetings.filter((m) => m.date !== '' && m.date > today)
       const lastMet = past[0] ?? null // meetings is already newest first
@@ -81,7 +82,7 @@ export function usePersonProfile(name: string): {
     return () => {
       cancelled = true
     }
-  }, [name, reload])
+  }, [name, reload, today])
 
   const profile = found?.name === name && found.reload === reload ? found.profile : EMPTY
   return { profile, loading, refresh: () => setReload((r) => r + 1) }
