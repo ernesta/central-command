@@ -366,7 +366,12 @@ export function TasksTable({
                 series={series}
                 today={today}
                 tracked={tracked}
-                isRunning={running.has(item.task.uid)}
+                isRunning={
+                  running.has(item.task.uid) ||
+                  (item.type === 'task' &&
+                    !open.has(item.task.uid) &&
+                    item.kids.some((kid) => running.has(kid.uid)))
+                }
                 flat={flat}
                 isOpen={open.has(item.task.uid)}
                 drag={
