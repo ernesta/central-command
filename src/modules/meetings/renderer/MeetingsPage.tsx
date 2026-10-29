@@ -1,3 +1,4 @@
+import { useToday } from '@renderer/state/use-today'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
@@ -26,7 +27,7 @@ import { MeetingsHours } from './MeetingsHours'
 import { fixedSeries, tracksSkills } from '../shared/types'
 import { MeetingsTable } from './MeetingsTable'
 import { NewMeetingButton } from './NewMeetingButton'
-import { todayIso, useMeetingsWorkspace } from './meetings-paths'
+import { useMeetingsWorkspace } from './meetings-paths'
 import { useMeetingsList } from './useMeetingsList'
 import { useTaskLists } from './useTaskLists'
 import { useMeetingsView } from './useMeetingsView'
@@ -52,7 +53,7 @@ export function MeetingsPage(): React.JSX.Element {
   )
   const set = (patch: Partial<MeetingsQuery>): void => setQuery(patch)
 
-  const today = todayIso()
+  const today = useToday()
   const everything = rows ?? []
   const period = usePeriod(
     workspace,

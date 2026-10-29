@@ -1,3 +1,4 @@
+import { useToday } from '@renderer/state/use-today'
 import { useState } from 'react'
 import { ArrowRight } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
@@ -13,7 +14,7 @@ import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { KIND_NOUN, SHOWN_PER_SECTION, sectionsOf } from '../shared/rows'
 import type { ShownKind } from '../shared/types'
-import { todayIso, useWatchWorkspace, watchListRoute } from './watch-paths'
+import { useWatchWorkspace, watchListRoute } from './watch-paths'
 import { useWatchItems } from './useWatchItems'
 import { useWatchSources } from './useWatchSources'
 import { WatchList } from './WatchList'
@@ -28,7 +29,7 @@ export function WatchPage(): React.JSX.Element {
   const { sources } = useWatchSources(workspace)
   const [checking, setChecking] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const today = todayIso()
+  const today = useToday()
   const sections = sectionsOf(items ?? [])
 
   const checkNow = async (): Promise<void> => {

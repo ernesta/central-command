@@ -1,3 +1,4 @@
+import { useToday } from '@renderer/state/use-today'
 import { ArrowRight } from 'lucide-react'
 import { useState } from 'react'
 import { YearSelect } from '@renderer/components/YearSelect'
@@ -31,7 +32,6 @@ import {
   meetingsListRoute,
   seriesRoute,
   clockNow,
-  todayIso,
   useMeetingsWorkspace
 } from './meetings-paths'
 import { useMeetingsList } from './useMeetingsList'
@@ -50,7 +50,7 @@ export function MeetingsLanding(): React.JSX.Element {
   const workspace = useMeetingsWorkspace()
   const { rows, people } = useMeetingsList(workspace)
   const [whose, setWhose] = useState<Whose>('everyone')
-  const today = todayIso()
+  const today = useToday()
   const now = clockNow()
 
   const me = people.find((p) => p.me)

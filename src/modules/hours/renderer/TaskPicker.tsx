@@ -1,3 +1,4 @@
+import { useToday } from '@renderer/state/use-today'
 import { useId, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { useOpenContracts } from '@renderer/state/use-open-contracts'
@@ -10,7 +11,6 @@ import { useTaskDefaults } from '../../tasks/renderer/useTaskDefaults'
 import { useOpenTasks } from '../../tasks/renderer/useOpenTasks'
 import { TaskName } from '../../tasks/renderer/TaskName'
 import { parentIn, subtaskParent, taskLabel } from '../../tasks/shared/study-label'
-import { todayIso } from '@shared/time'
 import { TaskSecondLine } from '../../tasks/renderer/TaskSecondLine'
 import { ListField } from '../../tasks/renderer/ListField'
 import { taskKey } from '../../tasks/shared/tracked'
@@ -79,6 +79,7 @@ export function TaskPicker({
 }: TaskPickerProps): React.JSX.Element {
   const listId = useId()
   const rootRef = useRef<HTMLDivElement>(null)
+  const today = useToday()
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(-1)
   const [input] = useState(() => new PickerInput(''))
@@ -265,7 +266,7 @@ export function TaskPicker({
                         parent={subtaskParent(item.task, tasks)}
                         list={detailOfTask(item.task, tasks)}
                         task={item.task}
-                        today={todayIso()}
+                        today={today}
                       />
                     </span>
                   </>
@@ -313,7 +314,7 @@ export function TaskPicker({
                       parent={subtaskParent(task, tasks)}
                       list={detailOfTask(task, tasks)}
                       task={task}
-                      today={todayIso()}
+                      today={today}
                     />
                   </span>
                 </button>

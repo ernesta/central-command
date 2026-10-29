@@ -1,3 +1,4 @@
+import { useToday } from '@renderer/state/use-today'
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { GraduationCap } from 'lucide-react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router'
@@ -32,7 +33,7 @@ import { RecurrenceField } from './RecurrenceField'
 import { TagsField } from './TagsField'
 import { TasksTable } from './TasksTable'
 import { TaskTimeCard } from './TaskTimeCard'
-import { taskRoute, todayIso, useTasksWorkspace } from './tasks-paths'
+import { taskRoute, useTasksWorkspace } from './tasks-paths'
 import { useTaskTime } from './useTaskTime'
 import { useTasksList } from './useTasksList'
 import { useSessionTaskUids } from './useSessionTaskUids'
@@ -104,7 +105,7 @@ function TaskView({
 }): React.JSX.Element {
   const navigate = useNavigate()
   const isNew = (useLocation().state as { isNew?: boolean } | null)?.isNew === true
-  const today = todayIso()
+  const today = useToday()
   const { tracked, running, yearFor, clientFor, months, earlier } = useTaskTime(workspace)
   const sessionTasks = useSessionTaskUids(workspace)
   // A self-study task, or a series task over session tasks, is the notes' to keep (title, list, date, status, repeat, delete).

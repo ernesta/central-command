@@ -1,3 +1,4 @@
+import { useToday } from '@renderer/state/use-today'
 import { Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '@renderer/components/Button'
@@ -60,6 +61,7 @@ function ContractRow({
   onDelete: () => void
 }): React.JSX.Element {
   const end = contractEnd(contract)
+  const today = useToday()
   const [name, setName] = useState(contract.name ?? '')
   const [finish, setFinish] = useState(end)
   const [minutes, setMinutes] = useState(contract.plan.hoursPerWeek)
@@ -188,7 +190,7 @@ function ContractRow({
         <DatePicker
           label={`Ends of ${label}`}
           value={finish}
-          today={todayIso()}
+          today={today}
           full
           clearable={false}
           isDisabled={(date) => !contractWeeks(contract.start, date).ok}
@@ -252,6 +254,7 @@ function NewContractRow({
   known: readonly string[]
   onDone: () => void
 }): React.JSX.Element {
+  const today = useToday()
   const [name, setName] = useState('')
   const [start, setStart] = useState(todayIso())
   const [chosenFinish, setChosenFinish] = useState<string | null>(null)
@@ -308,7 +311,7 @@ function NewContractRow({
           label="First day"
           placeholder="First day"
           value={start || null}
-          today={todayIso()}
+          today={today}
           full
           onChange={(day) =>
             edit(() => {
@@ -325,7 +328,7 @@ function NewContractRow({
           label="Last day"
           placeholder="Last day"
           value={finish || null}
-          today={todayIso()}
+          today={today}
           full
           isDisabled={(date) => !ISO.test(start) || !contractWeeks(start, date).ok}
           onChange={(day) => edit(() => setChosenFinish(day))}

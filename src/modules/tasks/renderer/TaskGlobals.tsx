@@ -1,3 +1,4 @@
+import { useToday } from '@renderer/state/use-today'
 import { useEffect } from 'react'
 import { useLocation } from 'react-router'
 import { matchesShortcut } from '@shared/shortcuts'
@@ -5,7 +6,7 @@ import { NEW_TASK_SHORTCUT } from '../shared/shortcuts'
 import type { TaskWorkspace } from '../shared/types'
 import { closeNewTask, openNewTask, useNewTaskRequest } from './new-task-store'
 import { NewTaskDialog } from './NewTaskDialog'
-import { todayIso, useTasksWorkspace } from './tasks-paths'
+import { useTasksWorkspace } from './tasks-paths'
 import { useTasksList } from './useTasksList'
 
 /**
@@ -41,13 +42,14 @@ function NewTaskHost({
 }): React.JSX.Element | null {
   const here = useTasksWorkspace()
   const workspace = asked ?? here
+  const today = useToday()
   const { rows } = useTasksList(workspace)
   if (rows === null) return null
   return (
     <NewTaskDialog
       workspace={workspace}
       rows={rows}
-      today={todayIso()}
+      today={today}
       listFilter={list}
       onClose={closeNewTask}
     />

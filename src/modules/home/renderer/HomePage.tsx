@@ -1,3 +1,4 @@
+import { useToday } from '@renderer/state/use-today'
 import { Link } from 'react-router'
 import { Bookmark, Check, GraduationCap, Plane, Users } from 'lucide-react'
 import { Panel } from '@renderer/components/Panel'
@@ -41,9 +42,14 @@ const KIND_ICON = {
 
 /** Today's date, for the page heading ("Thursday 15 October"). */
 export function HomeDate(): React.JSX.Element {
+  const today = useToday()
   return (
     <span className={styles.date}>
-      {new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}
+      {new Date(`${today}T12:00`).toLocaleDateString(undefined, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long'
+      })}
     </span>
   )
 }

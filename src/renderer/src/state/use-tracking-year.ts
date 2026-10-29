@@ -1,10 +1,10 @@
+import { useToday } from '@renderer/state/use-today'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import type { Workspace } from '@shared/settings'
 import type { TrackingYear } from '@shared/tracking/types'
 import { yearToShow } from '@shared/tracking/current-year'
 import { hasContracts } from '@shared/tracking/workspace-weeks'
-import { todayIso } from '@shared/time'
 import { useSettings } from './settings-context'
 import { useModuleState } from './use-module-state'
 import { useOpenContractsRead } from './use-open-contracts'
@@ -46,7 +46,7 @@ export function useTrackingYear(workspace: Workspace): {
 
   const years = offered?.workspace === workspace ? offered.years : null
   // A workspace with contracts has no year but the ones made (none yet: ''); the open ones are read before choosing.
-  const today = todayIso()
+  const today = useToday()
   const current = yearToShow(workspace, today, {
     yearStarts: settings.yearStarts,
     years,

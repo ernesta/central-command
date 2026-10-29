@@ -1,3 +1,4 @@
+import { useToday } from '@renderer/state/use-today'
 import { useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { DatePicker } from '@renderer/components/DatePicker'
@@ -5,7 +6,6 @@ import { FieldError } from '@renderer/components/FieldError'
 import { Input } from '@renderer/components/Input'
 import { Segmented } from '@renderer/components/Segmented'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
-import { todayIso } from '@shared/time'
 import { contractWeeks, dayAfterContract } from '@shared/tracking/workspace-weeks'
 import type { Invoice, TrackingYear } from '@shared/tracking/types'
 import {
@@ -36,7 +36,7 @@ function nextStart(latest: Pick<TrackingYear, 'start' | 'weeks' | 'end'> | null)
 export function ContractFields({ workspace }: { workspace: HoursWorkspace }): React.JSX.Element {
   const { data } = useTrackingYear(workspace)
   const current = data
-  const today = todayIso()
+  const today = useToday()
 
   const [start, setStart] = useState('')
   const [finish, setFinish] = useState('')

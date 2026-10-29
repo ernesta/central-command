@@ -1,7 +1,8 @@
+import { useToday } from '@renderer/state/use-today'
 import { Link } from 'react-router'
 import { isBacklog, isOpen } from '../shared/views'
 import { effectiveDue } from '../shared/views'
-import { tasksBase, todayIso, useTasksWorkspace } from './tasks-paths'
+import { tasksBase, useTasksWorkspace } from './tasks-paths'
 import { useTasksList } from './useTasksList'
 import styles from './TasksCard.module.css'
 
@@ -9,7 +10,7 @@ import styles from './TasksCard.module.css'
 export function TasksCard(): React.JSX.Element {
   const workspace = useTasksWorkspace()
   const { rows } = useTasksList(workspace)
-  const today = todayIso()
+  const today = useToday()
   const open = rows ? rows.filter((r) => isOpen(r) || isBacklog(r)).length : 0
   const overdue = rows
     ? rows.filter((r) => {

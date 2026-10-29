@@ -1,3 +1,4 @@
+import { useToday } from '@renderer/state/use-today'
 import { FolderOpen } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { YearSelect } from '@renderer/components/YearSelect'
@@ -14,14 +15,13 @@ import { useYear } from '@renderer/state/use-year'
 import { nextYearStart, yearLabel } from '@shared/year'
 import { useSettings } from '@renderer/state/settings-context'
 import { planKey } from '../shared/plan'
-import { todayIso } from './training-paths'
 import { useTrainingList } from './useTrainingList'
 import styles from './TrainingPlanPage.module.css'
 
 /** The training plan of one year: a Markdown document with an outline of its headings. */
 export function TrainingPlanPage(): React.JSX.Element {
   const { rows } = useTrainingList()
-  const today = todayIso()
+  const today = useToday()
   const { settings } = useSettings()
   // The next year is always offered, so a plan can be written before its year starts.
   const { year, years, setYear } = useYear(

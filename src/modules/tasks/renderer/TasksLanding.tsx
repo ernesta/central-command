@@ -1,3 +1,4 @@
+import { useToday } from '@renderer/state/use-today'
 import { useState } from 'react'
 import { EmptyState } from '@renderer/components/EmptyState'
 import {
@@ -18,7 +19,7 @@ import { landingSections, listSummaries, type SectionRow } from '../shared/views
 import { AddBar } from './AddBar'
 import { NewListDialog } from './NewListDialog'
 import { TasksTable } from './TasksTable'
-import { tasksAllRoute, todayIso, useTasksWorkspace } from './tasks-paths'
+import { tasksAllRoute, useTasksWorkspace } from './tasks-paths'
 import { useWorkClients } from './useWorkClients'
 import { useTaskTime } from './useTaskTime'
 import { useTasksList } from './useTasksList'
@@ -33,7 +34,7 @@ export function TasksLanding(): React.JSX.Element {
   const { rows } = useTasksList(workspace)
   const { tracked, running } = useTaskTime(workspace)
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set())
-  const today = todayIso()
+  const today = useToday()
   const [newList, setNewList] = useState(false)
 
   const all = rows ?? []

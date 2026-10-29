@@ -1,3 +1,4 @@
+import { useToday } from '@renderer/state/use-today'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { Play, Square, Trash2 } from 'lucide-react'
@@ -11,7 +12,7 @@ import { QUARTER } from '@shared/tracking/rounding'
 import { taskUidOf } from '@modules/tasks/shared/tracked'
 import { hiddenTaskUids } from '@modules/tasks/shared/session-lock'
 import { StatusButton } from '@modules/tasks/renderer/StatusButton'
-import { taskRoute, todayIso } from '@modules/tasks/renderer/tasks-paths'
+import { taskRoute } from '@modules/tasks/renderer/tasks-paths'
 import { TaskSecondLine } from '@modules/tasks/renderer/TaskSecondLine'
 import { studyName, subtaskParent } from '@modules/tasks/shared/study-label'
 import { TaskName } from '@modules/tasks/renderer/TaskName'
@@ -61,6 +62,7 @@ export function TaskList({
   onStop,
   canStart = true
 }: TaskListProps): React.JSX.Element | null {
+  const today = useToday()
   const [editing, setEditing] = useState<string | null>(null)
   const [draft, setDraft] = useState(0)
   const [renaming, setRenaming] = useState<string | null>(null)
@@ -167,7 +169,7 @@ export function TaskList({
                         parent={subtaskParent(own, tasks)}
                         list={detailOfTask(own, tasks)}
                         task={own}
-                        today={todayIso()}
+                        today={today}
                         noLate
                       />
                     </span>

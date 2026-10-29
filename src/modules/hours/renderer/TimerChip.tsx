@@ -1,7 +1,7 @@
+import { useToday } from '@renderer/state/use-today'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { ListChecks, Play } from 'lucide-react'
-import { todayIso } from '@shared/time'
 import { showToast } from '@renderer/components/toast-store'
 import { pushUndoWithToast } from '@renderer/components/undo-store'
 import { TopBarPortal } from '@renderer/shell/top-bar-slot'
@@ -67,6 +67,7 @@ function TimerPopover({
   // All tasks, so the list of a task since done or trashed still shows.
   const { tasks: all } = useTasksList(running.workspace as TaskWorkspace, true)
   const tracking = window.api.tracking
+  const today = useToday()
   const [name, setName] = useState(query)
   const recent = useMemo(
     () =>
@@ -148,7 +149,7 @@ function TimerPopover({
                 parent={head.parent}
                 list={head.line}
                 task={head.task}
-                today={todayIso()}
+                today={today}
               />
             )}
           </div>

@@ -1,3 +1,4 @@
+import { useToday } from '@renderer/state/use-today'
 import { ArrowRight } from 'lucide-react'
 import { YearSelect } from '@renderer/components/YearSelect'
 import { EmptyState } from '@renderer/components/EmptyState'
@@ -35,7 +36,6 @@ import {
   entryRoute,
   seriesRoute,
   clockNow,
-  todayIso,
   trainingListRoute,
   trainingPlanRoute,
   useTrainingWorkspace
@@ -64,7 +64,7 @@ export function TrainingLanding(): React.JSX.Element {
   const { rows, meetings, people } = useTrainingList(workspace)
   const selfStudy = useSelfStudy()
   const { settings } = useSettings()
-  const today = todayIso()
+  const today = useToday()
   const now = clockNow()
   const all = rows ?? []
   const { year, years, setYear } = useYear(

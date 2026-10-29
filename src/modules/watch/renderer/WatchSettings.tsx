@@ -1,3 +1,4 @@
+import { useToday } from '@renderer/state/use-today'
 import { useEffect, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
@@ -6,7 +7,6 @@ import { Tooltip } from '@renderer/components/Tooltip'
 import { KIND_LABEL, WORKSPACE_LABEL, checkedLabel } from '../shared/rows'
 import type { WatchItem } from '../shared/types'
 import { SourceDialog } from './SourceDialog'
-import { todayIso } from './watch-paths'
 import { useWatchSources } from './useWatchSources'
 import styles from './WatchSettings.module.css'
 
@@ -17,7 +17,7 @@ export function WatchSettings(): React.JSX.Element {
   const { sources, reload } = useWatchSources()
   const [dialog, setDialog] = useState<Dialogue>(null)
   const [counts, setCounts] = useState<Map<number, number>>(new Map())
-  const today = todayIso()
+  const today = useToday()
   const shown = sources?.length ?? -1
 
   // The items per source are for "Remove": read again when the sources change.

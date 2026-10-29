@@ -1,6 +1,6 @@
+import { useToday } from '@renderer/state/use-today'
 import { formatHours } from '@shared/tracking/format'
 import { TaskTimeActions } from '../../tasks/renderer/TaskTimeActions'
-import { todayIso } from '../../tasks/renderer/tasks-paths'
 import { useTaskTime } from '../../tasks/renderer/useTaskTime'
 import type { Task } from '../../tasks/shared/types'
 import { trainingTaskUid } from '../shared/training-entries'
@@ -28,6 +28,7 @@ export function TrainingHours({
   /** Life's entries have no session task: only the self-study one. */
   workspace?: 'research' | 'life'
 }): React.JSX.Element | null {
+  const today = useToday()
   const selfStudy = useSelfStudy(workspace)
   const time = useTaskTime(workspace)
   const uid = trainingTaskUid(meta.task)
@@ -50,7 +51,7 @@ export function TrainingHours({
           list={parent?.list ?? task.list}
           workspace={workspace}
           isRunning={study ? time.running.has(study.uid) : false}
-          today={todayIso()}
+          today={today}
           yearFor={time.yearFor}
           clientFor={time.clientFor}
           ensure={ensure}

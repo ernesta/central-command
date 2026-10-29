@@ -1,15 +1,16 @@
+import { useToday } from '@renderer/state/use-today'
 import { useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { DatePicker } from '@renderer/components/DatePicker'
 import { useSettings } from '@renderer/state/settings-context'
-import { formatDate, todayIso } from '@shared/time'
+import { formatDate } from '@shared/time'
 import { defaultNextStart, withNextStart, yearEnd, yearLabel } from '@shared/year'
 import styles from './YearsTable.module.css'
 
 /** The next year's row: its start can be moved until the year begins. */
 function NextYearRow({ start, starts }: { start: string; starts: string[] }): React.JSX.Element {
   const { update } = useSettings()
-  const today = todayIso()
+  const today = useToday()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(start)
   // Only a Monday far enough after the current year, and still ahead, is offered, so nothing chosen is ever refused.
@@ -79,7 +80,7 @@ function NextYearRow({ start, starts }: { start: string; starts: string[] }): Re
 /** Research's years, newest first: each lasts 52 weeks from a Monday. Only the next one, until it begins, has Edit. */
 export function YearsTable(): React.JSX.Element {
   const { settings } = useSettings()
-  const today = todayIso()
+  const today = useToday()
   const starts = settings.yearStarts
   const last = starts[starts.length - 1]
   const upcoming = last !== undefined && last > today ? last : defaultNextStart(starts, today)

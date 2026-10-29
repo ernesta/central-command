@@ -1,3 +1,4 @@
+import { useToday } from '@renderer/state/use-today'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
@@ -27,7 +28,7 @@ import { PRIORITY_LABELS } from './task-labels'
 import { AddBar } from './AddBar'
 import { useWorkClients } from './useWorkClients'
 import { TasksTable } from './TasksTable'
-import { todayIso, useTasksWorkspace } from './tasks-paths'
+import { useTasksWorkspace } from './tasks-paths'
 import { useTaskTime } from './useTaskTime'
 import { useTasksList } from './useTasksList'
 import { useTasksView } from './useTasksView'
@@ -59,7 +60,7 @@ export function TasksPage(): React.JSX.Element {
       : undefined
   )
   const [showAll, setShowAll] = useState(false)
-  const today = todayIso()
+  const today = useToday()
   const all = rows ?? []
   const clients = useWorkClients(workspace)
   const query: TasksQuery = rows === null ? saved : reconcileQuery(saved, all, clients)

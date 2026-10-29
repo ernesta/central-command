@@ -1,3 +1,4 @@
+import { useToday } from '@renderer/state/use-today'
 import { Button } from '@renderer/components/Button'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { FilterRow } from '@renderer/components/FilterRow'
@@ -17,7 +18,6 @@ import {
 } from '../shared/query'
 import { KIND_NOUN } from '../shared/rows'
 import type { ShownKind } from '../shared/types'
-import { todayIso } from './watch-paths'
 import { useWatchItems } from './useWatchItems'
 import { WatchTable } from './WatchTable'
 import styles from './WatchAllPage.module.css'
@@ -32,7 +32,7 @@ export function WatchAllPage({ kind }: { kind: ShownKind }): React.JSX.Element {
   const all = items ?? []
   const query = items === null ? saved : reconcileWatchQuery(saved, all)
   const visible = queryItems(all, query)
-  const today = todayIso()
+  const today = useToday()
 
   let content: React.ReactNode = null
   if (items === null) content = null

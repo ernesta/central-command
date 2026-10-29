@@ -1,3 +1,4 @@
+import { useToday } from '@renderer/state/use-today'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { YearSelect } from '@renderer/components/YearSelect'
@@ -29,7 +30,7 @@ import {
 import { TRAINING_TYPES } from '../shared/types'
 import { NewTrainingButton } from './NewTrainingButton'
 import { TrainingTable } from './TrainingTable'
-import { clockNow, todayIso, useTrainingWorkspace } from './training-paths'
+import { clockNow, useTrainingWorkspace } from './training-paths'
 import { useSelfStudy } from './useSelfStudy'
 import { useTrainingList } from './useTrainingList'
 import { useTrainingView } from './useTrainingView'
@@ -53,7 +54,7 @@ export function TrainingPage(): React.JSX.Element {
   const [exportNotice, setExportNotice] = useState<{ tone: 'info' | 'error'; text: string } | null>(
     null
   )
-  const today = todayIso()
+  const today = useToday()
   const now = clockNow()
   const everything = rows ?? []
   const { year, years, setYear } = useYear(

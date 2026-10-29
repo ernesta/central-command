@@ -1,3 +1,4 @@
+import { useToday } from '@renderer/state/use-today'
 import { Link } from 'react-router'
 import { formatDate } from '@shared/time'
 import { useSettings } from '@renderer/state/settings-context'
@@ -6,7 +7,7 @@ import { currentYear, yearLabel } from '@shared/year'
 import { trainingLabel } from '../shared/training-entries'
 import { compareNewestFirst, isUpcoming, trainingHours } from '../shared/rules'
 import { useSelfStudy } from './useSelfStudy'
-import { clockNow, todayIso, trainingBase, useTrainingWorkspace } from './training-paths'
+import { clockNow, trainingBase, useTrainingWorkspace } from './training-paths'
 import { useTrainingList } from './useTrainingList'
 import styles from './TrainingCard.module.css'
 
@@ -16,7 +17,7 @@ export function TrainingCard(): React.JSX.Element {
   const { rows } = useTrainingList(workspace)
   const selfStudy = useSelfStudy()
   const { settings } = useSettings()
-  const today = todayIso()
+  const today = useToday()
   const now = clockNow()
   const year = currentYear(today, settings.yearStarts)
   const hours = rows
