@@ -66,6 +66,34 @@ function isoDate(value: string | null): string | null {
 
 const MAX_SUMMARY = 1200
 
+/** A title that ends with its day in brackets, numerically: "Documents as Data - Online (09/03/27)". */
+const TITLE_NUMERIC_DATE = /\s*\((\d{1,2})\/(\d{1,2})\/(\d{4}|\d{2})\)\s*$/
+
+/**
+ * Titles ending "(dd/mm/yy)" (NCRM's training feed) have their date read and cut from the title. The order is ambiguous, so it is read
+ * only when the feed shows it: one day above 12 in the first place and none in the second (as for a page's numeric dates).
+ */
+function readTitleDates(items: ParsedItem[]): void {
+  const found = items.map((i) => TITLE_NUMERIC_DATE.exec(i.title))
+  const numbers = found.flatMap((m) => (m ? [[Number(m[1]), Number(m[2])]] : []))
+  if (!numbers.some(([d]) => d > 12) || numbers.some(([, m]) => m > 12)) return
+  items.forEach((item, n) => {
+    const m = found[n]
+    if (!m) return
+    const [day, month] = [Number(m[1]), Number(m[2])]
+    const year = m[3].length === 2 ? 2000 + Number(m[3]) : Number(m[3])
+    const date = new Date(Date.UTC(year, month - 1, day))
+    if (date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return
+    item.title = item.title.replace(TITLE_NUMERIC_DATE, '')
+    item.dates = {
+      eventStart: date.toISOString().slice(0, 10),
+      eventEnd: null,
+      deadline: null,
+      deadlineLabel: null
+    }
+  })
+}
+
 /** The entries of an RSS 2.0 or Atom feed. Throws when the text is not a feed, so a login page is not taken for an empty one. */
 export function parseFeed(xml: string): ParsedItem[] {
   const isRss = /<rss[\s>]|<rdf:RDF[\s>]/i.test(xml)
@@ -97,5 +125,6 @@ export function parseFeed(xml: string): ParsedItem[] {
       )
     })
   }
+  readTitleDates(items)
   return items
 }

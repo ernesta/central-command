@@ -64,6 +64,50 @@ describe('parseFeed', () => {
     ])
   })
 
+  describe('a title ending "(dd/mm/yy)"', () => {
+    const feed = (...titles: string[]): string =>
+      `<rss version="2.0"><channel>${titles
+        .map((t, n) => `<item><title>${t}</title><link>https://example.org/${n}</link></item>`)
+        .join('')}</channel></rss>`
+    const dated = (items: ReturnType<typeof parseFeed>): (string | null)[][] =>
+      items.map((i) => [i.title, i.dates?.eventStart ?? null])
+
+    it('has its date read and cut from the title when the feed shows the order', () => {
+      expect(
+        dated(
+          parseFeed(
+            feed(
+              'Documents as Data - Online (09/03/27)',
+              'Radical Research Ethics - Online (20/04/27)',
+              'Spring course (05/11/2026)'
+            )
+          )
+        )
+      ).toEqual([
+        ['Documents as Data - Online', '2027-03-09'],
+        ['Radical Research Ethics - Online', '2027-04-20'],
+        ['Spring course', '2026-11-05']
+      ])
+    })
+
+    it('is left alone when the order is not shown, or a month would be above 12', () => {
+      expect(dated(parseFeed(feed('Only course (05/11/26)')))).toEqual([
+        ['Only course (05/11/26)', null]
+      ])
+      expect(dated(parseFeed(feed('A (20/04/27)', 'B (09/13/27)')))).toEqual([
+        ['A (20/04/27)', null],
+        ['B (09/13/27)', null]
+      ])
+    })
+
+    it('leaves an impossible day in the title', () => {
+      expect(dated(parseFeed(feed('A (20/04/27)', 'B (31/04/27)')))).toEqual([
+        ['A', '2027-04-20'],
+        ['B (31/04/27)', null]
+      ])
+    })
+  })
+
   it('refuses a page that is not a feed, so a login page is not an empty feed', () => {
     expect(() => parseFeed('<html><body>Please log in</body></html>')).toThrow('Not a feed')
   })
