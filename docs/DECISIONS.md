@@ -4827,3 +4827,11 @@ The user asked for an audit of how "something you can click" looks and behaves, 
 - **Bug:** typing in the timer's task picker highlights "Create “…”" by default when several tasks match (it is the last row), so Arrow Down did nothing.
 - **Rule:** Arrow Down and Up wrap round the list (`TaskPicker.tsx`); Down from the last row goes to the first. Enter's default (the exact task, else the only match, else Create) is unchanged.
 - Built, typecheck, lint and tests pass; not driven in the app.
+
+## Today follows midnight (29 Oct 2026, the user's bug report)
+
+- **Bug:** the app left open overnight kept yesterday's date heading on Home. Home's summary already re-read itself every minute (tasks and late chips were right), but `HomeDate` called `new Date()` while rendering and sat beside `HomePage`, so nothing re-rendered it; about 30 other components computed `todayIso()` at render with no tick behind them (Tasks, Training, Meetings, Watch, Hours rows, the year picker).
+- **Rule:** `useToday()` (`src/renderer/src/state/use-today.ts`) is the calendar date (midnight, not the tracking day's 04:00 that `useNow` uses), shared through one store: checked every 30 s and on window focus and visibility, so a Mac that slept catches up when it wakes. Components that need "today" while rendering call it instead of `todayIso()`; handlers that need it at the moment of a click (`quick-actions`, the New buttons) keep `todayIso()`. `usePersonProfile` reads again when it changes (past and upcoming meetings).
+- **Tests:** `use-today.test.ts` (the midnight tick, the catch-up on focus); mutation-checked (a check that never reports a change fails both).
+- **Not touched:** the weather already re-reads every 30 minutes and on focus; an overnight failure of the weather service (the main process keeps the last reading up to 3 h) was not reproduced.
+- Built, typecheck, lint and tests pass; not driven in the app.
