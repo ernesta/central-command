@@ -139,6 +139,17 @@ describe('displayTitle', () => {
   })
 })
 
+describe('displayTitle with a feed tag', () => {
+  it.each([
+    ['Confs: Munich Inner Speech Workshop', 'Munich Inner Speech Workshop'],
+    ['Calls: Special Issue on L2 Reading (Jrnl)', 'Special Issue on L2 Reading (Jrnl)'],
+    ['Summer Schools: Corpus Linguistics 2027', 'Corpus Linguistics 2027'],
+    ['EPS Meeting: Cardiff University', 'EPS Meeting: Cardiff University']
+  ])('%s → %s', (title, shown) => {
+    expect(displayTitle(title)).toBe(shown)
+  })
+})
+
 describe('titleParts', () => {
   it('moves the date at the end of a title into its own part', () => {
     expect(titleParts('EPS Meeting: Cardiff University. 7th – 9th April 2027')).toEqual({

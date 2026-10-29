@@ -15,12 +15,16 @@ export const SECTION_NOUN: Record<WatchSection, { one: string; many: string }> =
   opportunity: { one: 'Opportunity', many: 'Opportunities' }
 }
 
+/** The tags LINGUIST List puts in front of its titles ("Confs: …", "Calls: …", "Summer Schools: …"); the section already says what they say. */
+const FEED_TAG = /^(?:confs?|calls?|summer schools?):\s*/i
+
 /**
- * An item's title as the page shows it: without the sentence's closing full stop, and without a "Local Organiser: <name>"
- * the page put in front of the event's own name.
+ * An item's title as the page shows it: without a feed's tag ("Confs:"), without the sentence's closing full stop, and without a
+ * "Local Organiser: <name>" the page put in front of the event's own name. The stored title keeps the tag (`sectionOf` reads it).
  */
 export function displayTitle(title: string): string {
   return title
+    .replace(FEED_TAG, '')
     .replace(/^Local Organi[sz]ers?:\s+\p{Lu}\p{L}+(?:\s\p{Lu}\p{L}+)?\s+(?=\p{Lu}{2,})/u, '')
     .replace(/\.\s*$/, '')
     .trim()
