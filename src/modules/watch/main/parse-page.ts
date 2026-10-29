@@ -97,7 +97,7 @@ export function dropPastSections(html: string): string {
 }
 
 /** A link to a section's own home page (`…/home.aspx`, `…/index.html`) that sits above the page being read: the site's menu, not an event. */
-function isSectionHome(url: string, base: string): boolean {
+export function isSectionHome(url: string, base: string): boolean {
   try {
     const u = new URL(url)
     const dir = u.pathname.replace(/[^/]*$/, '')

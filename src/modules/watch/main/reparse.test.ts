@@ -40,6 +40,27 @@ function item(
 }
 
 describe('watch:reparse', () => {
+  it("removes an unsaved link to the site's own home page, and an event beside the listing stays", () => {
+    const s = source('https://ex.ac.uk/school/news/events.aspx')
+    const put = (key: string, url: string, title: string): void => {
+      db.prepare(
+        `INSERT INTO watch_items (source_id, item_key, title, url, event_date, state, first_seen_at)
+         VALUES (?, ?, ?, ?, '2026-10-29', 'new', 'x')`
+      ).run(s, key, title, url)
+    }
+    put('a', 'https://ex.ac.uk/school/news/home.aspx', 'News | Events')
+    put('b', 'https://ex.ac.uk/school/home.aspx', 'Doctoral School')
+    put('c', 'https://ex.ac.uk/school/news/articles/r-course.aspx', 'Good Practice for R Users')
+    const plan = planReparse(db, TODAY)
+    expect(plan[0].items.map((p) => [p.item.title, p.remove])).toEqual(
+      expect.arrayContaining([
+        ['News | Events', "the site's menu"],
+        ['Doctoral School', "the site's menu"],
+        ['Good Practice for R Users', null]
+      ])
+    )
+  })
+
   it('removes unsaved items a page source would not store now, and keeps the ones it would', () => {
     const s = source('https://ex.org/events')
     item(s, 'a', 'FAQs', 'new')

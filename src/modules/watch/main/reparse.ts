@@ -1,7 +1,7 @@
 import type { Database } from 'better-sqlite3'
 import { findDates, isOver } from '../shared/dates'
 import type { WatchItem } from '../shared/types'
-import { CREDITS } from './parse-page'
+import { CREDITS, isSectionHome } from './parse-page'
 import { listItems, listSources } from './repository'
 
 /**
@@ -10,7 +10,8 @@ import { listItems, listSources } from './repository'
  * address, kind) is never changed.
  */
 
-export type RemoveReason = 'a credit or a cookie notice' | 'no coming date' | 'already over'
+export type RemoveReason =
+  'a credit or a cookie notice' | "the site's menu" | 'no coming date' | 'already over'
 
 export interface PlannedItem {
   item: WatchItem
@@ -34,8 +35,9 @@ const over = (item: WatchItem, today: string): boolean => {
   return dates.length > 0 && dates.every((d) => d < today)
 }
 
-function judge(item: WatchItem, today: string): RemoveReason | null {
+function judge(item: WatchItem, sourceUrl: string, today: string): RemoveReason | null {
   if (CREDITS.test(item.title)) return 'a credit or a cookie notice'
+  if (item.url !== sourceUrl && isSectionHome(item.url, sourceUrl)) return "the site's menu"
   const text = `${item.title}\n${item.summary}`
   const stored = item.eventDate !== null || item.deadline !== null
   if (stored ? over(item, today) : isOver(text, today)) return 'already over'
@@ -60,7 +62,7 @@ export function planReparse(db: Database, today: string): SourcePlan[] {
       saved: items.filter((i) => i.state === 'saved').length,
       items: items
         .filter((i) => i.state !== 'saved')
-        .map((item) => ({ item, remove: judge(item, today) }))
+        .map((item) => ({ item, remove: judge(item, source.url, today) }))
     })
   }
   return out
