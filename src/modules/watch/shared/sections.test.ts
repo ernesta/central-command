@@ -38,6 +38,7 @@ const table: [string, string, WatchSection][] = [
   ['Reconstructing Reading 2026 conference', '', 'conference'],
   ['Confs: Symposium on Bilingualism, Lancaster', '', 'conference'],
   ['SSSR Thirty-Fourth Annual Conference', '', 'conference'],
+  ['EPS Meeting: Cardiff University. 7th – 9th April 2027.', '', 'conference'],
   // Events: nothing says conference, training or opportunity, so the default
   ['British Social Attitudes: defence and security', '', 'event'],
   ['Public lecture on literacy', 'An evening talk.', 'event'],

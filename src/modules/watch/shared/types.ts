@@ -34,8 +34,7 @@ const CONFS_PREFIX = /^confs?:/i
 const TRAINING_SOURCE =
   /\b(training|courses?|schools?|workshops?|cpd|doctoral|pgr|learning|idre)\b/i
 /** Words in a title that make an item a conference; without one (or a call for papers) it is an event. */
-const CONFERENCE_WORDS =
-  /\b(conferences?|symposi(?:um|a)|congress|colloqui(?:um|a)|annual meeting)\b/i
+const CONFERENCE_WORDS = /\b(conferences?|symposi(?:um|a)|congress|colloqui(?:um|a)|meeting)\b/i
 const PAPERS_CALL = /\b(call for (?:papers|abstracts|proposals|submissions)|cfp)\b/i
 
 /**
