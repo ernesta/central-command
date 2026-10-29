@@ -207,7 +207,7 @@ export function findDates(text: string, today: string): FoundDates {
 }
 
 /**
- * A title that ends with the date of its event ("EPS Meeting: Cardiff University. 7th – 9th April 2027"): the title without
+ * A title that ends (or starts) with the date of its event ("EPS Meeting: Cardiff University. 7th – 9th April 2027"): the title without
  * it, and the date as a short phrase ("7–9 April 2027"). A title that does not end with a date is returned whole.
  */
 export function splitTrailingDate(title: string): { name: string; when: string } {
@@ -216,6 +216,15 @@ export function splitTrailingDate(title: string): { name: string; when: string }
     for (const m of text.matchAll(re)) {
       if ((m.index ?? 0) + m[0].length !== text.length) continue
       const name = text.slice(0, m.index).replace(/[\s.,;:–-]+$/, '')
+      if (!name) continue
+      const when = m[0].replace(/(\d)(?:st|nd|rd|th)/g, '$1').replace(/\s*[-–]\s*/, '–')
+      return { name, when }
+    }
+  }
+  for (const re of [DAY_FIRST, MONTH_FIRST]) {
+    for (const m of text.matchAll(re)) {
+      if ((m.index ?? 0) !== 0) continue
+      const name = text.slice(m[0].length).replace(/^[\s.,;:–-]+/, '')
       if (!name) continue
       const when = m[0].replace(/(\d)(?:st|nd|rd|th)/g, '$1').replace(/\s*[-–]\s*/, '–')
       return { name, when }

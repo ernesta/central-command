@@ -158,4 +158,12 @@ describe('titleParts', () => {
     })
     expect(titleParts('Summer school').when).toBe('')
   })
+  it('moves a date at the start of a title out of it too', () => {
+    expect(
+      titleParts('18 February 2027 Understanding Research Integrity in the Age of AI with D')
+    ).toEqual({
+      name: 'Understanding Research Integrity in the Age of AI with D',
+      when: '18 February 2027'
+    })
+  })
 })
