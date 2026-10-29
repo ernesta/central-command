@@ -96,3 +96,5 @@ History moved out of `CLAUDE.md` on 29 Oct 2026 to keep it small. Nothing here i
 - **Home: collapsed subtasks (29 Oct 2026, `docs/DECISIONS.md`, "Home: subtasks start collapsed under their task")**: Today and Coming up show a task with a count pill (`HomePage.tsx` `Rows`, `.pill`, right after the title), its subtasks hidden until opened. The Tasks landing's sections do the same (a closed task shows none of its `nested` subtasks; `docs/DECISIONS.md`, "Task tables: subtasks are closed by default everywhere"). Built, tested; not driven in the app. Pushed, installed.
 
 - **Home: no count line on Today (29 Oct 2026, `docs/DECISIONS.md`, "Home: the Today card has no count line")**: the "N events · N due · N overdue" / "Clear" text is removed from the Today card's header; only "+N more" and "See all" remain. Built, tested; not driven in the app. Pushed, installed.
+
+- **Tasks: running marker on a closed task (29 Oct 2026, `docs/DECISIONS.md`, "Task tables: a closed task carries the running marker")**: a closed task whose subtask has the timer running shows the accent stripe (`TasksTable.tsx`); open, the subtask's row has it. Built, tested; not driven in the app.

@@ -4917,3 +4917,7 @@ After Home, the Tasks landing's sections still drew a closed task's due subtasks
 ## Home: the Today card has no count line (29 Oct 2026, the user: "27 due"?? "+N is sufficient")
 
 The Today card's header said "3 events · 27 due · 1 overdue" (or "Clear") before "+N more · See all". The user did not ask for it and "27 due" read as a total, not as today's tasks. The line is gone (`TodayCard` in `HomePage.tsx`): the header holds only "+N more" and "See all", and the rows and "Nothing today." say the rest. Replaces the Today count in "Review of the page". Not driven in the app (lint, typecheck and tests pass).
+
+## Task tables: a closed task carries the running marker (29 Oct 2026, the user: the current task indicator should be on the task when its subtask runs)
+
+With a subtask's timer running and its task closed, no row showed the accent stripe: the timer's uid is the subtask's, and the subtask row is hidden. `TasksTable` now marks a closed task whose subtask is running (`isRunning` in the row's props); open it and the stripe moves to the subtask's own row. Only the table's marker changed: Hours and the task's time still count against the subtask. Not driven in the app (lint, typecheck and tests pass).
