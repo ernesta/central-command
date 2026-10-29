@@ -18,6 +18,7 @@ import {
   updateSource,
   upcoming
 } from './repository'
+import type { WatchSection } from '../shared/types'
 
 let db: Database.Database
 beforeEach(() => {
@@ -404,10 +405,11 @@ describe('items, keywords, upcoming and counts', () => {
       NOW
     )
     await checkSource(db, two, respond(feedOf([{ id: 'c', title: 'Reading 2027' }])), NOW)
-    const titles = (section: 'training' | 'conference' | 'opportunity'): string[] =>
+    const titles = (section: WatchSection): string[] =>
       listItems(db, { section }).map((i) => i.title)
     expect(titles('training')).toEqual(['Masterclass: writing'])
-    expect(titles('conference')).toEqual(['Reading 2027'])
+    expect(titles('event')).toEqual(['Reading 2027'])
+    expect(titles('conference')).toEqual([])
     expect(titles('opportunity')).toEqual(['Early-career fellowship'])
   })
 

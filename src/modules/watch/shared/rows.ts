@@ -11,6 +11,7 @@ export const WORKSPACE_LABEL: Record<WatchWorkspace, string> = {
 export const SECTION_NOUN: Record<WatchSection, { one: string; many: string }> = {
   training: { one: 'Training', many: 'Trainings' },
   conference: { one: 'Conference', many: 'Conferences' },
+  event: { one: 'Event', many: 'Events' },
   opportunity: { one: 'Opportunity', many: 'Opportunities' }
 }
 
@@ -58,6 +59,7 @@ export interface WatchSections {
   saved: WatchItem[]
   training: WatchItem[]
   conference: WatchItem[]
+  event: WatchItem[]
   opportunity: WatchItem[]
 }
 
@@ -88,6 +90,7 @@ export function sectionsOf(items: readonly WatchItem[], today: string): WatchSec
     saved: live.filter((i) => i.state === 'saved').sort(bySoonestDeadline),
     training: unsaved('training'),
     conference: unsaved('conference'),
+    event: unsaved('event'),
     opportunity: unsaved('opportunity')
   }
 }

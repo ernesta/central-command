@@ -23,7 +23,7 @@ import listStyles from './WatchList.module.css'
 
 const SETTINGS_WATCH = { settingsTab: 'watch' }
 
-/** The Watch page: what the places the user watches have announced, saved items first, then trainings, conferences and opportunities. */
+/** The Watch page: what the places the user watches have announced, saved items first, then trainings, conferences, events and opportunities. */
 export function WatchPage(): React.JSX.Element {
   const { items, ...itemActions } = useWatchItems()
   const entries = useManualEntries()
@@ -112,6 +112,7 @@ export function WatchPage(): React.JSX.Element {
           )}
           {section('training', sections.training)}
           {section('conference', sections.conference)}
+          {section('event', sections.event)}
           {section('opportunity', sections.opportunity)}
         </>
       )}

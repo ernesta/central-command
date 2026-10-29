@@ -9,8 +9,11 @@ export const STORED_SOURCE_KIND = 'conference'
 export const WATCH_WORKSPACES = ['research', 'life'] as const
 export type WatchWorkspace = (typeof WATCH_WORKSPACES)[number]
 
-/** The sections of the Watch page. A summer school is a training; a fellowship, grant or special-issue call is an opportunity. */
-export const WATCH_SECTIONS = ['training', 'conference', 'opportunity'] as const
+/**
+ * The sections of the Watch page. A summer school is a training; a fellowship, grant or special-issue call is an opportunity;
+ * a meeting of researchers is a conference; any other occasion (a talk, a seminar, a launch) is an event.
+ */
+export const WATCH_SECTIONS = ['training', 'conference', 'event', 'opportunity'] as const
 export type WatchSection = (typeof WATCH_SECTIONS)[number]
 
 /** Words that make an item an opportunity, in its title. */
@@ -30,6 +33,9 @@ const CONFS_PREFIX = /^confs?:/i
 /** A source named for courses ("WRDTP: Training and events calendar", "Doctoral School: PGR events"): what it lists is training unless an item says otherwise. */
 const TRAINING_SOURCE =
   /\b(training|courses?|schools?|workshops?|cpd|doctoral|pgr|learning|idre)\b/i
+/** Words in a title that make an item a conference; without one (or a call for papers) it is an event. */
+const CONFERENCE_WORDS =
+  /\b(conferences?|symposi(?:um|a)|congress|colloqui(?:um|a)|annual meeting)\b/i
 const PAPERS_CALL = /\b(call for (?:papers|abstracts|proposals|submissions)|cfp)\b/i
 
 /**
@@ -37,8 +43,10 @@ const PAPERS_CALL = /\b(call for (?:papers|abstracts|proposals|submissions)|cfp)
  * 1. Opportunity: an opportunity word in the title (or a "Calls:" title), or a narrower set in the description, or "apply by" with no event word.
  * 2. Training: a course word. The one conflict, decided on the facts: a "workshop" that is a call for papers
  *    ("Workshop at SLE 2027 … call for papers") is a conference that happens to be called a workshop, not a course.
- * 3. Everything else is a conference, except what a training source (named for courses) lists: nothing there is a conference
+ * 3. What a training source (named for courses) lists is training: nothing there is a conference
  *    ("Preparing a Conference Submission" is a course).
+ * 4. Conference: a conference word in the title, a "Confs:" title, or a call for papers.
+ * 5. Everything else, when the words do not say, is an event.
  * A manual entry's section is chosen by the user and never goes through here.
  */
 export function sectionOf(title: string, summary = '', sourceTitle = ''): WatchSection {
@@ -53,7 +61,9 @@ export function sectionOf(title: string, summary = '', sourceTitle = ''): WatchS
   const courseTitle = CONFS_PREFIX.test(title) ? title.replace(/\bworkshops?\b/gi, '') : title
   if (COURSE_WORDS.test(courseTitle) && !PAPERS_CALL.test(text)) return 'training'
   if (TRAINING_SOURCE.test(sourceTitle) && !CONFS_PREFIX.test(title)) return 'training'
-  return 'conference'
+  if (CONFS_PREFIX.test(title) || CONFERENCE_WORDS.test(title) || PAPERS_CALL.test(text))
+    return 'conference'
+  return 'event'
 }
 
 /**

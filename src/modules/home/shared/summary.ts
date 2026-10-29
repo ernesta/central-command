@@ -163,6 +163,7 @@ const TIME_OFF_LABEL: Record<TimeOffEntry['type'], string> = {
 
 const SECTION_LABEL: Record<WatchItem['section'], string> = {
   conference: 'Conference',
+  event: 'Event',
   training: 'Training',
   opportunity: 'Opportunity'
 }

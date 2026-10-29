@@ -110,7 +110,7 @@ describe('reclassifyItems', () => {
     reclassifyItems(db)
     expect(db.prepare('SELECT title, section FROM watch_items ORDER BY id').all()).toEqual([
       { title: 'Sharing Sensitive and Qualitative Data Openly', section: 'training' },
-      { title: 'Reconstructing Reading 2026', section: 'conference' }
+      { title: 'Reconstructing Reading 2026', section: 'event' }
     ])
   })
 })

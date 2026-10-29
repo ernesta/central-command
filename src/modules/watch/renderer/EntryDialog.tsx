@@ -35,7 +35,7 @@ export function EntryDialog({
 }): React.JSX.Element {
   const [url, setUrl] = useState(item?.url ?? '')
   const [title, setTitle] = useState(item?.title ?? '')
-  const [section, setSection] = useState<WatchSection>(item?.section ?? 'conference')
+  const [section, setSection] = useState<WatchSection>(item?.section ?? 'event')
   const [eventDate, setEventDate] = useState<string | null>(item?.eventDate ?? null)
   const [eventEnd, setEventEnd] = useState<string | null>(item?.eventEnd ?? null)
   const [deadline, setDeadline] = useState<string | null>(item?.deadline ?? null)

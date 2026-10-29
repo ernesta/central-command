@@ -4876,3 +4876,12 @@ The user asked for an audit of how "something you can click" looks and behaves, 
 ## Watch items are searched (29 Oct 2026, the user's bug report)
 
 Watch had no `search` in its manifest, so Mod-K never found its items. `searchWatch(workspace)` (`watch/renderer/search.ts`) matches an item's title, summary and source name; hits are saved, then new, then read; the detail is the matching part of the summary, else the source's name; a hit opens the item's section list in its workspace. `watch` is a search source (`SOURCE_IDS`, `in:watch`, last in `SEARCH_GROUP_ORDER`) and takes the date modifiers (`before:`, `after:`, `on:`, `during:`) on the item's date (deadline, else event day). Entries added by hand are searched too. Tested (typecheck, lint, unit tests); not driven in the app.
+
+## Watch: a fourth section, Events, and the default when the words do not say (29 Oct 2026, the user's request)
+
+NatCen's "British Social Attitudes: defence and security" is neither a conference nor a training. `WATCH_SECTIONS` gained `event`
+(Trainings, Conferences, Events, Opportunities; route `events`). `sectionOf` now says Conference only when the title has a conference word
+(conference, symposium, congress, colloquium, annual meeting), a `Confs:` prefix, or the text is a call for papers; every other item that is not
+a training or an opportunity is an Event, and so is a New entry whose link is unread. Items whose titles say nothing (talks on a
+calendar, "Reconstructing Reading 2026") moved from Conferences to Events. Stored sections are recomputed at launch (`reclassifyItems`), so no
+migration and no script. Not driven in the running app yet.

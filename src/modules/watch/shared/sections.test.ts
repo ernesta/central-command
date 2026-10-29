@@ -35,13 +35,17 @@ const table: [string, string, WatchSection][] = [
   ['Confs: Munich Inner Speech Workshop', '', 'conference'],
   ['Confs: Workshop at SLE 2027 – Non-Finite Verb Forms', '', 'conference'],
   ['Confs: Summer School in Corpus Linguistics 2027 and workshop', '', 'training'],
-  ['Reconstructing Reading 2026', '', 'conference'],
+  ['Reconstructing Reading 2026 conference', '', 'conference'],
   ['Confs: Symposium on Bilingualism, Lancaster', '', 'conference'],
   ['SSSR Thirty-Fourth Annual Conference', '', 'conference'],
+  // Events: nothing says conference, training or opportunity, so the default
+  ['British Social Attitudes: defence and security', '', 'event'],
+  ['Public lecture on literacy', 'An evening talk.', 'event'],
+  ['Reconstructing Reading 2026', '', 'event'],
   // A summer school that asks for applications is still an event, not an opportunity
   ['Summer school in statistics. Apply by 1 March 2027', '', 'training'],
   // A conference that mentions travel grants in passing stays a conference
-  ['LREC 2027', 'Travel grants and awards are available for students.', 'conference'],
+  ['LREC 2027 conference', 'Travel grants and awards are available for students.', 'conference'],
   ['Annual conference on reading', 'Scholarships will be announced.', 'conference'],
   // The one conflict: a workshop that is a call for papers is a conference
   ['Workshop at SLE 2027: call for papers', '', 'conference'],
@@ -69,7 +73,7 @@ describe('sectionOf with a training source', () => {
       'training'
     ],
     ['Research Grants 2027', 'WRDTP: Training and events calendar', 'opportunity'],
-    ['Reconstructing Reading 2026', 'National Literacy Trust', 'conference'],
+    ['Reconstructing Reading 2026 conference', 'National Literacy Trust', 'conference'],
     ['Confs: Munich Inner Speech Workshop', 'LINGUIST List: Summer schools', 'conference']
   ])('%s from %s → %s', (title, source, expected) => {
     expect(sectionOf(title, '', source)).toBe(expected)

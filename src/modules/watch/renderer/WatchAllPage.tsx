@@ -23,7 +23,7 @@ import { useWatchItems } from './useWatchItems'
 import { WatchTable } from './WatchTable'
 import styles from './WatchAllPage.module.css'
 
-/** Every item of one section (See all trainings, conferences, opportunities): search, source and state filters, grouped Saved, New, Read. */
+/** Every item of one section (See all trainings, conferences, events, opportunities): search, source and state filters, grouped Saved, New, Read. */
 export function WatchAllPage({ section }: { section: WatchSection }): React.JSX.Element {
   const noun = SECTION_NOUN[section].many.toLowerCase()
   const { items, ...itemActions } = useWatchItems({ section, limit: 1000 })

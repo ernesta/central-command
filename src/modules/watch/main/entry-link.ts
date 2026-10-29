@@ -32,7 +32,7 @@ const EMPTY = (url: string, notice: string | null): EntryLinkRead => ({
   url,
   title: '',
   summary: '',
-  section: 'conference',
+  section: 'event',
   eventDate: null,
   eventEnd: null,
   deadline: null,

@@ -17,10 +17,11 @@ export function useWatchWorkspace(): WatchWorkspace {
 const LIST_PATH: Record<WatchSection, string> = {
   training: 'trainings',
   conference: 'conferences',
+  event: 'events',
   opportunity: 'opportunities'
 }
 
-/** The list of one section's items (See all trainings, conferences, opportunities). */
+/** The list of one section's items (See all trainings, conferences, events, opportunities). */
 export const watchListRoute = (
   section: WatchSection,
   workspace: WatchWorkspace = 'research'

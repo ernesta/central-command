@@ -22,6 +22,7 @@ export function createWatchModule(workspace: WatchWorkspace): LiveModuleManifest
       { path: '', element: createElement(WatchPage) },
       { path: 'trainings', element: createElement(WatchAllPage, { section: 'training' }) },
       { path: 'conferences', element: createElement(WatchAllPage, { section: 'conference' }) },
+      { path: 'events', element: createElement(WatchAllPage, { section: 'event' }) },
       {
         path: 'opportunities',
         element: createElement(WatchAllPage, { section: 'opportunity' })
