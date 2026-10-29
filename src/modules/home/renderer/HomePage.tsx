@@ -297,22 +297,11 @@ function TodayCard({
   const { todayEvents } = view
   const empty = todayEvents.length + overdue.length + today.length === 0
   const { shown, more } = capRows(todayRows(view), view.tasks.hidden, SHOWN_ROWS, isKidRow)
-  const count = empty
-    ? 'Clear'
-    : [
-        todayEvents.length > 0 &&
-          `${todayEvents.length} ${todayEvents.length === 1 ? 'event' : 'events'}`,
-        today.length > 0 && `${today.length} due`,
-        overdue.length > 0 && `${overdue.length} overdue`
-      ]
-        .filter(Boolean)
-        .join(' · ')
   return (
     <Panel
       label="Today"
       actions={
         <span className={styles.actions}>
-          {!cut && <span className={styles.small}>{count}</span>}
           {(cut || more > 0 || overdue.length + today.length > 0) && (
             <span className={styles.seeAll}>
               {more > 0 && <MoreCount more={more} />}
