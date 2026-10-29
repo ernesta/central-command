@@ -388,6 +388,15 @@ describe('items, keywords, upcoming and counts', () => {
     expect(listItems(db, { state: 'new' })).toEqual([])
   })
 
+  it('corrects the title of an item found again', async () => {
+    const s = add({ url: 'https://ex.org/titles' })
+    const feedOf = (title: string): string =>
+      feed([{ id: 'a', title, date: 'Wed, 14 Oct 2026 10:00:00 GMT' }])
+    await checkSource(db, s, respond(feedOf('Open Day More details')), NOW)
+    await checkSource(db, s, respond(feedOf('Open Day')), NOW)
+    expect(listItems(db, {}).map((i) => i.title)).toEqual(['Open Day'])
+  })
+
   it('lists by section: an item is sorted by its own words, whatever its source', async () => {
     const one = add({ url: 'https://ex.org/one' })
     const two = add({ url: 'https://ex.org/two' })

@@ -80,9 +80,9 @@ export async function checkSource(
           score, matched, state, first_seen_at, section)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
-    // An item found again has its dates read again (an event that moved, a range that was once only a day); its description is filled in if it had none.
+    // An item found again has its title and dates read again (a title once read with its card's date and button text, an event that moved, a range that was once only a day); its description is filled in if it had none.
     const update = db.prepare(
-      `UPDATE watch_items SET summary = CASE WHEN summary = '' THEN ? ELSE summary END,
+      `UPDATE watch_items SET title = ?, summary = CASE WHEN summary = '' THEN ? ELSE summary END,
          event_date = ?, event_end = ?, deadline = ?, deadline_label = ?, section = ?
        WHERE source_id = ? AND item_key = ?`
     )
@@ -143,6 +143,7 @@ export async function checkSource(
           )
         } else {
           update.run(
+            item.title,
             item.summary,
             dated.eventStart,
             dated.eventEnd,
