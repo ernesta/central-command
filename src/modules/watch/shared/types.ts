@@ -23,7 +23,7 @@ const EVENT_WORDS =
   /\b(conferences?|confs?|symposi(?:um|a)|congress|colloqui(?:um|a)|meeting|workshops?|schools?|webinars?|courses?|training|masterclass|cpd|briefing|summit|seminar)\b/i
 /** Words that make an item a course. */
 const COURSE_WORDS =
-  /\b(cpd|masterclass|webinars?|courses?|training|workshops?|briefing|summer schools?)\b/i
+  /\b(cpd|masterclass|webinars?|courses?|training|workshops?|briefing|summer schools?|introduction to|getting started|drop-in|surgery|clinic|tutorial|bootcamp|learn)\b/i
 /** LINGUIST List's feeds tag their titles: "Calls:" are calls to journals (some carry no other word), "Confs:" are conferences. */
 const CALLS_PREFIX = /^calls?:/i
 const CONFS_PREFIX = /^confs?:/i
@@ -39,7 +39,10 @@ const PAPERS_CALL = /\b(call for (?:papers|abstracts|proposals|submissions)|cfp)
  */
 export function sectionOf(title: string, summary = ''): WatchSection {
   const text = `${title}\n${summary}`
-  if (OPPORTUNITY_TITLE.test(title) || CALLS_PREFIX.test(title)) return 'opportunity'
+  // "Funded training" is a funded course, not funding.
+  const opportunity = OPPORTUNITY_TITLE.exec(title)
+  const fundedCourse = opportunity?.[1]?.toLowerCase() === 'funded' && COURSE_WORDS.test(title)
+  if ((opportunity && !fundedCourse) || CALLS_PREFIX.test(title)) return 'opportunity'
   if (OPPORTUNITY_SUMMARY.test(summary) && !EVENT_WORDS.test(title)) return 'opportunity'
   if (/\bapply by\b/i.test(text) && !EVENT_WORDS.test(text)) return 'opportunity'
   // In a conference listing's own title ("Confs: Munich Inner Speech Workshop") a workshop is a meeting of researchers, not a course.

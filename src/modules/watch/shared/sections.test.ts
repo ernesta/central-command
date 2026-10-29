@@ -54,6 +54,17 @@ describe('sectionOf', () => {
     expect(sectionOf(title, summary)).toBe(expected)
   })
 
+  it.each([
+    ['ADR Funded Training: Good Practice for R Users', 'training'],
+    ['Introduction to Survival Analysis in R', 'training'],
+    ['Getting Started with the British Library for Postgraduate Researchers', 'training'],
+    ['Survey data drop-in', 'training'],
+    ['Learn prompt engineering using LLMs', 'training'],
+    ['Funded PhD studentship in linguistics', 'opportunity']
+  ] as const)('%s → %s', (title, expected) => {
+    expect(sectionOf(title)).toBe(expected)
+  })
+
   it('sorts a title with no summary', () => {
     expect(sectionOf('Fellowship')).toBe('opportunity')
   })
