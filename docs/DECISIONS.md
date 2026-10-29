@@ -4900,3 +4900,7 @@ Mark read, Save and opening a new item changed an item's state and registered no
 **Stage 3, a search hit lands on the item.** `watchListRoute(section, workspace, itemId)` adds `?item=<id>`; `WatchAllPage` reads it (`itemFromSearch`, so Life works as Research does), the filters stay All and unremembered, `openedWith` opens a group whose cut part holds the item, and `WatchTable` scrolls the row to the middle and lights it with a 2.4 s fade of `--hover-tint` (with reduced motion: lit, then off, no fade). Mutation-checked: not opening the group fails a test.
 
 Driven (production build and dev mode, light and dark, screenshots looked at): a landing row stayed after opening and Cmd-Z restored it; in All a New row stayed in New dimmed, Cmd-Z undimmed it, and on a fresh visit it was first in Read; a hit for a row in the cut part of Read opened the group, centred the row and the light faded. Not driven: Life's page by hand (the route is the same code and tested), reduced motion.
+
+## Landing header: a link styled as a button is as tall as a button (29 Oct 2026, the user's bug report)
+
+On Watch, "Sources" (`AllLink`, a router link) was taller than "New entry" and "Check now" (`Button`): a link takes the page's line height, a button has `line-height: 1.2` and `inline-flex`. `.allLink` (`Landing.module.css`) now sets `display: inline-flex`, `align-items: center` and `line-height: 1.2`, so the two match. Looked at in the installed app only.

@@ -25,6 +25,8 @@
   gap: 12px;
 }
 .allLink {
+  display: inline-flex;
+  align-items: center;
   padding: 8px 16px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-control);
@@ -32,6 +34,7 @@
   color: var(--ink);
   font-size: var(--text-14);
   font-weight: 500;
+  line-height: 1.2;
   text-decoration: none;
 }
 .allLink:hover {
