@@ -4885,3 +4885,7 @@ NatCen's "British Social Attitudes: defence and security" is neither a conferenc
 a training or an opportunity is an Event, and so is a New entry whose link is unread. researchED in a title and a description that says it "is a … conference" also make a conference. Items whose titles say nothing (talks on a
 calendar, "Reconstructing Reading 2026") moved from Conferences to Events. Stored sections are recomputed at launch (`reclassifyItems`), so no
 migration and no script. Not driven in the running app yet.
+
+## Watch: Mark read, Save and the first look are undoable (29 Oct 2026, the user's bug report)
+
+Mark read, Save and opening a new item changed an item's state and registered nothing with the undo stack, so Cmd-Z did nothing. They now go through `setStateUndoable` (`src/modules/watch/renderer/item-state-undo.ts`): it remembers the state the item had and Cmd-Z writes that back through the same `setState` call. Per "One rule for undo" a value changed in place is Cmd-Z only, with no toast Undo (that is for deleting a record). Opening a new item now writes `seen` through `setState` (so it can be undone) instead of the `items.open` call; opening a read or saved item still calls `items.open`, which changes nothing. `item-state-undo.test.ts` covers the four state pairs, no entry for an unchanged state and no entry for the undo itself (mutation check: an undo that does nothing fails 4 tests). Driven in a scratch library (production build): Mark read and Save, each undone with Cmd-Z.
