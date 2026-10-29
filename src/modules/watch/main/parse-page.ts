@@ -124,6 +124,21 @@ export function isSearchLink(url: string): boolean {
   }
 }
 
+/** A link to a feed of the site's events (`/feed/?post_type=event`, `events.rss`, `.ics`): a "Follow our events" link, which holds events but is none. */
+export function isFeedLink(url: string): boolean {
+  try {
+    const u = new URL(url)
+    return (
+      /(?:^|\/)(?:feed|rss|atom)\/?$/i.test(u.pathname) ||
+      /\.(?:rss|atom|xml|ics)$/i.test(u.pathname) ||
+      u.searchParams.has('feed') ||
+      ['rss', 'atom', 'ical', 'ics'].includes((u.searchParams.get('format') ?? '').toLowerCase())
+    )
+  } catch {
+    return false
+  }
+}
+
 const host = (url: string): string => new URL(url).hostname.replace(/^www\./, '')
 
 /** Links worth watching and the page's text. Navigation and footer are left out, since they are the same on every visit and would only add noise. */
@@ -142,7 +157,7 @@ export function parsePage(html: string, baseUrl: string): ParsedPage {
       const href = /href\s*=\s*["']([^"']+)["']/i.exec(m[1])
       if (!href) continue
       const url = resolve(href[1], baseUrl)
-      if (!url || isSectionHome(url, baseUrl) || isSearchLink(url)) continue
+      if (!url || isSectionHome(url, baseUrl) || isSearchLink(url) || isFeedLink(url)) continue
       urls.add(url)
       if (seen.has(url)) continue
       const text = toText(m[2])

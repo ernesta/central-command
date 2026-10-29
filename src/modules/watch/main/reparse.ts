@@ -1,7 +1,7 @@
 import type { Database } from 'better-sqlite3'
 import { findDates, isOver } from '../shared/dates'
 import type { WatchItem } from '../shared/types'
-import { CREDITS, isSearchLink, isSectionHome } from './parse-page'
+import { CREDITS, isFeedLink, isSearchLink, isSectionHome } from './parse-page'
 import { listItems, listSources } from './repository'
 
 /**
@@ -14,6 +14,7 @@ export type RemoveReason =
   | 'a credit or a cookie notice'
   | "the site's menu"
   | 'a search link'
+  | 'a feed link'
   | 'no coming date'
   | 'already over'
 
@@ -43,6 +44,7 @@ function judge(item: WatchItem, sourceUrl: string, today: string): RemoveReason 
   if (CREDITS.test(item.title)) return 'a credit or a cookie notice'
   if (item.url !== sourceUrl && isSectionHome(item.url, sourceUrl)) return "the site's menu"
   if (isSearchLink(item.url)) return 'a search link'
+  if (isFeedLink(item.url)) return 'a feed link'
   const text = `${item.title}\n${item.summary}`
   const stored = item.eventDate !== null || item.deadline !== null
   if (stored ? over(item, today) : isOver(text, today)) return 'already over'

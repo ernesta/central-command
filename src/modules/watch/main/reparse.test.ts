@@ -80,6 +80,19 @@ describe('watch:reparse', () => {
     )
   })
 
+  it('removes an unsaved link to a feed of the site\'s events ("Follow our events")', () => {
+    const s = source('https://ex.ac.uk/events')
+    item(s, 'a', 'Follow our events', 'new', { event: '2026-11-05' })
+    db.prepare('UPDATE watch_items SET url = ? WHERE item_key = ?').run(
+      'https://ex.ac.uk/feed/?post_type=event',
+      'a'
+    )
+    const plan = planReparse(db, TODAY)
+    expect(plan[0].items.map((p) => [p.item.title, p.remove])).toEqual(
+      expect.arrayContaining([['Follow our events', 'a feed link']])
+    )
+  })
+
   it('removes unsaved items a page source would not store now, and keeps the ones it would', () => {
     const s = source('https://ex.org/events')
     item(s, 'a', 'FAQs', 'new')

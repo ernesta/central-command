@@ -261,3 +261,18 @@ describe('a card with tag links to the site search', () => {
     expect(links[0].summary).toContain('5 November 2026')
   })
 })
+
+describe("a link to a feed of the site's events", () => {
+  const html = `<main><ul>
+    <li><a href="/events/code-anxiety-club-2026-11-03/"><span>Code anxiety club</span></a><time>3 November 2026</time></li>
+    <li><a href="/feed/?post_type=event">Follow our events 3 November 2026</a></li>
+    <li><a href="/events/calendar.ics">Add the calendar to yours 3 November 2026</a></li>
+  </ul></main>`
+
+  it('keeps the event and drops the feed links', () => {
+    const { links } = parsePage(html, 'https://ukdataservice.ac.uk/events/')
+    expect(links.map((l) => l.url)).toEqual([
+      'https://ukdataservice.ac.uk/events/code-anxiety-club-2026-11-03/'
+    ])
+  })
+})
