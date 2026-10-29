@@ -1,6 +1,6 @@
 # Watch: events, opportunities and entries by hand
 
-Agreed with the user, 29 Oct 2026. One run, no stops between the parts (the user's instruction for this plan overrides
+Agreed with the user, 29 Oct 2026. **Status: built, tested, driven in a scratch library and pushed 29 Oct 2026 (`docs/DECISIONS.md`, "Watch: no source types, three sections, entries by hand"); the real library step is recorded there and in CLAUDE.md.** One run, no stops between the parts (the user's instruction for this plan overrides
 the "stop at every stage" rule).
 
 ## What changes
