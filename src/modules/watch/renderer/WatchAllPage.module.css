@@ -64,3 +64,31 @@
     padding: 24px 16px 32px;
   }
 }
+
+/* The row a search hit opened the list on: lit, then fading out. With reduced motion it is lit, then plainly off. */
+.found > td {
+  animation: found 2.4s ease-out;
+}
+@keyframes found {
+  from {
+    background: var(--hover-tint);
+  }
+  to {
+    background: transparent;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .found > td {
+    animation-name: found-still;
+    animation-timing-function: steps(1, end);
+  }
+  @keyframes found-still {
+    from,
+    80% {
+      background: var(--hover-tint);
+    }
+    to {
+      background: transparent;
+    }
+  }
+}

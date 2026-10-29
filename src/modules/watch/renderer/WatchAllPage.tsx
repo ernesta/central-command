@@ -5,6 +5,7 @@ import { FilterRow } from '@renderer/components/FilterRow'
 import { SearchInput } from '@renderer/components/SearchInput'
 import { Select } from '@renderer/components/Select'
 import { useState } from 'react'
+import { useLocation } from 'react-router'
 import {
   DEFAULT_WATCH_QUERY,
   groupItems,
@@ -20,13 +21,16 @@ import { SECTION_NOUN } from '../shared/rows'
 import type { WatchSection } from '../shared/types'
 import { useManualEntries } from './useManualEntries'
 import { useWatchItems } from './useWatchItems'
+import { itemFromSearch } from './watch-paths'
 import { WatchTable } from './WatchTable'
 import styles from './WatchAllPage.module.css'
 
 /** Every item of one section (See all trainings, conferences, events, opportunities): search, source and state filters, grouped Saved, New, Read. */
 export function WatchAllPage({ section }: { section: WatchSection }): React.JSX.Element {
   const noun = SECTION_NOUN[section].many.toLowerCase()
-  const { items, ...itemActions } = useWatchItems({ section, limit: 1000 })
+  const { items, held, ...itemActions } = useWatchItems({ section, limit: 1000 })
+  // A search hit opens the list on its item: found in the full list, scrolled to and lit.
+  const focusId = itemFromSearch(useLocation().search)
   const entries = useManualEntries()
   const actions = { ...itemActions, ...entries.actions }
   // The filters are not remembered: every visit starts on All sources, All.
@@ -34,7 +38,7 @@ export function WatchAllPage({ section }: { section: WatchSection }): React.JSX.
   const setQuery = (changes: Partial<WatchQuery>): void => setSaved((q) => ({ ...q, ...changes }))
   const all = items ?? []
   const query = items === null ? saved : reconcileWatchQuery(saved, all)
-  const visible = queryItems(all, query)
+  const visible = queryItems(all, query, held)
   const today = useToday()
 
   let content: React.ReactNode = null
@@ -57,7 +61,8 @@ export function WatchAllPage({ section }: { section: WatchSection }): React.JSX.
   else
     content = (
       <WatchTable
-        groups={groupItems(visible, query)}
+        groups={groupItems(visible, query, held)}
+        focusId={focusId}
         today={today}
         label={SECTION_NOUN[section].many}
         actions={actions}

@@ -25,7 +25,7 @@ const SETTINGS_WATCH = { settingsTab: 'watch' }
 
 /** The Watch page: what the places the user watches have announced, saved items first, then trainings, conferences, events and opportunities. */
 export function WatchPage(): React.JSX.Element {
-  const { items, ...itemActions } = useWatchItems()
+  const { items, held, ...itemActions } = useWatchItems()
   const entries = useManualEntries()
   const actions = { ...itemActions, ...entries.actions }
   const workspace = useWatchWorkspace()
@@ -33,7 +33,7 @@ export function WatchPage(): React.JSX.Element {
   const [checking, setChecking] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const today = useToday()
-  const sections = sectionsOf(items ?? [], today)
+  const sections = sectionsOf(items ?? [], today, held)
 
   const checkNow = async (): Promise<void> => {
     setChecking(true)

@@ -168,21 +168,24 @@ function register({ db }: MainContext): () => void {
     broadcast(getCounts(db))
   })
   ipcMain.handle(WATCH_IPC.itemsList, (_e, query: unknown) => listItems(db, asQuery(query)))
-  ipcMain.handle(WATCH_IPC.itemsSetState, (_e, id: unknown, state: unknown) => {
+  ipcMain.handle(WATCH_IPC.itemsSetState, (_e, id: unknown, state: unknown, readAt: unknown) => {
     if (typeof state !== 'string' || !(WATCH_STATES as readonly string[]).includes(state))
       throw new Error('Invalid state')
-    setItemState(db, asId(id), state as WatchState)
+    if (readAt !== undefined && readAt !== null && typeof readAt !== 'string')
+      throw new Error('Invalid date')
+    setItemState(db, asId(id), state as WatchState, { readAt, now: now() })
     broadcast(getCounts(db))
   })
   ipcMain.handle(WATCH_IPC.itemsOpen, (_e, id: unknown) => {
-    openItem(db, asId(id))
+    openItem(db, asId(id), now())
     broadcast(getCounts(db))
   })
   ipcMain.handle(WATCH_IPC.itemsMarkAllSeen, (_e, sourceId: unknown, workspace: unknown) => {
     const changed = markAllSeen(
       db,
       sourceId === undefined ? undefined : asId(sourceId),
-      asWorkspace(workspace)
+      asWorkspace(workspace),
+      now()
     )
     broadcast(getCounts(db))
     return changed

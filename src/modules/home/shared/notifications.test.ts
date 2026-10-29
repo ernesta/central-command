@@ -83,7 +83,8 @@ const watched = (id: number, firstSeenAt = '2026-10-14T00:00:00.000Z'): WatchIte
   score: 3,
   matched: ['literacy'],
   state: 'new',
-  firstSeenAt
+  firstSeenAt,
+  readAt: null
 })
 
 describe('planNotifications', () => {

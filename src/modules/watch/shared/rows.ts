@@ -1,6 +1,7 @@
 import { daysBetween } from '@shared/year'
 import { dayLabel, splitTrailingDate, whenLabel } from './dates'
 import { formatDate, formatShortDate } from '@shared/time'
+import { listedState, type Held } from './query'
 import type { WatchItem, WatchSection, WatchSource, WatchWorkspace } from './types'
 
 export const WORKSPACE_LABEL: Record<WatchWorkspace, string> = {
@@ -84,12 +85,12 @@ export function isPastEntry(item: WatchItem, today: string): boolean {
 
 /**
  * The page's sections: what is saved (of any section) first, then each section's NEW items, newest first (a read item is only in
- * "See all"). An entry by hand whose dates are all over is left out.
+ * "See all"). A row the user opened this visit stays (`held`). An entry by hand whose dates are all over is left out.
  */
-export function sectionsOf(items: readonly WatchItem[], today: string): WatchSections {
+export function sectionsOf(items: readonly WatchItem[], today: string, held?: Held): WatchSections {
   const live = items.filter((i) => !isPastEntry(i, today))
   const unsaved = (section: WatchSection): WatchItem[] =>
-    live.filter((i) => i.state === 'new' && i.section === section)
+    live.filter((i) => listedState(i, held) === 'new' && i.section === section)
   return {
     saved: live.filter((i) => i.state === 'saved').sort(bySoonestDeadline),
     training: unsaved('training'),

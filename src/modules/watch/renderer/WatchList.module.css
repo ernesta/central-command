@@ -54,3 +54,12 @@
   color: var(--text-muted);
   font-size: var(--text-14);
 }
+
+/* A row opened this visit stays where it was, dimmed, until the page is left. */
+.held .title,
+.held .note {
+  color: var(--text-muted);
+}
+.held .title {
+  font-weight: 400;
+}

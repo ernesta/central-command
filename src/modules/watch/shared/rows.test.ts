@@ -31,6 +31,7 @@ const item = (over: Partial<WatchItem>): WatchItem => ({
   matched: [],
   state: 'new',
   firstSeenAt: '2026-10-26T08:00:00.000Z',
+  readAt: null,
   ...over
 })
 
@@ -82,6 +83,12 @@ describe('sectionsOf', () => {
     expect(s.training.map((i) => i.id)).toEqual([3])
     expect(s.conference.map((i) => i.id)).toEqual([])
     expect(s.opportunity.map((i) => i.id)).toEqual([6])
+  })
+
+  it('keeps a row the user opened this visit (held) in its section, and drops it once let go', () => {
+    const list = [item({ id: 3, section: 'training', state: 'seen' })]
+    expect(sectionsOf(list, '2026-10-29', new Set([3])).training.map((i) => i.id)).toEqual([3])
+    expect(sectionsOf(list, '2026-10-29').training).toEqual([])
   })
 
   it('leaves an entry by hand whose dates have all passed off the page, and keeps one with no date or a date to come', () => {

@@ -38,7 +38,7 @@ export function watchHits(
         key: String(item.id),
         title: item.title,
         detail: (!inTitle && snippet(item.summary, terms)) || item.sourceTitle,
-        route: watchListRoute(item.section, item.workspace)
+        route: watchListRoute(item.section, item.workspace, item.id)
       }
     })
 }

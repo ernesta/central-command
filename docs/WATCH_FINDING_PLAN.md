@@ -1,6 +1,6 @@
 # Watch: finding an item again (29 Oct 2026)
 
-**Status: PLANNED, agreed with the user (29 Oct 2026); nothing built.** Three stages; stop and ask at the end of each.
+**Status: ALL THREE STAGES BUILT (29 Oct 2026), in one run at the user's request** (`docs/DECISIONS.md`, "Watch: finding an item again"). Three stages; ~~stop and ask at the end of each~~ the user asked for all in one go.
 
 ## The user's report
 

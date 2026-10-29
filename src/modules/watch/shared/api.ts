@@ -25,7 +25,8 @@ export interface WatchApi {
   }
   items: {
     list(query?: WatchItemsQuery): Promise<WatchItem[]>
-    setState(id: number, state: WatchState): Promise<void>
+    /** `readAt` is for an undo: the time the item was read before (null for none); left out, Read is stamped now. */
+    setState(id: number, state: WatchState, readAt?: string | null): Promise<void>
     /** The first look at an item (the page opens it in the browser): a new one becomes seen. */
     open(id: number): Promise<void>
     /** New items become seen (all, one source's, or one workspace's). Returns how many changed. */

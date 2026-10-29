@@ -48,6 +48,7 @@ const watchItem = (over: Partial<WatchItem>): WatchItem => ({
   matched: ['literacy'],
   state: 'new',
   firstSeenAt: '2026-10-14T00:00:00.000Z',
+  readAt: null,
   ...over
 })
 

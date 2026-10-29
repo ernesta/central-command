@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { CutText } from '@renderer/components/CutText'
 import { ExternalIcon } from '@renderer/components/ExternalIcon'
 import { GroupRow } from '@renderer/components/GroupRow'
@@ -6,7 +6,7 @@ import { Tooltip } from '@renderer/components/Tooltip'
 import { useRowNavigation } from '@renderer/components/useRowNavigation'
 import shared from '@renderer/components/ListTable.module.css'
 import { deadlineFor, foundLabel, titleParts, whenFor } from '../shared/rows'
-import { cutGroups, type WatchGroup } from '../shared/query'
+import { cutGroups, openedWith, type WatchGroup } from '../shared/query'
 import { ItemActions } from './ItemActions'
 import type { EntryActions } from './useManualEntries'
 import type { WatchItems } from './useWatchItems'
@@ -25,15 +25,23 @@ export function WatchTable({
   groups: all,
   today,
   label,
+  focusId = null,
   actions
 }: {
   groups: readonly WatchGroup[]
   today: string
   label: string
+  /** The item a search hit asked for: its group is opened, it is scrolled to and lit for a moment. */
+  focusId?: number | null
   actions: Pick<WatchItems, 'toggleSaved' | 'toggleRead' | 'open'> & Partial<EntryActions>
 }): React.JSX.Element {
   const [opened, setOpened] = useState<ReadonlySet<WatchGroup['key']>>(new Set())
-  const groups = cutGroups(all, opened)
+  const groups = cutGroups(all, openedWith(all, opened, focusId))
+  const found = all.some((g) => g.rows.some((r) => r.id === focusId))
+  useEffect(() => {
+    if (focusId === null || !found) return
+    document.querySelector(`tr[data-watch-item="${focusId}"]`)?.scrollIntoView({ block: 'center' })
+  }, [focusId, found])
   const ordered = groups.flatMap((g) => g.rows)
   const { tableProps, rowProps } = useRowNavigation(ordered.length, (index) =>
     actions.open(ordered[index])
@@ -69,7 +77,8 @@ export function WatchTable({
                 {group.rows.map((item, offset) => (
                   <tr
                     key={item.id}
-                    className={shared.row}
+                    data-watch-item={item.id}
+                    className={item.id === focusId ? `${shared.row} ${styles.found}` : shared.row}
                     {...rowProps(first + offset)}
                     onClick={() => actions.open(item)}
                   >

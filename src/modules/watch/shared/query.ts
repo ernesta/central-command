@@ -39,13 +39,52 @@ export function reconcileWatchQuery(query: WatchQuery, items: readonly WatchItem
     : { ...query, source: 'all' }
 }
 
+/**
+ * Items the page is holding in place: ones the user opened this visit. They are Read in the database, but until the page is left they
+ * keep the place and the state they had (a New row stays in New, in its order) and show dimmed. A view-state, never stored.
+ */
+export type Held = ReadonlySet<number>
+
+/** The state a row is listed under: a held row still counts as New. */
+export const listedState = (item: WatchItem, held?: Held): WatchItem['state'] =>
+  held?.has(item.id) && item.state === 'seen' ? 'new' : item.state
+
+/** A row the page holds: Read in the database, listed as New, drawn dimmed. */
+export const isHeld = (item: WatchItem, held?: Held): boolean =>
+  listedState(item, held) !== item.state
+
+const day = (s: string): string => s.slice(0, 10)
+const later = (a: string, b: string): number => (a === b ? 0 : a < b ? 1 : -1)
+
+/**
+ * The order the repository lists in (New first; Read, most recently read first with those that have no time last; then the day
+ * found, the day published, newest id), with a held row sorted as the New row it was.
+ */
+export function sortItems(items: readonly WatchItem[], held?: Held): WatchItem[] {
+  const isNew = (i: WatchItem): number => (listedState(i, held) === 'new' ? 1 : 0)
+  const readKey = (i: WatchItem): string =>
+    listedState(i, held) === 'seen' ? (i.readAt ?? '') : ''
+  return [...items].sort(
+    (a, b) =>
+      isNew(b) - isNew(a) ||
+      later(readKey(a), readKey(b)) ||
+      later(day(a.firstSeenAt), day(b.firstSeenAt)) ||
+      later(a.publishedAt ?? a.firstSeenAt, b.publishedAt ?? b.firstSeenAt) ||
+      b.id - a.id
+  )
+}
+
 const normal = (s: string): string => s.toLowerCase()
 
 /** The items a query keeps, in the order given (the repository's: new first, then newest). */
-export function queryItems(items: readonly WatchItem[], query: WatchQuery): WatchItem[] {
+export function queryItems(
+  items: readonly WatchItem[],
+  query: WatchQuery,
+  held?: Held
+): WatchItem[] {
   const words = normal(query.search).split(/\s+/).filter(Boolean)
   return items.filter((i) => {
-    if (query.state !== 'all' && i.state !== query.state) return false
+    if (query.state !== 'all' && listedState(i, held) !== query.state) return false
     if (query.source !== 'all' && String(i.sourceId) !== query.source) return false
     const text = normal(`${i.title} ${i.sourceTitle}`)
     return words.every((w) => text.includes(w))
@@ -62,7 +101,11 @@ export interface WatchGroup {
  * The rows in groups. "All" is Saved, New, Read, each only when it has rows, with a header; a list of one state is one group with no
  * header. Within a group the order given is kept.
  */
-export function groupItems(items: readonly WatchItem[], query: WatchQuery): WatchGroup[] {
+export function groupItems(
+  items: readonly WatchItem[],
+  query: WatchQuery,
+  held?: Held
+): WatchGroup[] {
   if (query.state !== 'all')
     return items.length ? [{ key: 'one', label: null, rows: [...items] }] : []
   return (
@@ -75,9 +118,21 @@ export function groupItems(items: readonly WatchItem[], query: WatchQuery): Watc
     .map(({ key, label, state }) => ({
       key,
       label,
-      rows: items.filter((i) => i.state === state)
+      rows: items.filter((i) => listedState(i, held) === state)
     }))
     .filter((g) => g.rows.length > 0)
+}
+
+/** The groups to open up: the ones opened by hand, and the one whose cut part holds the wanted item (a search hit's). */
+export function openedWith(
+  groups: readonly WatchGroup[],
+  opened: ReadonlySet<WatchGroup['key']>,
+  wantedId: number | null
+): ReadonlySet<WatchGroup['key']> {
+  const wanted = groups.find((g) =>
+    g.rows.slice(GROUP_ROWS_SHOWN).some((r) => r.id === wantedId)
+  )?.key
+  return wanted ? new Set([...opened, wanted]) : opened
 }
 
 /** How many rows a group shows before "Show N more". */

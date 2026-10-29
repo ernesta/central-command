@@ -212,6 +212,7 @@ interface ItemRow {
   matched: string
   state: WatchState
   first_seen_at: string
+  read_at: string | null
 }
 
 const toItem = (r: ItemRow): WatchItem => ({
@@ -234,7 +235,8 @@ const toItem = (r: ItemRow): WatchItem => ({
   score: r.score,
   matched: r.matched ? r.matched.split(',') : [],
   state: r.state,
-  firstSeenAt: r.first_seen_at
+  firstSeenAt: r.first_seen_at,
+  readAt: r.read_at
 })
 
 const ITEM_SELECT = `
@@ -271,26 +273,52 @@ export function listItems(db: Database, query: WatchItemsQuery = {}): WatchItem[
   if (query.relevantOnly) where.push('i.score > 0')
   const limit = Math.min(Math.max(Math.trunc(query.limit ?? 200), 1), 1000)
   const sql = `${ITEM_SELECT} ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
-    ORDER BY (i.state = 'new') DESC, substr(i.first_seen_at, 1, 10) DESC, COALESCE(i.published_at, i.first_seen_at) DESC, i.id DESC
+    ORDER BY (i.state = 'new') DESC, CASE WHEN i.state = 'seen' THEN i.read_at END DESC, substr(i.first_seen_at, 1, 10) DESC, COALESCE(i.published_at, i.first_seen_at) DESC, i.id DESC
     LIMIT ${limit}`
   return (db.prepare(sql).all(...params) as ItemRow[]).map(toItem)
 }
 
-export function setItemState(db: Database, id: number, state: WatchState): void {
+/**
+ * Sets an item's state and its `read_at`: read now when it becomes Read, cleared when it becomes New, untouched when it is Saved.
+ * An undo passes the `readAt` the item had (null for none) so the Read list's order comes back too.
+ */
+export function setItemState(
+  db: Database,
+  id: number,
+  state: WatchState,
+  { readAt, now = new Date().toISOString() }: { readAt?: string | null; now?: string } = {}
+): void {
   if (!(WATCH_STATES as readonly string[]).includes(state)) throw new Error('Invalid state')
-  db.prepare('UPDATE watch_items SET state = ? WHERE id = ?').run(state, id)
+  if (readAt !== undefined) {
+    db.prepare('UPDATE watch_items SET state = ?, read_at = ? WHERE id = ?').run(state, readAt, id)
+    return
+  }
+  const stamp =
+    state === 'seen' ? 'read_at = @now' : state === 'new' ? 'read_at = NULL' : 'read_at = read_at'
+  db.prepare(`UPDATE watch_items SET state = @state, ${stamp} WHERE id = @id`).run({
+    state,
+    now,
+    id
+  })
 }
 
 /** Opening an item is the first look at it: a new one becomes seen (a saved or read one stays as it is). */
-export function openItem(db: Database, id: number): void {
-  db.prepare("UPDATE watch_items SET state = 'seen' WHERE id = ? AND state = 'new'").run(id)
+export function openItem(db: Database, id: number, now = new Date().toISOString()): void {
+  db.prepare(
+    "UPDATE watch_items SET state = 'seen', read_at = ? WHERE id = ? AND state = 'new'"
+  ).run(now, id)
 }
 
 /**
  * "Looked at everything": new items become read (saved ones stay as they are), in one source or one workspace's sources,
  * or everywhere when neither is given. Returns how many changed.
  */
-export function markAllSeen(db: Database, sourceId?: number, workspace?: WatchWorkspace): number {
+export function markAllSeen(
+  db: Database,
+  sourceId?: number,
+  workspace?: WatchWorkspace,
+  now = new Date().toISOString()
+): number {
   const sources = (column: string): string =>
     sourceId !== undefined
       ? `${column} = ${Math.trunc(sourceId)}`
@@ -299,9 +327,9 @@ export function markAllSeen(db: Database, sourceId?: number, workspace?: WatchWo
         : '1'
   const info = db
     .prepare(
-      `UPDATE watch_items SET state = 'seen' WHERE state = 'new' AND ${sources('source_id')}`
+      `UPDATE watch_items SET state = 'seen', read_at = ? WHERE state = 'new' AND ${sources('source_id')}`
     )
-    .run()
+    .run(now)
   db.prepare(`UPDATE watch_sources SET changed_at = NULL WHERE ${sources('id')}`).run()
   return info.changes
 }
@@ -537,8 +565,8 @@ export function restoreManualItem(db: Database, item: WatchItem, now: string): W
     .prepare(
       `INSERT INTO watch_items
          (source_id, item_key, title, url, summary, published_at, event_date, event_end, deadline, deadline_label,
-          score, matched, state, first_seen_at, manual, section)
-       VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, 0, '', ?, ?, 1, ?)`
+          score, matched, state, first_seen_at, manual, section, read_at)
+       VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, 0, '', ?, ?, 1, ?, ?)`
     )
     .run(
       sourceId,
@@ -552,7 +580,8 @@ export function restoreManualItem(db: Database, item: WatchItem, now: string): W
       v.deadlineLabel,
       item.state,
       item.firstSeenAt,
-      v.section
+      v.section,
+      item.readAt ?? null
     )
   return getItem(db, Number(info.lastInsertRowid))
 }

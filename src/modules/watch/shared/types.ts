@@ -159,6 +159,8 @@ export interface WatchItem {
   matched: string[]
   state: WatchState
   firstSeenAt: string
+  /** When it became Read (null for New, Saved, or Read before the date was kept). */
+  readAt: string | null
 }
 
 export interface WatchItemsQuery {

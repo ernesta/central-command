@@ -27,7 +27,8 @@ export function WatchList({
     <ul className={`${landing.box} ${landing.recentList}`}>
       {items.map((item) => (
         <li key={item.id}>
-          <div className={styles.row}>
+          {/* Only a row the user opened this visit is Read on this page (`Held`): it stays where it was, dimmed. */}
+          <div className={item.state === 'seen' ? `${styles.row} ${styles.held}` : styles.row}>
             <span className={landing.date}>{foundLabel(item.firstSeenAt, today)}</span>
             <span className={styles.titleCell}>
               <span className={styles.ext}>

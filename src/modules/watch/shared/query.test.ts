@@ -6,6 +6,8 @@ import {
   groupItems,
   LIST_STATES,
   LIST_STATE_LABELS,
+  openedWith,
+  sortItems,
   queryItems,
   reconcileWatchQuery,
   sourceOptions
@@ -33,6 +35,7 @@ const item = (over: Partial<WatchItem>): WatchItem => ({
   matched: [],
   state: 'new',
   firstSeenAt: '2026-10-26T08:00:00.000Z',
+  readAt: null,
   ...over
 })
 
@@ -112,5 +115,69 @@ describe('groups, sources and the cut', () => {
     ])
     expect(reconcileWatchQuery({ ...DEFAULT_WATCH_QUERY, source: '9' }, items).source).toBe('all')
     expect(reconcileWatchQuery({ ...DEFAULT_WATCH_QUERY, source: '2' }, items).source).toBe('2')
+  })
+})
+
+describe('a row opened this visit is held where it was', () => {
+  const day = (n: number): string => `2026-10-${String(n).padStart(2, '0')}T08:00:00.000Z`
+  const list = [
+    item({ id: 1, state: 'new', firstSeenAt: day(26) }),
+    item({ id: 2, state: 'seen', firstSeenAt: day(25) }), // opened just now
+    item({ id: 3, state: 'new', firstSeenAt: day(24) }),
+    item({ id: 4, state: 'seen', firstSeenAt: day(20), readAt: day(21) })
+  ]
+  const held = new Set([2])
+  const shape = (groups: ReturnType<typeof groupItems>): unknown[] =>
+    groups.map((g) => [g.key, g.rows.map((r) => r.id)])
+
+  it('is listed as New, between the New rows it was between', () => {
+    const sorted = sortItems(list, held)
+    expect(sorted.map((i) => i.id)).toEqual([1, 2, 3, 4])
+    expect(shape(groupItems(sorted, DEFAULT_WATCH_QUERY, held))).toEqual([
+      ['new', [1, 2, 3]],
+      ['seen', [4]]
+    ])
+    const onlyNew = queryItems(sorted, { ...DEFAULT_WATCH_QUERY, state: 'new' }, held)
+    expect(onlyNew.map((i) => i.id)).toEqual([1, 2, 3])
+  })
+
+  it('goes to the Read group once the page lets it go', () => {
+    expect(shape(groupItems(sortItems(list), DEFAULT_WATCH_QUERY))).toEqual([
+      ['new', [1, 3]],
+      ['seen', [4, 2]]
+    ])
+  })
+
+  it('a held row that was saved since is Saved, not New', () => {
+    const saved = [{ ...list[1], state: 'saved' as const }]
+    expect(groupItems(saved, DEFAULT_WATCH_QUERY, held)[0].key).toBe('saved')
+  })
+})
+
+describe('Read is most recently read first', () => {
+  it('orders by when it was read; rows with no time come after, by the day found', () => {
+    const list = [
+      item({ id: 1, state: 'seen', firstSeenAt: '2026-10-26T08:00:00.000Z' }),
+      item({ id: 2, state: 'seen', readAt: '2026-10-27T10:00:00.000Z' }),
+      item({ id: 3, state: 'seen', readAt: '2026-10-28T10:00:00.000Z' }),
+      item({ id: 4, state: 'seen', firstSeenAt: '2026-10-20T08:00:00.000Z' })
+    ]
+    expect(sortItems(list).map((i) => i.id)).toEqual([3, 2, 1, 4])
+  })
+})
+
+describe('a search hit’s item is never in a cut group', () => {
+  const many = Array.from({ length: GROUP_ROWS_SHOWN + 5 }, (_, i) =>
+    item({ id: i + 1, state: 'seen' })
+  )
+  const groups = groupItems(many, DEFAULT_WATCH_QUERY)
+
+  it('opens the group the item is in when it is past the cut', () => {
+    expect(cutGroups(groups, openedWith(groups, new Set(), many.length))[0].hidden).toBe(0)
+  })
+
+  it('leaves the cut alone for an item that is shown, or for none', () => {
+    expect(cutGroups(groups, openedWith(groups, new Set(), 1))[0].hidden).toBe(5)
+    expect(cutGroups(groups, openedWith(groups, new Set(), null))[0].hidden).toBe(5)
   })
 })
