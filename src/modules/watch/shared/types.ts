@@ -27,6 +27,8 @@ const COURSE_WORDS =
 /** LINGUIST List's feeds tag their titles: "Calls:" are calls to journals (some carry no other word), "Confs:" are conferences. */
 const CALLS_PREFIX = /^calls?:/i
 const CONFS_PREFIX = /^confs?:/i
+/** A source named for courses ("WRDTP: Training and events calendar", "Doctoral School: PGR events"): what it lists is training unless an item says otherwise. */
+const TRAINING_SOURCE = /\b(training|courses?|schools?|workshops?|cpd|doctoral|pgr|learning)\b/i
 const PAPERS_CALL = /\b(call for (?:papers|abstracts|proposals|submissions)|cfp)\b/i
 
 /**
@@ -34,10 +36,11 @@ const PAPERS_CALL = /\b(call for (?:papers|abstracts|proposals|submissions)|cfp)
  * 1. Opportunity: an opportunity word in the title (or a "Calls:" title), or a narrower set in the description, or "apply by" with no event word.
  * 2. Training: a course word. The one conflict, decided on the facts: a "workshop" that is a call for papers
  *    ("Workshop at SLE 2027 … call for papers") is a conference that happens to be called a workshop, not a course.
- * 3. Everything else is a conference.
+ * 3. Everything else is a conference, except what a training source (named for courses) lists: nothing there is a conference
+ *    ("Preparing a Conference Submission" is a course).
  * A manual entry's section is chosen by the user and never goes through here.
  */
-export function sectionOf(title: string, summary = ''): WatchSection {
+export function sectionOf(title: string, summary = '', sourceTitle = ''): WatchSection {
   const text = `${title}\n${summary}`
   // "Funded training" is a funded course, not funding.
   const opportunity = OPPORTUNITY_TITLE.exec(title)
@@ -48,6 +51,7 @@ export function sectionOf(title: string, summary = ''): WatchSection {
   // In a conference listing's own title ("Confs: Munich Inner Speech Workshop") a workshop is a meeting of researchers, not a course.
   const courseTitle = CONFS_PREFIX.test(title) ? title.replace(/\bworkshops?\b/gi, '') : title
   if (COURSE_WORDS.test(courseTitle) && !PAPERS_CALL.test(text)) return 'training'
+  if (TRAINING_SOURCE.test(sourceTitle) && !CONFS_PREFIX.test(title)) return 'training'
   return 'conference'
 }
 

@@ -96,6 +96,21 @@ export function dropPastSections(html: string): string {
   return out + html.slice(from)
 }
 
+/** A link to a section's own home page (`…/home.aspx`, `…/index.html`) that sits above the page being read: the site's menu, not an event. */
+function isSectionHome(url: string, base: string): boolean {
+  try {
+    const u = new URL(url)
+    const dir = u.pathname.replace(/[^/]*$/, '')
+    const file = u.pathname.slice(dir.length)
+    return (
+      (/^(?:home|index|default)(?:\.\w+)?$/i.test(file) || (file === '' && dir === '/')) &&
+      new URL(base).pathname.startsWith(dir)
+    )
+  } catch {
+    return false
+  }
+}
+
 const host = (url: string): string => new URL(url).hostname.replace(/^www\./, '')
 
 /** Links worth watching and the page's text. Navigation and footer are left out, since they are the same on every visit and would only add noise. */
@@ -114,7 +129,7 @@ export function parsePage(html: string, baseUrl: string): ParsedPage {
       const href = /href\s*=\s*["']([^"']+)["']/i.exec(m[1])
       if (!href) continue
       const url = resolve(href[1], baseUrl)
-      if (!url) continue
+      if (!url || isSectionHome(url, baseUrl)) continue
       urls.add(url)
       if (seen.has(url)) continue
       const text = toText(m[2])

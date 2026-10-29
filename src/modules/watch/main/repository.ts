@@ -219,7 +219,7 @@ const toItem = (r: ItemRow): WatchItem => ({
   sourceId: r.source_id,
   workspace: r.workspace,
   sourceTitle: r.source_title,
-  section: r.section ?? sectionOf(r.title, r.summary),
+  section: r.section ?? sectionOf(r.title, r.summary, r.source_title),
   manual: r.manual === 1,
   title: r.title,
   url: r.url,
@@ -385,12 +385,21 @@ export function setKeywords(db: Database, terms: string[]): string[] {
 /** Every item that is not an entry by hand gets its section from its own words (run at launch and after a check; saved and read states are untouched). */
 export function reclassifyItems(db: Database): void {
   const rows = db
-    .prepare('SELECT id, title, summary, section FROM watch_items WHERE manual = 0')
-    .all() as { id: number; title: string; summary: string; section: string | null }[]
+    .prepare(
+      `SELECT i.id, i.title, i.summary, i.section, s.title AS sourceTitle
+       FROM watch_items i JOIN watch_sources s ON s.id = i.source_id WHERE i.manual = 0`
+    )
+    .all() as {
+    id: number
+    title: string
+    summary: string
+    section: string | null
+    sourceTitle: string
+  }[]
   const update = db.prepare('UPDATE watch_items SET section = ? WHERE id = ?')
   db.transaction(() => {
     for (const r of rows) {
-      const section = sectionOf(r.title, r.summary)
+      const section = sectionOf(r.title, r.summary, r.sourceTitle)
       if (section !== r.section) update.run(section, r.id)
     }
   })()

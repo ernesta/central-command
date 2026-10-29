@@ -154,6 +154,16 @@ describe('parsePage', () => {
   })
 })
 
+describe('parsePage section homes', () => {
+  it("leaves out links to the site's own home pages above the page, keeps events beside it", () => {
+    const html = `<main><a href="/doctoral-school/home.aspx">Doctoral School</a>
+      <a href="/doctoral-school/news-events/home.aspx">News | Events</a>
+      <a href="/doctoral-school/news-events/event-articles/r-course.aspx">Good Practice for R Users</a></main>`
+    const page = parsePage(html, 'https://x.ac.uk/doctoral-school/news-events/events.aspx')
+    expect(page.links.map((l) => l.title)).toEqual(['Good Practice for R Users'])
+  })
+})
+
 describe('datedSentences', () => {
   const text =
     'Welcome to the society. EPS Meeting: University College London. 6th – 8th January 2027. This meeting will include a prize lecture. Last year we met on 3 March 2025 in Bangor, which was lovely. Abstracts are due by 1 December 2026 for the spring meeting.'

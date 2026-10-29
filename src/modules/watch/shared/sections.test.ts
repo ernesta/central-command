@@ -49,6 +49,32 @@ const table: [string, string, WatchSection][] = [
   ['Workshop on reading', 'Hands-on session for students.', 'training']
 ]
 
+describe('sectionOf with a training source', () => {
+  it.each([
+    [
+      'Preparing a Conference Submission in Management',
+      'WRDTP: Training and events calendar',
+      'training'
+    ],
+    ['Race and Diversity in Digital Media', 'WRDTP: Training and events calendar', 'training'],
+    [
+      'Doctoral Open Day: Music, Sound and Vision',
+      'Royal Holloway Doctoral School: PGR events',
+      'training'
+    ],
+    [
+      'ADR Funded Training: Good Practice for R Users',
+      'Royal Holloway Doctoral School: PGR events',
+      'training'
+    ],
+    ['Research Grants 2027', 'WRDTP: Training and events calendar', 'opportunity'],
+    ['Reconstructing Reading 2026', 'National Literacy Trust', 'conference'],
+    ['Confs: Munich Inner Speech Workshop', 'LINGUIST List: Summer schools', 'conference']
+  ])('%s from %s → %s', (title, source, expected) => {
+    expect(sectionOf(title, '', source)).toBe(expected)
+  })
+})
+
 describe('sectionOf', () => {
   it.each(table)('%s → %s', (title, summary, expected) => {
     expect(sectionOf(title, summary)).toBe(expected)

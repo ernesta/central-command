@@ -87,6 +87,34 @@ describe('migration 0008', () => {
   })
 })
 
+describe('reclassifyItems', () => {
+  it("lets a training source's name decide what its words leave open", () => {
+    const wrdtp = addSource(
+      db,
+      { title: 'WRDTP: Training and events calendar', url: 'https://w.ac.uk/', method: 'page' },
+      NOW
+    )
+    const nlt = addSource(
+      db,
+      { title: 'National Literacy Trust', url: 'https://n.org/', method: 'page' },
+      NOW
+    )
+    const put = (source: number, key: string, title: string): void => {
+      db.prepare(
+        `INSERT INTO watch_items (source_id, item_key, title, url, first_seen_at)
+         VALUES (?, ?, ?, 'https://ex.org/i', ?)`
+      ).run(source, key, title, NOW)
+    }
+    put(wrdtp.id, 'a', 'Sharing Sensitive and Qualitative Data Openly')
+    put(nlt.id, 'b', 'Reconstructing Reading 2026')
+    reclassifyItems(db)
+    expect(db.prepare('SELECT title, section FROM watch_items ORDER BY id').all()).toEqual([
+      { title: 'Sharing Sensitive and Qualitative Data Openly', section: 'training' },
+      { title: 'Reconstructing Reading 2026', section: 'conference' }
+    ])
+  })
+})
+
 describe('entries by hand', () => {
   it('are created Saved in their section, with the hidden source made on first use', () => {
     const item = createManualItem(db, JACOBS, NOW)

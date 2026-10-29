@@ -127,7 +127,7 @@ export async function checkSource(
         const text = `${item.title}\n${item.summary}`
         const relevance = scoreText(item.title, item.summary, keywords)
         const dated = item.dates ?? findDates(text, today)
-        const section = sectionOf(item.title, item.summary)
+        const section = sectionOf(item.title, item.summary, source.title)
         if (item.dates) {
           // Dates a calendar gave outright: a moved or renamed event is the same item, changed.
           refresh.run(
