@@ -4867,6 +4867,12 @@ The user asked for an audit of how "something you can click" looks and behaves, 
 - **`isSectionHome`** (`parse-page.ts`): a link to a `home`/`index`/`default` page (or the site root) whose directory is above the page being read is the menu, not an event. Both tests mutation-checked.
 - **`watch:reparse`** judges a stored link to a section home the same way (reason "the site's menu"; a link to the source's own address is never one), since a check never removes a stored link. Dry run on the real library: exactly the two menu rows ("News | Events", "Doctoral School") go, 64 stay, none saved. Mutation-checked.
 
+## Watch: a card's tag links to the site search are not items (29 Oct 2026, the user's bug report)
+
+- **Found by looking at the installed app:** NatCen's events page lists each event as a card with the title link and tag links (`/search/?keywords=Public spending`). A card with several links gives none of them a summary, so each tag with a title of 12 characters or more was stored as an item with the event's date and a link to a search page. `isSearchLink` (`parse-page.ts`: a `/search` path, or a `keywords`, `q`, `query`, `s` or `search` parameter) skips them; mutation-checked.
+- **Also:** `idre` joins the training-source words, so UCLA IDRE's workshop calendar lists trainings.
+- **For the user:** the three stored tag rows keep their old rows until `watch:reparse` (dry run first) or a check removes them; not applied.
+
 ## Watch items are searched (29 Oct 2026, the user's bug report)
 
 Watch had no `search` in its manifest, so Mod-K never found its items. `searchWatch(workspace)` (`watch/renderer/search.ts`) matches an item's title, summary and source name; hits are saved, then new, then read; the detail is the matching part of the summary, else the source's name; a hit opens the item's section list in its workspace. `watch` is a search source (`SOURCE_IDS`, `in:watch`, last in `SEARCH_GROUP_ORDER`) and takes the date modifiers (`before:`, `after:`, `on:`, `during:`) on the item's date (deadline, else event day). Entries added by hand are searched too. Tested (typecheck, lint, unit tests); not driven in the app.

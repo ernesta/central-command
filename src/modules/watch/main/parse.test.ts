@@ -244,3 +244,20 @@ describe('a listing of cards that are links (Royal Holloway)', () => {
     )
   })
 })
+
+describe('a card with tag links to the site search', () => {
+  const html = `<main><article class="c-card c-card--event">
+    <h3><a href="/events/british-social-attitudes-defence-and-security"><span>British Social Attitudes: Defence and Security</span></a></h3>
+    <time datetime="5 November 2026">5 November 2026</time>
+    <a href="/search/?keywords=British Social Attitudes"><span>British Social Attitudes</span></a>
+    <a href="/search/?keywords=Public spending"><span>Public spending</span></a>
+  </article></main>`
+
+  it('keeps the event and drops the tags', () => {
+    const { links } = parsePage(html, 'https://natcen.ac.uk/events')
+    expect(links.map((l) => l.url)).toEqual([
+      'https://natcen.ac.uk/events/british-social-attitudes-defence-and-security'
+    ])
+    expect(links[0].summary).toContain('5 November 2026')
+  })
+})

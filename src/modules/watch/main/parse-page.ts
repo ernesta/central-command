@@ -111,6 +111,19 @@ export function isSectionHome(url: string, base: string): boolean {
   }
 }
 
+/** A link to the site's own search (`/search/?keywords=Public spending`): a card's tag, which finds events but is none. */
+export function isSearchLink(url: string): boolean {
+  try {
+    const u = new URL(url)
+    return (
+      /^\/search\/?$/i.test(u.pathname) ||
+      ['keywords', 'keyword', 'q', 'query', 's', 'search'].some((k) => u.searchParams.has(k))
+    )
+  } catch {
+    return false
+  }
+}
+
 const host = (url: string): string => new URL(url).hostname.replace(/^www\./, '')
 
 /** Links worth watching and the page's text. Navigation and footer are left out, since they are the same on every visit and would only add noise. */
@@ -129,7 +142,7 @@ export function parsePage(html: string, baseUrl: string): ParsedPage {
       const href = /href\s*=\s*["']([^"']+)["']/i.exec(m[1])
       if (!href) continue
       const url = resolve(href[1], baseUrl)
-      if (!url || isSectionHome(url, baseUrl)) continue
+      if (!url || isSectionHome(url, baseUrl) || isSearchLink(url)) continue
       urls.add(url)
       if (seen.has(url)) continue
       const text = toText(m[2])
