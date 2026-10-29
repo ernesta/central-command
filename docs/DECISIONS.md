@@ -4904,3 +4904,7 @@ Driven (production build and dev mode, light and dark, screenshots looked at): a
 ## Landing header: a link styled as a button is as tall as a button (29 Oct 2026, the user's bug report)
 
 On Watch, "Sources" (`AllLink`, a router link) was taller than "New entry" and "Check now" (`Button`): a link takes the page's line height, a button has `line-height: 1.2` and `inline-flex`. `.allLink` (`Landing.module.css`) now sets `display: inline-flex`, `align-items: center` and `line-height: 1.2`, so the two match. Looked at in the installed app only.
+
+## Home: subtasks start collapsed under their task (29 Oct 2026, the user: Home is gigantic and overwhelming)
+
+Home's Today and Coming up listed every subtask under its task, so a few tasks filled the page. `Rows` now draws a task's subtasks only when that task is open; all start collapsed. A task with subtasks has a pill before its late chip (the count and a chevron, as the Tasks table's pill without the progress fill: Home holds only the open subtasks, so there is no done count). The pill is a button inside the row's link, so it stops the click from opening the task. Open state is local to the card and resets when leaving Home. The 5-row cap counts top-level rows only, so it is unchanged. Not driven in the app (lint, typecheck and tests pass).

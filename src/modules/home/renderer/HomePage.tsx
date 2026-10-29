@@ -1,6 +1,15 @@
 import { useToday } from '@renderer/state/use-today'
 import { Link } from 'react-router'
-import { Bookmark, Check, GraduationCap, Plane, Users } from 'lucide-react'
+import { useState } from 'react'
+import {
+  Bookmark,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  GraduationCap,
+  Plane,
+  Users
+} from 'lucide-react'
 import { Panel } from '@renderer/components/Panel'
 import { Tooltip } from '@renderer/components/Tooltip'
 import { LateChip } from '../../tasks/renderer/LateChip'
@@ -103,7 +112,10 @@ function TaskRow({
   due = '',
   kid = false,
   end = false,
-  hasKids = false
+  hasKids = false,
+  kidCount = 0,
+  open = false,
+  onToggle
 }: {
   task: HomeTask
   /** The date as `dueText` words it, where the row should say it. */
@@ -111,6 +123,10 @@ function TaskRow({
   kid?: boolean
   end?: boolean
   hasKids?: boolean
+  /** Subtasks under this task, shown or not; the pill says how many and opens them. */
+  kidCount?: number
+  open?: boolean
+  onToggle?: () => void
 }): React.JSX.Element {
   return (
     <Row
@@ -129,6 +145,28 @@ function TaskRow({
       line={kid ? null : <SubtaskLine parent={task.parent} list={task.list} due={due} />}
       trailing={
         <>
+          {kidCount > 0 && onToggle && (
+            <Tooltip text={`${open ? 'Hide' : 'Show'} ${kidCount === 1 ? 'subtask' : 'subtasks'}`}>
+              <button
+                type="button"
+                className={[styles.pill, open && styles.pillOpen].filter(Boolean).join(' ')}
+                aria-expanded={open}
+                aria-label={`${open ? 'Hide' : 'Show'} ${kidCount} ${kidCount === 1 ? 'subtask' : 'subtasks'}`}
+                onClick={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  onToggle()
+                }}
+              >
+                {kidCount}
+                {open ? (
+                  <ChevronDown size={12} strokeWidth={1.75} aria-hidden />
+                ) : (
+                  <ChevronRight size={12} strokeWidth={1.75} aria-hidden />
+                )}
+              </button>
+            </Tooltip>
+          )}
           <LateChip days={task.daysLate} />
           {/* A subtask shows no priority, as in the Tasks table; its space stays so the late chips line up. */}
           {task.parent === null ? (
@@ -173,13 +211,40 @@ function Rows({
   today: string
   initialsOf: (name: string) => string | null
 }): React.JSX.Element {
+  // Subtasks start collapsed under their task; the pill on the task opens them.
+  const [openUids, setOpenUids] = useState<ReadonlySet<string>>(new Set())
+  const toggle = (uid: string): void =>
+    setOpenUids((current) => {
+      const next = new Set(current)
+      if (!next.delete(uid)) next.add(uid)
+      return next
+    })
+  const kidCounts = new Map<string, number>()
+  const parentOf: (string | null)[] = []
+  let parentUid: string | null = null
+  for (const row of rows) {
+    if (row.kind !== 'task') {
+      parentUid = null
+      parentOf.push(null)
+    } else if (row.kid) {
+      parentOf.push(parentUid)
+      if (parentUid) kidCounts.set(parentUid, (kidCounts.get(parentUid) ?? 0) + 1)
+    } else {
+      parentUid = row.task.uid
+      parentOf.push(null)
+    }
+  }
   return (
     <ul className={styles.list}>
       {rows.map((row, i) => {
         if (row.kind === 'event')
           return <EventRow key={row.event.id} event={row.event} initialsOf={initialsOf} />
+        const owner = parentOf[i]
+        if (row.kid && !(owner && openUids.has(owner))) return null
         const next = rows[i + 1]
-        const nextIsKid = next?.kind === 'task' && next.kid
+        const nextIsKid =
+          next?.kind === 'task' && next.kid && openUids.has(row.kid ? (owner ?? '') : row.task.uid)
+        const count = row.kid ? 0 : (kidCounts.get(row.task.uid) ?? 0)
         return (
           <TaskRow
             key={`${row.kid ? 'kid' : 'task'}:${row.task.uid}`}
@@ -188,6 +253,9 @@ function Rows({
             kid={row.kid}
             end={row.kid && !nextIsKid}
             hasKids={!row.kid && nextIsKid}
+            kidCount={count}
+            open={openUids.has(row.task.uid)}
+            onToggle={() => toggle(row.task.uid)}
           />
         )
       })}

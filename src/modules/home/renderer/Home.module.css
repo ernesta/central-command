@@ -197,3 +197,23 @@
   flex: none;
   width: 30px;
 }
+
+/* The subtasks control on a task: their count and a chevron, as the pill in the Tasks table. */
+.pill {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  padding: 0 6px 0 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: var(--text-12);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.55;
+}
+.pill:hover,
+.pillOpen {
+  border-color: var(--accent);
+}
