@@ -70,6 +70,19 @@ describe('methods the page uses', () => {
 })
 
 describe('findDates', () => {
+  it('takes the end of an application window as the deadline, not its opening', () => {
+    expect(
+      findDates(
+        'Dates: 23-27 August 2027. Application period: 1 Oct, 2026 to 1 April, 2027.',
+        today
+      )
+    ).toMatchObject({
+      eventStart: '2027-08-23',
+      deadline: '2027-04-01',
+      deadlineLabel: 'Apply by'
+    })
+  })
+
   it('gives the event range and the deadline apart, with the deadline’s words', () => {
     expect(
       findDates(

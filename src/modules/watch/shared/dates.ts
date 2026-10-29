@@ -164,6 +164,9 @@ function spans(text: string): Span[] {
   return out.sort((a, b) => a.index - b.index)
 }
 
+/** The day a span matters: a deadline given as a window ("Applications 1 Oct 2026 to 1 Apr 2027") closes at its end. */
+const mattersOn = (s: Span): string => (s.kind === 'deadline' ? (s.end ?? s.date) : s.date)
+
 /** A span still ahead: it ends today or later (a range under way counts). */
 const ahead = (s: Span, today: string): boolean => (s.end ?? s.date) >= today
 
@@ -175,9 +178,9 @@ const ahead = (s: Span, today: string): boolean => (s.end ?? s.date) >= today
 export function findDate(text: string, today: string): Found | null {
   const all = spans(text)
     .filter((f) => ahead(f, today))
-    .sort((a, b) => a.date.localeCompare(b.date))
+    .sort((a, b) => mattersOn(a).localeCompare(mattersOn(b)))
   const pick = all.find((f) => f.kind === 'deadline') ?? all[0]
-  return pick ? { date: pick.date, kind: pick.kind } : null
+  return pick ? { date: mattersOn(pick), kind: pick.kind } : null
 }
 
 /** What a text says about when: the event's first and last day, and the earliest deadline, each only when still ahead. */
@@ -192,13 +195,13 @@ export interface FoundDates {
 export function findDates(text: string, today: string): FoundDates {
   const all = spans(text)
     .filter((f) => ahead(f, today))
-    .sort((a, b) => a.date.localeCompare(b.date))
+    .sort((a, b) => mattersOn(a).localeCompare(mattersOn(b)))
   const event = all.find((f) => f.kind === 'date')
   const due = all.find((f) => f.kind === 'deadline')
   return {
     eventStart: event?.date ?? null,
     eventEnd: event?.end ?? null,
-    deadline: due?.date ?? null,
+    deadline: due ? mattersOn(due) : null,
     deadlineLabel: due ? due.label : null
   }
 }
