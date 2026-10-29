@@ -4882,6 +4882,6 @@ Watch had no `search` in its manifest, so Mod-K never found its items. `searchWa
 NatCen's "British Social Attitudes: defence and security" is neither a conference nor a training. `WATCH_SECTIONS` gained `event`
 (Trainings, Conferences, Events, Opportunities; route `events`). `sectionOf` now says Conference only when the title has a conference word
 (conference, symposium, congress, colloquium, meeting), a `Confs:` prefix, or the text is a call for papers; every other item that is not
-a training or an opportunity is an Event, and so is a New entry whose link is unread. Items whose titles say nothing (talks on a
+a training or an opportunity is an Event, and so is a New entry whose link is unread. researchED in a title and a description that says it "is a … conference" also make a conference. Items whose titles say nothing (talks on a
 calendar, "Reconstructing Reading 2026") moved from Conferences to Events. Stored sections are recomputed at launch (`reclassifyItems`), so no
 migration and no script. Not driven in the running app yet.

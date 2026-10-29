@@ -43,6 +43,13 @@ const table: [string, string, WatchSection][] = [
   ['British Social Attitudes: defence and security', '', 'event'],
   ['Public lecture on literacy', 'An evening talk.', 'event'],
   ['Reconstructing Reading 2026', '', 'event'],
+  ['researchED Glasgow', 'Glasgow', 'conference'],
+  [
+    'Reconstructing Reading 2026',
+    'Reconstructing Reading is an online conference bringing literacy leaders together.',
+    'conference'
+  ],
+  ['Book launch', 'Join us after the conference for a launch.', 'event'],
   // A summer school that asks for applications is still an event, not an opportunity
   ['Summer school in statistics. Apply by 1 March 2027', '', 'training'],
   // A conference that mentions travel grants in passing stays a conference

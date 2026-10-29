@@ -35,6 +35,9 @@ const TRAINING_SOURCE =
   /\b(training|courses?|schools?|workshops?|cpd|doctoral|pgr|learning|idre)\b/i
 /** Words in a title that make an item a conference; without one (or a call for papers) it is an event. */
 const CONFERENCE_WORDS = /\b(conferences?|symposi(?:um|a)|congress|colloqui(?:um|a)|meeting)\b/i
+/** A conference by name (researchED is a series of them) or by its own description ("Reconstructing Reading is an online conference"). */
+const CONFERENCE_NAME = /\bresearched\b/i
+const CONFERENCE_SAYS = /\b(?:is|are) an? (?:[\w-]+ ){0,2}conference\b/i
 const PAPERS_CALL = /\b(call for (?:papers|abstracts|proposals|submissions)|cfp)\b/i
 
 /**
@@ -44,7 +47,7 @@ const PAPERS_CALL = /\b(call for (?:papers|abstracts|proposals|submissions)|cfp)
  *    ("Workshop at SLE 2027 … call for papers") is a conference that happens to be called a workshop, not a course.
  * 3. What a training source (named for courses) lists is training: nothing there is a conference
  *    ("Preparing a Conference Submission" is a course).
- * 4. Conference: a conference word in the title, a "Confs:" title, or a call for papers.
+ * 4. Conference: a conference word in the title, a "Confs:" title, researchED, a description that says it "is a … conference", or a call for papers.
  * 5. Everything else, when the words do not say, is an event.
  * A manual entry's section is chosen by the user and never goes through here.
  */
@@ -60,7 +63,13 @@ export function sectionOf(title: string, summary = '', sourceTitle = ''): WatchS
   const courseTitle = CONFS_PREFIX.test(title) ? title.replace(/\bworkshops?\b/gi, '') : title
   if (COURSE_WORDS.test(courseTitle) && !PAPERS_CALL.test(text)) return 'training'
   if (TRAINING_SOURCE.test(sourceTitle) && !CONFS_PREFIX.test(title)) return 'training'
-  if (CONFS_PREFIX.test(title) || CONFERENCE_WORDS.test(title) || PAPERS_CALL.test(text))
+  if (
+    CONFS_PREFIX.test(title) ||
+    CONFERENCE_WORDS.test(title) ||
+    CONFERENCE_NAME.test(title) ||
+    CONFERENCE_SAYS.test(summary) ||
+    PAPERS_CALL.test(text)
+  )
     return 'conference'
   return 'event'
 }
