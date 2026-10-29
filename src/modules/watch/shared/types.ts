@@ -24,11 +24,14 @@ const EVENT_WORDS =
 /** Words that make an item a course. */
 const COURSE_WORDS =
   /\b(cpd|masterclass|webinars?|courses?|training|workshops?|briefing|summer schools?)\b/i
+/** LINGUIST List's feeds tag their titles: "Calls:" are calls to journals (some carry no other word), "Confs:" are conferences. */
+const CALLS_PREFIX = /^calls?:/i
+const CONFS_PREFIX = /^confs?:/i
 const PAPERS_CALL = /\b(call for (?:papers|abstracts|proposals|submissions)|cfp)\b/i
 
 /**
  * The section of one item, from its own words (a source has no kind). Tests in this order:
- * 1. Opportunity: an opportunity word in the title, or a narrower set in the description, or "apply by" with no event word.
+ * 1. Opportunity: an opportunity word in the title (or a "Calls:" title), or a narrower set in the description, or "apply by" with no event word.
  * 2. Training: a course word. The one conflict, decided on the facts: a "workshop" that is a call for papers
  *    ("Workshop at SLE 2027 … call for papers") is a conference that happens to be called a workshop, not a course.
  * 3. Everything else is a conference.
@@ -36,10 +39,12 @@ const PAPERS_CALL = /\b(call for (?:papers|abstracts|proposals|submissions)|cfp)
  */
 export function sectionOf(title: string, summary = ''): WatchSection {
   const text = `${title}\n${summary}`
-  if (OPPORTUNITY_TITLE.test(title)) return 'opportunity'
+  if (OPPORTUNITY_TITLE.test(title) || CALLS_PREFIX.test(title)) return 'opportunity'
   if (OPPORTUNITY_SUMMARY.test(summary) && !EVENT_WORDS.test(title)) return 'opportunity'
   if (/\bapply by\b/i.test(text) && !EVENT_WORDS.test(text)) return 'opportunity'
-  if (COURSE_WORDS.test(title) && !PAPERS_CALL.test(text)) return 'training'
+  // In a conference listing's own title ("Confs: Munich Inner Speech Workshop") a workshop is a meeting of researchers, not a course.
+  const courseTitle = CONFS_PREFIX.test(title) ? title.replace(/\bworkshops?\b/gi, '') : title
+  if (COURSE_WORDS.test(courseTitle) && !PAPERS_CALL.test(text)) return 'training'
   return 'conference'
 }
 

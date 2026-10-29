@@ -10,6 +10,11 @@ const table: [string, string, WatchSection][] = [
   ['Calls: Special Issue on L2 Reading (Jrnl)', '', 'opportunity'],
   ['Calls: Thematic dossier on multilingual literacy', '', 'opportunity'],
   ['Calls: Reading and writing in two languages (Jrnl)', '', 'opportunity'],
+  [
+    'Calls: Journal of Experimental Pragmatics',
+    'Now live. We invite you to submit.',
+    'opportunity'
+  ],
   ['PhD funding at the University of Essex', '', 'opportunity'],
   ['Doctoral Scholarship in Reading', '', 'opportunity'],
   ['Travel bursary for early-career researchers', '', 'opportunity'],
@@ -27,6 +32,9 @@ const table: [string, string, WatchSection][] = [
   ['Introduction to R: a two-day course', '', 'training'],
   ['Training in multilevel models', '', 'training'],
   // Conferences
+  ['Confs: Munich Inner Speech Workshop', '', 'conference'],
+  ['Confs: Workshop at SLE 2027 – Non-Finite Verb Forms', '', 'conference'],
+  ['Confs: Summer School in Corpus Linguistics 2027 and workshop', '', 'training'],
   ['Reconstructing Reading 2026', '', 'conference'],
   ['Confs: Symposium on Bilingualism, Lancaster', '', 'conference'],
   ['SSSR Thirty-Fourth Annual Conference', '', 'conference'],
