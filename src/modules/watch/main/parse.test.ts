@@ -185,3 +185,52 @@ describe('parsePage cards', () => {
     expect(links[0].summary).toBe('Event 11 Nov 2026 Try out practical strategies.')
   })
 })
+
+describe('a page with a table of numeric dates (LSE MY580)', () => {
+  const table = `<main><table>
+    <tr><td>26/10/2026</td><td>Design-based causal inference with Dr Zach Dickson</td><td>.</td></tr>
+    <tr><td>9/11/2026</td><td>Measuring policy positions of political agents with Prof Michael Laver</td><td>.</td></tr>
+  </table></main>`
+  const text = (html: string): string => parsePage(html, 'https://example.org/').upcomingText
+
+  it('reads them day-first when one date proves the order', () => {
+    const items = datedSentences(text(table), 'https://example.org/', '2026-10-01')
+    expect(items.map((i) => i.title)).toEqual([
+      '26 October 2026 Design-based causal inference with Dr Zach Dickson.',
+      '9 November 2026 Measuring policy positions of political agents with Prof Michael Laver.'
+    ])
+    expect(findDate(items[1].title, '2026-10-01')?.date).toBe('2026-11-09')
+  })
+
+  it('leaves them alone when nothing proves the order', () => {
+    const html = table.replace('26/10/2026', '6/10/2026')
+    expect(datedSentences(text(html), 'https://example.org/', '2026-10-01')).toEqual([])
+  })
+
+  it('leaves them alone when a date cannot be day-first', () => {
+    const html = table.replace('9/11/2026', '11/26/2026')
+    expect(datedSentences(text(html), 'https://example.org/', '2026-10-01')).toEqual([])
+  })
+})
+
+describe('a listing of cards that are links (Royal Holloway)', () => {
+  const html = `<main>
+    <div class="breadcrumbs-wrapper"><div class="breadcrumb"><div>
+      <a href="/doctoral-school/home.aspx">Doctoral School</a> &gt; <a href="/news-events/home.aspx">News | Events</a>
+    </div></div></div>
+    <a href="/events/open-day.aspx" class="cta-wrapper"><div class="cta">
+      <div class="date-calendar"><span>Nov</span> <span>06</span> <span>2026</span></div>
+      <p class="cta__title">Doctoral Open Day: Music, Sound and Vision</p>
+      <div class="cta__p">Doctoral Open Day: Music, Sound and Vision</div>
+      <p class="cta__link-text">More details</p>
+    </div></a></main>`
+
+  it('takes the title from its own element, the date as summary, and leaves the breadcrumb out', () => {
+    const { links } = parsePage(html, 'https://example.org/doctoral-school/events.aspx')
+    expect(links.map((l) => l.title)).toEqual(['Doctoral Open Day: Music, Sound and Vision'])
+    expect(links[0].summary).toBe('Nov 06 2026')
+    expect(findDate(`${links[0].title}\n${links[0].summary}`, '2026-10-01')?.date).toBe(
+      '2026-11-06'
+    )
+  })
+})

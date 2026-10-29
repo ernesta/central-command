@@ -70,7 +70,9 @@ const toText = (html: string): string =>
 export function mainContent(html: string): string {
   const clean = stripNoise(html)
   const inner = /<main\b[^>]*>([\s\S]*)<\/main>/i.exec(clean)
-  return (inner ? inner[1] : clean).replace(/<(nav|header|footer|aside)[\s\S]*?<\/\1>/gi, ' ')
+  return (inner ? inner[1] : clean)
+    .replace(/<(nav|header|footer|aside)[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<(div|ol|ul)\b[^>]*breadcrumb[^>]*>[\s\S]*?<\/\1>/gi, ' ')
 }
 
 /**
@@ -115,16 +117,27 @@ export function parsePage(html: string, baseUrl: string): ParsedPage {
       if (!url) continue
       urls.add(url)
       if (seen.has(url)) continue
-      const title = decodeEntities(m[2].replace(/<[^>]+>/g, ' '))
-        .replace(/\s+/g, ' ')
-        .trim()
+      const text = toText(m[2])
+      // A card that is one link names its title in an element of its own ("cta__title"); the rest (a date, a blurb) is its summary.
+      const own = /<(\w+)\b[^>]*class="[^"]*title[^"]*"[^>]*>([\s\S]*?)<\/\1>/i.exec(m[2])
+      const named = own ? toText(own[2]) : ''
+      const title = named.length >= 12 ? named : text
       if (title.length < 12 || FURNITURE.test(title) || CREDITS.test(title)) continue
       seen.add(url)
       found.push({
         key: url,
         title,
         url,
-        summary: '',
+        summary:
+          title === named
+            ? text
+                .replace(title, ' ')
+                .replace(title, ' ')
+                .replace(/\bmore details\b/i, ' ')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .slice(0, 300)
+            : '',
         publishedAt: null,
         ...(host(url) !== host(baseUrl) ? { offsite: true } : {})
       })
@@ -165,6 +178,42 @@ export function parsePage(html: string, baseUrl: string): ParsedPage {
 
 const MAX_DATED_SENTENCES = 15
 
+const NUMERIC_DATE = /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/g
+const MONTH_NAMES = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December'
+]
+
+/**
+ * A numeric date (9/11/2026) is ambiguous, so it is read only on a page that shows its order: one date that cannot be month-first
+ * (26/10/2026) and none that cannot be day-first. Such a page is day-first.
+ */
+export function numericDatesAreDayFirst(text: string): boolean {
+  const found = [...text.matchAll(NUMERIC_DATE)].map((m) => [Number(m[1]), Number(m[2])])
+  return found.some(([a]) => a > 12) && !found.some(([, b]) => b > 12)
+}
+
+/** A day-first page's numeric dates written out ("9/11/2026" as "9 November 2026"), so that the date reader finds them. */
+function writeOutDates(sentence: string, dayFirst: boolean): string {
+  if (!dayFirst || !NUMERIC_DATE.test(sentence)) return sentence
+  NUMERIC_DATE.lastIndex = 0
+  return sentence
+    .replace(NUMERIC_DATE, (all, d, m, y) =>
+      Number(m) >= 1 && Number(m) <= 12 ? `${Number(d)} ${MONTH_NAMES[Number(m) - 1]} ${y}` : all
+    )
+    .replace(/\s+([.,;])/g, '$1')
+}
+
 /**
  * Sentences of a page's text that name a coming date ("EPS Meeting: University College London. 6th – 8th January
  * 2027."), for pages that announce things as prose rather than as links. Each one is an item of its own, found
@@ -173,8 +222,9 @@ const MAX_DATED_SENTENCES = 15
 export function datedSentences(text: string, pageUrl: string, today: string): ParsedItem[] {
   const out: ParsedItem[] = []
   const seen = new Set<string>()
+  const dayFirst = numericDatesAreDayFirst(text)
   for (const raw of text.split(/(?<=[.!?])[^\S\n]+(?=[A-Z£"“(])|\n+/)) {
-    const sentence = raw.trim()
+    const sentence = writeOutDates(raw.trim(), dayFirst)
     if (sentence.length < 25 || sentence.length > 260) continue
     if (!findDate(sentence, today)) continue
     const key = `text:${sentence
