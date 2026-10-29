@@ -52,7 +52,8 @@ describe('completionAt: values', () => {
       'training',
       'readings',
       'lists',
-      'people'
+      'people',
+      'watch'
     ])
     expect(labels('priority:')).toEqual(['P1', 'P2', 'P3'])
     expect(labels('workspace:')).toEqual(['research', 'work', 'life'])

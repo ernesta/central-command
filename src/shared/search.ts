@@ -95,5 +95,6 @@ export const SEARCH_GROUP_ORDER = [
   'tasks',
   'training',
   'readings',
-  'reading-lists'
+  'reading-lists',
+  'watch'
 ]

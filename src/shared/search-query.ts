@@ -13,7 +13,8 @@ export const SOURCE_IDS = [
   'meetings',
   'training',
   'readings',
-  'reading-lists'
+  'reading-lists',
+  'watch'
 ] as const
 export type SourceId = (typeof SOURCE_IDS)[number]
 
@@ -53,11 +54,12 @@ const IN_VALUES: Record<string, SourceId> = {
   list: 'reading-lists',
   lists: 'reading-lists',
   person: 'people',
-  people: 'people'
+  people: 'people',
+  watch: 'watch'
 }
 
 /** What `in:` is shown to accept (one form each; the singular works too). */
-const IN_SHOWN = ['tasks', 'notes', 'meetings', 'training', 'readings', 'lists', 'people']
+const IN_SHOWN = ['tasks', 'notes', 'meetings', 'training', 'readings', 'lists', 'people', 'watch']
 
 /** What `new:` creates (Enter on the chip makes the empty thing and opens it): not a filter, no source has the field. */
 export const NEW_VALUES = ['note', 'task', 'meeting', 'training', 'reading-list'] as const
@@ -110,7 +112,7 @@ export const MODIFIERS: Record<ModifierName, Modifier> = {
 }
 
 function DATED(spec: Spec = 'date'): Partial<Record<SourceId, Spec>> {
-  return { notes: spec, meetings: spec, training: spec, tasks: spec, readings: spec }
+  return { notes: spec, meetings: spec, training: spec, tasks: spec, readings: spec, watch: spec }
 }
 
 export interface SearchFilter {

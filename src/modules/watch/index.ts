@@ -1,5 +1,6 @@
 import { createElement } from 'react'
 import type { LiveModuleManifest } from '../types'
+import { searchWatch } from './renderer/search'
 import { WatchCard } from './renderer/WatchCard'
 import { WatchAllPage } from './renderer/WatchAllPage'
 import { WatchPage } from './renderer/WatchPage'
@@ -27,6 +28,7 @@ export function createWatchModule(workspace: WatchWorkspace): LiveModuleManifest
       }
     ],
     landingCard: WatchCard,
+    search: searchWatch(workspace),
     settingsSection: workspace === 'research' ? WatchSettings : undefined
   }
 }
