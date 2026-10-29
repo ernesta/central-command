@@ -5,6 +5,7 @@ import landing from '@renderer/components/Landing.module.css'
 import { deadlineFor, foundLabel, titleParts, whenFor } from '../shared/rows'
 import type { WatchItem } from '../shared/types'
 import { ItemActions } from './ItemActions'
+import type { EntryActions } from './useManualEntries'
 import type { WatchItems } from './useWatchItems'
 import styles from './WatchList.module.css'
 
@@ -20,7 +21,7 @@ export function WatchList({
 }: {
   items: readonly WatchItem[]
   today: string
-  actions: Pick<WatchItems, 'toggleSaved' | 'toggleRead' | 'open'>
+  actions: Pick<WatchItems, 'toggleSaved' | 'toggleRead' | 'open'> & Partial<EntryActions>
 }): React.JSX.Element {
   return (
     <ul className={`${landing.box} ${landing.recentList}`}>

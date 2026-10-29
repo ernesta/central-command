@@ -15,6 +15,7 @@ import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { SECTION_NOUN, SHOWN_PER_SECTION, sectionsOf } from '../shared/rows'
 import type { WatchSection } from '../shared/types'
 import { useWatchWorkspace, watchListRoute } from './watch-paths'
+import { useManualEntries } from './useManualEntries'
 import { useWatchItems } from './useWatchItems'
 import { useWatchSources } from './useWatchSources'
 import { WatchList } from './WatchList'
@@ -24,7 +25,9 @@ const SETTINGS_WATCH = { settingsTab: 'watch' }
 
 /** The Watch page: what the places the user watches have announced, saved items first, then trainings, conferences and opportunities. */
 export function WatchPage(): React.JSX.Element {
-  const { items, ...actions } = useWatchItems()
+  const { items, ...itemActions } = useWatchItems()
+  const entries = useManualEntries()
+  const actions = { ...itemActions, ...entries.actions }
   const workspace = useWatchWorkspace()
   const { sources } = useWatchSources(workspace)
   const [checking, setChecking] = useState(false)
@@ -72,6 +75,7 @@ export function WatchPage(): React.JSX.Element {
             <AllLink to="/settings" state={SETTINGS_WATCH}>
               Sources
             </AllLink>
+            <Button onClick={entries.openNew}>New entry</Button>
             <Button
               variant="primary"
               disabled={checking || !sources || sources.length === 0}
@@ -88,7 +92,9 @@ export function WatchPage(): React.JSX.Element {
         </Notice>
       )}
 
-      {sources === null || items === null ? null : sources.length === 0 ? (
+      {entries.dialog}
+
+      {sources === null || items === null ? null : sources.length === 0 && items.length === 0 ? (
         <EmptyState
           heading="Nothing watched yet"
           message="Add the pages and feeds you check by hand, and Watch tells you what is new."

@@ -18,6 +18,7 @@ import {
 } from '../shared/query'
 import { SECTION_NOUN } from '../shared/rows'
 import type { WatchSection } from '../shared/types'
+import { useManualEntries } from './useManualEntries'
 import { useWatchItems } from './useWatchItems'
 import { WatchTable } from './WatchTable'
 import styles from './WatchAllPage.module.css'
@@ -25,7 +26,9 @@ import styles from './WatchAllPage.module.css'
 /** Every item of one section (See all trainings, conferences, opportunities): search, source and state filters, grouped Saved, New, Read. */
 export function WatchAllPage({ section }: { section: WatchSection }): React.JSX.Element {
   const noun = SECTION_NOUN[section].many.toLowerCase()
-  const { items, ...actions } = useWatchItems({ section, limit: 1000 })
+  const { items, ...itemActions } = useWatchItems({ section, limit: 1000 })
+  const entries = useManualEntries()
+  const actions = { ...itemActions, ...entries.actions }
   // The filters are not remembered: every visit starts on All sources, All.
   const [saved, setSaved] = useState<WatchQuery>(DEFAULT_WATCH_QUERY)
   const setQuery = (changes: Partial<WatchQuery>): void => setSaved((q) => ({ ...q, ...changes }))
@@ -89,6 +92,7 @@ export function WatchAllPage({ section }: { section: WatchSection }): React.JSX.
         />
       </FilterRow>
       <div className={styles.content}>{content}</div>
+      {entries.dialog}
     </div>
   )
 }

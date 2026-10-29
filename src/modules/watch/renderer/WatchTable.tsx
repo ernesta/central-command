@@ -8,11 +8,12 @@ import shared from '@renderer/components/ListTable.module.css'
 import { deadlineFor, foundLabel, titleParts, whenFor } from '../shared/rows'
 import { cutGroups, type WatchGroup } from '../shared/query'
 import { ItemActions } from './ItemActions'
+import type { EntryActions } from './useManualEntries'
 import type { WatchItems } from './useWatchItems'
 import styles from './WatchAllPage.module.css'
 
 /** Column widths; the title takes the rest. */
-const WIDTHS = { found: 128, when: 190, deadline: 170, source: 240, actions: 96 }
+const WIDTHS = { found: 128, when: 190, deadline: 170, source: 240, actions: 132 }
 const HEADINGS = ['Found', 'Title', 'When', 'Deadline', 'Source', '']
 
 /**
@@ -29,7 +30,7 @@ export function WatchTable({
   groups: readonly WatchGroup[]
   today: string
   label: string
-  actions: Pick<WatchItems, 'toggleSaved' | 'toggleRead' | 'open'>
+  actions: Pick<WatchItems, 'toggleSaved' | 'toggleRead' | 'open'> & Partial<EntryActions>
 }): React.JSX.Element {
   const [opened, setOpened] = useState<ReadonlySet<WatchGroup['key']>>(new Set())
   const groups = cutGroups(all, opened)
