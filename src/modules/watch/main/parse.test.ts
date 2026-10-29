@@ -84,9 +84,29 @@ describe('parseFeed', () => {
           )
         )
       ).toEqual([
-        ['Documents as Data - Online', '2027-03-09'],
-        ['Radical Research Ethics - Online', '2027-04-20'],
+        ['Documents as Data', '2027-03-09'],
+        ['Radical Research Ethics', '2027-04-20'],
         ['Spring course', '2026-11-05']
+      ])
+    })
+
+    it('loses how the course is delivered, which the title ends with', () => {
+      expect(
+        dated(
+          parseFeed(
+            feed(
+              'Documents as Data - online (09/03/27)',
+              'Survey Design - In Person (24/05/27)',
+              'Series – A three-workshop series (online) (23/11/26)',
+              'Online Surveys (20/04/27)'
+            )
+          )
+        ).map(([title]) => title)
+      ).toEqual([
+        'Documents as Data',
+        'Survey Design',
+        'Series – A three-workshop series',
+        'Online Surveys'
       ])
     })
 

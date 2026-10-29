@@ -69,6 +69,9 @@ const MAX_SUMMARY = 1200
 /** A title that ends with its day in brackets, numerically: "Documents as Data - Online (09/03/27)". */
 const TITLE_NUMERIC_DATE = /\s*\((\d{1,2})\/(\d{1,2})\/(\d{4}|\d{2})\)\s*$/
 
+/** How a course is delivered, at the end of its title ("- Online", "- In Person", "(online)"): kept off the title. */
+const TITLE_MODE = /\s*(?:[-–]\s*|\()(?:online|in[- ]person|hybrid)\)?\s*$/i
+
 /**
  * Titles ending "(dd/mm/yy)" (NCRM's training feed) have their date read and cut from the title. The order is ambiguous, so it is read
  * only when the feed shows it: one day above 12 in the first place and none in the second (as for a page's numeric dates).
@@ -84,7 +87,7 @@ function readTitleDates(items: ParsedItem[]): void {
     const year = m[3].length === 2 ? 2000 + Number(m[3]) : Number(m[3])
     const date = new Date(Date.UTC(year, month - 1, day))
     if (date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return
-    item.title = item.title.replace(TITLE_NUMERIC_DATE, '')
+    item.title = item.title.replace(TITLE_NUMERIC_DATE, '').replace(TITLE_MODE, '')
     item.dates = {
       eventStart: date.toISOString().slice(0, 10),
       eventEnd: null,
