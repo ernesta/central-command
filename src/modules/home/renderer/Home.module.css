@@ -60,7 +60,14 @@
   flex: 1;
   min-width: 0;
 }
+.titleLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
 .title {
+  min-width: 0;
   overflow: hidden;
   font-size: var(--text-15);
   text-overflow: ellipsis;

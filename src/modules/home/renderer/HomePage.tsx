@@ -71,6 +71,7 @@ function Row({
   titleText,
   line,
   trailing,
+  afterTitle = null,
   kid = false,
   end = false,
   hasKids = false
@@ -82,6 +83,8 @@ function Row({
   titleText: string
   line: React.ReactNode
   trailing: React.ReactNode
+  /** Sits right after the title, which gives way to it when cut. */
+  afterTitle?: React.ReactNode
   /** A subtask under its task, hung off a rail as in the Tasks table; `end` for the last one. */
   kid?: boolean
   end?: boolean
@@ -96,9 +99,12 @@ function Row({
       <Link className={styles.row} to={to}>
         {lead}
         <span className={styles.grow}>
-          <Tooltip text={titleText} whenCut>
-            <span className={styles.title}>{title}</span>
-          </Tooltip>
+          <span className={styles.titleLine}>
+            <Tooltip text={titleText} whenCut>
+              <span className={styles.title}>{title}</span>
+            </Tooltip>
+            {afterTitle}
+          </span>
           {line && <span className={styles.small}>{line}</span>}
         </span>
         {trailing}
@@ -142,31 +148,34 @@ function TaskRow({
           {task.title}
         </>
       }
+      afterTitle={
+        kidCount > 0 &&
+        onToggle && (
+          <Tooltip text={`${open ? 'Hide' : 'Show'} ${kidCount === 1 ? 'subtask' : 'subtasks'}`}>
+            <button
+              type="button"
+              className={[styles.pill, open && styles.pillOpen].filter(Boolean).join(' ')}
+              aria-expanded={open}
+              aria-label={`${open ? 'Hide' : 'Show'} ${kidCount} ${kidCount === 1 ? 'subtask' : 'subtasks'}`}
+              onClick={(event) => {
+                event.preventDefault()
+                event.stopPropagation()
+                onToggle()
+              }}
+            >
+              {kidCount}
+              {open ? (
+                <ChevronDown size={12} strokeWidth={1.75} aria-hidden />
+              ) : (
+                <ChevronRight size={12} strokeWidth={1.75} aria-hidden />
+              )}
+            </button>
+          </Tooltip>
+        )
+      }
       line={kid ? null : <SubtaskLine parent={task.parent} list={task.list} due={due} />}
       trailing={
         <>
-          {kidCount > 0 && onToggle && (
-            <Tooltip text={`${open ? 'Hide' : 'Show'} ${kidCount === 1 ? 'subtask' : 'subtasks'}`}>
-              <button
-                type="button"
-                className={[styles.pill, open && styles.pillOpen].filter(Boolean).join(' ')}
-                aria-expanded={open}
-                aria-label={`${open ? 'Hide' : 'Show'} ${kidCount} ${kidCount === 1 ? 'subtask' : 'subtasks'}`}
-                onClick={(event) => {
-                  event.preventDefault()
-                  event.stopPropagation()
-                  onToggle()
-                }}
-              >
-                {kidCount}
-                {open ? (
-                  <ChevronDown size={12} strokeWidth={1.75} aria-hidden />
-                ) : (
-                  <ChevronRight size={12} strokeWidth={1.75} aria-hidden />
-                )}
-              </button>
-            </Tooltip>
-          )}
           <LateChip days={task.daysLate} />
           {/* A subtask shows no priority, as in the Tasks table; its space stays so the late chips line up. */}
           {task.parent === null ? (
