@@ -38,6 +38,9 @@ const CONFERENCE_WORDS = /\b(conferences?|symposi(?:um|a)|congress|colloqui(?:um
 /** A conference by name (researchED is a series of them) or by its own description ("Reconstructing Reading is an online conference"). */
 const CONFERENCE_NAME = /\bresearched\b/i
 const CONFERENCE_SAYS = /\b(?:is|are) an? (?:[\w-]+ ){0,2}conference\b/i
+/** A title that says it is an occasion, not a course, even in a training source ("Doctoral Open Day", "Early Career Researcher Event"). */
+const OCCASION_TITLE =
+  /\b(open (?:day|evening)|events?|lectures?|talks?|launch|networking|showcase|celebration|festival)\b/i
 const PAPERS_CALL = /\b(call for (?:papers|abstracts|proposals|submissions)|cfp)\b/i
 
 /**
@@ -46,7 +49,7 @@ const PAPERS_CALL = /\b(call for (?:papers|abstracts|proposals|submissions)|cfp)
  * 2. Training: a course word. The one conflict, decided on the facts: a "workshop" that is a call for papers
  *    ("Workshop at SLE 2027 … call for papers") is a conference that happens to be called a workshop, not a course.
  * 3. What a training source (named for courses) lists is training: nothing there is a conference
- *    ("Preparing a Conference Submission" is a course).
+ *    ("Preparing a Conference Submission" is a course), unless the title says it is an occasion ("Doctoral Open Day"), which is an event.
  * 4. Conference: a conference word in the title, a "Confs:" title, researchED, a description that says it "is a … conference", or a call for papers.
  * 5. Everything else, when the words do not say, is an event.
  * A manual entry's section is chosen by the user and never goes through here.
@@ -62,7 +65,8 @@ export function sectionOf(title: string, summary = '', sourceTitle = ''): WatchS
   // In a conference listing's own title ("Confs: Munich Inner Speech Workshop") a workshop is a meeting of researchers, not a course.
   const courseTitle = CONFS_PREFIX.test(title) ? title.replace(/\bworkshops?\b/gi, '') : title
   if (COURSE_WORDS.test(courseTitle) && !PAPERS_CALL.test(text)) return 'training'
-  if (TRAINING_SOURCE.test(sourceTitle) && !CONFS_PREFIX.test(title)) return 'training'
+  if (TRAINING_SOURCE.test(sourceTitle) && !CONFS_PREFIX.test(title) && !OCCASION_TITLE.test(title))
+    return 'training'
   if (
     CONFS_PREFIX.test(title) ||
     CONFERENCE_WORDS.test(title) ||

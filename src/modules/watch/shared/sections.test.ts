@@ -73,7 +73,12 @@ describe('sectionOf with a training source', () => {
     [
       'Doctoral Open Day: Music, Sound and Vision',
       'Royal Holloway Doctoral School: PGR events',
-      'training'
+      'event'
+    ],
+    [
+      'Early Career Researcher Event 27 November at Wellcome Collection',
+      'Royal Holloway Doctoral School: PGR events',
+      'event'
     ],
     [
       'ADR Funded Training: Good Practice for R Users',
