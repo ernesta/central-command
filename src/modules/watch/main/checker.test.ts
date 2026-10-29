@@ -50,11 +50,7 @@ function respond(
 }
 
 const add = (over = {}): ReturnType<typeof addSource> =>
-  addSource(
-    db,
-    { title: 'Confs', url: 'https://ex.org/feed', kind: 'conference', method: 'feed', ...over },
-    NOW
-  )
+  addSource(db, { title: 'Confs', url: 'https://ex.org/feed', method: 'feed', ...over }, NOW)
 
 describe('sources', () => {
   it('stores a source and refuses a second one for the same address', () => {
@@ -391,27 +387,28 @@ describe('items, keywords, upcoming and counts', () => {
     expect(listItems(db, { state: 'new' })).toEqual([])
   })
 
-  it('lists by kind: a summer school is a training, a journal is in neither section', async () => {
-    const training = add({ url: 'https://ex.org/t', kind: 'training' })
-    const school = add({ url: 'https://ex.org/s', kind: 'summer-school' })
-    const conf = add({ url: 'https://ex.org/c', kind: 'conference' })
-    for (const [s, id] of [
-      [training, 't'],
-      [school, 's'],
-      [conf, 'c']
-    ] as const)
-      await checkSource(
-        db,
-        s,
-        respond(feed([{ id, title: `Item ${id}`, date: 'Wed, 14 Oct 2026 10:00:00 GMT' }])),
-        NOW
-      )
-    expect(
-      listItems(db, { kind: 'training' })
-        .map((i) => i.title)
-        .sort()
-    ).toEqual(['Item s', 'Item t'])
-    expect(listItems(db, { kind: 'conference' }).map((i) => i.title)).toEqual(['Item c'])
+  it('lists by section: an item is sorted by its own words, whatever its source', async () => {
+    const one = add({ url: 'https://ex.org/one' })
+    const two = add({ url: 'https://ex.org/two' })
+    const feedOf = (items: { id: string; title: string }[]): string =>
+      feed(items.map((i) => ({ ...i, date: 'Wed, 14 Oct 2026 10:00:00 GMT' })))
+    await checkSource(
+      db,
+      one,
+      respond(
+        feedOf([
+          { id: 't', title: 'Masterclass: writing' },
+          { id: 'f', title: 'Early-career fellowship' }
+        ])
+      ),
+      NOW
+    )
+    await checkSource(db, two, respond(feedOf([{ id: 'c', title: 'Reading 2027' }])), NOW)
+    const titles = (section: 'training' | 'conference' | 'opportunity'): string[] =>
+      listItems(db, { section }).map((i) => i.title)
+    expect(titles('training')).toEqual(['Masterclass: writing'])
+    expect(titles('conference')).toEqual(['Reading 2027'])
+    expect(titles('opportunity')).toEqual(['Early-career fellowship'])
   })
 
   it('"open" is new plus saved; mark-all-seen leaves saved alone', async () => {
@@ -478,20 +475,6 @@ describe('changing a source', () => {
     const moved = updateSource(db, a.id, { url: 'https://ex.org/new#frag', title: 'Moved' })
     expect(moved).toMatchObject({ url: 'https://ex.org/new', title: 'Moved', lastOkAt: null })
     expect(updateSource(db, a.id, { title: 'Same address' }).url).toBe('https://ex.org/new')
-  })
-})
-
-describe('the two kinds migration', () => {
-  it('turns stored summer schools into trainings', () => {
-    const old = new Database(':memory:')
-    runMigrations(old, watchMigrations.slice(0, 1))
-    old
-      .prepare(
-        "INSERT INTO watch_sources (title, url, kind, method, created_at) VALUES ('S', 'https://ex.org/s', 'summer-school', 'page', 'x')"
-      )
-      .run()
-    runMigrations(old, watchMigrations)
-    expect(listSources(old).map((s) => s.kind)).toEqual(['training'])
   })
 })
 

@@ -72,7 +72,9 @@ export function planReparse(db: Database, today: string): SourcePlan[] {
  */
 export function applyReparse(db: Database, plan: readonly SourcePlan[]): number {
   let removed = 0
-  const drop = db.prepare("DELETE FROM watch_items WHERE id = ? AND state != 'saved'")
+  const drop = db.prepare(
+    "DELETE FROM watch_items WHERE id = ? AND state != 'saved' AND manual = 0"
+  )
   const forget = db.prepare(
     'UPDATE watch_sources SET etag = NULL, last_modified = NULL, page_hash = NULL, found_via = NULL, changed_at = NULL WHERE id = ?'
   )

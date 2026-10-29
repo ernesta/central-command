@@ -6,6 +6,7 @@ import workspace from './migrations/0004_workspace.sql?raw'
 import dismissedToRead from './migrations/0005_dismissed_to_read.sql?raw'
 import itemDates from './migrations/0006_item_dates.sql?raw'
 import structuredSources from './migrations/0007_structured_sources.sql?raw'
+import events from './migrations/0008_events.sql?raw'
 
 export const watchMigrations: Migration[] = [
   { id: 'watch/0001_init', sql: init },
@@ -14,5 +15,6 @@ export const watchMigrations: Migration[] = [
   { id: 'watch/0004_workspace', sql: workspace },
   { id: 'watch/0005_dismissed_to_read', sql: dismissedToRead },
   { id: 'watch/0006_item_dates', sql: itemDates },
-  { id: 'watch/0007_structured_sources', sql: structuredSources }
+  { id: 'watch/0007_structured_sources', sql: structuredSources },
+  { id: 'watch/0008_events', sql: events }
 ]

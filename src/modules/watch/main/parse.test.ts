@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import { crossrefUrl, parseCrossref } from './parse-crossref'
 import { parseFeed, plainText } from './parse-feed'
 import { datedSentences, parsePage } from './parse-page'
-import { itemKind } from '../shared/types'
 import { findDate } from '../shared/dates'
 
 const RSS = `<?xml version="1.0" encoding="UTF-8"?>
@@ -184,13 +183,5 @@ describe('parsePage cards', () => {
       ['Reconstructing Reading 2026', '2026-11-16']
     ])
     expect(links[0].summary).toBe('Event 11 Nov 2026 Try out practical strategies.')
-  })
-})
-
-describe('itemKind', () => {
-  it('makes a course on a conference listing a training, and nothing else', () => {
-    expect(itemKind('Secondary CPD: Developing literacy', 'conference')).toBe('training')
-    expect(itemKind('Reconstructing Reading 2026', 'conference')).toBeNull()
-    expect(itemKind('Summer course', 'training')).toBeNull()
   })
 })

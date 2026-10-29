@@ -2,11 +2,13 @@ import { BrowserWindow, ipcMain, net } from 'electron'
 import type { MainContext, MainModule } from '../../main-registry'
 import { WATCH_IPC } from '../shared/api'
 import {
-  WATCH_KINDS,
   WATCH_METHODS,
+  WATCH_SECTIONS,
   WATCH_STATES,
   WATCH_WORKSPACES,
+  type ManualItemInput,
   type NewWatchSource,
+  type WatchItem,
   type WatchCounts,
   type WatchItemsQuery,
   type WatchSourceChanges,
@@ -14,19 +16,25 @@ import {
   type WatchWorkspace
 } from '../shared/types'
 import { rescoreItems } from './checker'
+import { readEntryLink } from './entry-link'
 import { watchMigrations } from './migrations'
 import { makeNetFetcher } from './net-fetcher'
 import {
   addSource,
+  createManualItem,
+  deleteManualItem,
   getCounts,
   getKeywords,
   listItems,
   listSources,
   markAllSeen,
   openItem,
+  reclassifyItems,
   removeSource,
+  restoreManualItem,
   setItemState,
   setKeywords,
+  updateManualItem,
   updateSource,
   upcoming
 } from './repository'
@@ -52,16 +60,13 @@ function asWorkspace(value: unknown): WatchWorkspace | undefined {
 
 function asNewSource(value: unknown): NewWatchSource {
   const o = asObject(value, 'source')
-  const kind = str(o.kind)
   const method = str(o.method)
-  if (!kind || !(WATCH_KINDS as readonly string[]).includes(kind)) throw new Error('Invalid kind')
   if (!method || !(WATCH_METHODS as readonly string[]).includes(method))
     throw new Error('Invalid method')
   return {
     workspace: asWorkspace(o.workspace),
     title: str(o.title) ?? '',
     url: str(o.url) ?? '',
-    kind: kind as NewWatchSource['kind'],
     method: method as NewWatchSource['method'],
     issn: str(o.issn) ?? null,
     groupLabel: str(o.groupLabel),
@@ -77,7 +82,6 @@ function asChanges(value: unknown): WatchSourceChanges {
   if (workspace) out.workspace = workspace
   if (str(o.title) !== undefined) out.title = str(o.title)
   if (str(o.url) !== undefined) out.url = str(o.url)
-  if (str(o.kind) !== undefined) out.kind = str(o.kind) as WatchSourceChanges['kind']
   if (str(o.groupLabel) !== undefined) out.groupLabel = str(o.groupLabel)
   if (typeof o.intervalHours === 'number') out.intervalHours = o.intervalHours
   if (typeof o.active === 'boolean') out.active = o.active
@@ -87,6 +91,26 @@ function asChanges(value: unknown): WatchSourceChanges {
     out.method = method as WatchSourceChanges['method']
   }
   return out
+}
+
+const nullableString = (v: unknown): string | null => (typeof v === 'string' && v ? v : null)
+
+function asManualItem(value: unknown): ManualItemInput {
+  const o = asObject(value, 'entry')
+  const section = str(o.section)
+  if (!section || !(WATCH_SECTIONS as readonly string[]).includes(section))
+    throw new Error('Invalid section')
+  return {
+    workspace: asWorkspace(o.workspace),
+    title: str(o.title) ?? '',
+    section: section as ManualItemInput['section'],
+    url: str(o.url),
+    summary: str(o.summary),
+    eventDate: nullableString(o.eventDate),
+    eventEnd: nullableString(o.eventEnd),
+    deadline: nullableString(o.deadline),
+    deadlineLabel: nullableString(o.deadlineLabel)
+  }
 }
 
 function asQuery(value: unknown): WatchItemsQuery {
@@ -99,13 +123,13 @@ function asQuery(value: unknown): WatchItemsQuery {
     !(WATCH_STATES as readonly string[]).includes(state)
   )
     throw new Error('Invalid state')
-  const kind = str(o.kind)
-  if (kind !== undefined && !(WATCH_KINDS as readonly string[]).includes(kind))
-    throw new Error('Invalid kind')
+  const section = str(o.section)
+  if (section !== undefined && !(WATCH_SECTIONS as readonly string[]).includes(section))
+    throw new Error('Invalid section')
   return {
     workspace: asWorkspace(o.workspace),
     state: state as WatchItemsQuery['state'],
-    kind: kind as WatchItemsQuery['kind'],
+    section: section as WatchItemsQuery['section'],
     sourceId: typeof o.sourceId === 'number' ? o.sourceId : undefined,
     relevantOnly: o.relevantOnly === true,
     limit: typeof o.limit === 'number' ? o.limit : undefined
@@ -117,9 +141,12 @@ function register({ db }: MainContext): () => void {
     for (const window of BrowserWindow.getAllWindows())
       window.webContents.send(WATCH_IPC.changed, counts)
   }
+  // Sections come from each item's own words: stored ones are recomputed at launch (entries by hand keep the user's choice).
+  reclassifyItems(db)
+  const fetcher = makeNetFetcher((url, init) => net.fetch(url, init))
   const scheduler = new WatchScheduler({
     db,
-    fetcher: makeNetFetcher((url, init) => net.fetch(url, init)),
+    fetcher,
     onChange: () => broadcast(getCounts(db))
   })
   const now = (): string => new Date().toISOString()
@@ -163,6 +190,31 @@ function register({ db }: MainContext): () => void {
   ipcMain.handle(WATCH_IPC.itemsUpcoming, (_e, days: unknown, workspace: unknown) =>
     upcoming(db, today(), typeof days === 'number' ? days : 60, 50, asWorkspace(workspace))
   )
+  ipcMain.handle(WATCH_IPC.itemsCreateManual, (_e, input: unknown) => {
+    const item = createManualItem(db, asManualItem(input), now())
+    broadcast(getCounts(db))
+    return item
+  })
+  ipcMain.handle(WATCH_IPC.itemsUpdateManual, (_e, id: unknown, input: unknown) => {
+    const item = updateManualItem(db, asId(id), asManualItem(input))
+    broadcast(getCounts(db))
+    return item
+  })
+  ipcMain.handle(WATCH_IPC.itemsDeleteManual, (_e, id: unknown) => {
+    const item = deleteManualItem(db, asId(id))
+    broadcast(getCounts(db))
+    return item
+  })
+  ipcMain.handle(WATCH_IPC.itemsRestoreManual, (_e, item: unknown) => {
+    const o = asObject(item, 'entry') as unknown as WatchItem
+    const restored = restoreManualItem(db, o, now())
+    broadcast(getCounts(db))
+    return restored
+  })
+  ipcMain.handle(WATCH_IPC.itemsReadLink, (_e, url: unknown) => {
+    if (typeof url !== 'string') throw new Error('Invalid address')
+    return readEntryLink(url, fetcher, today())
+  })
   ipcMain.handle(WATCH_IPC.checkNow, (_e, sourceId: unknown, workspace: unknown) =>
     scheduler.checkNow(sourceId === undefined ? undefined : asId(sourceId), asWorkspace(workspace))
   )

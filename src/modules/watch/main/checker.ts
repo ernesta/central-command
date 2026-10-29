@@ -2,7 +2,7 @@ import { createHash } from 'crypto'
 import type { Database } from 'better-sqlite3'
 import { findDates, isOver, structuredOver } from '../shared/dates'
 import { scoreText } from '../shared/relevance'
-import { itemKind, type CheckOutcome, type WatchSource } from '../shared/types'
+import { sectionOf, type CheckOutcome, type WatchSource } from '../shared/types'
 import { loadSource, resolveUndated, type LoadOptions } from './load-source'
 import { getKeywords } from './repository'
 
@@ -77,18 +77,18 @@ export async function checkSource(
     const insert = db.prepare(
       `INSERT OR IGNORE INTO watch_items
          (source_id, item_key, title, url, summary, published_at, event_date, event_end, deadline, deadline_label,
-          score, matched, state, first_seen_at, item_kind)
+          score, matched, state, first_seen_at, section)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     // An item found again has its dates read again (an event that moved, a range that was once only a day); its description is filled in if it had none.
     const update = db.prepare(
       `UPDATE watch_items SET summary = CASE WHEN summary = '' THEN ? ELSE summary END,
-         event_date = ?, event_end = ?, deadline = ?, deadline_label = ?, item_kind = ?
+         event_date = ?, event_end = ?, deadline = ?, deadline_label = ?, section = ?
        WHERE source_id = ? AND item_key = ?`
     )
     // A calendar, an event page or a "no upcoming events" page is the whole truth about its source.
     const refresh = db.prepare(
-      `UPDATE watch_items SET title = ?, summary = ?, event_date = ?, event_end = ?, deadline = ?, deadline_label = ?, item_kind = ?
+      `UPDATE watch_items SET title = ?, summary = ?, event_date = ?, event_end = ?, deadline = ?, deadline_label = ?, section = ?
        WHERE source_id = ? AND item_key = ?`
     )
     const current = items.filter((i) =>
@@ -101,7 +101,7 @@ export async function checkSource(
         const keep = new Set(current.map((i) => i.key))
         const rows = db
           .prepare(
-            "SELECT id, item_key FROM watch_items WHERE source_id = ? AND item_key LIKE 'text:%' AND state != 'saved'"
+            "SELECT id, item_key FROM watch_items WHERE source_id = ? AND item_key LIKE 'text:%' AND state != 'saved' AND manual = 0"
           )
           .all(source.id) as { id: number; item_key: string }[]
         const drop = db.prepare('DELETE FROM watch_items WHERE id = ?')
@@ -110,7 +110,9 @@ export async function checkSource(
       if (got.authoritative) {
         const keep = new Set(current.map((i) => i.key))
         const rows = db
-          .prepare("SELECT id, item_key FROM watch_items WHERE source_id = ? AND state != 'saved'")
+          .prepare(
+            "SELECT id, item_key FROM watch_items WHERE source_id = ? AND state != 'saved' AND manual = 0"
+          )
           .all(source.id) as { id: number; item_key: string }[]
         const drop = db.prepare('DELETE FROM watch_items WHERE id = ?')
         for (const row of rows) if (!keep.has(row.item_key)) drop.run(row.id)
@@ -118,14 +120,14 @@ export async function checkSource(
       // Sentences stored before the page's cards were read with their dates ran across cards: they are not the user's to keep unless saved.
       if (got.cards)
         db.prepare(
-          "DELETE FROM watch_items WHERE source_id = ? AND item_key LIKE 'text:%' AND state != 'saved'"
+          "DELETE FROM watch_items WHERE source_id = ? AND item_key LIKE 'text:%' AND state != 'saved' AND manual = 0"
         ).run(source.id)
       for (const item of current) {
         if (added >= MAX_NEW_PER_CHECK) break
         const text = `${item.title}\n${item.summary}`
         const relevance = scoreText(item.title, item.summary, keywords)
         const dated = item.dates ?? findDates(text, today)
-        const kind = itemKind(item.title, source.kind)
+        const section = sectionOf(item.title, item.summary)
         if (item.dates) {
           // Dates a calendar gave outright: a moved or renamed event is the same item, changed.
           refresh.run(
@@ -135,7 +137,7 @@ export async function checkSource(
             dated.eventEnd,
             dated.deadline,
             dated.deadlineLabel,
-            kind,
+            section,
             source.id,
             item.key
           )
@@ -146,7 +148,7 @@ export async function checkSource(
             dated.eventEnd,
             dated.deadline,
             dated.deadlineLabel,
-            kind,
+            section,
             source.id,
             item.key
           )
@@ -166,7 +168,7 @@ export async function checkSource(
           relevance.matched.join(','),
           'new',
           now,
-          kind
+          section
         )
         added += info.changes
       }

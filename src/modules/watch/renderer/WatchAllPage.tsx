@@ -16,16 +16,16 @@ import {
   watchFiltersActive,
   type WatchQuery
 } from '../shared/query'
-import { KIND_NOUN } from '../shared/rows'
-import type { ShownKind } from '../shared/types'
+import { SECTION_NOUN } from '../shared/rows'
+import type { WatchSection } from '../shared/types'
 import { useWatchItems } from './useWatchItems'
 import { WatchTable } from './WatchTable'
 import styles from './WatchAllPage.module.css'
 
-/** Every item of one kind (See all trainings, See all conferences): search, source and state filters, grouped Saved, New, Read. */
-export function WatchAllPage({ kind }: { kind: ShownKind }): React.JSX.Element {
-  const noun = KIND_NOUN[kind].many.toLowerCase()
-  const { items, ...actions } = useWatchItems({ kind, limit: 1000 })
+/** Every item of one section (See all trainings, conferences, opportunities): search, source and state filters, grouped Saved, New, Read. */
+export function WatchAllPage({ section }: { section: WatchSection }): React.JSX.Element {
+  const noun = SECTION_NOUN[section].many.toLowerCase()
+  const { items, ...actions } = useWatchItems({ section, limit: 1000 })
   // The filters are not remembered: every visit starts on All sources, All.
   const [saved, setSaved] = useState<WatchQuery>(DEFAULT_WATCH_QUERY)
   const setQuery = (changes: Partial<WatchQuery>): void => setSaved((q) => ({ ...q, ...changes }))
@@ -56,7 +56,7 @@ export function WatchAllPage({ kind }: { kind: ShownKind }): React.JSX.Element {
       <WatchTable
         groups={groupItems(visible, query)}
         today={today}
-        label={KIND_NOUN[kind].many}
+        label={SECTION_NOUN[section].many}
         actions={actions}
       />
     )

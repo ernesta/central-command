@@ -12,8 +12,8 @@ import {
 } from '@renderer/components/Landing'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
-import { KIND_NOUN, SHOWN_PER_SECTION, sectionsOf } from '../shared/rows'
-import type { ShownKind } from '../shared/types'
+import { SECTION_NOUN, SHOWN_PER_SECTION, sectionsOf } from '../shared/rows'
+import type { WatchSection } from '../shared/types'
 import { useWatchWorkspace, watchListRoute } from './watch-paths'
 import { useWatchItems } from './useWatchItems'
 import { useWatchSources } from './useWatchSources'
@@ -22,7 +22,7 @@ import listStyles from './WatchList.module.css'
 
 const SETTINGS_WATCH = { settingsTab: 'watch' }
 
-/** The Watch page: what the places the user watches have announced, saved items first, then trainings and conferences. */
+/** The Watch page: what the places the user watches have announced, saved items first, then trainings, conferences and opportunities. */
 export function WatchPage(): React.JSX.Element {
   const { items, ...actions } = useWatchItems()
   const workspace = useWatchWorkspace()
@@ -30,7 +30,7 @@ export function WatchPage(): React.JSX.Element {
   const [checking, setChecking] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const today = useToday()
-  const sections = sectionsOf(items ?? [])
+  const sections = sectionsOf(items ?? [], today)
 
   const checkNow = async (): Promise<void> => {
     setChecking(true)
@@ -44,19 +44,19 @@ export function WatchPage(): React.JSX.Element {
     }
   }
 
-  const section = (kind: ShownKind, list: typeof sections.training): React.JSX.Element => (
+  const section = (kind: WatchSection, list: typeof sections.training): React.JSX.Element => (
     <LandingSection
       id={`watch-${kind}`}
-      label={KIND_NOUN[kind].many}
+      label={SECTION_NOUN[kind].many}
       aside={
         <SeeAllLink to={watchListRoute(kind, workspace)}>
-          See all {KIND_NOUN[kind].many.toLowerCase()}
+          See all {SECTION_NOUN[kind].many.toLowerCase()}
           <ArrowRight size={14} strokeWidth={1.75} aria-hidden />
         </SeeAllLink>
       }
     >
       {list.length === 0 ? (
-        <p className={listStyles.empty}>Nothing new in {KIND_NOUN[kind].many.toLowerCase()}</p>
+        <p className={listStyles.empty}>Nothing new in {SECTION_NOUN[kind].many.toLowerCase()}</p>
       ) : (
         <WatchList items={list.slice(0, SHOWN_PER_SECTION)} today={today} actions={actions} />
       )}
@@ -106,6 +106,7 @@ export function WatchPage(): React.JSX.Element {
           )}
           {section('training', sections.training)}
           {section('conference', sections.conference)}
+          {section('opportunity', sections.opportunity)}
         </>
       )}
     </LandingPage>

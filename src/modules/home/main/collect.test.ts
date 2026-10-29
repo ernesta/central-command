@@ -303,20 +303,12 @@ describe('collectHomeSummary: tracking', () => {
 describe('collectHomeSummary: watch', () => {
   it('has no Watch brief until a source exists', () => {
     expect(collect().watch).toEqual({ research: null, life: null })
-    addSource(
-      db,
-      { title: 'S', url: 'https://ex.org/f', kind: 'conference', method: 'feed' },
-      'now'
-    )
+    addSource(db, { title: 'S', url: 'https://ex.org/f', method: 'feed' }, 'now')
     expect(collect().watch.research?.counts.sources).toBe(1)
   })
 
   it('puts only SAVED items in Coming up, and every new one in the brief', () => {
-    const source = addSource(
-      db,
-      { title: 'S', url: 'https://ex.org/f', kind: 'conference', method: 'feed' },
-      'now'
-    )
+    const source = addSource(db, { title: 'S', url: 'https://ex.org/f', method: 'feed' }, 'now')
     const insert = db.prepare(
       `INSERT INTO watch_items (source_id, item_key, title, url, deadline, state, first_seen_at)
        VALUES (?, ?, ?, 'https://ex.org/i', ?, ?, '2026-10-14T00:00:00.000Z')`
@@ -334,11 +326,8 @@ describe('collectHomeSummary: watch', () => {
 
 describe('collectHomeSummary: Watch per workspace', () => {
   const sourceOf = (workspace: 'research' | 'life', n: number): number =>
-    addSource(
-      db,
-      { title: `S${n}`, url: `https://ex.org/${n}`, kind: 'conference', method: 'feed', workspace },
-      'now'
-    ).id
+    addSource(db, { title: `S${n}`, url: `https://ex.org/${n}`, method: 'feed', workspace }, 'now')
+      .id
   const item = (sourceId: number, key: string, state: string, date: string): void => {
     db.prepare(
       `INSERT INTO watch_items (source_id, item_key, title, url, deadline, state, first_seen_at)

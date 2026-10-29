@@ -19,8 +19,12 @@ export function createWatchModule(workspace: WatchWorkspace): LiveModuleManifest
     status: 'live',
     routes: [
       { path: '', element: createElement(WatchPage) },
-      { path: 'trainings', element: createElement(WatchAllPage, { kind: 'training' }) },
-      { path: 'conferences', element: createElement(WatchAllPage, { kind: 'conference' }) }
+      { path: 'trainings', element: createElement(WatchAllPage, { section: 'training' }) },
+      { path: 'conferences', element: createElement(WatchAllPage, { section: 'conference' }) },
+      {
+        path: 'opportunities',
+        element: createElement(WatchAllPage, { section: 'opportunity' })
+      }
     ],
     landingCard: WatchCard,
     settingsSection: workspace === 'research' ? WatchSettings : undefined

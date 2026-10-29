@@ -1,5 +1,4 @@
 import type { WatchCounts, WatchItem, WatchWorkspace } from '../../watch/shared/types'
-import type { WatchKind } from '../../watch/shared/types'
 
 import type { TaskStatus } from '../../tasks/shared/types'
 
@@ -171,8 +170,6 @@ export interface HomeSummary {
   /** Null when weather is off, has no place yet, or could not be read. */
   weather: WeatherSummary | null
 }
-
-export type { WatchKind }
 
 export interface HomeApi {
   /** Everything the Home page shows, read now. */

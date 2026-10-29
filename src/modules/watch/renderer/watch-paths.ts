@@ -1,6 +1,6 @@
 import { useLocation } from 'react-router'
 import { modulePath } from '@modules/types'
-import { WATCH_WORKSPACES, type ShownKind, type WatchWorkspace } from '../shared/types'
+import { WATCH_WORKSPACES, type WatchSection, type WatchWorkspace } from '../shared/types'
 
 export function watchBase(workspace: WatchWorkspace = 'research'): string {
   return modulePath({ workspace, id: 'watch' })
@@ -14,8 +14,16 @@ export function useWatchWorkspace(): WatchWorkspace {
     : 'research'
 }
 
-/** The list of one kind's items (See all trainings, See all conferences). */
-export const watchListRoute = (kind: ShownKind, workspace: WatchWorkspace = 'research'): string =>
-  `${watchBase(workspace)}/${kind === 'training' ? 'trainings' : 'conferences'}`
+const LIST_PATH: Record<WatchSection, string> = {
+  training: 'trainings',
+  conference: 'conferences',
+  opportunity: 'opportunities'
+}
+
+/** The list of one section's items (See all trainings, conferences, opportunities). */
+export const watchListRoute = (
+  section: WatchSection,
+  workspace: WatchWorkspace = 'research'
+): string => `${watchBase(workspace)}/${LIST_PATH[section]}`
 
 export { todayIso } from '@shared/time'

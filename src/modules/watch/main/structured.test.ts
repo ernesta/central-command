@@ -39,11 +39,8 @@ beforeEach(() => {
   runMigrations(db, watchMigrations)
 })
 
-const page = (
-  title: string,
-  url: string,
-  kind: 'conference' | 'training' = 'conference'
-): ReturnType<typeof addSource> => addSource(db, { title, url, kind, method: 'page' }, NOW)
+const page = (title: string, url: string): ReturnType<typeof addSource> =>
+  addSource(db, { title, url, method: 'page' }, NOW)
 
 const RESEARCHED = 'https://researched.org.uk/upcoming-events'
 const TRIBE =
@@ -154,7 +151,7 @@ describe('SSSR: a page that is one event', () => {
   })
 
   it('reads the same when the user says the page is one event', async () => {
-    const s = addSource(db, { title: 'SSSR', url: MAIN, kind: 'conference', method: 'event' }, NOW)
+    const s = addSource(db, { title: 'SSSR', url: MAIN, method: 'event' }, NOW)
     expect(s.method).toBe('event')
     await checkSource(db, s, sssr(), NOW, NO_WAIT)
     expect(listItems(db).map((i) => i.title)).toEqual(['SSSR Thirty-Fourth Annual Conference'])

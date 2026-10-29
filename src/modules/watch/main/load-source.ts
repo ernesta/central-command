@@ -15,7 +15,7 @@ import {
   tribeRequest
 } from './parse-structured'
 
-const USER_AGENT = 'CentralCommand/1.0 (a local reader of public announcement pages)'
+export const USER_AGENT = 'CentralCommand/1.0 (a local reader of public announcement pages)'
 
 /** How long to wait before the one retry of a request that failed on the network. */
 export const RETRY_WAIT_MS = 2_000

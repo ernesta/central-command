@@ -15,7 +15,8 @@ const item = (over: Partial<WatchItem>): WatchItem => ({
   sourceId: 1,
   workspace: 'research',
   sourceTitle: 'LINGUIST List',
-  kind: 'conference',
+  section: 'conference',
+  manual: false,
   title: 'An item',
   url: 'https://ex.org/1',
   summary: '',
@@ -66,17 +67,47 @@ describe('whenFor and deadlineFor', () => {
 })
 
 describe('sectionsOf', () => {
-  it('puts saved items first and splits the rest by kind, listing only new ones and leaving out kinds not shown', () => {
-    const s = sectionsOf([
-      item({ id: 1, kind: 'conference', state: 'saved', date: '2026-12-01' }),
-      item({ id: 2, kind: 'training', state: 'saved', date: '2026-11-05' }),
-      item({ id: 3, kind: 'summer-school', state: 'new' }),
-      item({ id: 4, kind: 'conference', state: 'seen' }),
-      item({ id: 6, kind: 'journal', state: 'new' })
-    ])
+  it('puts saved items first and splits the rest by section, listing only new ones', () => {
+    const s = sectionsOf(
+      [
+        item({ id: 1, section: 'conference', state: 'saved', date: '2026-12-01' }),
+        item({ id: 2, section: 'training', state: 'saved', date: '2026-11-05' }),
+        item({ id: 3, section: 'training', state: 'new' }),
+        item({ id: 4, section: 'conference', state: 'seen' }),
+        item({ id: 6, section: 'opportunity', state: 'new' })
+      ],
+      '2026-10-29'
+    )
     expect(s.saved.map((i) => i.id)).toEqual([2, 1])
     expect(s.training.map((i) => i.id)).toEqual([3])
     expect(s.conference.map((i) => i.id)).toEqual([])
+    expect(s.opportunity.map((i) => i.id)).toEqual([6])
+  })
+
+  it('leaves an entry by hand whose dates have all passed off the page, and keeps one with no date or a date to come', () => {
+    const s = sectionsOf(
+      [
+        item({ id: 1, manual: true, state: 'saved', deadline: '2026-10-28' }),
+        item({
+          id: 2,
+          manual: true,
+          state: 'saved',
+          eventDate: '2026-10-20',
+          eventEnd: '2026-10-30'
+        }),
+        item({ id: 3, manual: true, state: 'saved' }),
+        item({
+          id: 4,
+          manual: true,
+          state: 'saved',
+          eventDate: '2026-10-01',
+          deadline: '2026-11-02'
+        }),
+        item({ id: 5, manual: false, state: 'saved', deadline: '2026-10-01' })
+      ],
+      '2026-10-29'
+    )
+    expect(s.saved.map((i) => i.id).sort()).toEqual([2, 3, 4, 5])
   })
 })
 

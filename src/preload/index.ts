@@ -294,7 +294,12 @@ const api: Api = {
       open: (id) => ipcRenderer.invoke(WATCH_IPC.itemsOpen, id),
       markAllSeen: (sourceId, workspace) =>
         ipcRenderer.invoke(WATCH_IPC.itemsMarkAllSeen, sourceId, workspace),
-      upcoming: (days, workspace) => ipcRenderer.invoke(WATCH_IPC.itemsUpcoming, days, workspace)
+      upcoming: (days, workspace) => ipcRenderer.invoke(WATCH_IPC.itemsUpcoming, days, workspace),
+      createManual: (input) => ipcRenderer.invoke(WATCH_IPC.itemsCreateManual, input),
+      updateManual: (id, input) => ipcRenderer.invoke(WATCH_IPC.itemsUpdateManual, id, input),
+      deleteManual: (id) => ipcRenderer.invoke(WATCH_IPC.itemsDeleteManual, id),
+      restoreManual: (item) => ipcRenderer.invoke(WATCH_IPC.itemsRestoreManual, item),
+      readLink: (url) => ipcRenderer.invoke(WATCH_IPC.itemsReadLink, url)
     },
     checkNow: (sourceId, workspace) => ipcRenderer.invoke(WATCH_IPC.checkNow, sourceId, workspace),
     counts: (workspace) => ipcRenderer.invoke(WATCH_IPC.counts, workspace),

@@ -44,7 +44,7 @@ console.log(`${tasks.length} open "Check upcoming …" reminder(s) read.\n`)
 for (const label of [...new Set(found.sources.map((s) => s.groupLabel))]) {
   console.log(label)
   for (const s of found.sources.filter((x) => x.groupLabel === label))
-    console.log(`  + ${s.title}  (${s.kind}, page)\n      ${s.url}`)
+    console.log(`  + ${s.title}  (page)\n      ${s.url}`)
 }
 if (found.byHand.length > 0) {
   console.log('\nKeep checking by hand (the app cannot open these):')

@@ -1,23 +1,17 @@
 import { daysBetween } from '@shared/year'
 import { dayLabel, splitTrailingDate, whenLabel } from './dates'
 import { formatDate, formatShortDate } from '@shared/time'
-import {
-  shownKind,
-  type ShownKind,
-  type WatchItem,
-  type WatchKind,
-  type WatchSource,
-  type WatchWorkspace
-} from './types'
+import type { WatchItem, WatchSection, WatchSource, WatchWorkspace } from './types'
 
 export const WORKSPACE_LABEL: Record<WatchWorkspace, string> = {
   research: 'Research',
   life: 'Life'
 }
 
-export const KIND_NOUN: Record<ShownKind, { one: string; many: string }> = {
+export const SECTION_NOUN: Record<WatchSection, { one: string; many: string }> = {
   training: { one: 'Training', many: 'Trainings' },
-  conference: { one: 'Conference', many: 'Conferences' }
+  conference: { one: 'Conference', many: 'Conferences' },
+  opportunity: { one: 'Opportunity', many: 'Opportunities' }
 }
 
 /**
@@ -64,23 +58,37 @@ export interface WatchSections {
   saved: WatchItem[]
   training: WatchItem[]
   conference: WatchItem[]
+  opportunity: WatchItem[]
 }
 
 /** How many new items each section of the page lists; "See all" has the rest. */
 export const SHOWN_PER_SECTION = 8
 
 /**
- * The page's sections: what is saved (of either kind) first, then each kind's NEW items, newest first (a read item is only in
- * "See all"). An item of a kind the page does not show (a journal) is left out.
+ * An entry added by hand whose dates have all passed. It leaves the landing like an automatic item that is over; it is never
+ * deleted by code (the "See all" lists still hold it).
  */
-export function sectionsOf(items: readonly WatchItem[]): WatchSections {
-  const live = items.filter((i) => shownKind(i.kind) !== null)
-  const unsaved = (kind: ShownKind): WatchItem[] =>
-    live.filter((i) => i.state === 'new' && shownKind(i.kind) === kind)
+export function isPastEntry(item: WatchItem, today: string): boolean {
+  if (!item.manual) return false
+  const dates = [item.eventEnd ?? item.eventDate, item.deadline].filter(
+    (d): d is string => d !== null
+  )
+  return dates.length > 0 && dates.every((d) => d < today)
+}
+
+/**
+ * The page's sections: what is saved (of any section) first, then each section's NEW items, newest first (a read item is only in
+ * "See all"). An entry by hand whose dates are all over is left out.
+ */
+export function sectionsOf(items: readonly WatchItem[], today: string): WatchSections {
+  const live = items.filter((i) => !isPastEntry(i, today))
+  const unsaved = (section: WatchSection): WatchItem[] =>
+    live.filter((i) => i.state === 'new' && i.section === section)
   return {
     saved: live.filter((i) => i.state === 'saved').sort(bySoonestDeadline),
     training: unsaved('training'),
-    conference: unsaved('conference')
+    conference: unsaved('conference'),
+    opportunity: unsaved('opportunity')
   }
 }
 
@@ -110,13 +118,4 @@ export function checkedLabel(
     }
   if (!source.lastCheckedAt) return { text: 'Not yet', failing: false }
   return { text: foundLabel(source.lastCheckedAt, today), failing: false }
-}
-
-export const KIND_LABEL: Record<WatchKind, string> = {
-  training: 'Training',
-  'summer-school': 'Training',
-  conference: 'Conference',
-  journal: 'Journal',
-  listing: 'Listing',
-  other: 'Other'
 }

@@ -2,28 +2,18 @@ import { useState } from 'react'
 import { Button } from '@renderer/components/Button'
 import { Dialog } from '@renderer/components/Dialog'
 import { Input } from '@renderer/components/Input'
-import { Select, type SelectOption } from '@renderer/components/Select'
+import { Select } from '@renderer/components/Select'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
-import { KIND_LABEL, WORKSPACE_LABEL } from '../shared/rows'
+import { WORKSPACE_LABEL } from '../shared/rows'
 import {
   WATCH_WORKSPACES,
   guessMethod,
-  shownKind,
-  type WatchKind,
   type WatchSource,
   type WatchWorkspace
 } from '../shared/types'
 import styles from './WatchSettings.module.css'
 
-const SHOWN: WatchKind[] = ['training', 'conference']
-
-/** The kinds to choose from: the two the page shows, and a source's own odd kind (a journal added earlier) so that saving it changes nothing. */
-function kindOptions(current: WatchKind): SelectOption<WatchKind>[] {
-  const kinds = SHOWN.includes(current) || shownKind(current) ? SHOWN : [...SHOWN, current]
-  return kinds.map((k) => ({ value: k, label: KIND_LABEL[k] }))
-}
-
-/** Add a source, or edit one (name, address, kind) or remove it. Shown while it is wanted. */
+/** Add a source, or edit one (name, address, workspace) or remove it. Shown while it is wanted. */
 export function SourceDialog({
   source,
   itemCount,
@@ -39,13 +29,6 @@ export function SourceDialog({
 }): React.JSX.Element {
   const [title, setTitle] = useState(source?.title ?? '')
   const [url, setUrl] = useState(source?.url ?? '')
-  const [kind, setKind] = useState<WatchKind>(
-    source
-      ? shownKind(source.kind)
-        ? (shownKind(source.kind) as WatchKind)
-        : source.kind
-      : 'training'
-  )
   const [workspace, setWorkspace] = useState<WatchWorkspace>(source?.workspace ?? 'research')
   const [confirming, setConfirming] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -69,7 +52,6 @@ export function SourceDialog({
         await window.api.watch.sources.update(source.id, {
           title,
           url,
-          kind,
           workspace,
           intervalHours: 24
         })
@@ -77,7 +59,6 @@ export function SourceDialog({
         const added = await window.api.watch.sources.add({
           title,
           url,
-          kind,
           workspace,
           method: guessMethod(url),
           intervalHours: 24
@@ -165,25 +146,14 @@ export function SourceDialog({
             onChange={(event) => setUrl(event.target.value)}
           />
         </label>
-        <div className={styles.row2}>
-          <div className={styles.field}>
-            <span className={styles.fieldLabel}>Workspace</span>
-            <Select
-              label="Workspace"
-              value={workspace}
-              options={WATCH_WORKSPACES.map((w) => ({ value: w, label: WORKSPACE_LABEL[w] }))}
-              onChange={setWorkspace}
-            />
-          </div>
-          <div className={styles.field}>
-            <span className={styles.fieldLabel}>Kind</span>
-            <Select
-              label="Kind"
-              value={kind}
-              options={kindOptions(source?.kind ?? 'training')}
-              onChange={setKind}
-            />
-          </div>
+        <div className={styles.field}>
+          <span className={styles.fieldLabel}>Workspace</span>
+          <Select
+            label="Workspace"
+            value={workspace}
+            options={WATCH_WORKSPACES.map((w) => ({ value: w, label: WORKSPACE_LABEL[w] }))}
+            onChange={setWorkspace}
+          />
         </div>
         {error && (
           <p role="alert" className={styles.error}>

@@ -14,7 +14,7 @@ beforeEach(() => {
 })
 
 const source = (url: string, method: 'page' | 'feed' = 'page'): number =>
-  addSource(db, { title: url, url, kind: 'conference', method }, '2026-10-01T00:00:00.000Z').id
+  addSource(db, { title: url, url, method }, '2026-10-01T00:00:00.000Z').id
 
 function item(
   sourceId: number,
@@ -95,17 +95,9 @@ describe('watch:reparse', () => {
       changed_at: null
     })
     const after = listSources(db)[0]
-    expect([
-      after.title,
-      after.url,
-      after.kind,
-      after.method,
-      after.workspace,
-      after.active
-    ]).toEqual([
+    expect([after.title, after.url, after.method, after.workspace, after.active]).toEqual([
       before.title,
       before.url,
-      before.kind,
       before.method,
       before.workspace,
       before.active

@@ -1,18 +1,20 @@
 import type { Database } from 'better-sqlite3'
 import { DEFAULT_KEYWORDS } from '../shared/relevance'
 import {
-  WATCH_KINDS,
+  MANUAL_SOURCE_TITLE,
+  STORED_SOURCE_KIND,
   WATCH_METHODS,
+  WATCH_SECTIONS,
   WATCH_STATES,
   WATCH_WORKSPACES,
-  kindsOf,
-  shownKind,
+  sectionOf,
+  type ManualItemInput,
   type NewWatchSource,
   type WatchCounts,
   type WatchItem,
   type WatchItemsQuery,
-  type WatchKind,
   type WatchMethod,
+  type WatchSection,
   type WatchSource,
   type WatchSourceChanges,
   type WatchState,
@@ -24,7 +26,6 @@ interface SourceRow {
   workspace: WatchWorkspace
   title: string
   url: string
-  kind: WatchKind
   method: WatchMethod
   reading: string | null
   issn: string | null
@@ -50,7 +51,6 @@ const toSource = (r: SourceRow): WatchSource => ({
   workspace: r.workspace,
   title: r.title,
   url: r.url,
-  kind: r.kind,
   method: r.reading === 'event' ? 'event' : r.method,
   issn: r.issn,
   groupLabel: r.group_label,
@@ -88,13 +88,15 @@ const checkWorkspace = (workspace: string): WatchWorkspace => {
   return workspace as WatchWorkspace
 }
 
-/** The sources of one workspace, or of every workspace when none is given (Settings lists them all). */
+/** The sources of one workspace, or of every workspace when none is given (Settings lists them all). The hidden "Added by hand" source is not one of them. */
 export function listSources(db: Database, workspace?: WatchWorkspace): WatchSource[] {
   const rows = workspace
     ? db
-        .prepare(`${SOURCE_SELECT} WHERE s.workspace = ? ORDER BY s.group_label, s.title`)
+        .prepare(
+          `${SOURCE_SELECT} WHERE s.manual = 0 AND s.workspace = ? ORDER BY s.group_label, s.title`
+        )
         .all(checkWorkspace(workspace))
-    : db.prepare(`${SOURCE_SELECT} ORDER BY s.group_label, s.title`).all()
+    : db.prepare(`${SOURCE_SELECT} WHERE s.manual = 0 ORDER BY s.group_label, s.title`).all()
   return (rows as SourceRow[]).map(toSource)
 }
 
@@ -106,7 +108,6 @@ export function getSource(db: Database, id: number): WatchSource | null {
 export function addSource(db: Database, input: NewWatchSource, now: string): WatchSource {
   const title = input.title.trim()
   if (!title) throw new Error('A source needs a name')
-  if (!(WATCH_KINDS as readonly string[]).includes(input.kind)) throw new Error('Invalid kind')
   if (!(WATCH_METHODS as readonly string[]).includes(input.method))
     throw new Error('Invalid method')
   const url = validSourceUrl(input.url)
@@ -127,7 +128,7 @@ export function addSource(db: Database, input: NewWatchSource, now: string): Wat
       workspace,
       title,
       url,
-      input.kind,
+      STORED_SOURCE_KIND,
       // The CHECK on `method` has no 'event': a page that is one event is stored as a page read as an event.
       input.method === 'event' ? 'page' : input.method,
       input.method === 'event' ? 'event' : null,
@@ -146,7 +147,6 @@ export function updateSource(db: Database, id: number, changes: WatchSourceChang
   const next = { ...current, ...changes }
   checkWorkspace(next.workspace)
   if (!next.title.trim()) throw new Error('A source needs a name')
-  if (!(WATCH_KINDS as readonly string[]).includes(next.kind)) throw new Error('Invalid kind')
   if (
     !Number.isInteger(next.intervalHours) ||
     next.intervalHours < 1 ||
@@ -170,10 +170,9 @@ export function updateSource(db: Database, id: number, changes: WatchSourceChang
     if (taken && taken.id !== id) throw new Error('Already watching that address')
   }
   db.prepare(
-    'UPDATE watch_sources SET title = ?, kind = ?, group_label = ?, interval_hours = ?, active = ?, workspace = ? WHERE id = ?'
+    'UPDATE watch_sources SET title = ?, group_label = ?, interval_hours = ?, active = ?, workspace = ? WHERE id = ?'
   ).run(
     next.title.trim(),
-    next.kind,
     next.groupLabel,
     next.intervalHours,
     next.active ? 1 : 0,
@@ -199,7 +198,8 @@ interface ItemRow {
   source_id: number
   workspace: WatchWorkspace
   source_title: string
-  kind: WatchKind
+  section: WatchSection | null
+  manual: number
   title: string
   url: string
   summary: string
@@ -219,7 +219,8 @@ const toItem = (r: ItemRow): WatchItem => ({
   sourceId: r.source_id,
   workspace: r.workspace,
   sourceTitle: r.source_title,
-  kind: r.kind,
+  section: r.section ?? sectionOf(r.title, r.summary),
+  manual: r.manual === 1,
   title: r.title,
   url: r.url,
   summary: r.summary,
@@ -237,12 +238,12 @@ const toItem = (r: ItemRow): WatchItem => ({
 })
 
 const ITEM_SELECT = `
-  SELECT i.*, s.title AS source_title, s.workspace AS workspace, COALESCE(i.item_kind, s.kind) AS kind
+  SELECT i.*, s.title AS source_title, s.workspace AS workspace
   FROM watch_items i JOIN watch_sources s ON s.id = i.source_id`
 
 /**
  * Items, the ones that need a look first: not-yet-seen before the rest, then the day they were found and the day they were published, newest first (the
- * keyword score is not shown or sorted by: keywords are not part of the page). "open" means new or saved. A `kind` the page shows (training, conference) takes in its stored kinds.
+ * keyword score is not shown or sorted by: keywords are not part of the page). "open" means new or saved. A `section` is the item's stored section.
  */
 export function listItems(db: Database, query: WatchItemsQuery = {}): WatchItem[] {
   const where: string[] = []
@@ -261,10 +262,11 @@ export function listItems(db: Database, query: WatchItemsQuery = {}): WatchItem[
     where.push('i.source_id = ?')
     params.push(query.sourceId)
   }
-  if (query.kind) {
-    const kinds = shownKind(query.kind) ? kindsOf(shownKind(query.kind)!) : [query.kind]
-    where.push(`COALESCE(i.item_kind, s.kind) IN (${kinds.map(() => '?').join(', ')})`)
-    params.push(...kinds)
+  if (query.section) {
+    if (!(WATCH_SECTIONS as readonly string[]).includes(query.section))
+      throw new Error('Invalid section')
+    where.push('i.section = ?')
+    params.push(query.section)
   }
   if (query.relevantOnly) where.push('i.score > 0')
   const limit = Math.min(Math.max(Math.trunc(query.limit ?? 200), 1), 1000)
@@ -313,8 +315,8 @@ export function getCounts(db: Database, workspace?: WatchWorkspace): WatchCounts
     ? 'FROM watch_items i JOIN watch_sources s ON s.id = i.source_id WHERE s.workspace = ? AND'
     : 'FROM watch_items i WHERE'
   const sources = only
-    ? 'FROM watch_sources s WHERE s.workspace = ? AND'
-    : 'FROM watch_sources s WHERE'
+    ? 'FROM watch_sources s WHERE s.manual = 0 AND s.workspace = ? AND'
+    : 'FROM watch_sources s WHERE s.manual = 0 AND'
   return {
     new: one(`SELECT COUNT(*) AS n ${items} i.state = 'new'`),
     newRelevant: one(`SELECT COUNT(*) AS n ${items} i.state = 'new' AND i.score > 0`),
@@ -378,4 +380,170 @@ export function setKeywords(db: Database, terms: string[]): string[] {
     for (const term of clean) insert.run(term)
   })()
   return getKeywords(db)
+}
+
+/** Every item that is not an entry by hand gets its section from its own words (run at launch and after a check; saved and read states are untouched). */
+export function reclassifyItems(db: Database): void {
+  const rows = db
+    .prepare('SELECT id, title, summary, section FROM watch_items WHERE manual = 0')
+    .all() as { id: number; title: string; summary: string; section: string | null }[]
+  const update = db.prepare('UPDATE watch_items SET section = ? WHERE id = ?')
+  db.transaction(() => {
+    for (const r of rows) {
+      const section = sectionOf(r.title, r.summary)
+      if (section !== r.section) update.run(section, r.id)
+    }
+  })()
+}
+
+/** The workspace's hidden source for entries by hand, made on first use: inactive, never checked, not listed or counted. */
+export function manualSourceId(db: Database, workspace: WatchWorkspace, now: string): number {
+  const w = checkWorkspace(workspace)
+  const row = db
+    .prepare('SELECT id FROM watch_sources WHERE manual = 1 AND workspace = ?')
+    .get(w) as { id: number } | undefined
+  if (row) return row.id
+  const info = db
+    .prepare(
+      `INSERT INTO watch_sources (workspace, title, url, kind, method, interval_hours, active, manual, created_at)
+       VALUES (?, ?, ?, ?, 'page', 24, 0, 1, ?)`
+    )
+    .run(w, MANUAL_SOURCE_TITLE, `cc://added-by-hand/${w}`, STORED_SOURCE_KIND, now)
+  return Number(info.lastInsertRowid)
+}
+
+const DAY = /^\d{4}-\d{2}-\d{2}$/
+
+function cleanManual(input: ManualItemInput): {
+  title: string
+  section: WatchSection
+  url: string
+  summary: string
+  eventDate: string | null
+  eventEnd: string | null
+  deadline: string | null
+  deadlineLabel: string | null
+} {
+  const title = input.title.trim()
+  if (!title) throw new Error('An entry needs a title')
+  if (!(WATCH_SECTIONS as readonly string[]).includes(input.section))
+    throw new Error('Invalid section')
+  const url = input.url?.trim() ? validSourceUrl(input.url) : ''
+  const day = (v: string | null | undefined): string | null => {
+    if (!v) return null
+    if (!DAY.test(v)) throw new Error('Invalid date')
+    return v
+  }
+  const eventDate = day(input.eventDate)
+  const eventEnd = eventDate ? day(input.eventEnd) : null
+  if (eventDate && eventEnd && eventEnd < eventDate) throw new Error('The end is before the start')
+  const deadline = day(input.deadline)
+  return {
+    title,
+    section: input.section,
+    url,
+    summary: (input.summary ?? '').trim(),
+    eventDate,
+    eventEnd: eventEnd && eventEnd !== eventDate ? eventEnd : null,
+    deadline,
+    deadlineLabel: deadline ? input.deadlineLabel?.trim() || 'Apply by' : null
+  }
+}
+
+function getItem(db: Database, id: number): WatchItem {
+  const row = db.prepare(`${ITEM_SELECT} WHERE i.id = ?`).get(id) as ItemRow | undefined
+  if (!row) throw new Error('No such entry')
+  return toItem(row)
+}
+
+/** An entry added by hand: in its section like any other item, created Saved (the user put it there on purpose). */
+export function createManualItem(db: Database, input: ManualItemInput, now: string): WatchItem {
+  const v = cleanManual(input)
+  const sourceId = manualSourceId(db, input.workspace ?? 'research', now)
+  const info = db
+    .prepare(
+      `INSERT INTO watch_items
+         (source_id, item_key, title, url, summary, published_at, event_date, event_end, deadline, deadline_label,
+          score, matched, state, first_seen_at, manual, section)
+       VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, 0, '', 'saved', ?, 1, ?)`
+    )
+    .run(
+      sourceId,
+      `manual:${now}:${Math.random().toString(36).slice(2, 8)}`,
+      v.title,
+      v.url,
+      v.summary,
+      v.eventDate,
+      v.eventEnd,
+      v.deadline,
+      v.deadlineLabel,
+      now,
+      v.section
+    )
+  return getItem(db, Number(info.lastInsertRowid))
+}
+
+function manualOnly(db: Database, id: number): void {
+  const row = db.prepare('SELECT manual FROM watch_items WHERE id = ?').get(id) as
+    { manual: number } | undefined
+  if (!row) throw new Error('No such entry')
+  if (row.manual !== 1) throw new Error('Only an entry added by hand can be changed')
+}
+
+export function updateManualItem(db: Database, id: number, input: ManualItemInput): WatchItem {
+  manualOnly(db, id)
+  const v = cleanManual(input)
+  db.prepare(
+    `UPDATE watch_items SET title = ?, url = ?, summary = ?, event_date = ?, event_end = ?, deadline = ?,
+       deadline_label = ?, section = ? WHERE id = ?`
+  ).run(
+    v.title,
+    v.url,
+    v.summary,
+    v.eventDate,
+    v.eventEnd,
+    v.deadline,
+    v.deadlineLabel,
+    v.section,
+    id
+  )
+  return getItem(db, id)
+}
+
+/** Deletes an entry added by hand and returns it, so the page can offer Undo (`restoreManualItem`). */
+export function deleteManualItem(db: Database, id: number): WatchItem {
+  manualOnly(db, id)
+  const item = getItem(db, id)
+  db.prepare('DELETE FROM watch_items WHERE id = ?').run(id)
+  return item
+}
+
+/** Undo of a delete: the entry comes back as it was (same state, same day found). */
+export function restoreManualItem(db: Database, item: WatchItem, now: string): WatchItem {
+  if (!(WATCH_STATES as readonly string[]).includes(item.state)) throw new Error('Invalid state')
+  if (typeof item.firstSeenAt !== 'string') throw new Error('Invalid entry')
+  const v = cleanManual({ ...item, workspace: item.workspace })
+  const sourceId = manualSourceId(db, item.workspace, now)
+  const info = db
+    .prepare(
+      `INSERT INTO watch_items
+         (source_id, item_key, title, url, summary, published_at, event_date, event_end, deadline, deadline_label,
+          score, matched, state, first_seen_at, manual, section)
+       VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, 0, '', ?, ?, 1, ?)`
+    )
+    .run(
+      sourceId,
+      `manual:${now}:${Math.random().toString(36).slice(2, 8)}`,
+      v.title,
+      v.url,
+      v.summary,
+      v.eventDate,
+      v.eventEnd,
+      v.deadline,
+      v.deadlineLabel,
+      item.state,
+      item.firstSeenAt,
+      v.section
+    )
+  return getItem(db, Number(info.lastInsertRowid))
 }

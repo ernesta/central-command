@@ -23,11 +23,7 @@ beforeEach(() => {
 
 const NOW = '2026-10-15T09:00:00.000Z'
 const source = (n: number, workspace?: 'research' | 'life'): number =>
-  addSource(
-    db,
-    { title: `S${n}`, url: `https://ex.org/f${n}`, kind: 'conference', method: 'feed', workspace },
-    NOW
-  ).id
+  addSource(db, { title: `S${n}`, url: `https://ex.org/f${n}`, method: 'feed', workspace }, NOW).id
 const item = (
   sourceId: number,
   key: string,

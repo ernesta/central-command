@@ -1,5 +1,7 @@
 import type {
   CheckOutcome,
+  EntryLinkRead,
+  ManualItemInput,
   NewWatchSource,
   WatchCounts,
   WatchItem,
@@ -30,6 +32,14 @@ export interface WatchApi {
     markAllSeen(sourceId?: number, workspace?: WatchWorkspace): Promise<number>
     /** Saved items with a deadline or event date from today to `days` days on, soonest first (one workspace's, or all). */
     upcoming(days: number, workspace?: WatchWorkspace): Promise<WatchItem[]>
+    /** An entry added by hand: created Saved, in its section. */
+    createManual(input: ManualItemInput): Promise<WatchItem>
+    updateManual(id: number, input: ManualItemInput): Promise<WatchItem>
+    /** Deletes an entry added by hand and returns it, so that Undo can `restoreManual` it. */
+    deleteManual(id: number): Promise<WatchItem>
+    restoreManual(item: WatchItem): Promise<WatchItem>
+    /** Reads the page a pasted link points to, once, to fill the New entry dialog (one request to that public address). */
+    readLink(url: string): Promise<EntryLinkRead>
   }
   /** Check one source, or all of them (one workspace's, when it is given), now. Resolves when the checks are done. */
   checkNow(sourceId?: number, workspace?: WatchWorkspace): Promise<CheckOutcome[]>
@@ -53,6 +63,11 @@ export const WATCH_IPC = {
   itemsOpen: 'watch:items-open',
   itemsMarkAllSeen: 'watch:items-mark-all-seen',
   itemsUpcoming: 'watch:items-upcoming',
+  itemsCreateManual: 'watch:items-create-manual',
+  itemsUpdateManual: 'watch:items-update-manual',
+  itemsDeleteManual: 'watch:items-delete-manual',
+  itemsRestoreManual: 'watch:items-restore-manual',
+  itemsReadLink: 'watch:items-read-link',
   checkNow: 'watch:check-now',
   counts: 'watch:counts',
   keywordsGet: 'watch:keywords-get',

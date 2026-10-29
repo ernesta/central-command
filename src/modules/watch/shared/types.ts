@@ -1,40 +1,47 @@
-export const WATCH_KINDS = [
-  'conference',
-  'training',
-  'summer-school',
-  'journal',
-  'listing',
-  'other'
-] as const
-export type WatchKind = (typeof WATCH_KINDS)[number]
+/**
+ * The kind a source used to have. Sources have no kind any more (29 Oct 2026: every item is sorted by its own words, `sectionOf`);
+ * the column stays, holding this placeholder, because the CHECK in `watch/0001_init` lists the old kinds and a shipped migration is
+ * never edited. It is never read.
+ */
+export const STORED_SOURCE_KIND = 'conference'
 
 /** The workspaces that have a Watch: each has its own sources, and its items are its sources'. */
 export const WATCH_WORKSPACES = ['research', 'life'] as const
 export type WatchWorkspace = (typeof WATCH_WORKSPACES)[number]
 
-/** The two kinds the Watch page shows (a journals list may come later). A summer school is a training. */
-export const SHOWN_KINDS = ['training', 'conference'] as const
-export type ShownKind = (typeof SHOWN_KINDS)[number]
+/** The sections of the Watch page. A summer school is a training; a fellowship, grant or special-issue call is an opportunity. */
+export const WATCH_SECTIONS = ['training', 'conference', 'opportunity'] as const
+export type WatchSection = (typeof WATCH_SECTIONS)[number]
 
-/** The section a source's items belong to, or null for a kind the page does not show yet (journals, listings). */
-export function shownKind(kind: WatchKind): ShownKind | null {
-  if (kind === 'training' || kind === 'summer-school') return 'training'
-  if (kind === 'conference') return 'conference'
-  return null
-}
-
-/** Words that make a listing's entry a course, whatever the listing's own kind (a literacy charity's events page lists CPD and webinars among its conferences). */
+/** Words that make an item an opportunity, in its title. */
+const OPPORTUNITY_TITLE =
+  /\b(fellowships?|grants?|funding|funded|stipends?|scholarships?|bursar(?:y|ies)|awards?|call for applications|special issues?|thematic dossier)\b|\(jrnl\)/i
+/** The narrower set that counts in the description (a conference's text mentions travel grants and awards in passing). */
+const OPPORTUNITY_SUMMARY = /\b(fellowships?|stipends?|scholarships?|call for applications)\b/i
+/** A word that says the item is an event, so that "apply by" alone does not make it an opportunity. */
+const EVENT_WORDS =
+  /\b(conferences?|confs?|symposi(?:um|a)|congress|colloqui(?:um|a)|meeting|workshops?|schools?|webinars?|courses?|training|masterclass|cpd|briefing|summit|seminar)\b/i
+/** Words that make an item a course. */
 const COURSE_WORDS =
-  /\b(cpd|masterclass|webinars?|course|training|workshop|briefing|summer school)\b/i
+  /\b(cpd|masterclass|webinars?|courses?|training|workshops?|briefing|summer schools?)\b/i
+const PAPERS_CALL = /\b(call for (?:papers|abstracts|proposals|submissions)|cfp)\b/i
 
-/** The kind of one item: a course in a conference listing is a training; anything else keeps its source's kind. */
-export function itemKind(title: string, sourceKind: WatchKind): WatchKind | null {
-  return shownKind(sourceKind) === 'conference' && COURSE_WORDS.test(title) ? 'training' : null
+/**
+ * The section of one item, from its own words (a source has no kind). Tests in this order:
+ * 1. Opportunity: an opportunity word in the title, or a narrower set in the description, or "apply by" with no event word.
+ * 2. Training: a course word. The one conflict, decided on the facts: a "workshop" that is a call for papers
+ *    ("Workshop at SLE 2027 … call for papers") is a conference that happens to be called a workshop, not a course.
+ * 3. Everything else is a conference.
+ * A manual entry's section is chosen by the user and never goes through here.
+ */
+export function sectionOf(title: string, summary = ''): WatchSection {
+  const text = `${title}\n${summary}`
+  if (OPPORTUNITY_TITLE.test(title)) return 'opportunity'
+  if (OPPORTUNITY_SUMMARY.test(summary) && !EVENT_WORDS.test(title)) return 'opportunity'
+  if (/\bapply by\b/i.test(text) && !EVENT_WORDS.test(text)) return 'opportunity'
+  if (COURSE_WORDS.test(title) && !PAPERS_CALL.test(text)) return 'training'
+  return 'conference'
 }
-
-/** The stored kinds that make up a shown one. */
-export const kindsOf = (kind: ShownKind): WatchKind[] =>
-  kind === 'training' ? ['training', 'summer-school'] : ['conference']
 
 /**
  * How a source is read: a feed (RSS or Atom), a web page (its events, from the calendar it carries when it carries one, else from its
@@ -52,7 +59,6 @@ export interface WatchSource {
   workspace: WatchWorkspace
   title: string
   url: string
-  kind: WatchKind
   method: WatchMethod
   issn: string | null
   groupLabel: string
@@ -75,7 +81,6 @@ export interface NewWatchSource {
   workspace?: WatchWorkspace
   title: string
   url: string
-  kind: WatchKind
   method: WatchMethod
   issn?: string | null
   groupLabel?: string
@@ -86,7 +91,7 @@ export interface NewWatchSource {
 export type WatchSourceChanges = Partial<
   Pick<
     WatchSource,
-    'title' | 'url' | 'kind' | 'groupLabel' | 'intervalHours' | 'active' | 'workspace' | 'method'
+    'title' | 'url' | 'groupLabel' | 'intervalHours' | 'active' | 'workspace' | 'method'
   >
 >
 
@@ -98,7 +103,10 @@ export interface WatchItem {
   /** Its source's workspace. */
   workspace: WatchWorkspace
   sourceTitle: string
-  kind: WatchKind
+  /** Which section it is in: its own words (`sectionOf`), or the user's choice for an entry by hand. */
+  section: WatchSection
+  /** An entry the user added by hand: never checked, never removed by a check. */
+  manual: boolean
   title: string
   url: string
   summary: string
@@ -124,7 +132,7 @@ export interface WatchItemsQuery {
   /** `open` is new or saved. */
   state?: WatchState | 'open'
   sourceId?: number
-  kind?: WatchKind
+  section?: WatchSection
   /** Only items that mention at least one of the user's keywords. */
   relevantOnly?: boolean
   limit?: number
@@ -183,8 +191,37 @@ export interface CheckOutcome {
 export interface WatchSuggestion {
   title: string
   url: string
-  kind: WatchKind
   method: WatchMethod
   issn?: string
   groupLabel: string
 }
+
+/** An entry added by hand (any section); every field but the title is optional. */
+export interface ManualItemInput {
+  workspace?: WatchWorkspace
+  title: string
+  section: WatchSection
+  url?: string
+  summary?: string
+  eventDate?: string | null
+  eventEnd?: string | null
+  deadline?: string | null
+  deadlineLabel?: string | null
+}
+
+/** What a pasted link gave: the fields to fill in (all may be empty when the page could not be read). */
+export interface EntryLinkRead {
+  url: string
+  title: string
+  summary: string
+  section: WatchSection
+  eventDate: string | null
+  eventEnd: string | null
+  deadline: string | null
+  deadlineLabel: string | null
+  /** One line when the page could not be read; the link is kept anyway. */
+  notice: string | null
+}
+
+/** The name of the hidden source that holds a workspace's entries by hand. */
+export const MANUAL_SOURCE_TITLE = 'Added by hand'

@@ -161,13 +161,10 @@ const TIME_OFF_LABEL: Record<TimeOffEntry['type'], string> = {
   leave: 'Annual leave'
 }
 
-const KIND_LABEL: Record<WatchItem['kind'], string> = {
+const SECTION_LABEL: Record<WatchItem['section'], string> = {
   conference: 'Conference',
   training: 'Training',
-  'summer-school': 'Summer school',
-  journal: 'Journal',
-  listing: 'Listing',
-  other: 'Watch'
+  opportunity: 'Opportunity'
 }
 
 /** The workspace an event belongs to: set on it, or the first part of its in-app route. */
@@ -292,7 +289,9 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
       date: w.date,
       time: null,
       title: w.title,
-      detail: `${KIND_LABEL[w.kind]} · ${w.sourceTitle}`,
+      detail: w.manual
+        ? SECTION_LABEL[w.section]
+        : `${SECTION_LABEL[w.section]} · ${w.sourceTitle}`,
       route: w.url,
       workspace: w.workspace,
       inDays: daysFrom(today, w.date)

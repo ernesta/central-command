@@ -17,11 +17,7 @@ const RSS =
   '<rss version="2.0"><channel><item><title>T</title><link>https://ex.org/t</link></item></channel></rss>'
 const NOW = '2026-10-15T09:00:00.000Z'
 const add = (n: number, over = {}): number =>
-  addSource(
-    db,
-    { title: `S${n}`, url: `https://ex.org/f${n}`, kind: 'other', method: 'feed', ...over },
-    NOW
-  ).id
+  addSource(db, { title: `S${n}`, url: `https://ex.org/f${n}`, method: 'feed', ...over }, NOW).id
 
 describe('WatchScheduler', () => {
   it('checks what is due, one source at a time with a pause between, and reports once', async () => {

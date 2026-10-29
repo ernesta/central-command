@@ -1,4 +1,4 @@
-import type { WatchKind, WatchSuggestion } from '../shared/types'
+import type { WatchSuggestion } from '../shared/types'
 
 export interface TaskForWatch {
   uid: string
@@ -12,15 +12,6 @@ export interface FromTasks {
   byHand: { taskTitle: string; line: string; reason: string }[]
   /** Lines in a reminder that name a place but give no address. */
   noAddress: { taskTitle: string; line: string }[]
-}
-
-/** The kind a "Check upcoming …" reminder is about, from its title (a summer school is a training; the Watch page has two kinds). */
-export function kindOfReminder(title: string): WatchKind {
-  const t = title.toLowerCase()
-  if (t.includes('summer school')) return 'training'
-  if (t.includes('conference')) return 'conference'
-  if (t.includes('training') || t.includes('course') || t.includes('workshop')) return 'training'
-  return 'other'
 }
 
 const URL_RE = /https?:\/\/[^\s)<>\]]+/gi
@@ -55,7 +46,6 @@ export function sourcesFromTasks(tasks: TaskForWatch[]): FromTasks {
   const seen = new Set<string>()
   for (const task of tasks) {
     if (!/^check upcoming\b/i.test(task.title)) continue
-    const kind = kindOfReminder(task.title)
     for (const rawLine of task.description.split('\n')) {
       const line = rawLine.replace(/^\s*[-*]\s*/, '').trim()
       if (!line) continue
@@ -82,7 +72,6 @@ export function sourcesFromTasks(tasks: TaskForWatch[]): FromTasks {
         out.sources.push({
           title: titleFor(key, task.title),
           url: key,
-          kind,
           method: 'page',
           groupLabel: task.title,
           taskUid: task.uid
