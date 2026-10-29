@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { WatchItem, WatchItemsQuery, WatchState } from '../shared/types'
+import { setStateUndoable } from './item-state-undo'
 import { useWatchWorkspace } from './watch-paths'
 
 export interface WatchItems {
@@ -38,7 +39,8 @@ export function useWatchItems(query: WatchItemsQuery = { limit: 1000 }): WatchIt
   }, [key])
 
   const setState = useCallback(
-    (item: WatchItem, state: WatchState) => window.api.watch.items.setState(item.id, state),
+    (item: WatchItem, state: WatchState) =>
+      setStateUndoable(item, state, window.api.watch.items.setState),
     []
   )
 
@@ -47,7 +49,8 @@ export function useWatchItems(query: WatchItemsQuery = { limit: 1000 }): WatchIt
     toggleSaved: (item) => void setState(item, item.state === 'saved' ? 'seen' : 'saved'),
     toggleRead: (item) => void setState(item, item.state === 'new' ? 'seen' : 'new'),
     open: (item) => {
-      void window.api.watch.items.open(item.id)
+      if (item.state === 'new') void setState(item, 'seen')
+      else void window.api.watch.items.open(item.id)
       window.open(item.url, '_blank', 'noopener')
     }
   }
