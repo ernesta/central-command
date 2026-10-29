@@ -61,6 +61,25 @@ describe('watch:reparse', () => {
     )
   })
 
+  it("removes an unsaved link to the site's search (a card's tag), and the event itself stays", () => {
+    const s = source('https://ex.ac.uk/events')
+    const put = (key: string, url: string, title: string): void => {
+      db.prepare(
+        `INSERT INTO watch_items (source_id, item_key, title, url, event_date, state, first_seen_at)
+         VALUES (?, ?, ?, ?, '2026-11-05', 'new', 'x')`
+      ).run(s, key, title, url)
+    }
+    put('a', 'https://ex.ac.uk/search/?keywords=Public%20spending', 'Public spending')
+    put('b', 'https://ex.ac.uk/events/bsa-defence-and-security', 'BSA: Defence and Security')
+    const plan = planReparse(db, TODAY)
+    expect(plan[0].items.map((p) => [p.item.title, p.remove])).toEqual(
+      expect.arrayContaining([
+        ['Public spending', 'a search link'],
+        ['BSA: Defence and Security', null]
+      ])
+    )
+  })
+
   it('removes unsaved items a page source would not store now, and keeps the ones it would', () => {
     const s = source('https://ex.org/events')
     item(s, 'a', 'FAQs', 'new')

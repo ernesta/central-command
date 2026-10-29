@@ -19,7 +19,7 @@ ask the user.
   - `link:people [--first-names-off]`: people named in prose to person entities (rules in `src/shared/people-mentions.ts`: never the user, never a listed attendee/lead, first mention per note only)
   - `watch:from-tasks`: "Check upcoming …" reminder addresses as Watch sources; **not applied**, only on the user's go-ahead
   - `check:work-lists`: report only (expected: none)
-  - **Do not re-run** (applied; a dry run finds nothing): `backfill:life-self-study`, `luminos:meetings`, `luminos:meetings-2`, `royal-holloway:meeting`, `repair:training-folders`, `watch:reparse`, `watch:add-events`, `watch:add-schools`, `watch:add-training`, `watch:add-training-2`, `tidy:blank-runs`, `tidy:paragraph-blanks`, `standardise:bullets`, `fullname:chips`. Details: `docs/CLAUDE_ARCHIVE.md`, `docs/DECISIONS.md`.
+  - **Do not re-run** (applied; a dry run finds nothing): `backfill:life-self-study`, `luminos:meetings`, `luminos:meetings-2`, `royal-holloway:meeting`, `repair:training-folders`, `watch:add-events`, `watch:add-schools`, `watch:add-training`, `watch:add-training-2`, `tidy:blank-runs`, `tidy:paragraph-blanks`, `standardise:bullets`, `fullname:chips`. Details: `docs/CLAUDE_ARCHIVE.md`, `docs/DECISIONS.md`.
 - A spelling `link:people` cannot resolve is the user's call and lives in `~/CentralCommand/data/people-aliases.json` (`{ text, person, workspaces?, notes? }`; neither `workspaces` nor `notes` means everywhere). Add to the file, not the script.
 
 All of test, lint and typecheck must pass before finishing a checkpoint.

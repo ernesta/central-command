@@ -4871,7 +4871,7 @@ The user asked for an audit of how "something you can click" looks and behaves, 
 
 - **Found by looking at the installed app:** NatCen's events page lists each event as a card with the title link and tag links (`/search/?keywords=Public spending`). A card with several links gives none of them a summary, so each tag with a title of 12 characters or more was stored as an item with the event's date and a link to a search page. `isSearchLink` (`parse-page.ts`: a `/search` path, or a `keywords`, `q`, `query`, `s` or `search` parameter) skips them; mutation-checked.
 - **Also:** `idre` joins the training-source words, so UCLA IDRE's workshop calendar lists trainings.
-- **For the user:** the three stored tag rows keep their old rows until `watch:reparse` (dry run first) or a check removes them; not applied.
+- **`watch:reparse`** judges stored items with the same rule (`a search link`, `reparse.ts`; tested). **Applied to the real library on 29 Oct 2026** (backup `backups/watch-reparse-2026-10-29T12-06-18-599Z`, app closed): the three NatCen tag rows (British Social Attitudes, Public attitudes, Public spending) removed, 61 items kept, nothing saved touched; a dry run now finds nothing. Each page source reads afresh at the app's next check, which also re-sorts UCLA IDRE's items into Training.
 
 ## Watch items are searched (29 Oct 2026, the user's bug report)
 
