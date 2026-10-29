@@ -57,6 +57,7 @@ describe('sectionOf with a training source', () => {
       'training'
     ],
     ['Race and Diversity in Digital Media', 'WRDTP: Training and events calendar', 'training'],
+    ['Computing on the National Research Platform', 'UCLA IDRE: Calendar', 'training'],
     [
       'Doctoral Open Day: Music, Sound and Vision',
       'Royal Holloway Doctoral School: PGR events',

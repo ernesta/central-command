@@ -28,7 +28,8 @@ const COURSE_WORDS =
 const CALLS_PREFIX = /^calls?:/i
 const CONFS_PREFIX = /^confs?:/i
 /** A source named for courses ("WRDTP: Training and events calendar", "Doctoral School: PGR events"): what it lists is training unless an item says otherwise. */
-const TRAINING_SOURCE = /\b(training|courses?|schools?|workshops?|cpd|doctoral|pgr|learning)\b/i
+const TRAINING_SOURCE =
+  /\b(training|courses?|schools?|workshops?|cpd|doctoral|pgr|learning|idre)\b/i
 const PAPERS_CALL = /\b(call for (?:papers|abstracts|proposals|submissions)|cfp)\b/i
 
 /**
