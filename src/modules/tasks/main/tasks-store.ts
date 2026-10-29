@@ -23,7 +23,7 @@ import {
   writeTask
 } from './repository'
 import { listFor } from '../shared/work-lists'
-import { seriesChanges } from '../shared/session-task'
+import { seriesChanges, startedByKids } from '../shared/session-task'
 import { normaliseTag } from '../shared/tag'
 import { byPosition } from '../shared/views'
 
@@ -400,7 +400,9 @@ export class TasksStore {
     if (!uid) return false
     const series = getTask(this.db, uid)
     if (!series) return false
-    const changes = seriesChanges(series, listSubtasks(this.db, uid))
+    const kids = listSubtasks(this.db, uid)
+    const changes = seriesChanges(series, kids)
+    if (changes.status === undefined && startedByKids(series, kids)) changes.status = 'doing'
     if (changes.due === undefined && changes.status === undefined) return false
     const now = this.clock.now()
     const next: Task = { ...series, updatedAt: now }

@@ -88,6 +88,11 @@ export function selfStudyTaskChanges(
   return changes
 }
 
+/** A to-do task whose subtask is in progress or done has been started (the user's rule, 29 Oct 2026). Pure. */
+export function startedByKids(task: Task, kids: readonly Task[]): boolean {
+  return !task.parentUid && task.status === 'todo' && kids.some((k) => k.status !== 'todo')
+}
+
 export interface SeriesChanges {
   due?: string | null
   status?: TaskStatus

@@ -35,7 +35,7 @@ const training = (task: string, date: string, end: string | null): void => {
 const now = { date: '2026-10-17', time: '10:00' }
 
 describe('settleSessionTasks', () => {
-  it("dates and closes a past meeting's own subtask, and leaves the series task alone", () => {
+  it("dates and closes a past meeting's own subtask, and the series task, started by it, keeps its date", () => {
     const parent = store.create({ workspace: 'research', title: 'Rastle Lab', list: 'Meetings' })
     const sub = store.create({
       workspace: 'research',
@@ -46,7 +46,7 @@ describe('settleSessionTasks', () => {
     meeting(sub.uid, '2026-10-10', '11:00')
     expect([...settleSessionTasks(db, store, now)]).toEqual(['research'])
     expect(store.get(sub.uid)).toMatchObject({ status: 'done', due: '2026-10-10' })
-    expect(store.get(parent.uid)).toMatchObject({ status: 'todo', due: null })
+    expect(store.get(parent.uid)).toMatchObject({ status: 'doing', due: null })
     expect(settleSessionTasks(db, store, now).size).toBe(0)
   })
 

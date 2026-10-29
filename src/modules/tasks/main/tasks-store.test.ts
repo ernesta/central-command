@@ -174,12 +174,12 @@ describe('setStatus and recurrence', () => {
     expect(store.setStatus(t.uid, 'todo').task.completedAt).toBeNull()
   })
 
-  it('marks open subtasks done with their parent, and leaves them alone when a subtask is done', () => {
+  it('marks open subtasks done with their parent, and a done subtask starts the parent', () => {
     const t = make('Parent')
     const a = store.create({ workspace: 'research', title: 'A', parentUid: t.uid })
     const b = store.create({ workspace: 'research', title: 'B', parentUid: t.uid })
     store.setStatus(a.uid, 'done')
-    expect(store.get(t.uid)?.status).toBe('todo')
+    expect(store.get(t.uid)?.status).toBe('doing')
     store.setStatus(t.uid, 'done')
     expect(store.get(a.uid)?.status).toBe('done')
     expect(store.get(b.uid)).toMatchObject({ status: 'done' })

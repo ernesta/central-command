@@ -4921,3 +4921,7 @@ The Today card's header said "3 events · 27 due · 1 overdue" (or "Clear") befo
 ## Task tables: a closed task carries the running marker (29 Oct 2026, the user: the current task indicator should be on the task when its subtask runs)
 
 With a subtask's timer running and its task closed, no row showed the accent stripe: the timer's uid is the subtask's, and the subtask row is hidden. `TasksTable` now marks a closed task whose subtask is running (`isRunning` in the row's props); open it and the stripe moves to the subtask's own row. Only the table's marker changed: Hours and the task's time still count against the subtask. Not driven in the app (lint, typecheck and tests pass).
+
+## Tasks: a started subtask starts its parent (29 Oct 2026)
+
+A top-level task that is To do becomes In progress as soon as one of its subtasks is In progress or Done (`startedByKids`, applied in `TasksStore.settleSeries`, which already runs after every subtask change). It only ever moves To do to In progress: a Done parent is not reopened and an In progress parent is not sent back when the subtask returns to To do.
