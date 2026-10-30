@@ -241,9 +241,9 @@ export class TasksStore {
     })()
   }
 
-  /** A parent that gets a due date where it had none gives it to the subtasks that have none; once dates are set, nothing follows. */
+  /** A parent that is given a due date gives it to the subtasks that have none; subtasks with a date keep it. */
   private passDown(before: Task, due: string | null): void {
-    if (before.due !== null || due === null) return
+    if (due === null || due === before.due) return
     for (const sub of listSubtasks(this.db, before.uid)) {
       if (sub.due === null) writeTask(this.db, { ...sub, due, updatedAt: this.clock.now() })
     }

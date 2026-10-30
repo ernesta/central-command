@@ -3225,7 +3225,7 @@ The user's request, looking at a task's Subtasks card: always order subtasks by 
 ## A subtask's due date follows its parent only until dates are set (13 Oct 2026)
 
 - **Why (the user):** a new subtask should start with its parent's due date, and a parent that gets its first date should not leave undated subtasks behind; once dates exist, nothing should move on its own.
-- **Now (`TasksStore`):** a new subtask with no `due` given takes its parent's (an explicit `null` stays undated; the repeat copy, `ruled = false`, keeps the dates it was given). When a parent's `due` goes from none to a date (`update` or `setDue`), `passDown` gives it to the subtasks that have none. Every other change to a parent's date, and a subtask's own date, leave the others alone.
+- **Now (`TasksStore`):** a new subtask with no `due` given takes its parent's (an explicit `null` stays undated; the repeat copy, `ruled = false`, keeps the dates it was given). When a parent's `due` is set to a date (`update` or `setDue`), `passDown` gives it to the subtasks that have none. A subtask that has a date keeps it, and a subtask's own date leaves the others alone. (30 Oct 2026: the rule first applied only when the parent had no date before; the user asked that any undated subtask get the date whenever the parent's is set.)
 - Unit-tested (`tasks-store.test.ts`); not driven in the built app.
 
 ## Task tags are one lower-case word (13 Oct 2026)
