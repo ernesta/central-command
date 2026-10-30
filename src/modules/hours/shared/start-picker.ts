@@ -17,7 +17,7 @@ export interface PickerOptions {
 }
 
 /**
- * The open tasks whose title holds what is typed (those that start with it first, then the rest, each group in the
+ * The open tasks whose title holds every word typed (those that start with it first, then the rest, each group in the
  * order given), at most `limit`; and always, once something is typed, the title to create. Nothing is listed before
  * anything is typed.
  */
@@ -29,7 +29,9 @@ export function pickerOptions(tasks: readonly Task[], typed: string, limit = 8):
     const study = studyName(t, t.parentUid ? tasks.find((p) => p.uid === t.parentUid) : undefined)
     return [fold(t.title), ...(study ? [fold(study)] : [])]
   }
-  const hits = tasks.filter((t) => names(t).some((n) => n.includes(q)))
+  // Every word typed must be in the name, in any order ("select 2017" finds "2017 selection").
+  const terms = q.split(/\s+/)
+  const hits = tasks.filter((t) => names(t).some((n) => terms.every((w) => n.includes(w))))
   const starts = hits.filter((t) => names(t).some((n) => n.startsWith(q)))
   return {
     tasks: [...starts, ...hits.filter((t) => !starts.includes(t))].slice(0, limit),

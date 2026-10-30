@@ -33,6 +33,12 @@ describe('pickerOptions', () => {
     expect(r.create).toBe('report')
   })
 
+  it('matches every word typed, in any order', () => {
+    expect(pickerOptions(tasks, 'report write').tasks.map((t) => t.uid)).toEqual(['1'])
+    expect(pickerOptions(tasks, 'board  the report').tasks.map((t) => t.uid)).toEqual(['2'])
+    expect(pickerOptions(tasks, 'report zzz').tasks).toEqual([])
+  })
+
   it('offers Create even when a title matches exactly, and for text that matches nothing', () => {
     expect(pickerOptions(tasks, ' Marking ').create).toBe('Marking')
     expect(pickerOptions(tasks, 'zzz')).toEqual({ tasks: [], create: 'zzz' })
