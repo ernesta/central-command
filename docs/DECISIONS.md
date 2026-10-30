@@ -208,6 +208,7 @@ notes all render it. Milkdown and its packages are gone.
   `notes-shortcuts.test.ts` fails if a listed chord is not bound (it replaced the test that read Milkdown's built source).
 - **Chosen with the user**: formatted paste (web, Word) is pasted as plain text; selection across blocks shows no markers; nested quotes show one `>` per level
   as typed; typing `#` at the start of a heading raises the level; a marker is deleted like any character.
+- **Paste over a link (30 Oct 2026).** A web address pasted over selected text makes a link, but not when the selection is inside a link or image already (its label or its address): highlighting the address of `[text](old)` and pasting a new one nested a link in the address. That selection is replaced as plain text (`insideLink` in `live-paste.ts`; syntax tree, so the parse is awaited briefly).
 - **Cost.** About 3,000 lines of editor code were replaced, and 94 tests were retired (each recorded as ported or retired in "stage 8"). Bugs that only the
   built app showed (CSS specificity against CodeMirror's own `.cm-line` reset, grid cells made by hidden ranges, the tail of a long note seen as plain text
   in tests) are in the stage write-ups and in the pitfalls in `CLAUDE.md`.
