@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { showToast } from '@renderer/components/toast-store'
+import { pushUndoWithToast } from '@renderer/components/undo-store'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useToday } from '@renderer/state/use-today'
 import type { WatchItem } from '../shared/types'
@@ -27,12 +28,13 @@ export function useManualEntries(): {
     void window.api.watch.items
       .deleteManual(item.id)
       .then((gone) =>
-        showToast(`Deleted “${gone.title}”.`, {
-          label: 'Undo',
-          run: () =>
-            void window.api.watch.items
-              .restoreManual(gone)
-              .catch((e) => showToast(`Couldn’t undo: ${ipcErrorMessage(e)}`))
+        // The toast's Undo and Cmd-Z are one undo; the entry comes back with its id, so a task made from it still finds it.
+        pushUndoWithToast(`Deleted “${gone.title}”.`, {
+          label: `deletion of “${gone.title}”`,
+          message: `Brought back “${gone.title}”.`,
+          undo: async () => {
+            await window.api.watch.items.restoreManual(gone)
+          }
         })
       )
       .catch((e) => showToast(`Couldn’t delete it: ${ipcErrorMessage(e)}`))
