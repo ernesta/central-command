@@ -33,7 +33,12 @@ export function SubtaskLine({
       <Tooltip text={parentName} whenCut>
         <span className={styles.parent}>{parentName}</span>
       </Tooltip>
-      {(list || due) && <span className={styles.tail}> · {taskLine(list, due)}</span>}
+      {(list || due) && (
+        // The parent can be squeezed to nothing, so the tail's tip names the whole line.
+        <Tooltip text={`${parentName} · ${taskLine(list, due)}`} whenCut>
+          <span className={styles.tail}> · {taskLine(list, due)}</span>
+        </Tooltip>
+      )}
     </span>
   )
 }
