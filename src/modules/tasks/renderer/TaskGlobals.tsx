@@ -32,6 +32,16 @@ export function TaskGlobals(): React.JSX.Element | null {
   return request && <NewTaskHost request={request} />
 }
 
+/**
+ * The New task dialog alone, with no keyboard shortcut: it opens when something calls `openNewTask` (a Watch row's "Task" button).
+ * The dialog was switched off on 13 Oct 2026 (`docs/DECISIONS.md`, "The New task dialog is switched off"); this brings back the
+ * host and nothing else, so no shortcut is left that Settings does not list.
+ */
+export function NewTaskDialogHost(): React.JSX.Element | null {
+  const request = useNewTaskRequest()
+  return request && <NewTaskHost request={request} />
+}
+
 /** Loads the workspace's tasks (for the lists to choose from) only while the dialog is open. */
 function NewTaskHost({ request }: { request: NewTaskRequest }): React.JSX.Element | null {
   const here = useTasksWorkspace()

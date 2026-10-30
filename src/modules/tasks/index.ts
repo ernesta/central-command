@@ -4,6 +4,7 @@ import { TASKS_SHORTCUTS } from './shared/shortcuts'
 import type { TaskWorkspace } from './shared/types'
 import { taskEntities } from './renderer/entities'
 import { searchTasks } from './renderer/search'
+import { NewTaskDialogHost } from './renderer/TaskGlobals'
 import { TaskPage } from './renderer/TaskPage'
 import { TasksCard } from './renderer/TasksCard'
 import { TasksLanding } from './renderer/TasksLanding'
@@ -14,7 +15,8 @@ import { TasksSettings } from './renderer/TasksSettings'
  * Tasks: a task manager of the app's own (it replaces ClickUp), in SQLite. Registered once per workspace
  * (`src/modules/index.ts`); each instance shows only its own workspace's tasks. The shortcuts and the
  * messages belong to the app, not a workspace, so only the 'research' instance carries them. The New task dialog
- * (`TaskGlobals`, `NewTaskButton`) is built but not mounted: tasks are made from the Add bar and the Start picker.
+ * (`TaskGlobals`, `NewTaskButton`) is built but not mounted: tasks are made from the Add bar and the Start picker. Only the dialog's host
+ * is mounted (`NewTaskDialogHost`, no shortcut), for the "Task" button on a Watch row.
  */
 export function createTasksModule(workspace: TaskWorkspace): LiveModuleManifest {
   return {
@@ -32,6 +34,7 @@ export function createTasksModule(workspace: TaskWorkspace): LiveModuleManifest 
     ...(workspace === 'research'
       ? {
           shortcuts: TASKS_SHORTCUTS,
+          globals: NewTaskDialogHost,
           entities: [taskEntities],
           settingsSection: TasksSettings
         }
