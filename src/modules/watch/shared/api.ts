@@ -25,6 +25,8 @@ export interface WatchApi {
   }
   items: {
     list(query?: WatchItemsQuery): Promise<WatchItem[]>
+    /** One item by id (null when it is gone), for the task page of a task made from it. */
+    get(id: number): Promise<WatchItem | null>
     /** `readAt` is for an undo: the time the item was read before (null for none); left out, Read is stamped now. */
     setState(id: number, state: WatchState, readAt?: string | null): Promise<void>
     /** The first look at an item (the page opens it in the browser): a new one becomes seen. */
@@ -60,6 +62,7 @@ export const WATCH_IPC = {
   sourcesUpdate: 'watch:sources-update',
   sourcesRemove: 'watch:sources-remove',
   itemsList: 'watch:items-list',
+  itemsGet: 'watch:items-get',
   itemsSetState: 'watch:items-set-state',
   itemsOpen: 'watch:items-open',
   itemsMarkAllSeen: 'watch:items-mark-all-seen',

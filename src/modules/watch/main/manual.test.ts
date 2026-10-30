@@ -10,6 +10,7 @@ import {
   createManualItem,
   deleteManualItem,
   getCounts,
+  itemsByIds,
   listItems,
   listSources,
   reclassifyItems,
@@ -322,5 +323,13 @@ describe('reading a pasted link', () => {
 
   it('refuses an address that is not public', async () => {
     await expect(readEntryLink('http://localhost/x', page(''), '2026-10-29')).rejects.toThrow()
+  })
+})
+
+describe('itemsByIds', () => {
+  it('finds the items that exist and says nothing of the ones that do not', () => {
+    const a = createManualItem(db, JACOBS, NOW)
+    expect(itemsByIds(db, [a.id, 999]).map((i) => i.id)).toEqual([a.id])
+    expect(itemsByIds(db, [])).toEqual([])
   })
 })

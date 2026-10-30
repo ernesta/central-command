@@ -32,6 +32,7 @@ import { StatusIcon } from './TaskIcons'
 import { RecurrenceField } from './RecurrenceField'
 import { TagsField } from './TagsField'
 import { TasksTable } from './TasksTable'
+import { WatchPanel } from './WatchPanel'
 import { TaskTimeCard } from './TaskTimeCard'
 import { taskRoute, useTasksWorkspace } from './tasks-paths'
 import { useTaskTime } from './useTaskTime'
@@ -395,6 +396,7 @@ function TaskView({
             parts={row.kids.filter((k) => k.status !== 'done' && !sessionTasks.has(k.uid))}
             actions={!sessionTasks.has(task.uid)}
           />
+          <WatchPanel task={task} today={today} onError={setError} />
           <MentionedIn
             kind="task"
             entityKey={task.uid}

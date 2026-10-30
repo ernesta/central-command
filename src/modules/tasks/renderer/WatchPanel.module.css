@@ -1,0 +1,14 @@
+.link {
+  composes: link external from '@renderer/components/Link.module.css';
+  min-width: 0;
+  font-size: var(--text-14);
+}
+.text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.line {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+}

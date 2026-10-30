@@ -25,6 +25,7 @@ import {
   deleteManualItem,
   getCounts,
   getKeywords,
+  itemsByIds,
   listItems,
   listSources,
   markAllSeen,
@@ -168,6 +169,7 @@ function register({ db }: MainContext): () => void {
     broadcast(getCounts(db))
   })
   ipcMain.handle(WATCH_IPC.itemsList, (_e, query: unknown) => listItems(db, asQuery(query)))
+  ipcMain.handle(WATCH_IPC.itemsGet, (_e, id: unknown) => itemsByIds(db, [asId(id)])[0] ?? null)
   ipcMain.handle(WATCH_IPC.itemsSetState, (_e, id: unknown, state: unknown, readAt: unknown) => {
     if (typeof state !== 'string' || !(WATCH_STATES as readonly string[]).includes(state))
       throw new Error('Invalid state')
