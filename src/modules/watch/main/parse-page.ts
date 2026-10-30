@@ -50,6 +50,13 @@ const toLines = (html: string): string =>
   decodeEntities(
     html
       .replace(/<head\b[\s\S]*?<\/head>/gi, ' ')
+      // A table row is one line, however its cells are wrapped (`<td><p>26/10/26</p></td><td><p>Title</p></td>`).
+      .replace(/<tr\b[\s\S]*?<\/tr>/gi, (row) =>
+        row
+          .replace(/<\/?(?:p|div|li|br)\b[^>]*>/gi, ' ')
+          .replace(/<\/t[dh]>/gi, ' ')
+          .replace(/\s+/g, ' ')
+      )
       .replace(
         /<\/(?:p|h[1-6]|li|div|tr|section|article|blockquote|figcaption)>|<br\s*\/?>/gi,
         '\n'
@@ -220,8 +227,10 @@ export function parsePage(html: string, baseUrl: string): ParsedPage {
 }
 
 const MAX_DATED_SENTENCES = 15
+/** A timetable (dates in a table, read day-first) lists every session; the cap is for prose that happens to name dates. */
+const MAX_TIMETABLE_ROWS = 200
 
-const NUMERIC_DATE = /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/g
+const NUMERIC_DATE = /\b(\d{1,2})\/(\d{1,2})\/(\d{4}|\d{2})\b/g
 const MONTH_NAMES = [
   'January',
   'February',
@@ -250,11 +259,20 @@ export function numericDatesAreDayFirst(text: string): boolean {
 function writeOutDates(sentence: string, dayFirst: boolean): string {
   if (!dayFirst || !NUMERIC_DATE.test(sentence)) return sentence
   NUMERIC_DATE.lastIndex = 0
-  return sentence
-    .replace(NUMERIC_DATE, (all, d, m, y) =>
-      Number(m) >= 1 && Number(m) <= 12 ? `${Number(d)} ${MONTH_NAMES[Number(m) - 1]} ${y}` : all
-    )
-    .replace(/\s+([.,;])/g, '$1')
+  return (
+    sentence
+      // A timetable row's time ("26/10/26 10:00 - 13:00") is dropped, so the title follows the date.
+      .replace(
+        /(\b\d{1,2}\/\d{1,2}\/(?:\d{4}|\d{2}))\s+\d{1,2}[:.]\d{2}\s*[-–]\s*\d{1,2}[:.]\d{2}\b/g,
+        '$1'
+      )
+      .replace(NUMERIC_DATE, (all, d, m, y) =>
+        Number(m) >= 1 && Number(m) <= 12
+          ? `${Number(d)} ${MONTH_NAMES[Number(m) - 1]} ${y.length === 2 ? `20${y}` : y}`
+          : all
+      )
+      .replace(/\s+([.,;])/g, '$1')
+  )
 }
 
 /**
@@ -278,7 +296,7 @@ export function datedSentences(text: string, pageUrl: string, today: string): Pa
     if (seen.has(key)) continue
     seen.add(key)
     out.push({ key, title: sentence, url: pageUrl, summary: '', publishedAt: null })
-    if (out.length >= MAX_DATED_SENTENCES) break
+    if (out.length >= (dayFirst ? MAX_TIMETABLE_ROWS : MAX_DATED_SENTENCES)) break
   }
   return out
 }

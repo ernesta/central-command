@@ -287,6 +287,41 @@ describe('a page with a table of numeric dates (LSE MY580)', () => {
   })
 })
 
+describe('a timetable with two-digit years, times and wrapped cells (Royal Holloway RDP)', () => {
+  const table = `<main><table><tbody>
+    <tr><td><b>Date</b></td><td></td><td><b>Time</b></td><td><b>Title</b></td></tr>
+    <tr><td><b>October</b></td><td></td><td></td><td></td></tr>
+    <tr>
+<td><p>28/10/26</p></td>
+<td></td>
+<td>10:00 - 11:30</td>
+<td><p>Understanding AI and Ethics</p></td>
+</tr>
+    <tr><td>05/11/26</td><td></td><td>13:00 - 15:30</td><td>Introduction to Podcasting</td></tr>
+    <tr><td>TBC</td><td></td><td>10:00 - 12:00</td><td>From Draft to Done: Effective Editing of the PhD Thesis</td></tr>
+  </tbody></table></main>`
+  const text = (html: string): string => parsePage(html, 'https://example.org/').upcomingText
+
+  it('keeps a row on one line and writes its date out without the time', () => {
+    const items = datedSentences(text(table), 'https://example.org/', '2026-10-01')
+    expect(items.map((i) => i.title)).toEqual([
+      '28 October 2026 Understanding AI and Ethics',
+      '5 November 2026 Introduction to Podcasting'
+    ])
+    expect(findDate(items[1].title, '2026-10-01')?.date).toBe('2026-11-05')
+  })
+
+  it('reads more than the prose cap of rows from a timetable', () => {
+    const rows = Array.from(
+      { length: 40 },
+      (_, i) =>
+        `<tr><td>${String((i % 28) + 1).padStart(2, '0')}/11/26</td><td>10:00 - 11:00</td><td>Session number ${i}</td></tr>`
+    ).join('')
+    const html = `<main><table>${rows}</table></main>`
+    expect(datedSentences(text(html), 'https://example.org/', '2026-10-01')).toHaveLength(40)
+  })
+})
+
 describe('a listing of cards that are links (Royal Holloway)', () => {
   const html = `<main>
     <div class="breadcrumbs-wrapper"><div class="breadcrumb"><div>
