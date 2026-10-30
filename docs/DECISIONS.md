@@ -4925,3 +4925,7 @@ With a subtask's timer running and its task closed, no row showed the accent str
 ## Tasks: a started subtask starts its parent (29 Oct 2026)
 
 A top-level task that is To do becomes In progress as soon as one of its subtasks is In progress or Done (`startedByKids`, applied in `TasksStore.settleSeries`, which already runs after every subtask change). It only ever moves To do to In progress: a Done parent is not reopened and an In progress parent is not sent back when the subtask returns to To do.
+
+## Watch: a search hit carries the list's title (30 Oct 2026, the user's screenshot: "my watch search results and items in the watch list look different")
+
+Mod-K's Watch hits used the stored title ("10 December 2026 Machine learning and probability: …", feed tags and all) while the list shows `titleParts(item.title).name`. `watchHits` now uses the same function, so a hit and its row read alike. The second line (summary snippet, else the source) is unchanged: the list has no such line. Tested in `search.test.ts` with a mutation check.
