@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import type { TaskWorkspace } from '../shared/types'
+import type { Task, TaskWorkspace } from '../shared/types'
 
 /** Whether the "New task" dialog is open, and what it was opened with. One dialog for the whole app (see `TaskGlobals`). */
 export interface NewTaskRequest {
@@ -7,6 +7,16 @@ export interface NewTaskRequest {
   workspace?: TaskWorkspace
   /** The list being looked at, as a list value (see `listValue`), if any. */
   list?: string
+  /** What the dialog starts with, when it is opened from somewhere that knows (a Watch row). Left out: an empty title, due today. */
+  title?: string
+  /** YYYY-MM-DD, or null for no date; left out, the dialog's own default (today). */
+  due?: string | null
+  /** Carried to the task as it is made; the dialog has no field for it. */
+  description?: string
+  /** The Watch item the task is made from: the task keeps its id and address (`docs/WATCH_TASKS_PLAN.md`). */
+  watchItem?: { id: number; url: string }
+  /** Called once the task exists (not on Cancel), so the caller can do what goes with it. */
+  onCreated?: (task: Task) => void
 }
 
 let current: NewTaskRequest | null = null

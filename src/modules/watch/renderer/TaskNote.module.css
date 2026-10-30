@@ -1,0 +1,16 @@
+/* The note on a row that has a task: a muted text link (Link.module.css) above the row's stretched title link. */
+.note {
+  composes: link muted from '@renderer/components/Link.module.css';
+  position: relative;
+  z-index: 1;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 45%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--text-13);
+  text-align: left;
+  cursor: pointer;
+}

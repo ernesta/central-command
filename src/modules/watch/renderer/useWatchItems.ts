@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router'
+import { openNewTask } from '@modules/tasks/renderer/new-task-store'
+import { taskRoute } from '@modules/tasks/renderer/tasks-paths'
+import type { WatchTaskLink } from '@modules/tasks/shared/watch-links'
 import { sortItems, type Held } from '../shared/query'
 import type { WatchItem, WatchItemsQuery, WatchState } from '../shared/types'
 import { setStateUndoable } from './item-state-undo'
+import { watchTaskPrefill } from '../shared/watch-task-prefill'
+import { useWatchTasks } from './useWatchTasks'
 import { useWatchWorkspace } from './watch-paths'
 
 export interface WatchItems {
@@ -15,11 +21,19 @@ export interface WatchItems {
   toggleRead: (item: WatchItem) => void
   /** Opens the item's page in the browser; the first look makes a new item seen. */
   open: (item: WatchItem) => void
+  /** The tasks made from these items, by item id (`useWatchTasks`). */
+  tasks: ReadonlyMap<number, WatchTaskLink>
+  /** Opens the New task dialog filled in from the item; confirming it also saves the item (Cmd-Z puts its state back). */
+  startTask: (item: WatchItem) => void
+  /** Goes to a task's page. */
+  openTask: (uid: string) => void
 }
 
 /** Items from this workspace's Watch (every state by default), read again whenever a check or a click changes them. */
 export function useWatchItems(query: WatchItemsQuery = { limit: 1000 }): WatchItems {
   const workspace = useWatchWorkspace()
+  const tasks = useWatchTasks()
+  const navigate = useNavigate()
   const [loaded, setItems] = useState<WatchItem[] | null>(null)
   const [held, setHeld] = useState<ReadonlySet<number>>(new Set())
   const key = JSON.stringify({ ...query, workspace })
@@ -64,6 +78,20 @@ export function useWatchItems(query: WatchItemsQuery = { limit: 1000 }): WatchIt
     items,
     held,
     // Any choice about the row (Save, Mark as unread, Cmd-Z) lets it go to where its state puts it.
+    tasks,
+    startTask: (item) => {
+      const { workspace: taskWorkspace, ...start } = watchTaskPrefill(item)
+      openNewTask({
+        ...start,
+        workspace: taskWorkspace,
+        // Only saved items reach Coming up, and a task whose item can drop off would lose its deadline.
+        onCreated: () => {
+          hold(item.id, false)
+          void setState(item, 'saved')
+        }
+      })
+    },
+    openTask: (uid) => void navigate(taskRoute(workspace, uid)),
     toggleSaved: (item) => {
       hold(item.id, false)
       void setState(item, item.state === 'saved' ? 'seen' : 'saved')

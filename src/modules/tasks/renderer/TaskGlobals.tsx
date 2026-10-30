@@ -4,7 +4,7 @@ import { useLocation } from 'react-router'
 import { matchesShortcut } from '@shared/shortcuts'
 import { NEW_TASK_SHORTCUT } from '../shared/shortcuts'
 import type { TaskWorkspace } from '../shared/types'
-import { closeNewTask, openNewTask, useNewTaskRequest } from './new-task-store'
+import { closeNewTask, openNewTask, useNewTaskRequest, type NewTaskRequest } from './new-task-store'
 import { NewTaskDialog } from './NewTaskDialog'
 import { useTasksWorkspace } from './tasks-paths'
 import { useTasksList } from './useTasksList'
@@ -29,19 +29,13 @@ export function TaskGlobals(): React.JSX.Element | null {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [search])
 
-  return request && <NewTaskHost list={request.list ?? ''} workspace={request.workspace} />
+  return request && <NewTaskHost request={request} />
 }
 
 /** Loads the workspace's tasks (for the lists to choose from) only while the dialog is open. */
-function NewTaskHost({
-  list,
-  workspace: asked
-}: {
-  list: string
-  workspace?: TaskWorkspace
-}): React.JSX.Element | null {
+function NewTaskHost({ request }: { request: NewTaskRequest }): React.JSX.Element | null {
   const here = useTasksWorkspace()
-  const workspace = asked ?? here
+  const workspace: TaskWorkspace = request.workspace ?? here
   const today = useToday()
   const { rows } = useTasksList(workspace)
   if (rows === null) return null
@@ -50,7 +44,8 @@ function NewTaskHost({
       workspace={workspace}
       rows={rows}
       today={today}
-      listFilter={list}
+      listFilter={request.list ?? ''}
+      request={request}
       onClose={closeNewTask}
     />
   )

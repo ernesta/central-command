@@ -5,6 +5,7 @@ import landing from '@renderer/components/Landing.module.css'
 import { deadlineFor, foundLabel, titleParts, whenFor } from '../shared/rows'
 import type { WatchItem } from '../shared/types'
 import { ItemActions } from './ItemActions'
+import { TaskNote } from './TaskNote'
 import type { EntryActions } from './useManualEntries'
 import type { WatchItems } from './useWatchItems'
 import styles from './WatchList.module.css'
@@ -21,7 +22,11 @@ export function WatchList({
 }: {
   items: readonly WatchItem[]
   today: string
-  actions: Pick<WatchItems, 'toggleSaved' | 'toggleRead' | 'open'> & Partial<EntryActions>
+  actions: Pick<
+    WatchItems,
+    'toggleSaved' | 'toggleRead' | 'open' | 'tasks' | 'startTask' | 'openTask'
+  > &
+    Partial<EntryActions>
 }): React.JSX.Element {
   return (
     <ul className={`${landing.box} ${landing.recentList}`}>
@@ -48,6 +53,7 @@ export function WatchList({
                   {titleParts(item.title).name}
                 </a>
               </Tooltip>
+              <TaskNote link={actions.tasks.get(item.id)} open={actions.openTask} />
             </span>
             <CutText className={styles.note}>{whenFor(item)}</CutText>
             <CutText className={styles.note}>{deadlineFor(item, today)}</CutText>

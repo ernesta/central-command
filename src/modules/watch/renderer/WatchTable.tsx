@@ -8,12 +8,13 @@ import shared from '@renderer/components/ListTable.module.css'
 import { deadlineFor, foundLabel, titleParts, whenFor } from '../shared/rows'
 import { cutGroups, openedWith, type WatchGroup } from '../shared/query'
 import { ItemActions } from './ItemActions'
+import { TaskNote } from './TaskNote'
 import type { EntryActions } from './useManualEntries'
 import type { WatchItems } from './useWatchItems'
 import styles from './WatchAllPage.module.css'
 
 /** Column widths; the title takes the rest. */
-const WIDTHS = { found: 128, when: 190, deadline: 170, source: 240, actions: 132 }
+const WIDTHS = { found: 128, when: 190, deadline: 170, source: 240, actions: 164 }
 const HEADINGS = ['Found', 'Title', 'When', 'Deadline', 'Source', '']
 
 /**
@@ -33,7 +34,11 @@ export function WatchTable({
   label: string
   /** The item a search hit asked for: its group is opened, it is scrolled to and lit for a moment. */
   focusId?: number | null
-  actions: Pick<WatchItems, 'toggleSaved' | 'toggleRead' | 'open'> & Partial<EntryActions>
+  actions: Pick<
+    WatchItems,
+    'toggleSaved' | 'toggleRead' | 'open' | 'tasks' | 'startTask' | 'openTask'
+  > &
+    Partial<EntryActions>
 }): React.JSX.Element {
   const [opened, setOpened] = useState<ReadonlySet<WatchGroup['key']>>(new Set())
   const groups = cutGroups(all, openedWith(all, opened, focusId))
@@ -110,6 +115,7 @@ export function WatchTable({
                             {titleParts(item.title).name}
                           </a>
                         </Tooltip>
+                        <TaskNote link={actions.tasks.get(item.id)} open={actions.openTask} />
                       </div>
                     </td>
                     <td className={styles.muted}>

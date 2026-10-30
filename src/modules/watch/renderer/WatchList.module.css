@@ -3,7 +3,7 @@
 .row {
   composes: recent from '@renderer/components/Landing.module.css';
   position: relative;
-  grid-template-columns: 120px minmax(0, 1fr) 190px 170px minmax(0, 200px) 128px;
+  grid-template-columns: 120px minmax(0, 1fr) 190px 170px minmax(0, 200px) 164px;
 }
 .titleCell {
   display: flex;

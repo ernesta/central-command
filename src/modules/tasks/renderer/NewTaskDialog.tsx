@@ -8,6 +8,7 @@ import { splitTitleTags } from '../shared/title-tags'
 import { canUseList } from '../shared/work-lists'
 import { type TaskPriority, type TaskWorkspace } from '../shared/types'
 import type { TaskRow } from '../shared/views'
+import type { NewTaskRequest } from './new-task-store'
 import { DueField } from './DueField'
 import { ListField } from './ListField'
 import { TagsField } from './TagsField'
@@ -22,17 +23,20 @@ export function NewTaskDialog({
   rows,
   today,
   listFilter,
+  request,
   onClose
 }: {
   workspace: TaskWorkspace
   rows: readonly TaskRow[]
   today: string
   listFilter: string
+  /** What the dialog was opened with: a title, a due date, a description and a Watch item to start from. */
+  request?: NewTaskRequest
   onClose: () => void
 }): React.JSX.Element {
   const { last, remember } = useTaskDefaults(workspace)
-  const [title, setTitle] = useState('')
-  const [due, setDue] = useState<string | null>(today)
+  const [title, setTitle] = useState(request?.title ?? '')
+  const [due, setDue] = useState<string | null>(request?.due !== undefined ? request.due : today)
   const [priority, setPriority] = useState<TaskPriority>('normal')
   const [tags, setTags] = useState<string[]>([])
   const [chosen, setChosen] = useState<{ list: string; sublist: string } | null>(null)
@@ -49,16 +53,21 @@ export function NewTaskDialog({
     setBusy(true)
     setError(null)
     try {
-      await window.api.tasks.create({
+      const made = await window.api.tasks.create({
         workspace,
         title: typed.title,
         list: list.list,
         sublist: list.sublist,
         due,
         priority,
-        tags: [...new Set([...tags, ...typed.tags])]
+        tags: [...new Set([...tags, ...typed.tags])],
+        ...(request?.description ? { description: request.description } : {}),
+        ...(request?.watchItem
+          ? { watchItemId: request.watchItem.id, watchUrl: request.watchItem.url }
+          : {})
       })
       remember(list.list, list.sublist)
+      request?.onCreated?.(made)
       onClose()
     } catch (e) {
       setError(ipcErrorMessage(e))
