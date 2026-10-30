@@ -46,6 +46,15 @@ describe('paste', () => {
     expect(pasted('|mail|', 'mailto:a@b.org')).toBe('[mail](mailto:a@b.org)|')
   })
 
+  it('replaces the address of a link as plain text instead of nesting a link in it', () => {
+    expect(pasted('[docs](|https://old.org/a|)', 'https://new.org/b')).toBe(
+      '[docs](https://new.org/b|)'
+    )
+    expect(pasted('[|docs|](https://old.org/a)', 'https://new.org/b')).toBe(
+      '[https://new.org/b|](https://old.org/a)'
+    )
+  })
+
   it('escapes brackets in the text that would end the label early', () => {
     expect(pasted('|a] b|', 'https://x.org')).toBe('[a\\] b](https://x.org)|')
     expect(pasted('|a [b] c|', 'https://x.org')).toBe('[a [b] c](https://x.org)|')

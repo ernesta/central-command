@@ -1,4 +1,5 @@
-import { EditorSelection } from '@codemirror/state'
+import { ensureSyntaxTree } from '@codemirror/language'
+import { EditorSelection, type EditorState } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
 import { markdownFromCopy } from '@shared/entity-copy'
 import { positions } from './live-lines'
@@ -22,6 +23,25 @@ function linkLabel(text: string): string {
   return depth === 0 ? text : text.replace(/([[\]])/g, '\\$1')
 }
 
+/** Whether the range sits inside a link's or image's own markup (its address included): a link over that would nest. */
+function insideLink(state: EditorState, from: number, to: number): boolean {
+  const tree = ensureSyntaxTree(state, to, 100)
+  if (!tree) return false
+  for (
+    let node = tree.resolveInner(from, 1) as typeof tree.topNode | null;
+    node;
+    node = node.parent
+  ) {
+    if (
+      ['Link', 'Image', 'URL', 'Autolink'].includes(node.name) &&
+      node.from <= from &&
+      node.to >= to
+    )
+      return true
+  }
+  return false
+}
+
 /**
  * Put `clipboardText` where the selection is. `trusted` is false for the made-up event of Cmd-Shift-V, which is
  * plain on purpose and must not link.
@@ -33,7 +53,9 @@ export function pasteText(view: EditorView, clipboardText: string, trusted: bool
   const href = trusted ? pastedLinkTarget(clipboardText) : null
   const oneLine = (from: number, to: number): boolean =>
     from < to && state.doc.lineAt(from).number === state.doc.lineAt(to).number
-  const linking = href !== null && state.selection.ranges.every((r) => oneLine(r.from, r.to))
+  const linking =
+    href !== null &&
+    state.selection.ranges.every((r) => oneLine(r.from, r.to) && !insideLink(state, r.from, r.to))
   if (text === '') return
   view.dispatch(
     state.update(
