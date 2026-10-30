@@ -4930,3 +4930,7 @@ A top-level task that is To do becomes In progress as soon as one of its subtask
 ## Watch: a search hit carries the list's title (30 Oct 2026, the user's screenshot: "my watch search results and items in the watch list look different")
 
 Mod-K's Watch hits used the stored title ("10 December 2026 Machine learning and probability: …", feed tags and all) while the list shows `titleParts(item.title).name`. `watchHits` now uses the same function, so a hit and its row read alike. The second line (summary snippet, else the source) is unchanged: the list has no such line. Tested in `search.test.ts` with a mutation check.
+
+## The Start picker matches every word, in any order (30 Oct 2026, the user's screenshot: "search is strict so if I mix up order of tokens, it finds nothing")
+
+The task picker (`pickerOptions`, `src/modules/hours/shared/start-picker.ts`) looked for the whole typed text as one substring, so "select 2017" missed "2017 selection". It now splits what is typed into words and lists a task whose name holds every one, in any order; tasks whose name starts with the whole text still come first. `Picker`/`matchOptions` already worked this way, and the highlight was already per word. Tested in `start-picker.test.ts`; not mutation-checked, not driven in the app.
