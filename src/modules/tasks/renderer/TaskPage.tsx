@@ -359,6 +359,7 @@ function TaskView({
             done={progress.done}
             total={progress.total}
             tracked={tracked}
+            running={running}
           />
 
           <EditorCard
@@ -414,7 +415,8 @@ function Subtasks({
   today,
   done,
   total,
-  tracked
+  tracked,
+  running
 }: {
   row: TaskRow
   workspace: TaskWorkspace
@@ -422,6 +424,7 @@ function Subtasks({
   done: number
   total: number
   tracked: ReadonlyMap<string, number>
+  running: ReadonlySet<string>
 }): React.JSX.Element {
   return (
     <section className={styles.box} aria-label="Subtasks">
@@ -441,7 +444,7 @@ function Subtasks({
         today={today}
         label="Subtasks"
         tracked={tracked}
-        running={new Set()}
+        running={running}
       />
     </section>
   )

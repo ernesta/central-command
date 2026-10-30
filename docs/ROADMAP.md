@@ -1,5 +1,7 @@
 # Roadmap
 
+**Task page: the running subtask is striped (30 Oct 2026, `docs/DECISIONS.md`, "A task page's subtasks carry the running-timer stripe"): fixed after your screenshot, tested, pushed and installed; not driven in the app.** For you: start a timer on a subtask and open its parent's page; that subtask's row should carry the accent stripe, like in the Tasks lists.
+
 **Start picker: words in any order (30 Oct 2026, `docs/DECISIONS.md`, "The Start picker matches every word, in any order"): fixed after your screenshot, tested, pushed and installed; not driven in the app.** For you: typing "select 2017" in the timer's task field should find "2017 selection".
 
 **Watch: search hits use the list's title (30 Oct 2026, `docs/DECISIONS.md`, "Watch: a search hit carries the list's title"): fixed after your screenshot, tested with a mutation check, pushed and installed; not driven in the app.** For you: a Watch hit in Mod-K should read like its row in the list (no "Confs:" tag, no leading or trailing date).
