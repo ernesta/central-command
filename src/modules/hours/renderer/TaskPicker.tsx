@@ -267,6 +267,8 @@ export function TaskPicker({
                         list={detailOfTask(item.task, tasks)}
                         task={item.task}
                         today={today}
+
+                        noLate
                       />
                     </span>
                   </>
@@ -315,6 +317,8 @@ export function TaskPicker({
                       list={detailOfTask(task, tasks)}
                       task={task}
                       today={today}
+
+                      noLate
                     />
                   </span>
                 </button>
