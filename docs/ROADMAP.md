@@ -386,6 +386,11 @@ Choices the plan left open, made conservatively; change any of them by telling C
 
 ## TODOs
 
+### Watch: a task from a saved item (30 Oct 2026, `docs/WATCH_TASKS_PLAN.md`: BUILT and driven in a scratch library, not pushed; `docs/DECISIONS.md`, "Watch: a task from a saved item, and one row in Coming up")
+
+- A "Task" button on every Watch row opens the New task dialog filled in from the item; confirming makes the task, saves the item, and Home then shows the pair once (the task's row carries "Apply by 31 Oct" and the item's address). A done or deleted task gives the item's own row back. The task page has a side-column "Watch" panel with "Unlink". **For the user to look at in the installed app:** the real library's migration (`tasks/0005_watch_item` runs at the next launch; nothing else touches your data), Life's Watch rows, and how the "Task: …" note sits beside a long title.
+- **Your call (asked, not decided):** (1) whether a task should also be offered from a Watch item in Settings or a search result; (2) whether "Unlink" needs an Undo (a re-link has no field); (3) whether deleting an entry added by hand should also be undoable with Cmd-Z (today only the toast's Undo); (4) a "link an existing task" field (not built; the button covers the case that prompted the plan). The New task dialog's host is mounted again for this (no shortcut); say if the dialog's other entry points (the shortcut, buttons, palette) should come back too.
+
 ### Life's Home and Watch per workspace (28 Oct 2026, `docs/LIFE_HOME_PLAN.md`: all five stages BUILT and driven in a scratch library; `docs/DECISIONS.md`, "Home: Life has one", "Watch: sources per workspace")
 
 - Life has its own Home (tasks, trainings, hours with trainings, the timer), caps of 5 per workspace, one digest per workspace, Life in `snapshot.json`, and Watch with separate sources per workspace (`watch/0004_workspace`). **For the user to look at in the installed app:** Life's Home with real data, Settings → Watch's Workspace column, and adding a Life source (a check that finds items was not driven). Decided on my own, change on request: the address is unique across workspaces; the deadline notification still opens the item's web address; a saved Watch date is not cut by the cap of 5. Not driven: the digest and reminder banners themselves.
