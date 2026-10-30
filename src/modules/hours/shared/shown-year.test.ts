@@ -12,6 +12,8 @@ const now: Moment = { date: '2026-10-15', time: '17:00' }
 const task = (uid: string, title: string, over: Partial<Task> = {}): Task => ({
   uid,
   ownKind: null,
+  watchItemId: null,
+  watchUrl: null,
   workspace: 'research',
   title,
   description: '',

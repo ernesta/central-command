@@ -48,6 +48,8 @@ export function draftSelfStudyTask(
     sourceId: null,
     tags: [],
     ownKind: 'self-study',
+    watchItemId: null,
+    watchUrl: null,
     createdAt: '',
     updatedAt: ''
   }

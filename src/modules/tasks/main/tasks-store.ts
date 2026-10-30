@@ -149,6 +149,8 @@ export class TasksStore {
       sourceId: input.sourceId ?? null,
       tags: cleanTags(input.tags),
       ownKind: input.ownKind ?? null,
+      watchItemId: input.watchItemId ?? null,
+      watchUrl: input.watchUrl ?? null,
       createdAt: input.createdAt ?? now,
       updatedAt: now
     }
@@ -177,6 +179,10 @@ export class TasksStore {
       if (changes.due !== undefined) next.due = checkDue(changes.due)
       if (changes.tags !== undefined) next.tags = cleanTags(changes.tags)
       if (changes.ownKind !== undefined) next.ownKind = changes.ownKind
+      if (changes.unlink) {
+        next.watchItemId = null
+        next.watchUrl = null
+      }
       const promoting = changes.parentUid === null && task.parentUid !== null
       if (!promoting && (changes.list !== undefined || changes.sublist !== undefined)) {
         if (task.parentUid) throw new Error('A subtask has no list of its own')

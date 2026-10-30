@@ -55,6 +55,13 @@ export interface Task {
   tags: string[]
   /** Set only on a task the app made for a meeting or training session (see `OwnKind`). */
   ownKind: OwnKind | null
+  /**
+   * The Watch item this task was made from (`docs/WATCH_TASKS_PLAN.md`). No foreign key: the item may be gone, and then the task
+   * keeps working with `watchUrl`.
+   */
+  watchItemId: number | null
+  /** The item's address, copied when the task was made, so the link outlives the item. */
+  watchUrl: string | null
   createdAt: string
   updatedAt: string
 }
@@ -74,6 +81,9 @@ export interface NewTask {
   recurrence?: Recurrence | null
   tags?: string[]
   ownKind?: OwnKind | null
+  /** Set by the New task dialog when it was opened from a Watch row. */
+  watchItemId?: number | null
+  watchUrl?: string | null
   /** Importer only. */
   earlierMinutes?: number
   sourceId?: string | null
@@ -99,4 +109,6 @@ export interface TaskChanges {
    * `null` (and a `list`), make a subtask a top-level task.
    */
   parentUid?: string | null
+  /** Clear the link to a Watch item (`watchItemId` and `watchUrl`); both sides are left as they are. */
+  unlink?: boolean
 }

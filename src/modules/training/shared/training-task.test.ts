@@ -5,6 +5,8 @@ import { parentFor, planTrainingTask, strandedParent } from './training-task'
 const task = (uid: string, title: string, over: Partial<Task> = {}): Task => ({
   uid,
   ownKind: null,
+  watchItemId: null,
+  watchUrl: null,
   workspace: 'research',
   title,
   description: '',

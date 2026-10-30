@@ -464,3 +464,42 @@ describe('subtask due dates follow the parent only until dates are set', () => {
     expect(store.get(a.uid)?.due).toBe('2026-10-20')
   })
 })
+
+describe('a task made from a Watch item', () => {
+  it('keeps the item and its address, and a re-read finds them', () => {
+    const made = make('Apply', { watchItemId: 7, watchUrl: 'https://example.org/call' })
+    expect(made.watchItemId).toBe(7)
+    expect(store.get(made.uid)).toMatchObject({
+      watchItemId: 7,
+      watchUrl: 'https://example.org/call'
+    })
+    expect(make('Plain').watchItemId).toBeNull()
+  })
+
+  it('unlink clears both and nothing else', () => {
+    const made = make('Apply', {
+      watchItemId: 7,
+      watchUrl: 'https://example.org/call',
+      due: '2026-11-01',
+      tags: ['grant']
+    })
+    const after = store.update(made.uid, { unlink: true })
+    expect(after.watchItemId).toBeNull()
+    expect(after.watchUrl).toBeNull()
+    expect({ ...after, watchItemId: 7, watchUrl: made.watchUrl, updatedAt: '' }).toEqual({
+      ...made,
+      updatedAt: ''
+    })
+    expect(store.get(made.uid)).toMatchObject({ watchItemId: null, watchUrl: null })
+  })
+
+  it('an update that does not unlink leaves the link', () => {
+    const made = make('Apply', { watchItemId: 7, watchUrl: 'https://example.org/call' })
+    expect(store.update(made.uid, { title: 'Apply now' }).watchItemId).toBe(7)
+  })
+
+  it('allows a second task for one item: the store is not the guard (the Watch row hides its button)', () => {
+    make('One', { watchItemId: 7 })
+    expect(() => make('Two', { watchItemId: 7 })).not.toThrow()
+  })
+})

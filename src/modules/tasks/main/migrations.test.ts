@@ -62,6 +62,7 @@ describe('tasks/0003_own_kind', () => {
     ).run()
 
     expect(runMigrations(db, tasksMigrations.slice(0, 3))).toEqual(['tasks/0003_own_kind'])
+    runMigrations(db, tasksMigrations)
     const store = new TasksStore(db)
     expect(store.get('before')?.ownKind).toBeNull()
 
@@ -75,5 +76,29 @@ describe('tasks/0003_own_kind', () => {
     expect(store.get(sub.uid)?.ownKind).toBe('meeting')
     expect(store.update(sub.uid, { title: 'Supervision · 20 Oct 2026' }).ownKind).toBe('meeting')
     expect(store.update(sub.uid, { ownKind: null }).ownKind).toBeNull()
+  })
+})
+
+describe('tasks/0005_watch_item', () => {
+  it('adds the two columns, empty on every task there was, from a database at 0004', () => {
+    const db = new Database(':memory:')
+    db.pragma('foreign_keys = ON')
+    runMigrations(db, tasksMigrations.slice(0, 4))
+    db.prepare(
+      `INSERT INTO tasks (uid, workspace, title, list, created_at, updated_at)
+       VALUES ('before', 'research', 'Read', 'Reading', '2026-10-01T00:00:00.000Z', '2026-10-01T00:00:00.000Z')`
+    ).run()
+    const columns = (): string[] =>
+      (db.prepare('PRAGMA table_info(tasks)').all() as { name: string }[]).map((c) => c.name)
+    expect(columns()).not.toContain('watch_item_id')
+
+    expect(runMigrations(db, tasksMigrations)).toEqual(['tasks/0005_watch_item'])
+    expect(columns()).toEqual(expect.arrayContaining(['watch_item_id', 'watch_url']))
+    expect(db.prepare('SELECT watch_item_id, watch_url FROM tasks').all()).toEqual([
+      { watch_item_id: null, watch_url: null }
+    ])
+    const store = new TasksStore(db)
+    expect(store.get('before')?.watchItemId).toBeNull()
+    expect(store.get('before')?.watchUrl).toBeNull()
   })
 })

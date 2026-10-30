@@ -21,6 +21,8 @@ export function task(over: Partial<Task> = {}): Task {
     sourceId: null,
     tags: [],
     ownKind: null,
+    watchItemId: null,
+    watchUrl: null,
     createdAt: '2026-10-01T00:00:00.000Z',
     updatedAt: '2026-10-01T00:00:00.000Z',
     ...over
