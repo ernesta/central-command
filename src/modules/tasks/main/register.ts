@@ -27,6 +27,7 @@ import { writeTasksSnapshot } from './snapshot'
 import { TrackingStore } from '../../../main/tracking/store'
 import { trackingMoment } from '@shared/time'
 import { workClients } from '../shared/work-lists'
+import { watchLinks } from '../shared/watch-links'
 import { visibleTrash } from '../shared/session-lock'
 import {
   guardDelete,
@@ -91,6 +92,12 @@ function asOwnKind(value: unknown): OwnKind | null | undefined {
   return value as OwnKind
 }
 
+function asWatchItem(value: unknown): number | null | undefined {
+  if (value === undefined || value === null) return value
+  if (typeof value !== 'number' || !Number.isInteger(value)) throw new Error('Invalid Watch item')
+  return value
+}
+
 function register(context: MainContext): () => void {
   try {
     snapshotOncePerDay(context)
@@ -149,7 +156,9 @@ function register(context: MainContext): () => void {
       parentUid: o.parentUid === null || o.parentUid === undefined ? null : asUid(o.parentUid),
       recurrence: asRecurrence(o.recurrence),
       tags: asTags(o.tags),
-      ownKind: asOwnKind(o.ownKind)
+      ownKind: asOwnKind(o.ownKind),
+      watchItemId: asWatchItem(o.watchItemId),
+      watchUrl: o.watchUrl === null ? null : text(o.watchUrl)
     })
     broadcast(task.workspace)
     return task
@@ -166,6 +175,7 @@ function register(context: MainContext): () => void {
       sublist: text(o.sublist),
       recurrence: asRecurrence(o.recurrence),
       tags: asTags(o.tags),
+      unlink: o.unlink === true ? true : undefined,
       parentUid:
         o.parentUid === undefined ? undefined : o.parentUid === null ? null : asUid(o.parentUid)
     }
@@ -237,6 +247,9 @@ function register(context: MainContext): () => void {
   ipcMain.handle(TASKS_IPC.deleteForSession, (_event, uid: unknown) => deleteTask(asUid(uid)))
   ipcMain.handle(TASKS_IPC.sessionSource, (_event, uid: unknown) =>
     sessionSource(context.db, asUid(uid))
+  )
+  ipcMain.handle(TASKS_IPC.watchLinks, (_event, workspace: unknown) =>
+    watchLinks(listTasks(context.db, asWorkspace(workspace)))
   )
   ipcMain.handle(TASKS_IPC.timeOn, (_event, uid: unknown) =>
     taskTimeMinutes(withKids(asUid(uid)).map(taskKey))

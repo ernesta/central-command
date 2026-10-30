@@ -174,6 +174,7 @@ const api: Api = {
       ipcRenderer.invoke(TASKS_IPC.updateForSession, uid, changes),
     deleteForSession: (uid) => ipcRenderer.invoke(TASKS_IPC.deleteForSession, uid),
     sessionSource: (uid) => ipcRenderer.invoke(TASKS_IPC.sessionSource, uid),
+    watchLinks: (workspace) => ipcRenderer.invoke(TASKS_IPC.watchLinks, workspace),
     onChanged: (listener) => {
       const handler = (_event: Electron.IpcRendererEvent, event: TasksChangedEvent): void =>
         listener(event)

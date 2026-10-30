@@ -8,6 +8,7 @@ import type {
   TaskWorkspace
 } from './types'
 import type { SessionSource } from './session-lock'
+import type { WatchTaskLink } from './watch-links'
 
 /** What the app may ask for when it creates a task: nothing the importer alone sets. */
 export interface CreateTaskInput {
@@ -26,6 +27,9 @@ export interface CreateTaskInput {
   tags?: string[]
   /** Set by the page that makes a meeting's or training's task, so the app knows it is the session's own. */
   ownKind?: OwnKind | null
+  /** Set by the New task dialog when it was opened from a Watch row (`docs/WATCH_TASKS_PLAN.md`). */
+  watchItemId?: number | null
+  watchUrl?: string | null
 }
 
 /** The result of changing a task's status: the next occurrence of a recurring task, when completing it started one. */
@@ -85,6 +89,11 @@ export interface TasksApi {
   deleteForSession(uid: string): Promise<number>
   /** The meeting or training whose note made this task, for the line on a locked task; null for any other. */
   sessionSource(uid: string): Promise<SessionSource | null>
+  /**
+   * For each Watch item of a workspace that has a task made from it, the task (an open one first), for the Watch rows. Tasks in the
+   * trash are left out. Kept fresh by `onChanged`.
+   */
+  watchLinks(workspace: TaskWorkspace): Promise<WatchTaskLink[]>
   /** Subscribe to changes. Returns an unsubscribe function. */
   onChanged(listener: (event: TasksChangedEvent) => void): () => void
 }
@@ -108,5 +117,6 @@ export const TASKS_IPC = {
   updateForSession: 'tasks:update-for-session',
   deleteForSession: 'tasks:delete-for-session',
   sessionSource: 'tasks:session-source',
+  watchLinks: 'tasks:watch-links',
   changed: 'tasks:changed'
 } as const
