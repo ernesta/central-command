@@ -570,14 +570,18 @@ export function restoreManualItem(db: Database, item: WatchItem, now: string): W
   if (typeof item.firstSeenAt !== 'string') throw new Error('Invalid entry')
   const v = cleanManual({ ...item, workspace: item.workspace })
   const sourceId = manualSourceId(db, item.workspace, now)
+  // The id goes back (ids are never reused), so a task made from the entry still finds it; if the id is in use already (a second
+  // Undo), the entry takes a new one.
+  const idTaken = db.prepare('SELECT 1 FROM watch_items WHERE id = ?').get(item.id) !== undefined
   const info = db
     .prepare(
       `INSERT INTO watch_items
-         (source_id, item_key, title, url, summary, published_at, event_date, event_end, deadline, deadline_label,
+         (id, source_id, item_key, title, url, summary, published_at, event_date, event_end, deadline, deadline_label,
           score, matched, state, first_seen_at, manual, section, read_at)
-       VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, 0, '', ?, ?, 1, ?, ?)`
+       VALUES (?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, 0, '', ?, ?, 1, ?, ?)`
     )
     .run(
+      idTaken || !Number.isInteger(item.id) ? null : item.id,
       sourceId,
       `manual:${now}:${Math.random().toString(36).slice(2, 8)}`,
       v.title,

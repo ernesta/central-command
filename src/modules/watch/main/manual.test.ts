@@ -333,3 +333,25 @@ describe('itemsByIds', () => {
     expect(itemsByIds(db, [])).toEqual([])
   })
 })
+
+describe('Delete then Undo', () => {
+  it('puts the entry back under the id it had, so a task linked to it still finds it', () => {
+    const made = createManualItem(db, JACOBS, NOW)
+    const gone = deleteManualItem(db, made.id)
+    // Something else is made meanwhile: it must not take the freed id.
+    createManualItem(db, { ...JACOBS, title: 'Other' }, NOW)
+    const back = restoreManualItem(db, gone, '2026-10-30T09:00:00.000Z')
+    expect(back.id).toBe(made.id)
+    expect(itemsByIds(db, [made.id])[0].title).toBe(JACOBS.title)
+  })
+
+  it('a second Undo does not overwrite the entry: it takes a new id', () => {
+    const made = createManualItem(db, JACOBS, NOW)
+    const gone = deleteManualItem(db, made.id)
+    const first = restoreManualItem(db, gone, '2026-10-30T09:00:00.000Z')
+    const second = restoreManualItem(db, gone, '2026-10-30T09:00:01.000Z')
+    expect(first.id).toBe(made.id)
+    expect(second.id).not.toBe(made.id)
+    expect(listItems(db)).toHaveLength(2)
+  })
+})
