@@ -9,6 +9,7 @@ import {
 } from '@shared/search-query'
 import { fold } from '@shared/text'
 import type { WatchItem, WatchWorkspace } from '../shared/types'
+import { titleParts } from '../shared/rows'
 import { watchListRoute } from './watch-paths'
 
 const DEFAULT_LIMIT = 6
@@ -36,7 +37,7 @@ export function watchHits(
       const inTitle = terms.every((t) => fold(item.title).includes(t))
       return {
         key: String(item.id),
-        title: item.title,
+        title: titleParts(item.title).name,
         detail: (!inTitle && snippet(item.summary, terms)) || item.sourceTitle,
         route: watchListRoute(item.section, item.workspace, item.id)
       }
