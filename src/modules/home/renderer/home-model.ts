@@ -134,7 +134,8 @@ export function groupTasks(tasks: HomeTask[], today: string): TaskGroup[] {
           due: t.parentDue ?? '',
           parentDue: null,
           daysLate: t.parentDue && t.parentDue < today ? daysFrom(t.parentDue, today) : 0,
-          route: taskRoute(t.workspace, t.parentUid)
+          route: taskRoute(t.workspace, t.parentUid),
+          watch: null
         },
         kids: []
       }
@@ -168,7 +169,8 @@ function taskOfEvent(e: HomeEvent, workspace: HomeWorkspace): HomeTask {
     priority: t.priority,
     status: t.status,
     daysLate: 0,
-    route: e.route
+    route: e.route,
+    watch: t.watch
   }
 }
 

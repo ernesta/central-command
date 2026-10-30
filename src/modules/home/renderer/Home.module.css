@@ -224,3 +224,19 @@
 .pillOpen {
   border-color: var(--accent);
 }
+
+/* The address of a Watch item a task was made from: the external arrow of Link.module.css, as a button inside the row's link. */
+.watchLink {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+.watchLink:hover {
+  color: var(--accent);
+}

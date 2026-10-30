@@ -5,6 +5,7 @@ import { digestLine, planNotifications, pruneSent } from './notifications'
 import { buildWidgetSnapshot } from './widget'
 import type { HomeSummary, HomeTask, HomeWorkspace } from './types'
 import { tasksIn } from './summary.testing'
+import { buildHomeSummary } from './summary'
 
 const on = {
   ...DEFAULT_HOME_SETTINGS.notifications,
@@ -38,7 +39,8 @@ const task = (uid: string, daysLate = 0, workspace: HomeWorkspace = 'research'):
   priority: 'normal',
   status: 'todo',
   daysLate,
-  route: `/${workspace}/tasks/t/${uid}`
+  route: `/${workspace}/tasks/t/${uid}`,
+  watch: null
 })
 const meeting = (start: string | null): NonNullable<HomeSummary['meetings']['next']> => ({
   workspace: 'research',
@@ -445,5 +447,57 @@ describe('Watch in the notifications, per workspace', () => {
     })
     expect(snap.watchNew).toBe(3)
     expect(snap.watchNewByWorkspace).toEqual({ research: 1, life: 2 })
+  })
+})
+
+describe('a Watch item with an open task', () => {
+  const item = {
+    ...watched(5),
+    state: 'saved' as const,
+    date: '2026-10-17',
+    dateKind: 'deadline' as const
+  }
+  const summary = (watchLinked: number[]): HomeSummary =>
+    buildHomeSummary({
+      today: '2026-10-15',
+      nowMinutes: 10 * 60,
+      generatedAt: '2026-10-15T10:00:00.000Z',
+      tasks: [
+        {
+          uid: 'apply',
+          title: 'Apply',
+          workspace: 'research',
+          list: 'Admin',
+          due: '2026-10-15',
+          priority: 'normal',
+          status: 'todo'
+        }
+      ],
+      meetings: [],
+      trainings: [],
+      openMeetingTodos: 0,
+      watchLinked: new Set(watchLinked),
+      timer: null,
+      hours: { research: null, work: null, life: null },
+      timeOff: [],
+      watch: {
+        research: {
+          counts: { new: 0, newRelevant: 0, sources: 1, failing: 0, changed: 0 },
+          fresh: [],
+          upcoming: [item]
+        },
+        life: null
+      },
+      weather: null
+    })
+  const plan = (s: HomeSummary): string[] =>
+    planNotifications(s, on, state, at('09:00')).map((n) => n.key)
+
+  it('gets no deadline notification of its own, and the task’s own (the digest) still comes', () => {
+    expect(plan(summary([5]))).toEqual(['digest:research:2026-10-15'])
+  })
+
+  it('is notified as before once the task is done', () => {
+    expect(plan(summary([]))).toContain('watch:5:2026-10-17')
   })
 })

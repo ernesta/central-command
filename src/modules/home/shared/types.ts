@@ -10,6 +10,13 @@ export const HOME_WORKSPACES: readonly HomeWorkspace[] = ['research', 'work', 'l
 /** The workspaces that have meetings (Life has none for now). */
 export type MeetingHomeWorkspace = Exclude<HomeWorkspace, 'life'>
 
+/** What a task made from a Watch item carries onto Home's row: the item's date in its words, and its address (the task keeps its own copy). */
+export interface HomeTaskWatch {
+  /** "Apply by 31 Oct", "Starts 3 Nov"; null when the item is gone or has no date. */
+  label: string | null
+  url: string
+}
+
 export interface HomeTask {
   uid: string
   title: string
@@ -31,6 +38,8 @@ export interface HomeTask {
   /** Days past its due date (0 = due today). */
   daysLate: number
   route: string
+  /** Set when the task was made from a Watch item. */
+  watch: HomeTaskWatch | null
 }
 
 export interface HomeMeeting {
@@ -79,6 +88,7 @@ export interface HomeEvent {
     parentPriority: 'high' | 'normal' | 'low' | null
     parentDue: string | null
     study: boolean
+    watch: HomeTaskWatch | null
   }
 }
 

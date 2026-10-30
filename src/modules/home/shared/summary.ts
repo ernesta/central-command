@@ -8,6 +8,7 @@ import {
   type HomeMeeting,
   type HomeSummary,
   type HomeTask,
+  type HomeTaskWatch,
   type HomeTasks,
   type MeetingHomeWorkspace,
   type HomeTimer,
@@ -36,6 +37,8 @@ export interface TaskInput {
   due: string | null
   priority: 'high' | 'normal' | 'low'
   status: 'todo' | 'doing' | 'done'
+  /** Set when the task was made from a Watch item (the loader reads the item's date). */
+  watch?: HomeTaskWatch | null
 }
 
 export interface MeetingInput {
@@ -71,6 +74,8 @@ export interface HomeInputs {
   /** Training sessions dated today or later. */
   trainings: TrainingInput[]
   openMeetingTodos: number
+  /** The ids of the Watch items that have an open task: the task is their row, so their own date is left out of Coming up. */
+  watchLinked: ReadonlySet<number>
   timer: HomeTimer | null
   hours: HomeHoursByWorkspace
   timeOff: TimeOffEntry[]
@@ -121,7 +126,8 @@ function toHomeTask(t: TaskInput, today: string): HomeTask | null {
     priority: t.priority,
     status: t.status,
     daysLate: daysLate(t.due, today),
-    route: taskRoute(t.workspace, t.uid)
+    route: taskRoute(t.workspace, t.uid),
+    watch: t.watch ?? null
   }
 }
 
@@ -231,7 +237,8 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
           parentStatus: t.parentStatus,
           parentPriority: t.parentPriority,
           parentDue: t.parentDue,
-          study: t.study ?? false
+          study: t.study ?? false,
+          watch: t.watch
         }
       })
   }
@@ -284,6 +291,8 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
   // saved items only; this keeps the rule even when it is handed more).
   for (const w of Object.values(input.watch).flatMap((b) => b?.upcoming ?? [])) {
     if (!w.date || w.state !== 'saved') continue
+    // One obligation, one row: while its task is open the task's row carries the date (and the link).
+    if (input.watchLinked.has(w.id)) continue
     events.push({
       id: `watch:${w.id}`,
       kind: w.dateKind === 'deadline' ? 'deadline' : 'event',

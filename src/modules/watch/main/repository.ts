@@ -493,6 +493,15 @@ function getItem(db: Database, id: number): WatchItem {
   return toItem(row)
 }
 
+/** The items with these ids (those that exist), for Home to read what a linked task's item says now. */
+export function itemsByIds(db: Database, ids: readonly number[]): WatchItem[] {
+  if (ids.length === 0) return []
+  const marks = ids.map(() => '?').join(',')
+  return (db.prepare(`${ITEM_SELECT} WHERE i.id IN (${marks})`).all(...ids) as ItemRow[]).map(
+    toItem
+  )
+}
+
 /** An entry added by hand: in its section like any other item, created Saved (the user put it there on purpose). */
 export function createManualItem(db: Database, input: ManualItemInput, now: string): WatchItem {
   const v = cleanManual(input)

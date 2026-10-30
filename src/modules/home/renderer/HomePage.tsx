@@ -11,6 +11,7 @@ import {
   Users
 } from 'lucide-react'
 import { Panel } from '@renderer/components/Panel'
+import { ExternalIcon } from '@renderer/components/ExternalIcon'
 import { Tooltip } from '@renderer/components/Tooltip'
 import { LateChip } from '../../tasks/renderer/LateChip'
 import { PriorityBadge } from '../../tasks/renderer/TaskIcons'
@@ -113,6 +114,26 @@ function Row({
   )
 }
 
+/** The address of the Watch item a task was made from, as an external link (the row around it is a link too, so this is a button). */
+function WatchLink({ url }: { url: string }): React.JSX.Element {
+  return (
+    <Tooltip text="Open page">
+      <button
+        type="button"
+        className={styles.watchLink}
+        aria-label="Open page"
+        onClick={(event) => {
+          event.preventDefault()
+          event.stopPropagation()
+          window.open(url, '_blank', 'noopener')
+        }}
+      >
+        <ExternalIcon />
+      </button>
+    </Tooltip>
+  )
+}
+
 function TaskRow({
   task,
   due = '',
@@ -149,31 +170,41 @@ function TaskRow({
         </>
       }
       afterTitle={
-        kidCount > 0 &&
-        onToggle && (
-          <Tooltip text={`${open ? 'Hide' : 'Show'} ${kidCount === 1 ? 'subtask' : 'subtasks'}`}>
-            <button
-              type="button"
-              className={[styles.pill, open && styles.pillOpen].filter(Boolean).join(' ')}
-              aria-expanded={open}
-              aria-label={`${open ? 'Hide' : 'Show'} ${kidCount} ${kidCount === 1 ? 'subtask' : 'subtasks'}`}
-              onClick={(event) => {
-                event.preventDefault()
-                event.stopPropagation()
-                onToggle()
-              }}
-            >
-              {kidCount}
-              {open ? (
-                <ChevronDown size={12} strokeWidth={1.75} aria-hidden />
-              ) : (
-                <ChevronRight size={12} strokeWidth={1.75} aria-hidden />
-              )}
-            </button>
-          </Tooltip>
+        <>
+          {task.watch && <WatchLink url={task.watch.url} />}
+          {kidCount > 0 && onToggle && (
+            <Tooltip text={`${open ? 'Hide' : 'Show'} ${kidCount === 1 ? 'subtask' : 'subtasks'}`}>
+              <button
+                type="button"
+                className={[styles.pill, open && styles.pillOpen].filter(Boolean).join(' ')}
+                aria-expanded={open}
+                aria-label={`${open ? 'Hide' : 'Show'} ${kidCount} ${kidCount === 1 ? 'subtask' : 'subtasks'}`}
+                onClick={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  onToggle()
+                }}
+              >
+                {kidCount}
+                {open ? (
+                  <ChevronDown size={12} strokeWidth={1.75} aria-hidden />
+                ) : (
+                  <ChevronRight size={12} strokeWidth={1.75} aria-hidden />
+                )}
+              </button>
+            </Tooltip>
+          )}
+        </>
+      }
+      line={
+        kid ? null : (
+          <SubtaskLine
+            parent={task.parent}
+            list={task.list}
+            due={[due, task.watch?.label].filter(Boolean).join(' · ')}
+          />
         )
       }
-      line={kid ? null : <SubtaskLine parent={task.parent} list={task.list} due={due} />}
       trailing={
         <>
           <LateChip days={task.daysLate} />

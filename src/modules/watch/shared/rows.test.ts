@@ -6,6 +6,7 @@ import {
   deadlineFor,
   whenFor,
   sectionsOf,
+  taskWatchLabel,
   titleParts
 } from './rows'
 import type { WatchItem } from './types'
@@ -172,5 +173,28 @@ describe('titleParts', () => {
       name: 'Understanding Research Integrity in the Age of AI with D',
       when: '18 February 2027'
     })
+  })
+})
+
+describe('taskWatchLabel', () => {
+  const dated = (over: Partial<WatchItem>): WatchItem => item({ ...over })
+  it('says a deadline in its own words and an event day as "Starts"', () => {
+    expect(
+      taskWatchLabel(
+        dated({ date: '2026-10-31', dateKind: 'deadline', deadlineLabel: 'Apply by' }),
+        '2026-10-30'
+      )
+    ).toBe('Apply by 31 Oct')
+    expect(taskWatchLabel(dated({ date: '2026-11-03', dateKind: 'date' }), '2026-10-30')).toBe(
+      'Starts 3 Nov'
+    )
+  })
+  it('names the year when it is not this one, and defaults the deadline words', () => {
+    expect(taskWatchLabel(dated({ date: '2027-01-05', dateKind: 'deadline' }), '2026-10-30')).toBe(
+      'Apply by 5 Jan 2027'
+    )
+  })
+  it('says nothing for an item with no date', () => {
+    expect(taskWatchLabel(dated({ date: null, dateKind: null }), '2026-10-30')).toBeNull()
   })
 })

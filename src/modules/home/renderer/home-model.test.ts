@@ -30,7 +30,8 @@ const task = (uid: string, workspace: HomeWorkspace, daysLate = 0): HomeTask => 
   priority: 'normal',
   status: 'todo',
   daysLate,
-  route: `/${workspace}/tasks/t/${uid}`
+  route: `/${workspace}/tasks/t/${uid}`,
+  watch: null
 })
 const event = (id: string, kind: HomeEvent['kind'], route: string, inDays: number): HomeEvent => ({
   id,
@@ -290,7 +291,8 @@ describe('comingUpItems', () => {
       parentStatus: parentUid ? 'todo' : null,
       parentPriority: parentUid ? 'normal' : null,
       parentDue: null,
-      study: false
+      study: false,
+      watch: null
     }
   })
   it('groups tasks where the first of them is and leaves the other events as they are', () => {

@@ -60,6 +60,22 @@ export function deadlineFor(item: WatchItem, today: string): string {
   return `${item.deadlineLabel ?? 'Apply by'} ${dayLabel(item.deadline, !sameYear)}`
 }
 
+/**
+ * What a task made from an item says about it on Home's row: the deadline in its own words ("Apply by 31 Oct") or, for an item with
+ * only an event date, "Starts 3 Nov". Read at summary time, so it follows the item when a check moves the date. A date over is still
+ * given: the task is open. Null for an item with no date.
+ */
+export function taskWatchLabel(
+  item: Pick<WatchItem, 'date' | 'dateKind' | 'deadlineLabel'>,
+  today: string
+): string | null {
+  if (!item.date) return null
+  const day = dayLabel(item.date, item.date.slice(0, 4) !== today.slice(0, 4))
+  return item.dateKind === 'deadline'
+    ? `${item.deadlineLabel ?? 'Apply by'} ${day}`
+    : `Starts ${day}`
+}
+
 export interface WatchSections {
   saved: WatchItem[]
   training: WatchItem[]

@@ -16,7 +16,9 @@ import { STUDY_LINE, studyNameOf } from '../../tasks/shared/study-label'
 import { hiddenTaskUids, studySeriesUids } from '../../tasks/shared/session-lock'
 import { workClients } from '../../tasks/shared/work-lists'
 import { listTrainingRows } from '../../training/main/repository'
-import { getCounts, listItems, upcoming } from '../../watch/main/repository'
+import { getCounts, itemsByIds, listItems, upcoming } from '../../watch/main/repository'
+import { taskWatchLabel } from '../../watch/shared/rows'
+import { openWatchItemIds } from '../../tasks/shared/watch-links'
 import { WATCH_WORKSPACES, type WatchWorkspace } from '../../watch/shared/types'
 import {
   buildHomeSummary,
@@ -149,6 +151,18 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
   // Meetings' and trainings' own tasks (and the series task over them) are never shown as tasks: their events are.
   const all = HOME_WORKSPACES.flatMap((w) => listTasks(db, w))
   const hidden = new Set([...hiddenTaskUids(all), ...studySeriesUids(all)])
+  // A task made from a Watch item carries the item's date as it is now and its address (its own copy when the item is gone).
+  const linkedItems = new Map(
+    itemsByIds(
+      db,
+      all.flatMap((t) => (t.watchItemId === null ? [] : [t.watchItemId]))
+    ).map((i) => [i.id, i])
+  )
+  const linkedWatch = (itemId: number | null, url: string | null): TaskInput['watch'] => {
+    const item = itemId === null ? undefined : linkedItems.get(itemId)
+    const address = item?.url ?? url
+    return address ? { label: item ? taskWatchLabel(item, now.date) : null, url: address } : null
+  }
   const tasks = (
     db
       .prepare(
@@ -159,6 +173,7 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
               CASE WHEN t.own_kind = 'self-study' THEN NULL ELSE p.priority END AS parentPriority,
               CASE WHEN t.own_kind = 'self-study' THEN NULL ELSE p.due END AS parentDue,
               t.own_kind AS ownKind, p.title AS parentTitle,
+              t.watch_item_id AS watchItemId, t.watch_url AS watchUrl,
               CASE WHEN t.parent_uid IS NULL THEN t.list ELSE COALESCE(p.list, '') END AS list,
               CASE WHEN t.parent_uid IS NULL THEN t.sublist ELSE COALESCE(p.sublist, '') END AS sublist
        FROM tasks t LEFT JOIN tasks p ON p.uid = t.parent_uid
@@ -170,15 +185,18 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
       sublist: string
       ownKind: string | null
       parentTitle: string | null
+      watchItemId: number | null
+      watchUrl: string | null
     })[]
   )
     .filter((t) => !hidden.has(t.uid))
-    .map(({ sublist, ownKind, parentTitle, ...t }): TaskInput =>
+    .map(({ sublist, ownKind, parentTitle, watchItemId, watchUrl, ...t }): TaskInput => {
+      const watch = linkedWatch(watchItemId, watchUrl)
       // A self-study task is shown as its training: that name, and "Training · self-study" where a list would be.
-      ownKind === 'self-study'
-        ? { ...t, title: studyNameOf(t.title, parentTitle), list: STUDY_LINE, study: true }
-        : { ...t, list: listLabel(t.list, sublist) }
-    )
+      return ownKind === 'self-study'
+        ? { ...t, title: studyNameOf(t.title, parentTitle), list: STUDY_LINE, study: true, watch }
+        : { ...t, list: listLabel(t.list, sublist), watch }
+    })
   const meetings = (
     db
       .prepare(
@@ -224,6 +242,7 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
     meetings,
     trainings,
     openMeetingTodos,
+    watchLinked: openWatchItemIds(all),
     timer: homeTimer(db, deps.tracking, now),
     hours: {
       research: homeHours(research, now, 'research'),

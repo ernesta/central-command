@@ -597,3 +597,75 @@ describe('collectHomeSummary: hours are the Hours page’s hours', () => {
     expect(db.prepare('SELECT * FROM tasks').all()).toEqual(tasksBefore)
   })
 })
+
+describe('collectHomeSummary: a task made from a Watch item', () => {
+  const source = (): number =>
+    addSource(db, { title: 'Jacobs', url: 'https://ex.org/f', method: 'feed' }, 'x').id
+  const item = (sourceId: number, over: Record<string, unknown> = {}): number =>
+    Number(
+      db
+        .prepare(
+          `INSERT INTO watch_items (source_id, item_key, title, url, state, first_seen_at, deadline, deadline_label)
+           VALUES (?, ?, 'BOLD Fellowship', 'https://ex.org/bold', ?, '2026-10-14T00:00:00.000Z', ?, ?)`
+        )
+        .run(
+          sourceId,
+          `k${Math.random()}`,
+          over.state ?? 'saved',
+          over.deadline ?? '2026-10-16',
+          over.label ?? null
+        ).lastInsertRowid
+    )
+  const link = (uid: string, itemId: number, url: string | null = 'https://ex.org/bold'): void => {
+    db.prepare('UPDATE tasks SET watch_item_id = ?, watch_url = ? WHERE uid = ?').run(
+      itemId,
+      url,
+      uid
+    )
+  }
+
+  it('shows one row: the task, with the item’s deadline in its words and its address', () => {
+    const id = item(source())
+    task('apply', { due: '2026-10-17' })
+    link('apply', id)
+    const s = collect()
+    expect(s.upcoming.map((e) => e.id)).toEqual(['task:apply'])
+    expect(s.upcoming[0].task?.watch).toEqual({
+      label: 'Apply by 16 Oct',
+      url: 'https://ex.org/bold'
+    })
+  })
+
+  it('gives the item its own row back when the task is done', () => {
+    const id = item(source())
+    task('apply', { due: '2026-10-17' })
+    link('apply', id)
+    db.prepare("UPDATE tasks SET status = 'done' WHERE uid = 'apply'").run()
+    expect(collect().upcoming.map((e) => e.id)).toEqual([`watch:${id}`])
+  })
+
+  it('gives the item its own row back when the task is deleted', () => {
+    const id = item(source())
+    task('apply', { due: '2026-10-17' })
+    link('apply', id)
+    db.prepare("UPDATE tasks SET deleted_at = 'x' WHERE uid = 'apply'").run()
+    expect(collect().upcoming.map((e) => e.id)).toEqual([`watch:${id}`])
+  })
+
+  it('follows the item when a check moves its date, and keeps the address when the item is gone', () => {
+    const id = item(source(), { label: 'Register by' })
+    task('apply', { due: '2026-10-17' })
+    link('apply', id)
+    db.prepare('UPDATE watch_items SET deadline = ? WHERE id = ?').run('2026-10-20', id)
+    expect(collect().upcoming[0].task?.watch?.label).toBe('Register by 20 Oct')
+    db.prepare('DELETE FROM watch_items WHERE id = ?').run(id)
+    const s = collect()
+    expect(s.upcoming).toHaveLength(1)
+    expect(s.upcoming[0].task?.watch).toEqual({ label: null, url: 'https://ex.org/bold' })
+  })
+
+  it('a task with no link has none', () => {
+    task('plain', { due: '2026-10-17' })
+    expect(collect().upcoming[0].task?.watch).toBeNull()
+  })
+})

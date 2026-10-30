@@ -10,6 +10,7 @@ const base: HomeInputs = {
   meetings: [],
   trainings: [],
   openMeetingTodos: 0,
+  watchLinked: new Set(),
   timer: null,
   hours: { research: null, work: null, life: null },
   timeOff: [],
@@ -428,5 +429,66 @@ describe('a task’s marks', () => {
       study: false
     })
     expect(s.upcoming.find((e) => e.id === 'task:study')?.task).toMatchObject({ study: true })
+  })
+})
+
+describe('a Watch item with a task made from it', () => {
+  const saved = (over: Partial<WatchItem> = {}): WatchItem =>
+    watchItem({ id: 7, title: 'BOLD Fellowship', date: '2026-10-16', state: 'saved', ...over })
+  const input = (
+    items: WatchItem[],
+    watchLinked: number[],
+    tasks: TaskInput[] = []
+  ): ReturnType<typeof buildHomeSummary> =>
+    buildHomeSummary({
+      ...base,
+      tasks,
+      watchLinked: new Set(watchLinked),
+      watch: {
+        research: {
+          counts: { new: 0, newRelevant: 0, sources: 1, failing: 0, changed: 0 },
+          fresh: [],
+          upcoming: items
+        },
+        life: null
+      }
+    })
+  const watchEvents = (s: ReturnType<typeof buildHomeSummary>): string[] =>
+    s.upcoming.filter((e) => e.id.startsWith('watch:')).map((e) => e.id)
+
+  it('is not a row of its own while its task is open', () => {
+    expect(watchEvents(input([saved()], [7]))).toEqual([])
+  })
+
+  it('is back once the task is done or deleted (the loader no longer lists it as linked)', () => {
+    expect(watchEvents(input([saved()], []))).toEqual(['watch:7'])
+  })
+
+  it('is a row when it has no task, and only the linked item is left out', () => {
+    expect(watchEvents(input([saved(), saved({ id: 8, title: 'Other' })], [7]))).toEqual([
+      'watch:8'
+    ])
+  })
+
+  it('a link to an item that is gone changes nothing', () => {
+    expect(watchEvents(input([saved()], [999]))).toEqual(['watch:7'])
+  })
+
+  it('the task row carries the item’s words and address, on Today and in Coming up', () => {
+    const watch = { label: 'Apply by 16 Oct', url: 'https://ex.org/c' }
+    const s = input(
+      [saved()],
+      [7],
+      [
+        task({ uid: 'today', watch }),
+        task({ uid: 'soon', due: '2026-10-17', watch }),
+        task({ uid: 'plain' })
+      ]
+    )
+    expect(s.tasks.research.today.map((t) => [t.uid, t.watch])).toEqual([
+      ['plain', null],
+      ['today', watch]
+    ])
+    expect(s.upcoming.find((e) => e.task?.uid === 'soon')?.task?.watch).toEqual(watch)
   })
 })
