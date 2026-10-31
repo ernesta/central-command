@@ -55,6 +55,19 @@ const table = '| a | bb |\n|---|---|\n| 1 | **two** |\n'
 const doc = `Intro\n\n${table}\nAfter\n`
 const inside = (needle: string, offset = 0): number => doc.indexOf(needle) + offset
 
+describe('spell check in a table drawn as a grid', () => {
+  it('is off for a right-to-left cell and on for an English one', () => {
+    const urdu = '| No. | Answer |\n|---|---|\n| 1. | السلام علیکم |\n'
+    const cells = decorationsOf(stateFor(`Intro\n\n${urdu}`, 0)).filter((s) =>
+      s.kind.startsWith('live-cell')
+    )
+    const at = (text: string): string | undefined =>
+      cells.find((s) => s.from === `Intro\n\n${urdu}`.indexOf(text))?.spellcheck
+    expect(at('السلام')).toBe('false')
+    expect(at('Answer')).toBeUndefined()
+  })
+})
+
 describe('a table away from the cursor', () => {
   const state = stateFor(doc, 0)
 

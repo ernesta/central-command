@@ -26,6 +26,8 @@ export interface Seen {
   to: number
   /** The class, `hidden` for a replaced (hidden) range, or `widget` for a range drawn as a bullet, number or checkbox. */
   kind: string
+  /** The `spellcheck` attribute, when the decoration sets one. */
+  spellcheck?: string
 }
 
 /** Every decoration for the whole document as plain data, with the editor focused. */
@@ -35,13 +37,13 @@ export function decorationsOf(state: EditorState, focused = true): Seen[] {
   ])
   const seen: Seen[] = []
   set.between(0, state.doc.length, (from, to, value) => {
-    const spec = value.spec as { class?: string }
+    const spec = value.spec as { class?: string; attributes?: { spellcheck?: string } }
     const kind = value.spec.widget
       ? 'widget'
       : value.point && !spec.class
         ? 'hidden'
         : (spec.class ?? '')
-    seen.push({ from, to, kind })
+    seen.push({ from, to, kind, spellcheck: spec.attributes?.spellcheck })
   })
   return seen
 }

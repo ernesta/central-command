@@ -191,11 +191,33 @@ const textCellRtl = Decoration.mark({
   attributes: { dir: 'auto', spellcheck: 'false' }
 })
 const pipeMark = Decoration.mark({ class: 'live-tablemark' })
-const cellMarks: Record<Align, Decoration> = {
-  left: Decoration.mark({ class: 'live-cell', attributes: { dir: 'auto' } }),
-  center: Decoration.mark({ class: 'live-cell live-cell-center', attributes: { dir: 'auto' } }),
-  right: Decoration.mark({ class: 'live-cell live-cell-right', attributes: { dir: 'auto' } })
+const cellClass: Record<Align, string> = {
+  left: 'live-cell',
+  center: 'live-cell live-cell-center',
+  right: 'live-cell live-cell-right'
 }
+const cellMarks = {
+  ltr: {
+    left: Decoration.mark({ class: cellClass.left, attributes: { dir: 'auto' } }),
+    center: Decoration.mark({ class: cellClass.center, attributes: { dir: 'auto' } }),
+    right: Decoration.mark({ class: cellClass.right, attributes: { dir: 'auto' } })
+  },
+  // A cell drawn in the grid is spell-checked too, even though it cannot be typed in there.
+  rtl: {
+    left: Decoration.mark({
+      class: cellClass.left,
+      attributes: { dir: 'auto', spellcheck: 'false' }
+    }),
+    center: Decoration.mark({
+      class: cellClass.center,
+      attributes: { dir: 'auto', spellcheck: 'false' }
+    }),
+    right: Decoration.mark({
+      class: cellClass.right,
+      attributes: { dir: 'auto', spellcheck: 'false' }
+    })
+  }
+} satisfies Record<'ltr' | 'rtl', Record<Align, Decoration>>
 
 type Add = (kind: string, from: number, to: number, deco: Decoration) => void
 
@@ -271,8 +293,10 @@ export function drawTable(
       else if (cell.gapFrom < cell.gapTo) shown.push({ from: cell.gapFrom, to: cell.gapFrom + 1 })
       else shown.push({ from: cell.gapFrom, to: cell.gapFrom })
       const at = shown[shown.length - 1]
-      if (at.from < at.to) add('tcell', line.from + at.from, line.from + at.to, cellMarks[align])
-      else
+      if (at.from < at.to) {
+        const dir = textDirection(line.text.slice(cell.from, cell.to)) === 'rtl' ? 'rtl' : 'ltr'
+        add('tcell', line.from + at.from, line.from + at.to, cellMarks[dir][align])
+      } else
         add(
           'tcell',
           line.from + at.from,
