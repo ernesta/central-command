@@ -285,7 +285,8 @@
   width: fit-content;
   max-width: 100%;
   column-gap: 16px;
-  padding: 6px 4px;
+  /* The gap above a block (`--lead`) is padding that `clip-path` cuts away; keep it on top of the row's own, or the clip eats into the header's text. */
+  padding: calc(6px + var(--lead, 0px)) 4px 6px;
   border-bottom: 1px solid var(--border-soft);
   line-height: calc(var(--table-row) - 1px);
   /* A table wider than the page scrolls sideways, every row together (`tableScroll`); the bar is not drawn. */
