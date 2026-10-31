@@ -4968,3 +4968,7 @@ The user's hand-made task "Apply for the BOLD Science Communication Fellowship" 
 ## A task page's subtasks carry the running-timer stripe (30 Oct 2026, the user's screenshot: "when a task is running in hours, why do subtasks not get marked with an indicator of current task here?")
 
 The task page's Subtasks box is the Tasks table (`flat`), which marks a row whose timer runs, but `Subtasks` in `TaskPage.tsx` passed it an empty `running` set (since "Task page: subtasks use the Tasks table's own rows"), so no subtask there ever showed the accent stripe. It now gets the page's own `running` set (`useTaskTime`), which holds the uid of the task the timer names, a subtask included. Not mutation-checked (no logic changed, a prop passed through), not driven in the app.
+
+## Editor tables: the gap above a table does not clip its header (31 Oct 2026, the user's screenshot: the header "English | Urdu" cut off at the top)
+
+A line after a block carries `--lead` (the gap above it, 4px after a list item, 16px otherwise); `.live-gap*` pads the line by that much and `clip-path` cuts the gap away. The table row rule (`padding: 6px 4px`) outranked the gap padding because it comes later in the file, but the clip stayed, so it cut 4px off the top of the header's text. The row's top padding is now `calc(6px + var(--lead, 0px))`. Driven in a scratch library (production build): a bullet followed by a table showed the cut header before the change and the whole header after. Not mutation-checked (CSS only, no unit test can see it); dev mode and dark mode not driven.
