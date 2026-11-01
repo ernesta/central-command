@@ -21,7 +21,7 @@ export async function exportHtmlAsPdf(
 ): Promise<PdfExportResult> {
   const dialogOptions = {
     title: options.dialogTitle,
-    defaultPath: join(app.getPath('documents'), options.fileName),
+    defaultPath: join(app.getPath('downloads'), options.fileName),
     filters: [{ name: 'PDF', extensions: ['pdf'] }]
   }
   const parent = BrowserWindow.fromWebContents(sender)
