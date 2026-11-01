@@ -54,8 +54,9 @@ export function InvoiceCard({
     setNotice(null)
     try {
       const log = activityLog(data, month, now)
+      const people = await window.api.meetings.people.list().catch(() => [])
       const result = await window.api.tracking.exportActivityLog(
-        activityLogHtml(log, now.date),
+        activityLogHtml(log, now.date, people.find((p) => p.me)?.name),
         log.fileName
       )
       if (result.status === 'saved')

@@ -110,8 +110,12 @@ export function activityLog(year: TrackingYear, period: ContractPeriod, now?: Mo
   }
 }
 
-/** The printable page: a title, the date, the opening sentence and the table of activities. Everything is escaped. */
-export function activityLogHtml(log: ActivityLog, today: string): string {
+/**
+ * The printable page, styled like the invoice it goes with: a black bar, the author's name top right, a ruled title block,
+ * a black table header and pale rows. Everything is escaped. `name` is the user's own (the person flagged `me`); without it
+ * the name block is left out.
+ */
+export function activityLogHtml(log: ActivityLog, today: string, name?: string): string {
   const cell = (text: string, className = ''): string =>
     `<td${className ? ` class="${className}"` : ''}>${escapeHtml(text)}</td>`
   const rows = log.groups
@@ -132,30 +136,45 @@ export function activityLogHtml(log: ActivityLog, today: string): string {
 <meta charset="utf-8">
 <title>${escapeHtml(log.title)}</title>
 <style>
-* { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-@page { size: A4 portrait; margin: 20mm; }
-body { font-family: Calibri, Carlito, Helvetica, Arial, sans-serif; font-size: 11pt; color: #000; }
-h1 { margin: 0 0 14px; font-size: 24pt; font-weight: 600; }
-p { margin: 0 0 12px; }
-table { width: 100%; border-collapse: collapse; }
-th, td { padding: 4px 8px; border: 0.75pt solid #000; vertical-align: top; }
-th { background: #002060; color: #fff; text-align: center; }
-td.r, th.r { width: 70px; text-align: center; }
+* { -webkit-print-color-adjust: exact; print-color-adjust: exact; box-sizing: border-box; }
+@page { size: A4 portrait; margin: 0; }
+body { margin: 0; font-family: 'DM Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10pt; line-height: 1.4; color: #000; }
+.bar { height: 4px; background: #000; }
+.page { padding: 12mm 12mm 14mm; }
+.author { text-align: right; min-height: 22mm; font-weight: 700; font-size: 10.5pt; }
+.head { border-top: 1.5px solid #000; margin-top: 4mm; padding-top: 5mm; }
+h1 { margin: 0 0 3mm; font-size: 17pt; line-height: 1.2; font-weight: 700; text-transform: uppercase; }
+.date { margin: 0 0 3mm; font-size: 11pt; font-weight: 700; }
+.intro { margin: 0 0 8mm; color: #333; max-width: 150mm; }
+table { width: 100%; border-collapse: separate; border-spacing: 0; }
+th { padding: 4mm 5mm; background: #000; color: #fff; font-size: 8pt; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; text-align: left; }
+th:first-child { border-radius: 8px 0 0 8px; }
+th:last-child { border-radius: 0 8px 8px 0; }
+td { padding: 3.2mm 5mm; vertical-align: top; }
+tbody tr:nth-child(odd) td { background: #f7f7f7; }
+td.r, th.r { width: 28mm; text-align: right; }
 tr { break-inside: avoid; }
-tr.client td, tr.total td { background: #e8e8e8; font-weight: 700; }
+tr.client td { font-weight: 700; }
+.total { display: flex; justify-content: flex-end; gap: 6mm; margin-top: 6mm; padding-right: 5mm; font-size: 17pt; font-weight: 700; }
 </style>
 </head>
 <body>
+<div class="bar"></div>
+<div class="page">
+<div class="author">${name ? escapeHtml(name) : ''}</div>
+<div class="head">
 <h1>${escapeHtml(log.title)}</h1>
-<p><strong>Date</strong>: ${escapeHtml(longDate(today))}</p>
-<p>${escapeHtml(log.intro)}</p>
+<p class="date">${escapeHtml(longDate(today))}</p>
+</div>
+<p class="intro">${escapeHtml(log.intro)}</p>
 <table>
 <thead><tr><th>Activity</th><th class="r">Time (h)</th></tr></thead>
 <tbody>
 ${rows}
-<tr class="total">${cell('Total')}${cell(logHours(log.minutes), 'r')}</tr>
 </tbody>
 </table>
+<div class="total"><span>Total</span><span>${escapeHtml(logHours(log.minutes))} h</span></div>
+</div>
 </body>
 </html>
 `

@@ -110,6 +110,9 @@ describe('activityLogHtml', () => {
     expect(html).toContain('A &lt;b&gt; &amp; B')
     expect(html).toContain('Impact – Total')
     expect(html).toContain('<td class="r">0.75</td>')
+    expect(activityLogHtml(activityLog(year, september), '2026-10-04', 'Ada <L>')).toContain(
+      'Ada &lt;L&gt;'
+    )
   })
 })
 
