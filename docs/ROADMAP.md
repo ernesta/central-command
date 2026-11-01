@@ -1,5 +1,7 @@
 # Roadmap
 
+**PDF exports: toast with Show, dialog starts in Downloads (1 Nov 2026, `docs/DECISIONS.md`, "PDF exports: the saved message is a toast with Show"): built, tested, not driven in the app.** For you: Export an activity log; the toast should offer Show (opens Finder on the file), and the save dialog should start in Downloads (Meetings and Training exports too). Open: Meetings and Training exports have no saved message or Show yet; say if you want the same.
+
 **Hours: activity log export (1 Nov 2026, `docs/DECISIONS.md`, "Activity log: an Export on the Invoice card"): built, tested, driven in a scratch library (production build; dev mode and dark mode not driven), pushed and installed.** For you: Hours → Work → the Invoice card's Export saves the shown month (or week) as a PDF like your Luminos logs; compare September with your own (the interviews row should read 4.25 with meeting time). No "Prepared for/by" lines, by your decision. Open: your logs group tasks by hand ("Meetings, meeting note synthesis…"); this lists tasks under their own names.
 
 **Editor tables: the header is no longer clipped (31 Oct 2026, `docs/DECISIONS.md`, "Editor tables: the gap above a table does not clip its header"): fixed after your screenshot, driven in a scratch library (production build), pushed and installed; dev mode and dark mode not driven.** For you: a table right after a bullet should show "English | Urdu" whole.
