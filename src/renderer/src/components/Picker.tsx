@@ -157,8 +157,22 @@ export function PickerPopup<T extends string>({
     popup.style.maxHeight = `${Math.min(room, window.innerHeight * 0.6)}px`
     if (downwards) popup.style.top = `${rect.bottom + 4}px`
     else popup.style.bottom = `${window.innerHeight - rect.top + 4}px`
-    const left = rect.left + width > window.innerWidth - margin ? rect.right - width : rect.left
-    popup.style.left = `${Math.max(margin, left)}px`
+    const sideways = (box: DOMRect): void => {
+      const left = box.left + width > window.innerWidth - margin ? box.right - width : box.left
+      popup.style.left = `${Math.max(margin, left)}px`
+    }
+    sideways(rect)
+    // The anchor can move after the list is placed (a search box shrinks when it loses focus, with a transition), so
+    // follow it while the list is open.
+    let last = rect
+    let frame = requestAnimationFrame(function follow() {
+      const now = anchor.getBoundingClientRect()
+      if (now.left !== last.left || now.right !== last.right) sideways(now)
+      if (now.bottom !== last.bottom && downwards) popup.style.top = `${now.bottom + 4}px`
+      last = now
+      frame = requestAnimationFrame(follow)
+    })
+    return () => cancelAnimationFrame(frame)
   }, [anchorRef, minWidth, searchable])
 
   useEffect(() => {
