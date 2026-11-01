@@ -95,7 +95,7 @@ export function activityLog(year: TrackingYear, period: ContractPeriod, now?: Mo
 }
 
 /**
- * The printable page, styled like the invoice it goes with: a ruled title block with the name and period, a
+ * The printable page, styled like the invoice it goes with: a title block with the name and period, a
  * black table header, pale banded rows and a black Total row. Everything is escaped. `name` is the user's own (the person
  * flagged `me`); without it the line shows the period alone. `fontCss` is the `@font-face` rules for DM Sans
  * (`renderer/activity-log-font.ts`; the shared code stays free of bundler imports); without it the page uses Helvetica.
@@ -131,7 +131,7 @@ ${fontCss}
 @page { size: A4 portrait; margin: 0; }
 body { margin: 0; font-family: 'DM Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10pt; line-height: 1.4; color: #000; }
 .page { padding: 10mm 12mm 10mm; }
-.head { border-top: 1.5px solid #000; margin-top: 4mm; padding-top: 5mm; }
+.head { padding-top: 4mm; }
 h1 { margin: 0 0 2mm; font-size: 17pt; line-height: 1.2; font-weight: 700; }
 .by { margin: 0 0 8mm; font-size: 10.5pt; }
 table { width: 100%; border-collapse: separate; border-spacing: 0; }
