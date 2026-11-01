@@ -101,7 +101,7 @@ describe('activityLogHtml', () => {
     }
     const html = activityLogHtml(activityLog(year, september))
     expect(html).toContain('A &lt;b&gt; &amp; B')
-    expect(html).toContain('Impact – Total')
+    expect(html).toContain('Impact – Subtotal')
     expect(html).toContain('<td class="r">0.75</td>')
     expect(activityLogHtml(activityLog(year, september), 'Ada <L>')).toContain('Ada &lt;L&gt;')
   })

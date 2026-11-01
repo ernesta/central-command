@@ -90,15 +90,17 @@ export function activityLogHtml(log: ActivityLog, name?: string): string {
   const cell = (text: string, className = ''): string =>
     `<td${className ? ` class="${className}"` : ''}>${escapeHtml(text)}</td>`
   const rows = log.groups
-    .map((g) => {
+    .map((g, i) => {
+      // A blank row sets each client's block apart from the one above.
+      const gap = i === 0 ? '' : '<tr class="gap"><td colspan="2"></td></tr>\n'
       const head =
         g.client === null
           ? ''
-          : `<tr class="client">${cell(`${g.client} – Total`)}${cell(logHours(g.minutes), 'r')}</tr>`
+          : `<tr class="client">${cell(`${g.client} – Subtotal`)}${cell(logHours(g.minutes), 'r')}</tr>`
       const body = g.rows
         .map((r) => `<tr>${cell(r.label)}${cell(logHours(r.minutes), 'r')}</tr>`)
         .join('\n')
-      return `${head}\n${body}`
+      return `${gap}${head}\n${body}`
     })
     .join('\n')
   return `<!doctype html>
@@ -112,37 +114,42 @@ export function activityLogHtml(log: ActivityLog, name?: string): string {
 body { margin: 0; font-family: 'DM Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10pt; line-height: 1.4; color: #000; }
 .bar { height: 4px; background: #000; }
 .page { padding: 10mm 12mm 10mm; }
-.author { text-align: right; min-height: 12mm; font-weight: 700; font-size: 10.5pt; }
 .head { border-top: 1.5px solid #000; margin-top: 4mm; padding-top: 5mm; }
-h1 { margin: 0 0 3mm; font-size: 17pt; line-height: 1.2; font-weight: 700; text-transform: uppercase; }
-.date { margin: 0 0 6mm; font-size: 11pt; font-weight: 700; }
+h1 { margin: 0 0 2mm; font-size: 17pt; line-height: 1.2; font-weight: 700; }
+.by { margin: 0 0 8mm; font-size: 10.5pt; }
 table { width: 100%; border-collapse: separate; border-spacing: 0; }
 th { padding: 3.2mm 5mm; background: #000; color: #fff; font-size: 8pt; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; text-align: left; }
 th:first-child { border-radius: 8px 0 0 8px; }
 th:last-child { border-radius: 0 8px 8px 0; }
 td { padding: 2mm 5mm; vertical-align: top; }
-tbody tr:nth-child(odd) td { background: #f7f7f7; }
+td { border-bottom: 0.75pt solid #e3e3e3; }
 td.r, th.r { width: 28mm; text-align: right; }
 tr { break-inside: avoid; }
-tr.client td { font-weight: 700; }
-.total { display: flex; justify-content: flex-end; gap: 6mm; margin-top: 4mm; padding-right: 5mm; font-size: 17pt; font-weight: 700; }
+tr.client td { padding-top: 3mm; padding-bottom: 3mm; background: #dcdcdc; border-bottom: 0; font-weight: 700; }
+tr.client td:first-child { border-radius: 8px 0 0 8px; }
+tr.client td:last-child { border-radius: 0 8px 8px 0; }
+tr.gap td { padding: 0; height: 4mm; border: 0; }
+tbody tr:not(.client):not(.gap):not(.total) td:first-child { padding-left: 9mm; }
+tr.total td { padding-top: 3.5mm; padding-bottom: 3.5mm; border: 0; background: #000; color: #fff; font-weight: 700; }
+tr.total td:first-child { border-radius: 8px 0 0 8px; }
+tr.total td:last-child { border-radius: 0 8px 8px 0; }
 </style>
 </head>
 <body>
 <div class="bar"></div>
 <div class="page">
-<div class="author">${name ? escapeHtml(name) : ''}</div>
 <div class="head">
 <h1>${escapeHtml(log.title)}</h1>
-<p class="date">Period: ${escapeHtml(log.covered)}</p>
+<p class="by">${escapeHtml([name, log.covered].filter(Boolean).join(' | '))}</p>
 </div>
 <table>
 <thead><tr><th>Activity</th><th class="r">Time (h)</th></tr></thead>
 <tbody>
 ${rows}
+<tr class="gap"><td colspan="2"></td></tr>
+<tr class="total">${cell('Total')}${cell(logHours(log.minutes), 'r')}</tr>
 </tbody>
 </table>
-<div class="total"><span>Total</span><span>${escapeHtml(logHours(log.minutes))} h</span></div>
 </div>
 </body>
 </html>
