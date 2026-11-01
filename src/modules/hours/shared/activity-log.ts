@@ -1,6 +1,5 @@
 import { escapeHtml } from '@shared/report-page'
 import { localeDate } from '@shared/locale-names'
-import { fold } from '@shared/text'
 import { derivedRows, type DerivedRow } from '@shared/tracking/derived'
 import { dayRows } from '@shared/tracking/totals'
 import { sameLabel } from '@shared/tracking/timer'
@@ -41,21 +40,12 @@ export function logHours(minutes: number): string {
 }
 
 /**
- * What a line is called in the log. A name that has the contract's or the client's name as a part ("Document Automation –
- * Luminos") loses that part, which every line of the log is already about; a meeting or training counted from a note says
- * what it is ("Meeting: Document Automation"), because its note's name alone does not.
+ * What a line is called in the log. A meeting or training counted from a note is named for its series with "meetings" or
+ * "trainings" after it ("Supervision meetings"), so every meeting of a series is one entry; a typed or timed task keeps its
+ * own name.
  */
-export function activityName(
-  label: string,
-  year: TrackingYear,
-  client: string | null,
-  kind?: DerivedRow['kind']
-): string {
-  const repeated = [year.name, client ?? ''].map((n) => fold(n ?? '')).filter(Boolean)
-  const parts = label.split(/\s+[–—-]\s+/)
-  const kept = parts.filter((part) => !repeated.includes(fold(part)))
-  const name = kept.length > 0 ? kept.join(' – ') : label
-  return kind === undefined ? name : `${kind === 'training' ? 'Training' : 'Meeting'}: ${name}`
+export function activityName(label: string, kind?: DerivedRow['kind']): string {
+  return kind === undefined ? label : `${label} ${kind === 'training' ? 'trainings' : 'meetings'}`
 }
 
 /**
@@ -74,7 +64,7 @@ export function activityLog(year: TrackingYear, period: ContractPeriod, now?: Mo
     ]
     for (const row of rows) {
       const client = row.client ?? null
-      const label = activityName(row.label, year, client, row.kind)
+      const label = activityName(row.label, row.kind)
       let group = groups.find((g) => g.client === client)
       if (!group) groups.push((group = { client, minutes: 0, rows: [] }))
       let activity = group.rows.find((r) => sameLabel(r.label, label))
