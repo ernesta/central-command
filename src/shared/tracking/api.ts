@@ -159,6 +159,8 @@ export interface TrackingApi {
   removeContract(workspace: Workspace, year: string): Promise<YearResult>
   /** Print a finished activity log page to a PDF the user chooses where to save (portrait A4). */
   exportActivityLog(html: string, fileName: string): Promise<ActivityLogExport>
+  /** Show the PDF the last export saved in Finder. */
+  revealActivityLog(): Promise<void>
   /** A year's file changed (any workspace). Returns an unsubscribe function. */
   onChanged(listener: (event: TrackingChangedEvent) => void): () => void
 }
@@ -192,5 +194,6 @@ export const TRACKING_IPC = {
   setContractTerms: 'tracking:set-contract-terms',
   removeContract: 'tracking:remove-contract',
   exportActivityLog: 'tracking:export-activity-log',
+  revealActivityLog: 'tracking:reveal-activity-log',
   changed: 'tracking:changed'
 } as const

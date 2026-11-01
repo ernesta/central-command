@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from 'electron'
+import { BrowserWindow, ipcMain, shell } from 'electron'
 import { INVOICES, TIME_OFF_TYPES, type Invoice, type TimeOffType } from '@shared/tracking/types'
 import { TRACKING_IPC } from '@shared/tracking/api'
 import { WORKSPACES, type Workspace } from '@shared/settings'
@@ -166,8 +166,10 @@ export function registerTrackingIpc(store: TrackingStore): void {
       ...(t.invoice !== undefined ? { invoice: invoice(t.invoice) } : {})
     })
   })
-  h(TRACKING_IPC.exportActivityLog, (e, html, fileName) =>
-    exportHtmlAsPdf(e.sender, {
+  // Only the file this export saved can be shown, never a path the page names.
+  let lastExport: string | null = null
+  h(TRACKING_IPC.exportActivityLog, async (e, html, fileName) => {
+    const result = await exportHtmlAsPdf(e.sender, {
       html: text(html),
       dialogTitle: 'Export the activity log',
       // Only a file name: never a folder the page asked for.
@@ -175,7 +177,12 @@ export function registerTrackingIpc(store: TrackingStore): void {
       portrait: true,
       backgrounds: true
     })
-  )
+    if (result.status === 'saved') lastExport = result.path
+    return result
+  })
+  h(TRACKING_IPC.revealActivityLog, () => {
+    if (lastExport) shell.showItemInFolder(lastExport)
+  })
   h(TRACKING_IPC.removeContract, (_e, ws, year) => store.removeContract(workspace(ws), text(year)))
   h(TRACKING_IPC.addTimeOff, (_e, ws, year, from, to, type) =>
     store.addTimeOff(workspace(ws), text(year), text(from), text(to), timeOffType(type))
