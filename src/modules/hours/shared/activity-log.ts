@@ -111,21 +111,21 @@ export function activityLogHtml(log: ActivityLog, name?: string): string {
 @page { size: A4 portrait; margin: 0; }
 body { margin: 0; font-family: 'DM Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10pt; line-height: 1.4; color: #000; }
 .bar { height: 4px; background: #000; }
-.page { padding: 12mm 12mm 14mm; }
-.author { text-align: right; min-height: 22mm; font-weight: 700; font-size: 10.5pt; }
+.page { padding: 10mm 12mm 10mm; }
+.author { text-align: right; min-height: 12mm; font-weight: 700; font-size: 10.5pt; }
 .head { border-top: 1.5px solid #000; margin-top: 4mm; padding-top: 5mm; }
 h1 { margin: 0 0 3mm; font-size: 17pt; line-height: 1.2; font-weight: 700; text-transform: uppercase; }
-.date { margin: 0 0 8mm; font-size: 11pt; font-weight: 700; }
+.date { margin: 0 0 6mm; font-size: 11pt; font-weight: 700; }
 table { width: 100%; border-collapse: separate; border-spacing: 0; }
-th { padding: 4mm 5mm; background: #000; color: #fff; font-size: 8pt; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; text-align: left; }
+th { padding: 3.2mm 5mm; background: #000; color: #fff; font-size: 8pt; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; text-align: left; }
 th:first-child { border-radius: 8px 0 0 8px; }
 th:last-child { border-radius: 0 8px 8px 0; }
-td { padding: 3.2mm 5mm; vertical-align: top; }
+td { padding: 2mm 5mm; vertical-align: top; }
 tbody tr:nth-child(odd) td { background: #f7f7f7; }
 td.r, th.r { width: 28mm; text-align: right; }
 tr { break-inside: avoid; }
 tr.client td { font-weight: 700; }
-.total { display: flex; justify-content: flex-end; gap: 6mm; margin-top: 6mm; padding-right: 5mm; font-size: 17pt; font-weight: 700; }
+.total { display: flex; justify-content: flex-end; gap: 6mm; margin-top: 4mm; padding-right: 5mm; font-size: 17pt; font-weight: 700; }
 </style>
 </head>
 <body>
