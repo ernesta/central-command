@@ -141,7 +141,9 @@ export function PickerPopup<T extends string>({
     const margin = 8
     popup.style.minWidth = `${minWidth ?? Math.max(rect.width, searchable ? 120 : 0)}px`
     // A field-sized control gets a list exactly as wide as itself; a small one keeps the width its options need.
-    if (rect.width >= 160) {
+    // A filter row caps its fields to keep the row on one line (`--list-grow`); its list may be wider than the field.
+    const grows = getComputedStyle(popup).getPropertyValue('--list-grow').trim() !== ''
+    if (rect.width >= 160 && !grows) {
       const fit = `${rect.width}px`
       popup.style.minWidth = fit
       popup.style.maxWidth = fit

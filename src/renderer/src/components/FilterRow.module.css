@@ -9,6 +9,8 @@
 /* A select is as wide as its value needs, never as its longest option, and gives way before the row wraps. */
 .filters {
   --field-max: 200px;
+  /* The open list is not held to the field's width, so a long name reads in full (up to the popup's own cap). */
+  --list-grow: 1;
 }
 .filters > * {
   flex: 0 1 auto;
