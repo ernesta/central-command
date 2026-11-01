@@ -1,12 +1,11 @@
 import { escapeHtml } from '@shared/report-page'
 import { localeDate } from '@shared/locale-names'
-import { hasAim } from '@shared/tracking/plan'
 import { derivedRows } from '@shared/tracking/derived'
 import { dayRows } from '@shared/tracking/totals'
 import { sameLabel } from '@shared/tracking/timer'
 import { contractEnd } from '@shared/tracking/workspace-weeks'
 import { invoiceOf, type Moment, type TrackingYear } from '@shared/tracking/types'
-import { addDays, daysBetween } from '@shared/year'
+import { addDays } from '@shared/year'
 import type { ContractPeriod } from './periods'
 
 /** One activity: a task's name and everything spent on it in the period. */
@@ -24,43 +23,20 @@ export interface ActivityGroup {
 
 export interface ActivityLog {
   title: string
-  /** The sentence that opens the log. */
-  intro: string
+  /** The span the log covers, for example "2 Oct 2026 – 5 Nov 2026". */
+  covered: string
   groups: ActivityGroup[]
   minutes: number
   /** The name the PDF is suggested to be saved as, for example "2026 09 Activity Log.pdf". */
   fileName: string
 }
 
-const NUMBER_WORDS = [
-  'zero',
-  'one',
-  'two',
-  'three',
-  'four',
-  'five',
-  'six',
-  'seven',
-  'eight',
-  'nine'
-]
-
-const longDate = (date: string): string =>
-  localeDate(date, { month: 'long', day: 'numeric', year: 'numeric' })
+const shortDate = (date: string): string =>
+  localeDate(date, { month: 'short', day: 'numeric', year: 'numeric' })
 
 /** Hours the way the log writes them: 2.25, 14, 0.25. */
 export function logHours(minutes: number): string {
   return String(Number((minutes / 60).toFixed(2)))
-}
-
-/** "1 day per week", "2 days per week", "6.5 hours per week": the weekly aim, a day being eight hours; null where there is none. */
-export function levelOfEffort(year: TrackingYear): string | null {
-  if (!hasAim(year)) return null
-  const minutes = year.plan.hoursPerWeek
-  const days = minutes / 480
-  if (Number.isInteger(days)) return `${days} ${days === 1 ? 'day' : 'days'} per week`
-  const hours = logHours(minutes)
-  return `${hours} ${hours === '1' ? 'hour' : 'hours'} per week`
 }
 
 /**
@@ -93,17 +69,12 @@ export function activityLog(year: TrackingYear, period: ContractPeriod, now?: Mo
         ? order.indexOf(client)
         : order.length
   groups.sort((a, b) => rank(a.client) - rank(b.client))
-  const weeks = Math.round((daysBetween(period.from, to) + 1) / 7)
-  const effort = levelOfEffort(year)
   const byWeek = invoiceOf(year) === 'week'
   const what = byWeek ? period.name : `${period.name} ${period.id.slice(0, 4)}`
-  const span = `${weeks === 1 ? 'week' : `${NUMBER_WORDS[weeks] ?? weeks} weeks`} between ${longDate(period.from)}, and ${longDate(to)}`
   const month = period.id.slice(0, 7).replace('-', ' ')
   return {
     title: `${what} Activity Log`,
-    intro:
-      `This activity log summarises the consulting work completed during ${byWeek ? `${period.name.toLowerCase()}` : what}. ` +
-      `More specifically, ${effort ? `with the contract specifying the level of effort at ${effort}, ` : ''}the log covers the ${span}.`,
+    covered: `${shortDate(period.from)} – ${shortDate(to)}`,
     groups,
     minutes: groups.reduce((sum, g) => sum + g.minutes, 0),
     fileName: `${byWeek ? period.from.replace(/-/g, ' ') : month} Activity Log.pdf`
@@ -115,7 +86,7 @@ export function activityLog(year: TrackingYear, period: ContractPeriod, now?: Mo
  * a black table header and pale rows. Everything is escaped. `name` is the user's own (the person flagged `me`); without it
  * the name block is left out.
  */
-export function activityLogHtml(log: ActivityLog, today: string, name?: string): string {
+export function activityLogHtml(log: ActivityLog, name?: string): string {
   const cell = (text: string, className = ''): string =>
     `<td${className ? ` class="${className}"` : ''}>${escapeHtml(text)}</td>`
   const rows = log.groups
@@ -144,8 +115,7 @@ body { margin: 0; font-family: 'DM Sans', 'Helvetica Neue', Helvetica, Arial, sa
 .author { text-align: right; min-height: 22mm; font-weight: 700; font-size: 10.5pt; }
 .head { border-top: 1.5px solid #000; margin-top: 4mm; padding-top: 5mm; }
 h1 { margin: 0 0 3mm; font-size: 17pt; line-height: 1.2; font-weight: 700; text-transform: uppercase; }
-.date { margin: 0 0 3mm; font-size: 11pt; font-weight: 700; }
-.intro { margin: 0 0 8mm; color: #333; max-width: 150mm; }
+.date { margin: 0 0 8mm; font-size: 11pt; font-weight: 700; }
 table { width: 100%; border-collapse: separate; border-spacing: 0; }
 th { padding: 4mm 5mm; background: #000; color: #fff; font-size: 8pt; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; text-align: left; }
 th:first-child { border-radius: 8px 0 0 8px; }
@@ -164,9 +134,8 @@ tr.client td { font-weight: 700; }
 <div class="author">${name ? escapeHtml(name) : ''}</div>
 <div class="head">
 <h1>${escapeHtml(log.title)}</h1>
-<p class="date">${escapeHtml(longDate(today))}</p>
+<p class="date">Period covered: ${escapeHtml(log.covered)}</p>
 </div>
-<p class="intro">${escapeHtml(log.intro)}</p>
 <table>
 <thead><tr><th>Activity</th><th class="r">Time (h)</th></tr></thead>
 <tbody>

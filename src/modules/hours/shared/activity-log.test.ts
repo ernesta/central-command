@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { emptyYear, WORK_PLAN } from '@shared/tracking/types'
-import { activityLog, activityLogHtml, levelOfEffort, logHours } from './activity-log'
+import { activityLog, activityLogHtml, logHours } from './activity-log'
 import { monthsOf, weekPeriodsOf } from './periods'
 
 const plan = { ...WORK_PLAN, hoursPerWeek: 480, clients: ['Impact', 'Teaching & Learning'] }
@@ -80,14 +80,7 @@ describe('activityLog', () => {
   it('names the file and the period', () => {
     expect(log.fileName).toBe('2026 09 Activity Log.pdf')
     expect(log.title).toBe('September 2026 Activity Log')
-    expect(log.intro).toContain('during September 2026.')
-    expect(log.intro).toContain('level of effort at 1 day per week')
-    expect(log.intro).toContain('the four weeks between')
-  })
-
-  it('says nothing of effort where the contract has no aim', () => {
-    const none = { ...contract, plan: { ...plan, hoursPerWeek: 0 } }
-    expect(activityLog(none, september).intro).not.toContain('level of effort')
+    expect(log.covered).toMatch(/^\w{3} \d{1,2}, 2026 – \w{3} \d{1,2}, 2026$/)
   })
 
   it('writes a weekly-invoiced contract per week', () => {
@@ -95,7 +88,7 @@ describe('activityLog', () => {
     const week = weekPeriodsOf(weekly).find((w) => w.from <= '2026-09-23' && w.to >= '2026-09-23')!
     const one = activityLog(weekly, week)
     expect(one.title).toBe(`${week.name} Activity Log`)
-    expect(one.intro).toContain('the week between')
+    expect(one.covered).toContain(' – ')
     expect(one.fileName).toBe(`${week.from.replace(/-/g, ' ')} Activity Log.pdf`)
   })
 })
@@ -106,27 +99,16 @@ describe('activityLogHtml', () => {
       ...contract,
       adjusts: [{ id: 'x', date: '2026-09-23', label: 'A <b> & B', minutes: 45, client: 'Impact' }]
     }
-    const html = activityLogHtml(activityLog(year, september), '2026-10-04')
+    const html = activityLogHtml(activityLog(year, september))
     expect(html).toContain('A &lt;b&gt; &amp; B')
     expect(html).toContain('Impact – Total')
     expect(html).toContain('<td class="r">0.75</td>')
-    expect(activityLogHtml(activityLog(year, september), '2026-10-04', 'Ada <L>')).toContain(
-      'Ada &lt;L&gt;'
-    )
+    expect(activityLogHtml(activityLog(year, september), 'Ada <L>')).toContain('Ada &lt;L&gt;')
   })
 })
 
 describe('formats', () => {
   it('writes hours as decimals', () => {
     expect([0, 15, 135, 840, 975].map(logHours)).toEqual(['0', '0.25', '2.25', '14', '16.25'])
-  })
-  it('writes the level of effort', () => {
-    expect(levelOfEffort(contract)).toBe('1 day per week')
-    expect(levelOfEffort({ ...contract, plan: { ...plan, hoursPerWeek: 960 } })).toBe(
-      '2 days per week'
-    )
-    expect(levelOfEffort({ ...contract, plan: { ...plan, hoursPerWeek: 360 } })).toBe(
-      '6 hours per week'
-    )
   })
 })
