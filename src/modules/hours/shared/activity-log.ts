@@ -1,6 +1,7 @@
 import { escapeHtml } from '@shared/report-page'
 import { localeDate } from '@shared/locale-names'
 import { hasAim } from '@shared/tracking/plan'
+import { derivedRows } from '@shared/tracking/derived'
 import { dayRows } from '@shared/tracking/totals'
 import { sameLabel } from '@shared/tracking/timer'
 import { contractEnd } from '@shared/tracking/workspace-weeks'
@@ -71,7 +72,9 @@ export function activityLog(year: TrackingYear, period: ContractPeriod, now?: Mo
   const to = [period.to, contractEnd(year)].sort()[0]
   const groups: ActivityGroup[] = []
   for (let date = period.from; date <= to; date = addDays(date, 1)) {
-    for (const row of dayRows(year, date, now)) {
+    // Meetings and trainings are derived from their notes and counted in the totals, so they are activities too.
+    const rows = [...dayRows(year, date, now), ...derivedRows(year, date)]
+    for (const row of rows) {
       const client = row.client ?? null
       let group = groups.find((g) => g.client === client)
       if (!group) groups.push((group = { client, minutes: 0, rows: [] }))

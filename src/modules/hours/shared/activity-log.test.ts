@@ -50,6 +50,29 @@ describe('activityLog', () => {
     expect(log.minutes).toBe(390)
   })
 
+  it('counts meetings and trainings, which the totals count', () => {
+    const withMeeting = {
+      ...contract,
+      sessions: [
+        {
+          id: 'meeting:m1',
+          date: '2026-09-24',
+          start: '10:00:00',
+          end: '11:00:00',
+          label: 'Developer call',
+          client: 'Teaching & Learning',
+          derived: { kind: 'meeting' as const, id: 'm1' }
+        }
+      ]
+    }
+    const log = activityLog(
+      withMeeting,
+      monthsOf(withMeeting).find((m) => m.name === 'September')!
+    )
+    expect(log.groups[1].rows).toContainEqual({ label: 'Developer call', minutes: 60 })
+    expect(log.minutes).toBe(450)
+  })
+
   it('leaves out time from outside the period', () => {
     expect(JSON.stringify(log)).not.toContain('Next month')
   })
