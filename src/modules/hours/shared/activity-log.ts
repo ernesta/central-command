@@ -89,18 +89,21 @@ export function activityLog(year: TrackingYear, period: ContractPeriod, now?: Mo
 export function activityLogHtml(log: ActivityLog, name?: string): string {
   const cell = (text: string, className = ''): string =>
     `<td${className ? ` class="${className}"` : ''}>${escapeHtml(text)}</td>`
+  // Activity rows alternate pale and white; the subtotal rows do not count.
+  let band = 0
   const rows = log.groups
-    .map((g, i) => {
-      // A blank row sets each client's block apart from the one above.
-      const gap = i === 0 ? '' : '<tr class="gap"><td colspan="2"></td></tr>\n'
+    .map((g) => {
       const head =
         g.client === null
           ? ''
           : `<tr class="client">${cell(`${g.client} – Subtotal`)}${cell(logHours(g.minutes), 'r')}</tr>`
       const body = g.rows
-        .map((r) => `<tr>${cell(r.label)}${cell(logHours(r.minutes), 'r')}</tr>`)
+        .map(
+          (r) =>
+            `<tr${band++ % 2 === 0 ? ' class="band"' : ''}>${cell(r.label)}${cell(logHours(r.minutes), 'r')}</tr>`
+        )
         .join('\n')
-      return `${gap}${head}\n${body}`
+      return `${head}\n${body}`
     })
     .join('\n')
   return `<!doctype html>
@@ -119,20 +122,15 @@ h1 { margin: 0 0 2mm; font-size: 17pt; line-height: 1.2; font-weight: 700; }
 .by { margin: 0 0 8mm; font-size: 10.5pt; }
 table { width: 100%; border-collapse: separate; border-spacing: 0; }
 th { padding: 3.2mm 5mm; background: #000; color: #fff; font-size: 8pt; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; text-align: left; }
-th:first-child { border-radius: 8px 0 0 8px; }
-th:last-child { border-radius: 0 8px 8px 0; }
+th:first-child { border-radius: 8px 0 0 0; }
+th:last-child { border-radius: 0 8px 0 0; }
 td { padding: 2mm 5mm; vertical-align: top; }
-td { border-bottom: 0.75pt solid #e3e3e3; }
 td.r, th.r { width: 28mm; text-align: right; }
 tr { break-inside: avoid; }
-tr.client td { padding-top: 3mm; padding-bottom: 3mm; background: #dcdcdc; border-bottom: 0; font-weight: 700; }
-tr.client td:first-child { border-radius: 8px 0 0 8px; }
-tr.client td:last-child { border-radius: 0 8px 8px 0; }
-tr.gap td { padding: 0; height: 4mm; border: 0; }
-tbody tr:not(.client):not(.gap):not(.total) td:first-child { padding-left: 9mm; }
-tr.total td { padding-top: 3.5mm; padding-bottom: 3.5mm; border: 0; background: #000; color: #fff; font-weight: 700; }
-tr.total td:first-child { border-radius: 8px 0 0 8px; }
-tr.total td:last-child { border-radius: 0 8px 8px 0; }
+tr.band td { background: #f7f7f7; }
+tr.client td { padding-top: 3mm; padding-bottom: 3mm; background: #dcdcdc; font-weight: 700; }
+tbody tr:not(.client):not(.total) td:first-child { padding-left: 9mm; }
+tr.total td { padding-top: 3.5mm; padding-bottom: 3.5mm; background: #000; color: #fff; font-weight: 700; }
 </style>
 </head>
 <body>
@@ -146,7 +144,6 @@ tr.total td:last-child { border-radius: 0 8px 8px 0; }
 <thead><tr><th>Activity</th><th class="r">Time (h)</th></tr></thead>
 <tbody>
 ${rows}
-<tr class="gap"><td colspan="2"></td></tr>
 <tr class="total">${cell('Total')}${cell(logHours(log.minutes), 'r')}</tr>
 </tbody>
 </table>
