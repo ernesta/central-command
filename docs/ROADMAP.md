@@ -12,6 +12,8 @@
 
 **Editor tables: the header is no longer clipped (31 Oct 2026, `docs/DECISIONS.md`, "Editor tables: the gap above a table does not clip its header"): fixed after your screenshot, driven in a scratch library (production build), pushed and installed; dev mode and dark mode not driven.** For you: a table right after a bullet should show "English | Urdu" whole.
 
+**Filter lists (1 Nov 2026, `docs/DECISIONS.md`, "Filter lists: aligned with the field, wider than it"): fixed after your screenshot, pushed and installed; driven in the production build only.** For you: open Series in Training and Meetings after clicking Search (the list should sit under its field, with full names); say if the tooltip on a cut row still needs a dark-mode look.
+
 **Task page: the running subtask is striped (30 Oct 2026, `docs/DECISIONS.md`, "A task page's subtasks carry the running-timer stripe"): fixed after your screenshot, tested, pushed and installed; not driven in the app.** For you: start a timer on a subtask and open its parent's page; that subtask's row should carry the accent stripe, like in the Tasks lists.
 
 **Start picker: words in any order (30 Oct 2026, `docs/DECISIONS.md`, "The Start picker matches every word, in any order"): fixed after your screenshot, tested, pushed and installed; not driven in the app.** For you: typing "select 2017" in the timer's task field should find "2017 selection".
