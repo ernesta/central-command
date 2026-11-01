@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { emptyYear, WORK_PLAN } from '@shared/tracking/types'
-import { activityLog, activityLogHtml, logHours } from './activity-log'
+import { activityLog, activityLogHtml, activityName, logHours } from './activity-log'
 import { monthsOf, weekPeriodsOf } from './periods'
 
 const plan = { ...WORK_PLAN, hoursPerWeek: 480, clients: ['Impact', 'Teaching & Learning'] }
@@ -69,7 +69,7 @@ describe('activityLog', () => {
       withMeeting,
       monthsOf(withMeeting).find((m) => m.name === 'September')!
     )
-    expect(log.groups[1].rows).toContainEqual({ label: 'Developer call', minutes: 60 })
+    expect(log.groups[1].rows).toContainEqual({ label: 'Meeting: Developer call', minutes: 60 })
     expect(log.minutes).toBe(450)
   })
 
@@ -110,5 +110,27 @@ describe('activityLogHtml', () => {
 describe('formats', () => {
   it('writes hours as decimals', () => {
     expect([0, 15, 135, 840, 975].map(logHours)).toEqual(['0', '0.25', '2.25', '14', '16.25'])
+  })
+})
+
+describe('activityName', () => {
+  const year = { ...emptyYear('2026-05-01', plan), name: 'Luminos' }
+  it('drops a part that repeats the contract or the client', () => {
+    expect(activityName('Document Automation – Luminos', year, 'Impact')).toBe(
+      'Document Automation'
+    )
+    expect(activityName('Luminos - Impact - Weekly sync', year, 'Impact')).toBe('Weekly sync')
+    expect(activityName('Impact', year, 'Impact')).toBe('Impact')
+  })
+  it('says what a note-derived line is', () => {
+    expect(activityName('Document Automation – Luminos', year, null, 'meeting')).toBe(
+      'Meeting: Document Automation'
+    )
+    expect(activityName('Python course', year, null, 'training')).toBe('Training: Python course')
+  })
+  it('leaves a typed task as it is', () => {
+    expect(activityName('Liberia RAI for the upcoming endline', year, 'Impact')).toBe(
+      'Liberia RAI for the upcoming endline'
+    )
   })
 })

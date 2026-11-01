@@ -1,6 +1,7 @@
 import { escapeHtml } from '@shared/report-page'
 import { localeDate } from '@shared/locale-names'
-import { derivedRows } from '@shared/tracking/derived'
+import { fold } from '@shared/text'
+import { derivedRows, type DerivedRow } from '@shared/tracking/derived'
 import { dayRows } from '@shared/tracking/totals'
 import { sameLabel } from '@shared/tracking/timer'
 import { contractEnd } from '@shared/tracking/workspace-weeks'
@@ -40,6 +41,24 @@ export function logHours(minutes: number): string {
 }
 
 /**
+ * What a line is called in the log. A name that has the contract's or the client's name as a part ("Document Automation –
+ * Luminos") loses that part, which every line of the log is already about; a meeting or training counted from a note says
+ * what it is ("Meeting: Document Automation"), because its note's name alone does not.
+ */
+export function activityName(
+  label: string,
+  year: TrackingYear,
+  client: string | null,
+  kind?: DerivedRow['kind']
+): string {
+  const repeated = [year.name, client ?? ''].map((n) => fold(n ?? '')).filter(Boolean)
+  const parts = label.split(/\s+[–—-]\s+/)
+  const kept = parts.filter((part) => !repeated.includes(fold(part)))
+  const name = kept.length > 0 ? kept.join(' – ') : label
+  return kind === undefined ? name : `${kind === 'training' ? 'Training' : 'Meeting'}: ${name}`
+}
+
+/**
  * The activity log of one invoice period: every task worked on, summed over the period and grouped under its client,
  * in the order first worked on, the way the consulting logs are written by hand. A task is told by its name and client;
  * a task named with different capitals counts once. Pure: the same input gives the same log.
@@ -49,13 +68,17 @@ export function activityLog(year: TrackingYear, period: ContractPeriod, now?: Mo
   const groups: ActivityGroup[] = []
   for (let date = period.from; date <= to; date = addDays(date, 1)) {
     // Meetings and trainings are derived from their notes and counted in the totals, so they are activities too.
-    const rows = [...dayRows(year, date, now), ...derivedRows(year, date)]
+    const rows = [
+      ...dayRows(year, date, now).map((r) => ({ ...r, kind: undefined })),
+      ...derivedRows(year, date)
+    ]
     for (const row of rows) {
       const client = row.client ?? null
+      const label = activityName(row.label, year, client, row.kind)
       let group = groups.find((g) => g.client === client)
       if (!group) groups.push((group = { client, minutes: 0, rows: [] }))
-      let activity = group.rows.find((r) => sameLabel(r.label, row.label))
-      if (!activity) group.rows.push((activity = { label: row.label, minutes: 0 }))
+      let activity = group.rows.find((r) => sameLabel(r.label, label))
+      if (!activity) group.rows.push((activity = { label, minutes: 0 }))
       activity.minutes += row.minutes
       group.minutes += row.minutes
     }
