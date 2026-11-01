@@ -5001,3 +5001,19 @@ The log page now follows the invoice PDF: a black bar, the user's name (the pers
 **Update, 1 Nov 2026 (the user: "no need for that black bar at the top"):** the thin black bar above the title block is gone from the activity log page; the ruled title block starts the page. Order, as asked about the same day: clients in the plan's client order (others after, no client last); within a client, activities in the order first worked on (by date; on one day typed and timed tasks, then meetings and trainings); hours summed over the period. Unchanged. Tested; the PDF was not re-exported in the app.
 
 **Update, 1 Nov 2026 (the user: "also no need for that black line there"):** the black rule above the title block is gone too (`.head` has no `border-top`); the title starts the page with a little top padding. Tested; the PDF was not re-exported in the app.
+
+## Hours: a finished contract opens on its last month (1 Nov 2026, the user: "old contracts should default to last month, not first")
+
+`resolveWeek` (the Hours page's opening week, `hours/shared/week.ts`) falls back to the contract's **last** week once today is past its end; before its start it still opens on the first. `defaultWeek` is unchanged, so Home and the "This week" / "This month" shortcuts (`so-far.ts`, `WeekCard`, `InvoiceCard`) behave as before: a finished contract has no current week. Test in `week.test.ts`. Dev mode and the built app were not driven.
+
+## Buttons: a quiet variant, and Export as one (1 Nov 2026, the user: the Export label looked misaligned against the card's right edge)
+
+**Why Export looked off.** The old Export was a transparent button with 10px of padding, so its label sat 10px in from the edge that the balance and the bar end at. A negative margin fixed the label but made the hover tint hang past the edge (rejected by the user: "no hanging hover"). Elsewhere (Meetings, Training) the filled "New" button is the edge, so the padding never showed. The user chose a faint resting background; a full bordered button was "too obvious for such a rarely used feature".
+
+**The kinds of button** (`components/Button`): primary (filled accent, the "New …" action), secondary (bordered, the default), **quiet** (new: `color-mix` of `--ink` at 5% at rest and 9% on hover, no border, muted text going to ink; for an action used now and then), danger and danger-outline. Icon-only is `IconButton`; a text action ("Show all", a toggle) follows the link rule of `docs/CLICKABLES_PLAN.md` (ink, accent on hover). `ExportButton` is `Button variant="quiet"` with the download icon, in Hours, Meetings and Training; its own CSS file is gone. "Move to Today" (Tasks) is a quiet small `Button` instead of its own `.quiet` class.
+
+**Fixed with it.** Four text buttons that were accent-coloured with no hover (`TasksLanding` and `TasksPage` `.showAll`, `NotesLanding` `.toggle`, `AbstractBlock` `.toggle`) now compose `Link.module.css`.
+
+**Left as they are.** The "Link" / "Show them" actions inside Readings notices (accent on the notice's background, deliberately); Hours' "Add time" row button, the Notice dismiss, the timer's "Discard" and the Watch "more" row (already a muted text or tint, consistent); the other ~80 raw `<button>`s, which are parts of chips, tabs, pickers and tables. No guard test yet.
+
+**Open.** The user may turn Export into a plain text button once they have seen the quiet one in the app (aligned label, no box, link colours; icon kept). Not driven: the quiet look in both themes and the Hours header height (the button is a few pixels taller than the 32px arrows).
