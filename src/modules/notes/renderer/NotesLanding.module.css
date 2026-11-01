@@ -6,13 +6,13 @@
 }
 /* "Show all": a quiet text button that looks like the landing pages' links. */
 .toggle {
+  composes: link from '@renderer/components/Link.module.css';
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--accent);
   font-size: var(--text-13);
 }
 .open {

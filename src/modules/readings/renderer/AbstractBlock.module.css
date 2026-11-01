@@ -12,11 +12,11 @@
   -webkit-box-orient: vertical;
 }
 .toggle {
+  composes: link from '@renderer/components/Link.module.css';
   justify-self: start;
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--accent);
   font-size: var(--text-13);
   font-weight: 600;
 }

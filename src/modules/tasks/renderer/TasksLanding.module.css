@@ -7,23 +7,11 @@
   font-size: var(--text-13);
 }
 .showAll {
+  composes: link from '@renderer/components/Link.module.css';
   padding: 0;
   border: 0;
   background: none;
-  color: var(--accent);
   font-size: var(--text-13);
-}
-.quiet {
-  padding: 4px 8px;
-  border: 0;
-  border-radius: var(--radius-control);
-  background: transparent;
-  color: var(--text-muted);
-  font-size: var(--text-13);
-}
-.quiet:hover {
-  background: var(--hover-tint);
-  color: var(--ink);
 }
 .muted {
   color: var(--text-muted);

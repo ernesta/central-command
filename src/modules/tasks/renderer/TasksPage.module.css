@@ -52,10 +52,10 @@
   font-size: var(--text-13);
 }
 .showAll {
+  composes: link from '@renderer/components/Link.module.css';
   padding: 0;
   border: 0;
   background: none;
-  color: var(--accent);
   font-size: var(--text-13);
 }
 @media (max-width: 720px) {

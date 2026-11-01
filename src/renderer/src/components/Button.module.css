@@ -31,6 +31,16 @@
   background: var(--hover-tint);
 }
 
+.quiet {
+  /* For an action used now and then: a faint box at rest (so it has an edge to align with), no border. */
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+  color: var(--text-muted);
+}
+.quiet:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ink) 9%, transparent);
+  color: var(--ink);
+}
+
 .danger {
   background: var(--danger);
   color: var(--accent-contrast);

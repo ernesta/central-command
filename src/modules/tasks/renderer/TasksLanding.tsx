@@ -152,13 +152,9 @@ export function TasksLanding(): React.JSX.Element {
             'overdue',
             'Overdue',
             'Nothing is overdue.',
-            <button
-              type="button"
-              className={styles.quiet}
-              onClick={() => void moveOverdueToToday()}
-            >
+            <Button variant="quiet" size="small" onClick={() => void moveOverdueToToday()}>
               Move to Today
-            </button>,
+            </Button>,
             true
           )}
           {section('today', 'Due today', 'Nothing is due today.')}
