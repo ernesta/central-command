@@ -134,7 +134,7 @@ tr.client td { font-weight: 700; }
 <div class="author">${name ? escapeHtml(name) : ''}</div>
 <div class="head">
 <h1>${escapeHtml(log.title)}</h1>
-<p class="date">Period covered: ${escapeHtml(log.covered)}</p>
+<p class="date">Period: ${escapeHtml(log.covered)}</p>
 </div>
 <table>
 <thead><tr><th>Activity</th><th class="r">Time (h)</th></tr></thead>
