@@ -9,6 +9,7 @@ import { hasAim } from '@shared/tracking/plan'
 import { inContract } from '@shared/tracking/workspace-weeks'
 import { invoiceOf, type Moment, type TrackingYear } from '@shared/tracking/types'
 import { activityLog, activityLogHtml } from '../shared/activity-log'
+import { DM_SANS_CSS } from './activity-log-font'
 import { periodOfWeek, periodsOf } from '../shared/periods'
 import { defaultWeek } from '../shared/week'
 import { BackToToday } from './BackToToday'
@@ -56,7 +57,7 @@ export function InvoiceCard({
       const log = activityLog(data, month, now)
       const people = await window.api.meetings.people.list().catch(() => [])
       const result = await window.api.tracking.exportActivityLog(
-        activityLogHtml(log, people.find((p) => p.me)?.name),
+        activityLogHtml(log, people.find((p) => p.me)?.name, DM_SANS_CSS),
         log.fileName
       )
       if (result.status === 'saved')

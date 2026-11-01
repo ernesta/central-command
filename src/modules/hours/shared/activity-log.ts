@@ -82,11 +82,12 @@ export function activityLog(year: TrackingYear, period: ContractPeriod, now?: Mo
 }
 
 /**
- * The printable page, styled like the invoice it goes with: a black bar, the author's name top right, a ruled title block,
- * a black table header and pale rows. Everything is escaped. `name` is the user's own (the person flagged `me`); without it
- * the name block is left out.
+ * The printable page, styled like the invoice it goes with: a black bar, a ruled title block with the name and period, a
+ * black table header, pale banded rows and a black Total row. Everything is escaped. `name` is the user's own (the person
+ * flagged `me`); without it the line shows the period alone. `fontCss` is the `@font-face` rules for DM Sans
+ * (`renderer/activity-log-font.ts`; the shared code stays free of bundler imports); without it the page uses Helvetica.
  */
-export function activityLogHtml(log: ActivityLog, name?: string): string {
+export function activityLogHtml(log: ActivityLog, name?: string, fontCss = ''): string {
   const cell = (text: string, className = ''): string =>
     `<td${className ? ` class="${className}"` : ''}>${escapeHtml(text)}</td>`
   // Activity rows alternate pale and white; the subtotal rows do not count.
@@ -112,6 +113,7 @@ export function activityLogHtml(log: ActivityLog, name?: string): string {
 <meta charset="utf-8">
 <title>${escapeHtml(log.title)}</title>
 <style>
+${fontCss}
 * { -webkit-print-color-adjust: exact; print-color-adjust: exact; box-sizing: border-box; }
 @page { size: A4 portrait; margin: 0; }
 body { margin: 0; font-family: 'DM Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10pt; line-height: 1.4; color: #000; }
