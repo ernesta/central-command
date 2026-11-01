@@ -261,6 +261,8 @@ const api: Api = {
       ipcRenderer.invoke(TRACKING_IPC.createContract, workspace, start, end, terms),
     setContractTerms: (workspace, year, terms) =>
       ipcRenderer.invoke(TRACKING_IPC.setContractTerms, workspace, year, terms),
+    exportActivityLog: (html, fileName) =>
+      ipcRenderer.invoke(TRACKING_IPC.exportActivityLog, html, fileName),
     removeContract: (workspace, year) =>
       ipcRenderer.invoke(TRACKING_IPC.removeContract, workspace, year),
     setContractEnd: (workspace, year, end) =>

@@ -4,6 +4,7 @@ import { TRACKING_IPC } from '@shared/tracking/api'
 import { WORKSPACES, type Workspace } from '@shared/settings'
 import type { EntryParts } from '@shared/tracking/totals'
 import type { Adjust, Session } from '@shared/tracking/types'
+import { exportHtmlAsPdf } from '../export-pdf'
 import type { TrackingStore } from '../tracking/store'
 
 function workspace(value: unknown): Workspace {
@@ -165,6 +166,16 @@ export function registerTrackingIpc(store: TrackingStore): void {
       ...(t.invoice !== undefined ? { invoice: invoice(t.invoice) } : {})
     })
   })
+  h(TRACKING_IPC.exportActivityLog, (e, html, fileName) =>
+    exportHtmlAsPdf(e.sender, {
+      html: text(html),
+      dialogTitle: 'Export the activity log',
+      // Only a file name: never a folder the page asked for.
+      fileName: text(fileName).replace(/[/\\:]/g, '-'),
+      portrait: true,
+      backgrounds: true
+    })
+  )
   h(TRACKING_IPC.removeContract, (_e, ws, year) => store.removeContract(workspace(ws), text(year)))
   h(TRACKING_IPC.addTimeOff, (_e, ws, year, from, to, type) =>
     store.addTimeOff(workspace(ws), text(year), text(from), text(to), timeOffType(type))

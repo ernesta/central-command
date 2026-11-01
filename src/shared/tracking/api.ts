@@ -25,6 +25,8 @@ export type YearResult = Change
 /** The result of starting or stopping: the timer that runs afterwards (null when none does). */
 export type TimerResult = { ok: true; running: RunningTimer | null } | { ok: false; reason: string }
 
+export type ActivityLogExport = { status: 'saved'; path: string } | { status: 'cancelled' }
+
 export interface TrackingChangedEvent {
   workspace: Workspace
   year: string
@@ -155,6 +157,8 @@ export interface TrackingApi {
   ): Promise<YearResult>
   /** Remove a contract that holds no time (its file is set aside, not deleted). */
   removeContract(workspace: Workspace, year: string): Promise<YearResult>
+  /** Print a finished activity log page to a PDF the user chooses where to save (portrait A4). */
+  exportActivityLog(html: string, fileName: string): Promise<ActivityLogExport>
   /** A year's file changed (any workspace). Returns an unsubscribe function. */
   onChanged(listener: (event: TrackingChangedEvent) => void): () => void
 }
@@ -187,5 +191,6 @@ export const TRACKING_IPC = {
   setContractEnd: 'tracking:set-contract-end',
   setContractTerms: 'tracking:set-contract-terms',
   removeContract: 'tracking:remove-contract',
+  exportActivityLog: 'tracking:export-activity-log',
   changed: 'tracking:changed'
 } as const

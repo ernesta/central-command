@@ -1,9 +1,13 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ExportButton } from '@renderer/components/ExportButton'
+import { Notice } from '@renderer/components/Notice'
+import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { formatHours, formatRange } from '@shared/tracking/format'
 import { hasAim } from '@shared/tracking/plan'
 import { inContract } from '@shared/tracking/workspace-weeks'
 import { invoiceOf, type Moment, type TrackingYear } from '@shared/tracking/types'
+import { activityLog, activityLogHtml } from '../shared/activity-log'
 import { periodOfWeek, periodsOf } from '../shared/periods'
 import { defaultWeek } from '../shared/week'
 import { BackToToday } from './BackToToday'
@@ -32,6 +36,8 @@ export function InvoiceCard({
 }: InvoiceCardProps): React.JSX.Element | null {
   const periods = useMemo(() => periodsOf(data, now), [data, now])
   const month = periodOfWeek(periods, week)
+  const [exporting, setExporting] = useState(false)
+  const [notice, setNotice] = useState<{ tone: 'info' | 'error'; text: string } | null>(null)
   if (!month) return null
   const byWeek = invoiceOf(data) === 'week'
   const aimed = hasAim(data)
@@ -41,6 +47,24 @@ export function InvoiceCard({
     ? periodOfWeek(periods, defaultWeek(data.start, now.date, data.weeks, data.end))
     : undefined
   const begun = month.from <= now.date
+
+  const exportLog = async (): Promise<void> => {
+    setExporting(true)
+    setNotice(null)
+    try {
+      const log = activityLog(data, month, now)
+      const result = await window.api.tracking.exportActivityLog(
+        activityLogHtml(log, now.date),
+        log.fileName
+      )
+      if (result.status === 'saved')
+        setNotice({ tone: 'info', text: `Saved the activity log to ${result.path}` })
+    } catch (e) {
+      setNotice({ tone: 'error', text: `Couldn’t export: ${ipcErrorMessage(e)}` })
+    } finally {
+      setExporting(false)
+    }
+  }
 
   return (
     <section className={styles.card} aria-label="Invoice">
@@ -68,13 +92,29 @@ export function InvoiceCard({
             <ChevronRight size={16} strokeWidth={1.75} aria-hidden />
           </button>
         </div>
-        {current && current !== month && (
-          <BackToToday
-            label={`This ${unit}`}
-            onClick={() => onWeekChange(defaultWeek(data.start, now.date, data.weeks, data.end))}
-          />
-        )}
+        <div className={styles.actions}>
+          {current && current !== month && (
+            <BackToToday
+              label={`This ${unit}`}
+              onClick={() => onWeekChange(defaultWeek(data.start, now.date, data.weeks, data.end))}
+            />
+          )}
+          {begun && (
+            <ExportButton
+              busy={exporting}
+              disabled={month.minutes === 0}
+              onClick={() => void exportLog()}
+            />
+          )}
+        </div>
       </header>
+      {notice && (
+        <div className={styles.notice}>
+          <Notice tone={notice.tone} onDismiss={() => setNotice(null)}>
+            {notice.text}
+          </Notice>
+        </div>
+      )}
       {begun &&
         (aimed ? (
           <PeriodSummary minutes={month.minutes} aim={month.plan} />
