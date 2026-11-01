@@ -1,7 +1,7 @@
 import { Download } from 'lucide-react'
-import { Button } from './Button'
+import styles from './ExportButton.module.css'
 
-/** "Export": a quiet button (a faint box, so it lines up with the edge it sits at). Same label and place in every list. */
+/** "Export": used about once a year, so a quiet text link with an icon. Same label and place in every list. */
 export function ExportButton({
   onClick,
   disabled,
@@ -12,13 +12,9 @@ export function ExportButton({
   busy?: boolean
 }): React.JSX.Element {
   return (
-    <Button
-      variant="quiet"
-      icon={<Download size={14} strokeWidth={1.75} aria-hidden />}
-      disabled={disabled || busy}
-      onClick={onClick}
-    >
+    <button type="button" className={styles.export} disabled={disabled || busy} onClick={onClick}>
+      <Download size={14} strokeWidth={1.75} aria-hidden />
       {busy ? 'Exporting…' : 'Export'}
-    </Button>
+    </button>
   )
 }
