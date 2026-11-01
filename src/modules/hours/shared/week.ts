@@ -26,6 +26,14 @@ export function resolveWeek(
     inYear(asked, yearStart, weeks) &&
     daysBetween(yearStart, asked) % 7 === 0
     ? asked
+    : openingWeek(yearStart, today, weeks, end)
+}
+
+/** The week the page opens on: today's, or the last one once the contract is over (its latest month, not its first). */
+function openingWeek(yearStart: string, today: string, weeks?: number, end?: string): string {
+  const last = end ?? yearEnd(yearStart, weeks)
+  return today > last
+    ? addDays(yearStart, Math.floor(daysBetween(yearStart, last) / 7) * 7)
     : defaultWeek(yearStart, today, weeks, end)
 }
 

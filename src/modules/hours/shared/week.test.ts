@@ -28,6 +28,11 @@ describe('resolveWeek', () => {
     expect(resolveWeek('2027-09-20', START, '2026-10-01')).toBe('2026-09-28')
     expect(resolveWeek('soon', START, '2026-10-01')).toBe('2026-09-28')
   })
+  it('opens a finished contract on its last week, not its first', () => {
+    expect(resolveWeek(null, START, '2028-01-01')).toBe('2027-09-13')
+    expect(resolveWeek(null, START, '2028-01-01', undefined, '2027-09-19')).toBe('2027-09-13')
+    expect(resolveWeek(null, START, '2026-09-01')).toBe(START)
+  })
 })
 
 describe('barFill', () => {
