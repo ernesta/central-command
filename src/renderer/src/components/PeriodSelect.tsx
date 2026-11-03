@@ -1,31 +1,22 @@
 import type { Workspace } from '@shared/settings'
-import type { ContractScope } from '@shared/tracking/scope'
 import { hasContracts } from '@shared/tracking/workspace-weeks'
-import { ContractFilter } from './ContractFilter'
 import { YearSelect } from './YearSelect'
 
 /**
- * The one selector a tracking page puts in its header: Work's contract filter, or the year for Research and Life. Pass what
+ * The year selector a tracking page puts in its header (Research and Life). Work has none here: its contract filter is in the top bar. Pass what
  * `useTrackingYear` or `usePeriod` give.
  */
 export function PeriodSelect({
   workspace,
   year,
   years,
-  onYear,
-  scope,
-  onScope
+  onYear
 }: {
   workspace: Workspace
   year: string
   years: readonly string[]
   onYear: (year: string) => void
-  scope: ContractScope
-  onScope: (scope: ContractScope) => void
-}): React.JSX.Element {
-  return hasContracts(workspace) ? (
-    <ContractFilter scope={scope} starts={years} onChange={onScope} workspace={workspace} />
-  ) : (
-    <YearSelect year={year} years={years} onChange={onYear} />
-  )
+}): React.JSX.Element | null {
+  // Work's contract filter lives in the top bar, beside the workspace tabs.
+  return hasContracts(workspace) ? null : <YearSelect year={year} years={years} onChange={onYear} />
 }

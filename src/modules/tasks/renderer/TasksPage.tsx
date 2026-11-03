@@ -2,7 +2,6 @@ import { useToday } from '@renderer/state/use-today'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
-import { ContractFilter } from '@renderer/components/ContractFilter'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { FilterRow } from '@renderer/components/FilterRow'
 import { SearchInput } from '@renderer/components/SearchInput'
@@ -180,16 +179,6 @@ export function TasksPage(): React.JSX.Element {
     <div className={styles.page}>
       <header className={styles.header}>
         <h1 className={styles.heading}>{heading}</h1>
-        {filter.applies && (
-          <div className={styles.actions}>
-            <ContractFilter
-              scope={filter.scope}
-              starts={filter.starts}
-              onChange={filter.setScope}
-              workspace={workspace}
-            />
-          </div>
-        )}
       </header>
 
       {rows !== null && (

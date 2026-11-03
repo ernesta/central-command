@@ -1,4 +1,3 @@
-import { ContractFilter } from '@renderer/components/ContractFilter'
 import { Panel } from '@renderer/components/Panel'
 import { useNow } from '@renderer/state/use-now'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
@@ -23,18 +22,10 @@ import styles from './Home.module.css'
  * included, so the two always agree. The running timer is not repeated here: it is in the top bar.
  */
 export function HomeHours({ workspace }: { workspace: HomeWorkspace }): React.JSX.Element | null {
-  const { data: stored, scope, setScope, years, loaded } = useTrackingYear(workspace)
+  const { data: stored, scope, years, loaded } = useTrackingYear(workspace)
   const now = useNow(false)
   const data = useShownYear(workspace, stored, now.date)
-  // Work's one contract filter is here too, as Home has no header of its own; the panel stays so the choice can always be changed.
-  const actions = (
-    <>
-      {hasContracts(workspace) && (
-        <ContractFilter scope={scope} starts={years} onChange={setScope} workspace={workspace} />
-      )}
-      <StyledLink to={hoursBase(workspace)}>Hours</StyledLink>
-    </>
-  )
+  const actions = <StyledLink to={hoursBase(workspace)}>Hours</StyledLink>
   // Work under All contracts: today summed over every contract, and each contract's period so far.
   if (hasContracts(workspace) && isAllContracts(scope))
     return <HomeAllHours starts={years} now={now} actions={actions} />

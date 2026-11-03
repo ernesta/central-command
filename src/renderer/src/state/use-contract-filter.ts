@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { useSearchParams } from 'react-router'
 import type { Workspace } from '@shared/settings'
 import {
@@ -8,7 +8,7 @@ import {
   type ContractScope
 } from '@shared/tracking/scope'
 import { hasContracts } from '@shared/tracking/workspace-weeks'
-import { useModuleState } from './use-module-state'
+import { useSettings } from './settings-context'
 import { useYearFile } from './use-year-file'
 
 /** The scope last chosen for Work: `all`, or a contract's first day. */
@@ -22,10 +22,42 @@ function normaliseScope(raw: unknown): RememberedScope {
 }
 
 /**
+ * The remembered scope is one value for the whole app, not one per caller: the top bar's selector and the page under it must
+ * agree. It is read from the settings the first time and held here after; a choice is written at once.
+ */
+let sharedScope: string | null = null
+const scopeListeners = new Set<() => void>()
+function subscribeScope(listener: () => void): () => void {
+  scopeListeners.add(listener)
+  return () => scopeListeners.delete(listener)
+}
+/** For tests: forget the held choice so the next caller reads the settings again. */
+export function resetRememberedScope(): void {
+  sharedScope = null
+  scopeListeners.forEach((l) => l())
+}
+
+function useRememberedScope(): { scope: string; remember: (scope: string) => void } {
+  const { settings, update } = useSettings()
+  const held = useSyncExternalStore(subscribeScope, () => sharedScope)
+  const latest = useRef({ settings, update })
+  useEffect(() => {
+    latest.current = { settings, update }
+  })
+  const remember = useCallback((scope: string): void => {
+    sharedScope = scope
+    scopeListeners.forEach((l) => l())
+    const { settings: s, update: save } = latest.current
+    void save({ ui: { moduleState: { ...s.ui.moduleState, 'work-contract': { scope } } } })
+  }, [])
+  return { scope: held ?? normaliseScope(settings.ui.moduleState['work-contract']).scope, remember }
+}
+
+/**
  * Work's one contract filter (`docs/WORK_CONTRACT_FILTER_PLAN.md`): every Work page shows All contracts or one contract, chosen
- * once and remembered. A link with `?year=<start>` (or `all`) sets it for that visit; choosing in the selector remembers the
- * choice. It opens on All. `starts` are the contracts' first days, newest first. Call it once per page and pass what it gives down:
- * two calls would each hold their own copy of the choice. For a workspace with no contracts it does nothing (`applies` false).
+ * once, in the top bar, and remembered. A link with `?year=<start>` (or `all`) sets it for that visit; choosing in the selector
+ * remembers the choice. It opens on All. `starts` are the contracts' first days, newest first. Every caller shares the one
+ * choice. For a workspace with no contracts it does nothing (`applies` false).
  */
 export function useContractFilter(workspace: Workspace): {
   applies: boolean
@@ -37,7 +69,7 @@ export function useContractFilter(workspace: Workspace): {
 } {
   const applies = hasContracts(workspace)
   const [params, setParams] = useSearchParams()
-  const remembered = useModuleState('work-contract', normaliseScope)
+  const remembered = useRememberedScope()
   const [offered, setOffered] = useState<{ workspace: Workspace; years: string[] } | null>(null)
 
   useEffect(() => {
@@ -61,17 +93,17 @@ export function useContractFilter(workspace: Workspace): {
   const starts = offered?.workspace === workspace ? offered.years : null
   const asked = params.get('year')
   // Until the contracts are read the choice is taken as given; then one that no longer exists falls back to All.
-  const wanted = asked ?? remembered.value.scope
+  const wanted = asked ?? remembered.scope
   const scope = !applies
     ? ALL_CONTRACTS
     : starts === null
       ? wanted
-      : (validScope(asked, starts) ?? validScope(remembered.value.scope, starts) ?? ALL_CONTRACTS)
+      : (validScope(asked, starts) ?? validScope(remembered.scope, starts) ?? ALL_CONTRACTS)
 
-  const { update } = remembered
+  const { remember } = remembered
   const setScope = useCallback(
     (next: ContractScope): void => {
-      if (applies) update({ scope: next })
+      if (applies) remember(next)
       setParams(
         (prev) => {
           const p = new URLSearchParams(prev)
@@ -82,7 +114,7 @@ export function useContractFilter(workspace: Workspace): {
         { replace: true }
       )
     },
-    [applies, update, setParams]
+    [applies, remember, setParams]
   )
 
   return { applies, scope, setScope, starts: starts ?? [], loaded: starts !== null }

@@ -72,14 +72,7 @@ export function MeetingsLanding(): React.JSX.Element {
   // A link carries the scope: under All, `all`, not the contract the page would otherwise have picked.
   const linkYear = period.all ? ALL_CONTRACTS : year
   const periodSelect = (
-    <PeriodSelect
-      workspace={workspace}
-      year={year}
-      years={years}
-      onYear={setYear}
-      scope={period.scope}
-      onScope={period.setScope}
-    />
+    <PeriodSelect workspace={workspace} year={year} years={years} onYear={setYear} />
   )
   const { upcoming, recent } = recentAndUpcoming(
     meetingsInYearOrPlanned(all, span, today, weeks, end),

@@ -21,7 +21,7 @@ import styles from './HoursPage.module.css'
 /** The Hours page: the year selector in the header, then Today beside the Charts card, the Week and invoice cards side by side, and the whole contract as one line. */
 export function HoursPage(): React.JSX.Element {
   const workspace = useHoursWorkspace()
-  const { year, years, loaded, setYear, scope, setScope, data: stored } = useTrackingYear(workspace)
+  const { year, years, loaded, setYear, scope, data: stored } = useTrackingYear(workspace)
   const { running } = useRunningTimer()
   const now = useNow(running !== null)
   // The year with its meetings' hours worked out from the notes (read-only, never saved).
@@ -44,16 +44,7 @@ export function HoursPage(): React.JSX.Element {
     <LandingPage>
       <LandingHeader
         title="Hours"
-        actions={
-          <PeriodSelect
-            workspace={workspace}
-            year={year}
-            years={years}
-            onYear={setYear}
-            scope={scope}
-            onScope={setScope}
-          />
-        }
+        actions={<PeriodSelect workspace={workspace} year={year} years={years} onYear={setYear} />}
       />
       {loaded && years.length === 0 && (
         <div className={styles.contract}>

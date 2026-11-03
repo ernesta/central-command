@@ -2,6 +2,7 @@
 import { act, createElement } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { MemoryRouter } from 'react-router'
+import { resetRememberedScope } from '@renderer/state/use-contract-filter'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defaultSettings } from '@shared/settings'
 import { openContracts } from '@shared/tracking/contracts'
@@ -32,6 +33,7 @@ const files: Record<string, TrackingYear> = { '2026-10-30': luminos, '2026-09-28
 let host: HTMLElement
 let root: Root
 beforeEach(() => {
+  resetRememberedScope()
   vi.useFakeTimers({ toFake: ['Date'] })
   vi.setSystemTime(new Date(2026, 10, 3, 12, 0, 0))
   ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
@@ -91,7 +93,8 @@ describe("Work's Home hours", () => {
     expect(text).toContain('Luminos · this month')
     expect(text).toContain('Royal Holloway · this week')
     expect(text).not.toContain(' of ')
-    expect(host.querySelector('button[aria-label="Contract"]')).not.toBeNull()
+    // The filter is in the top bar, not in the panel.
+    expect(host.querySelector('button[aria-label="Contract"]')).toBeNull()
   })
 
   it('a day worked on the contract that is not the one a page would open on is counted, not 0:00', async () => {
@@ -108,9 +111,8 @@ describe("Work's Home hours", () => {
     expect(text).toContain('Teaching')
   })
 
-  it('under a contract with no hours today it reads 0:00, and the filter stays', async () => {
+  it('under a contract with no hours today it reads 0:00', async () => {
     const text = await show('2026-09-28')
     expect(text).toContain('0:00')
-    expect(host.querySelector('button[aria-label="Contract"]')).not.toBeNull()
   })
 })

@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
 import { LandingHeader, LandingPage } from '@renderer/components/Landing'
 import { YearSelect } from '@renderer/components/YearSelect'
+import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { useNow } from '@renderer/state/use-now'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { useHoursWorkspace } from '../../hours/renderer/hours-paths'
@@ -24,7 +25,9 @@ export function TimeOffPage(): React.JSX.Element {
         title="Time off"
         actions={
           <div className={styles.actions}>
-            <YearSelect year={year} years={years} onChange={setYear} />
+            {!hasContracts(workspace) && (
+              <YearSelect year={year} years={years} onChange={setYear} />
+            )}
             <Button
               variant="primary"
               icon={<Plus size={16} strokeWidth={1.75} aria-hidden />}

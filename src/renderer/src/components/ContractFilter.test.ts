@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defaultSettings, type Settings } from '@shared/settings'
 import { emptyYear, WORK_PLAN, type TrackingYear } from '@shared/tracking/types'
 import { SettingsContext } from '../state/settings-context'
-import { useContractFilter } from '../state/use-contract-filter'
+import { resetRememberedScope, useContractFilter } from '../state/use-contract-filter'
 import { ContractFilter } from './ContractFilter'
 import { click, mount, type Mounted } from './picker-test-utils'
 
@@ -27,6 +27,7 @@ const STARTS = ['2026-10-30', '2026-09-28']
 
 let mounted: Mounted | null = null
 beforeEach(() => {
+  resetRememberedScope()
   Element.prototype.scrollIntoView = () => {}
   vi.stubGlobal(
     'window',

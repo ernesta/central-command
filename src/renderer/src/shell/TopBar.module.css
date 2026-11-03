@@ -60,3 +60,12 @@
   gap: 0;
   --icon-button-size: 28px;
 }
+/* Work's contract filter, beside the workspace tabs; empty (and no gap) on pages that do not follow it. */
+.filter {
+  flex: none;
+  margin: 0 12px;
+  width: 290px;
+}
+.filter:empty {
+  display: none;
+}

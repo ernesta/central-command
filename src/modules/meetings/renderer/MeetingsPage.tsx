@@ -65,14 +65,7 @@ export function MeetingsPage(): React.JSX.Element {
   // Under All contracts there is no one period: every Work meeting.
   const span = period.all ? null : year
   const periodSelect = (
-    <PeriodSelect
-      workspace={workspace}
-      year={year}
-      years={years}
-      onYear={setYear}
-      scope={period.scope}
-      onScope={period.setScope}
-    />
+    <PeriodSelect workspace={workspace} year={year} years={years} onYear={setYear} />
   )
   const listOf = useTaskLists(workspace)
   const all = ofContractClients(

@@ -12,7 +12,6 @@ import { showToast } from '@renderer/components/toast-store'
 import { pushUndo } from '@renderer/components/undo-store'
 import { ArrowRight, Plus } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
-import { ContractFilter } from '@renderer/components/ContractFilter'
 import { Link } from 'react-router'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useContractScope } from '@renderer/state/use-contract-filter'
@@ -126,14 +125,6 @@ export function TasksLanding(): React.JSX.Element {
         title="Tasks"
         actions={
           <>
-            {filter.applies && (
-              <ContractFilter
-                scope={filter.scope}
-                starts={filter.starts}
-                onChange={filter.setScope}
-                workspace={workspace}
-              />
-            )}
             {clients === null && (
               <Button
                 icon={<Plus size={14} strokeWidth={2} aria-hidden />}

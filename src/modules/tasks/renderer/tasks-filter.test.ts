@@ -2,6 +2,7 @@
 import { act, createElement } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { MemoryRouter, Route, Routes } from 'react-router'
+import { resetRememberedScope } from '@renderer/state/use-contract-filter'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defaultSettings } from '@shared/settings'
 import { emptyYear, WORK_PLAN, type TrackingYear } from '@shared/tracking/types'
@@ -31,6 +32,7 @@ const tasks = [
 let host: HTMLElement
 let root: Root
 beforeEach(() => {
+  resetRememberedScope()
   ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
   const stub = (overrides: Record<string, unknown>): object =>
     new Proxy(overrides, {
@@ -90,11 +92,11 @@ async function show(scope: string): Promise<string> {
 }
 
 describe('Work Tasks follow the contract filter', () => {
-  it('under All, every task, and the filter is in the header', async () => {
+  it('under All, every task, and the filter is not in the page (it is in the top bar)', async () => {
     const text = await show('all')
     expect(text).toContain('Draft the impact report')
     expect(text).toContain('Write the literature section')
-    expect(host.querySelector('header button[aria-label="Contract"]')).not.toBeNull()
+    expect(host.querySelector('button[aria-label="Contract"]')).toBeNull()
   })
 
   it('under a contract, the tasks whose list is one of its clients', async () => {
