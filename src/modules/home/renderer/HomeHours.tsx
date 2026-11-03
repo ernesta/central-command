@@ -26,7 +26,7 @@ export function HomeHours({ workspace }: { workspace: HomeWorkspace }): React.JS
   const now = useNow(false)
   const data = useShownYear(workspace, stored, now.date)
   const actions = <StyledLink to={hoursBase(workspace)}>Hours</StyledLink>
-  // Work under All contracts: today summed over every contract, and each contract's period so far.
+  // Work under All contracts: today, this week and this month, each summed over every contract.
   if (hasContracts(workspace) && isAllContracts(scope))
     return <HomeAllHours starts={years} now={now} actions={actions} />
   if (!data || !inContract(now.date, data)) {
@@ -64,8 +64,8 @@ export function HomeHours({ workspace }: { workspace: HomeWorkspace }): React.JS
 }
 
 /**
- * Work's hours under All contracts: today summed over every contract that holds it, by client, then each such contract's time so
- * far in its own invoice period (hours only). No aim: it means nothing across contracts. Nothing when no contract holds today.
+ * Work's hours under All contracts: today, this week (Monday to Sunday) and this month (the calendar month), each one total over
+ * every contract, with no split by contract or client. No aim: it means nothing across contracts.
  */
 function HomeAllHours({
   starts,
@@ -80,33 +80,19 @@ function HomeAllHours({
   const years = useShownYears('work', files, now.date)
   if (!years || starts.length === 0) return null
   const figures = allFigures(years, now)
-  if (figures.contracts.length === 0)
-    return (
-      <Panel label="Today" actions={actions}>
-        <p className={styles.small}>No contract today.</p>
-      </Panel>
-    )
+  const rows = [
+    ['Today', figures.today],
+    ['This week', figures.week.minutes],
+    ['This month', figures.month]
+  ] as const
 
   return (
-    <Panel label="Today" actions={actions}>
-      <p className={styles.total}>{formatHours(figures.today)}</p>
-      {figures.todayClients.length > 0 && (
-        <ul className={styles.list}>
-          {figures.todayClients.map((c) => (
-            <li key={c.client ?? ''} className={styles.plain}>
-              <span className={styles.grow}>{c.client ?? 'No client'}</span>
-              <span className={styles.num}>{formatHours(c.minutes)}</span>
-            </li>
-          ))}
-        </ul>
-      )}
+    <Panel label="All contracts" actions={actions}>
       <ul className={styles.list}>
-        {figures.contracts.map((c) => (
-          <li key={c.year} className={styles.plain}>
-            <span className={styles.grow}>
-              {c.name ?? c.year} · {c.label.toLowerCase()}
-            </span>
-            <span className={styles.num}>{formatHours(c.minutes)}</span>
+        {rows.map(([label, minutes]) => (
+          <li key={label} className={styles.plain}>
+            <span className={styles.grow}>{label}</span>
+            <span className={styles.num}>{formatHours(minutes)}</span>
           </li>
         ))}
       </ul>

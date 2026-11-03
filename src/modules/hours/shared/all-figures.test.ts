@@ -53,6 +53,12 @@ describe('allFigures', () => {
       ['Royal Holloway', 'This week']
     ])
   })
+  it('sums the calendar month so far over every contract, counting no day outside its month', () => {
+    const f = allFigures([luminos, holloway], now)
+    // 3 Nov: 120 + 30; 2 Nov: 60; Royal Holloway's 600 minutes on 5 Oct are last month's.
+    expect(f.month).toBe(210)
+    expect(allFigures([luminos, holloway], { date: '2026-10-31', time: '12:00' }).month).toBe(600)
+  })
   it('does not depend on the order, or on which contract a page would show', () => {
     expect(allFigures([holloway, luminos], now).today).toBe(150)
   })
@@ -66,6 +72,7 @@ describe('allFigures', () => {
     expect(f).toEqual({
       today: 0,
       todayClients: [],
+      month: 0,
       week: { minutes: 0, clients: [] },
       contracts: []
     })

@@ -1,5 +1,11 @@
 import { holding } from '@shared/tracking/contracts'
-import { allDay, allWeek, workWeekStart, type ContractShare } from '@shared/tracking/scope'
+import {
+  allDay,
+  allMinutes,
+  allWeek,
+  workWeekStart,
+  type ContractShare
+} from '@shared/tracking/scope'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
 import { periodFigures, type PeriodFigures } from './so-far'
 
@@ -31,6 +37,8 @@ export interface AllFigures {
   todayClients: { client: string | null; minutes: number }[]
   /** Work's week (Monday to Sunday) summed over every contract. */
   week: { minutes: number; clients: { client: string | null; minutes: number }[] }
+  /** The calendar month so far (the 1st to today) summed over every contract. */
+  month: number
   /** The period so far of each contract that holds today. */
   contracts: ContractSoFar[]
 }
@@ -43,6 +51,7 @@ export function allFigures(years: readonly TrackingYear[], now: Moment): AllFigu
     today: day.minutes,
     todayClients: mergeClients(day.contracts),
     week: { minutes: week.minutes, clients: mergeClients(week.contracts) },
+    month: allMinutes(years, `${now.date.slice(0, 7)}-01`, now.date, now),
     contracts: holding(years, now.date).map((y) => {
       const f = periodFigures(y, now, 'work')
       return {

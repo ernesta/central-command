@@ -86,12 +86,16 @@ async function show(scope: string): Promise<string> {
 }
 
 describe("Work's Home hours", () => {
-  it('under All, today is the sum over the contracts and the periods are per contract, with no aim', async () => {
+  it('under All, shows today, this week and this month as totals over the contracts, with no breakdown', async () => {
     const text = await show('all')
-    expect(text).toContain('3:00')
-    expect(text).toContain('Impact')
-    expect(text).toContain('Luminos · this month')
-    expect(text).toContain('Royal Holloway · this week')
+    // Today 3:00 (Luminos) + 0 (Royal Holloway); the week (Mon 2 Nov) adds Luminos' 1:00; the month is the same days.
+    expect(host.querySelector('section')?.getAttribute('aria-label')).toBe('All contracts')
+    expect(text).toMatch(/Today3:00/)
+    expect(text).toMatch(/This week4:00/)
+    expect(text).toMatch(/This month4:00/)
+    expect(text).not.toContain('Impact')
+    expect(text).not.toContain('Luminos')
+    expect(text).not.toContain('Royal Holloway')
     expect(text).not.toContain(' of ')
     // The filter is in the top bar, not in the panel.
     expect(host.querySelector('button[aria-label="Contract"]')).toBeNull()
@@ -99,8 +103,7 @@ describe("Work's Home hours", () => {
 
   it('a day worked on the contract that is not the one a page would open on is counted, not 0:00', async () => {
     const text = await show('all')
-    expect(text).not.toMatch(/^Today0:00/)
-    expect(host.querySelector('section')?.getAttribute('aria-label')).toBe('Today')
+    expect(text).not.toMatch(/Today0:00/)
   })
 
   it('under one contract it looks as before: the period against its aim, today and the clients', async () => {

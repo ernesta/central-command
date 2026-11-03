@@ -102,6 +102,23 @@ export function allWeek(years: readonly TrackingYear[], from: string, now: Momen
 }
 
 /**
+ * The hours of every contract between two dates (both included), each day counted only inside the contract that holds it: a total,
+ * with no split by contract. `years` must be the shown years.
+ */
+export function allMinutes(
+  years: readonly TrackingYear[],
+  from: string,
+  to: string,
+  now: Moment
+): number {
+  let total = 0
+  for (const y of years.filter((y) => overlaps(y, from, to)))
+    for (const [date, minutes] of minutesByDate(y, now))
+      if (date >= from && date <= to) total += minutes
+  return total
+}
+
+/**
  * Every contract as one read-only year, for the charts under All: it starts on the Monday of the earliest first day and ends on the
  * latest last day, holds every contract's sessions, typed time and imported days, and has no aim, clients or days off. A day inside no
  * contract has no time, so the gaps read as empty days. Never saved. `years` must be the shown years. Null with none.
