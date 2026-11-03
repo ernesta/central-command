@@ -1,7 +1,6 @@
 import { markdownLanguage } from '@codemirror/lang-markdown'
 import type { SyntaxNode } from '@lezer/common'
 import { escapeHtml } from '@shared/report-page'
-import { findByInitials, type Person } from './people'
 import { findMarkers } from './todos'
 import { parseHeading, scanLines } from './sections'
 import { durationMinutes, formatDuration, meetingHeading } from './time'
@@ -44,7 +43,6 @@ interface Context {
   text: string
   /** Where a TODO marker sits in `text`, so it can be printed as its owner's name instead. */
   markers: Marker[]
-  people: readonly Person[]
   /** The markers already printed, since a marker can span a bold node and the text after it. */
   printed: Set<Marker>
 }
@@ -57,13 +55,12 @@ function children(node: SyntaxNode): SyntaxNode[] {
   return out
 }
 
-/** `**TODO (EO)**:` printed as the owner's name in small type: "Ernesta Orlovaitė", "Ernesta Orlovaitė & Kathy Rastle", or initials not in the list. */
+/** `**TODO (EO)**:` printed as its owner's initials in small type, "EO" or "EO & KR": the initials the note uses. */
 function ownerLabel(ctx: Context, marker: Marker): string {
   if (ctx.printed.has(marker)) return ''
   ctx.printed.add(marker)
   if (marker.owners.length === 0) return ''
-  const names = marker.owners.map((o) => findByInitials(ctx.people, o)?.name ?? o)
-  return `<span class="owner">${escapeHtml(names.join(' & '))}</span>`
+  return `<span class="owner">${escapeHtml(marker.owners.join(' & '))}</span>`
 }
 
 /** Text between two nodes (or the start and end), with any TODO marker in it swapped for its owner label. */
@@ -238,9 +235,9 @@ function todoMarkers(text: string): Marker[] {
 }
 
 /** A piece of a note as HTML: paragraphs, headings, lists with boxes for TODOs, quotes, tables and code. */
-export function markdownHtml(text: string, people: readonly Person[]): string {
+export function markdownHtml(text: string): string {
   const tree = markdownLanguage.parser.parse(text)
-  const ctx: Context = { text, markers: todoMarkers(text), people, printed: new Set() }
+  const ctx: Context = { text, markers: todoMarkers(text), printed: new Set() }
   return blocks(ctx, tree.topNode)
 }
 
@@ -266,10 +263,10 @@ function sections(body: string): Section[] {
 }
 
 /** The note's body as HTML: the Summary as a lead, every other section under a small label, Previous TODOs not at all. */
-export function noteBodyHtml(body: string, people: readonly Person[]): string {
+export function noteBodyHtml(body: string): string {
   return sections(body)
     .map(({ title, text }) => {
-      const content = text.trim() === '' ? '' : markdownHtml(text, people)
+      const content = text.trim() === '' ? '' : markdownHtml(text)
       if (content === '') return ''
       const key = title?.trim().toLowerCase()
       if (key === 'previous todos') return ''
@@ -325,12 +322,8 @@ export function noteFileName(meta: Pick<MeetingMeta, 'series' | 'date'>): string
 }
 
 /** The whole page for one meeting. */
-export function meetingNoteHtml(input: {
-  meta: MeetingMeta
-  body: string
-  people: readonly Person[]
-}): string {
-  const { meta, body, people } = input
+export function meetingNoteHtml(input: { meta: MeetingMeta; body: string }): string {
+  const { meta, body } = input
   const title = noteTitle(meta)
   const details = noteDetails(meta)
   const attendees = meta.attendees.join(', ')
@@ -377,7 +370,7 @@ tr { break-inside: avoid; }
 <body>
 <h1>${escapeHtml(title)}</h1>
 ${details ? `<p class="meta">${escapeHtml(details)}</p>\n` : ''}${attendees ? `<p class="meta">${escapeHtml(attendees)}</p>\n` : ''}<hr class="rule">
-${noteBodyHtml(body, people)}
+${noteBodyHtml(body)}
 </body>
 </html>
 `

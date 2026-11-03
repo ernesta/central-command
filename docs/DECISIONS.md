@@ -642,8 +642,7 @@ list. `convertPseudoHeadings` (`meetings/shared/pseudo-headings.ts`) turns such 
   left out, totals and hours per skill on top. It mirrors Training's export on purpose. The printing (`src/main/export-pdf.ts`) and the
   page shell (`src/shared/report-page.ts`) are shared, so a layout change after the user's review is made once.
 - **One meeting's PDF** (Export on the meeting page, 3 Nov 2026) prints the saved note, portrait A4: the heading, a details line, attendees,
-  the Summary as a lead paragraph, then the Notes. No Previous TODOs (the user has none). A TODO is printed as a box with its owner's full
-  name (from the people list; unknown initials as written) in place of `**TODO (EO)**:`; mentions and links print as their words. The
+  the Summary as a lead paragraph, then the Notes. No Previous TODOs (the user has none). A TODO is printed as a box with its owner's initials as the note has them (the user asked for "EO", not full names) in place of `**TODO (EO)**:`; mentions and links print as their words. The
   Markdown is read with the editor's own parser (`shared/note-html.ts`, pure, escaped), not a second library. The page flushes the editor
   first, then the main process reads the file. The footer (title, "Page n of m") is Chromium's footer template, which `exportHtmlAsPdf`
   now takes as `footer`. The file is named `2026 11 13 Supervision.pdf` (no dashes: the user's request). Driven in a scratch library with the

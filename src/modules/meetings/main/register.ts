@@ -180,7 +180,7 @@ function register({ db, paths }: MainContext): () => void {
     async (event, ref: unknown): Promise<MeetingsExportResult> => {
       const file = await store.read(asRef(ref))
       return exportHtmlAsPdf(event.sender, {
-        html: meetingNoteHtml({ meta: file.meta, body: file.body, people: people.list() }),
+        html: meetingNoteHtml({ meta: file.meta, body: file.body }),
         dialogTitle: 'Export the meeting as a PDF',
         fileName: noteFileName(file.meta),
         portrait: true,
