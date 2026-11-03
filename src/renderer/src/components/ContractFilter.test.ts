@@ -59,11 +59,12 @@ const open = async (): Promise<string[]> => {
 }
 
 describe('ContractFilter', () => {
-  it('is labelled Contract and offers All contracts, then each contract by name and dates', async () => {
+  it('is named Contract for assistive tech, shows no label of its own, and offers All contracts, then each contract by name and dates', async () => {
     mounted = mount(
       createElement(ContractFilter, { scope: 'all', starts: STARTS, onChange: vi.fn() })
     )
-    expect(document.body.querySelector('span[aria-hidden="true"]')?.textContent).toBe('Contract')
+    expect(document.body.querySelector('button[aria-label="Contract"]')).not.toBeNull()
+    expect(document.body.textContent).not.toContain('Contract ')
     const options = await open()
     expect(options).toHaveLength(3)
     expect(options[0]).toBe('All contracts')

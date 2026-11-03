@@ -3,10 +3,9 @@ import { contractLabel } from '@shared/tracking/workspace-weeks'
 import type { Workspace } from '@shared/settings'
 import { useYearFiles } from '../state/use-year-files'
 import { Select } from './Select'
-import styles from './YearSelect.module.css'
 
 /**
- * Work's one contract filter, in the header of every Work page that has contract content, at the right end: `Contract [All contracts ⌄]`,
+ * Work's one contract filter, in the header of every Work page that has contract content, at the right end: `[All contracts ⌄]`,
  * then each contract by name and dates. The choice is the whole workspace's (`useContractFilter`).
  */
 export function ContractFilter({
@@ -27,19 +26,14 @@ export function ContractFilter({
     return contractLabel(start, file?.weeks, file?.name, file?.end)
   }
   return (
-    <span className={styles.field}>
-      <span className={styles.label} aria-hidden>
-        Contract
-      </span>
-      <Select
-        label="Contract"
-        value={scope}
-        options={[
-          { value: ALL_CONTRACTS, label: 'All contracts' },
-          ...starts.map((s) => ({ value: s, label: label(s) }))
-        ]}
-        onChange={onChange}
-      />
-    </span>
+    <Select
+      label="Contract"
+      value={scope}
+      options={[
+        { value: ALL_CONTRACTS, label: 'All contracts' },
+        ...starts.map((s) => ({ value: s, label: label(s) }))
+      ]}
+      onChange={onChange}
+    />
   )
 }
