@@ -31,10 +31,13 @@ const OFF_LABELS = Object.fromEntries(TIME_OFF_TYPES.map((t) => [t.id, t.label])
  */
 export function YearHeatMap({
   workspace,
+  routeYear,
   data,
   now
 }: {
   workspace: string
+  /** The `?year=` a click on a day opens its week under: the year's own start, or `all` for the merged year under All contracts. */
+  routeYear?: string
   data: TrackingYear
   now: Moment
 }): React.JSX.Element {
@@ -69,7 +72,7 @@ export function YearHeatMap({
     const day = grid[i]
     if (!day) return
     const weekStart = addDays(data.start, Math.floor(daysBetween(data.start, day.date) / 7) * 7)
-    void navigate(weekRoute(workspace, data.start, weekStart))
+    void navigate(weekRoute(workspace, routeYear ?? data.start, weekStart))
   }
 
   const move = (delta: number): void => {

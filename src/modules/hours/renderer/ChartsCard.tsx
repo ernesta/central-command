@@ -20,11 +20,14 @@ type View = (typeof VIEWS)[number]['value']
 export function ChartsCard({
   workspace,
   data,
-  now
+  now,
+  routeYear
 }: {
   workspace: string
   data: TrackingYear
   now: Moment
+  /** See `YearHeatMap`. */
+  routeYear?: string
 }): React.JSX.Element {
   const { value, update } = useModuleState('hours-charts', (raw) => ({
     view: (VIEWS.some((v) => v.value === (raw as { view?: string } | null)?.view)
@@ -43,7 +46,9 @@ export function ChartsCard({
         />
       </header>
       <div className={styles.body}>
-        {value.view === 'year' && <YearHeatMap workspace={workspace} data={data} now={now} />}
+        {value.view === 'year' && (
+          <YearHeatMap workspace={workspace} data={data} now={now} routeYear={routeYear} />
+        )}
         {value.view === 'weeks' && <WeeksChart data={data} now={now} />}
         {value.view === 'typical' && <TypicalWeek data={data} now={now} />}
       </div>

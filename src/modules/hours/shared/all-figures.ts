@@ -29,7 +29,7 @@ export interface AllFigures {
   /** Today summed over every contract that holds it. */
   today: number
   todayClients: { client: string | null; minutes: number }[]
-  /** Work's week (Friday to Thursday) summed over every contract. */
+  /** Work's week (Monday to Sunday) summed over every contract. */
   week: { minutes: number; clients: { client: string | null; minutes: number }[] }
   /** The period so far of each contract that holds today. */
   contracts: ContractSoFar[]

@@ -536,7 +536,7 @@ describe('collectHomeSummary: hours are the Hours page’s hours', () => {
     db.prepare("UPDATE tasks SET parent_uid = 'p' WHERE uid = 'm1'").run()
     insertMeeting('work', 'wm', 'm1', { date: '2026-10-13' })
     const h = hours({ research, work }).work
-    // Work's hours are over every open contract: the week (Friday to Thursday), and each contract's period so far.
+    // Work's hours are over every open contract: the week (Monday to Sunday), and each contract's period so far.
     expect(h?.label).toBe('This week')
     expect(h?.minutes).toBe(45 + 60)
     expect(h?.clients).toEqual([{ client: 'Impact', minutes: 105 }])
@@ -576,10 +576,10 @@ describe('collectHomeSummary: hours are the Hours page’s hours', () => {
     it('today is the sum of every open contract, and the week too', () => {
       const h = workOf([luminos, holloway])
       expect(h?.todayMinutes).toBe(120)
-      expect(h?.minutes).toBe(120 + 60 + 90)
+      // Monday 12 to Sunday 18 Oct: Saturday's 60 is last week's.
+      expect(h?.minutes).toBe(120 + 90)
       expect(h?.clients).toEqual([
         { client: 'Impact', minutes: 120 },
-        { client: 'Teaching', minutes: 60 },
         { client: 'Royal Holloway', minutes: 90 }
       ])
       expect(h?.contracts?.map((c) => [c.name, c.label])).toEqual([

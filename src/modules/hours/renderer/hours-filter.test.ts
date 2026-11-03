@@ -111,7 +111,7 @@ const ariaLabels = (): string[] =>
 describe('the Hours page under All contracts', () => {
   it('is the default, and shows only Today and Week', async () => {
     await show(null)
-    expect(ariaLabels()).toEqual(['Today', 'Week'])
+    expect(ariaLabels()).toEqual(['Today', 'Patterns', 'Week'])
   })
 
   it('adds the day worked on a contract that is not the one the page used to show', async () => {
@@ -125,26 +125,16 @@ describe('the Hours page under All contracts', () => {
     expect(text).toContain('Contract')
   })
 
-  it('the week adds the contracts, Friday to Thursday', async () => {
+  it('the week adds the contracts, Monday to Sunday', async () => {
     await show('all')
     const week = host.querySelector('section[aria-label="Week"]')!.textContent ?? ''
     expect(week).toContain('4:00')
     expect(week).toContain('Teaching')
   })
 
-  it('has no aim, balance, invoice, export or charts', async () => {
+  it('has no aim, balance, invoice or export, and has the charts', async () => {
     const text = await show('all')
-    for (const word of [
-      'Balance',
-      'balance',
-      'Invoice',
-      'Export',
-      'to go',
-      'Patterns',
-      'Add',
-      'Start',
-      ' of '
-    ])
+    for (const word of ['Balance', 'balance', 'Invoice', 'Export', 'to go', 'Add', 'Start', ' of '])
       expect(text).not.toContain(word)
     expect(host.querySelectorAll('button[aria-label="Start"]')).toHaveLength(0)
   })

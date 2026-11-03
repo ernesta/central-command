@@ -7,10 +7,12 @@ import {
   scopeYears,
   validScope,
   weekBounds,
+  mergedYear,
   workWeekStart
 } from './scope'
 import { emptyYear, WORK_PLAN, type Moment, type TrackingYear } from './types'
 import { weekdayOf } from '../year'
+import { minutesByDate, yearMinutes } from './totals'
 import { withDerived } from './derived'
 
 const now: Moment = { date: '2026-11-03', time: '12:00' }
@@ -155,12 +157,12 @@ describe('allDay', () => {
 })
 
 describe('Work week', () => {
-  it('begins on a Friday', () => {
-    expect(workWeekStart('2026-11-03')).toBe('2026-10-30')
-    expect(workWeekStart('2026-10-30')).toBe('2026-10-30')
-    expect(workWeekStart('2026-11-05')).toBe('2026-10-30')
-    expect(workWeekStart('2026-11-06')).toBe('2026-11-06')
-    expect(weekdayOf(workWeekStart('2027-01-01'))).toBe(5)
+  it('is Monday to Sunday', () => {
+    expect(workWeekStart('2026-11-03')).toBe('2026-11-02')
+    expect(workWeekStart('2026-11-02')).toBe('2026-11-02')
+    expect(workWeekStart('2026-11-08')).toBe('2026-11-02')
+    expect(workWeekStart('2026-11-09')).toBe('2026-11-09')
+    expect(weekdayOf(workWeekStart('2027-01-01'))).toBe(1)
   })
 })
 
@@ -194,16 +196,42 @@ describe('allWeek', () => {
 })
 
 describe('week bounds', () => {
-  it('from the Friday week of the earliest start to that of the latest end', () => {
-    expect(weekBounds(all)).toEqual({ first: '2026-05-01', last: '2027-03-26' })
+  it('from the Monday week of the earliest start to that of the latest end', () => {
+    expect(weekBounds(all)).toEqual({ first: '2026-04-27', last: '2027-03-22' })
     expect(weekBounds([])).toBeNull()
   })
   it('opens on this week, or the nearest bound, and honours a valid asked week', () => {
-    expect(resolveAllWeek(null, all, '2026-11-03')).toBe('2026-10-30')
-    expect(resolveAllWeek('2026-10-23', all, '2026-11-03')).toBe('2026-10-23')
-    expect(resolveAllWeek('2026-10-24', all, '2026-11-03')).toBe('2026-10-30')
-    expect(resolveAllWeek(null, all, '2030-01-01')).toBe('2027-03-26')
-    expect(resolveAllWeek(null, all, '2020-01-01')).toBe('2026-05-01')
-    expect(resolveAllWeek(null, [], '2026-11-03')).toBe('2026-10-30')
+    expect(resolveAllWeek(null, all, '2026-11-03')).toBe('2026-11-02')
+    expect(resolveAllWeek('2026-10-26', all, '2026-11-03')).toBe('2026-10-26')
+    expect(resolveAllWeek('2026-10-27', all, '2026-11-03')).toBe('2026-11-02')
+    expect(resolveAllWeek(null, all, '2030-01-01')).toBe('2027-03-22')
+    expect(resolveAllWeek(null, all, '2020-01-01')).toBe('2026-04-27')
+    expect(resolveAllWeek(null, [], '2026-11-03')).toBe('2026-11-02')
+  })
+})
+
+describe('mergedYear (the charts under All)', () => {
+  it('is one Monday-based year over every contract, with every contract’s time and no aim', () => {
+    const m = mergedYear(all)!
+    expect(m.start).toBe('2026-04-27')
+    expect(weekdayOf(m.start)).toBe(1)
+    expect(m.end).toBe('2027-03-28')
+    expect(m.plan.hoursPerWeek).toBe(0)
+    expect(m.plan.clients).toBeUndefined()
+    // 480 + 120 + 60 + 90 in the three contracts; the 600 dated after Luminos's end is in none of them.
+    expect(yearMinutes(m)).toBe(480 + 120 + 60 + 90)
+  })
+  it('a day worked on either overlapping contract is in it, none twice', () => {
+    const m = mergedYear([luminos, holloway])!
+    expect(minutesByDate(m).get('2026-11-03')).toBe(180)
+    expect(minutesByDate(m).get('2026-11-04')).toBe(90)
+  })
+  it('sums imported day totals of different contracts on one date', () => {
+    const a: TrackingYear = { ...luminos, days: { '2026-11-03': { minutes: 30 } } }
+    const b: TrackingYear = { ...holloway, days: { '2026-11-03': { minutes: 45 } } }
+    expect(mergedYear([a, b])!.days['2026-11-03'].minutes).toBe(75)
+  })
+  it('none with no contract', () => {
+    expect(mergedYear([])).toBeNull()
   })
 })

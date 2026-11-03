@@ -117,7 +117,7 @@ export interface HomeHours {
   clients: { client: string | null; minutes: number }[]
   /**
    * Work only: the same figures over every contract that holds today (`allFigures`), not one page's chosen contract. `minutes` is then
-   * Work's week (Friday to Thursday) summed, there is no aim, `todayMinutes` is today summed, `clients` the week's per client, and this
+   * Work's week (Monday to Sunday) summed, there is no aim, `todayMinutes` is today summed, `clients` the week's per client, and this
    * lists each such contract's time so far in its own invoice period.
    */
   contracts?: { year: string; name?: string; label: 'This week' | 'This month'; minutes: number }[]

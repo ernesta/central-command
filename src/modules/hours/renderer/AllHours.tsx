@@ -4,7 +4,9 @@ import { useYearFiles } from '@renderer/state/use-year-files'
 import { formatDay, formatHours, formatRange } from '@shared/tracking/format'
 import {
   allDay,
+  ALL_CONTRACTS,
   allWeek,
+  mergedYear,
   resolveAllWeek,
   weekBounds,
   workWeekStart,
@@ -14,9 +16,11 @@ import type { Moment } from '@shared/tracking/types'
 import { addDays } from '@shared/year'
 import { BackToToday } from './BackToToday'
 import { useShownYears } from './useMeetingHours'
+import { ChartsCard } from './ChartsCard'
+import pageStyles from './HoursPage.module.css'
 import styles from './AllHours.module.css'
 
-/** The week under All, kept in the URL (`?week=`, its Friday) like the Hours page's own. */
+/** The week under All, kept in the URL (`?week=`, its Monday) like the Hours page's own. */
 function useAllWeek(
   years: Parameters<typeof resolveAllWeek>[1],
   today: string
@@ -89,77 +93,92 @@ export function AllHours({
   const thisWeek = workWeekStart(now.date)
   const bounds = weekBounds(years)
   const shown = allWeek(years, week, now)
+  // The charts read every contract as one read-only year without an aim.
+  const merged = mergedYear(years)
 
   return (
     <>
-      <section className={styles.card} aria-label="Today">
-        <header className={styles.head}>
-          <h2 className={styles.title}>
-            Today <span className={styles.date}>{formatDay(now.date)}</span>
-          </h2>
-          <span className={styles.total}>{formatHours(day.minutes)}</span>
-        </header>
-        {day.contracts.length > 0 ? (
-          <Shares shares={day.contracts} className={styles.groups} />
-        ) : (
-          <p className={styles.none}>No contract today.</p>
+      <div className={pageStyles.cards}>
+        <section className={styles.card} aria-label="Today">
+          <header className={styles.head}>
+            <h2 className={styles.title}>
+              Today <span className={styles.date}>{formatDay(now.date)}</span>
+            </h2>
+            <span className={styles.total}>{formatHours(day.minutes)}</span>
+          </header>
+          {day.contracts.length > 0 ? (
+            <Shares shares={day.contracts} className={styles.groups} />
+          ) : (
+            <p className={styles.none}>No contract today.</p>
+          )}
+        </section>
+        {merged && (
+          <ChartsCard workspace="work" data={merged} now={now} routeYear={ALL_CONTRACTS} />
         )}
-      </section>
+      </div>
 
-      <section className={styles.weekCard} aria-label="Week">
-        <header className={styles.weekHead}>
-          <div className={styles.nav}>
-            <button
-              type="button"
-              className={styles.arrow}
-              aria-label="Previous week"
-              disabled={!bounds || week <= bounds.first}
-              onClick={() => setWeek(addDays(week, -7))}
-            >
-              <ChevronLeft size={16} strokeWidth={1.75} aria-hidden />
-            </button>
-            <span className={styles.label}>{formatRange(shown.from, shown.to)}</span>
-            <button
-              type="button"
-              className={styles.arrow}
-              aria-label="Next week"
-              disabled={!bounds || week >= bounds.last}
-              onClick={() => setWeek(addDays(week, 7))}
-            >
-              <ChevronRight size={16} strokeWidth={1.75} aria-hidden />
-            </button>
-          </div>
-          {week !== thisWeek && <BackToToday label="This week" onClick={() => setWeek(thisWeek)} />}
-        </header>
-        <p className={styles.weekTotal}>{formatHours(shown.minutes)}</p>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th scope="col">Day</th>
-              <th scope="col" className={styles.right}>
-                Hours
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {shown.days.map((d) => (
-              <tr key={d.date} className={styles.day} data-today={d.date === now.date || undefined}>
-                <td>{formatDay(d.date)}</td>
-                <td className={styles.right}>
-                  {d.date <= now.date ? (
-                    formatHours(d.minutes)
-                  ) : (
-                    <span className={styles.muted}>—</span>
-                  )}
-                </td>
+      <div className={pageStyles.cards}>
+        <section className={styles.weekCard} aria-label="Week">
+          <header className={styles.weekHead}>
+            <div className={styles.nav}>
+              <button
+                type="button"
+                className={styles.arrow}
+                aria-label="Previous week"
+                disabled={!bounds || week <= bounds.first}
+                onClick={() => setWeek(addDays(week, -7))}
+              >
+                <ChevronLeft size={16} strokeWidth={1.75} aria-hidden />
+              </button>
+              <span className={styles.label}>{formatRange(shown.from, shown.to)}</span>
+              <button
+                type="button"
+                className={styles.arrow}
+                aria-label="Next week"
+                disabled={!bounds || week >= bounds.last}
+                onClick={() => setWeek(addDays(week, 7))}
+              >
+                <ChevronRight size={16} strokeWidth={1.75} aria-hidden />
+              </button>
+            </div>
+            {week !== thisWeek && (
+              <BackToToday label="This week" onClick={() => setWeek(thisWeek)} />
+            )}
+          </header>
+          <p className={styles.weekTotal}>{formatHours(shown.minutes)}</p>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th scope="col">Day</th>
+                <th scope="col" className={styles.right}>
+                  Hours
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        {shown.contracts.length > 0 && (
-          <Shares shares={shown.contracts} className={styles.weekGroups} />
-        )}
-      </section>
+            </thead>
+            <tbody>
+              {shown.days.map((d) => (
+                <tr
+                  key={d.date}
+                  className={styles.day}
+                  data-today={d.date === now.date || undefined}
+                >
+                  <td>{formatDay(d.date)}</td>
+                  <td className={styles.right}>
+                    {d.date <= now.date ? (
+                      formatHours(d.minutes)
+                    ) : (
+                      <span className={styles.muted}>—</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {shown.contracts.length > 0 && (
+            <Shares shares={shown.contracts} className={styles.weekGroups} />
+          )}
+        </section>
+      </div>
     </>
   )
 }

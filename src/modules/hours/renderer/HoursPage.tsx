@@ -61,11 +61,9 @@ export function HoursPage(): React.JSX.Element {
         </div>
       )}
       {allContracts && years.length > 0 && (
-        // Under All: today and the week summed over every contract, read only; no aim, balance, invoice, charts or export.
+        // Under All: today and the week summed over every contract, read only; no aim, balance, invoice or export.
         <div className={styles.stack}>
-          <div className={styles.cards}>
-            <AllHours starts={years} now={now} />
-          </div>
+          <AllHours starts={years} now={now} />
         </div>
       )}
       {!allContracts && data && (
