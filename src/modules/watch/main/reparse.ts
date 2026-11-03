@@ -1,7 +1,14 @@
 import type { Database } from 'better-sqlite3'
 import { findDates, isOver } from '../shared/dates'
 import type { WatchItem } from '../shared/types'
-import { CREDITS, isFeedLink, isSearchLink, isSectionHome } from './parse-page'
+import {
+  CREDITS,
+  isFeedLink,
+  isOutsideListing,
+  isSearchLink,
+  isSectionHome,
+  listingSegment
+} from './parse-page'
 import { listItems, listSources } from './repository'
 
 /**
@@ -15,6 +22,7 @@ export type RemoveReason =
   | "the site's menu"
   | 'a search link'
   | 'a feed link'
+  | "the site's own page"
   | 'no coming date'
   | 'already over'
 
@@ -40,11 +48,18 @@ const over = (item: WatchItem, today: string): boolean => {
   return dates.length > 0 && dates.every((d) => d < today)
 }
 
-function judge(item: WatchItem, sourceUrl: string, today: string): RemoveReason | null {
+function judge(
+  item: WatchItem,
+  sourceUrl: string,
+  today: string,
+  segment: string | null
+): RemoveReason | null {
   if (CREDITS.test(item.title)) return 'a credit or a cookie notice'
   if (item.url !== sourceUrl && isSectionHome(item.url, sourceUrl)) return "the site's menu"
   if (isSearchLink(item.url)) return 'a search link'
   if (isFeedLink(item.url)) return 'a feed link'
+  if (item.url !== sourceUrl && isOutsideListing(item.url, segment, sourceUrl))
+    return "the site's own page"
   const text = `${item.title}\n${item.summary}`
   const stored = item.eventDate !== null || item.deadline !== null
   if (stored ? over(item, today) : isOver(text, today)) return 'already over'
@@ -61,6 +76,7 @@ export function planReparse(db: Database, today: string): SourcePlan[] {
   for (const source of listSources(db)) {
     if (source.method !== 'page' && source.method !== 'event') continue
     const items = listItems(db, { sourceId: source.id, limit: 1000 })
+    const segment = listingSegment(items.map((i) => i.url))
     out.push({
       sourceId: source.id,
       title: source.title,
@@ -69,7 +85,7 @@ export function planReparse(db: Database, today: string): SourcePlan[] {
       saved: items.filter((i) => i.state === 'saved').length,
       items: items
         .filter((i) => i.state !== 'saved')
-        .map((item) => ({ item, remove: judge(item, source.url, today) }))
+        .map((item) => ({ item, remove: judge(item, source.url, today, segment) }))
     })
   }
   return out

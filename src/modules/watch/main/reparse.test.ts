@@ -164,3 +164,23 @@ describe('watch:reparse', () => {
     expect(listItems(db)).toHaveLength(1)
   })
 })
+
+describe('a listing keeps its entries in one place', () => {
+  it('removes same-site pages outside it, and keeps saved ones', () => {
+    const id = source('https://x.org/training/calendar/')
+    const add = (key: string, url: string, state = 'new'): void => {
+      db.prepare(
+        `INSERT INTO watch_items (source_id, item_key, title, url, event_date, state, first_seen_at)
+         VALUES (?, ?, ?, ?, '2026-12-01', ?, 'x')`
+      ).run(id, key, key, url, state)
+    }
+    for (const n of [1, 2, 3, 4]) add(`e${n}`, `https://x.org/events/e${n}/`)
+    add('apply', 'https://x.org/how-to-apply/')
+    add('kept', 'https://x.org/eligibility/', 'saved')
+    applyReparse(db, planReparse(db, TODAY))
+    const left = listItems(db, { sourceId: id, limit: 50 }).map((i) => i.title)
+    expect(left).not.toContain('apply')
+    expect(left).toContain('kept')
+    expect(left).toHaveLength(5)
+  })
+})

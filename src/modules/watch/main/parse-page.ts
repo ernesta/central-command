@@ -300,3 +300,35 @@ export function datedSentences(text: string, pageUrl: string, today: string): Pa
   }
   return out
 }
+
+const firstSegment = (url: string): string | null => {
+  try {
+    return new URL(url).pathname.split('/').filter(Boolean)[0] ?? null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * The first path segment (`events` of `/events/tidying-…`) that most of a listing's items share, when at least three do and they are at least
+ * three in five of them: where the listing keeps its own entries. Null when there is no such place.
+ */
+export function listingSegment(urls: readonly string[]): string | null {
+  const counts = new Map<string, number>()
+  for (const u of urls) {
+    const seg = firstSegment(u)
+    if (seg) counts.set(seg, (counts.get(seg) ?? 0) + 1)
+  }
+  const [top] = [...counts.entries()].sort((a, b) => b[1] - a[1])
+  return top && top[1] >= 3 && top[1] * 5 >= urls.length * 3 ? top[0] : null
+}
+
+/** A link of the same site outside the place the listing keeps its entries (`/how-to-apply/` on a list of `/events/…`): the site's own page, not an entry. */
+export function isOutsideListing(url: string, segment: string | null, base: string): boolean {
+  if (!segment) return false
+  try {
+    return host(url) === host(base) && firstSegment(url) !== segment
+  } catch {
+    return false
+  }
+}

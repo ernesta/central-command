@@ -5,7 +5,13 @@ import type { Fetcher } from './checker'
 import { crossrefUrl, parseCrossref } from './parse-crossref'
 import { decodeEntities, parseFeed } from './parse-feed'
 import { eventItem, keyDateLinks, namesOneEvent, pageTitle } from './parse-event'
-import { datedSentences, mainContent, parsePage } from './parse-page'
+import {
+  datedSentences,
+  isOutsideListing,
+  listingSegment,
+  mainContent,
+  parsePage
+} from './parse-page'
 import {
   advertisedCalendars,
   parseIcs,
@@ -244,7 +250,10 @@ export async function loadSource(
     (l) => !l.offsite || findDate(`${l.title}\n${l.summary}`, today)
   )
   const dated = links.filter((l) => findDate(`${l.title}\n${l.summary}`, today))
-  const undated = links.filter((l) => !dated.includes(l))
+  const segment = listingSegment(dated.map((l) => l.url))
+  const undated = links.filter(
+    (l) => !dated.includes(l) && !isOutsideListing(l.url, segment, source.url)
+  )
   return {
     // Prose that names dates is an item of its own, unless the cards carry theirs.
     items: [...dated, ...(cards ? [] : datedSentences(page.upcomingText, source.url, today))],
