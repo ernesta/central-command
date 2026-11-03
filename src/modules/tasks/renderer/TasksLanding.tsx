@@ -160,7 +160,12 @@ export function TasksLanding(): React.JSX.Element {
       )}
       {rows !== null && (
         <>
-          <AddBar workspace={workspace} rows={everyRow ?? all} today={today} />
+          <AddBar
+            workspace={workspace}
+            rows={everyRow ?? all}
+            today={today}
+            scopeClients={filter.clients}
+          />
           {section(
             'overdue',
             'Overdue',

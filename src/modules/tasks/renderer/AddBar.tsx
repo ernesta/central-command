@@ -24,13 +24,16 @@ export function AddBar({
   workspace,
   rows,
   today,
-  listFilter = ''
+  listFilter = '',
+  scopeClients
 }: {
   workspace: TaskWorkspace
   rows: readonly TaskRow[]
   today: string
   /** The list being looked at, as a list value; '' on a page that shows every list. */
   listFilter?: string
+  /** Work under one contract: its clients. A new task starts in one of their lists, so it is not made where the page does not show it. */
+  scopeClients?: readonly string[]
 }): React.JSX.Element {
   const { last, remember } = useTaskDefaults(workspace)
   const [title, setTitle] = useState('')
@@ -45,7 +48,13 @@ export function AddBar({
   const clients = useWorkClients(workspace)
   // A list chosen earlier that is no longer a client (renamed or removed meanwhile) gives way to the default.
   const picked = chosen && canUseList(workspace, chosen.list, clients ?? []) ? chosen : null
-  const list = picked ?? defaultList(rows, { filter: listFilter, last, clients })
+  const list =
+    picked ??
+    defaultList(rows, {
+      filter: listFilter,
+      last,
+      clients: scopeClients && clients !== null ? scopeClients : clients
+    })
 
   const submit = async (): Promise<void> => {
     const typed = splitTitleTags(title)

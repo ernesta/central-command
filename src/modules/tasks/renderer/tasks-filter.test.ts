@@ -108,4 +108,15 @@ describe('Work Tasks follow the contract filter', () => {
     expect(text).not.toContain('Draft the impact report')
     expect(text).toContain('Write the literature section')
   })
+
+  it('a new task starts in a list of the chosen contract, so it is made where it shows', async () => {
+    await show('2026-09-28')
+    expect(host.querySelector('form[aria-label="Add a task"]')?.textContent).toContain(
+      'Royal Holloway'
+    )
+    act(() => root.unmount())
+    host.remove()
+    await show('2026-10-30')
+    expect(host.querySelector('form[aria-label="Add a task"]')?.textContent).toContain('Impact')
+  })
 })

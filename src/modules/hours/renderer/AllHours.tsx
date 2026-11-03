@@ -51,7 +51,8 @@ function Shares({
             <span>{c.name ?? c.year}</span>
             <span className={styles.num}>{formatHours(c.minutes)}</span>
           </div>
-          {c.clients.length > 0 && (
+          {/* A contract with one client of its own name (Royal Holloway) says it once. */}
+          {c.clients.length > 0 && !(c.clients.length === 1 && c.clients[0].client === c.name) && (
             <ul className={styles.clients}>
               {c.clients.map((cl) => (
                 <li key={cl.client ?? ''} className={styles.client}>

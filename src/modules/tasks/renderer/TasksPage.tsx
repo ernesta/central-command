@@ -198,6 +198,7 @@ export function TasksPage(): React.JSX.Element {
           rows={everyRow ?? all}
           today={today}
           listFilter={query.list}
+          scopeClients={filter.clients}
         />
       )}
 

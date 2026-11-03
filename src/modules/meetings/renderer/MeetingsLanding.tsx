@@ -2,6 +2,7 @@ import { useToday } from '@renderer/state/use-today'
 import { ArrowRight } from 'lucide-react'
 import { useState } from 'react'
 import { PeriodSelect } from '@renderer/components/PeriodSelect'
+import { ALL_CONTRACTS } from '@shared/tracking/scope'
 import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { EmptyState } from '@renderer/components/EmptyState'
 import {
@@ -68,6 +69,8 @@ export function MeetingsLanding(): React.JSX.Element {
   const { year, years, setYear, weeks, end } = period
   // Under All contracts there is no one period: every Work meeting.
   const span = period.all ? null : year
+  // A link carries the scope: under All, `all`, not the contract the page would otherwise have picked.
+  const linkYear = period.all ? ALL_CONTRACTS : year
   const periodSelect = (
     <PeriodSelect
       workspace={workspace}
@@ -164,7 +167,7 @@ export function MeetingsLanding(): React.JSX.Element {
                 .filter((s) => s.count > 0 || s.next)
                 .map((s) => ({
                   key: s.series,
-                  to: seriesRoute(workspace, s.series, year),
+                  to: seriesRoute(workspace, s.series, linkYear),
                   title: s.series,
                   line: seriesLine(s, formatShortDate)
                 }))}
@@ -175,7 +178,7 @@ export function MeetingsLanding(): React.JSX.Element {
             id="recent"
             label="Recent and upcoming"
             aside={
-              <SeeAllLink window to={`${meetingsListRoute(workspace)}?year=${year}`}>
+              <SeeAllLink window to={`${meetingsListRoute(workspace)}?year=${linkYear}`}>
                 See all meetings
                 <ArrowRight size={14} strokeWidth={1.75} aria-hidden />
               </SeeAllLink>
