@@ -1,0 +1,96 @@
+.card {
+  composes: card from './TodayCard.module.css';
+}
+.head {
+  composes: head from './TodayCard.module.css';
+}
+.title {
+  composes: title from './TodayCard.module.css';
+}
+.date {
+  composes: date from './TodayCard.module.css';
+}
+.total {
+  composes: total from './TodayCard.module.css';
+}
+.weekCard {
+  composes: card from './WeekCard.module.css';
+  padding-bottom: 8px;
+}
+.weekHead {
+  composes: head from './WeekCard.module.css';
+}
+.nav {
+  composes: nav from './WeekCard.module.css';
+}
+.label {
+  composes: label from './WeekCard.module.css';
+}
+.arrow {
+  composes: arrow from './WeekCard.module.css';
+}
+.weekTotal {
+  composes: total from './WeekCard.module.css';
+}
+.table {
+  composes: table from './WeekCard.module.css';
+}
+.right {
+  composes: right from './WeekCard.module.css';
+}
+.day {
+  composes: day from './WeekCard.module.css';
+}
+.muted {
+  composes: muted from './WeekCard.module.css';
+}
+
+/* A contract, then its clients with time. */
+.groups {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.weekGroups {
+  composes: groups;
+  padding: 12px var(--hours-pad) 16px;
+  border-top: 1px solid var(--border-soft);
+}
+.group {
+  display: grid;
+  gap: 4px;
+}
+.contract {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 600;
+}
+.contract[data-empty='true'] {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.clients {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0 0 0 12px;
+  list-style: none;
+}
+.client {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-secondary);
+}
+.num {
+  font-variant-numeric: tabular-nums;
+}
+.none {
+  margin: 0;
+  color: var(--text-muted);
+}

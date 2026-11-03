@@ -3,9 +3,11 @@ import { LandingHeader, LandingPage } from '@renderer/components/Landing'
 import { useNow } from '@renderer/state/use-now'
 import { useRunningTimer } from '@renderer/state/use-running-timer'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
+import { isAllContracts } from '@shared/tracking/scope'
 import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { inContract } from '@shared/tracking/workspace-weeks'
 import { useHoursWorkspace } from './hours-paths'
+import { AllHours } from './AllHours'
 import { BalanceCard } from './BalanceCard'
 import { ChartsCard } from './ChartsCard'
 import { TodayCard } from './TodayCard'
@@ -26,6 +28,7 @@ export function HoursPage(): React.JSX.Element {
   const data = useShownYear(workspace, stored, now.date)
   const { week, setWeek } = useWeek(stored?.start ?? year, now.date, stored?.weeks, stored?.end)
 
+  const allContracts = hasContracts(workspace) && isAllContracts(scope)
   // A finished (or not yet begun) year has no Today card: the week and Patterns share the first row.
   const current = data !== null && inContract(now.date, data)
   const charts = data && <ChartsCard workspace={workspace} data={data} now={now} />
@@ -57,7 +60,15 @@ export function HoursPage(): React.JSX.Element {
           <ContractFields workspace={workspace} />
         </div>
       )}
-      {data && (
+      {allContracts && years.length > 0 && (
+        // Under All: today and the week summed over every contract, read only; no aim, balance, invoice, charts or export.
+        <div className={styles.stack}>
+          <div className={styles.cards}>
+            <AllHours starts={years} now={now} />
+          </div>
+        </div>
+      )}
+      {!allContracts && data && (
         <div className={styles.stack}>
           {current ? (
             <>
