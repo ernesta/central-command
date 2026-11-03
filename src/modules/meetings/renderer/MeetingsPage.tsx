@@ -62,6 +62,8 @@ export function MeetingsPage(): React.JSX.Element {
     today
   )
   const { year, years, setYear, weeks, end } = period
+  // Under All contracts there is no one period: every Work meeting.
+  const span = period.all ? null : year
   const periodSelect = (
     <PeriodSelect
       workspace={workspace}
@@ -74,7 +76,7 @@ export function MeetingsPage(): React.JSX.Element {
   )
   const listOf = useTaskLists(workspace)
   const all = ofContractClients(
-    meetingsInYearOrPlanned(everything, year, today, weeks, end),
+    meetingsInYearOrPlanned(everything, span, today, weeks, end),
     period.clients,
     listOf
   )
@@ -166,7 +168,7 @@ export function MeetingsPage(): React.JSX.Element {
       {rows !== null && period.loaded && (
         <MeetingsHours
           rows={everything}
-          year={year}
+          year={span}
           weeks={weeks}
           end={end}
           label={period.label}

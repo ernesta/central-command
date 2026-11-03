@@ -5,8 +5,12 @@ import { isUpcoming } from './query'
 import { durationMinutes } from './time'
 import type { MeetingIndexRow } from './types'
 
-/** Whether a date is in the period: the year (or contract) from its first day for `weeks`, and not after a contract's real `end`. */
-function inPeriod(date: string, year: string, weeks: number, end?: string): boolean {
+/**
+ * Whether a date is in the period: the year (or contract) from its first day for `weeks`, and not after a contract's real `end`.
+ * A `null` year is every date: Work under All contracts.
+ */
+function inPeriod(date: string, year: string | null, weeks: number, end?: string): boolean {
+  if (year === null) return date !== ''
   return inYear(date, year, weeks) && (end === undefined || date <= end)
 }
 
@@ -19,11 +23,11 @@ export interface MeetingHours {
 
 /**
  * The meetings dated within a year (its start date), upcoming ones included. Work's period is a contract, which has its own
- * length in `weeks`.
+ * length in `weeks`; under All contracts (a `null` year) every meeting.
  */
 export function meetingsInYear(
   rows: readonly MeetingIndexRow[],
-  year: string,
+  year: string | null,
   weeks = YEAR_WEEKS,
   end?: string
 ): MeetingIndexRow[] {
@@ -36,7 +40,7 @@ export function meetingsInYear(
  */
 export function meetingsInYearOrPlanned(
   rows: readonly MeetingIndexRow[],
-  year: string,
+  year: string | null,
   today: string,
   weeks = YEAR_WEEKS,
   end?: string
@@ -51,7 +55,7 @@ export function meetingsInYearOrPlanned(
  */
 export function meetingHours(
   rows: readonly MeetingIndexRow[],
-  year: string,
+  year: string | null,
   today: string,
   weeks = YEAR_WEEKS,
   end?: string,

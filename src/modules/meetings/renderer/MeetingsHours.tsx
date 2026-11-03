@@ -14,7 +14,8 @@ export function MeetingsHours({
   showSkills
 }: {
   rows: readonly MeetingIndexRow[]
-  year: string
+  /** The period's first day; null is every meeting (Work under All contracts). */
+  year: string | null
   /** The period's length and name: a contract's in Work. */
   weeks: number
   end?: string

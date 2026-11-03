@@ -141,3 +141,20 @@ describe('ofContractClients', () => {
     expect(ofContractClients(rows, undefined, listOf)).toHaveLength(4)
   })
 })
+
+describe('a null year is every meeting (Work under All contracts)', () => {
+  const rows = [
+    row('2025-01-05'),
+    row('2026-02-10', { start: '09:00', end: '09:45' }),
+    row('', { id: 'planned' })
+  ]
+  it('lists every dated meeting, whatever the contract, and the undated plan', () => {
+    expect(meetingsInYear(rows, null)).toHaveLength(2)
+    expect(meetingsInYearOrPlanned(rows, null, TODAY)).toHaveLength(3)
+    // One contract still lists its own days only, and the plan only while today is inside it.
+    expect(meetingsInYearOrPlanned(rows, '2026-01-02', TODAY, 4)).toHaveLength(0)
+  })
+  it('adds up the hours of all of them', () => {
+    expect(meetingHours(rows, null, TODAY).minutes).toBe(60 + 45)
+  })
+})

@@ -66,6 +66,8 @@ export function MeetingsLanding(): React.JSX.Element {
   )
   const all = ofContractClients(everything, period.clients, listOf)
   const { year, years, setYear, weeks, end } = period
+  // Under All contracts there is no one period: every Work meeting.
+  const span = period.all ? null : year
   const periodSelect = (
     <PeriodSelect
       workspace={workspace}
@@ -77,12 +79,12 @@ export function MeetingsLanding(): React.JSX.Element {
     />
   )
   const { upcoming, recent } = recentAndUpcoming(
-    meetingsInYearOrPlanned(all, year, today, weeks, end),
+    meetingsInYearOrPlanned(all, span, today, weeks, end),
     today,
     now
   )
   const summaries = seriesSummaries(
-    meetingsInYear(all, year, weeks, end),
+    meetingsInYear(all, span, weeks, end),
     today,
     fixedSeries(workspace),
     now
@@ -150,7 +152,7 @@ export function MeetingsLanding(): React.JSX.Element {
           >
             <MeetingsHours
               rows={all}
-              year={year}
+              year={span}
               weeks={weeks}
               end={end}
               label={period.label}
