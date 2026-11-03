@@ -1,7 +1,8 @@
 import { useToday } from '@renderer/state/use-today'
 import { ArrowRight } from 'lucide-react'
 import { useState } from 'react'
-import { YearSelect } from '@renderer/components/YearSelect'
+import { PeriodSelect } from '@renderer/components/PeriodSelect'
+import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { EmptyState } from '@renderer/components/EmptyState'
 import {
   LandingHeader,
@@ -65,6 +66,16 @@ export function MeetingsLanding(): React.JSX.Element {
   )
   const all = ofContractClients(everything, period.clients, listOf)
   const { year, years, setYear, weeks, end } = period
+  const periodSelect = (
+    <PeriodSelect
+      workspace={workspace}
+      year={year}
+      years={years}
+      onYear={setYear}
+      scope={period.scope}
+      onScope={period.setScope}
+    />
+  )
   const { upcoming, recent } = recentAndUpcoming(
     meetingsInYearOrPlanned(all, year, today, weeks, end),
     today,
@@ -89,7 +100,15 @@ export function MeetingsLanding(): React.JSX.Element {
 
   return (
     <LandingPage>
-      <LandingHeader title="Meetings" actions={<NewMeetingButton />} />
+      <LandingHeader
+        title="Meetings"
+        actions={
+          <>
+            {hasContracts(workspace) && periodSelect}
+            <NewMeetingButton />
+          </>
+        }
+      />
 
       {rows === null || !period.loaded ? null : (
         <>
@@ -127,9 +146,7 @@ export function MeetingsLanding(): React.JSX.Element {
             id="year"
             label="Year"
             labelHidden
-            aside={
-              <YearSelect year={year} years={years} onChange={setYear} workspace={workspace} />
-            }
+            aside={!hasContracts(workspace) && periodSelect}
           >
             <MeetingsHours
               rows={all}

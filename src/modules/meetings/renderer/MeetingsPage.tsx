@@ -8,7 +8,8 @@ import { FilterRow } from '@renderer/components/FilterRow'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { skillFilterOptions, skillsIn } from '@shared/skills'
-import { YearSelect } from '@renderer/components/YearSelect'
+import { PeriodSelect } from '@renderer/components/PeriodSelect'
+import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { SearchInput } from '@renderer/components/SearchInput'
 import { Select } from '@renderer/components/Select'
 import { usePeriod } from '@renderer/state/use-period'
@@ -61,6 +62,16 @@ export function MeetingsPage(): React.JSX.Element {
     today
   )
   const { year, years, setYear, weeks, end } = period
+  const periodSelect = (
+    <PeriodSelect
+      workspace={workspace}
+      year={year}
+      years={years}
+      onYear={setYear}
+      scope={period.scope}
+      onScope={period.setScope}
+    />
+  )
   const listOf = useTaskLists(workspace)
   const all = ofContractClients(
     meetingsInYearOrPlanned(everything, year, today, weeks, end),
@@ -138,6 +149,8 @@ export function MeetingsPage(): React.JSX.Element {
       <header className={styles.header}>
         <h1 className={styles.heading}>All meetings</h1>
         <div className={styles.actions}>
+          {/* Work's one contract filter sits at the right end of the header, as on every Work page. */}
+          {hasContracts(workspace) && periodSelect}
           {/* Work's log is by date only and would include another contract's meetings: off until it follows the contract's clients. */}
           {workspace !== 'work' && (
             <ExportButton
@@ -163,7 +176,7 @@ export function MeetingsPage(): React.JSX.Element {
       )}
 
       <FilterRow>
-        <YearSelect year={year} years={years} onChange={setYear} workspace={workspace} />
+        {!hasContracts(workspace) && periodSelect}
         <SearchInput
           label="Search meetings"
           value={query.search}

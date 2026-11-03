@@ -1,4 +1,5 @@
 import type { Workspace } from '@shared/settings'
+import { ALL_CONTRACTS, isAllContracts, type ContractScope } from '@shared/tracking/scope'
 import { contractLabel, hasContracts } from '@shared/tracking/workspace-weeks'
 import { YEAR_WEEKS, yearLabel } from '@shared/year'
 import { useTrackingYear } from './use-tracking-year'
@@ -10,6 +11,11 @@ export interface Period {
   year: string
   years: string[]
   setYear: (year: string) => void
+  /** Work: All contracts, or one contract's first day (the workspace's one filter). Research and Life: always All, unused. */
+  scope: ContractScope
+  setScope: (scope: ContractScope) => void
+  /** Work under All: every Work meeting, no one period. `year`, `weeks` and `end` are then of no use. */
+  all: boolean
   /** Its length in report weeks. */
   weeks: number
   /** A contract's real last day; undefined for the academic year (and while Work has no contract). */
@@ -34,6 +40,9 @@ export function usePeriod(workspace: Workspace, dates: readonly string[], today:
   if (!hasContracts(workspace)) {
     return {
       ...academic,
+      scope: ALL_CONTRACTS,
+      setScope: () => {},
+      all: false,
       weeks: YEAR_WEEKS,
       end: undefined,
       clients: undefined,
@@ -42,23 +51,29 @@ export function usePeriod(workspace: Workspace, dates: readonly string[], today:
       loaded: true
     }
   }
+  const all = isAllContracts(tracked.scope)
   const weeks = tracked.data?.weeks
-  const label =
-    tracked.year === ''
+  const label = all
+    ? 'all contracts'
+    : tracked.year === ''
       ? 'any contract'
       : contractLabel(tracked.year, weeks, tracked.data?.name, tracked.data?.end)
   return {
     year: tracked.year,
     years: tracked.years,
     setYear: tracked.setYear,
+    scope: tracked.scope,
+    setScope: tracked.setScope,
+    all,
     weeks: weeks ?? 0,
     end: tracked.data?.end,
-    clients: tracked.data?.plan.clients ?? [],
+    // Under All no contract's clients narrow the list.
+    clients: all ? undefined : (tracked.data?.plan.clients ?? []),
     label,
     contract:
-      weeks === undefined
+      all || weeks === undefined
         ? undefined
         : { weeks, ...(tracked.data?.end ? { end: tracked.data.end } : {}), label },
-    loaded: tracked.loaded && (tracked.year === '' || tracked.data !== null)
+    loaded: tracked.loaded && (all || tracked.year === '' || tracked.data !== null)
   }
 }

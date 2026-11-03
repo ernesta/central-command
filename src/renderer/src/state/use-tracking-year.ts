@@ -4,31 +4,19 @@ import { useSearchParams } from 'react-router'
 import type { Workspace } from '@shared/settings'
 import type { TrackingYear } from '@shared/tracking/types'
 import { yearToShow } from '@shared/tracking/current-year'
+import { isAllContracts, type ContractScope } from '@shared/tracking/scope'
 import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { useSettings } from './settings-context'
-import { useModuleState } from './use-module-state'
+import { useContractFilter } from './use-contract-filter'
 import { useOpenContractsRead } from './use-open-contracts'
 import { useYearFile } from './use-year-file'
-
-/** The contract last shown, per workspace. */
-interface RememberedContracts {
-  shown: Record<string, string>
-}
-
-function normaliseContracts(raw: unknown): RememberedContracts {
-  const shown = (raw as { shown?: unknown } | undefined)?.shown
-  const out: Record<string, string> = {}
-  if (shown && typeof shown === 'object')
-    for (const [key, value] of Object.entries(shown))
-      if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) out[key] = value
-  return { shown: out }
-}
 
 /**
  * The year a tracking page shows, kept in the URL (`?year=2026-09-21`, the year's start) so a link can open a
  * page on a given year. It opens on the current year; one that has no file and is not the current one falls back
- * to the current year. `data` is that year's file, null until it is read. A workspace with contracts opens on the
- * one that holds today and was shown or used last (`contractToShow`); the last one chosen is remembered.
+ * to the current year. `data` is that year's file, null until it is read. A workspace with contracts is filtered by
+ * `useContractFilter`: under one contract that is the year; under All there is no one year, and `year` is the contract
+ * `contractToShow` picks, for what still needs one (Settings, a landing card). Pages that read every contract use `scope`.
  */
 export function useTrackingYear(workspace: Workspace): {
   year: string
@@ -37,26 +25,42 @@ export function useTrackingYear(workspace: Workspace): {
   loaded: boolean
   setYear: (year: string) => void
   data: TrackingYear | null
+  /** Work: All contracts, or one contract's first day. Research and Life: always All, and not used. */
+  scope: ContractScope
+  setScope: (scope: ContractScope) => void
 } {
   const { settings } = useSettings()
   const [params, setParams] = useSearchParams()
-  const [offered, setOffered] = useState<{ workspace: Workspace; years: string[] } | null>(null)
+  const filter = useContractFilter(workspace)
   const open = useOpenContractsRead(workspace)
-  const remembered = useModuleState('hours-contract', normaliseContracts)
 
-  const years = offered?.workspace === workspace ? offered.years : null
+  const contracts = hasContracts(workspace)
+  const [offered, setOffered] = useState<{ workspace: Workspace; years: string[] } | null>(null)
+  const years = contracts
+    ? filter.loaded
+      ? filter.starts
+      : null
+    : offered?.workspace === workspace
+      ? offered.years
+      : null
   // A workspace with contracts has no year but the ones made (none yet: ''); the open ones are read before choosing.
   const today = useToday()
   const current = yearToShow(workspace, today, {
     yearStarts: settings.yearStarts,
     years,
-    open,
-    remembered: remembered.value.shown[workspace]
+    open
   })
   const asked = params.get('year')
-  const year = asked && years?.includes(asked) ? asked : current
+  const year = contracts
+    ? !isAllContracts(filter.scope) && years?.includes(filter.scope)
+      ? filter.scope
+      : current
+    : asked && years?.includes(asked)
+      ? asked
+      : current
 
   useEffect(() => {
+    if (contracts) return
     let cancelled = false
     const load = (): void => {
       void window.api.tracking.years(workspace).then((list) => {
@@ -71,14 +75,16 @@ export function useTrackingYear(workspace: Workspace): {
       cancelled = true
       off()
     }
-  }, [workspace])
+  }, [workspace, contracts])
 
   // Wait for the list: a year in the address that is not offered must never be asked for.
   const data = useYearFile(workspace, years === null || year === '' ? null : year)
 
   const setYear = (next: string): void => {
-    if (hasContracts(workspace))
-      remembered.update({ shown: { ...remembered.value.shown, [workspace]: next } })
+    if (contracts) {
+      filter.setScope(next)
+      return
+    }
     setParams(
       (prev) => {
         const p = new URLSearchParams(prev)
@@ -93,8 +99,10 @@ export function useTrackingYear(workspace: Workspace): {
   return {
     year,
     years: years ?? (current === '' ? [] : [current]),
-    loaded: years !== null && (open !== null || !hasContracts(workspace)),
+    loaded: years !== null && (open !== null || !contracts),
     setYear,
-    data
+    data,
+    scope: filter.scope,
+    setScope: filter.setScope
   }
 }
