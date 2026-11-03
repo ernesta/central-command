@@ -1,4 +1,4 @@
-import { EditorSelection } from '@codemirror/state'
+import { EditorSelection, type SelectionRange } from '@codemirror/state'
 import { describe, expect, it } from 'vitest'
 import { stateFor } from './live-test-utils'
 
@@ -48,5 +48,45 @@ describe('a selection that reaches a line opening with hidden span markers', () 
   it('leaves a selection that ends past the markers, inside the text, alone', () => {
     const after = stateFor(bold, 0, 0).update({ selection: EditorSelection.single(0, 9) }).state
     expect(after.selection.main.to).toBe(9)
+  })
+})
+
+describe('a selection inside a list item that starts at its left edge', () => {
+  const list = 'one\n\n- Two here\n  - Nested\n- Three\n'
+  const select = (from: number, to: number, backwards = false): SelectionRange =>
+    stateFor(list).update({
+      selection: backwards ? EditorSelection.single(to, from) : EditorSelection.single(from, to)
+    }).state.selection.main
+  const two = list.indexOf('- Two')
+  const nested = list.indexOf('  - Nested')
+
+  it('starts at the text, not the bullet', () => {
+    const range = select(two, two + 10)
+    expect([range.from, range.to]).toEqual([two + 2, two + 10])
+  })
+
+  it('does so for a backwards selection and a nested item', () => {
+    const back = select(nested, nested + 10, true)
+    expect([back.anchor, back.head]).toEqual([nested + 10, nested + 4])
+  })
+
+  it('leaves one that already starts at the text alone', () => {
+    const range = select(two + 2, two + 10)
+    expect([range.from, range.to]).toEqual([two + 2, two + 10])
+  })
+
+  it('leaves one that runs past the end of the line (a triple-click) alone', () => {
+    const range = select(two, two + 11)
+    expect([range.from, range.to]).toEqual([two, two + 11])
+  })
+
+  it('leaves a selection of the whole note alone', () => {
+    const state = stateFor('- Only').update({ selection: EditorSelection.single(0, 6) }).state
+    expect([state.selection.main.from, state.selection.main.to]).toEqual([0, 6])
+  })
+
+  it('leaves a plain line alone', () => {
+    const range = select(0, 3)
+    expect([range.from, range.to]).toEqual([0, 3])
   })
 })

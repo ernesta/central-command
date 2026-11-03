@@ -11,6 +11,7 @@ import {
   type EditorView,
   type LayerMarker
 } from '@codemirror/view'
+import { listMarkAt, parseLine } from './live-lines'
 
 /**
  * What a line starts with before its text: an optional quote or list prefix (never snapped to, it is drawn as its own
@@ -50,6 +51,36 @@ export const snapSelectionToLineStart = EditorState.transactionFilter.of(
     ]
   }
 )
+
+/**
+ * A selection inside one list item that starts at the item's left edge (dragging past the text, a second Cmd-Shift-Left,
+ * Shift-Right from the line start) starts at the item's text instead: the bullet, number or checkbox is drawn as a unit
+ * and is not highlighted, and Delete leaves the empty item. A selection that runs past the line's end (a triple-click,
+ * several items) and one that holds the whole note are left alone, so they still take the markers.
+ */
+export const snapSelectionToItemText = EditorState.transactionFilter.of((tr): TransactionSpec[] => {
+  if (!tr.selection || tr.docChanged) return [tr]
+  const { newDoc } = tr
+  let changed = false
+  const ranges = tr.selection.ranges.map((range) => {
+    if (range.empty) return range
+    const line = newDoc.lineAt(range.from)
+    if (range.to > line.to || (range.from === 0 && range.to === newDoc.length)) return range
+    const parts = parseLine(line.text)
+    const textStart = line.from + parts.quote.length + parts.indent.length + parts.marker.length
+    if (range.from >= textStart || range.to <= textStart) return range
+    if (!listMarkAt(tr.state, line.from, parts)) return range
+    changed = true
+    return range.anchor < range.head
+      ? EditorSelection.range(textStart, range.head)
+      : EditorSelection.range(range.anchor, textStart)
+  })
+  if (!changed) return [tr]
+  return [
+    tr,
+    { selection: EditorSelection.create(ranges, tr.selection.mainIndex), sequential: false }
+  ]
+})
 
 interface TableRow {
   from: number
@@ -242,4 +273,8 @@ const selectionLayer = layer({
     update.docChanged || update.selectionSet || update.viewportChanged || update.geometryChanged
 })
 
-export const liveSelection: Extension = [snapSelectionToLineStart, selectionLayer]
+export const liveSelection: Extension = [
+  snapSelectionToLineStart,
+  snapSelectionToItemText,
+  selectionLayer
+]
