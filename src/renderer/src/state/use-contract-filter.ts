@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import type { Workspace } from '@shared/settings'
 import {
@@ -8,49 +8,14 @@ import {
   type ContractScope
 } from '@shared/tracking/scope'
 import { hasContracts } from '@shared/tracking/workspace-weeks'
-import { useSettings } from './settings-context'
+import { createScopeStore, useRememberedScope } from './remembered-scope'
 import { useYearFile } from './use-year-file'
 
-/** The scope last chosen for Work: `all`, or a contract's first day. */
-interface RememberedScope {
-  scope: string
-}
+const store = createScopeStore('work-contract')
 
-function normaliseScope(raw: unknown): RememberedScope {
-  const scope = (raw as { scope?: unknown } | undefined)?.scope
-  return { scope: typeof scope === 'string' && scope !== '' ? scope : ALL_CONTRACTS }
-}
-
-/**
- * The remembered scope is one value for the whole app, not one per caller: the top bar's selector and the page under it must
- * agree. It is read from the settings the first time and held here after; a choice is written at once.
- */
-let sharedScope: string | null = null
-const scopeListeners = new Set<() => void>()
-function subscribeScope(listener: () => void): () => void {
-  scopeListeners.add(listener)
-  return () => scopeListeners.delete(listener)
-}
 /** For tests: forget the held choice so the next caller reads the settings again. */
 export function resetRememberedScope(): void {
-  sharedScope = null
-  scopeListeners.forEach((l) => l())
-}
-
-function useRememberedScope(): { scope: string; remember: (scope: string) => void } {
-  const { settings, update } = useSettings()
-  const held = useSyncExternalStore(subscribeScope, () => sharedScope)
-  const latest = useRef({ settings, update })
-  useEffect(() => {
-    latest.current = { settings, update }
-  })
-  const remember = useCallback((scope: string): void => {
-    sharedScope = scope
-    scopeListeners.forEach((l) => l())
-    const { settings: s, update: save } = latest.current
-    void save({ ui: { moduleState: { ...s.ui.moduleState, 'work-contract': { scope } } } })
-  }, [])
-  return { scope: held ?? normaliseScope(settings.ui.moduleState['work-contract']).scope, remember }
+  store.set(null)
 }
 
 /**
@@ -69,7 +34,7 @@ export function useContractFilter(workspace: Workspace): {
 } {
   const applies = hasContracts(workspace)
   const [params, setParams] = useSearchParams()
-  const remembered = useRememberedScope()
+  const remembered = useRememberedScope(store, ALL_CONTRACTS)
   const [offered, setOffered] = useState<{ workspace: Workspace; years: string[] } | null>(null)
 
   useEffect(() => {

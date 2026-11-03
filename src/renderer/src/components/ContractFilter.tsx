@@ -1,8 +1,8 @@
-import { ALL_CONTRACTS, type ContractScope } from '@shared/tracking/scope'
+import { type ContractScope } from '@shared/tracking/scope'
 import { contractLabel } from '@shared/tracking/workspace-weeks'
 import type { Workspace } from '@shared/settings'
 import { useYearFiles } from '../state/use-year-files'
-import { Select } from './Select'
+import { ScopeSelect } from './ScopeSelect'
 
 /**
  * Work's one contract filter, in the header of every Work page that has contract content, at the right end: `[All contracts ⌄]`,
@@ -26,13 +26,11 @@ export function ContractFilter({
     return contractLabel(start, file?.weeks, file?.name, file?.end)
   }
   return (
-    <Select
+    <ScopeSelect
       label="Contract"
-      value={scope}
-      options={[
-        { value: ALL_CONTRACTS, label: 'All contracts' },
-        ...starts.map((s) => ({ value: s, label: label(s) }))
-      ]}
+      all="All contracts"
+      scope={scope}
+      choices={starts.map((s) => ({ value: s, label: label(s) }))}
       onChange={onChange}
     />
   )

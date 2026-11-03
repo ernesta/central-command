@@ -69,3 +69,12 @@
 .filter:empty {
   display: none;
 }
+/* Research's academic year filter, in the same place; narrower, since a year is short. */
+.yearFilter {
+  flex: none;
+  margin: 0 12px;
+  width: 150px;
+}
+.yearFilter:empty {
+  display: none;
+}

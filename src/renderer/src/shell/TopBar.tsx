@@ -3,6 +3,7 @@ import { BACK_SHORTCUT, SEARCH_SHORTCUT, SETTINGS_SHORTCUT } from '@shared/short
 import { WORKSPACES, type Workspace } from '@shared/settings'
 import { WORKSPACE_LABELS } from './workspaces'
 import { TopBarSlot } from './top-bar-slot'
+import { ResearchYearFilter } from './ResearchYearFilter'
 import { WorkContractFilter } from './WorkContractFilter'
 import { useFullScreen } from './useFullScreen'
 import { Button } from '../components/Button'
@@ -52,6 +53,11 @@ export function TopBar({
         {workspace === 'work' && (
           <div className={styles.filter}>
             <WorkContractFilter />
+          </div>
+        )}
+        {workspace === 'research' && (
+          <div className={styles.yearFilter}>
+            <ResearchYearFilter />
           </div>
         )}
       </div>
