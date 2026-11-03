@@ -2986,6 +2986,8 @@ The user ran `remove:previous-todos` (29 notes) and then found the section back 
 - **List markers and tables:** both counted a mention chip (a `widget`) as a list marker or a table cell. Both now skip widgets whose text holds `](cc://`. The table text check also ignores backticks, which the editor hides in inline code.
 - Copying `backups/` into the gate's library, as CLAUDE.md says, puts every note's earlier versions through the same checks; that is how the chip cases (the `link:people` backups) were found. A run takes about 8 minutes.
 
+- **Paste, 3 Nov 2026.** The paste check failed on the user's library (`Data Sources Summary.md`, the word `ECLS` inside the label of `[ECLS-K](cc://note/…)`). Not an editor bug: "Paste over a link" (30 Oct) replaces a selection inside a link or image as text, and the gate still expected a nested link. `checkPaste` now expects the bare address inside a link (`withinLink` in the gate, written separately from `insideLink` so it does not agree with the code by construction) and `[word](url)` elsewhere, and asserts that some words fell inside a link. Mutation check: with `insideLink` off, the check fails. The gate is opt-in, so it had not been run since 30 Oct; the full gate passes (15 files).
+
 ## One-off scripts applied to the real library (record kept when CLAUDE.md dropped them, 11 Oct 2026)
 
 The scripts stay in `scripts/` and `package.json`; each is dry-run by default, refuses or finds nothing now. CLAUDE.md no longer lists them.
