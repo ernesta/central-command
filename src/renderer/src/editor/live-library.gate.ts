@@ -1,4 +1,6 @@
 import { undo } from '@codemirror/commands'
+import { ensureSyntaxTree, syntaxTree } from '@codemirror/language'
+import type { SyntaxNode } from '@lezer/common'
 import type { EditorState, Transaction, TransactionSpec } from '@codemirror/state'
 import type { EditorView } from '@codemirror/view'
 import { readdirSync, readFileSync, statSync } from 'fs'
@@ -193,10 +195,27 @@ function checkPaste(file: string, text: string): void {
       true
     )
     const label = text.slice(word.from, word.to)
+    // Inside a link or image (label or address) the address replaces the word as text: a link there would nest.
+    const inside = withinLink(state, word.from, word.to)
     expect(done[0], file).toBe(
-      `${text.slice(0, word.from)}[${label}](https://example.org/x)${text.slice(word.to)}`
+      inside
+        ? `${text.slice(0, word.from)}https://example.org/x${text.slice(word.to)}`
+        : `${text.slice(0, word.from)}[${label}](https://example.org/x)${text.slice(word.to)}`
     )
+    if (inside) insideLinkWords += 1
   }
+}
+
+/** Words the paste check found inside a link (the rule of "Paste over a link" in docs/DECISIONS.md); the test asserts some. */
+let insideLinkWords = 0
+
+/** Written out here, not imported from `live-paste.ts`, so the gate does not just agree with the code it checks. */
+function withinLink(state: EditorState, from: number, to: number): boolean {
+  ensureSyntaxTree(state, state.doc.length, 5000)
+  for (let n: SyntaxNode | null = syntaxTree(state).resolveInner(from, 1); n; n = n.parent)
+    if (['Link', 'Image', 'URL', 'Autolink'].includes(n.name) && n.from <= from && n.to >= to)
+      return true
+  return false
 }
 
 const MENTION = '[Kathy Rastle](cc://person/Kathy%20Rastle)'
@@ -922,6 +941,7 @@ export function registerGate(part: GatePart, shard = 0, shards = 1): void {
             const whole = readFileSync(file, 'utf8')
             checkPaste(file, splitNote(whole).body)
           }
+          expect(insideLinkWords, 'words pasted over inside a link').toBeGreaterThan(0)
         },
         600_000
       )
