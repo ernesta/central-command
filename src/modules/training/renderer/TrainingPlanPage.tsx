@@ -1,7 +1,5 @@
-import { useToday } from '@renderer/state/use-today'
 import { FolderOpen } from 'lucide-react'
 import { useRef, useState } from 'react'
-import { YearSelect } from '@renderer/components/YearSelect'
 import { Button } from '@renderer/components/Button'
 import { IconButton } from '@renderer/components/IconButton'
 import { Notice } from '@renderer/components/Notice'
@@ -11,23 +9,16 @@ import { EditorCard } from '@renderer/notes/EditorCard'
 import { LiveEditor } from '@renderer/editor/LiveEditor'
 import { useNotesSession } from '@renderer/notes/useNotesSession'
 import { NoteOutline } from '@renderer/notes/NoteOutline'
-import { useYear } from '@renderer/state/use-year'
-import { nextYearStart, yearLabel } from '@shared/year'
-import { useSettings } from '@renderer/state/settings-context'
+import { useYearFilter } from '@renderer/state/use-year-filter'
+import { yearLabel } from '@shared/year'
+import { isAllYears } from '@shared/year-scope'
 import { planKey } from '../shared/plan'
-import { useTrainingList } from './useTrainingList'
 import styles from './TrainingPlanPage.module.css'
 
 /** The training plan of one year: a Markdown document with an outline of its headings. */
 export function TrainingPlanPage(): React.JSX.Element {
-  const { rows } = useTrainingList()
-  const today = useToday()
-  const { settings } = useSettings()
-  // The next year is always offered, so a plan can be written before its year starts.
-  const { year, years, setYear } = useYear(
-    [...(rows ?? []).map((r) => r.date), nextYearStart(today, settings.yearStarts)],
-    today
-  )
+  // One plan is for one year: the chosen one, or the current year under All years (the heading then names it).
+  const { year, scope } = useYearFilter('research')
   const [folderError, setFolderError] = useState<string | null>(null)
 
   const openFolder = async (): Promise<void> => {
@@ -42,9 +33,10 @@ export function TrainingPlanPage(): React.JSX.Element {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1 className={styles.heading}>Training plan</h1>
+        <h1 className={styles.heading}>
+          Training plan{isAllYears(scope) && ` ${yearLabel(year)}`}
+        </h1>
         <div className={styles.actions}>
-          <YearSelect year={year} years={years} onChange={setYear} />
           <IconButton label="Show in Finder" onClick={() => void openFolder()}>
             <FolderOpen size={15} strokeWidth={1.75} aria-hidden />
           </IconButton>

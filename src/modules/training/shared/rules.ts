@@ -25,22 +25,30 @@ export function isNow(
   return isSessionNow(row, today, now)
 }
 
+/** Whether an entry's date is in the period: the year from its start date, or every dated entry for a `null` year (All years). */
+const inPeriod = (date: string, year: string | null): boolean =>
+  year === null ? date !== '' : inYear(date, year)
+
 /**
  * What the list shows for a year: its entries, plus, in the current year only, every
  * planned entry with no date yet (an earlier year must not show this year's plans).
+ * A `null` year is every year (Research's All years): every entry, planned ones too.
  */
 export function entriesInYearOrPlanned(
   rows: readonly TrainingIndexRow[],
-  year: string,
+  year: string | null,
   today: string
 ): TrainingIndexRow[] {
-  const showPlanned = inYear(today, year)
-  return rows.filter((r) => (r.date === '' ? showPlanned : inYear(r.date, year)))
+  const showPlanned = year === null || inYear(today, year)
+  return rows.filter((r) => (r.date === '' ? showPlanned : inPeriod(r.date, year)))
 }
 
-/** The entries dated within a year (its start date), upcoming ones included. */
-export function entriesInYear(rows: readonly TrainingIndexRow[], year: string): TrainingIndexRow[] {
-  return rows.filter((r) => inYear(r.date, year))
+/** The entries dated within a year (its start date), upcoming ones included; every dated entry for a `null` year. */
+export function entriesInYear(
+  rows: readonly TrainingIndexRow[],
+  year: string | null
+): TrainingIndexRow[] {
+  return rows.filter((r) => inPeriod(r.date, year))
 }
 
 /** Minutes tracked on each task (by uid) in Hours: the timers and typed time on a training's tasks. */
@@ -92,7 +100,7 @@ export interface TrainingHours {
  */
 export function trainingHours(
   rows: readonly TrainingIndexRow[],
-  year: string,
+  year: string | null,
   today: string,
   aimHours: number,
   selfStudy?: SelfStudy,
@@ -247,8 +255,8 @@ export function leadNames(rows: readonly TrainingIndexRow[]): string[] {
   return [...new Set(rows.flatMap((r) => r.leads))].sort((a, b) => a.localeCompare(b))
 }
 
-export function yearHoursTitle(year: string): string {
-  return `Hours of training, ${yearLabel(year)}`
+export function yearHoursTitle(year: string | null): string {
+  return `Hours of training, ${year === null ? 'all years' : yearLabel(year)}`
 }
 
 /**

@@ -16,7 +16,8 @@ import {
   recentAndUpcoming,
   seriesSummaries,
   trainingFiltersActive,
-  trainingHours
+  trainingHours,
+  yearHoursTitle
 } from './rules'
 import type { TrainingIndexRow } from './types'
 
@@ -214,6 +215,39 @@ describe('entriesInYearOrPlanned', () => {
       'Planned'
     ])
     expect(entriesInYearOrPlanned(rows, '2025-09-22', today).map((r) => r.title)).toEqual(['Talk'])
+  })
+})
+
+describe('All years (a null year)', () => {
+  const rows = [
+    row('2024-10-01'),
+    row('2025-10-01'),
+    row('2026-10-01', { start: '', end: '' }),
+    row('', { title: 'Planned' })
+  ]
+  const today = '2026-09-30'
+
+  it('lists every entry, the planned ones too', () => {
+    expect(entriesInYearOrPlanned(rows, null, today).map((r) => r.date)).toEqual([
+      '2024-10-01',
+      '2025-10-01',
+      '2026-10-01',
+      ''
+    ])
+  })
+
+  it('counts every dated entry, and none without a date', () => {
+    expect(entriesInYear(rows, null)).toHaveLength(3)
+  })
+
+  it('adds up the hours of every year, which a year alone does not', () => {
+    expect(trainingHours(rows, null, today, 200).minutes).toBe(120)
+    expect(trainingHours(rows, '2025-09-22', today, 200).minutes).toBe(60)
+  })
+
+  it('names itself in the title', () => {
+    expect(yearHoursTitle(null)).toBe('Hours of training, all years')
+    expect(yearHoursTitle('2025-09-22')).toBe('Hours of training, 2025–26')
   })
 })
 

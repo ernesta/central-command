@@ -13,9 +13,10 @@ import {
   SeriesCards,
   type RecentRow
 } from '@renderer/components/Landing'
-import { useYear } from '@renderer/state/use-year'
+import { usePeriod } from '@renderer/state/use-period'
 import { useSettings } from '@renderer/state/settings-context'
 import { formatHours } from '@shared/skills'
+import { ALL_YEARS } from '@shared/year-scope'
 import { formatDate } from '@shared/time'
 import { initialsFor } from '@modules/meetings/shared/query'
 import {
@@ -67,18 +68,24 @@ export function TrainingLanding(): React.JSX.Element {
   const today = useToday()
   const now = clockNow()
   const all = rows ?? []
-  const { year, years, setYear } = useYear(
+  // Research follows its one academic year filter (every year under All); Life keeps a selector of its own.
+  const period = usePeriod(
+    workspace,
     [...all.map((r) => r.date), ...meetings.map((m) => m.date)],
     today
   )
+  const { year, years, setYear } = period
+  const span = period.all ? null : year
+  // A link carries the scope: under All, `all`, not the year the page would otherwise have picked.
+  const linkYear = period.all ? ALL_YEARS : year
   const aim = settings.trainingAimHours
-  const hours = trainingHours(all, year, today, aim, selfStudy, now)
+  const hours = trainingHours(all, span, today, aim, selfStudy, now)
   const { upcoming, recent } = recentAndUpcoming(
-    entriesInYearOrPlanned(all, year, today),
+    entriesInYearOrPlanned(all, span, today),
     today,
     now
   )
-  const summaries = seriesSummaries(entriesInYear(all, year), today, selfStudy, now)
+  const summaries = seriesSummaries(entriesInYear(all, span), today, selfStudy, now)
 
   const noteParts = [`${hours.entries} done`]
 
@@ -98,7 +105,9 @@ export function TrainingLanding(): React.JSX.Element {
         title="Training"
         actions={
           <>
-            {research && <AllLink to={`${trainingPlanRoute}?year=${year}`}>Training plan</AllLink>}
+            {research && (
+              <AllLink to={`${trainingPlanRoute}?year=${linkYear}`}>Training plan</AllLink>
+            )}
             <NewTrainingButton workspace={workspace} />
           </>
         }
@@ -110,19 +119,20 @@ export function TrainingLanding(): React.JSX.Element {
             id="year"
             label="Year"
             labelHidden
-            aside={<YearSelect year={year} years={years} onChange={setYear} />}
+            aside={!research && <YearSelect year={year} years={years} onChange={setYear} />}
           >
             <HoursStrip
-              title={yearHoursTitle(year)}
+              title={yearHoursTitle(span)}
               minutes={hours.minutes}
               note={noteParts.join(' · ')}
-              aim={research ? { hours: aim, progress: hours.progress } : undefined}
+              // The yearly aim means nothing across years: no aim under All years.
+              aim={research && !period.all ? { hours: aim, progress: hours.progress } : undefined}
               perSkill={research ? hours.perSkill : []}
             />
             <SeriesCards
               cards={summaries.map((s) => ({
                 key: s.series,
-                to: seriesRoute(s.series, year, workspace),
+                to: seriesRoute(s.series, linkYear, workspace),
                 title: s.series,
                 line:
                   s.count === 0 && s.upcoming === 0
@@ -144,7 +154,7 @@ export function TrainingLanding(): React.JSX.Element {
             id="recent"
             label="Recent and upcoming"
             aside={
-              <SeeAllLink window to={`${trainingListRoute(workspace)}?year=${year}`}>
+              <SeeAllLink window to={`${trainingListRoute(workspace)}?year=${linkYear}`}>
                 See all training
                 <ArrowRight size={14} strokeWidth={1.75} aria-hidden />
               </SeeAllLink>

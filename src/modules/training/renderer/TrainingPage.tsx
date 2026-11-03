@@ -11,7 +11,7 @@ import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { SearchInput } from '@renderer/components/SearchInput'
 import { Select } from '@renderer/components/Select'
-import { useYear } from '@renderer/state/use-year'
+import { usePeriod } from '@renderer/state/use-period'
 import { useSettings } from '@renderer/state/settings-context'
 import { yearLabel } from '@shared/year'
 import { skillFilterOptions, skillsIn } from '@shared/skills'
@@ -57,11 +57,15 @@ export function TrainingPage(): React.JSX.Element {
   const today = useToday()
   const now = clockNow()
   const everything = rows ?? []
-  const { year, years, setYear } = useYear(
+  // Research follows its one academic year filter (every year under All); Life keeps a selector of its own.
+  const period = usePeriod(
+    workspace,
     [...everything.map((r) => r.date), ...meetings.map((m) => m.date)],
     today
   )
-  const all = entriesInYearOrPlanned(everything, year, today)
+  const { year, years, setYear } = period
+  const span = period.all ? null : year
+  const all = entriesInYearOrPlanned(everything, span, today)
 
   // A remembered filter whose value no longer exists in the files must not hide everything.
   const query =
@@ -75,12 +79,13 @@ export function TrainingPage(): React.JSX.Element {
         })
   const visible = queryTraining(all, query, people)
   const aim = settings.trainingAimHours
-  const hours = trainingHours(everything, year, today, aim, selfStudy, now)
+  const hours = trainingHours(everything, span, today, aim, selfStudy, now)
 
   const exportPdf = async (): Promise<void> => {
     setExporting(true)
     setExportNotice(null)
     try {
+      // The report is of one year: the current one under All years, which the notice names.
       const result = await window.api.training.exportPdf(year)
       if (result.status === 'saved') {
         setExportNotice({
@@ -146,16 +151,17 @@ export function TrainingPage(): React.JSX.Element {
 
       {rows !== null && (
         <HoursStrip
-          title={yearHoursTitle(year)}
+          title={yearHoursTitle(span)}
           minutes={hours.minutes}
           note={noteParts.join(' · ')}
-          aim={research ? { hours: aim, progress: hours.progress } : undefined}
+          // The yearly aim means nothing across years: no aim under All years.
+          aim={research && !period.all ? { hours: aim, progress: hours.progress } : undefined}
           perSkill={research ? hours.perSkill : []}
         />
       )}
 
       <FilterRow>
-        <YearSelect year={year} years={years} onChange={setYear} />
+        {!research && <YearSelect year={year} years={years} onChange={setYear} />}
         <SearchInput
           label="Search training"
           value={query.search}
