@@ -50,6 +50,8 @@ export interface MeetingInput {
   end: string | null
   attendees: string[]
   mode: string | null
+  /** The top-level list of the meeting's task (its client in Work); '' or absent when it has none. */
+  list?: string
 }
 
 export interface TrainingInput {
@@ -253,6 +255,7 @@ export function buildHomeSummary(input: HomeInputs): HomeSummary {
       end: m.end,
       attendees: m.attendees,
       mode: m.mode,
+      ...(m.list ? { list: m.list } : {}),
       title: m.series || 'Untitled meeting',
       detail: '',
       route: meetingRoute(m.workspace, m.id),

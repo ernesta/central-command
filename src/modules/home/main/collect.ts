@@ -224,8 +224,12 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
   const meetings = (
     db
       .prepare(
-        `SELECT workspace, meeting_id AS id, series, date, start_time AS start, end_time AS end, mode, attendees
-         FROM meetings WHERE date >= ? AND date != '' ORDER BY date, start_time`
+        `SELECT m.workspace, m.meeting_id AS id, m.series, m.date, m.start_time AS start, m.end_time AS end, m.mode, m.attendees,
+                COALESCE(NULLIF(t.list, ''), p.list, '') AS list
+         FROM meetings m
+         LEFT JOIN tasks t ON t.uid = m.task AND m.task != ''
+         LEFT JOIN tasks p ON p.uid = t.parent_uid
+         WHERE m.date >= ? AND m.date != '' ORDER BY m.date, m.start_time`
       )
       .all(now.date) as (Omit<MeetingInput, 'attendees'> & { attendees: string })[]
   )

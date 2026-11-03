@@ -1,5 +1,7 @@
 import { useToday } from '@renderer/state/use-today'
 import { Link } from 'react-router'
+import { useContractScope } from '@renderer/state/use-contract-filter'
+import { inContractLists } from '../shared/work-lists'
 import { isBacklog, isOpen } from '../shared/views'
 import { effectiveDue } from '../shared/views'
 import { tasksBase, useTasksWorkspace } from './tasks-paths'
@@ -9,7 +11,10 @@ import styles from './TasksCard.module.css'
 /** The Tasks entry on a workspace's landing page. The title is a real link whose hit area covers the whole card. */
 export function TasksCard(): React.JSX.Element {
   const workspace = useTasksWorkspace()
-  const { rows } = useTasksList(workspace)
+  const { rows: everyRow } = useTasksList(workspace)
+  // Work: the counts are the chosen contract's tasks (every task under All).
+  const filter = useContractScope(workspace)
+  const rows = everyRow !== null && filter.ready ? inContractLists(everyRow, filter.clients) : null
   const today = useToday()
   const open = rows ? rows.filter((r) => isOpen(r) || isBacklog(r)).length : 0
   const overdue = rows

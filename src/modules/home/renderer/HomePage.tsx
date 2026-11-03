@@ -1,4 +1,5 @@
 import { useToday } from '@renderer/state/use-today'
+import { useContractScope } from '@renderer/state/use-contract-filter'
 import { Link } from 'react-router'
 import { useState } from 'react'
 import {
@@ -399,12 +400,15 @@ function ComingUpCard({
 /** What a workspace opens on: today's tasks, what is dated in the next 3 days, and the hours so far. */
 export function HomePage({ workspace }: { workspace: HomeWorkspace }): React.JSX.Element | null {
   const summary = useHomeSummary()
+  // Work: the contract filter narrows the lists to its clients; under All (and in Research and Life) nothing is narrowed.
+  const filter = useContractScope(workspace)
   const { people } = usePeople()
-  if (!summary) return null
+  // Nothing until a chosen contract's clients are read, rather than every task meanwhile.
+  if (!summary || !filter.ready) return null
   // Initials as the Meetings table shows them; the user themselves is left out ("with" is the others).
   const initialsOf = (name: string): string | null =>
     people?.find((p) => p.me && p.name === name) ? null : initialsFor(name, people ?? [])
-  const view = homeView(summary, workspace)
+  const view = homeView(summary, workspace, filter.clients)
   return (
     <section className={styles.home} aria-label="Home">
       <div className={styles.cols}>

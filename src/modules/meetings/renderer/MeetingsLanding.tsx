@@ -58,8 +58,6 @@ export function MeetingsLanding(): React.JSX.Element {
   const me = people.find((p) => p.me)
   const listOf = useTaskLists(workspace)
   const everything = rows ?? []
-  const open = openTodos(everything)
-  const shown = whose === 'mine' && me ? mine(open, me.initials) : open
   const period = usePeriod(
     workspace,
     everything.map((r) => r.date),
@@ -69,6 +67,11 @@ export function MeetingsLanding(): React.JSX.Element {
   const { year, years, setYear, weeks, end } = period
   // Under All contracts there is no one period: every Work meeting.
   const span = period.all ? null : year
+  // The open TODOs are those of the chosen contract's meetings (its days and clients); every Work meeting under All.
+  const open = openTodos(
+    hasContracts(workspace) ? meetingsInYearOrPlanned(all, span, today, weeks, end) : all
+  )
+  const shown = whose === 'mine' && me ? mine(open, me.initials) : open
   // A link carries the scope: under All, `all`, not the contract the page would otherwise have picked.
   const linkYear = period.all ? ALL_CONTRACTS : year
   const periodSelect = (

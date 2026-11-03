@@ -72,6 +72,8 @@ export interface HomeEvent {
   workspace?: HomeWorkspace
   /** HH:MM it ends, when known (a meeting or a training). */
   end?: string | null
+  /** A meeting's task's top-level list (its client in Work); absent when it has no task. */
+  list?: string
   /** A meeting's attendees (full names), for "Meeting · with …". */
   attendees?: string[]
   /** A meeting's or training's format: `in-person` or `online`. */

@@ -67,7 +67,9 @@ export function TasksPage(): React.JSX.Element {
   const filter = useContractScope(workspace)
   const rows = everyRow !== null && filter.ready ? inContractLists(everyRow, filter.clients) : null
   const all = rows ?? []
-  const clients = useWorkClients(workspace)
+  // The lists offered are the chosen contract's clients (every client under All); Research's lists are free.
+  const everyClient = useWorkClients(workspace)
+  const clients = everyClient === null ? null : (filter.clients ?? everyClient)
   const query: TasksQuery = rows === null ? saved : reconcileQuery(saved, all, clients)
   const set = (patch: Partial<TasksQuery>): void => {
     setShowAll(false)

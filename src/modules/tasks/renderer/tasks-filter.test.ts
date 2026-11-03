@@ -8,6 +8,8 @@ import { defaultSettings } from '@shared/settings'
 import { emptyYear, WORK_PLAN, type TrackingYear } from '@shared/tracking/types'
 import { SettingsContext } from '../../../renderer/src/state/settings-context'
 import { task } from '../shared/test-utils'
+import { TasksCard } from './TasksCard'
+import { TasksLanding } from './TasksLanding'
 import { TasksPage } from './TasksPage'
 
 const files: Record<string, TrackingYear> = {
@@ -33,6 +35,7 @@ let host: HTMLElement
 let root: Root
 beforeEach(() => {
   resetRememberedScope()
+  Element.prototype.scrollIntoView = () => {}
   ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
   const stub = (overrides: Record<string, unknown>): object =>
     new Proxy(overrides, {
@@ -64,7 +67,11 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-async function show(scope: string): Promise<string> {
+async function show(
+  scope: string,
+  landing = false,
+  element: () => React.ReactElement = () => createElement(TasksPage)
+): Promise<string> {
   const base = defaultSettings('/z.bib')
   const settings = { ...base, ui: { ...base.ui, moduleState: { 'work-contract': { scope } } } }
   host = document.createElement('div')
@@ -77,11 +84,12 @@ async function show(scope: string): Promise<string> {
         { value: { settings, update: () => Promise.resolve() } },
         createElement(
           MemoryRouter,
-          { initialEntries: ['/work/tasks/all'] },
+          { initialEntries: [landing ? '/work/tasks' : '/work/tasks/all'] },
           createElement(
             Routes,
             null,
-            createElement(Route, { path: '/work/tasks/all', element: createElement(TasksPage) })
+            createElement(Route, { path: '/work/tasks/all', element: element() }),
+            createElement(Route, { path: '/work/tasks', element: createElement(TasksLanding) })
           )
         )
       )
@@ -120,5 +128,38 @@ describe('Work Tasks follow the contract filter', () => {
     host.remove()
     await show('2026-10-30')
     expect(host.querySelector('form[aria-label="Add a task"]')?.textContent).toContain('Impact')
+  })
+
+  it("the landing's list cards and the list filter are the chosen contract's clients, not every contract's", async () => {
+    await show('2026-10-30', true)
+    // What follows the "Lists" heading: the cards (the add bar's own list menu offers every list, on purpose).
+    const cards = (): string =>
+      (host.textContent ?? '').slice((host.textContent ?? '').lastIndexOf('Lists'))
+    expect(cards()).toContain('Impact')
+    expect(cards()).not.toContain('Royal Holloway')
+    act(() => root.unmount())
+    host.remove()
+    await show('all', true)
+    expect(cards()).toContain('Impact')
+    expect(cards()).toContain('Royal Holloway')
+    act(() => root.unmount())
+    host.remove()
+    // The page's list filter offers the same lists.
+    await show('2026-10-30')
+    const filter = host.querySelector('button[aria-label="Filter by list"]') as HTMLElement
+    act(() => filter.click())
+    const options = [...document.body.querySelectorAll('[role="option"]')].map((o) => o.textContent)
+    expect(options).toContain('Impact')
+    expect(options).not.toContain('Royal Holloway')
+  })
+
+  it("the Home card counts the chosen contract's tasks, not every contract's", async () => {
+    const card = (): string => host.textContent ?? ''
+    await show('2026-10-30', false, () => createElement(TasksCard))
+    expect(card()).toContain('1 open')
+    act(() => root.unmount())
+    host.remove()
+    await show('all', false, () => createElement(TasksCard))
+    expect(card()).toContain('2 open')
   })
 })

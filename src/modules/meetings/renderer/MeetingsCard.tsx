@@ -1,17 +1,40 @@
 import { useToday } from '@renderer/state/use-today'
 import { Link } from 'react-router'
+import { usePeriod } from '@renderer/state/use-period'
+import { hasContracts } from '@shared/tracking/workspace-weeks'
+import { meetingsInYearOrPlanned, ofContractClients } from '../shared/hours'
 import { seriesSummaries } from '../shared/landing'
 import { openTodos } from '../shared/open-todos'
 import { formatShortDate } from '../shared/time'
 import { clockNow, meetingsBase, useMeetingsWorkspace } from './meetings-paths'
 import { useMeetingsList } from './useMeetingsList'
+import { useTaskLists } from './useTaskLists'
 import styles from './MeetingsCard.module.css'
 
 /** The Meetings entry on a workspace's landing page. The title is a real link whose hit area covers the whole card. */
 export function MeetingsCard(): React.JSX.Element {
   const workspace = useMeetingsWorkspace()
-  const { rows } = useMeetingsList(workspace)
+  const { rows: everyRow } = useMeetingsList(workspace)
   const today = useToday()
+  // Work: the chosen contract's meetings (its days and clients), every Work meeting under All.
+  const period = usePeriod(
+    workspace,
+    (everyRow ?? []).map((r) => r.date),
+    today
+  )
+  const listOf = useTaskLists(workspace)
+  const rows =
+    everyRow === null || !period.loaded
+      ? null
+      : hasContracts(workspace)
+        ? meetingsInYearOrPlanned(
+            ofContractClients(everyRow, period.clients, listOf),
+            period.all ? null : period.year,
+            today,
+            period.weeks,
+            period.end
+          )
+        : everyRow
   const summaries = rows ? seriesSummaries(rows, today, undefined, clockNow()) : []
   const count = summaries.reduce((n, s) => n + s.count, 0)
   const next = summaries

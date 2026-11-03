@@ -79,6 +79,39 @@ describe('homeView', () => {
     expect(homeView(s, 'work').tasks.cut).toBe(false)
   })
 
+  it("narrows Work's tasks and meetings to the chosen contract's clients, and nothing under All", () => {
+    const inList = (uid: string, list: string): HomeTask => ({ ...task(uid, 'work'), list })
+    const meeting = (id: string, list?: string): HomeEvent => ({
+      ...event(id, 'meeting', `/work/meetings/m/${id}`, 0),
+      ...(list ? { list } : {})
+    })
+    const s: HomeSummary = {
+      ...base,
+      tasks: tasksIn({
+        work: {
+          overdue: [inList('a', 'Impact › Admin'), inList('b', 'Royal Holloway')],
+          today: [inList('c', 'impact'), inList('d', 'Teaching')],
+          overdueTotal: 2,
+          todayTotal: 2
+        }
+      }),
+      upcoming: [
+        { ...event('task:e', 'task', '/work/tasks/t/e', 1), detail: 'Impact', task: undefined },
+        meeting('m1', 'Impact'),
+        meeting('m2', 'Royal Holloway'),
+        meeting('m3')
+      ]
+    }
+    const mine = homeView(s, 'work', ['Impact'])
+    expect(mine.tasks.overdue.map((t) => t.uid)).toEqual(['a'])
+    expect(mine.tasks.today.map((t) => t.uid)).toEqual(['c'])
+    // A meeting of another contract's client is out; one whose task is not known stays, as in Meetings.
+    expect(mine.todayEvents.map((e) => e.id)).toEqual(['m1', 'm3'])
+    const all = homeView(s, 'work')
+    expect(all.tasks.overdue.map((t) => t.uid)).toEqual(['a', 'b'])
+    expect(all.todayEvents.map((e) => e.id)).toEqual(['m1', 'm2', 'm3'])
+  })
+
   it('says when the summary cut a list short', () => {
     const s = { ...base, tasks: tasksIn({ work: { today: [task('c', 'work')], todayTotal: 12 } }) }
     expect(homeView(s, 'work').tasks.cut).toBe(true)

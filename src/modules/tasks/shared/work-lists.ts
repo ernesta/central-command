@@ -49,6 +49,17 @@ export function outsideRule<T extends { list: string }>(
 }
 
 /**
+ * Whether a list belongs to a contract: its top-level list, which is the first part of a label ("Impact › Admin"), is one of the
+ * contract's clients (case and outer spaces ignored). `clients` undefined is every list (All contracts, or no contracts). For the
+ * places that hold a list as its label: Home's rows.
+ */
+export function labelInClients(label: string, clients: readonly string[] | undefined): boolean {
+  if (clients === undefined) return true
+  const top = label.split(' › ')[0].trim().toLowerCase()
+  return clients.some((c) => c.trim().toLowerCase() === top)
+}
+
+/**
  * The lists and sublists a task may be moved to, as (list, sublist) pairs for the list menu: in Work every client (even with
  * no task) and the sublists in use under it, in the client's own spelling, and no list that is no client; in Research (`clients`
  * null) the lists in use as they are.
