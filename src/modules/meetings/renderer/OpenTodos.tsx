@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { Notice } from '@renderer/components/Notice'
+import { ShowMore } from '@renderer/components/ShowMore'
 import { pushUndo } from '@renderer/components/undo-store'
 import { markdownToExcerpt } from '@shared/text'
 import type { OpenTodo } from '../shared/open-todos'
@@ -9,6 +10,9 @@ import type { MeetingWorkspace, Person } from '../shared/types'
 import { meetingRoute } from './meetings-paths'
 import { OwnerPill } from './OwnerPill'
 import styles from './OpenTodos.module.css'
+
+/** How many TODOs show before "Show all" (as the Tasks landing's sections). */
+const TODO_LIMIT = 5
 
 const keyOf = (todo: OpenTodo): string => `${todo.meetingId}|${todo.owners.join('&')}|${todo.text}`
 
@@ -28,6 +32,7 @@ export function OpenTodos({
   // Hidden as soon as it is ticked, so the list does not wait for the file to be written and read back.
   const [ticked, setTicked] = useState<ReadonlySet<string>>(new Set())
   const [error, setError] = useState<string | null>(null)
+  const [expanded, setExpanded] = useState(false)
 
   const tick = (todo: OpenTodo, key: string): void => {
     setError(null)
@@ -60,6 +65,9 @@ export function OpenTodos({
       })
   }
 
+  const open = todos.filter((todo) => !ticked.has(keyOf(todo)))
+  const shown = expanded ? open : open.slice(0, TODO_LIMIT)
+
   return (
     <>
       {error && (
@@ -68,9 +76,8 @@ export function OpenTodos({
         </Notice>
       )}
       <ul className={styles.list}>
-        {todos.map((todo) => {
+        {shown.map((todo) => {
           const key = keyOf(todo)
-          if (ticked.has(key)) return null
           return (
             <li key={key} className={styles.item}>
               <input
@@ -95,6 +102,15 @@ export function OpenTodos({
           )
         })}
       </ul>
+      <div className={styles.more}>
+        <ShowMore
+          shown={shown.length}
+          total={open.length}
+          limit={TODO_LIMIT}
+          expanded={expanded}
+          onToggle={() => setExpanded((v) => !v)}
+        />
+      </div>
     </>
   )
 }

@@ -12,6 +12,7 @@ import { showToast } from '@renderer/components/toast-store'
 import { pushUndo } from '@renderer/components/undo-store'
 import { ArrowRight, Plus } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
+import { ShowMore } from '@renderer/components/ShowMore'
 import { Link } from 'react-router'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useContractScope } from '@renderer/state/use-contract-filter'
@@ -43,33 +44,31 @@ export function TasksLanding(): React.JSX.Element {
 
   const all = rows ?? []
   const sections = landingSections(all, today)
-  const clients = useWorkClients(workspace)
+  // The list cards are the chosen contract's clients (every client under All); Research has no client lists.
+  const everyClient = useWorkClients(workspace)
+  const clients = everyClient === null ? null : (filter.clients ?? everyClient)
   const summaries = listSummaries(all, today, clients)
   const lists = summaries.filter((l) => l.open > 0 || l.total === 0)
   const finished = summaries.filter((l) => l.open === 0 && l.total > 0)
 
   const limited = (id: string, list: SectionRow[]): SectionRow[] =>
     expanded.has(id) ? list : list.slice(0, SECTION_LIMIT)
-  const more = (id: string, shown: number, total: number): React.ReactNode =>
-    total > SECTION_LIMIT && (
-      <p className={styles.more}>
-        <span>{expanded.has(id) ? `Showing all ${total}` : `Showing ${shown} of ${total}`}</span>
-        <button
-          type="button"
-          className={styles.showAll}
-          onClick={() =>
-            setExpanded((current) => {
-              const next = new Set(current)
-              if (next.has(id)) next.delete(id)
-              else next.add(id)
-              return next
-            })
-          }
-        >
-          {expanded.has(id) ? 'Show fewer' : 'Show all'}
-        </button>
-      </p>
-    )
+  const toggle = (id: string): void =>
+    setExpanded((current) => {
+      const next = new Set(current)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  const more = (id: string, shown: number, total: number): React.ReactNode => (
+    <ShowMore
+      shown={shown}
+      total={total}
+      limit={SECTION_LIMIT}
+      expanded={expanded.has(id)}
+      onToggle={() => toggle(id)}
+    />
+  )
 
   const section = (
     id: 'today' | 'tomorrow' | 'doing' | 'overdue' | 'upcoming',

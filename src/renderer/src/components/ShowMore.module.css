@@ -1,0 +1,15 @@
+.more {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0 4px;
+  color: var(--text-muted);
+  font-size: var(--text-13);
+}
+.toggle {
+  composes: link from './Link.module.css';
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: var(--text-13);
+}
