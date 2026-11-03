@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { crossrefUrl, parseCrossref } from './parse-crossref'
 import { parseFeed, plainText } from './parse-feed'
-import { datedSentences, parsePage } from './parse-page'
+import { datedSentences, listingSegment, parsePage } from './parse-page'
 import { findDate } from '../shared/dates'
 
 const RSS = `<?xml version="1.0" encoding="UTF-8"?>
@@ -373,5 +373,20 @@ describe("a link to a feed of the site's events", () => {
     expect(links.map((l) => l.url)).toEqual([
       'https://ukdataservice.ac.uk/events/code-anxiety-club-2026-11-03/'
     ])
+  })
+})
+
+describe('listingSegment', () => {
+  const u = (...p: string[]): string[] => p.map((x) => `https://x.org/${x}`)
+  it('finds the path most links share, even when menu links are many', () => {
+    const urls = u(
+      ...Array.from({ length: 13 }, (_, i) => `events/e${i}/`),
+      ...Array.from({ length: 8 }, (_, i) => `training/t${i}/`),
+      ...Array.from({ length: 5 }, (_, i) => `placements/p${i}/`)
+    )
+    expect(listingSegment(urls)).toBe('events')
+  })
+  it('finds none when no path stands out', () => {
+    expect(listingSegment(u('a/1', 'a/2', 'a/3', 'b/1', 'b/2', 'b/3'))).toBeNull()
   })
 })

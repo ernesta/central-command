@@ -250,7 +250,7 @@ export async function loadSource(
     (l) => !l.offsite || findDate(`${l.title}\n${l.summary}`, today)
   )
   const dated = links.filter((l) => findDate(`${l.title}\n${l.summary}`, today))
-  const segment = listingSegment(dated.map((l) => l.url))
+  const segment = listingSegment(dated.map((l) => l.url)) ?? listingSegment(links.map((l) => l.url))
   const undated = links.filter(
     (l) => !dated.includes(l) && !isOutsideListing(l.url, segment, source.url)
   )
