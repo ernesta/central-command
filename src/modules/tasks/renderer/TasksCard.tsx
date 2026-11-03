@@ -1,10 +1,9 @@
 import { useToday } from '@renderer/state/use-today'
 import { Link } from 'react-router'
-import { useContractScope } from '@renderer/state/use-contract-filter'
-import { inContractLists } from '../shared/work-lists'
 import { isBacklog, isOpen } from '../shared/views'
 import { effectiveDue } from '../shared/views'
 import { tasksBase, useTasksWorkspace } from './tasks-paths'
+import { useScopedRows } from './useScopedRows'
 import { useTasksList } from './useTasksList'
 import styles from './TasksCard.module.css'
 
@@ -12,9 +11,8 @@ import styles from './TasksCard.module.css'
 export function TasksCard(): React.JSX.Element {
   const workspace = useTasksWorkspace()
   const { rows: everyRow } = useTasksList(workspace)
-  // Work: the counts are the chosen contract's tasks (every task under All).
-  const filter = useContractScope(workspace)
-  const rows = everyRow !== null && filter.ready ? inContractLists(everyRow, filter.clients) : null
+  // The counts are the chosen contract's tasks (Work) or year's (Research); every task under All.
+  const { rows } = useScopedRows(workspace, everyRow)
   const today = useToday()
   const open = rows ? rows.filter((r) => isOpen(r) || isBacklog(r)).length : 0
   const overdue = rows

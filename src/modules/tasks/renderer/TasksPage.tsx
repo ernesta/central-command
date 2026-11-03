@@ -8,8 +8,6 @@ import { SearchInput } from '@renderer/components/SearchInput'
 import { Segmented } from '@renderer/components/Segmented'
 import { Select } from '@renderer/components/Select'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
-import { useContractScope } from '@renderer/state/use-contract-filter'
-import { inContractLists } from '../shared/work-lists'
 import {
   DEFAULT_TASKS_QUERY,
   listChoices,
@@ -28,6 +26,7 @@ import { TASK_PRIORITIES } from '../shared/types'
 import type { TaskView } from '../shared/views'
 import { PRIORITY_LABELS } from './task-labels'
 import { AddBar } from './AddBar'
+import { useScopedRows } from './useScopedRows'
 import { useWorkClients } from './useWorkClients'
 import { TasksTable } from './TasksTable'
 import { useTasksWorkspace } from './tasks-paths'
@@ -63,9 +62,8 @@ export function TasksPage(): React.JSX.Element {
   )
   const [showAll, setShowAll] = useState(false)
   const today = useToday()
-  // Work: the contract filter narrows the tasks to its clients' lists; under All every task is here.
-  const filter = useContractScope(workspace)
-  const rows = everyRow !== null && filter.ready ? inContractLists(everyRow, filter.clients) : null
+  // Work: the contract filter narrows the tasks to its clients' lists; Research: the year filter, by due date. Under All every task is here.
+  const { rows, filter } = useScopedRows(workspace, everyRow)
   const all = rows ?? []
   // The lists offered are the chosen contract's clients (every client under All); Research's lists are free.
   const everyClient = useWorkClients(workspace)

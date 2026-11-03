@@ -8,6 +8,7 @@ import { defaultSettings } from '@shared/settings'
 import { emptyYear, WORK_PLAN } from '@shared/tracking/types'
 import { SettingsContext } from '../../../renderer/src/state/settings-context'
 import type { TrainingIndexRow } from '../shared/types'
+import { TrainingCard } from './TrainingCard'
 import { TrainingLanding } from './TrainingLanding'
 import { TrainingPage } from './TrainingPage'
 import { TrainingPlanPage } from './TrainingPlanPage'
@@ -165,6 +166,16 @@ describe('Research Training follows the academic year filter', () => {
     const one = await show(Y25, '/research/training', TrainingLanding)
     expect(one).toContain('Hours of training, 2025–26')
     expect(one).toContain('2 done')
+  })
+
+  it('the Home card totals the chosen year, with its aim, or every year, without one', async () => {
+    const all = await show('all', '/research/training', TrainingCard)
+    expect(all).toContain('6:00 · all years')
+    expect(all).not.toContain(' of ')
+    again()
+    const one = await show(Y25, '/research/training', TrainingCard)
+    expect(one).toMatch(/4:00 of \d+:\d{2} · 2025–26/)
+    expect(one).toContain('Latest: Alpha')
   })
 
   it('the plan is the chosen year’s, and the current year’s under All, named in its heading', async () => {

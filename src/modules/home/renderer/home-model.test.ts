@@ -55,6 +55,73 @@ const base: HomeSummary = {
   weather: null
 }
 
+describe('homeView under one academic year (Research)', () => {
+  // 2026–27 runs 21 Sep 2026 to 19 Sep 2027, 2025–26 22 Sep 2025 to 20 Sep 2026. Today is 15 Oct 2026.
+  const Y26 = '2026-09-21'
+  const Y25 = '2025-09-22'
+  const dueOn = (uid: string, due: string, daysLate = 0): HomeTask => ({
+    ...task(uid, 'research', daysLate),
+    due
+  })
+  const eventOn = (id: string, date: string, kind: HomeEvent['kind'] = 'meeting'): HomeEvent => ({
+    ...event(id, kind, `/research/meetings/m/${id}`, 1),
+    date
+  })
+  const s: HomeSummary = {
+    ...base,
+    tasks: tasksIn({
+      research: {
+        overdue: [
+          dueOn('late-last-year', '2026-09-20', 25),
+          dueOn('late-long-ago', '2025-01-10', 600),
+          dueOn('late-this-year', '2026-09-30', 15),
+          dueOn('undated', '', 0)
+        ],
+        today: [dueOn('today', '2026-10-15')],
+        overdueTotal: 4,
+        todayTotal: 1
+      }
+    }),
+    upcoming: [
+      eventOn('this-year', '2026-10-16'),
+      eventOn('first-day', '2026-09-21'),
+      eventOn('last-year', '2026-09-20'),
+      eventOn('next-year', '2027-09-20')
+    ]
+  }
+
+  it('shows nothing narrowed under All years', () => {
+    const all = homeView(s, 'research')
+    expect(all.tasks.overdue).toHaveLength(4)
+    expect(all.tasks.today).toHaveLength(1)
+    expect(all.comingUp).toHaveLength(4)
+  })
+
+  it('in the current year keeps what is dated in it, an undated task and a task still open from an earlier year', () => {
+    const v = homeView(s, 'research', undefined, Y26)
+    expect(v.tasks.overdue.map((t) => t.uid)).toEqual([
+      'late-last-year',
+      'late-long-ago',
+      'late-this-year',
+      'undated'
+    ])
+    expect(v.tasks.today.map((t) => t.uid)).toEqual(['today'])
+    // A meeting on the year's first day is in it; the day before is the last year's; the next year's is out.
+    expect(v.comingUp.map((e) => e.id)).toEqual(['this-year', 'first-day'])
+  })
+
+  it('in an earlier year drops what is dated after it, but keeps the undated and the open late ones from before it', () => {
+    const v = homeView(s, 'research', undefined, Y25)
+    expect(v.tasks.overdue.map((t) => t.uid)).toEqual([
+      'late-last-year',
+      'late-long-ago',
+      'undated'
+    ])
+    expect(v.tasks.today).toEqual([])
+    expect(v.comingUp.map((e) => e.id)).toEqual(['last-year'])
+  })
+})
+
 describe('homeView', () => {
   it('keeps each workspace to its own tasks', () => {
     const s: HomeSummary = {

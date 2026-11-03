@@ -1,5 +1,6 @@
 import { formatClock } from '@shared/locale-names'
 import { formatShortDate } from '@shared/time'
+import { inYear } from '@shared/year'
 import { labelInClients } from '../../tasks/shared/work-lists'
 import { COMING_UP_DAYS, daysFrom, taskRoute } from '../shared/summary'
 import type { HomeEvent, HomeSummary, HomeTask, HomeWorkspace } from '../shared/types'
@@ -68,12 +69,18 @@ function eventKindDetail(event: HomeEvent, initialsOf: (name: string) => string 
  * The one workspace's share of the summary, which holds both: its tasks, and what is dated in the next 3 days. `clients` are the
  * chosen Work contract's clients: only the tasks in their lists and the meetings of their tasks stay (a meeting with no known task
  * stays, as in Meetings); undefined is everything (All contracts, and Research and Life).
+ * `year` is the chosen Research year's start (`docs/RESEARCH_YEAR_FILTER_PLAN.md`): only what is dated in it stays, a task also when it is
+ * undated or still open from an earlier year (the Tasks rule, `taskInYearScope`); undefined is every year.
  */
 export function homeView(
   summary: HomeSummary,
   workspace: HomeWorkspace,
-  clients?: readonly string[]
+  clients?: readonly string[],
+  year?: string
 ): HomeView {
+  const ofYear = (t: HomeTask): boolean =>
+    year === undefined || t.due === '' || inYear(t.due, year) || t.due < year
+  const eventOfYear = (e: HomeEvent): boolean => year === undefined || inYear(e.date, year)
   const ofContract = (t: HomeTask): boolean => labelInClients(t.list, clients)
   const eventOfContract = (e: HomeEvent): boolean =>
     e.task ? labelInClients(e.detail, clients) : !e.list || labelInClients(e.list, clients)
@@ -83,7 +90,7 @@ export function homeView(
     .map((e) =>
       e.id.startsWith('watch:') ? { ...e, route: `/${e.workspace ?? 'research'}/watch` } : e
     )
-    .filter((e) => isHere(workspace, e.route) && eventOfContract(e))
+    .filter((e) => isHere(workspace, e.route) && eventOfContract(e) && eventOfYear(e))
   const comingUp = here.filter((e) => e.inDays >= 1 && e.inDays <= COMING_UP_DAYS)
   // The summary is sorted by date then time; an untimed item (a day off) follows the timed ones.
   const todayEvents = here
@@ -96,8 +103,8 @@ export function homeView(
 
   return {
     tasks: {
-      overdue: tasks.overdue.filter(ofContract),
-      today: tasks.today.filter(ofContract),
+      overdue: tasks.overdue.filter((t) => ofContract(t) && ofYear(t)),
+      today: tasks.today.filter((t) => ofContract(t) && ofYear(t)),
       cut: tasks.overdue.length < tasks.overdueTotal || tasks.today.length < tasks.todayTotal,
       hidden: tasks.overdueTotal - tasks.overdue.length + (tasks.todayTotal - tasks.today.length)
     },

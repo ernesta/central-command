@@ -1,5 +1,7 @@
 import { useToday } from '@renderer/state/use-today'
 import { useContractScope } from '@renderer/state/use-contract-filter'
+import { useYearFilter } from '@renderer/state/use-year-filter'
+import { isAllYears } from '@shared/year-scope'
 import { Link } from 'react-router'
 import { useState } from 'react'
 import {
@@ -402,13 +404,20 @@ export function HomePage({ workspace }: { workspace: HomeWorkspace }): React.JSX
   const summary = useHomeSummary()
   // Work: the contract filter narrows the lists to its clients; under All (and in Research and Life) nothing is narrowed.
   const filter = useContractScope(workspace)
+  // Research: the year filter keeps what is dated in the chosen year; under All years nothing is narrowed.
+  const years = useYearFilter(workspace)
   const { people } = usePeople()
   // Nothing until a chosen contract's clients are read, rather than every task meanwhile.
-  if (!summary || !filter.ready) return null
+  if (!summary || !filter.ready || !years.loaded) return null
   // Initials as the Meetings table shows them; the user themselves is left out ("with" is the others).
   const initialsOf = (name: string): string | null =>
     people?.find((p) => p.me && p.name === name) ? null : initialsFor(name, people ?? [])
-  const view = homeView(summary, workspace, filter.clients)
+  const view = homeView(
+    summary,
+    workspace,
+    filter.clients,
+    years.applies && !isAllYears(years.scope) ? years.scope : undefined
+  )
   return (
     <section className={styles.home} aria-label="Home">
       <div className={styles.cols}>

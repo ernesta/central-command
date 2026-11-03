@@ -15,11 +15,10 @@ import { Button } from '@renderer/components/Button'
 import { ShowMore } from '@renderer/components/ShowMore'
 import { Link } from 'react-router'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
-import { useContractScope } from '@renderer/state/use-contract-filter'
 import { listValue } from '../shared/query'
-import { inContractLists } from '../shared/work-lists'
 import { landingSections, listSummaries, type SectionRow } from '../shared/views'
 import { AddBar } from './AddBar'
+import { useScopedRows } from './useScopedRows'
 import { NewListDialog } from './NewListDialog'
 import { TasksTable } from './TasksTable'
 import { tasksAllRoute, useTasksWorkspace } from './tasks-paths'
@@ -35,8 +34,7 @@ const SECTION_LIMIT = 5
 export function TasksLanding(): React.JSX.Element {
   const workspace = useTasksWorkspace()
   const { rows: everyRow } = useTasksList(workspace)
-  const filter = useContractScope(workspace)
-  const rows = everyRow !== null && filter.ready ? inContractLists(everyRow, filter.clients) : null
+  const { rows, filter } = useScopedRows(workspace, everyRow)
   const { tracked, running } = useTaskTime(workspace)
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set())
   const today = useToday()
