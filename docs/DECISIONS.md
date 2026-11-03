@@ -641,6 +641,13 @@ list. `convertPseudoHeadings` (`meetings/shared/pseudo-headings.ts`) turns such 
 - **Meetings' Export** saves the Supervision log of the selected academic year as a PDF: oldest first, upcoming and planned meetings
   left out, totals and hours per skill on top. It mirrors Training's export on purpose. The printing (`src/main/export-pdf.ts`) and the
   page shell (`src/shared/report-page.ts`) are shared, so a layout change after the user's review is made once.
+- **One meeting's PDF** (Export on the meeting page, 3 Nov 2026) prints the saved note, portrait A4: the heading, a details line, attendees,
+  the Summary as a lead paragraph, then the Notes. No Previous TODOs (the user has none). A TODO is printed as a box with its owner's full
+  name (from the people list; unknown initials as written) in place of `**TODO (EO)**:`; mentions and links print as their words. The
+  Markdown is read with the editor's own parser (`shared/note-html.ts`, pure, escaped), not a second library. The page flushes the editor
+  first, then the main process reads the file. The footer (title, "Page n of m") is Chromium's footer template, which `exportHtmlAsPdf`
+  now takes as `footer`. The file is named `2026 11 13 Supervision.pdf` (no dashes: the user's request). Driven in a scratch library with the
+  save dialog stubbed; the PDF was read as an image.
 - **The Training plan** is one Markdown file per academic year, `notes/training-plans/Training plan 2026-27.md`, edited on
   `/research/training/plan` (linked from the Training landing page). It sits in its own folder, not in `notes/training/research/`,
   because that folder is watched and indexed as training entries. It reuses `NotesSession` and the shared editor (then `NotesEditor`, now `LiveEditor`) unchanged (the year
@@ -5073,4 +5080,3 @@ The user's screenshot of Trainings showed White Rose (WRDTP) rows that were site
 - **Applied to the real library, 3 Nov 2026**, app closed, backup `~/CentralCommand/backups/watch-reparse-2026-11-03T16-28-20-766Z`: 12 rows removed, 7 of them the WRDTP pages above, the other 5 "already over" under the older rule. Nothing saved was touched. Not re-run needed.
 - **Not checked:** a fresh network check of the live WRDTP page (it could not be fetched from the session); the next scheduled check will show it.
 - **Came back the same day, second fix:** the first version needed three in five of the dated entries to share the path, but this page puts no date beside any link (only 12 of its 46 links are `/events/…`), so no place was found and four site pages returned at the next check. The rule now takes the path with at least three links and half as many again as any other path, from the dated links first, else from all the page's links; checked against a saved copy of the real page (it keeps the 12 events and one off-site link). A second `watch:reparse --apply` removed the four again (backup in `~/CentralCommand/backups/`).
-

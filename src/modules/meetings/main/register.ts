@@ -14,6 +14,7 @@ import {
   type MeetingsExportResult
 } from '../shared/api'
 import { REPORT_SERIES, meetingsReportHtml, reportFileName } from '../shared/report'
+import { meetingNoteHtml, noteFileName, noteFooter, noteTitle } from '../shared/note-html'
 import type { MeetingChanges } from '../shared/front-matter'
 import { MEETING_WORKSPACES, type MeetingRef, type MeetingWorkspace } from '../shared/types'
 import { meetingPath } from './file-name'
@@ -171,6 +172,19 @@ function register({ db, paths }: MainContext): () => void {
         }),
         dialogTitle: seriesFilter ? 'Export the supervision log' : 'Export the meetings log',
         fileName: reportFileName(year, seriesFilter, period?.label)
+      })
+    }
+  )
+  ipcMain.handle(
+    MEETINGS_IPC.exportNotePdf,
+    async (event, ref: unknown): Promise<MeetingsExportResult> => {
+      const file = await store.read(asRef(ref))
+      return exportHtmlAsPdf(event.sender, {
+        html: meetingNoteHtml({ meta: file.meta, body: file.body, people: people.list() }),
+        dialogTitle: 'Export the meeting as a PDF',
+        fileName: noteFileName(file.meta),
+        portrait: true,
+        footer: noteFooter(noteTitle(file.meta))
       })
     }
   )

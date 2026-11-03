@@ -106,6 +106,7 @@ const api: Api = {
     tickTodo: (ref, todo) => ipcRenderer.invoke(MEETINGS_IPC.tickTodo, ref, todo),
     exportPdf: (workspace, year, contract) =>
       ipcRenderer.invoke(MEETINGS_IPC.exportPdf, workspace, year, contract),
+    exportNotePdf: (ref) => ipcRenderer.invoke(MEETINGS_IPC.exportNotePdf, ref),
     people: {
       list: () => ipcRenderer.invoke(MEETINGS_IPC.peopleList),
       add: (input) => ipcRenderer.invoke(MEETINGS_IPC.peopleAdd, input),

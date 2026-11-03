@@ -130,6 +130,8 @@ export interface MeetingsApi {
     /** Work's period is a contract: its length and how the report names it. Omitted for the 52-week year. */
     contract?: { weeks: number; end?: string; label: string }
   ): Promise<MeetingsExportResult>
+  /** Ask where to save, then write one meeting's saved note (its Summary and Notes) as a PDF. The caller saves first. */
+  exportNotePdf(ref: MeetingRef): Promise<MeetingsExportResult>
   people: {
     list(): Promise<Person[]>
     /** Add a person (initials are worked out from the name and made unique unless given). Resolves with the new list. */
@@ -166,6 +168,7 @@ export const MEETINGS_IPC = {
   syncPrevious: 'meetings:sync-previous',
   tickTodo: 'meetings:tick-todo',
   exportPdf: 'meetings:export-pdf',
+  exportNotePdf: 'meetings:export-note-pdf',
   peopleList: 'meetings:people-list',
   peopleAdd: 'meetings:people-add',
   peopleUpdate: 'meetings:people-update',

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
+import { ExportButton } from '@renderer/components/ExportButton'
 import { isUntouchedBody } from '@renderer/components/untouched'
 import { NEW_MEETING_BODY } from '../shared/front-matter'
 import { EmptyState } from '@renderer/components/EmptyState'
@@ -153,6 +154,26 @@ function MeetingView({
 
   const [moving, setMoving] = useState(false)
   const [moveError, setMoveError] = useState<string | null>(null)
+  const [exporting, setExporting] = useState(false)
+  const [exportNotice, setExportNotice] = useState<{ tone: 'info' | 'error'; text: string } | null>(
+    null
+  )
+  // The PDF is made from the saved file, so what is typed is saved first.
+  const exportPdf = async (): Promise<void> => {
+    setExporting(true)
+    setExportNotice(null)
+    try {
+      await session.flush()
+      const result = await window.api.meetings.exportNotePdf(session.getRef())
+      if (result.status === 'saved') {
+        setExportNotice({ tone: 'info', text: `Saved the meeting to ${result.path}` })
+      }
+    } catch (e) {
+      setExportNotice({ tone: 'error', text: `Couldn’t export: ${ipcErrorMessage(e)}` })
+    } finally {
+      setExporting(false)
+    }
+  }
   const moveTo = async (target: 'research' | 'work'): Promise<void> => {
     setMoving(true)
     setMoveError(null)
@@ -241,6 +262,7 @@ function MeetingView({
       <div className={styles.head}>
         <h1 className={styles.title}>{heading}</h1>
         <div className={styles.actions}>
+          <ExportButton busy={exporting} onClick={() => void exportPdf()} />
           <WorkspaceSelect
             compact
             value={meetingRef.workspace}
@@ -270,7 +292,7 @@ function MeetingView({
         </div>
       </div>
 
-      {(conflict || error || deleteError || moveError || problems.length > 0) && (
+      {(conflict || error || deleteError || moveError || exportNotice || problems.length > 0) && (
         <div className={styles.notices}>
           {conflict && (
             <Notice
@@ -304,6 +326,11 @@ function MeetingView({
           {moveError && (
             <Notice tone="error" onDismiss={() => setMoveError(null)}>
               Couldn’t move the meeting: {moveError}
+            </Notice>
+          )}
+          {exportNotice && (
+            <Notice tone={exportNotice.tone} onDismiss={() => setExportNotice(null)}>
+              {exportNotice.text}
             </Notice>
           )}
           {deleteError && (

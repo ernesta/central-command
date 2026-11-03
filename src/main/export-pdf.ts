@@ -17,6 +17,8 @@ export async function exportHtmlAsPdf(
     fileName: string
     portrait?: boolean
     backgrounds?: boolean
+    /** An HTML footer template for every page (Chromium fills in `pageNumber` and `totalPages`); the page's own `@page` size and margins are then used. */
+    footer?: string
   }
 ): Promise<PdfExportResult> {
   const dialogOptions = {
@@ -39,7 +41,15 @@ export async function exportHtmlAsPdf(
     const pdf = await printer.webContents.printToPDF({
       pageSize: 'A4',
       landscape: !options.portrait,
-      printBackground: options.backgrounds === true
+      printBackground: options.backgrounds === true,
+      ...(options.footer === undefined
+        ? {}
+        : {
+            displayHeaderFooter: true,
+            headerTemplate: '<span></span>',
+            footerTemplate: options.footer,
+            preferCSSPageSize: true
+          })
     })
     await writeFile(chosen.filePath, pdf)
   } finally {
