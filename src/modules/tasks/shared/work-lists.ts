@@ -65,3 +65,17 @@ export function offeredLists(
   })
   return [...own, ...held]
 }
+
+/**
+ * The tasks a contract's page shows: those whose top-level list is one of its clients (case and outer spaces ignored). A task in no
+ * list, or in a list that is no client of the contract, belongs to another contract or to none. `clients` undefined is every
+ * task (All contracts, or a workspace with no contracts).
+ */
+export function inContractLists<T extends { task: { list: string } }>(
+  rows: readonly T[],
+  clients: readonly string[] | undefined
+): T[] {
+  if (clients === undefined) return [...rows]
+  const mine = new Set(clients.map((c) => c.trim().toLowerCase()))
+  return rows.filter((r) => mine.has(r.task.list.trim().toLowerCase()))
+}

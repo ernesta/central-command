@@ -12,9 +12,12 @@ import { showToast } from '@renderer/components/toast-store'
 import { pushUndo } from '@renderer/components/undo-store'
 import { ArrowRight, Plus } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
+import { ContractFilter } from '@renderer/components/ContractFilter'
 import { Link } from 'react-router'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
+import { useContractScope } from '@renderer/state/use-contract-filter'
 import { listValue } from '../shared/query'
+import { inContractLists } from '../shared/work-lists'
 import { landingSections, listSummaries, type SectionRow } from '../shared/views'
 import { AddBar } from './AddBar'
 import { NewListDialog } from './NewListDialog'
@@ -31,7 +34,9 @@ const SECTION_LIMIT = 5
 /** The Tasks landing page: what is due today, overdue, coming up and in progress, then the lists. */
 export function TasksLanding(): React.JSX.Element {
   const workspace = useTasksWorkspace()
-  const { rows } = useTasksList(workspace)
+  const { rows: everyRow } = useTasksList(workspace)
+  const filter = useContractScope(workspace)
+  const rows = everyRow !== null && filter.ready ? inContractLists(everyRow, filter.clients) : null
   const { tracked, running } = useTaskTime(workspace)
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set())
   const today = useToday()
@@ -121,6 +126,14 @@ export function TasksLanding(): React.JSX.Element {
         title="Tasks"
         actions={
           <>
+            {filter.applies && (
+              <ContractFilter
+                scope={filter.scope}
+                starts={filter.starts}
+                onChange={filter.setScope}
+                workspace={workspace}
+              />
+            )}
             {clients === null && (
               <Button
                 icon={<Plus size={14} strokeWidth={2} aria-hidden />}
@@ -147,7 +160,7 @@ export function TasksLanding(): React.JSX.Element {
       )}
       {rows !== null && (
         <>
-          <AddBar workspace={workspace} rows={all} today={today} />
+          <AddBar workspace={workspace} rows={everyRow ?? all} today={today} />
           {section(
             'overdue',
             'Overdue',

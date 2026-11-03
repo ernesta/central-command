@@ -2,12 +2,15 @@ import { useToday } from '@renderer/state/use-today'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
+import { ContractFilter } from '@renderer/components/ContractFilter'
 import { EmptyState } from '@renderer/components/EmptyState'
 import { FilterRow } from '@renderer/components/FilterRow'
 import { SearchInput } from '@renderer/components/SearchInput'
 import { Segmented } from '@renderer/components/Segmented'
 import { Select } from '@renderer/components/Select'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
+import { useContractScope } from '@renderer/state/use-contract-filter'
+import { inContractLists } from '../shared/work-lists'
 import {
   DEFAULT_TASKS_QUERY,
   listChoices,
@@ -43,7 +46,7 @@ const PAGE_ROWS = 50
  */
 export function TasksPage(): React.JSX.Element {
   const workspace = useTasksWorkspace()
-  const { rows } = useTasksList(workspace)
+  const { rows: everyRow } = useTasksList(workspace)
   const { tracked, running } = useTaskTime(workspace)
   const [params] = useSearchParams()
   // A card or link opens the page already filtered (for this visit only, the other filters cleared so that is what you see).
@@ -61,6 +64,9 @@ export function TasksPage(): React.JSX.Element {
   )
   const [showAll, setShowAll] = useState(false)
   const today = useToday()
+  // Work: the contract filter narrows the tasks to its clients' lists; under All every task is here.
+  const filter = useContractScope(workspace)
+  const rows = everyRow !== null && filter.ready ? inContractLists(everyRow, filter.clients) : null
   const all = rows ?? []
   const clients = useWorkClients(workspace)
   const query: TasksQuery = rows === null ? saved : reconcileQuery(saved, all, clients)
@@ -174,10 +180,25 @@ export function TasksPage(): React.JSX.Element {
     <div className={styles.page}>
       <header className={styles.header}>
         <h1 className={styles.heading}>{heading}</h1>
+        {filter.applies && (
+          <div className={styles.actions}>
+            <ContractFilter
+              scope={filter.scope}
+              starts={filter.starts}
+              onChange={filter.setScope}
+              workspace={workspace}
+            />
+          </div>
+        )}
       </header>
 
       {rows !== null && (
-        <AddBar workspace={workspace} rows={all} today={today} listFilter={query.list} />
+        <AddBar
+          workspace={workspace}
+          rows={everyRow ?? all}
+          today={today}
+          listFilter={query.list}
+        />
       )}
 
       <FilterRow>

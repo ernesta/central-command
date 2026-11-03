@@ -1,9 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import type { Workspace } from '@shared/settings'
-import { ALL_CONTRACTS, validScope, type ContractScope } from '@shared/tracking/scope'
+import {
+  ALL_CONTRACTS,
+  isAllContracts,
+  validScope,
+  type ContractScope
+} from '@shared/tracking/scope'
 import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { useModuleState } from './use-module-state'
+import { useYearFile } from './use-year-file'
 
 /** The scope last chosen for Work: `all`, or a contract's first day. */
 interface RememberedScope {
@@ -80,4 +86,23 @@ export function useContractFilter(workspace: Workspace): {
   )
 
   return { applies, scope, setScope, starts: starts ?? [], loaded: starts !== null }
+}
+
+/**
+ * The filter for a page that narrows a list by the chosen contract's clients (Tasks): the filter itself, and `clients`, the
+ * contract's clients under one contract, `undefined` under All (nothing is narrowed) and for a workspace with no contracts.
+ * `ready` is false while a chosen contract's file is being read: the page waits rather than show every task meanwhile.
+ */
+export function useContractScope(workspace: Workspace): ReturnType<typeof useContractFilter> & {
+  clients: readonly string[] | undefined
+  ready: boolean
+} {
+  const filter = useContractFilter(workspace)
+  const one = filter.applies && !isAllContracts(filter.scope) && filter.loaded
+  const data = useYearFile(workspace, one ? filter.scope : null)
+  return {
+    ...filter,
+    clients: one ? (data?.plan.clients ?? []) : undefined,
+    ready: !one || data !== null
+  }
 }
