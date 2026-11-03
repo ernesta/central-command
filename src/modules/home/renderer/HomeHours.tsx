@@ -1,12 +1,17 @@
+import { ContractFilter } from '@renderer/components/ContractFilter'
 import { Panel } from '@renderer/components/Panel'
 import { useNow } from '@renderer/state/use-now'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { formatHours } from '@shared/tracking/format'
 import { hasAim } from '@shared/tracking/plan'
-import { inContract } from '@shared/tracking/workspace-weeks'
+import { isAllContracts } from '@shared/tracking/scope'
+import { hasContracts, inContract } from '@shared/tracking/workspace-weeks'
+import type { Moment } from '@shared/tracking/types'
+import { useYearFiles } from '@renderer/state/use-year-files'
 import { hoursBase } from '../../hours/renderer/hours-paths'
 import { PeriodSummary } from '../../hours/renderer/PeriodSummary'
-import { useShownYear } from '../../hours/renderer/useMeetingHours'
+import { useShownYear, useShownYears } from '../../hours/renderer/useMeetingHours'
+import { allFigures } from '../../hours/shared/all-figures'
 import { periodFigures } from '../../hours/shared/so-far'
 import type { HomeWorkspace } from '../shared/types'
 import { StyledLink } from './HomeParts'
@@ -18,15 +23,33 @@ import styles from './Home.module.css'
  * included, so the two always agree. The running timer is not repeated here: it is in the top bar.
  */
 export function HomeHours({ workspace }: { workspace: HomeWorkspace }): React.JSX.Element | null {
-  const { data: stored } = useTrackingYear(workspace)
+  const { data: stored, scope, setScope, years, loaded } = useTrackingYear(workspace)
   const now = useNow(false)
   const data = useShownYear(workspace, stored, now.date)
-  if (!data || !inContract(now.date, data)) return null
+  // Work's one contract filter is here too, as Home has no header of its own; the panel stays so the choice can always be changed.
+  const actions = (
+    <>
+      {hasContracts(workspace) && (
+        <ContractFilter scope={scope} starts={years} onChange={setScope} workspace={workspace} />
+      )}
+      <StyledLink to={hoursBase(workspace)}>Hours</StyledLink>
+    </>
+  )
+  // Work under All contracts: today summed over every contract, and each contract's period so far.
+  if (hasContracts(workspace) && isAllContracts(scope))
+    return <HomeAllHours starts={years} now={now} actions={actions} />
+  if (!data || !inContract(now.date, data)) {
+    return hasContracts(workspace) && loaded && years.length > 0 ? (
+      <Panel label="Hours" actions={actions}>
+        <p className={styles.small}>Outside this contract today.</p>
+      </Panel>
+    ) : null
+  }
 
   const { label, minutes, aim, today, clients } = periodFigures(data, now, workspace)
 
   return (
-    <Panel label={label} actions={<StyledLink to={hoursBase(workspace)}>Hours</StyledLink>}>
+    <Panel label={label} actions={actions}>
       {hasAim(data) && aim > 0 ? (
         <div className={styles.hours}>
           <PeriodSummary minutes={minutes} aim={aim} />
@@ -45,6 +68,57 @@ export function HomeHours({ workspace }: { workspace: HomeWorkspace }): React.JS
           ))}
         </ul>
       )}
+    </Panel>
+  )
+}
+
+/**
+ * Work's hours under All contracts: today summed over every contract that holds it, by client, then each such contract's time so
+ * far in its own invoice period (hours only). No aim: it means nothing across contracts. Nothing when no contract holds today.
+ */
+function HomeAllHours({
+  starts,
+  now,
+  actions
+}: {
+  starts: readonly string[]
+  now: Moment
+  actions: React.ReactNode
+}): React.JSX.Element | null {
+  const files = useYearFiles('work', starts)
+  const years = useShownYears('work', files, now.date)
+  if (!years || starts.length === 0) return null
+  const figures = allFigures(years, now)
+  if (figures.contracts.length === 0)
+    return (
+      <Panel label="Today" actions={actions}>
+        <p className={styles.small}>No contract today.</p>
+      </Panel>
+    )
+
+  return (
+    <Panel label="Today" actions={actions}>
+      <p className={styles.total}>{formatHours(figures.today)}</p>
+      {figures.todayClients.length > 0 && (
+        <ul className={styles.list}>
+          {figures.todayClients.map((c) => (
+            <li key={c.client ?? ''} className={styles.plain}>
+              <span className={styles.grow}>{c.client ?? 'No client'}</span>
+              <span className={styles.num}>{formatHours(c.minutes)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <ul className={styles.list}>
+        {figures.contracts.map((c) => (
+          <li key={c.year} className={styles.plain}>
+            <span className={styles.grow}>
+              {c.name ?? c.year} · {c.label.toLowerCase()}
+            </span>
+            <span className={styles.num}>{formatHours(c.minutes)}</span>
+          </li>
+        ))}
+      </ul>
     </Panel>
   )
 }
