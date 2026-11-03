@@ -647,6 +647,10 @@ list. `convertPseudoHeadings` (`meetings/shared/pseudo-headings.ts`) turns such 
   first, then the main process reads the file. The footer (title, "Page n of m") is Chromium's footer template, which `exportHtmlAsPdf`
   now takes as `footer`. The file is named `2026 11 13 Supervision.pdf` (no dashes: the user's request). Driven in a scratch library with the
   save dialog stubbed; the PDF was read as an image.
+  **Restyled the same day** (the user: too pretentious, simple and elegant): the same fonts and sizes as the other exports' report page
+  (Georgia, an 18pt title, a grey subtitle), no rule, no boxed Summary, no "Notes" label (the other sections keep a plain heading),
+  tighter spacing. A TODO is an ordinary bullet starting with a bold `TODO(EO)` (struck through when ticked), not a box. The subtitle is
+  one line, "10:00–11:00 · attendees": no weekday, length or in-person/online. Not re-checked as a rendered PDF.
 - **The Training plan** is one Markdown file per academic year, `notes/training-plans/Training plan 2026-27.md`, edited on
   `/research/training/plan` (linked from the Training landing page). It sits in its own folder, not in `notes/training/research/`,
   because that folder is watched and indexed as training entries. It reuses `NotesSession` and the shared editor (then `NotesEditor`, now `LiveEditor`) unchanged (the year

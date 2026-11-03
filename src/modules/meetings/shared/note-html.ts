@@ -3,7 +3,7 @@ import type { SyntaxNode } from '@lezer/common'
 import { escapeHtml } from '@shared/report-page'
 import { findMarkers } from './todos'
 import { parseHeading, scanLines } from './sections'
-import { durationMinutes, formatDuration, meetingHeading } from './time'
+import { meetingHeading } from './time'
 import type { MeetingMeta } from './types'
 
 /**
@@ -11,8 +11,6 @@ import type { MeetingMeta } from './types'
  * (its Notes). Previous TODOs are left out. Pure and escaped, with no scripts or network resources, like the other
  * PDF pages. The note is read with the same Markdown parser the editor uses, so a note looks the same in both places.
  */
-
-const MODE_LABELS = { 'in-person': 'In person', online: 'Online' } as const
 
 const BLOCK_NAMES = new Set([
   'Paragraph',
@@ -55,12 +53,12 @@ function children(node: SyntaxNode): SyntaxNode[] {
   return out
 }
 
-/** `**TODO (EO)**:` printed as its owner's initials in small type, "EO" or "EO & KR": the initials the note uses. */
+/** `**TODO (EO)**:` printed in bold with its owner's initials, "TODO(EO)" or "TODO(EO & KR)": the initials the note uses. */
 function ownerLabel(ctx: Context, marker: Marker): string {
   if (ctx.printed.has(marker)) return ''
   ctx.printed.add(marker)
-  if (marker.owners.length === 0) return ''
-  return `<span class="owner">${escapeHtml(marker.owners.join(' & '))}</span>`
+  const owners = marker.owners.length > 0 ? `(${marker.owners.join(' & ')})` : ''
+  return `<strong>${escapeHtml(`TODO${owners}`)}</strong>`
 }
 
 /** Text between two nodes (or the start and end), with any TODO marker in it swapped for its owner label. */
@@ -167,8 +165,7 @@ function listItem(ctx: Context, item: SyntaxNode): { html: string; task: boolean
     .join('\n')
   if (!taskMarker) return { html: `<li>${lead}${rest}</li>`, task: false }
   const done = /[xX]/.test(slice(ctx, taskMarker.from, taskMarker.to))
-  const html = `<li class="todo${done ? ' done' : ''}"><span class="box"></span><div class="c">${lead}${rest}</div></li>`
-  return { html, task: true }
+  return { html: `<li${done ? ' class="done"' : ''}>${lead}${rest}</li>`, task: true }
 }
 
 function table(ctx: Context, node: SyntaxNode): string {
@@ -192,8 +189,7 @@ function blockNode(ctx: Context, node: SyntaxNode): string {
         .filter((c) => c.name === 'ListItem')
         .map((c) => listItem(ctx, c))
       const tag = node.name === 'BulletList' ? 'ul' : 'ol'
-      const tasks = items.length > 0 && items.every((i) => i.task)
-      return `<${tag}${tasks ? ' class="tasks"' : ''}>${items.map((i) => i.html).join('')}</${tag}>`
+      return `<${tag}>${items.map((i) => i.html).join('')}</${tag}>`
     }
     case 'Blockquote':
       return `<blockquote>${blocks(ctx, node)}</blockquote>`
@@ -234,7 +230,7 @@ function todoMarkers(text: string): Marker[] {
   return found
 }
 
-/** A piece of a note as HTML: paragraphs, headings, lists with boxes for TODOs, quotes, tables and code. */
+/** A piece of a note as HTML: paragraphs, headings, lists (TODOs as bullets), quotes, tables and code. */
 export function markdownHtml(text: string): string {
   const tree = markdownLanguage.parser.parse(text)
   const ctx: Context = { text, markers: todoMarkers(text), printed: new Set() }
@@ -262,7 +258,7 @@ function sections(body: string): Section[] {
   return out.map((s, i) => ({ ...s, text: lines[i].join('\n') }))
 }
 
-/** The note's body as HTML: the Summary as a lead, every other section under a small label, Previous TODOs not at all. */
+/** The note's body as HTML: the Summary first, every other section under a plain heading (Notes without one), Previous TODOs not at all. */
 export function noteBodyHtml(body: string): string {
   return sections(body)
     .map(({ title, text }) => {
@@ -271,7 +267,10 @@ export function noteBodyHtml(body: string): string {
       const key = title?.trim().toLowerCase()
       if (key === 'previous todos') return ''
       if (key === 'summary') return `<div class="summary">${content}</div>`
-      return title === null ? content : `<h2>${escapeHtml(title)}</h2>\n${content}`
+      // The note's own "Notes" section needs no label: it is the note.
+      return title === null || key === 'notes'
+        ? content
+        : `<h2>${escapeHtml(title)}</h2>\n${content}`
     })
     .filter((s) => s !== '')
     .join('\n')
@@ -282,31 +281,15 @@ export function noteTitle(meta: Pick<MeetingMeta, 'series' | 'date'>): string {
   return meetingHeading(meta.series, meta.date)
 }
 
-function weekday(date: string): string | null {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date)
-  if (!m) return null
-  const day = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
-  if (Number.isNaN(day.getTime())) return null
-  return day.toLocaleDateString(undefined, { weekday: 'long' })
-}
-
-/** "Friday · 10:00–11:00 · 1 h · Online": what is known about when and how the meeting went. */
+/** "10:00–11:00 · Alice, Bob": the time (no length) and the attendees, on one line. */
 export function noteDetails(meta: MeetingMeta): string {
-  const minutes = durationMinutes(meta.start, meta.end)
   const time = meta.start && meta.end ? `${meta.start}–${meta.end}` : (meta.start ?? '')
-  return [
-    weekday(meta.date),
-    time,
-    minutes === null ? '' : formatDuration(minutes),
-    meta.mode ? MODE_LABELS[meta.mode] : ''
-  ]
-    .filter((part) => part)
-    .join(' · ')
+  return [time, meta.attendees.join(', ')].filter((part) => part).join(' · ')
 }
 
 /** The footer on every page: the title on the left, the page count on the right. Chromium fills in the two classes. */
 export function noteFooter(title: string): string {
-  return `<div style="box-sizing:border-box;width:100%;padding:0 22mm;display:flex;justify-content:space-between;font:7.5pt Helvetica,Arial,sans-serif;color:#8a939e"><span>${escapeHtml(title)}</span><span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span></div>`
+  return `<div style="box-sizing:border-box;width:100%;padding:0 22mm;display:flex;justify-content:space-between;font:7.5pt Georgia,'Times New Roman',serif;color:#8a939e"><span>${escapeHtml(title)}</span><span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span></div>`
 }
 
 /** The name suggested when saving: "2026 11 13 Supervision.pdf" (no dashes). */
@@ -326,42 +309,28 @@ export function meetingNoteHtml(input: { meta: MeetingMeta; body: string }): str
   const { meta, body } = input
   const title = noteTitle(meta)
   const details = noteDetails(meta)
-  const attendees = meta.attendees.join(', ')
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <title>${escapeHtml(title)}</title>
 <style>
-@page { size: A4; margin: 20mm 22mm 24mm; }
-body { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 10.5pt; line-height: 1.5; color: #1b222b; }
-h1 { margin: 0 0 8px; font-size: 24pt; line-height: 1.15; font-weight: 600; }
-.meta { margin: 0; font: 9pt Helvetica, Arial, sans-serif; color: #5c6672; }
-.rule { border: 0; border-top: 1.5px solid #1b222b; margin: 14px 0 18px; }
-.summary { margin: 0 0 20px; padding-left: 12px; border-left: 2px solid #c3cad2; font-size: 11.5pt; line-height: 1.55; }
-.summary p:last-child { margin-bottom: 0; }
-h2 { margin: 22px 0 8px; padding-bottom: 4px; border-bottom: 0.5px solid #c3cad2; font: 700 8pt Helvetica, Arial, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: #5c6672; break-after: avoid; }
-h3 { margin: 14px 0 4px; font: 600 10.5pt Helvetica, Arial, sans-serif; break-after: avoid; }
-h4 { margin: 10px 0 3px; font: italic 600 10.5pt Georgia, 'Times New Roman', serif; break-after: avoid; }
-p { margin: 0 0 8px; }
-ul, ol { margin: 0 0 8px; padding-left: 18px; }
-li { margin: 0 0 3px; break-inside: avoid; }
-ul.tasks { padding-left: 0; }
-li.todo { display: flex; gap: 8px; align-items: baseline; list-style: none; margin-left: -18px; }
-ul.tasks > li.todo { margin-left: 0; }
-li.todo > .c { flex: 1; }
-li.todo ul, li.todo ol { margin-top: 3px; }
-.box { flex: none; width: 8pt; height: 8pt; border: 1px solid #1b222b; border-radius: 1.5px; position: relative; top: 0.5pt; }
-.done { color: #8a939e; }
-.done > .c { text-decoration: line-through; }
-.done > .box { background: #8a939e; border-color: #8a939e; }
-.owner { margin-right: 3px; font: 600 8pt Helvetica, Arial, sans-serif; color: #5c6672; }
-.done .owner { color: #8a939e; }
-blockquote { margin: 0 0 8px; padding-left: 12px; border-left: 2px solid #c3cad2; color: #5c6672; }
-pre { margin: 0 0 8px; padding: 6px 8px; background: #f3f5f7; font: 8.5pt Menlo, monospace; white-space: pre-wrap; }
+@page { size: A4; margin: 18mm 20mm 22mm; }
+body { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 10pt; line-height: 1.45; color: #1b222b; }
+h1 { margin: 0 0 4px; font-size: 18pt; }
+.sub { margin: 0 0 14px; color: #5c6672; font-size: 9pt; }
+h2 { margin: 14px 0 4px; font-size: 11pt; }
+h3 { margin: 10px 0 3px; font-size: 10pt; }
+h4 { margin: 8px 0 2px; font-size: 10pt; font-style: italic; }
+p { margin: 0 0 6px; }
+ul, ol { margin: 0 0 6px; padding-left: 18px; }
+li { margin: 0 0 2px; }
+.done { color: #8a939e; text-decoration: line-through; }
+blockquote { margin: 0 0 6px; padding-left: 12px; border-left: 2px solid #c3cad2; color: #5c6672; }
+pre { margin: 0 0 6px; padding: 6px 8px; background: #f3f5f7; font: 8.5pt Menlo, monospace; white-space: pre-wrap; }
 code { font: 9pt Menlo, monospace; }
-hr { border: 0; border-top: 0.5px solid #c3cad2; margin: 12px 0; }
-table { width: 100%; border-collapse: collapse; margin: 0 0 10px; font: 9pt Helvetica, Arial, sans-serif; }
+hr { border: 0; border-top: 0.5px solid #c3cad2; margin: 10px 0; }
+table { width: 100%; border-collapse: collapse; margin: 0 0 8px; font-family: Helvetica, Arial, sans-serif; font-size: 8.5pt; }
 th { text-align: left; padding: 4px 6px; border-bottom: 1.5px solid #1b222b; font-size: 8pt; }
 td { padding: 4px 6px; border-bottom: 0.5px solid #c3cad2; vertical-align: top; }
 tr { break-inside: avoid; }
@@ -369,8 +338,7 @@ tr { break-inside: avoid; }
 </head>
 <body>
 <h1>${escapeHtml(title)}</h1>
-${details ? `<p class="meta">${escapeHtml(details)}</p>\n` : ''}${attendees ? `<p class="meta">${escapeHtml(attendees)}</p>\n` : ''}<hr class="rule">
-${noteBodyHtml(body)}
+${details ? `<p class="sub">${escapeHtml(details)}</p>\n` : ''}${noteBodyHtml(body)}
 </body>
 </html>
 `

@@ -47,31 +47,24 @@ describe('markdownHtml', () => {
     expect(html).not.toContain('x.org')
   })
 
-  it('prints a TODO with its owner as initials, in a box that is ticked when it is done', () => {
+  it('prints a TODO as a bullet with a bold TODO(owner), struck through when done', () => {
     const html = markdownHtml(
       '- [ ] **TODO (EO)**: Redraft intro\n- [x] **TODO(KR):** Send *figures*'
     )
-    expect(html).toContain('<ul class="tasks">')
-    expect(html).toContain(
-      '<li class="todo"><span class="box"></span><div class="c"><span class="owner">EO</span> Redraft intro</div></li>'
-    )
-    expect(html).toContain('<li class="todo done">')
-    expect(html).toContain('<span class="owner">KR</span> Send <em>figures</em>')
-    expect(html).not.toContain('TODO')
+    expect(html).toContain('<ul><li><strong>TODO(EO)</strong> Redraft intro</li>')
+    expect(html).toContain('<li class="done"><strong>TODO(KR)</strong> Send <em>figures</em></li>')
+    expect(html).not.toContain('box')
   })
 
-  it('keeps several owners and prints nothing for no owner', () => {
-    const html = markdownHtml(
-      '- [ ] **TODO (EO & KR)**: Both\n- [ ] **TODO (ZZ)**: Unknown\n- [ ] **TODO**: Nobody'
-    )
-    expect(html).toContain('EO &amp; KR</span> Both')
-    expect(html).toContain('<span class="owner">ZZ</span> Unknown')
-    expect(html).toContain('<div class="c">Nobody</div>')
+  it('keeps several owners and prints a bare TODO for no owner', () => {
+    const html = markdownHtml('- [ ] **TODO (EO & KR)**: Both\n- [ ] **TODO**: Nobody')
+    expect(html).toContain('<strong>TODO(EO &amp; KR)</strong> Both')
+    expect(html).toContain('<li><strong>TODO</strong> Nobody</li>')
   })
 
-  it('prints a TODO that is not in a checkbox as a bullet with the owner as initials', () => {
+  it('prints a TODO that is not in a checkbox the same way', () => {
     const html = markdownHtml('- **TODO (EO)**: Plain one')
-    expect(html).toContain('<li><span class="owner">EO</span> Plain one</li>')
+    expect(html).toContain('<li><strong>TODO(EO)</strong> Plain one</li>')
   })
 
   it('leaves a TODO inside code alone', () => {
@@ -88,17 +81,17 @@ describe('markdownHtml', () => {
 
   it('does not run on in a long note (the whole text is parsed)', () => {
     const long = `${'word '.repeat(2000)}\n\n- [ ] **TODO (EO)**: at the end`
-    expect(markdownHtml(long)).toContain('<span class="owner">EO</span> at the end')
+    expect(markdownHtml(long)).toContain('<strong>TODO(EO)</strong> at the end')
   })
 })
 
 describe('noteBodyHtml', () => {
-  it('leads with the Summary, labels the rest and leaves Previous TODOs out', () => {
+  it('leads with the Summary, leaves the Notes label off and leaves Previous TODOs out', () => {
     const html = noteBodyHtml(
       '## Summary\nKey topics: A.\n## Previous TODOs\n- [ ] **TODO (EO)**: old\n## Notes\n### Topic\ntext'
     )
     expect(html).toContain('<div class="summary"><p>Key topics: A.</p></div>')
-    expect(html).toContain('<h2>Notes</h2>')
+    expect(html).not.toContain('<h2>Notes</h2>')
     expect(html).toContain('<h3>Topic</h3>')
     expect(html).not.toContain('old')
     expect(html).not.toContain('Previous')
@@ -107,7 +100,6 @@ describe('noteBodyHtml', () => {
   it('leaves out an empty section and treats a heading in a code fence as code', () => {
     const html = noteBodyHtml('## Summary\n## Notes\n```\n## Not a heading\n```\n')
     expect(html).not.toContain('summary')
-    expect(html).toContain('<h2>Notes</h2>')
     expect(html).toContain('<pre>## Not a heading</pre>')
   })
 })
@@ -116,8 +108,8 @@ describe('meetingNoteHtml', () => {
   it('has the heading, details, attendees and body, and no dashes in the title line', () => {
     const html = meetingNoteHtml({ meta, body: '## Summary\nHello\n## Notes\n- x' })
     expect(html).toContain('<h1>Supervision · ')
-    expect(html).toContain('10:00–11:00 · 1 h · Online')
-    expect(html).toContain('Ernesta Orlovaitė, Kathy Rastle')
+    expect(html).toContain('10:00–11:00 · Ernesta Orlovaitė, Kathy Rastle')
+    expect(html).not.toMatch(/Online|1 h|day</)
     expect(html).toContain('<div class="summary"><p>Hello</p></div>')
     expect(html).not.toContain('<script')
   })
@@ -134,8 +126,8 @@ describe('meetingNoteHtml', () => {
 
 describe('noteDetails, noteFileName and noteFooter', () => {
   it('leaves out what is not known', () => {
-    expect(noteDetails({ ...meta, start: null, end: null, mode: null, date: '' })).toBe('')
-    expect(noteDetails({ ...meta, end: null, mode: null })).toMatch(/10:00$/)
+    expect(noteDetails({ ...meta, start: null, end: null, attendees: [] })).toBe('')
+    expect(noteDetails({ ...meta, end: null, attendees: [] })).toBe('10:00')
   })
 
   it('names the file with spaces and no dashes', () => {
