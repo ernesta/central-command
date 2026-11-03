@@ -2,19 +2,24 @@ import type { Workspace } from '@shared/settings'
 import { ALL_CONTRACTS, isAllContracts, type ContractScope } from '@shared/tracking/scope'
 import { contractLabel, hasContracts } from '@shared/tracking/workspace-weeks'
 import { YEAR_WEEKS, yearLabel } from '@shared/year'
+import { isAllYears } from '@shared/year-scope'
 import { useTrackingYear } from './use-tracking-year'
 import { useYear } from './use-year'
+import { useYearFilter } from './use-year-filter'
 
-/** The period a list page (Meetings) shows: the academic year, or in Work the contract (its first day, length and name). */
+/** The period a list page (Meetings, Training) shows: the academic year, or in Work the contract (its first day, length and name). */
 export interface Period {
   /** The period's first day: the year's start, or the contract's. '' while Work has no contract. */
   year: string
   years: string[]
   setYear: (year: string) => void
-  /** Work: All contracts, or one contract's first day (the workspace's one filter). Research and Life: always All, unused. */
+  /** Work: All contracts, or one contract's first day. Research: All years, or one year's start (each workspace's one filter). Life: always All, unused. */
   scope: ContractScope
   setScope: (scope: ContractScope) => void
-  /** Work under All: every Work meeting, no one period. `year`, `weeks` and `end` are then of no use. */
+  /**
+   * Work under All contracts, Research under All years: every item, no one period (the rules take a null period as everything).
+   * In Work `year`, `weeks` and `end` are then of no use; in Research `year` is the current year, for what can only mean one.
+   */
   all: boolean
   /** Its length in report weeks. */
   weeks: number
@@ -31,12 +36,30 @@ export interface Period {
 }
 
 /**
- * Research and Life keep the academic year; Work's choice is always a contract (`docs/CONTRACTS_PLAN.md`: they may overlap,
+ * Research follows its one academic year filter (`useYearFilter`) and Life keeps its page's academic year; Work's choice is always a contract (`docs/CONTRACTS_PLAN.md`: they may overlap,
  * each has its own first and last day). Both hooks run so that the order never changes; only the one that fits is used.
  */
 export function usePeriod(workspace: Workspace, dates: readonly string[], today: string): Period {
   const academic = useYear(dates, today)
   const tracked = useTrackingYear(workspace)
+  const filter = useYearFilter(workspace)
+  if (filter.applies) {
+    const all = isAllYears(filter.scope)
+    return {
+      year: filter.year,
+      years: filter.years,
+      setYear: filter.setScope,
+      scope: filter.scope,
+      setScope: filter.setScope,
+      all,
+      weeks: YEAR_WEEKS,
+      end: undefined,
+      clients: undefined,
+      label: all ? 'all years' : yearLabel(filter.year),
+      contract: undefined,
+      loaded: filter.loaded
+    }
+  }
   if (!hasContracts(workspace)) {
     return {
       ...academic,

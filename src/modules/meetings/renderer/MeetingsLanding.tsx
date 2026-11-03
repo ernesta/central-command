@@ -1,9 +1,7 @@
 import { useToday } from '@renderer/state/use-today'
 import { ArrowRight } from 'lucide-react'
 import { useState } from 'react'
-import { PeriodSelect } from '@renderer/components/PeriodSelect'
 import { ALL_CONTRACTS } from '@shared/tracking/scope'
-import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { EmptyState } from '@renderer/components/EmptyState'
 import {
   LandingHeader,
@@ -64,19 +62,14 @@ export function MeetingsLanding(): React.JSX.Element {
     today
   )
   const all = ofContractClients(everything, period.clients, listOf)
-  const { year, years, setYear, weeks, end } = period
-  // Under All contracts there is no one period: every Work meeting.
+  const { year, weeks, end } = period
+  // Under All (contracts or years) there is no one period: every meeting.
   const span = period.all ? null : year
-  // The open TODOs are those of the chosen contract's meetings (its days and clients); every Work meeting under All.
-  const open = openTodos(
-    hasContracts(workspace) ? meetingsInYearOrPlanned(all, span, today, weeks, end) : all
-  )
+  // The open TODOs are those of the chosen contract's or year's meetings; every meeting under All.
+  const open = openTodos(meetingsInYearOrPlanned(all, span, today, weeks, end))
   const shown = whose === 'mine' && me ? mine(open, me.initials) : open
-  // A link carries the scope: under All, `all`, not the contract the page would otherwise have picked.
+  // A link carries the scope: under All, `all`, not the contract or year the page would otherwise have picked.
   const linkYear = period.all ? ALL_CONTRACTS : year
-  const periodSelect = (
-    <PeriodSelect workspace={workspace} year={year} years={years} onYear={setYear} />
-  )
   const { upcoming, recent } = recentAndUpcoming(
     meetingsInYearOrPlanned(all, span, today, weeks, end),
     today,
@@ -101,15 +94,7 @@ export function MeetingsLanding(): React.JSX.Element {
 
   return (
     <LandingPage>
-      <LandingHeader
-        title="Meetings"
-        actions={
-          <>
-            {hasContracts(workspace) && periodSelect}
-            <NewMeetingButton />
-          </>
-        }
-      />
+      <LandingHeader title="Meetings" actions={<NewMeetingButton />} />
 
       {rows === null || !period.loaded ? null : (
         <>
@@ -143,12 +128,7 @@ export function MeetingsLanding(): React.JSX.Element {
             </LandingBox>
           </LandingSection>
 
-          <LandingSection
-            id="year"
-            label="Year"
-            labelHidden
-            aside={!hasContracts(workspace) && periodSelect}
-          >
+          <LandingSection id="year" label="Year" labelHidden>
             <MeetingsHours
               rows={all}
               year={span}

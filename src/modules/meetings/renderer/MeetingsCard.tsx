@@ -1,7 +1,6 @@
 import { useToday } from '@renderer/state/use-today'
 import { Link } from 'react-router'
 import { usePeriod } from '@renderer/state/use-period'
-import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { meetingsInYearOrPlanned, ofContractClients } from '../shared/hours'
 import { seriesSummaries } from '../shared/landing'
 import { openTodos } from '../shared/open-todos'
@@ -16,7 +15,7 @@ export function MeetingsCard(): React.JSX.Element {
   const workspace = useMeetingsWorkspace()
   const { rows: everyRow } = useMeetingsList(workspace)
   const today = useToday()
-  // Work: the chosen contract's meetings (its days and clients), every Work meeting under All.
+  // The chosen contract's meetings (its days and clients) or year's, every meeting under All.
   const period = usePeriod(
     workspace,
     (everyRow ?? []).map((r) => r.date),
@@ -26,15 +25,13 @@ export function MeetingsCard(): React.JSX.Element {
   const rows =
     everyRow === null || !period.loaded
       ? null
-      : hasContracts(workspace)
-        ? meetingsInYearOrPlanned(
-            ofContractClients(everyRow, period.clients, listOf),
-            period.all ? null : period.year,
-            today,
-            period.weeks,
-            period.end
-          )
-        : everyRow
+      : meetingsInYearOrPlanned(
+          ofContractClients(everyRow, period.clients, listOf),
+          period.all ? null : period.year,
+          today,
+          period.weeks,
+          period.end
+        )
   const summaries = rows ? seriesSummaries(rows, today, undefined, clockNow()) : []
   const count = summaries.reduce((n, s) => n + s.count, 0)
   const next = summaries

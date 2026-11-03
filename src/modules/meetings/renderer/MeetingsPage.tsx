@@ -8,8 +8,7 @@ import { FilterRow } from '@renderer/components/FilterRow'
 import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { skillFilterOptions, skillsIn } from '@shared/skills'
-import { PeriodSelect } from '@renderer/components/PeriodSelect'
-import { hasContracts } from '@shared/tracking/workspace-weeks'
+import { yearLabel } from '@shared/year'
 import { SearchInput } from '@renderer/components/SearchInput'
 import { Select } from '@renderer/components/Select'
 import { usePeriod } from '@renderer/state/use-period'
@@ -61,12 +60,9 @@ export function MeetingsPage(): React.JSX.Element {
     everything.map((r) => r.date),
     today
   )
-  const { year, years, setYear, weeks, end } = period
-  // Under All contracts there is no one period: every Work meeting.
+  const { year, weeks, end } = period
+  // Under All (contracts or years) there is no one period: every meeting.
   const span = period.all ? null : year
-  const periodSelect = (
-    <PeriodSelect workspace={workspace} year={year} years={years} onYear={setYear} />
-  )
   const listOf = useTaskLists(workspace)
   const all = ofContractClients(
     meetingsInYearOrPlanned(everything, span, today, weeks, end),
@@ -99,7 +95,8 @@ export function MeetingsPage(): React.JSX.Element {
       if (result.status === 'saved') {
         setExportNotice({
           tone: 'info',
-          text: `Saved the ${workspace === 'research' ? 'supervision' : 'meetings'} log for ${period.label} to ${result.path}`
+          // Research's log is of one year: under All years, the current one, which the notice names.
+          text: `Saved the ${workspace === 'research' ? 'supervision' : 'meetings'} log for ${period.all && workspace === 'research' ? yearLabel(year) : period.label} to ${result.path}`
         })
       }
     } catch (e) {
@@ -144,8 +141,6 @@ export function MeetingsPage(): React.JSX.Element {
       <header className={styles.header}>
         <h1 className={styles.heading}>All meetings</h1>
         <div className={styles.actions}>
-          {/* Work's one contract filter sits at the right end of the header, as on every Work page. */}
-          {hasContracts(workspace) && periodSelect}
           {/* Work's log is by date only and would include another contract's meetings: off until it follows the contract's clients. */}
           {workspace !== 'work' && (
             <ExportButton
@@ -171,7 +166,6 @@ export function MeetingsPage(): React.JSX.Element {
       )}
 
       <FilterRow>
-        {!hasContracts(workspace) && periodSelect}
         <SearchInput
           label="Search meetings"
           value={query.search}
