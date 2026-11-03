@@ -1,12 +1,12 @@
 import type { Database } from 'better-sqlite3'
 import type { RunningTimer } from '@shared/tracking/api'
 import { timeOffRows } from '@shared/tracking/timeoff'
-import { openContracts } from '@shared/tracking/contracts'
 import { yearToShow } from '@shared/tracking/current-year'
 import type { Moment, TrackingYear } from '@shared/tracking/types'
 import { inContract } from '@shared/tracking/workspace-weeks'
 import type { Workspace } from '@shared/settings'
 import { shownYear } from '../../hours/shared/shown-year'
+import { allFigures } from '../../hours/shared/all-figures'
 import { periodFigures } from '../../hours/shared/so-far'
 import { listMeetingRows } from '../../meetings/main/repository'
 import { listTasks } from '../../tasks/main/repository'
@@ -82,34 +82,58 @@ function homeTimer(db: Database, tracking: TrackingSource, now: Moment): HomeTim
 }
 
 /**
- * A workspace's year as the Hours page opens it, with the hours its notes derive added: the one `yearToShow` picks (today must be
- * in it), read through `shownYear`, so every figure is the Hours page's. Read only. Null when there is no such year.
+ * Research's or Life's year as the Hours page opens it, with the hours its notes derive added: the one `currentYear` picks (today must
+ * be in it), read through `shownYear`, so every figure is the Hours page's. Read only. Null when there is no such year. Work has
+ * contracts, not one year: see `workHours`.
  */
 function shownYearOf(
   db: Database,
   tracking: TrackingSource,
-  workspace: HomeWorkspace,
+  workspace: Exclude<HomeWorkspace, 'work'>,
   now: Moment,
   yearStarts: readonly string[]
 ): TrackingYear | null {
   const starts = tracking.years(workspace)
-  const files = workspace === 'work' ? starts.map((s) => tracking.get(workspace, s)) : []
-  const start = yearToShow(workspace, now.date, {
-    yearStarts,
-    years: starts,
-    open: workspace === 'work' ? openContracts(files, now.date) : null
-  })
+  const start = yearToShow(workspace, now.date, { yearStarts, years: starts, open: null })
   if (!start || !starts.includes(start)) return null
-  const stored = files.find((f) => f.start === start) ?? tracking.get(workspace, start)
+  const stored = tracking.get(workspace, start)
   if (!inContract(now.date, stored)) return null
   return shownYear(stored, {
     // Life has no meetings; its trainings count as Research's do.
     meetings: workspace === 'life' ? [] : listMeetingRows(db, workspace),
-    trainings: workspace === 'work' ? [] : listTrainingRows(db, workspace),
+    trainings: listTrainingRows(db, workspace),
     tasks: listTasks(db, workspace),
-    clients: workspace === 'work' ? workClients(files.map((f) => f.plan)) : null,
+    clients: null,
     today: now.date
   })
+}
+
+/**
+ * Work's hours over every contract that holds today, whichever one a page has chosen: `allFigures` of the shown years, so today is
+ * the sum of the open contracts and a day worked on any of them counts. Null when no contract holds today. Read only.
+ */
+function workHours(db: Database, tracking: TrackingSource, now: Moment): HomeHours | null {
+  const files = tracking.years('work').map((s) => tracking.get('work', s))
+  if (!files.some((f) => inContract(now.date, f))) return null
+  const sources = {
+    meetings: listMeetingRows(db, 'work'),
+    trainings: [],
+    tasks: listTasks(db, 'work'),
+    clients: workClients(files.map((f) => f.plan)),
+    today: now.date
+  }
+  const f = allFigures(
+    files.map((file) => shownYear(file, sources)),
+    now
+  )
+  return {
+    label: 'This week',
+    minutes: f.week.minutes,
+    aimMinutes: 0,
+    todayMinutes: f.today,
+    clients: f.week.clients,
+    contracts: f.contracts
+  }
 }
 
 function homeHours(
@@ -223,7 +247,6 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
   ).n
 
   const research = shownYearOf(db, deps.tracking, 'research', now, deps.yearStarts)
-  const work = shownYearOf(db, deps.tracking, 'work', now, deps.yearStarts)
   const life = shownYearOf(db, deps.tracking, 'life', now, deps.yearStarts)
   // Each workspace's Watch has its own sources, counts, new items and saved dates; one with no source says nothing.
   const watchOf = (workspace: WatchWorkspace): HomeInputs['watch'][WatchWorkspace] =>
@@ -246,7 +269,7 @@ export function collectHomeSummary(deps: CollectDeps): HomeSummary {
     timer: homeTimer(db, deps.tracking, now),
     hours: {
       research: homeHours(research, now, 'research'),
-      work: homeHours(work, now, 'work'),
+      work: workHours(deps.db, deps.tracking, now),
       life: homeHours(life, now, 'life')
     },
     timeOff: research

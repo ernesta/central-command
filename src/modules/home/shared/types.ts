@@ -115,6 +115,12 @@ export interface HomeHours {
   todayMinutes: number
   /** Minutes per client in the period (Work, only those with time); none where the plan has no clients. */
   clients: { client: string | null; minutes: number }[]
+  /**
+   * Work only: the same figures over every contract that holds today (`allFigures`), not one page's chosen contract. `minutes` is then
+   * Work's week (Friday to Thursday) summed, there is no aim, `todayMinutes` is today summed, `clients` the week's per client, and this
+   * lists each such contract's time so far in its own invoice period.
+   */
+  contracts?: { year: string; name?: string; label: 'This week' | 'This month'; minutes: number }[]
 }
 
 /** Time so far for each workspace that tracks it; null when the workspace has no year holding today. */

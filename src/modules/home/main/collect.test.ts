@@ -536,9 +536,83 @@ describe('collectHomeSummary: hours are the Hours page’s hours', () => {
     db.prepare("UPDATE tasks SET parent_uid = 'p' WHERE uid = 'm1'").run()
     insertMeeting('work', 'wm', 'm1', { date: '2026-10-13' })
     const h = hours({ research, work }).work
-    expect(h?.label).toBe('This month')
+    // Work's hours are over every open contract: the week (Friday to Thursday), and each contract's period so far.
+    expect(h?.label).toBe('This week')
     expect(h?.minutes).toBe(45 + 60)
     expect(h?.clients).toEqual([{ client: 'Impact', minutes: 105 }])
+    expect(h?.contracts).toEqual([{ year: '2026-09-14', label: 'This month', minutes: 45 + 60 }])
+    expect(h?.aimMinutes).toBe(0)
+  })
+
+  describe('Work with two contracts open', () => {
+    // Today is Thu 15 Oct 2026. Luminos (a client worked today) and Royal Holloway (none) overlap.
+    const luminos: TrackingYear = {
+      ...emptyYear('2026-09-25', { ...WORK_PLAN, clients: ['Impact', 'Teaching'] }),
+      name: 'Luminos',
+      weeks: 8,
+      adjusts: [
+        { id: 'a', date: '2026-10-15', label: 'Proposal', minutes: 120, client: 'Impact' },
+        { id: 'b', date: '2026-10-10', label: 'Notes', minutes: 60, client: 'Teaching' },
+        { id: 'c', date: '2026-10-08', label: 'Last week', minutes: 600, client: 'Impact' }
+      ]
+    }
+    const holloway: TrackingYear = {
+      ...emptyYear('2026-09-28', { ...WORK_PLAN, hoursPerWeek: 0, clients: ['Royal Holloway'] }),
+      name: 'Royal Holloway',
+      weeks: 26,
+      invoice: 'week',
+      adjusts: [
+        { id: 'd', date: '2026-10-12', label: 'Reading', minutes: 90, client: 'Royal Holloway' }
+      ]
+    }
+    const multi = (files: TrackingYear[]): TrackingSource => ({
+      running: () => null,
+      years: (ws) => (ws === 'work' ? files.map((f) => f.start) : []),
+      get: (_ws, start) => files.find((f) => f.start === start) as TrackingYear
+    })
+    const workOf = (files: TrackingYear[]): ReturnType<typeof collect>['hours']['work'] =>
+      collect(multi(files)).hours.work
+
+    it('today is the sum of every open contract, and the week too', () => {
+      const h = workOf([luminos, holloway])
+      expect(h?.todayMinutes).toBe(120)
+      expect(h?.minutes).toBe(120 + 60 + 90)
+      expect(h?.clients).toEqual([
+        { client: 'Impact', minutes: 120 },
+        { client: 'Teaching', minutes: 60 },
+        { client: 'Royal Holloway', minutes: 90 }
+      ])
+      expect(h?.contracts?.map((c) => [c.name, c.label])).toEqual([
+        ['Luminos', 'This month'],
+        ['Royal Holloway', 'This week']
+      ])
+    })
+
+    it('does not depend on which file comes first (no page’s chosen contract)', () => {
+      expect(workOf([holloway, luminos])?.todayMinutes).toBe(120)
+      expect(workOf([holloway, luminos])?.minutes).toBe(workOf([luminos, holloway])?.minutes)
+    })
+
+    it('a day worked on the contract that is not the first open one still counts (the Home bug)', () => {
+      const h = workOf([holloway, luminos])
+      expect(h?.todayMinutes).not.toBe(0)
+    })
+
+    it('counts a meeting under a client of the second contract in that contract', () => {
+      task('p', { workspace: 'work', list: 'Royal Holloway', due: null })
+      task('m1', { workspace: 'work', list: '', due: null })
+      db.prepare("UPDATE tasks SET parent_uid = 'p' WHERE uid = 'm1'").run()
+      insertMeeting('work', 'wm', 'm1', { date: '2026-10-15' })
+      const h = workOf([luminos, holloway])
+      expect(h?.todayMinutes).toBe(120 + 60)
+      expect(h?.contracts?.find((c) => c.name === 'Royal Holloway')?.minutes).toBe(90 + 60)
+    })
+
+    it('a contract that ended is left out; with none open there is nothing', () => {
+      const ended: TrackingYear = { ...luminos, start: '2026-01-02', weeks: 4 }
+      expect(workOf([ended, holloway])?.contracts?.map((c) => c.name)).toEqual(['Royal Holloway'])
+      expect(workOf([ended])).toBeNull()
+    })
   })
 
   it('a year that does not hold today gives nothing, not the newest year’s hours', () => {
