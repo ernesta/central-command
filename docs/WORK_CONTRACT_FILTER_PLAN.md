@@ -1,5 +1,7 @@
 # Work: one contract filter for the whole workspace (plan, 3 Nov 2026)
 
+> **Status, 3 Nov 2026: all six stages BUILT and driven in a scratch library (production build and dev mode, light and dark); pushed, not installed.** Choices the plan left open, and what driving found: `docs/DECISIONS.md`, "Work: one contract filter". One change from the plan's wording: the week under All is a fixed Friday to Thursday (`weekStartDay` no longer exists).
+
 The user found Work confusing: Home's hours showed 0 for a day they had worked (for Luminos, not Royal Holloway), some pages had a contract
 dropdown and some did not, and the dropdowns sat in different places and filtered different things. Agreed with the user on 3 Nov 2026
 (do not re-ask): **proposal A, one filter for the whole workspace**, with "All" showing no aim and no export. Read `docs/CONTRACTS_PLAN.md`,

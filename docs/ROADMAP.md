@@ -406,6 +406,12 @@ Choices the plan left open, made conservatively; change any of them by telling C
 
 ## TODOs
 
+### Work: one contract filter (3 Nov 2026, `docs/WORK_CONTRACT_FILTER_PLAN.md`: all six stages BUILT and driven in a scratch library, pushed, not installed; `docs/DECISIONS.md`, "Work: one contract filter")
+
+- One `Contract` selector for Work (All contracts, or one), in the same place on Hours, Meetings, Tasks and in Home's hours panel, remembered; under All Hours shows Today and Week summed over the contracts, and there is no aim, balance, invoice card or Export. Home's summary and widget file sum every open contract.
+- **For you, to look at in the installed app (with the real contracts):** (1) the selector's place in the Home hours panel (it wraps under the label, as Home has no header); (2) Hours under All on a real week: the Friday-to-Thursday week and the arrows' range; (3) the Tasks page under Luminos and under Royal Holloway: any task whose list is no client of either contract is only under All; (4) Meetings under each contract (a meeting with no task shows under every contract); (5) that Home's Today and Coming up are not narrowed by the choice (left as they were).
+- **Decided on my own, change on request:** the Charts card is left out under All; Work has no Time off, so nothing there; the week under All starts on a Friday; the summary's Work label is "This week" and its `minutes` is Work's week, with each contract's own period in `contracts`.
+
 ### Watch: a task from a saved item (30 Oct 2026, `docs/WATCH_TASKS_PLAN.md`: BUILT and driven in a scratch library, not pushed; `docs/DECISIONS.md`, "Watch: a task from a saved item, and one row in Coming up")
 
 - A "Task" button on every Watch row opens the New task dialog filled in from the item; confirming makes the task, saves the item, and Home then shows the pair once (the task's row carries "Apply by 31 Oct" and the item's address). A done or deleted task gives the item's own row back. The task page has a side-column "Watch" panel with "Unlink". **For the user to look at in the installed app:** the real library's migration (`tasks/0005_watch_item` runs at the next launch; nothing else touches your data), Life's Watch rows, and how the "Task: …" note sits beside a long title.
