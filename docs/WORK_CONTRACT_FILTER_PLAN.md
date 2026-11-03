@@ -2,6 +2,8 @@
 
 > **Status, 3 Nov 2026: all six stages BUILT and driven in a scratch library (production build and dev mode, light and dark); pushed, not installed.** Choices the plan left open, and what driving found: `docs/DECISIONS.md`, "Work: one contract filter". Changes from the plan's wording (the user, 3 Nov 2026): the week under All is Monday to Sunday, and the Charts card is shown under All over one merged read-only year.
 
+> **Moved, 3 Nov 2026 (the user):** the selector is not in each page's header but in the **top bar, beside the workspace tabs**, while Work is active and the page follows it (`shell/WorkContractFilter.tsx`, pages in `shell/contract-filter-pages.ts`). The pages no longer carry one (Home's panel, Tasks, Hours, Meetings, Time off). The remembered scope is one shared value (`use-contract-filter.ts`), so the bar and the page agree.
+
 The user found Work confusing: Home's hours showed 0 for a day they had worked (for Luminos, not Royal Holloway), some pages had a contract
 dropdown and some did not, and the dropdowns sat in different places and filtered different things. Agreed with the user on 3 Nov 2026
 (do not re-ask): **proposal A, one filter for the whole workspace**, with "All" showing no aim and no export. Read `docs/CONTRACTS_PLAN.md`,
