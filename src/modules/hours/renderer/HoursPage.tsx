@@ -4,6 +4,7 @@ import { useNow } from '@renderer/state/use-now'
 import { useRunningTimer } from '@renderer/state/use-running-timer'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { isAllContracts } from '@shared/tracking/scope'
+import { yearLabel } from '@shared/year'
 import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { inContract } from '@shared/tracking/workspace-weeks'
 import { useHoursWorkspace } from './hours-paths'
@@ -21,7 +22,7 @@ import styles from './HoursPage.module.css'
 /** The Hours page: the year selector in the header, then Today beside the Charts card, the Week and invoice cards side by side, and the whole contract as one line. */
 export function HoursPage(): React.JSX.Element {
   const workspace = useHoursWorkspace()
-  const { year, years, loaded, setYear, scope, data: stored } = useTrackingYear(workspace)
+  const { year, years, loaded, setYear, scope, allYears, data: stored } = useTrackingYear(workspace)
   const { running } = useRunningTimer()
   const now = useNow(running !== null)
   // The year with its meetings' hours worked out from the notes (read-only, never saved).
@@ -43,7 +44,8 @@ export function HoursPage(): React.JSX.Element {
   return (
     <LandingPage>
       <LandingHeader
-        title="Hours"
+        // Research under All years shows the current year only, and says which.
+        title={allYears ? `Hours ${yearLabel(year)}` : 'Hours'}
         actions={<PeriodSelect workspace={workspace} year={year} years={years} onYear={setYear} />}
       />
       {loaded && years.length === 0 && (

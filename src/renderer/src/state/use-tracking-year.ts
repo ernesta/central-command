@@ -5,10 +5,12 @@ import type { Workspace } from '@shared/settings'
 import type { TrackingYear } from '@shared/tracking/types'
 import { yearToShow } from '@shared/tracking/current-year'
 import { isAllContracts, type ContractScope } from '@shared/tracking/scope'
+import { isAllYears } from '@shared/year-scope'
 import { hasContracts } from '@shared/tracking/workspace-weeks'
 import { useSettings } from './settings-context'
 import { useContractFilter } from './use-contract-filter'
 import { useOpenContractsRead } from './use-open-contracts'
+import { useYearFilter } from './use-year-filter'
 import { useYearFile } from './use-year-file'
 
 /**
@@ -16,7 +18,8 @@ import { useYearFile } from './use-year-file'
  * page on a given year. It opens on the current year; one that has no file and is not the current one falls back
  * to the current year. `data` is that year's file, null until it is read. A workspace with contracts is filtered by
  * `useContractFilter`: under one contract that is the year; under All there is no one year, and `year` is the contract
- * `contractToShow` picks, for what still needs one (Settings, a landing card). Pages that read every contract use `scope`.
+ * `contractToShow` picks, for what still needs one (Settings, a landing card). Pages that read every contract use `scope`. Research is
+ * filtered by `useYearFilter`: its year is the chosen one, or the current year under All years (`allYears`: the page can only show one).
  */
 export function useTrackingYear(workspace: Workspace): {
   year: string
@@ -25,13 +28,16 @@ export function useTrackingYear(workspace: Workspace): {
   loaded: boolean
   setYear: (year: string) => void
   data: TrackingYear | null
-  /** Work: All contracts, or one contract's first day. Research and Life: always All, and not used. */
+  /** Work: All contracts, or one contract's first day. Research: All years, or one year's start. Life: always All, and not used. */
   scope: ContractScope
   setScope: (scope: ContractScope) => void
+  /** Research under All years: `year` is then the current year, because these pages can only show one. */
+  allYears: boolean
 } {
   const { settings } = useSettings()
   const [params, setParams] = useSearchParams()
   const filter = useContractFilter(workspace)
+  const yearFilter = useYearFilter(workspace)
   const open = useOpenContractsRead(workspace)
 
   const contracts = hasContracts(workspace)
@@ -55,9 +61,11 @@ export function useTrackingYear(workspace: Workspace): {
     ? !isAllContracts(filter.scope) && years?.includes(filter.scope)
       ? filter.scope
       : current
-    : asked && years?.includes(asked)
-      ? asked
-      : current
+    : yearFilter.applies
+      ? yearFilter.year
+      : asked && years?.includes(asked)
+        ? asked
+        : current
 
   useEffect(() => {
     if (contracts) return
@@ -85,6 +93,10 @@ export function useTrackingYear(workspace: Workspace): {
       filter.setScope(next)
       return
     }
+    if (yearFilter.applies) {
+      yearFilter.setScope(next)
+      return
+    }
     setParams(
       (prev) => {
         const p = new URLSearchParams(prev)
@@ -102,7 +114,8 @@ export function useTrackingYear(workspace: Workspace): {
     loaded: years !== null && (open !== null || !contracts),
     setYear,
     data,
-    scope: filter.scope,
-    setScope: filter.setScope
+    scope: yearFilter.applies ? yearFilter.scope : filter.scope,
+    setScope: yearFilter.applies ? yearFilter.setScope : filter.setScope,
+    allYears: yearFilter.applies && isAllYears(yearFilter.scope)
   }
 }

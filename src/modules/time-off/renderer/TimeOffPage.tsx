@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@renderer/components/Button'
 import { LandingHeader, LandingPage } from '@renderer/components/Landing'
-import { YearSelect } from '@renderer/components/YearSelect'
-import { hasContracts } from '@shared/tracking/workspace-weeks'
+import { PeriodSelect } from '@renderer/components/PeriodSelect'
+import { yearLabel } from '@shared/year'
 import { useNow } from '@renderer/state/use-now'
 import { useTrackingYear } from '@renderer/state/use-tracking-year'
 import { useHoursWorkspace } from '../../hours/renderer/hours-paths'
@@ -15,19 +15,18 @@ import styles from './TimeOffPage.module.css'
 /** The Time off page: the year selector and Add in the header, the summary, then every day off of the year. */
 export function TimeOffPage(): React.JSX.Element {
   const workspace = useHoursWorkspace()
-  const { year, years, setYear, data } = useTrackingYear(workspace)
+  const { year, years, setYear, allYears, data } = useTrackingYear(workspace)
   const now = useNow(false)
   const [adding, setAdding] = useState(false)
 
   return (
     <LandingPage>
       <LandingHeader
-        title="Time off"
+        // Research under All years shows the current year only, and says which.
+        title={allYears ? `Time off ${yearLabel(year)}` : 'Time off'}
         actions={
           <div className={styles.actions}>
-            {!hasContracts(workspace) && (
-              <YearSelect year={year} years={years} onChange={setYear} />
-            )}
+            <PeriodSelect workspace={workspace} year={year} years={years} onYear={setYear} />
             <Button
               variant="primary"
               icon={<Plus size={16} strokeWidth={1.75} aria-hidden />}
