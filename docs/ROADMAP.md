@@ -1,5 +1,7 @@
 # Roadmap
 
+**Saved-file toasts (4 Nov 2026, `docs/DECISIONS.md`, "Saved-file messages are toasts with an Open button"): built, tested, not driven in the app, pushed and installed.** For you: after an export the "Saved … to <path>" message is a toast at the bottom (meeting PDF, meetings/supervision log, training report, activity log) with an **Open** button that opens the PDF; it replaces the page notice and the activity log's "Show". Export errors are still page notices. Look at: that Open opens the right file after two different exports in a row.
+
 **Add time hides Start (4 Nov 2026, `docs/DECISIONS.md`, "Add time: the buttons give way to the form"): built, tested, not driven in the app, pushed and installed.** For you: while the Add time form is open, Start/Stop and Add time are hidden, so a training's self-study card stays one line (the task page's Time card does the same). Cancel or Escape brings them back.
 
 **Urdu font and digits (4 Nov 2026, `docs/DECISIONS.md`, "Urdu and Arabic text: Noto Naskh Arabic, tagged `lang=\"ur\"`"): built, tested, driven in a scratch library (production build and dev mode, light only), pushed and installed.** For you: Urdu now draws in Noto Naskh Arabic everywhere (upright, one font), and 6 and 7 (also 4) take the Urdu shapes because Arabic-script text is tagged Urdu. Look at the title, the editor, tables, lists and task titles. Open: the app assumes every Arabic-script text is Urdu (TODO to infer it, below); exports (PDF, activity log) keep their own fonts; dark mode not driven.
