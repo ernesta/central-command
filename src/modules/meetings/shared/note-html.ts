@@ -326,12 +326,11 @@ export function notePageHtml(input: { title: string; details: string; bodyHtml: 
 body { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 10pt; line-height: 1.45; color: #1b222b; }
 h1 { margin: 0 0 4px; font-size: 18pt; }
 .sub { margin: 0 0 14px; color: #5c6672; font-size: 9pt; }
-/* # is 16pt, ## 14pt, ### 11.5pt bold, #### italic: the same in a meeting's and a note's page. Steps under 2pt read as the same size. */
+/* Every heading is bold and upright and only the size differs: # 16pt, ## 14pt, ### 11.5pt, #### 10pt. The same in a meeting's and a note's page. Steps under 2pt read as the same size. */
 h2 { margin: 18px 0 4px; font-size: 16pt; }
 h3 { margin: 14px 0 4px; font-size: 14pt; }
-h4 { margin: 10px 0 3px; font-size: 11.5pt; font-style: normal; }
-h5 { margin: 6px 0 2px; font-size: 10pt; font-weight: normal; font-style: italic; }
-a { color: #2f5d8a; text-decoration: underline; }
+h4 { margin: 10px 0 3px; font-size: 11.5pt; }
+h5 { margin: 8px 0 2px; font-size: 10pt; }
 p { margin: 0 0 6px; }
 ul, ol { margin: 0 0 6px; padding-left: 18px; }
 li { margin: 0 0 2px; }
