@@ -54,6 +54,7 @@ All of test, lint and typecheck must pass before finishing a checkpoint.
   - `live-keymap.ts`: every binding (Settings' Notes editor list is tested against it); `live-format.ts`: inline and block formatting keys
   - `live-lists.ts`: Enter, Shift-Enter, Tab, Backspace, Delete in lists and quotes; `live-lines.ts`: line parsing shared by them; `live-motion.ts`: Home
   - `live-links.ts`: Cmd-click and paste-a-URL-over-a-selection; `live-paste.ts`: plain-text paste; `live-history.ts`: each command its own undo step
+  - `live-language.ts`: Arabic-script runs tagged `lang="ur"` (the Urdu digit shapes; the rest of the app: `lib/auto-lang.ts`)
   - `live-find.ts`, `live-outline.ts`: Find and replace and the outline jump, through small bridge objects (`notes/find-types.ts`,
     `entities/mention-target.ts`, and Meetings' `todo-live.ts`)
   - tests: one `*.test.ts` per module, helpers `live-test-utils.ts`, `live-key-utils.ts`, `live-history.testing.ts`, and the real-library gate (`live-library.gate.ts`, run as `live-library.<part>.test.ts` files so the parts run in parallel)
