@@ -14,7 +14,7 @@ import type { Task, TaskWorkspace } from '../shared/types'
 import styles from './TaskPage.module.css'
 
 /**
- * The two ways to put time on a task: Start a timer on it, or Add time that was not tracked, on a day. One component for every
+ * The two ways to put time on a task (the buttons give way to the Add time form while it is open, so it stays one line): Start a timer on it, or Add time that was not tracked, on a day. One component for every
  * place that offers them (the task page's Time card, a training note), so a task is the same everywhere. Time lives in Hours; a
  * task only names it (`cc://task/<uid>`). When the task has subtasks (`parts`), Add time can go to one of them instead: a
  * series' trainings keep their own time. A task that does not exist yet (`uid` ''; a training's self-study) is made by `ensure` the
@@ -114,28 +114,28 @@ export function TaskTimeActions({
 
   return (
     <>
-      <div className={styles.timeButtons}>
-        {isRunning ? (
-          <Button
-            size="small"
-            variant="primary"
-            icon={<Square size={14} strokeWidth={1.75} aria-hidden />}
-            onClick={() => void stopTimer()}
-          >
-            Stop
-          </Button>
-        ) : (
-          <Button
-            ref={startRef}
-            size="small"
-            variant="primary"
-            icon={<Play size={14} strokeWidth={1.75} aria-hidden />}
-            onClick={start}
-          >
-            Start
-          </Button>
-        )}
-        {!adding && (
+      {!adding && (
+        <div className={styles.timeButtons}>
+          {isRunning ? (
+            <Button
+              size="small"
+              variant="primary"
+              icon={<Square size={14} strokeWidth={1.75} aria-hidden />}
+              onClick={() => void stopTimer()}
+            >
+              Stop
+            </Button>
+          ) : (
+            <Button
+              ref={startRef}
+              size="small"
+              variant="primary"
+              icon={<Play size={14} strokeWidth={1.75} aria-hidden />}
+              onClick={start}
+            >
+              Start
+            </Button>
+          )}
           <Button
             size="small"
             icon={<Plus size={14} strokeWidth={1.75} aria-hidden />}
@@ -143,8 +143,8 @@ export function TaskTimeActions({
           >
             Add time
           </Button>
-        )}
-      </div>
+        </div>
+      )}
       {adding && (
         <div
           className={styles.addTime}
