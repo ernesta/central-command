@@ -1,6 +1,6 @@
 # Research: one academic year filter for the whole workspace (plan, 3 Nov 2026)
 
-> **Status: planned, not started.** Agreed with the user on 3 Nov 2026 (do not re-ask): the same idea as Work's contract filter
+> **Status, 3 Nov 2026: all six stages BUILT and driven in a scratch library (production build and dev mode, light only); pushed and installed.** Choices the plan left open, and what driving found: `docs/DECISIONS.md`, "Research: one academic year filter". Originally: Agreed with the user on 3 Nov 2026 (do not re-ask): the same idea as Work's contract filter
 > (`docs/WORK_CONTRACT_FILTER_PLAN.md`, `docs/DECISIONS.md`, "Work: one contract filter"), for Research and its academic years. Read both,
 > `docs/DECISIONS.md` ("Hours and Time off": the shared 52-week year) and `CLAUDE.md` first.
 
