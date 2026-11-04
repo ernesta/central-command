@@ -1,11 +1,23 @@
 import { mkdir } from 'fs/promises'
 import { join } from 'path'
 import { BrowserWindow, ipcMain, shell } from 'electron'
+import { exportHtmlAsPdf } from '../../../main/export-pdf'
 import { readNoteFile } from '../../../main/notes/guarded-file'
 import { NotesWatcher } from '../../../main/notes/watcher'
 import type { MainContext, MainModule } from '../../main-registry'
-import { NOTES_IPC, type CreateNoteInput, type NoteChangedEvent } from '../shared/api'
+import {
+  NOTES_IPC,
+  type CreateNoteInput,
+  type NoteChangedEvent,
+  type NotesExportResult
+} from '../shared/api'
 import type { NoteChanges } from '../shared/front-matter'
+import {
+  noteExportFileName,
+  noteExportFooter,
+  noteExportHtml,
+  noteExportTitle
+} from '../shared/note-html'
 import { NOTE_WORKSPACES, type NoteRef, type NoteWorkspace } from '../shared/types'
 import { notesPath } from './file-name'
 import { notesMigrations } from './migrations'
@@ -75,6 +87,18 @@ function register({ db, paths }: MainContext): () => void {
   ipcMain.handle(NOTES_IPC.discardIfEmpty, (_event, ref: unknown) =>
     store.discardIfEmpty(asRef(ref))
   )
+
+  ipcMain.handle(NOTES_IPC.exportPdf, async (event, ref: unknown): Promise<NotesExportResult> => {
+    const file = await store.read(asRef(ref))
+    const title = noteExportTitle(file.meta, file.body)
+    return exportHtmlAsPdf(event.sender, {
+      html: noteExportHtml({ meta: file.meta, body: file.body }),
+      dialogTitle: 'Export the note as a PDF',
+      fileName: noteExportFileName(title),
+      portrait: true,
+      footer: noteExportFooter(title)
+    })
+  })
 
   const watchers = ACTIVE_WORKSPACES.map(
     (workspace) =>

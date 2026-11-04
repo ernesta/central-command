@@ -44,6 +44,8 @@ export interface NoteChangedEvent {
   hash: string | null
 }
 
+export type NotesExportResult = { status: 'saved'; path: string } | { status: 'cancelled' }
+
 /** The Notes slice of window.api. */
 export interface NotesApi {
   /** Create a new note file and resolve with it. Never replaces an existing file. */
@@ -72,6 +74,8 @@ export interface NotesApi {
    * The one case where a file is deleted without the Trash, because nothing is lost.
    */
   discardIfEmpty(ref: NoteRef): Promise<boolean>
+  /** Ask where to save, then write the note's saved text as a PDF. The caller saves first. */
+  exportPdf(ref: NoteRef): Promise<NotesExportResult>
   /** Subscribe to note files changing on disk. Returns an unsubscribe function. */
   onChanged(listener: (event: NoteChangedEvent) => void): () => void
 }
@@ -86,5 +90,6 @@ export const NOTES_IPC = {
   move: 'notes:move',
   ensureUid: 'notes:ensure-uid',
   discardIfEmpty: 'notes:discard-if-empty',
+  exportPdf: 'notes:export-pdf',
   changed: 'notes:changed'
 } as const

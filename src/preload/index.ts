@@ -194,6 +194,7 @@ const api: Api = {
     move: (ref, to) => ipcRenderer.invoke(NOTES_IPC.move, ref, to),
     ensureUid: (ref) => ipcRenderer.invoke(NOTES_IPC.ensureUid, ref),
     discardIfEmpty: (ref) => ipcRenderer.invoke(NOTES_IPC.discardIfEmpty, ref),
+    exportPdf: (ref) => ipcRenderer.invoke(NOTES_IPC.exportPdf, ref),
     onChanged: (listener) => {
       const handler = (_event: Electron.IpcRendererEvent, change: NotesChangedEvent): void =>
         listener(change)

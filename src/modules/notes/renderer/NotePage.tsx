@@ -2,6 +2,8 @@ import { Pin } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@renderer/components/Button'
+import { ExportButton } from '@renderer/components/ExportButton'
+import { showSavedToast } from '@renderer/components/saved-toast'
 import { isUntouchedBody } from '@renderer/components/untouched'
 import { NEW_NOTE_BODY } from '../shared/front-matter'
 import { EmptyState } from '@renderer/components/EmptyState'
@@ -123,6 +125,23 @@ function NoteView({
     }
   }
 
+  const [exporting, setExporting] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
+  // The PDF is made from the saved file, so what is typed is saved first.
+  const exportPdf = async (): Promise<void> => {
+    setExporting(true)
+    setExportError(null)
+    try {
+      await session.flush()
+      const result = await window.api.notes.exportPdf(session.getRef())
+      if (result.status === 'saved') showSavedToast(`Saved the note to ${result.path}`)
+    } catch (e) {
+      setExportError(`Couldn’t export: ${ipcErrorMessage(e)}`)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   // A page nothing was typed into goes without asking.
   const untouched = !meta.title && !meta.pinned && isUntouchedBody(body, NEW_NOTE_BODY)
 
@@ -176,6 +195,7 @@ function NoteView({
           }
         />
         <div className={styles.actions}>
+          <ExportButton busy={exporting} onClick={() => void exportPdf()} />
           <WorkspaceSelect
             compact
             workspaces={NOTE_WORKSPACE_CHOICES}
@@ -218,7 +238,7 @@ function NoteView({
         </div>
       </div>
 
-      {(conflict || error || deleteError || moveError || problems.length > 0) && (
+      {(conflict || error || deleteError || exportError || moveError || problems.length > 0) && (
         <div className={styles.notices}>
           {conflict && (
             <Notice
@@ -252,6 +272,11 @@ function NoteView({
           {moveError && (
             <Notice tone="error" onDismiss={() => setMoveError(null)}>
               Couldn’t move the note: {moveError}
+            </Notice>
+          )}
+          {exportError && (
+            <Notice tone="error" onDismiss={() => setExportError(null)}>
+              {exportError}
             </Notice>
           )}
           {deleteError && (
