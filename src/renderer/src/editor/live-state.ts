@@ -16,6 +16,7 @@ import { liveCopy } from './live-copy'
 import { livePaste } from './live-paste'
 import { liveSelection } from './live-selection'
 import { liveDirection } from './live-direction'
+import { liveLanguage } from './live-language'
 import { tableScroll } from './live-tables'
 
 export interface LiveOptions {
@@ -54,6 +55,7 @@ export function liveExtensions(options: LiveOptions): Extension[] {
     drawSelection(),
     liveSelection,
     liveDirection,
+    liveLanguage,
     EditorView.lineWrapping,
     // Its own Enter and Backspace rules (`addKeymap`) are replaced by `live-lists.ts`, and its link-on-paste by `live-paste.ts`
     // (which knows a made-up paste, Cmd-Shift-V, must not link).

@@ -8,6 +8,7 @@ import { moduleEntityProviders } from '@modules/index'
 import App from './App'
 import { registerEntityProviders } from './entities/registry'
 import { autoDirectionOnFocus } from './lib/auto-direction'
+import { autoLang } from './lib/auto-lang'
 
 // What a note can mention with `@` comes from the modules; the editor only knows the registry.
 registerEntityProviders(moduleEntityProviders())
@@ -16,6 +17,7 @@ registerEntityProviders(moduleEntityProviders())
 document.documentElement.lang = navigator.language
 
 autoDirectionOnFocus()
+autoLang()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

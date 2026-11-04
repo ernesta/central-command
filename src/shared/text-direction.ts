@@ -13,3 +13,20 @@ export function textDirection(text: string): 'ltr' | 'rtl' | null {
   }
   return null
 }
+
+/** One Arabic-script letter, digit or mark (Arabic, Urdu, Persian: the blocks that hold them and the presentation forms). */
+const ARABIC = '[\\u0600-\\u06FF\\u0750-\\u077F\\u08A0-\\u08FF\\uFB50-\\uFDFF\\uFE70-\\uFEFF]'
+/** A run of Arabic-script text: spaces and punctuation between two such characters belong to it, so "چھ ۶" is one run. */
+const ARABIC_RUN = new RegExp(
+  `${ARABIC}+(?:(?:[\\s\\u00A0.,:;!?()\\u060C\\u061B\\u061F\\-\\u2013\\u2014]|\\u200C|\\u200D)+${ARABIC}+)*`,
+  'g'
+)
+
+export function hasArabicScript(text: string): boolean {
+  return new RegExp(ARABIC).test(text)
+}
+
+/** The ranges of Arabic-script text in `text` (what `lang="ur"` is put on). */
+export function arabicScriptRuns(text: string): { from: number; to: number }[] {
+  return [...text.matchAll(ARABIC_RUN)].map((m) => ({ from: m.index, to: m.index + m[0].length }))
+}
