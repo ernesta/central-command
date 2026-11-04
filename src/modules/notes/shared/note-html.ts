@@ -25,12 +25,20 @@ export function noteExportDetails(meta: Pick<NoteMeta, 'group' | 'subgroup'>): s
   return [meta.group, meta.subgroup].filter((part) => part).join(' · ')
 }
 
+/** A note's headings step down in size from the title: # is 13pt, ## 11pt, ### 10pt bold, #### italic. */
+const HEADING_CSS = `h2 { margin: 16px 0 4px; font-size: 13pt; }
+h3 { margin: 12px 0 3px; font-size: 11pt; }
+h4 { margin: 8px 0 2px; font-size: 10pt; font-style: normal; }
+h5 { margin: 6px 0 2px; font-size: 10pt; font-weight: normal; font-style: italic; }
+`
+
 /** The whole page for one note: its title, its group, then its text. */
 export function noteExportHtml(input: { meta: NoteMeta; body: string }): string {
   const { meta, body } = input
   return notePageHtml({
     title: noteExportTitle(meta, body),
     details: noteExportDetails(meta),
-    bodyHtml: markdownHtml(body)
+    bodyHtml: markdownHtml(body, { note: true }),
+    extraCss: HEADING_CSS
   })
 }

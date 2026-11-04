@@ -15,6 +15,19 @@ describe('note export page', () => {
     expect(html).not.toContain('<script>')
   })
 
+  it('keeps links and steps headings down in size', () => {
+    const html = noteExportHtml({
+      meta,
+      body: '# One\n\n## Two\n\n### Three\n\nSee [the plan](https://example.com/a?b=1&c=2) and [a person](cc://person/x).\n'
+    })
+    expect(html).toContain('<h2>One</h2>')
+    expect(html).toContain('<h3>Two</h3>')
+    expect(html).toContain('<h4>Three</h4>')
+    expect(html).toContain('<a href="https://example.com/a?b=1&amp;c=2">the plan</a>')
+    expect(html).toContain(' and a person.')
+    expect(html).not.toContain('cc://')
+  })
+
   it('titles an untitled note by its first line', () => {
     expect(noteExportTitle({ title: '' }, 'First line here\n\nmore')).toBe('First line here more')
     expect(noteExportTitle({ title: '' }, '')).toBe('Untitled')
