@@ -6,6 +6,7 @@ import { EmptyState } from '@renderer/components/EmptyState'
 import { ExportButton } from '@renderer/components/ExportButton'
 import { FilterRow } from '@renderer/components/FilterRow'
 import { Notice } from '@renderer/components/Notice'
+import { showToast } from '@renderer/components/toast-store'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { skillFilterOptions, skillsIn } from '@shared/skills'
 import { yearLabel } from '@shared/year'
@@ -48,9 +49,7 @@ export function MeetingsPage(): React.JSX.Element {
     seriesParam ? { ...DEFAULT_MEETINGS_QUERY, series: seriesParam } : undefined
   )
   const [exporting, setExporting] = useState(false)
-  const [exportNotice, setExportNotice] = useState<{ tone: 'info' | 'error'; text: string } | null>(
-    null
-  )
+  const [exportError, setExportError] = useState<string | null>(null)
   const set = (patch: Partial<MeetingsQuery>): void => setQuery(patch)
 
   const today = useToday()
@@ -89,18 +88,17 @@ export function MeetingsPage(): React.JSX.Element {
 
   const exportPdf = async (): Promise<void> => {
     setExporting(true)
-    setExportNotice(null)
+    setExportError(null)
     try {
       const result = await window.api.meetings.exportPdf(workspace, year, period.contract)
       if (result.status === 'saved') {
-        setExportNotice({
-          tone: 'info',
-          // Research's log is of one year: under All years, the current one, which the notice names.
-          text: `Saved the ${workspace === 'research' ? 'supervision' : 'meetings'} log for ${period.all && workspace === 'research' ? yearLabel(year) : period.label} to ${result.path}`
-        })
+        // Research's log is of one year: under All years, the current one, which the message names.
+        showToast(
+          `Saved the ${workspace === 'research' ? 'supervision' : 'meetings'} log for ${period.all && workspace === 'research' ? yearLabel(year) : period.label} to ${result.path}`
+        )
       }
     } catch (e) {
-      setExportNotice({ tone: 'error', text: `Couldn’t export: ${ipcErrorMessage(e)}` })
+      setExportError(`Couldn’t export: ${ipcErrorMessage(e)}`)
     } finally {
       setExporting(false)
     }
@@ -220,9 +218,9 @@ export function MeetingsPage(): React.JSX.Element {
           onChange={(attendee) => set({ attendee })}
         />
       </FilterRow>
-      {exportNotice && (
-        <Notice tone={exportNotice.tone} onDismiss={() => setExportNotice(null)}>
-          {exportNotice.text}
+      {exportError && (
+        <Notice tone="error" onDismiss={() => setExportError(null)}>
+          {exportError}
         </Notice>
       )}
 

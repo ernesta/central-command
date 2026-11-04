@@ -9,6 +9,7 @@ import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { WorkspaceSelect } from '@renderer/components/WorkspaceSelect'
+import { showToast } from '@renderer/components/toast-store'
 import { pushUndo, pushUndoWithToast } from '@renderer/components/undo-store'
 import { liveViewIn, placeCursorOnLine } from '@renderer/editor/live-outline'
 import { DocSplit } from '@renderer/notes/DocSplit'
@@ -155,21 +156,19 @@ function MeetingView({
   const [moving, setMoving] = useState(false)
   const [moveError, setMoveError] = useState<string | null>(null)
   const [exporting, setExporting] = useState(false)
-  const [exportNotice, setExportNotice] = useState<{ tone: 'info' | 'error'; text: string } | null>(
-    null
-  )
+  const [exportError, setExportError] = useState<string | null>(null)
   // The PDF is made from the saved file, so what is typed is saved first.
   const exportPdf = async (): Promise<void> => {
     setExporting(true)
-    setExportNotice(null)
+    setExportError(null)
     try {
       await session.flush()
       const result = await window.api.meetings.exportNotePdf(session.getRef())
       if (result.status === 'saved') {
-        setExportNotice({ tone: 'info', text: `Saved the meeting to ${result.path}` })
+        showToast(`Saved the meeting to ${result.path}`)
       }
     } catch (e) {
-      setExportNotice({ tone: 'error', text: `Couldn’t export: ${ipcErrorMessage(e)}` })
+      setExportError(`Couldn’t export: ${ipcErrorMessage(e)}`)
     } finally {
       setExporting(false)
     }
@@ -292,7 +291,7 @@ function MeetingView({
         </div>
       </div>
 
-      {(conflict || error || deleteError || moveError || exportNotice || problems.length > 0) && (
+      {(conflict || error || deleteError || moveError || exportError || problems.length > 0) && (
         <div className={styles.notices}>
           {conflict && (
             <Notice
@@ -328,9 +327,9 @@ function MeetingView({
               Couldn’t move the meeting: {moveError}
             </Notice>
           )}
-          {exportNotice && (
-            <Notice tone={exportNotice.tone} onDismiss={() => setExportNotice(null)}>
-              {exportNotice.text}
+          {exportError && (
+            <Notice tone="error" onDismiss={() => setExportError(null)}>
+              {exportError}
             </Notice>
           )}
           {deleteError && (
