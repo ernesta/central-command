@@ -56,6 +56,8 @@ export interface Api {
     info(): Promise<AppInfo>
     /** Opens the data folder in Finder. */
     revealData(): Promise<void>
+    /** Opens the PDF the last export saved (never a path the page names). */
+    openExport(): Promise<void>
     /** Leave full screen (Escape, when the page did not use the key). A no-op outside full screen. */
     leaveFullScreen(): Promise<void>
     /** A quick action chosen from the Dock menu (macOS). Returns an unsubscribe function. */
@@ -106,6 +108,7 @@ export const IPC = {
   dialogPickPath: 'dialog:pick-path',
   appInfo: 'app:info',
   appRevealData: 'app:reveal-data',
+  appOpenExport: 'app:open-export',
   appLeaveFullScreen: 'app:leave-full-screen',
   appDockAction: 'app:dock-action',
   appFullScreenChange: 'app:full-screen-change',

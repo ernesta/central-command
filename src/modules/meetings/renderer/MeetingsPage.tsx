@@ -6,7 +6,7 @@ import { EmptyState } from '@renderer/components/EmptyState'
 import { ExportButton } from '@renderer/components/ExportButton'
 import { FilterRow } from '@renderer/components/FilterRow'
 import { Notice } from '@renderer/components/Notice'
-import { showToast } from '@renderer/components/toast-store'
+import { showSavedToast } from '@renderer/components/saved-toast'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { skillFilterOptions, skillsIn } from '@shared/skills'
 import { yearLabel } from '@shared/year'
@@ -93,7 +93,7 @@ export function MeetingsPage(): React.JSX.Element {
       const result = await window.api.meetings.exportPdf(workspace, year, period.contract)
       if (result.status === 'saved') {
         // Research's log is of one year: under All years, the current one, which the message names.
-        showToast(
+        showSavedToast(
           `Saved the ${workspace === 'research' ? 'supervision' : 'meetings'} log for ${period.all && workspace === 'research' ? yearLabel(year) : period.label} to ${result.path}`
         )
       }

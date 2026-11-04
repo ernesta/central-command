@@ -8,7 +8,7 @@ import { ExportButton } from '@renderer/components/ExportButton'
 import { FilterRow } from '@renderer/components/FilterRow'
 import { HoursStrip } from '@renderer/components/HoursStrip'
 import { Notice } from '@renderer/components/Notice'
-import { showToast } from '@renderer/components/toast-store'
+import { showSavedToast } from '@renderer/components/saved-toast'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { SearchInput } from '@renderer/components/SearchInput'
 import { Select } from '@renderer/components/Select'
@@ -87,7 +87,7 @@ export function TrainingPage(): React.JSX.Element {
       // The report is of one year: the current one under All years, which the notice names.
       const result = await window.api.training.exportPdf(year)
       if (result.status === 'saved') {
-        showToast(`Saved ${yearLabel(year)} to ${result.path}`)
+        showSavedToast(`Saved ${yearLabel(year)} to ${result.path}`)
       }
     } catch (e) {
       setExportError(`Couldn’t export: ${ipcErrorMessage(e)}`)

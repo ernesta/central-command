@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { APP_NAME } from '@shared/app-info'
 import { IPC, type AppInfo } from '@shared/api'
+import { openLastExport } from '../export-pdf'
 
 /** The app's version and data folder, and a way to open that folder in Finder. Nothing else about the machine is exposed. */
 export function registerAppIpc(dataDir: string): void {
@@ -12,6 +13,10 @@ export function registerAppIpc(dataDir: string): void {
   ipcMain.handle(IPC.appLeaveFullScreen, (event) => {
     const window = BrowserWindow.fromWebContents(event.sender)
     if (window?.isFullScreen()) window.setFullScreen(false)
+  })
+  ipcMain.handle(IPC.appOpenExport, async () => {
+    const problem = await openLastExport()
+    if (problem) throw new Error(problem)
   })
   ipcMain.handle(IPC.appRevealData, async () => {
     const problem = await shell.openPath(dataDir)

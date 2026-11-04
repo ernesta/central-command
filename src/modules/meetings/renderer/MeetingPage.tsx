@@ -9,7 +9,7 @@ import { Notice } from '@renderer/components/Notice'
 import { ipcErrorMessage } from '@renderer/lib/ipc-error'
 import { useDocumentTitle } from '@renderer/lib/use-document-title'
 import { WorkspaceSelect } from '@renderer/components/WorkspaceSelect'
-import { showToast } from '@renderer/components/toast-store'
+import { showSavedToast } from '@renderer/components/saved-toast'
 import { pushUndo, pushUndoWithToast } from '@renderer/components/undo-store'
 import { liveViewIn, placeCursorOnLine } from '@renderer/editor/live-outline'
 import { DocSplit } from '@renderer/notes/DocSplit'
@@ -165,7 +165,7 @@ function MeetingView({
       await session.flush()
       const result = await window.api.meetings.exportNotePdf(session.getRef())
       if (result.status === 'saved') {
-        showToast(`Saved the meeting to ${result.path}`)
+        showSavedToast(`Saved the meeting to ${result.path}`)
       }
     } catch (e) {
       setExportError(`Couldn’t export: ${ipcErrorMessage(e)}`)

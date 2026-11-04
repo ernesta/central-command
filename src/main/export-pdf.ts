@@ -1,8 +1,16 @@
 import { writeFile } from 'fs/promises'
 import { join } from 'path'
-import { BrowserWindow, app, dialog } from 'electron'
+import { BrowserWindow, app, dialog, shell } from 'electron'
 
 export type PdfExportResult = { status: 'saved'; path: string } | { status: 'cancelled' }
+
+// Only the file an export saved can be opened, never a path the page names.
+let lastExport: string | null = null
+
+/** Open the PDF the last export saved in the default app. Resolves to an error text, or '' when opened or when nothing was exported. */
+export async function openLastExport(): Promise<string> {
+  return lastExport ? shell.openPath(lastExport) : ''
+}
 
 /**
  * Asks where to save, then prints a finished HTML page to an A4 PDF there (landscape unless `portrait`; no background colours unless `backgrounds`). The page is
@@ -55,5 +63,6 @@ export async function exportHtmlAsPdf(
   } finally {
     printer.destroy()
   }
+  lastExport = chosen.filePath
   return { status: 'saved', path: chosen.filePath }
 }

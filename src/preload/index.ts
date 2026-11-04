@@ -28,6 +28,7 @@ const api: Api = {
   app: {
     info: () => ipcRenderer.invoke(IPC.appInfo),
     revealData: () => ipcRenderer.invoke(IPC.appRevealData),
+    openExport: () => ipcRenderer.invoke(IPC.appOpenExport),
     leaveFullScreen: () => ipcRenderer.invoke(IPC.appLeaveFullScreen),
     onDockAction: (listener) => {
       const handler = (_event: Electron.IpcRendererEvent, action: DockActionId): void =>
@@ -264,7 +265,6 @@ const api: Api = {
       ipcRenderer.invoke(TRACKING_IPC.setContractTerms, workspace, year, terms),
     exportActivityLog: (html, fileName) =>
       ipcRenderer.invoke(TRACKING_IPC.exportActivityLog, html, fileName),
-    revealActivityLog: () => ipcRenderer.invoke(TRACKING_IPC.revealActivityLog),
     removeContract: (workspace, year) =>
       ipcRenderer.invoke(TRACKING_IPC.removeContract, workspace, year),
     setContractEnd: (workspace, year, end) =>

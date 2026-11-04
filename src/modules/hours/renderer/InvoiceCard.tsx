@@ -1,4 +1,4 @@
-import { showToast } from '@renderer/components/toast-store'
+import { showSavedToast } from '@renderer/components/saved-toast'
 import { useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { ExportButton } from '@renderer/components/ExportButton'
@@ -60,11 +60,7 @@ export function InvoiceCard({
         activityLogHtml(log, people.find((p) => p.me)?.name, DM_SANS_CSS),
         log.fileName
       )
-      if (result.status === 'saved')
-        showToast(`Saved the activity log to ${result.path}`, {
-          label: 'Show',
-          run: () => void window.api.tracking.revealActivityLog()
-        })
+      if (result.status === 'saved') showSavedToast(`Saved the activity log to ${result.path}`)
     } catch (e) {
       setNotice({ tone: 'error', text: `Couldn’t export: ${ipcErrorMessage(e)}` })
     } finally {
