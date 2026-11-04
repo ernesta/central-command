@@ -33,18 +33,17 @@ describe('markdownHtml', () => {
 
   it('prints headings, bullets and nested bullets', () => {
     const html = markdownHtml('### Topic\n- one\n  - inner\n- two')
-    expect(html).toContain('<h3>Topic</h3>')
+    expect(html).toContain('<h4>Topic</h4>')
     expect(html).toContain('<li>one<ul><li>inner</li></ul></li>')
     expect(html).toContain('<li>two</li>')
   })
 
-  it('prints a mention as its name and a link as its words', () => {
+  it('prints a mention as its name and a web link as a link', () => {
     const html = markdownHtml(
       'With [Kathy Rastle](cc://person/Kathy%20Rastle) and [a site](https://x.org)'
     )
-    expect(html).toContain('With Kathy Rastle and a site')
+    expect(html).toContain('With Kathy Rastle and <a href="https://x.org">a site</a>')
     expect(html).not.toContain('cc://')
-    expect(html).not.toContain('x.org')
   })
 
   it('prints a TODO as a bullet with a bold TODO(owner), struck through when done', () => {
@@ -92,7 +91,7 @@ describe('noteBodyHtml', () => {
     )
     expect(html).toContain('<div class="summary"><p>Key topics: A.</p></div>')
     expect(html).not.toContain('<h2>Notes</h2>')
-    expect(html).toContain('<h3>Topic</h3>')
+    expect(html).toContain('<h4>Topic</h4>')
     expect(html).not.toContain('old')
     expect(html).not.toContain('Previous')
   })

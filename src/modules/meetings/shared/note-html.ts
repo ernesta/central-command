@@ -43,8 +43,6 @@ interface Context {
   markers: Marker[]
   /** The markers already printed, since a marker can span a bold node and the text after it. */
   printed: Set<Marker>
-  /** A note's own page: links keep their address and headings keep their levels (a meeting's page has no use for either). */
-  note: boolean
 }
 
 const slice = (ctx: Context, from: number, to: number): string => ctx.text.slice(from, to)
@@ -102,7 +100,7 @@ function inlineNode(ctx: Context, node: SyntaxNode): string {
       const words = inline(ctx, node, marks[0].to, marks[1].from)
       const url = node.getChild('URL')
       const href = url ? slice(ctx, url.from, url.to).trim() : ''
-      return ctx.note && node.name === 'Link' && /^(?:https?:\/\/|mailto:)/i.test(href)
+      return node.name === 'Link' && /^(?:https?:\/\/|mailto:)/i.test(href)
         ? `<a href="${escapeHtml(href)}">${words}</a>`
         : words
     }
@@ -150,8 +148,8 @@ function heading(ctx: Context, node: SyntaxNode): string {
   } else {
     to = marks[marks.length - 1]?.from ?? to
   }
-  // A meeting's page has its own <h2> section titles, so its headings are all <h3> or <h4>; a note's # ## ### #### are <h2> to <h5>.
-  const tag = ctx.note ? Math.min(level, 4) + 1 : level <= 3 ? 3 : 4
+  // # ## ### #### are <h2> to <h5> (the page's title is the <h1>); deeper levels print as the last.
+  const tag = Math.min(level, 4) + 1
   return `<h${tag}>${inline(ctx, node, from, to).trim()}</h${tag}>`
 }
 
@@ -240,30 +238,27 @@ function todoMarkers(text: string): Marker[] {
 }
 
 /** A piece of a note as HTML: paragraphs, headings, lists (TODOs as bullets), quotes, tables and code. */
-export function markdownHtml(text: string, options: { note?: boolean } = {}): string {
+export function markdownHtml(text: string): string {
   const tree = markdownLanguage.parser.parse(text)
-  const ctx: Context = {
-    text,
-    markers: todoMarkers(text),
-    printed: new Set(),
-    note: options.note === true
-  }
+  const ctx: Context = { text, markers: todoMarkers(text), printed: new Set() }
   return blocks(ctx, tree.topNode)
 }
 
 interface Section {
   title: string | null
+  /** 1 or 2: the heading's own level, so its size matches the same heading inside a note. */
+  level: number
   text: string
 }
 
 /** The note cut at its `#` and `##` headings (not inside code); anything before the first is a section with no title. */
 function sections(body: string): Section[] {
-  const out: Section[] = [{ title: null, text: '' }]
+  const out: Section[] = [{ title: null, level: 2, text: '' }]
   const lines: string[][] = [[]]
   for (const line of scanLines(body)) {
     const title = line.inFence ? null : parseHeading(line.text)
     if (title && title.level <= 2) {
-      out.push({ title: title.text, text: '' })
+      out.push({ title: title.text, level: title.level, text: '' })
       lines.push([])
     } else {
       lines[lines.length - 1].push(line.text)
@@ -275,7 +270,7 @@ function sections(body: string): Section[] {
 /** The note's body as HTML: the Summary first, every other section under a plain heading (Notes without one), Previous TODOs not at all. */
 export function noteBodyHtml(body: string): string {
   return sections(body)
-    .map(({ title, text }) => {
+    .map(({ title, level, text }) => {
       const content = text.trim() === '' ? '' : markdownHtml(text)
       if (content === '') return ''
       const key = title?.trim().toLowerCase()
@@ -284,7 +279,7 @@ export function noteBodyHtml(body: string): string {
       // The note's own "Notes" section needs no label: it is the note.
       return title === null || key === 'notes'
         ? content
-        : `<h2>${escapeHtml(title)}</h2>\n${content}`
+        : `<h${level + 1}>${escapeHtml(title)}</h${level + 1}>\n${content}`
     })
     .filter((s) => s !== '')
     .join('\n')
@@ -319,14 +314,8 @@ export function noteFileName(meta: Pick<MeetingMeta, 'series' | 'date'>): string
 }
 
 /** A printable note page: the title, an optional one-line subtitle and the body HTML. Shared by the meeting and the note export. */
-export function notePageHtml(input: {
-  title: string
-  details: string
-  bodyHtml: string
-  /** CSS added after the page's own, for a page that needs different rules. */
-  extraCss?: string
-}): string {
-  const { title, details, bodyHtml, extraCss = '' } = input
+export function notePageHtml(input: { title: string; details: string; bodyHtml: string }): string {
+  const { title, details, bodyHtml } = input
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -337,9 +326,10 @@ export function notePageHtml(input: {
 body { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 10pt; line-height: 1.45; color: #1b222b; }
 h1 { margin: 0 0 4px; font-size: 18pt; }
 .sub { margin: 0 0 14px; color: #5c6672; font-size: 9pt; }
-h2 { margin: 14px 0 4px; font-size: 11pt; }
-h3 { margin: 10px 0 3px; font-size: 10pt; }
-h4 { margin: 8px 0 2px; font-size: 10pt; font-style: italic; }
+/* # is 13pt, ## 11pt, ### 10pt bold, #### italic: the same in a meeting's and a note's page. */
+h2 { margin: 16px 0 4px; font-size: 13pt; }
+h3 { margin: 12px 0 3px; font-size: 11pt; }
+h4 { margin: 8px 0 2px; font-size: 10pt; font-style: normal; }
 h5 { margin: 6px 0 2px; font-size: 10pt; font-weight: normal; font-style: italic; }
 a { color: #2f5d8a; text-decoration: underline; }
 p { margin: 0 0 6px; }
@@ -354,7 +344,7 @@ table { width: 100%; border-collapse: collapse; margin: 0 0 8px; font-family: He
 th { text-align: left; padding: 4px 6px; border-bottom: 1.5px solid #1b222b; font-size: 8pt; }
 td { padding: 4px 6px; border-bottom: 0.5px solid #c3cad2; vertical-align: top; }
 tr { break-inside: avoid; }
-${extraCss}</style>
+</style>
 </head>
 <body>
 <h1>${escapeHtml(title)}</h1>
