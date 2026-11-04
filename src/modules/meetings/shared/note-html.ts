@@ -304,11 +304,9 @@ export function noteFileName(meta: Pick<MeetingMeta, 'series' | 'date'>): string
   return `${name}.pdf`
 }
 
-/** The whole page for one meeting. */
-export function meetingNoteHtml(input: { meta: MeetingMeta; body: string }): string {
-  const { meta, body } = input
-  const title = noteTitle(meta)
-  const details = noteDetails(meta)
+/** A printable note page: the title, an optional one-line subtitle and the body HTML. Shared by the meeting and the note export. */
+export function notePageHtml(input: { title: string; details: string; bodyHtml: string }): string {
+  const { title, details, bodyHtml } = input
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -338,8 +336,18 @@ tr { break-inside: avoid; }
 </head>
 <body>
 <h1>${escapeHtml(title)}</h1>
-${details ? `<p class="sub">${escapeHtml(details)}</p>\n` : ''}${noteBodyHtml(body)}
+${details ? `<p class="sub">${escapeHtml(details)}</p>\n` : ''}${bodyHtml}
 </body>
 </html>
 `
+}
+
+/** The whole page for one meeting. */
+export function meetingNoteHtml(input: { meta: MeetingMeta; body: string }): string {
+  const { meta, body } = input
+  return notePageHtml({
+    title: noteTitle(meta),
+    details: noteDetails(meta),
+    bodyHtml: noteBodyHtml(body)
+  })
 }
