@@ -162,9 +162,14 @@ describe('the space between lines', () => {
       }
     })
 
+    it('makes each further blank line one more line of space, not a jump', () => {
+      // First blank is the 16px separator; the second is a line of its own and the text below carries no gap.
+      expect(spacing('- a\n\n\nq')).toEqual([[], ['sep'], ['gap'], []])
+      expect(spacing('- a\n\n\n\nq')).toEqual([[], ['sep'], ['gap'], ['gap'], []])
+    })
+
     it('is only for a lone blank line where the line below would join the block above', () => {
       for (const doc of [
-        '- a\n\n\nq', // two blank lines are space on purpose
         '- a\n\n- b',
         '- a\n\n## h',
         '- a\n\n> q',

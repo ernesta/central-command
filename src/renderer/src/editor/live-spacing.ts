@@ -10,9 +10,9 @@ import type { Extent } from './live-reveal'
  * it would carry, so typing there moves nothing and the cursor never changes the layout. Where the gap is not the block gap it is the
  * list's small one (`live-gap-item`), a quote's (`live-gap-quote`), or none (a heading pads itself, code keeps its own blank lines,
  * and the first line of a note has nothing above it). A blank line is therefore real: n blank lines are n lines of space.
- * One exception, so the space looks the same whatever the blocks: a lone blank line that Markdown needs, because without it the line
+ * One exception, so the space looks the same whatever the blocks: the first blank line of a run that Markdown needs, because without it the line
  * below would join the block above (a paragraph under a list item, a quote or a table row; `---` under a table row or a paragraph),
- * is drawn as the gap itself (`live-sep`, 16px) and the line below carries none, so those blocks are 45px apart like any other.
+ * is drawn as the gap itself (`live-sep`, 16px) and the line below carries none, so those blocks are 45px apart like any other. Each further blank line of that run is a line of its own (the text below then carries no gap), so one more blank line is one more line of space, not a jump.
  * The note's empty last line (the final line break) is the end of the file and is drawn with no height until the cursor goes there.
  * Nothing here edits the text.
  */
@@ -133,20 +133,27 @@ export function drawSpacing(state: EditorState, range: Extent, add: Add): void {
     return here.kind === 'list' ? 'item' : here.kind === 'quote' ? 'quote' : null
   }
 
-  /** A lone blank line between two blocks that would run together without it. */
+  /**
+   * The first blank line of a run between two blocks that would run together without one. It is the gap itself (16px); every
+   * further blank line of the run is a line of its own, and the text below carries no gap, so each extra blank adds one line.
+   */
   const separator = (n: number): boolean => {
     if (n < 2 || n >= doc.lines) return false
-    if (
-      !isBlank(doc.line(n).text) ||
-      isBlank(doc.line(n - 1).text) ||
-      isBlank(doc.line(n + 1).text)
-    )
-      return false
+    if (!isBlank(doc.line(n).text) || isBlank(doc.line(n - 1).text)) return false
     if (inCode(state, doc.line(n).from)) return false
+    const after = nearest(n, 1)
+    if (!after) return false
     const above = info(n - 1).kind
-    const below = info(n + 1).kind
+    const below = info(after).kind
     if (below === 'paragraph') return above === 'list' || above === 'quote' || above === 'table'
     return below === 'rule' && (above === 'table' || above === 'paragraph')
+  }
+  /** Text below a run of blank lines whose first line is a separator. */
+  const afterSeparator = (n: number): boolean => {
+    let at = n - 1
+    if (at < 1 || !isBlank(doc.line(at).text)) return false
+    while (at > 1 && isBlank(doc.line(at - 1).text)) at--
+    return separator(at)
   }
 
   const first = doc.lineAt(range.from).number
@@ -163,7 +170,7 @@ export function drawSpacing(state: EditorState, range: Extent, add: Add): void {
       add('sep', line.from, line.from, sepLine)
       continue
     }
-    const gap = n > 1 && separator(n - 1) ? null : gapOf(n)
+    const gap = !blank && afterSeparator(n) ? null : gapOf(n)
     if (gap)
       add(
         'gap',
