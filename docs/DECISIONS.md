@@ -4566,6 +4566,14 @@ The editor treated every line as left to right: an Arabic or Urdu paragraph was 
 - **Underline**: the editor has always had `spellcheck="true"`, and macOS has no Urdu dictionary, so every Urdu word got the red dotted line (why it showed only now is not known). Right-to-left lines (`live-direction.ts`) and right-to-left table cells shown as text (`textCellRtl`) are `spellcheck="false"`; a cell is chosen by its first strong letter, so English is still checked. A cell in a grid (cursor outside the table) was first left unmarked ("its text is not editable there"), but the checker underlines text that is only displayed too.
 - **Grid cells too** (31 Oct 2026, the user: "underlined only when displayed and not in edit mode"): a right-to-left cell drawn in the grid is `spellcheck="false"` as well (`cellMarks.rtl`, `live-tables.ts`). Urdu is not checked at all: macOS has no Urdu dictionary, so every word was flagged. Unit test added (mutation-checked); not driven in the app.
 
+## Right-to-left caret, the root cause (5 Nov 2026, the user: "I pressed space, a space appeared, but my caret is blinking still right after the last symbol ... implement right to left correctly rather than me having to find all the bugs")
+
+The 27 Oct fix (run covers the gap) was never driven; driving it showed two causes still open:
+
+- **CodeMirror did not know the cell run was isolated.** It orders text for the caret and arrows itself. A cell shown as text was `dir="auto"` plus CSS `unicode-bidi: isolate`, which the browser honoured and CodeMirror did not, so the space after an Urdu word was placed on opposite sides by the two. Now each cell run is a mark with `bidiIsolate` and an explicit `dir` (`textCell`/`textCellRtl`, `live-tables.ts`), and `liveLayer` exposes the editor's decorations through `EditorView.bidiIsolatedRanges` (`live-decorations.ts`). **Rule: any mark that isolates or sets a direction must carry `bidiIsolate` and be in that facet.** `bidiIsolate` does not set the `dir` attribute; set it too.
+- **The last cell of a row with no closing pipe** ended at `trimEnd()`, so a typed trailing space was outside the run (`splitRow`). It now runs to the end of the line.
+- Driven in the production build (scratch library; typed Urdu with real keystrokes, row with and without a closing pipe): caret moves one space left after the space. Not driven in dev mode. Real-library gate passed.
+
 ## Editor tables are as wide as their text (26 Oct 2026, the user: "this table is waaaay too wide")
 
 A table shown as a grid sized its columns as shares of the page (`fr`), so a two-column table of short phrases still spread across the whole line, with the right-aligned Urdu cells far from their English column.

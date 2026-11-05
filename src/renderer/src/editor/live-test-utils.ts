@@ -28,6 +28,8 @@ export interface Seen {
   kind: string
   /** The `spellcheck` attribute, when the decoration sets one. */
   spellcheck?: string
+  /** The `dir` attribute, when the decoration sets one. */
+  dir?: string
 }
 
 /** Every decoration for the whole document as plain data, with the editor focused. */
@@ -37,13 +39,22 @@ export function decorationsOf(state: EditorState, focused = true): Seen[] {
   ])
   const seen: Seen[] = []
   set.between(0, state.doc.length, (from, to, value) => {
-    const spec = value.spec as { class?: string; attributes?: { spellcheck?: string } }
+    const spec = value.spec as {
+      class?: string
+      attributes?: { spellcheck?: string; dir?: string }
+    }
     const kind = value.spec.widget
       ? 'widget'
       : value.point && !spec.class
         ? 'hidden'
         : (spec.class ?? '')
-    seen.push({ from, to, kind, spellcheck: spec.attributes?.spellcheck })
+    seen.push({
+      from,
+      to,
+      kind,
+      spellcheck: spec.attributes?.spellcheck,
+      dir: spec.attributes?.dir
+    })
   })
   return seen
 }

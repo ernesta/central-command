@@ -1,5 +1,5 @@
 import { EditorSelection, type EditorState, type StateCommand } from '@codemirror/state'
-import { Decoration, ViewPlugin, WidgetType } from '@codemirror/view'
+import { Decoration, Direction, ViewPlugin, WidgetType } from '@codemirror/view'
 import { textDirection } from '@shared/text-direction'
 import type { SyntaxNode } from '@lezer/common'
 import { enclosing, withBreaks } from './live-lines'
@@ -65,7 +65,9 @@ export function splitRow(text: string): RowParts {
     add(segmentStart, pipes[i])
     segmentStart = pipes[i] + 1
   }
-  if (!trailing && segmentStart <= end && end > start) add(segmentStart, end)
+  // The last cell of a row with no closing pipe runs to the end of the line, typed trailing spaces included: they are
+  // part of its run, or a space typed after a right-to-left word sits outside it and the caret jumps to the word's right.
+  if (!trailing && segmentStart <= end && end > start) add(segmentStart, text.length)
   return { start, end, pipes, leading, trailing, cells }
 }
 
@@ -184,11 +186,19 @@ class EmptyCell extends WidgetType {
 }
 
 const hidden = Decoration.replace({})
-const textCell = Decoration.mark({ class: 'live-cell-text', attributes: { dir: 'auto' } })
+// `bidiIsolate` tells CodeMirror (the `dir` and the CSS isolation are set here and in `LiveEditor.module.css`) (`EditorView.bidiIsolatedRanges`, `live-decorations.ts`),
+// which orders text for the caret itself: with `dir="auto"` it did not know the run was isolated and drew the caret on the
+// wrong side of a space typed after a right-to-left word.
+const textCell = Decoration.mark({
+  class: 'live-cell-text',
+  bidiIsolate: Direction.LTR,
+  attributes: { dir: 'ltr' }
+})
 // Urdu and Arabic are not in the spell checker's languages: every word would be underlined.
 const textCellRtl = Decoration.mark({
   class: 'live-cell-text',
-  attributes: { dir: 'auto', spellcheck: 'false' }
+  bidiIsolate: Direction.RTL,
+  attributes: { dir: 'rtl', spellcheck: 'false' }
 })
 const pipeMark = Decoration.mark({ class: 'live-tablemark' })
 const cellClass: Record<Align, string> = {

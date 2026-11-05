@@ -6,6 +6,12 @@ const cellsOf = (line: string): string[] =>
   splitRow(line).cells.map((cell) => line.slice(cell.from, cell.to))
 
 describe('splitRow', () => {
+  it('keeps trailing spaces in the last cell of a row with no closing pipe', () => {
+    const line = '| a | سوال '
+    const cell = splitRow(line).cells[1]
+    expect(line.slice(cell.gapFrom, cell.gapTo)).toBe(' سوال ')
+    expect(line.slice(cell.from, cell.to)).toBe('سوال')
+  })
   it('takes the cells between the pipes, without the white space round them', () => {
     expect(cellsOf('| a | bb |')).toEqual(['a', 'bb'])
     expect(cellsOf('|a|b|c|')).toEqual(['a', 'b', 'c'])
@@ -65,6 +71,18 @@ describe('spell check in a table drawn as a grid', () => {
       cells.find((s) => s.from === `Intro\n\n${urdu}`.indexOf(text))?.spellcheck
     expect(at('السلام')).toBe('false')
     expect(at('Answer')).toBeUndefined()
+  })
+})
+
+describe('a table row shown as text', () => {
+  it('isolates a right-to-left cell with its direction, including the space after the word', () => {
+    const text = '| a | سوال |\n|---|---|\n| b | سوال \n'
+    const state = stateFor(text, text.indexOf('b'))
+    const cells = decorationsOf(state).filter((s) => s.kind === 'live-cell-text')
+    expect(cells.length).toBeGreaterThan(0)
+    const last = cells[cells.length - 1]
+    expect(last.dir).toBe('rtl')
+    expect(text.slice(last.from, last.to)).toBe(' سوال ')
   })
 })
 

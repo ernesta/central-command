@@ -394,5 +394,8 @@ const atomicOf = (set: DecorationSet): DecorationSet =>
 /** The formatting layer with the ranges the cursor must not enter. */
 export const liveLayer: Extension[] = [
   liveDecorations,
-  EditorView.atomicRanges.of((view) => view.plugin(liveDecorations)?.atomic ?? Decoration.none)
+  EditorView.atomicRanges.of((view) => view.plugin(liveDecorations)?.atomic ?? Decoration.none),
+  EditorView.bidiIsolatedRanges.of(
+    (view) => view.plugin(liveDecorations)?.decorations ?? Decoration.none
+  )
 ]
